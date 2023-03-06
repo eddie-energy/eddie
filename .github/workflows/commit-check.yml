@@ -1,0 +1,14 @@
+name: 'Commit Message Check'
+on:
+  push:
+
+jobs:
+  check-commit-message:
+    name: Check Commit Message
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for referenced issue
+        uses: gsactions/commit-message-checker@v2
+        with:
+          pattern: '^((\#|GH\-|gh\-)[0-9]+|NOISSUE).+'
+          error: 'Commit message must reference an issue at the start or start with NOISSUE'
