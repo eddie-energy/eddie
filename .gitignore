@@ -12,6 +12,8 @@
 
 # Package Files #
 *.jar
+# The wrapper jar is needed to download the gradle distribution
+!gradle/wrapper/gradle-wrapper.jar
 *.war
 *.nar
 *.ear
