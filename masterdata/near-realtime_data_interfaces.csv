@@ -1,0 +1,4 @@
+Country,Company,"Basic class of interface utilised",Vendor,"Metering Point Administrators using the model","Physical interface standard","Communication protocol","Data formats"
+AT,"Verein ""Österreichs E-Wirtschaft""",https://oesterreichsenergie.at/smart-meter/technische-leitfaeden,https://oesterreichsenergie.at/fileadmin/user_upload/Oesterreichs_Energie/Publikationsdatenbank/Leitfaden/2022/Datenblatt_Smart_Meter_Adapter_V7_20220808.pdf,All,https://oesterreichsenergie.at/fileadmin/user_upload/Oesterreichs_Energie/Publikationsdatenbank/Leitfaden/2022/Datenblatt_Smart_Meter_Adapter_V7_20220808.pdf,MQTT,JSON
+AT,"Netz Niederösterreich GmbH","P1 Interface",Kaifa,"Netz Niederösterreich GmbH","DLMS-COESEM, see https://hartnerconsultingcom.sharepoint.com/:b:/r/sites/EuropeanDataAccess/Freigegebene%20Dokumente/WPs/WP5_RegionConnectors/T5.1_BPRT_Infrastructure/P1Descriptions /218_5_SmartMeter_Kundenschnittstelle_2710.pdf?csf=1&web=1&e=HuOc87",,
+,,,Sagemcom,,,,
