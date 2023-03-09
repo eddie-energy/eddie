@@ -1,0 +1,11 @@
+# See: https://docs.gradle.org/current/userguide/platforms.html#sub:conventional-dependencies-toml
+[versions]
+junit = "5.9.2"
+
+[libraries]
+# Aggregator artifact of junit5
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit"}
+
+[bundles]
+
+[plugins]
