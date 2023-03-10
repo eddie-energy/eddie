@@ -7,6 +7,7 @@ import net.ltgt.gradle.errorprone.errorprone
 plugins {
     id("java")
     alias(libs.plugins.errorprone)
+    alias(libs.plugins.sonarqube).apply(false)
 }
 
 repositories {
@@ -37,8 +38,10 @@ allprojects {
     }
 }
 
-// make all projects use errorprone
+// make all projects use these plugins
 allprojects {
+    apply(plugin = libraries.plugins.sonarqube.get().pluginId)
+
     apply(plugin = libraries.plugins.errorprone.get().pluginId)
     tasks.withType<JavaCompile>() {
         options.errorprone {
