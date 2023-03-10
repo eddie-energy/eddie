@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Mit XMLSpy v2020 rel. 2 sp1 (x64) (http://www.altova.com) von Illwerke VKW Aktiengesellschaft (illwerke vkw Aktiengesellschaft) bearbeitet -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ct="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20" xmlns:cp="http://www.ebutilities.at/schemata/customerconsent/cmrequest/01p10" targetNamespace="http://www.ebutilities.at/schemata/customerconsent/cmrequest/01p10" elementFormDefault="qualified">
+	<xsd:import namespace="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20" schemaLocation="CPCommonTypes_01p20.xsd"/>
+	<xsd:annotation>
+		<xsd:documentation>
+			schema version: 01.10
+			autor: Reinhold Hansmann
+			valid from: 2022-10-01
+			changes: CMRequest/ECID
+			                  /ECShare
+			         MessageCode
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:element name="CMRequest">
+		<xsd:annotation>
+			<xsd:documentation>Anforderungsprozesse CCM</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="MarketParticipantDirectory" type="cp:MarketParticipantDirectory"/>
+				<xsd:element name="ProcessDirectory" type="cp:ProcessDirectory"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:complexType name="MarketParticipantDirectory">
+		<xsd:complexContent>
+			<xsd:extension base="ct:MarketParticipantDirectory">
+				<xsd:sequence>
+					<xsd:element name="MessageCode" type="ct:MessageCode">
+						<xsd:annotation>
+							<xsd:documentation>Nachricht (nicht im Schema geprüft)</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+				<xsd:attribute name="SchemaVersion" use="required">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="01.10"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="ProcessDirectory">
+		<xsd:annotation>
+			<xsd:documentation>Request: Prozessdaten</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="ct:ProcessDirectoryS">
+				<xsd:sequence>
+					<xsd:element name="ProcessDate" type="xsd:date"/>
+					<xsd:element name="MeteringPoint" type="ct:MeteringPoint" minOccurs="0"/>
+					<xsd:element name="CMRequestId" type="ct:GroupingId">
+						<xsd:annotation>
+							<xsd:documentation>Anforderungs-ID</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="ConsentId" type="ct:GroupingId" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Zustimmungs-ID</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="CMRequest" type="cp:ReqType">
+						<xsd:annotation>
+							<xsd:documentation>Anforderungs-Details</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="ReqType">
+		<xsd:sequence>
+			<xsd:element name="ReqDatType" type="cp:ReqDatType">
+				<xsd:annotation>
+					<xsd:documentation>Datentypen der Anfrage</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="DateFrom" type="xsd:date">
+				<xsd:annotation>
+					<xsd:documentation>Beginndatum für Versand/Datenzugriff</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="DateTo" type="xsd:date" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Endedatum für Versand/Datenzugriff</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="MeteringIntervall" type="cp:MeteringIntervallType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Messintervall/Granularität</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="TransmissionCycle" type="cp:TransmissionCycle" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Übertragungsintervall</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="ECID" type="ct:MeteringPoint" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Energiegemeinschafts-ID</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="ECShare" type="cp:ECShare" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Anteil bei statischem Modell von Energiegemeinschaften in Prozent</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="EnergyDirection" type="cp:EnergyDirection" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Energierichtung</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<!--			<xsd:element name="ReqDatParam" type="cp:ReqDatParamType" minOccurs="0"/> -->
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ReqDatParamType">
+		<xsd:annotation>
+			<xsd:documentation>Anforderungsdaten</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:element name="ParamCyc" type="cp:ParamCycType"/>
+			<xsd:element name="ParamHist" type="cp:ParamHistType"/>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="ParamHistType">
+		<xsd:annotation>
+			<xsd:documentation>Parameter für Historischen Versand</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="MeteringIntervall" type="cp:MeteringIntervallType">
+				<xsd:annotation>
+					<xsd:documentation>Messintervall/Granularität</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ParamCycType">
+		<xsd:annotation>
+			<xsd:documentation>Parameter für Zyklischen Versand</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="MeteringIntervall" type="cp:MeteringIntervallType">
+				<xsd:annotation>
+					<xsd:documentation>Messintervall/Granularität</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="TransmissionCycle" type="cp:TransmissionCycle">
+				<xsd:annotation>
+					<xsd:documentation>Übertragungsintervall</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="ECShare">
+		<xsd:annotation>
+			<xsd:documentation>Anteil bei statischem Modell in Prozent</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:decimal">
+			<xsd:fractionDigits value="4"/>
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="EnergyDirection">
+		<xsd:annotation>
+			<xsd:documentation>Energierichtung (Erzeuger/Verbraucher)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="CONSUMPTION"/>
+			<xsd:enumeration value="GENERATION"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="MeteringIntervallType">
+		<xsd:annotation>
+			<xsd:documentation>Messintervall</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="QH"/>
+			<xsd:enumeration value="H"/>
+			<xsd:enumeration value="D"/>
+			<xsd:enumeration value="V"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ReqDatType">
+		<xsd:annotation>
+			<xsd:documentation>Datentypen der Anfrage</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="30"/>
+			<xsd:minLength value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="TransmissionCycle">
+		<xsd:annotation>
+			<xsd:documentation>Übertragungsintervall Verbrauchsdaten</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="D"/>
+			<xsd:enumeration value="M"/>
+			<xsd:enumeration value="V"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>
