@@ -9,21 +9,20 @@ repositories {
     mavenCentral()
 }
 
+
 // JAXB configuration holds classpath for running the JAXB XJC compiler
 val jaxb: Configuration by configurations.creating
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${project.ext["junitVersion"]}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${project.ext["junitVersion"]}")
+    testImplementation(libs.junit.jupiter)
 
     // dependencies needed to generate code
-    jaxb("org.glassfish.jaxb:jaxb-xjc:4.0.2")
-    jaxb("org.glassfish.jaxb:jaxb-runtime:4.0.2")
-    // The next two dependencies are not necessary for generating code, only when running the code:
-    // Generated code depends on the JAXB API, which is removed from base Java in JDK 11, and therefore needs to be added
-    implementation("org.glassfish.jaxb:jaxb-runtime:4.0.2")
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.0") // In JAXB v3, 'javax.xml.bind' was moved to 'jakarta.xml.bind'
-    implementation("jakarta.annotation:jakarta.annotation-api:2.1.0")
+    jaxb(libs.jaxb.xjc)
+    jaxb(libs.jaxb.runtime)
+
+    implementation(libs.jaxb.runtime)
+    implementation(libs.jakarta.xml.bind.api)
+    implementation(libs.jakarta.annotation.api)
 }
 
 
