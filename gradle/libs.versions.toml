@@ -1,11 +1,20 @@
 # See: https://docs.gradle.org/current/userguide/platforms.html#sub:conventional-dependencies-toml
 [versions]
 junit = "5.9.2"
+errorprone = "3.0.1"
+errorpronecore = "2.18.0"
+nullaway = "0.7.9"
+jsr305 = "3.0.2"
 
 [libraries]
+errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorpronecore" }
+nullaway = { module = "com.uber.nullaway:nullaway", version.ref = "nullaway"}
+jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305"}
+
 # Aggregator artifact of junit5
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit"}
 
 [bundles]
 
 [plugins]
+errorprone = { id = "net.ltgt.errorprone", version.ref = "errorprone" }
