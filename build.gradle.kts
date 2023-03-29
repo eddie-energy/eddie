@@ -6,7 +6,7 @@ import net.ltgt.gradle.errorprone.errorprone
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     id("java")
-    alias(libs.plugins.errorprone)
+    alias(libs.plugins.errorprone).apply(false)
 }
 
 repositories {
@@ -23,6 +23,7 @@ dependencies {
 }
 
 allprojects {
+    apply(plugin = libs.plugins.errorprone.get().pluginId)
     tasks.withType<JavaCompile>() {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
