@@ -1,3 +1,6 @@
+import net.ltgt.gradle.errorprone.CheckSeverity
+import net.ltgt.gradle.errorprone.errorprone
+
 plugins {
     id("java")
 }
@@ -40,6 +43,11 @@ sourceSets {
             srcDir(generatedXJCJavaDir)
         }
     }
+    test {
+        java {
+            srcDir(generatedXJCJavaDir)
+        }
+    }
 }
 
 val generateEDASchemaClasses = tasks.create<JavaExec>("generateEDASchemaClasses") {
@@ -60,4 +68,12 @@ val generateEDASchemaClasses = tasks.create<JavaExec>("generateEDASchemaClasses"
 tasks.named("compileJava") {
     // generate the classes before compiling
     dependsOn(generateEDASchemaClasses)
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.errorprone {
+        check("NullAway", CheckSeverity.ERROR)
+        option("NullAway:AnnotatedPackages", "at.eda")
+
+    }
 }
