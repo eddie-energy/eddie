@@ -17,7 +17,10 @@ group = "energy.eddie"
 version = "0.0.0"
 
 // for some reason libs is not available in allprojects scope
+// when working with multiple projects, it's available if only the root project is present
+// https://stackoverflow.com/questions/75640395/why-does-the-dependency-declared-in-libs-versions-toml-not-work-in-subprojects
 val libraries = libs
+
 // configure dependencies required by all projects
 allprojects {
     plugins.withId(libraries.plugins.errorprone.get().pluginId) {
@@ -40,6 +43,7 @@ allprojects {
     tasks.withType<JavaCompile>() {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
+            // add namespaces we want to check for nullability
             option("NullAway:AnnotatedPackages", "energy.eddie")
         }
     }
