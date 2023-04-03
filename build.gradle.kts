@@ -1,5 +1,6 @@
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
+import java.util.*
 
 // Fixed in https://github.com/gradle/gradle/issues/22797
 // Remove once Gradle 8.1+ is released: https://gradle.org/releases/
@@ -43,11 +44,13 @@ allprojects {
     apply(plugin = libraries.plugins.sonarqube.get().pluginId)
 
     apply(plugin = libraries.plugins.errorprone.get().pluginId)
-    tasks.withType<JavaCompile>() {
-        options.errorprone {
-            check("NullAway", CheckSeverity.ERROR)
-            // add namespaces we want to check for nullability
-            option("NullAway:AnnotatedPackages", "energy.eddie")
+    tasks.withType<JavaCompile>().configureEach {
+        if (!name.lowercase(Locale.getDefault()).contains("test")) {
+            options.errorprone {
+                check("NullAway", CheckSeverity.ERROR)
+                // add namespaces we want to check for nullability
+                option("NullAway:AnnotatedPackages", "energy.eddie")
+            }
         }
     }
 }
