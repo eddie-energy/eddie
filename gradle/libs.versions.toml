@@ -5,7 +5,10 @@ errorprone = "3.0.1"
 errorpronecore = "2.18.0"
 nullaway = "0.7.9"
 jsr305 = "3.0.2"
-sonar = "3.5.0.2730"
+jaxb = "4.0.2"
+jakarta-xml-bind = "4.0.0"
+jakarta-annotation = "2.1.0"
+sonar = "4.0.0.2929"
 
 [libraries]
 errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorpronecore" }
@@ -14,6 +17,14 @@ jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305"}
 
 # Aggregator artifact of junit5
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit"}
+
+# dependencies required by region-connector-at
+jaxb-xjc = { module = "org.glassfish.jaxb:jaxb-xjc", version.ref = "jaxb"}
+jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "jaxb"}
+
+jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakarta-xml-bind"}
+jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakarta-annotation"}
+
 
 [bundles]
 
