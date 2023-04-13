@@ -7,6 +7,7 @@ import java.util.*
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     id("java")
+    id("jacoco")
     alias(libs.plugins.errorprone)
     alias(libs.plugins.sonarqube).apply(false)
 }
@@ -42,6 +43,21 @@ allprojects {
 // make all projects use these plugins
 allprojects {
     apply(plugin = libraries.plugins.sonarqube.get().pluginId)
+    apply(plugin = "jacoco")
+
+    jacoco {
+        toolVersion = "0.8.9"
+    }
+
+    tasks.withType<Test>().configureEach {
+        finalizedBy(tasks.jacocoTestReport)
+    }
+
+    tasks.withType<JacocoReport> {
+        reports {
+            xml.required.set(true)
+        }
+    }
 
     apply(plugin = libraries.plugins.errorprone.get().pluginId)
     tasks.withType<JavaCompile>().configureEach {
