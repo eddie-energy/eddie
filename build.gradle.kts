@@ -2,9 +2,6 @@ import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
 import java.util.*
 
-// Fixed in https://github.com/gradle/gradle/issues/22797
-// Remove once Gradle 8.1+ is released: https://gradle.org/releases/
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     id("java")
     id("jacoco")
