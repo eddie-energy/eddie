@@ -39,14 +39,14 @@ public class ProcessDirectorySBuilderTest {
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         ProcessDirectorySBuilder processDirSBuilder = new ProcessDirectorySBuilder();
 
         // Assign no attributes
-        assertThrows(IllegalStateException.class, processDirSBuilder::build);
+        assertThrows(NullPointerException.class, processDirSBuilder::build);
 
         // Assign only one required attribute
-        assertThrows(IllegalStateException.class, () -> processDirSBuilder
+        assertThrows(NullPointerException.class, () -> processDirSBuilder
                 .withMessageId("Test")
                 .build());
     }

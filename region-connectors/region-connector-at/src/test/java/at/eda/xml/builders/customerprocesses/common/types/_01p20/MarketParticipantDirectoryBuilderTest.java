@@ -3,6 +3,7 @@ package at.eda.xml.builders.customerprocesses.common.types._01p20;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.AddressType;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMode;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.ObjectFactory;
+import at.eda.xml.builders.helper.Sector;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -29,38 +30,32 @@ public class MarketParticipantDirectoryBuilderTest {
                                         LocalDateTime.of(2022, Month.DECEMBER, 17, 9, 30, 47)
                                 ).build()
                 )
-                .withSector("01")
+                .withSector(Sector.ELECTRICITY)
                 .withDocumentMode(DocumentMode.PROD)
                 .withDuplicate(true)
                 .build();
     }
 
     @Test
-    public void testEmptyString() {
-        MarketParticipantDirectoryBuilder marketParticipantDirectoryBuilder = new MarketParticipantDirectoryBuilder();
-        assertThrows(IllegalArgumentException.class, () -> marketParticipantDirectoryBuilder.withSector(""));
-    }
-
-    @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         ObjectFactory objectFactory = new ObjectFactory();
         MarketParticipantDirectoryBuilder mpDirBuilder = new MarketParticipantDirectoryBuilder();
 
         // Assign no required arguments
-        assertThrows(IllegalStateException.class, mpDirBuilder::build);
+        assertThrows(NullPointerException.class, mpDirBuilder::build);
 
         // Assign only one required argument
-        assertThrows(IllegalStateException.class, () -> mpDirBuilder
+        assertThrows(NullPointerException.class, () -> mpDirBuilder
                 .withRoutingHeader(objectFactory.createRoutingHeader())
                 .build());
 
         // Assign only two required argument
-        assertThrows(IllegalStateException.class, () -> mpDirBuilder
-                .withSector("Test")
+        assertThrows(NullPointerException.class, () -> mpDirBuilder
+                .withSector(Sector.ELECTRICITY)
                 .build());
 
         // Assign only three required argument
-        assertThrows(IllegalStateException.class, () -> mpDirBuilder
+        assertThrows(NullPointerException.class, () -> mpDirBuilder
                 .withDocumentMode(DocumentMode.SIMU)
                 .build());
     }

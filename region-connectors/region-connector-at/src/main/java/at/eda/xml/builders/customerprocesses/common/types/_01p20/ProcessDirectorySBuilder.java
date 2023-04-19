@@ -2,6 +2,9 @@ package at.eda.xml.builders.customerprocesses.common.types._01p20;
 
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.ProcessDirectoryS;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 /**
  * <p>Allows to create a ProcessDirectoryS Object (Common Type).
  * <p>All fields are required according to the schema definition.
@@ -11,8 +14,12 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.ProcessDire
  * @see at.ebutilities.schemata.customerconsent.cmnotification._01p11.ProcessDirectory
  */
 public class ProcessDirectorySBuilder {
-    protected String messageId = "";
-    protected String conversationId = "";
+    private static final int LEN_MESSAGE_ID = 35;
+    private static final int LEN_CONVERSATION_ID = 35;
+    @Nullable
+    protected String messageId;
+    @Nullable
+    protected String conversationId;
 
     /**
      * Sets the globally unique message ID
@@ -22,11 +29,10 @@ public class ProcessDirectorySBuilder {
      * @return {@link ProcessDirectorySBuilder}
      */
     public ProcessDirectorySBuilder withMessageId(String messageId) {
-        if (messageId == null || messageId.length() == 0) {
+        if (Objects.requireNonNull(messageId).isEmpty()) {
             throw new IllegalArgumentException("`messageId` cannot be empty.");
         }
 
-        int LEN_MESSAGE_ID = 35;
         if (messageId.length() > LEN_MESSAGE_ID) {
             throw new IllegalArgumentException("`messageId` length cannot exceed " + LEN_MESSAGE_ID + " characters.");
         }
@@ -43,11 +49,10 @@ public class ProcessDirectorySBuilder {
      * @return {@link ProcessDirectorySBuilder}
      */
     public ProcessDirectorySBuilder withConversationId(String conversationId) {
-        if (conversationId == null || conversationId.length() == 0) {
+        if (Objects.requireNonNull(conversationId).isEmpty()) {
             throw new IllegalArgumentException("`conversationId` cannot be empty.");
         }
 
-        int LEN_CONVERSATION_ID = 35;
         if (conversationId.length() > LEN_CONVERSATION_ID) {
             throw new IllegalArgumentException("`conversationId` length cannot exceed " + LEN_CONVERSATION_ID + " characters.");
         }
@@ -62,13 +67,9 @@ public class ProcessDirectorySBuilder {
      * @return {@link ProcessDirectoryS}
      */
     public ProcessDirectoryS build() {
-        if (messageId.length() == 0 || conversationId.length() == 0) {
-            throw new IllegalStateException("Attributes `messageId` and `conversationId` are required.");
-        }
-
         ProcessDirectoryS processDirS = new ProcessDirectoryS();
-        processDirS.setMessageId(messageId);
-        processDirS.setConversationId(conversationId);
+        processDirS.setMessageId(Objects.requireNonNull(messageId, "Attributes `messageId` is required."));
+        processDirS.setConversationId(Objects.requireNonNull(conversationId, "Attributes `conversationId` is required."));
 
         return processDirS;
     }

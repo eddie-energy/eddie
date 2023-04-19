@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
 public class ResponseDataTypeBuilderTest {
     @Test
     public void testProcessDirectoryBuilder() {
@@ -44,14 +45,14 @@ public class ResponseDataTypeBuilderTest {
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         ResponseDataTypeBuilder responseDataTypeBuilder = new ResponseDataTypeBuilder();
 
         // Assign no attributes
-        assertThrows(IllegalStateException.class, responseDataTypeBuilder::build);
+        assertThrows(NullPointerException.class, responseDataTypeBuilder::build);
 
         // Assign no required attribute
-        assertThrows(IllegalStateException.class, () -> responseDataTypeBuilder
+        assertThrows(NullPointerException.class, () -> responseDataTypeBuilder
                 .withConsentId("Test")
                 .withMeteringPointId("Test")
                 .withParamHistory(getParamHist())

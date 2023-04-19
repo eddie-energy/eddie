@@ -2,10 +2,12 @@ package at.eda.xml.builders.customerconsent.cmnotification._01p11;
 
 import at.ebutilities.schemata.customerconsent.cmnotification._01p11.ProcessDirectory;
 import at.ebutilities.schemata.customerconsent.cmnotification._01p11.ResponseDataType;
+import at.eda.utils.CMRequestId;
 import at.eda.xml.builders.customerprocesses.common.types._01p20.ProcessDirectorySBuilder;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * <p>Allows to create a ProcessDirectory Object for CMNotification.
@@ -15,7 +17,9 @@ import java.util.List;
  * @see at.ebutilities.schemata.customerprocesses.common.types._01p20.ProcessDirectoryS
  */
 public class ProcessDirectoryBuilder extends ProcessDirectorySBuilder {
-    private String cmRequestId = "";
+    private static final int LEN_METERING_POINT = 35;
+    @Nullable
+    private String cmRequestId;
     @Nullable
     private List<ResponseDataType> responseData;
 
@@ -53,10 +57,10 @@ public class ProcessDirectoryBuilder extends ProcessDirectorySBuilder {
      * @return {@link ProcessDirectoryBuilder}
      */
     public ProcessDirectoryBuilder withCMRequestId(String cmRequestId) {
-        if (cmRequestId == null || cmRequestId.length() == 0) {
+        if (Objects.requireNonNull(cmRequestId).isEmpty()) {
             throw new IllegalArgumentException("`cmRequestId` cannot be empty.");
         }
-        int LEN_METERING_POINT = 35;
+
         if (cmRequestId.length() > LEN_METERING_POINT) {
             throw new IllegalArgumentException("`cmRequestId` length cannot exceed " + LEN_METERING_POINT + " characters.");
         }
@@ -73,7 +77,7 @@ public class ProcessDirectoryBuilder extends ProcessDirectorySBuilder {
      * @return {@link ProcessDirectoryBuilder}
      */
     public ProcessDirectoryBuilder withResponseData(List<ResponseDataType> responseData) {
-        if (responseData == null || responseData.isEmpty()) {
+        if (Objects.requireNonNull(responseData).isEmpty()) {
             throw new IllegalArgumentException("`responseData` cannot be empty.");
         }
 
@@ -88,18 +92,12 @@ public class ProcessDirectoryBuilder extends ProcessDirectorySBuilder {
      */
     @Override
     public ProcessDirectory build() {
-        super.build();
-
-        if (cmRequestId.length() == 0 || responseData == null) {
-            throw new IllegalStateException("Attributes `messageId`, `conversationId`, `cmRequestId` and `responseData` are required.");
-        }
-
         ProcessDirectory processDir = new ProcessDirectory();
 
-        processDir.setMessageId(messageId);
-        processDir.setConversationId(conversationId);
-        processDir.setCMRequestId(cmRequestId);
-        for (ResponseDataType responseDataEntry : responseData) {
+        processDir.setMessageId(Objects.requireNonNull(messageId, "Attributes `messageId` is required."));
+        processDir.setConversationId(Objects.requireNonNull(conversationId, "Attributes `conversationId` is required."));
+        processDir.setCMRequestId(Objects.requireNonNullElseGet(cmRequestId, () -> new CMRequestId(Objects.requireNonNull(messageId)).toString()));
+        for (ResponseDataType responseDataEntry : Objects.requireNonNull(responseData, "Attribute `responseData` is required.")) {
             processDir.getResponseData().add(responseDataEntry);
         }
 

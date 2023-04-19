@@ -5,6 +5,7 @@ import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ParamHistType;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ReqDatParamType;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 
 /**
@@ -20,7 +21,7 @@ public class ReqDatParamTypeBuilder {
     private ParamHistType paramHist;
 
     public ReqDatParamTypeBuilder withParamCyc(ParamCycType paramCyc) {
-        this.paramCyc = paramCyc;
+        this.paramCyc = Objects.requireNonNull(paramCyc);
         return this;
     }
 
@@ -32,7 +33,7 @@ public class ReqDatParamTypeBuilder {
      * @return {@link ReqDatParamTypeBuilder}
      */
     public ReqDatParamTypeBuilder withParamHist(ParamHistType paramHist) {
-        this.paramHist = paramHist;
+        this.paramHist = Objects.requireNonNull(paramHist);
         return this;
     }
 
@@ -43,10 +44,10 @@ public class ReqDatParamTypeBuilder {
      */
     public ReqDatParamType build() {
         if (paramCyc != null && paramHist != null) {
-            throw new IllegalStateException("Either `paramCyc` or `paramHist` is allowed but not both.");
+            throw new NullPointerException("Either `paramCyc` or `paramHist` is allowed but not both.");
         }
         if (paramCyc == null && paramHist == null) {
-            throw new IllegalStateException("Either `paramCyc` or `paramHist` is required.");
+            throw new NullPointerException("Either `paramCyc` or `paramHist` is required.");
         }
 
         ReqDatParamType reqDatParam = new ReqDatParamType();

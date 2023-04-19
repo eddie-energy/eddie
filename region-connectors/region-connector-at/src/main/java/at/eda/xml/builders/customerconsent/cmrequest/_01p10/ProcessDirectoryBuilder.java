@@ -2,13 +2,13 @@ package at.eda.xml.builders.customerconsent.cmrequest._01p10;
 
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ProcessDirectory;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ReqType;
+import at.eda.utils.CMRequestId;
 import at.eda.xml.builders.customerprocesses.common.types._01p20.ProcessDirectorySBuilder;
 import at.eda.xml.builders.helper.DateTimeConverter;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Objects;
 
 /**
  * <p>Allows to create a ProcessDirectory Object for CMRequest.
@@ -18,12 +18,17 @@ import java.util.regex.Pattern;
  * @see at.ebutilities.schemata.customerprocesses.common.types._01p20.ProcessDirectoryS
  */
 public class ProcessDirectoryBuilder extends ProcessDirectorySBuilder {
+    private static final int LEN_METERING_POINT = 33;
+    private static final int LEN_CM_REQ_ID = 35;
+    private static final int LEN_CONSENT_ID = 35;
     @Nullable
     private LocalDate processDate;
-    private String meteringPoint = "";
+    @Nullable
+    private String meteringPoint;
     @Nullable
     private String cmRequestId;
-    private String consentId = "";
+    @Nullable
+    private String consentId;
     @Nullable
     private ReqType cmRequest;
 
@@ -73,21 +78,19 @@ public class ProcessDirectoryBuilder extends ProcessDirectorySBuilder {
      * @return {@link ProcessDirectoryBuilder}
      */
     public ProcessDirectoryBuilder withMeteringPoint(String meteringPoint) {
-        if (meteringPoint == null || meteringPoint.length() == 0) {
+        if (Objects.requireNonNull(meteringPoint).isEmpty()) {
             throw new IllegalArgumentException("`meteringPoint` cannot be empty.");
         }
 
-        int LEN_METERING_POINT = 33;
         if (meteringPoint.length() > LEN_METERING_POINT) {
             throw new IllegalArgumentException("`meteringPoint` length cannot exceed " + LEN_METERING_POINT + " characters.");
         }
 
-        String regex = "[0-9A-Za-z]*";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(meteringPoint);
-
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException("`meteringPoint` does not match the necessary pattern (" + regex + ").");
+        for (int i = 0; i < meteringPoint.length(); i++) {
+            char ch = meteringPoint.charAt(i);
+            if (!Character.isLetterOrDigit(ch)) {
+                throw new IllegalArgumentException("`meteringPoint` must consist only of letters and digits.");
+            }
         }
 
         this.meteringPoint = meteringPoint;
@@ -102,7 +105,6 @@ public class ProcessDirectoryBuilder extends ProcessDirectorySBuilder {
      * @return {@link ProcessDirectoryBuilder}
      */
     public ProcessDirectoryBuilder withCMRequestId(String cmRequestId) {
-        int LEN_CM_REQ_ID = 35;
         if (cmRequestId != null && cmRequestId.length() > LEN_CM_REQ_ID) {
             throw new IllegalArgumentException("`cmRequestId` length cannot exceed " + LEN_CM_REQ_ID + " characters.");
         }
@@ -119,11 +121,10 @@ public class ProcessDirectoryBuilder extends ProcessDirectorySBuilder {
      * @return {@link ProcessDirectoryBuilder}
      */
     public ProcessDirectoryBuilder withConsentId(String consentId) {
-        if (consentId == null || consentId.length() == 0) {
+        if (Objects.requireNonNull(consentId).isEmpty()) {
             throw new IllegalArgumentException("`consentId` cannot be empty.");
         }
 
-        int LEN_CONSENT_ID = 35;
         if (consentId.length() > LEN_CONSENT_ID) {
             throw new IllegalArgumentException("`consentId` length cannot exceed " + LEN_CONSENT_ID + " characters.");
         }
@@ -151,22 +152,14 @@ public class ProcessDirectoryBuilder extends ProcessDirectorySBuilder {
      */
     @Override
     public ProcessDirectory build() {
-        super.build();
-
-        if (meteringPoint.length() == 0 || consentId.length() == 0) {
-            throw new IllegalStateException("Attributes `messageId`, `conversationId`, `meteringPoint` and `consentId` are required.");
-        }
-
         ProcessDirectory processDir = new ProcessDirectory();
 
-        processDir.setConversationId(conversationId);
-        processDir.setMessageId(messageId);
-        if (processDate != null) {
-            processDir.setProcessDate(DateTimeConverter.dateToXMl(processDate));
-        }
-        processDir.setMeteringPoint(meteringPoint);
-        processDir.setCMRequestId(cmRequestId);
-        processDir.setConsentId(consentId);
+        processDir.setMessageId(Objects.requireNonNull(messageId, "Attributes `messageId` is required."));
+        processDir.setConversationId(Objects.requireNonNull(conversationId, "Attributes `conversationId` is required."));
+        processDir.setProcessDate(DateTimeConverter.dateToXMl(Objects.requireNonNullElseGet(processDate, LocalDate::now)));
+        processDir.setMeteringPoint(Objects.requireNonNull(meteringPoint, "Attribute `meteringPoint` is required."));
+        processDir.setCMRequestId(Objects.requireNonNullElseGet(cmRequestId, () -> new CMRequestId(Objects.requireNonNull(messageId)).toString()));
+        processDir.setConsentId(Objects.requireNonNull(consentId, "Attribute `consentId` is required."));
         processDir.setCMRequest(cmRequest);
 
         return processDir;

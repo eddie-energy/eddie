@@ -16,9 +16,9 @@ public class ParamHistTypeBuilderTest {
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         // Assign no attributes
         ParamHistTypeBuilder paramHistTypeBuilder = new ParamHistTypeBuilder();
-        assertThrows(IllegalStateException.class, paramHistTypeBuilder::build);
+        assertThrows(NullPointerException.class, paramHistTypeBuilder::build);
     }
 }

@@ -5,6 +5,7 @@ import at.ebutilities.schemata.customerconsent.cmnotification._01p11.MarketParti
 import at.ebutilities.schemata.customerconsent.cmnotification._01p11.ProcessDirectory;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /**
  * <p>Allows to create a CMNotification Object.
@@ -26,11 +27,7 @@ public class CMNotificationBuilder {
      * @return {@link CMNotificationBuilder}
      */
     public CMNotificationBuilder withMarketParticipantDirectory(MarketParticipantDirectory mpDir) {
-        if (mpDir == null) {
-            throw new IllegalArgumentException("`mpDir` cannot be empty.");
-        }
-
-        this.mpDir = mpDir;
+        this.mpDir = Objects.requireNonNull(mpDir);
         return this;
     }
 
@@ -42,11 +39,7 @@ public class CMNotificationBuilder {
      * @return {@link CMNotificationBuilder}
      */
     public CMNotificationBuilder withProcessDirectory(ProcessDirectory processDir) {
-        if (processDir == null) {
-            throw new IllegalArgumentException("`processDir` cannot be empty.");
-        }
-
-        this.processDir = processDir;
+        this.processDir = Objects.requireNonNull(processDir);
         return this;
     }
 
@@ -56,14 +49,10 @@ public class CMNotificationBuilder {
      * @return {@link CMNotification}
      */
     public CMNotification build() {
-        if (mpDir == null || processDir == null) {
-            throw new IllegalStateException("Attributes `mpDir` and `processDir` are required.");
-        }
-
         CMNotification cmNotification = new CMNotification();
 
-        cmNotification.setMarketParticipantDirectory(mpDir);
-        cmNotification.setProcessDirectory(processDir);
+        cmNotification.setMarketParticipantDirectory(Objects.requireNonNull(mpDir, "Attribute `mpDir` is required"));
+        cmNotification.setProcessDirectory(Objects.requireNonNull(processDir, "Attribute `processDir` is required"));
 
         return cmNotification;
     }

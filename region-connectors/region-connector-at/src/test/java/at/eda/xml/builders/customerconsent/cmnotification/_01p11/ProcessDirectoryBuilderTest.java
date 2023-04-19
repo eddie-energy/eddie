@@ -26,6 +26,18 @@ public class ProcessDirectoryBuilderTest {
                                 .withResponseCode(List.of(99))
                                 .build()
                 )).build();
+
+        ProcessDirectoryBuilder processDirBuilderWithDefaults = new ProcessDirectoryBuilder();
+        processDirBuilderWithDefaults
+                .withMessageId("GC100007201912170930001230001234567")
+                .withConversationId("GC100007201912170930001230012345678")
+                .withResponseData(List.of(
+                        responseDataTypeBuilder
+                                .withConsentId("AT999999201912171011121230023456789")
+                                .withMeteringPointId("AT9999990699900000000000206868100")
+                                .withResponseCode(List.of(99))
+                                .build()
+                )).build();
     }
 
     @Test
@@ -62,24 +74,24 @@ public class ProcessDirectoryBuilderTest {
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         ProcessDirectoryBuilder processDirBuilder = new ProcessDirectoryBuilder();
 
         // Assign no attributes
-        assertThrows(IllegalStateException.class, processDirBuilder::build);
+        assertThrows(NullPointerException.class, processDirBuilder::build);
 
         // Assign only one required attribute
-        assertThrows(IllegalStateException.class, () -> processDirBuilder
+        assertThrows(NullPointerException.class, () -> processDirBuilder
                 .withMessageId("Test")
                 .build());
 
         // Assign only two required attribute
-        assertThrows(IllegalStateException.class, () -> processDirBuilder
+        assertThrows(NullPointerException.class, () -> processDirBuilder
                 .withConversationId("Test")
                 .build());
 
         // Assign only three required attribute
-        assertThrows(IllegalStateException.class, () -> processDirBuilder
+        assertThrows(NullPointerException.class, () -> processDirBuilder
                 .withCMRequestId("Test")
                 .build());
     }

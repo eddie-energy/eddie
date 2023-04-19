@@ -18,14 +18,14 @@ public class ParamCycTypeBuilderTest {
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         // Assign no attributes
         ParamCycTypeBuilder paramCycTypeBuilder1 = new ParamCycTypeBuilder();
         ParamCycTypeBuilder paramCycTypeBuilder2 = new ParamCycTypeBuilder();
-        assertThrows(IllegalStateException.class, paramCycTypeBuilder1::build);
+        assertThrows(NullPointerException.class, paramCycTypeBuilder1::build);
 
         // Only one attribute assigned
-        assertThrows(IllegalStateException.class, () -> paramCycTypeBuilder1.withMeteringIntervall(MeteringIntervallType.QH).build());
-        assertThrows(IllegalStateException.class, () -> paramCycTypeBuilder2.withTransmissionCycle(TransmissionCycle.M).build());
+        assertThrows(NullPointerException.class, () -> paramCycTypeBuilder1.withMeteringIntervall(MeteringIntervallType.QH).build());
+        assertThrows(NullPointerException.class, () -> paramCycTypeBuilder2.withTransmissionCycle(TransmissionCycle.M).build());
     }
 }

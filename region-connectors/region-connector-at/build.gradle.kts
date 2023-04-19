@@ -26,6 +26,7 @@ dependencies {
     implementation(libs.jaxb.runtime)
     implementation(libs.jakarta.xml.bind.api)
     implementation(libs.jakarta.annotation.api)
+    implementation(libs.commons.codec)
 }
 
 

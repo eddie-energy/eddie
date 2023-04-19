@@ -21,7 +21,7 @@ public class VerificationDocumentBuilderTest {
         VerificationDocumentBuilder verificationDocumentBuilder = new VerificationDocumentBuilder();
 
         assertThrows(IllegalArgumentException.class, () -> verificationDocumentBuilder
-                .withDocNumber("DeutschÄÖÜ"));
+                .withDocNumber("!§$&/(()="));
         assertThrows(IllegalArgumentException.class, () -> verificationDocumentBuilder
                 .withDocNumber("SpecialCharacters!\"-.,"));
     }
@@ -37,11 +37,11 @@ public class VerificationDocumentBuilderTest {
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         VerificationDocumentBuilder verificationDocumentBuilder = new VerificationDocumentBuilder();
 
         // Assign no required attributes
-        assertThrows(IllegalStateException.class, verificationDocumentBuilder::build);
+        assertThrows(NullPointerException.class, verificationDocumentBuilder::build);
     }
 
     @Test

@@ -3,8 +3,10 @@ package at.eda.xml.builders.customerprocesses.common.types._01p20;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMode;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.MarketParticipantDirectory;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
+import at.eda.xml.builders.helper.Sector;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /**
  * <p>Allows to create a MarketParticipantDirectory Object (Common Type).
@@ -20,7 +22,8 @@ import javax.annotation.Nullable;
 public class MarketParticipantDirectoryBuilder {
     @Nullable
     protected RoutingHeader routingHeader;
-    protected String sector = "";
+    @Nullable
+    protected Sector sector;
     @Nullable
     protected DocumentMode documentMode;
     @Nullable
@@ -34,11 +37,7 @@ public class MarketParticipantDirectoryBuilder {
      * @return {@link MarketParticipantDirectoryBuilder}
      */
     public MarketParticipantDirectoryBuilder withRoutingHeader(RoutingHeader routingHeader) {
-        if (routingHeader == null) {
-            throw new IllegalArgumentException("`routingHeader` cannot be empty.");
-        }
-
-        this.routingHeader = routingHeader;
+        this.routingHeader = Objects.requireNonNull(routingHeader);
         return this;
     }
 
@@ -49,12 +48,8 @@ public class MarketParticipantDirectoryBuilder {
      *               {@link String}
      * @return {@link MarketParticipantDirectoryBuilder}
      */
-    public MarketParticipantDirectoryBuilder withSector(String sector) {
-        if (sector == null || sector.length() == 0) {
-            throw new IllegalArgumentException("`sector` cannot be empty.");
-        }
-
-        this.sector = sector;
+    public MarketParticipantDirectoryBuilder withSector(Sector sector) {
+        this.sector = Objects.requireNonNull(sector);
         return this;
     }
 
@@ -66,11 +61,7 @@ public class MarketParticipantDirectoryBuilder {
      * @return {@link MarketParticipantDirectoryBuilder}
      */
     public MarketParticipantDirectoryBuilder withDocumentMode(DocumentMode documentMode) {
-        if (documentMode == null) {
-            throw new IllegalArgumentException("`documentMode` cannot be empty.");
-        }
-
-        this.documentMode = documentMode;
+        this.documentMode = Objects.requireNonNull(documentMode);
         return this;
     }
 
@@ -92,16 +83,12 @@ public class MarketParticipantDirectoryBuilder {
      * @return {@link MarketParticipantDirectory}
      */
     public MarketParticipantDirectory build() {
-        if (routingHeader == null || sector.length() == 0 || documentMode == null || duplicate == null) {
-            throw new IllegalStateException("Attributes `routingHeader`, `sector` `documentMode` and `duplicate` are required.");
-        }
-
         MarketParticipantDirectory mpDir = new MarketParticipantDirectory();
 
-        mpDir.setRoutingHeader(routingHeader);
-        mpDir.setSector(sector);
-        mpDir.setDocumentMode(documentMode);
-        mpDir.setDuplicate(duplicate);
+        mpDir.setRoutingHeader(Objects.requireNonNull(routingHeader, "Attribute `routingHeader` is required."));
+        mpDir.setSector(Objects.requireNonNull(sector, "Attribute `sector` is required.").value());
+        mpDir.setDocumentMode(Objects.requireNonNull(documentMode, "Attribute `documentMode` is required."));
+        mpDir.setDuplicate(Objects.requireNonNull(duplicate, "Attribute `duplicate` is required."));
 
         return mpDir;
     }

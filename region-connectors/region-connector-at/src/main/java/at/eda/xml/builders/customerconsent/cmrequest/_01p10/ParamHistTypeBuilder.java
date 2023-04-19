@@ -5,6 +5,7 @@ import at.ebutilities.schemata.customerconsent.cmrequest._01p10.MeteringInterval
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ParamHistType;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /**
  * <p>Allows to create a ParamHistType Object for CMRequest.
@@ -24,11 +25,7 @@ public class ParamHistTypeBuilder {
      * @return {@link ParamHistTypeBuilder}
      */
     public ParamHistTypeBuilder withMeteringIntervall(MeteringIntervallType meteringIntervall) {
-        if (meteringIntervall == null) {
-            throw new IllegalArgumentException("`meteringIntervall` cannot be empty.");
-        }
-
-        this.meteringIntervall = meteringIntervall;
+        this.meteringIntervall = Objects.requireNonNull(meteringIntervall);
         return this;
     }
 
@@ -38,12 +35,8 @@ public class ParamHistTypeBuilder {
      * @return {@link ParamHistType}
      */
     public ParamHistType build() {
-        if (meteringIntervall == null) {
-            throw new IllegalStateException("Attribute `meteringIntervall` is required.");
-        }
-
         ParamHistType paramHist = new ParamHistType();
-        paramHist.setMeteringIntervall(meteringIntervall);
+        paramHist.setMeteringIntervall(Objects.requireNonNull(meteringIntervall, "Attribute `meteringIntervall` is required."));
 
         return paramHist;
     }

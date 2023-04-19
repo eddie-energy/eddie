@@ -5,8 +5,7 @@ import at.ebutilities.schemata.customerconsent.cmnotification._01p11.ResponseDat
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Objects;
 
 /**
  * <p>Allows to create a ResponseDataType Object for CMNotification.
@@ -15,6 +14,8 @@ import java.util.regex.Pattern;
  * @see ResponseDataType
  */
 public class ResponseDataTypeBuilder {
+    private static final int LEN_CONSENT_ID = 35;
+    private static final int LEN_METERING_POINT = 33;
     @Nullable
     private String consentId;
     @Nullable
@@ -32,7 +33,6 @@ public class ResponseDataTypeBuilder {
      * @return {@link ResponseDataTypeBuilder}
      */
     public ResponseDataTypeBuilder withConsentId(String consentId) {
-        int LEN_CONSENT_ID = 35;
         if (consentId != null && consentId.length() > 35) {
             throw new IllegalArgumentException("`consentId` length cannot exceed " + LEN_CONSENT_ID + " characters.");
         }
@@ -50,17 +50,15 @@ public class ResponseDataTypeBuilder {
      */
     public ResponseDataTypeBuilder withMeteringPointId(String meteringPointId) {
         if (meteringPointId != null) {
-            int LEN_METERING_POINT = 33;
             if (meteringPointId.length() > LEN_METERING_POINT) {
                 throw new IllegalArgumentException("`meteringPointId` length cannot exceed " + LEN_METERING_POINT + " characters.");
             }
 
-            String regex = "[0-9A-Za-z]*";
-            Pattern pattern = Pattern.compile(regex);
-            Matcher matcher = pattern.matcher(meteringPointId);
-
-            if (!matcher.matches()) {
-                throw new IllegalArgumentException("`meteringPointId` does not match the necessary pattern (" + regex + ").");
+            for (int i = 0; i < meteringPointId.length(); i++) {
+                char ch = meteringPointId.charAt(i);
+                if (!Character.isLetterOrDigit(ch)) {
+                    throw new IllegalArgumentException("`meteringPointId` must consist only of letters and digits.");
+                }
             }
         }
 
@@ -76,7 +74,7 @@ public class ResponseDataTypeBuilder {
      * @return {@link ResponseDataTypeBuilder}
      */
     public ResponseDataTypeBuilder withResponseCode(List<Integer> responseCode) {
-        if (responseCode == null || responseCode.isEmpty()) {
+        if (Objects.requireNonNull(responseCode).isEmpty()) {
             throw new IllegalArgumentException("`responseCode` cannot be empty.");
         }
 
@@ -102,17 +100,13 @@ public class ResponseDataTypeBuilder {
      * @return {@link ResponseDataType}
      */
     public ResponseDataType build() {
-        if (responseCode == null) {
-            throw new IllegalStateException("Attribute `messageCode` is required.");
-        }
-
         ResponseDataType responseData = new ResponseDataType();
 
-        responseData.setConsentId(consentId);
-        responseData.setMeteringPoint(meteringPointId);
-        for (Integer responseCodeEntry : responseCode) {
+        for (Integer responseCodeEntry : Objects.requireNonNull(responseCode, "Attribute `responseCode` is required.")) {
             responseData.getResponseCode().add(responseCodeEntry);
         }
+        responseData.setConsentId(consentId);
+        responseData.setMeteringPoint(meteringPointId);
         if (paramHist != null) {
             for (ParamHistType paramHistEntry : paramHist) {
                 responseData.getParamHist().add(paramHistEntry);

@@ -6,6 +6,7 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.AddressType
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMode;
 import at.eda.xml.builders.customerprocesses.common.types._01p20.RoutingAddressBuilder;
 import at.eda.xml.builders.customerprocesses.common.types._01p20.RoutingHeaderBuilder;
+import at.eda.xml.builders.helper.Sector;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
 public class CMRequestBuilderTest {
     @Test
     public void testCMRequestBuilder() {
@@ -37,7 +39,7 @@ public class CMRequestBuilderTest {
                                                         LocalDateTime.of(2022, Month.DECEMBER, 17, 9, 30, 47)
                                                 ).build()
                                 )
-                                .withSector("01")
+                                .withSector(Sector.ELECTRICITY)
                                 .withDocumentMode(DocumentMode.PROD)
                                 .withDuplicate(true)
                                 .withSchemaVersion("01.10")
@@ -64,19 +66,19 @@ public class CMRequestBuilderTest {
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         ObjectFactory objectFactory = new ObjectFactory();
         CMRequestBuilder cmRequestBuilder1 = new CMRequestBuilder();
         CMRequestBuilder cmRequestBuilder2 = new CMRequestBuilder();
 
         // Assign no required attributes
-        assertThrows(IllegalStateException.class, cmRequestBuilder1::build);
+        assertThrows(NullPointerException.class, cmRequestBuilder1::build);
 
         // Assign only one required attribute
-        assertThrows(IllegalStateException.class, () -> cmRequestBuilder1
+        assertThrows(NullPointerException.class, () -> cmRequestBuilder1
                 .withMarketParticipantDirectory(objectFactory.createMarketParticipantDirectory())
                 .build());
-        assertThrows(IllegalStateException.class, () -> cmRequestBuilder2
+        assertThrows(NullPointerException.class, () -> cmRequestBuilder2
                 .withProcessDirectory(objectFactory.createProcessDirectory())
                 .build());
     }

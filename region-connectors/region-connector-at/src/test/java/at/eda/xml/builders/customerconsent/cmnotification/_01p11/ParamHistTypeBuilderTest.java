@@ -23,22 +23,22 @@ public class ParamHistTypeBuilderTest {
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         ParamHistTypeBuilder paramHistTypeBuilder1 = new ParamHistTypeBuilder();
         ParamHistTypeBuilder paramHistTypeBuilder2 = new ParamHistTypeBuilder();
         ParamHistTypeBuilder paramHistTypeBuilder3 = new ParamHistTypeBuilder();
 
         // Assign no required attributes
-        assertThrows(IllegalStateException.class, paramHistTypeBuilder1::build);
+        assertThrows(NullPointerException.class, paramHistTypeBuilder1::build);
 
         // Assign only one required attribute
-        assertThrows(IllegalStateException.class, () -> paramHistTypeBuilder1.withDateFrom(
+        assertThrows(NullPointerException.class, () -> paramHistTypeBuilder1.withDateFrom(
                 LocalDate.of(2023, Month.FEBRUARY, 6)).build());
 
         // Assign only two required attributes
-        assertThrows(IllegalStateException.class, () -> paramHistTypeBuilder1.withDateTo(
+        assertThrows(NullPointerException.class, () -> paramHistTypeBuilder1.withDateTo(
                 LocalDate.of(2023, Month.FEBRUARY, 7)).build());
-        assertThrows(IllegalStateException.class, () -> paramHistTypeBuilder2
+        assertThrows(NullPointerException.class, () -> paramHistTypeBuilder2
                 .withDateFrom(LocalDate.of(2023, Month.FEBRUARY, 6))
                 .withMeteringIntervall(MeteringIntervallType.D).build());
 

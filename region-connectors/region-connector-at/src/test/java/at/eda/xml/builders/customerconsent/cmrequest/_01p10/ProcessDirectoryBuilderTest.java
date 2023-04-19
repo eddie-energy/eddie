@@ -32,6 +32,22 @@ public class ProcessDirectoryBuilderTest {
                                 .build()
                 )
                 .build();
+
+        ProcessDirectoryBuilder processDirBuilderWithDefaults = new ProcessDirectoryBuilder();
+
+        processDirBuilderWithDefaults
+                .withMessageId("GC100007201912170930001230001234567")
+                .withConversationId("GC100007201912170930001230012345678")
+                .withMeteringPoint("AT9999990699900000000000206868100")
+                .withConsentId("AT999999201912171011121230023456789")
+                .withCMRequest(
+                        reqTypeBuilder
+                                .withReqDatType("EnergyCommunityRegistration")
+                                .withEcId("AT99999900000RC000000000012345678")
+                                .withEnergyDirection(EnergyDirection.CONSUMPTION)
+                                .build()
+                )
+                .build();
     }
 
     @Test
@@ -60,7 +76,7 @@ public class ProcessDirectoryBuilderTest {
         ProcessDirectoryBuilder processDirBuilder = new ProcessDirectoryBuilder();
 
         assertThrows(IllegalArgumentException.class, () -> processDirBuilder
-                .withMeteringPoint("DeutschÄÖÜ"));
+                .withMeteringPoint("!§$&/(()="));
         assertThrows(IllegalArgumentException.class, () -> processDirBuilder
                 .withMeteringPoint("SpecialCharacters!\"-.,"));
     }
@@ -81,24 +97,24 @@ public class ProcessDirectoryBuilderTest {
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         ProcessDirectoryBuilder processDirBuilder = new ProcessDirectoryBuilder();
 
         // Assign no attributes
-        assertThrows(IllegalStateException.class, processDirBuilder::build);
+        assertThrows(NullPointerException.class, processDirBuilder::build);
 
         // Assign only one required attribute
-        assertThrows(IllegalStateException.class, () -> processDirBuilder
+        assertThrows(NullPointerException.class, () -> processDirBuilder
                 .withMessageId("Test")
                 .build());
 
         // Assign only two required attribute
-        assertThrows(IllegalStateException.class, () -> processDirBuilder
+        assertThrows(NullPointerException.class, () -> processDirBuilder
                 .withConversationId("Test")
                 .build());
 
         // Assign only three required attribute
-        assertThrows(IllegalStateException.class, () -> processDirBuilder
+        assertThrows(NullPointerException.class, () -> processDirBuilder
                 .withMeteringPoint("Test")
                 .build());
     }

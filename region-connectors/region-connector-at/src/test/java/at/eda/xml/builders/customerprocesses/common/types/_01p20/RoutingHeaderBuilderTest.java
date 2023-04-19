@@ -27,20 +27,20 @@ public class RoutingHeaderBuilderTest {
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         ObjectFactory objectFactory = new ObjectFactory();
         RoutingHeaderBuilder routingHeaderBuilder = new RoutingHeaderBuilder();
 
         // Assign no required attributes
-        assertThrows(IllegalStateException.class, routingHeaderBuilder::build);
+        assertThrows(NullPointerException.class, routingHeaderBuilder::build);
 
         // Assign only one required attribute
-        assertThrows(IllegalStateException.class, () -> routingHeaderBuilder
+        assertThrows(NullPointerException.class, () -> routingHeaderBuilder
                 .withSender(objectFactory.createRoutingAddress())
                 .build());
 
         // Assign only one required attribute
-        assertThrows(IllegalStateException.class, () -> routingHeaderBuilder
+        assertThrows(NullPointerException.class, () -> routingHeaderBuilder
                 .withReceiver(objectFactory.createRoutingAddress())
                 .build());
     }

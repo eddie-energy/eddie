@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * <p>Allows to create ReqType Object.
@@ -19,7 +20,10 @@ import java.time.LocalDate;
  */
 
 public class ReqTypeBuilder {
-    private String reqDatType = "";
+    private static final int LEN_REQ_DAT_TYPE = 30;
+    private static final int LEN_ECID = 33;
+    @Nullable
+    private String reqDatType;
     @Nullable
     private LocalDate dateFrom;
     @Nullable
@@ -43,11 +47,10 @@ public class ReqTypeBuilder {
      * @return {@link ReqTypeBuilder}
      */
     public ReqTypeBuilder withReqDatType(String reqDatType) {
-        if (reqDatType == null || reqDatType.length() == 0) {
+        if (Objects.requireNonNull(reqDatType).isEmpty()) {
             throw new IllegalArgumentException("`reqDatType` cannot be empty.");
         }
 
-        int LEN_REQ_DAT_TYPE = 30;
         if (reqDatType.length() > LEN_REQ_DAT_TYPE) {
             throw new IllegalArgumentException("`reqDatType` length cannot exceed " + LEN_REQ_DAT_TYPE + " characters.");
         }
@@ -64,11 +67,7 @@ public class ReqTypeBuilder {
      * @return {@link ReqTypeBuilder}
      */
     public ReqTypeBuilder withDateFrom(LocalDate dateFrom) {
-        if (dateFrom == null) {
-            throw new IllegalArgumentException("`dateFrom` cannot be empty.");
-        }
-
-        this.dateFrom = dateFrom;
+        this.dateFrom = Objects.requireNonNull(dateFrom);
         return this;
     }
 
@@ -79,7 +78,7 @@ public class ReqTypeBuilder {
      *               {@link LocalDate}
      * @return {@link ReqTypeBuilder}
      */
-    public ReqTypeBuilder withDateTo(@Nullable LocalDate dateTo) {
+    public ReqTypeBuilder withDateTo(LocalDate dateTo) {
         this.dateTo = dateTo;
         return this;
     }
@@ -91,7 +90,7 @@ public class ReqTypeBuilder {
      *                          {@link MeteringIntervallType}
      * @return {@link ReqTypeBuilder}
      */
-    public ReqTypeBuilder withMeteringIntervall(@Nullable MeteringIntervallType meteringIntervall) {
+    public ReqTypeBuilder withMeteringIntervall(MeteringIntervallType meteringIntervall) {
         this.meteringIntervall = meteringIntervall;
         return this;
     }
@@ -103,7 +102,7 @@ public class ReqTypeBuilder {
      *                          {@link TransmissionCycle}
      * @return {@link ReqTypeBuilder}
      */
-    public ReqTypeBuilder withTransmissionCycle(@Nullable TransmissionCycle transmissionCycle) {
+    public ReqTypeBuilder withTransmissionCycle(TransmissionCycle transmissionCycle) {
         this.transmissionCycle = transmissionCycle;
         return this;
     }
@@ -116,7 +115,6 @@ public class ReqTypeBuilder {
      * @return {@link ReqTypeBuilder}
      */
     public ReqTypeBuilder withEcId(String ecid) {
-        int LEN_ECID = 33;
         if (ecid != null && ecid.length() > LEN_ECID) {
             throw new IllegalArgumentException("`ecid` length cannot exceed " + LEN_ECID + " characters.");
         }
@@ -132,7 +130,7 @@ public class ReqTypeBuilder {
      *                {@link BigDecimal} with 4 decimal places
      * @return {@link ReqTypeBuilder}
      */
-    public ReqTypeBuilder withEcShare(@Nullable BigDecimal ecShare) {
+    public ReqTypeBuilder withEcShare(BigDecimal ecShare) {
         this.ecShare = ecShare != null ? ecShare.setScale(4, RoundingMode.HALF_EVEN) : null;
         return this;
     }
@@ -144,7 +142,7 @@ public class ReqTypeBuilder {
      *                        {@link EnergyDirection}
      * @return {@link ReqTypeBuilder}
      */
-    public ReqTypeBuilder withEnergyDirection(@Nullable EnergyDirection energyDirection) {
+    public ReqTypeBuilder withEnergyDirection(EnergyDirection energyDirection) {
         this.energyDirection = energyDirection;
         return this;
     }
@@ -155,17 +153,13 @@ public class ReqTypeBuilder {
      * @return {@link ReqType}
      */
     public ReqType build() {
-        if (reqDatType.length() == 0 || dateFrom == null) {
-            throw new IllegalStateException("Attributes `reqDatType` and `dateFrom` are required.");
-        }
-
         ReqType reqType = new ReqType();
-        reqType.setReqDatType(reqDatType);
-        reqType.setDateFrom(DateTimeConverter.dateToXMl(dateFrom));
+        reqType.setReqDatType(Objects.requireNonNull(reqDatType, "Attribute `reqDatType` is required."));
+        reqType.setDateFrom(DateTimeConverter.dateToXMl(Objects.requireNonNull(dateFrom, "Attribute `dateFrom` is required.")));
 
         if (dateTo != null) {
             if (dateFrom.isAfter(dateTo)) {
-                throw new IllegalStateException("Attribute `dateFrom`(" + dateFrom + ") is after `dateTo`(" + dateTo + ").");
+                throw new NullPointerException("Attribute `dateFrom`(" + dateFrom + ") is after `dateTo`(" + dateTo + ").");
             } else {
                 reqType.setDateFrom(DateTimeConverter.dateToXMl(dateTo));
             }

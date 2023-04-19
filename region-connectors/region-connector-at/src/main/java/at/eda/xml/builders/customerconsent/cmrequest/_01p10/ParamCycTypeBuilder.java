@@ -5,6 +5,7 @@ import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ParamCycType;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.TransmissionCycle;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /**
  * <p>Allows to create a ParamCycType Object for CMRequest.
@@ -26,11 +27,7 @@ public class ParamCycTypeBuilder {
      * @return {@link ParamCycTypeBuilder}
      */
     public ParamCycTypeBuilder withMeteringIntervall(MeteringIntervallType meteringIntervall) {
-        if (meteringIntervall == null) {
-            throw new IllegalArgumentException("`meteringIntervall` cannot be empty.");
-        }
-
-        this.meteringIntervall = meteringIntervall;
+        this.meteringIntervall = Objects.requireNonNull(meteringIntervall);
         return this;
     }
 
@@ -42,11 +39,7 @@ public class ParamCycTypeBuilder {
      * @return {@link ParamCycTypeBuilder}
      */
     public ParamCycTypeBuilder withTransmissionCycle(TransmissionCycle transmissionCycle) {
-        if (transmissionCycle == null) {
-            throw new IllegalArgumentException("`transmissionCycle` cannot be empty.");
-        }
-
-        this.transmissionCycle = transmissionCycle;
+        this.transmissionCycle = Objects.requireNonNull(transmissionCycle);
         return this;
     }
 
@@ -56,14 +49,10 @@ public class ParamCycTypeBuilder {
      * @return {@link ParamCycType}
      */
     public ParamCycType build() {
-        if (meteringIntervall == null || transmissionCycle == null) {
-            throw new IllegalStateException("Attributes `meteringIntervall` and `transmissionCycle` are required.");
-        }
-
         ParamCycType paramCyc = new ParamCycType();
 
-        paramCyc.setMeteringIntervall(meteringIntervall);
-        paramCyc.setTransmissionCycle(transmissionCycle);
+        paramCyc.setMeteringIntervall(Objects.requireNonNull(meteringIntervall, "Attribute `meteringIntervall` is required."));
+        paramCyc.setTransmissionCycle(Objects.requireNonNull(transmissionCycle, "Attribute `transmissionCycle` is required."));
 
         return paramCyc;
     }

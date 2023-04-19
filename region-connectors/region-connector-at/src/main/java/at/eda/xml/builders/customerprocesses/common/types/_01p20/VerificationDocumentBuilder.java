@@ -2,8 +2,8 @@ package at.eda.xml.builders.customerprocesses.common.types._01p20;
 
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.VerificationDocument;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /**
  * <p>Allows to create a VerificationDocument Object (Common Type).
@@ -12,7 +12,9 @@ import java.util.regex.Pattern;
  * @see VerificationDocument
  */
 public class VerificationDocumentBuilder {
-    private String docNumber = "";
+    private static final int LEN_METERING_POINT = 35;
+    @Nullable
+    private String docNumber;
 
     /**
      * Sets the document id
@@ -22,21 +24,19 @@ public class VerificationDocumentBuilder {
      * @return {@link VerificationDocumentBuilder}
      */
     public VerificationDocumentBuilder withDocNumber(String docNumber) {
-        if (docNumber == null || docNumber.length() == 0) {
+        if (Objects.requireNonNull(docNumber).isEmpty()) {
             throw new IllegalArgumentException("`docNumber` cannot be empty.");
         }
 
-        int LEN_METERING_POINT = 35;
         if (docNumber.length() > LEN_METERING_POINT) {
             throw new IllegalArgumentException("`docNumber` length cannot exceed " + LEN_METERING_POINT + " characters.");
         }
 
-        String regex = "[0-9A-Za-z]*";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(docNumber);
-
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException("`docNumber` does not match the necessary pattern (" + regex + ").");
+        for (int i = 0; i < docNumber.length(); i++) {
+            char ch = docNumber.charAt(i);
+            if (!Character.isLetterOrDigit(ch)) {
+                throw new IllegalArgumentException("`docNumber` must consist only of letters and digits.");
+            }
         }
 
         this.docNumber = docNumber;
@@ -49,12 +49,8 @@ public class VerificationDocumentBuilder {
      * @return {@link VerificationDocument}
      */
     public VerificationDocument build() {
-        if (docNumber.length() == 0) {
-            throw new IllegalStateException("Attribute `docNumber` is required.");
-        }
-
         VerificationDocument verificationDocument = new VerificationDocument();
-        verificationDocument.setDOCNumber(docNumber);
+        verificationDocument.setDOCNumber(Objects.requireNonNull(docNumber, "Attribute `docNumber` is required."));
 
         return verificationDocument;
     }

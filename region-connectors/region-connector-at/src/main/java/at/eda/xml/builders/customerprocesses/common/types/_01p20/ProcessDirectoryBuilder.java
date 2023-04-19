@@ -6,8 +6,7 @@ import at.eda.xml.builders.helper.DateTimeConverter;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Objects;
 
 /**
  * <p>Allows to create a ProcessDirectory Object (Common Type).
@@ -16,11 +15,17 @@ import java.util.regex.Pattern;
  * @see ProcessDirectory
  */
 public class ProcessDirectoryBuilder {
-    private String messageId = "";
-    private String conversationId = "";
+    private final static int LEN_MESSAGE_ID = 35;
+    private final static int LEN_CONVERSATION_ID = 35;
+    private final static int LEN_METERING_POINT = 33;
+    @Nullable
+    private String messageId;
+    @Nullable
+    private String conversationId;
     @Nullable
     private LocalDate processDate;
-    private String meteringPoint = "";
+    @Nullable
+    private String meteringPoint;
 
     /**
      * Sets the globally unique message ID
@@ -30,11 +35,10 @@ public class ProcessDirectoryBuilder {
      * @return {@link ProcessDirectoryBuilder}
      */
     public ProcessDirectoryBuilder withMessageId(String messageId) {
-        if (messageId == null || messageId.length() == 0) {
+        if (Objects.requireNonNull(messageId).isEmpty()) {
             throw new IllegalArgumentException("`messageId` cannot be empty.");
         }
 
-        int LEN_MESSAGE_ID = 35;
         if (messageId.length() > LEN_MESSAGE_ID) {
             throw new IllegalArgumentException("`messageId` length cannot exceed " + LEN_MESSAGE_ID + " characters.");
         }
@@ -51,11 +55,10 @@ public class ProcessDirectoryBuilder {
      * @return {@link ProcessDirectoryBuilder}
      */
     public ProcessDirectoryBuilder withConversationId(String conversationId) {
-        if (conversationId == null || conversationId.length() == 0) {
+        if (Objects.requireNonNull(conversationId).isEmpty()) {
             throw new IllegalArgumentException("`conversationId` cannot be empty.");
         }
 
-        int LEN_CONVERSATION_ID = 35;
         if (conversationId.length() > LEN_CONVERSATION_ID) {
             throw new IllegalArgumentException("`conversationId` length cannot exceed " + LEN_CONVERSATION_ID + " characters.");
         }
@@ -72,7 +75,7 @@ public class ProcessDirectoryBuilder {
      * @return {@link ProcessDirectoryBuilder}
      */
     public ProcessDirectoryBuilder withProcessDate(LocalDate processDate) {
-        this.processDate = processDate;
+        this.processDate = Objects.requireNonNull(processDate);
         return this;
     }
 
@@ -84,21 +87,19 @@ public class ProcessDirectoryBuilder {
      * @return {@link ProcessDirectoryBuilder}
      */
     public ProcessDirectoryBuilder withMeteringPoint(String meteringPoint) {
-        if (meteringPoint == null || meteringPoint.length() == 0) {
+        if (Objects.requireNonNull(meteringPoint).isEmpty()) {
             throw new IllegalArgumentException("`meteringPoint` cannot be empty.");
         }
 
-        int LEN_METERING_POINT = 33;
         if (meteringPoint.length() > LEN_METERING_POINT) {
             throw new IllegalArgumentException("`meteringPoint` length cannot exceed " + LEN_METERING_POINT + " characters.");
         }
 
-        String regex = "[0-9A-Za-z]*";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(meteringPoint);
-
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException("`meteringPoint` does not match the necessary pattern (" + regex + ").");
+        for (int i = 0; i < meteringPoint.length(); i++) {
+            char ch = meteringPoint.charAt(i);
+            if (!Character.isLetterOrDigit(ch)) {
+                throw new IllegalArgumentException("`meteringPoint` must consist only of letters and digits.");
+            }
         }
 
         this.meteringPoint = meteringPoint;
@@ -111,16 +112,12 @@ public class ProcessDirectoryBuilder {
      * @return {@link ProcessDirectory}
      */
     public ProcessDirectory build() {
-        if (messageId.length() == 0 || conversationId.length() == 0 || processDate == null || meteringPoint.length() == 0) {
-            throw new IllegalStateException("Attributes `messageId`, `conversationId`, `processDate` and `meteringPoint` are required.");
-        }
-
         ProcessDirectory processDir = new ProcessDirectory();
 
-        processDir.setMessageId(messageId);
-        processDir.setConversationId(conversationId);
-        processDir.setProcessDate(DateTimeConverter.dateToXMl(processDate));
-        processDir.setMeteringPoint(meteringPoint);
+        processDir.setMessageId(Objects.requireNonNull(messageId, "Attribute `messageId` is required."));
+        processDir.setConversationId(Objects.requireNonNull(conversationId, "Attribute `conversationId` is required."));
+        processDir.setProcessDate(DateTimeConverter.dateToXMl(Objects.requireNonNullElseGet(processDate, LocalDate::now)));
+        processDir.setMeteringPoint(Objects.requireNonNull(meteringPoint, "Attribute `meteringPoint` is required."));
 
         return processDir;
     }

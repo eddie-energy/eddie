@@ -41,13 +41,13 @@ public class AdditionalDataBuilderTest {
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         AdditionalDataBuilder additionalDataBuilder = new AdditionalDataBuilder();
 
         // Assign no required attributes
-        assertThrows(IllegalStateException.class, additionalDataBuilder::build);
+        assertThrows(NullPointerException.class, additionalDataBuilder::build);
 
         // Assign only one required attribute
-        assertThrows(IllegalStateException.class, () -> additionalDataBuilder.withValue("Test").build());
+        assertThrows(NullPointerException.class, () -> additionalDataBuilder.withValue("Test").build());
     }
 }

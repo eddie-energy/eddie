@@ -5,6 +5,7 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.AddressType
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMode;
 import at.eda.xml.builders.customerprocesses.common.types._01p20.RoutingAddressBuilder;
 import at.eda.xml.builders.customerprocesses.common.types._01p20.RoutingHeaderBuilder;
+import at.eda.xml.builders.helper.Sector;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -37,7 +38,7 @@ public class CMNotificationBuilderTest {
                                                         LocalDateTime.of(2020, Month.DECEMBER, 17, 9, 30, 47)
                                                 ).build()
                                 )
-                                .withSector("01")
+                                .withSector(Sector.ELECTRICITY)
                                 .withDocumentMode(DocumentMode.PROD)
                                 .withDuplicate(false)
                                 .withSchemaVersion("01.10")
@@ -46,33 +47,33 @@ public class CMNotificationBuilderTest {
                 )
                 .withProcessDirectory(
                         processDirBuilder
-                        .withMessageId("GC100007201912170930001230001234567")
-                        .withConversationId("GC100007201912170930001230012345678")
-                        .withCMRequestId("IWRN74PW")
-                        .withResponseData(List.of(
-                                responseDataTypeBuilder
-                                        .withConsentId("AT999999201912171011121230023456789")
-                                        .withMeteringPointId("AT9999990699900000000000206868100")
-                                        .withResponseCode(List.of(99))
-                                        .build()
-                        )).build()
+                                .withMessageId("GC100007201912170930001230001234567")
+                                .withConversationId("GC100007201912170930001230012345678")
+                                .withCMRequestId("IWRN74PW")
+                                .withResponseData(List.of(
+                                        responseDataTypeBuilder
+                                                .withConsentId("AT999999201912171011121230023456789")
+                                                .withMeteringPointId("AT9999990699900000000000206868100")
+                                                .withResponseCode(List.of(99))
+                                                .build()
+                                )).build()
                 ).build();
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointer() {
         ObjectFactory objectFactory = new ObjectFactory();
         CMNotificationBuilder cmNotificationBuilder1 = new CMNotificationBuilder();
         CMNotificationBuilder cmNotificationBuilder2 = new CMNotificationBuilder();
 
         // Assign no required attributes
-        assertThrows(IllegalStateException.class, cmNotificationBuilder1::build);
+        assertThrows(NullPointerException.class, cmNotificationBuilder1::build);
 
         // Assign only one required attribute
-        assertThrows(IllegalStateException.class, () -> cmNotificationBuilder1
+        assertThrows(NullPointerException.class, () -> cmNotificationBuilder1
                 .withMarketParticipantDirectory(objectFactory.createMarketParticipantDirectory())
                 .build());
-        assertThrows(IllegalStateException.class, () -> cmNotificationBuilder2
+        assertThrows(NullPointerException.class, () -> cmNotificationBuilder2
                 .withProcessDirectory(objectFactory.createProcessDirectory())
                 .build());
     }

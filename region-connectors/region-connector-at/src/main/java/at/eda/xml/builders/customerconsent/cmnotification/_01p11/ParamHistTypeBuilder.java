@@ -6,6 +6,7 @@ import at.eda.xml.builders.helper.DateTimeConverter;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * <p>Allows to create a ParamHistType Object for CMNotification.
@@ -29,11 +30,7 @@ public class ParamHistTypeBuilder {
      * @return {@link ParamHistTypeBuilder}
      */
     public ParamHistTypeBuilder withDateFrom(LocalDate dateFrom) {
-        if (dateFrom == null) {
-            throw new IllegalArgumentException("`dateFrom` cannot be empty.");
-        }
-
-        this.dateFrom = dateFrom;
+        this.dateFrom = Objects.requireNonNull(dateFrom, "`dateFrom` cannot be empty.");
         return this;
     }
 
@@ -45,11 +42,7 @@ public class ParamHistTypeBuilder {
      * @return {@link ParamHistTypeBuilder}
      */
     public ParamHistTypeBuilder withDateTo(LocalDate dateTo) {
-        if (dateTo == null) {
-            throw new IllegalArgumentException("`dateTo` cannot be empty.");
-        }
-
-        this.dateTo = dateTo;
+        this.dateTo = Objects.requireNonNull(dateTo, "`dateTo` cannot be empty.");
         return this;
     }
 
@@ -61,11 +54,7 @@ public class ParamHistTypeBuilder {
      * @return {@link ParamHistTypeBuilder}
      */
     public ParamHistTypeBuilder withMeteringIntervall(MeteringIntervallType meteringIntervall) {
-        if (meteringIntervall == null) {
-            throw new IllegalArgumentException("`meteringIntervall` cannot be empty.");
-        }
-
-        this.meteringIntervall = meteringIntervall;
+        this.meteringIntervall = Objects.requireNonNull(meteringIntervall, "`meteringIntervall` cannot be empty.");
         return this;
     }
 
@@ -75,18 +64,15 @@ public class ParamHistTypeBuilder {
      * @return {@link ParamHistType}
      */
     public ParamHistType build() {
-        if (dateFrom == null || dateTo == null || meteringIntervall == null) {
-            throw new IllegalStateException("Attributes `dateFrom`, `dateTo` and `meteringIntervall` are required.");
-        }
-        if (dateFrom.isAfter(dateTo)) {
-            throw new IllegalStateException("Attribute `dateFrom`(" + dateFrom + ") is after `dateTo`(" + dateTo + ").");
+        if (Objects.requireNonNull(dateFrom, "Attribute `dateFrom` is required.").isAfter(Objects.requireNonNull(dateTo, "Attribute `dateFrom` is required."))) {
+            throw new NullPointerException("Attribute `dateFrom`(" + dateFrom + ") is after `dateTo`(" + dateTo + ").");
         }
 
         ParamHistType paramHist = new ParamHistType();
 
         paramHist.setDateFrom(DateTimeConverter.dateToXMl(dateFrom));
         paramHist.setDateTo(DateTimeConverter.dateToXMl(dateTo));
-        paramHist.setMeteringIntervall(meteringIntervall);
+        paramHist.setMeteringIntervall(Objects.requireNonNull(meteringIntervall, "Attribute `meteringIntervall` is required."));
 
         return paramHist;
     }

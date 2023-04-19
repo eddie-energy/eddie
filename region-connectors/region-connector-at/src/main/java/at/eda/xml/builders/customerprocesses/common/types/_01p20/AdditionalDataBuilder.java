@@ -2,6 +2,9 @@ package at.eda.xml.builders.customerprocesses.common.types._01p20;
 
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.AdditionalData;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 /**
  * <p>Allows to create a AdditionalData Object (Common Type).
  * <p>All fields are required according to the schema definition.
@@ -9,8 +12,12 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.AdditionalD
  * @see AdditionalData
  */
 public class AdditionalDataBuilder {
-    private String value = "";
-    private String name = "";
+    private final static int LEN_VALUE = 120;
+    private final static int LEN_NAME = 40;
+    @Nullable
+    private String value;
+    @Nullable
+    private String name;
 
     /**
      * Sets additional information
@@ -20,11 +27,10 @@ public class AdditionalDataBuilder {
      * @return {@link AdditionalDataBuilder}
      */
     public AdditionalDataBuilder withValue(String value) {
-        if (value == null || value.length() == 0) {
+        if (Objects.requireNonNull(value).isEmpty()) {
             throw new IllegalArgumentException("`value` cannot be empty.");
         }
 
-        int LEN_VALUE = 120;
         if (value.length() > LEN_VALUE) {
             throw new IllegalArgumentException("`value` length cannot exceed " + LEN_VALUE + " characters.");
         }
@@ -41,11 +47,10 @@ public class AdditionalDataBuilder {
      * @return {@link AdditionalDataBuilder}
      */
     public AdditionalDataBuilder withName(String name) {
-        if (name == null || name.length() == 0) {
+        if (Objects.requireNonNull(name).isEmpty()) {
             throw new IllegalArgumentException("`name` cannot be empty.");
         }
 
-        int LEN_NAME = 40;
         if (name.length() > LEN_NAME) {
             throw new IllegalArgumentException("`name` length cannot exceed " + LEN_NAME + " characters.");
         }
@@ -60,13 +65,9 @@ public class AdditionalDataBuilder {
      * @return {@link AdditionalData}
      */
     public AdditionalData build() {
-        if (value.length() == 0 || name.length() == 0) {
-            throw new IllegalStateException("Attributes `name` and `value` are required.");
-        }
-
         AdditionalData additionalData = new AdditionalData();
-        additionalData.setValue(value);
-        additionalData.setName(name);
+        additionalData.setValue(Objects.requireNonNull(value, "Attribute `value` is required."));
+        additionalData.setName(Objects.requireNonNull(name, "Attribute `name` is required."));
 
         return additionalData;
     }

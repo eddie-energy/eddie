@@ -33,14 +33,14 @@ public class ReqDatParamTypeBuilderTest {
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         // Assign no attributes
         ReqDatParamTypeBuilder reqDatParamTypeBuilder = new ReqDatParamTypeBuilder();
-        assertThrows(IllegalStateException.class, reqDatParamTypeBuilder::build);
+        assertThrows(NullPointerException.class, reqDatParamTypeBuilder::build);
 
         // Assign paramCyc AND paramHist
         ObjectFactory objectFactory = new ObjectFactory();
-        assertThrows(IllegalStateException.class, () -> reqDatParamTypeBuilder
+        assertThrows(NullPointerException.class, () -> reqDatParamTypeBuilder
                 .withParamCyc(objectFactory.createParamCycType())
                 .withParamHist(objectFactory.createParamHistType())
                 .build());

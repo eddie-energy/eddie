@@ -33,7 +33,7 @@ public class RoutingAddressBuilderTest {
         RoutingAddressBuilder routingAddressBuilder = new RoutingAddressBuilder();
 
         assertThrows(IllegalArgumentException.class, () -> routingAddressBuilder
-                .withMessageAddress("DeutschÄÖÜ"));
+                .withMessageAddress("!§$&/(()="));
         assertThrows(IllegalArgumentException.class, () -> routingAddressBuilder
                 .withMessageAddress("SpecialCharacters!\"-.,"));
         // Wrong order of characters
@@ -44,14 +44,14 @@ public class RoutingAddressBuilderTest {
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         RoutingAddressBuilder routingAddressBuilder = new RoutingAddressBuilder();
 
         // Assign no required attributes
-        assertThrows(IllegalStateException.class, routingAddressBuilder::build);
+        assertThrows(NullPointerException.class, routingAddressBuilder::build);
 
         // Assign only one required attribute
-        assertThrows(IllegalStateException.class, () -> routingAddressBuilder.withMessageAddress("AT999999").build());
+        assertThrows(NullPointerException.class, () -> routingAddressBuilder.withMessageAddress("AT999999").build());
     }
 
     @Test

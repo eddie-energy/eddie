@@ -44,22 +44,22 @@ public class ReqTypeBuilderTest {
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         // Assign no attributes
         ReqTypeBuilder reqTypeBuilder1 = new ReqTypeBuilder();
-        assertThrows(IllegalStateException.class, reqTypeBuilder1::build);
+        assertThrows(NullPointerException.class, reqTypeBuilder1::build);
 
         // Assign only one required attribute
-        assertThrows(IllegalStateException.class, () -> reqTypeBuilder1
+        assertThrows(NullPointerException.class, () -> reqTypeBuilder1
                 .withReqDatType("Test")
                 .build());
         ReqTypeBuilder reqTypeBuilder2 = new ReqTypeBuilder();
-        assertThrows(IllegalStateException.class, () -> reqTypeBuilder2
+        assertThrows(NullPointerException.class, () -> reqTypeBuilder2
                 .withDateFrom(LocalDate.of(2023, Month.FEBRUARY, 6))
                 .build());
 
         // Assign toDate which is before fromDate
-        assertThrows(IllegalStateException.class, () -> reqTypeBuilder1
+        assertThrows(NullPointerException.class, () -> reqTypeBuilder1
                 .withDateFrom(LocalDate.of(2023, Month.MARCH, 6))
                 .withDateTo(LocalDate.of(2023, Month.FEBRUARY, 6))
                 .build());

@@ -3,6 +3,10 @@ package at.eda.xml.builders.customerconsent.cmnotification._01p11;
 import at.ebutilities.schemata.customerconsent.cmnotification._01p11.MarketParticipantDirectory;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMode;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
+import at.eda.xml.builders.helper.Sector;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /**
  * <p>Allows to create a MarketParticipantDirectory Object for CMNotification.
@@ -12,8 +16,11 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHead
  * @see at.ebutilities.schemata.customerprocesses.common.types._01p20.MarketParticipantDirectory
  */
 public class MarketParticipantDirectoryBuilder extends at.eda.xml.builders.customerprocesses.common.types._01p20.MarketParticipantDirectoryBuilder {
-    private String messageCode = "";
-    private String schemaVersion = "";
+    private static final int MESSAGE_CODE_LEN = 20;
+    @Nullable
+    private String messageCode;
+    @Nullable
+    private String schemaVersion;
 
     /**
      * Sets the routing header
@@ -36,7 +43,7 @@ public class MarketParticipantDirectoryBuilder extends at.eda.xml.builders.custo
      * @return {@link MarketParticipantDirectoryBuilder}
      */
     @Override
-    public MarketParticipantDirectoryBuilder withSector(String sector) {
+    public MarketParticipantDirectoryBuilder withSector(Sector sector) {
         super.withSector(sector);
         return this;
     }
@@ -75,12 +82,11 @@ public class MarketParticipantDirectoryBuilder extends at.eda.xml.builders.custo
      * @return {@link MarketParticipantDirectoryBuilder}
      */
     public MarketParticipantDirectoryBuilder withMessageCode(String messageCode) {
-        if (messageCode == null || messageCode.length() == 0) {
+        if (Objects.requireNonNull(messageCode).isEmpty()) {
             throw new IllegalArgumentException("`messageCode` cannot be empty.");
         }
 
-        int MESSAGE_CODE_LEN = 20;
-        if (messageCode.length() > MESSAGE_CODE_LEN) {
+        if (Objects.requireNonNull(messageCode, "").length() > MESSAGE_CODE_LEN) {
             throw new IllegalArgumentException("`messageCode` length cannot exceed " + MESSAGE_CODE_LEN + " characters.");
         }
 
@@ -96,7 +102,7 @@ public class MarketParticipantDirectoryBuilder extends at.eda.xml.builders.custo
      * @return {@link MarketParticipantDirectoryBuilder}
      */
     public MarketParticipantDirectoryBuilder withSchemaVersion(String schemaVersion) {
-        if (schemaVersion == null || schemaVersion.length() == 0) {
+        if (Objects.requireNonNull(schemaVersion).isEmpty()) {
             throw new IllegalArgumentException("`schemaVersion` cannot be empty.");
         }
 
@@ -111,19 +117,14 @@ public class MarketParticipantDirectoryBuilder extends at.eda.xml.builders.custo
      */
     @Override
     public MarketParticipantDirectory build() {
-        super.build();
-        if (messageCode.length() == 0 || schemaVersion.length() == 0) {
-            throw new IllegalStateException("Attributes `messageCode`, `schemaVersion`, `routingHeader`, `sector`," +
-                    "`documentMode` and `duplicate` are required.");
-        }
-
         MarketParticipantDirectory mpDir = new MarketParticipantDirectory();
-        mpDir.setRoutingHeader(routingHeader);
-        mpDir.setSector(sector);
-        mpDir.setDocumentMode(documentMode);
-        mpDir.setDuplicate(duplicate);
-        mpDir.setMessageCode(messageCode);
-        mpDir.setSchemaVersion(schemaVersion);
+
+        mpDir.setRoutingHeader(Objects.requireNonNull(routingHeader, "Attribute `routingHeader` is required."));
+        mpDir.setSector(Objects.requireNonNull(sector, "Attribute `sector` is required.").value());
+        mpDir.setDocumentMode(Objects.requireNonNull(documentMode, "Attribute `documentMode` is required."));
+        mpDir.setDuplicate(Objects.requireNonNull(duplicate, "Attribute `duplicate` is required."));
+        mpDir.setMessageCode(Objects.requireNonNull(messageCode, "Attribute `messageCode` is required."));
+        mpDir.setSchemaVersion(Objects.requireNonNull(schemaVersion, "Attribute `schemaVersion` is required."));
 
         return mpDir;
     }

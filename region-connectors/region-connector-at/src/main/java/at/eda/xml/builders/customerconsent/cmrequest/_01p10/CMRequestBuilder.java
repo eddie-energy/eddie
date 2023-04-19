@@ -6,6 +6,7 @@ import at.ebutilities.schemata.customerconsent.cmrequest._01p10.MarketParticipan
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ProcessDirectory;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /**
  * <p>Allows to create a CMRequest Object.
@@ -27,11 +28,7 @@ public class CMRequestBuilder {
      * @return {@link CMRequestBuilder}
      */
     public CMRequestBuilder withMarketParticipantDirectory(MarketParticipantDirectory mpDir) {
-        if (mpDir == null) {
-            throw new IllegalArgumentException("`mpDir` cannot be empty.");
-        }
-
-        this.mpDir = mpDir;
+        this.mpDir = Objects.requireNonNull(mpDir);
         return this;
     }
 
@@ -43,11 +40,7 @@ public class CMRequestBuilder {
      * @return {@link CMRequestBuilder}
      */
     public CMRequestBuilder withProcessDirectory(ProcessDirectory processDir) {
-        if (processDir == null) {
-            throw new IllegalArgumentException("`processDir` cannot be empty.");
-        }
-
-        this.processDir = processDir;
+        this.processDir = Objects.requireNonNull(processDir);
         return this;
     }
 
@@ -57,14 +50,10 @@ public class CMRequestBuilder {
      * @return {@link CMRequest}
      */
     public CMRequest build() {
-        if (mpDir == null || processDir == null) {
-            throw new IllegalStateException("Attributes `mpDir` and `processDir` are required.");
-        }
-
         CMRequest cmRequest = new CMRequest();
 
-        cmRequest.setMarketParticipantDirectory(mpDir);
-        cmRequest.setProcessDirectory(processDir);
+        cmRequest.setMarketParticipantDirectory(Objects.requireNonNull(mpDir, "Attribute `mpDir` is required."));
+        cmRequest.setProcessDirectory(Objects.requireNonNull(processDir, "Attribute `processDir` is required."));
 
         return cmRequest;
     }

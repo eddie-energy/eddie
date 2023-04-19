@@ -4,6 +4,7 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.AddressType
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingAddress;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,7 +15,8 @@ import java.util.regex.Pattern;
  * @see RoutingAddress
  */
 public class RoutingAddressBuilder {
-    private String messageAddress = "";
+    @Nullable
+    private String messageAddress;
     @Nullable
     private AddressType addressType;
 
@@ -26,7 +28,7 @@ public class RoutingAddressBuilder {
      * @return {@link RoutingHeaderBuilder}
      */
     public RoutingAddressBuilder withMessageAddress(String messageAddress) {
-        if (messageAddress == null || messageAddress.length() == 0) {
+        if (Objects.requireNonNull(messageAddress).isEmpty()) {
             throw new IllegalArgumentException("`messageAddress` cannot be empty.");
         }
 
@@ -50,11 +52,7 @@ public class RoutingAddressBuilder {
      * @return {@link RoutingHeaderBuilder}
      */
     public RoutingAddressBuilder withAddressType(AddressType addressType) {
-        if (addressType == null) {
-            throw new IllegalArgumentException("`addressType` cannot be empty.");
-        }
-
-        this.addressType = addressType;
+        this.addressType = Objects.requireNonNull(addressType);
         return this;
     }
 
@@ -64,13 +62,9 @@ public class RoutingAddressBuilder {
      * @return {@link RoutingAddress}
      */
     public RoutingAddress build() {
-        if (messageAddress.length() == 0 || addressType == null) {
-            throw new IllegalStateException("Attributes `messageAddress` and `addressType` are required.");
-        }
-
         RoutingAddress routingAddress = new RoutingAddress();
-        routingAddress.setMessageAddress(messageAddress);
-        routingAddress.setAddressType(addressType);
+        routingAddress.setMessageAddress(Objects.requireNonNull(messageAddress, "Attribute `messageAddress` is required."));
+        routingAddress.setAddressType(Objects.requireNonNull(addressType, "Attribute `addressType` is required."));
 
         return routingAddress;
     }

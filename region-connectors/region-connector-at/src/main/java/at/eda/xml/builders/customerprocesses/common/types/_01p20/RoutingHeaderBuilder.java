@@ -6,6 +6,7 @@ import at.eda.xml.builders.helper.DateTimeConverter;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * <p>Allows to create a RoutingHeader Object (Common Type).
@@ -29,11 +30,7 @@ public class RoutingHeaderBuilder {
      * @return {@link RoutingHeaderBuilder}
      */
     public RoutingHeaderBuilder withSender(RoutingAddress sender) {
-        if (sender == null) {
-            throw new IllegalArgumentException("`sender` cannot be empty.");
-        }
-
-        this.sender = sender;
+        this.sender = Objects.requireNonNull(sender);
         return this;
     }
 
@@ -45,11 +42,7 @@ public class RoutingHeaderBuilder {
      * @return {@link RoutingHeaderBuilder}
      */
     public RoutingHeaderBuilder withReceiver(RoutingAddress receiver) {
-        if (receiver == null) {
-            throw new IllegalArgumentException("`receiver` cannot be empty.");
-        }
-
-        this.receiver = receiver;
+        this.receiver = Objects.requireNonNull(receiver);
         return this;
     }
 
@@ -61,11 +54,7 @@ public class RoutingHeaderBuilder {
      * @return {@link RoutingHeaderBuilder}
      */
     public RoutingHeaderBuilder withDocCreationDateTime(LocalDateTime documentCreationDateTime) {
-        if (documentCreationDateTime == null) {
-            throw new IllegalArgumentException("`documentCreationDateTime` cannot be empty.");
-        }
-
-        this.documentCreationDateTime = documentCreationDateTime;
+        this.documentCreationDateTime = Objects.requireNonNull(documentCreationDateTime);
         return this;
     }
 
@@ -75,14 +64,10 @@ public class RoutingHeaderBuilder {
      * @return {@link RoutingHeader}
      */
     public RoutingHeader build() {
-        if (sender == null || receiver == null || documentCreationDateTime == null) {
-            throw new IllegalStateException("Attribute `sender`, `receiver` and `documentCreationDateTime` are required.");
-        }
-
         RoutingHeader routingAddress = new RoutingHeader();
-        routingAddress.setSender(sender);
-        routingAddress.setReceiver(receiver);
-        routingAddress.setDocumentCreationDateTime(DateTimeConverter.dateTimeToXml(documentCreationDateTime));
+        routingAddress.setSender(Objects.requireNonNull(sender, "Attribute `sender` is required."));
+        routingAddress.setReceiver(Objects.requireNonNull(receiver, "Attribute `receiver` is required."));
+        routingAddress.setDocumentCreationDateTime(DateTimeConverter.dateTimeToXml(Objects.requireNonNull(documentCreationDateTime, "Attribute `documentCreationDateTime` is required.")));
 
         return routingAddress;
     }

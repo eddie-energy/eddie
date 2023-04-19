@@ -46,7 +46,7 @@ public class ProcessDirectoryBuilderTest {
         at.eda.xml.builders.customerconsent.cmrequest._01p10.ProcessDirectoryBuilder processDirBuilder = new at.eda.xml.builders.customerconsent.cmrequest._01p10.ProcessDirectoryBuilder();
 
         assertThrows(IllegalArgumentException.class, () -> processDirBuilder
-                .withMeteringPoint("DeutschÄÖÜ"));
+                .withMeteringPoint("!§$&/(()="));
         assertThrows(IllegalArgumentException.class, () -> processDirBuilder
                 .withMeteringPoint("SpecialCharacters!\"-.,"));
     }
@@ -65,24 +65,24 @@ public class ProcessDirectoryBuilderTest {
     }
 
     @Test
-    public void testIllegalStateException() {
+    public void testNullPointerException() {
         ProcessDirectoryBuilder processDirBuilder = new ProcessDirectoryBuilder();
 
         // Assign no attributes
-        assertThrows(IllegalStateException.class, processDirBuilder::build);
+        assertThrows(NullPointerException.class, processDirBuilder::build);
 
         // Assign only one required attribute
-        assertThrows(IllegalStateException.class, () -> processDirBuilder
+        assertThrows(NullPointerException.class, () -> processDirBuilder
                 .withMessageId("Test")
                 .build());
 
         // Assign only two required attribute
-        assertThrows(IllegalStateException.class, () -> processDirBuilder
+        assertThrows(NullPointerException.class, () -> processDirBuilder
                 .withConversationId("Test")
                 .build());
 
         // Assign only three required attribute
-        assertThrows(IllegalStateException.class, () -> processDirBuilder
+        assertThrows(NullPointerException.class, () -> processDirBuilder
                 .withMeteringPoint("Test")
                 .build());
     }
