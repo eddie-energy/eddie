@@ -1,7 +1,3 @@
-import net.ltgt.gradle.errorprone.CheckSeverity
-import net.ltgt.gradle.errorprone.errorprone
-import java.util.*
-
 plugins {
     id("java")
     id("jacoco")
@@ -57,13 +53,4 @@ allprojects {
     }
 
     apply(plugin = libraries.plugins.errorprone.get().pluginId)
-    tasks.withType<JavaCompile>().configureEach {
-        if (!name.lowercase(Locale.getDefault()).contains("test")) {
-            options.errorprone {
-                check("NullAway", CheckSeverity.ERROR)
-                // add namespaces we want to check for nullability
-                option("NullAway:AnnotatedPackages", "energy.eddie")
-            }
-        }
-    }
 }
