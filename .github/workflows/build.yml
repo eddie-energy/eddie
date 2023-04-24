@@ -15,15 +15,28 @@ jobs:
           java-version: '20'
           distribution: 'temurin'
 
-      - name: Cache Gradle packages
+      - name: Cache Gradle
         uses: actions/cache@v3
+        id: cache-gradle
         with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle
+          path: |
+            ~/.gradle/caches/
+            ~/.gradle/wrapper/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Build with Gradle
         run: ./gradlew build
+
+      - name: Upload Caches
+        if: steps.cache-gradle.outputs.cache-hit != 'true' || steps.cache-build.outputs.cache-hit != 'true'
+        uses: actions/upload-artifact@v2
+        with:
+          name: gradle-cache-and-build
+          path: |
+            ~/.gradle/caches/
+            **/build/
 
   test:
     runs-on: ubuntu-latest
@@ -39,15 +52,36 @@ jobs:
           java-version: '20'
           distribution: 'temurin'
 
-      - name: Cache Gradle packages
+      - name: Restore Gradle Cache
         uses: actions/cache@v3
         with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle
+          path: |
+            ~/.gradle/caches/
+            ~/.gradle/wrapper/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Restore Build Outputs Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            **/build/
+          key: ${{ runner.os }}-gradle-build-${{ hashFiles('**/*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-build-
 
       - name: Test with Gradle
         run: ./gradlew test
+
+      - name: Upload Caches
+        if: steps.cache-gradle.outputs.cache-hit != 'true' || steps.cache-build.outputs.cache-hit != 'true'
+        uses: actions/upload-artifact@v2
+        with:
+          name: gradle-cache-and-build
+          path: |
+            ~/.gradle/caches/
+            **/build/
 
   analyze:
     runs-on: ubuntu-latest
@@ -63,12 +97,24 @@ jobs:
           java-version: '20'
           distribution: 'temurin'
 
-      - name: Cache Gradle packages
+      - name: Restore Gradle Cache
         uses: actions/cache@v3
         with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle
+          path: |
+            ~/.gradle/caches/
+            ~/.gradle/wrapper/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Restore Build Outputs Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            **/build/
+          key: ${{ runner.os }}-gradle-build-${{ hashFiles('**/*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-build-
 
       - name: Cache SonarCloud packages
         uses: actions/cache@v3
