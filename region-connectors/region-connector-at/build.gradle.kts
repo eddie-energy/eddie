@@ -1,8 +1,9 @@
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
+import java.util.*
 
 plugins {
-    id("java")
+    id("energy.eddie.java-conventions")
 }
 
 group = "energy.eddie"
@@ -72,9 +73,10 @@ tasks.named("compileJava") {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.errorprone {
-        check("NullAway", CheckSeverity.ERROR)
-        option("NullAway:AnnotatedPackages", "at.eda")
-
+    if (!name.lowercase(Locale.getDefault()).contains("test")) {
+        options.errorprone {
+            check("NullAway", CheckSeverity.ERROR)
+            option("NullAway:AnnotatedPackages", "at.eda")
+        }
     }
 }

@@ -1,5 +1,5 @@
 plugins {
-    id("java")
+    id("energy.eddie.java-conventions")
 }
 
 group = "energy.eddie"

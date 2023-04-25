@@ -2,7 +2,7 @@ import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
 
 plugins {
-    id("java")
+    id("energy.eddie.java-conventions")
     alias(libs.plugins.jsonschema2pojo)
 }
 
