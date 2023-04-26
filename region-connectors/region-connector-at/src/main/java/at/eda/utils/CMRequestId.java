@@ -4,6 +4,7 @@ import org.apache.commons.codec.binary.Base32;
 
 import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public class CMRequestId {
@@ -38,7 +39,7 @@ public class CMRequestId {
 
     private String getBase32() {
         if (base32 == null) {
-            var crc32 = (int) CRC.computeCRC32(Objects.requireNonNull(messageId).getBytes());
+            var crc32 = (int) CRC.computeCRC32(Objects.requireNonNull(messageId).getBytes(StandardCharsets.UTF_8));
             byte[] crc32Bytes = ByteBuffer.allocate(Integer.BYTES).putInt(crc32).array();
             var crc8 = CRC.computeCRC8DVBS2(crc32Bytes);
             // append crc8 to crc32
@@ -49,6 +50,7 @@ public class CMRequestId {
             Base32 base32 = new Base32();
             this.base32 = base32.encodeAsString(concatenated);
         }
+
         return base32;
     }
 }

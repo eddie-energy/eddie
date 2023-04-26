@@ -43,7 +43,7 @@ public class ProcessDirectoryBuilderTest {
     @Test
     public void testStringWrongCharacters() {
         // Assign string which contains not allowed characters
-        at.eda.xml.builders.customerconsent.cmrequest._01p10.ProcessDirectoryBuilder processDirBuilder = new at.eda.xml.builders.customerconsent.cmrequest._01p10.ProcessDirectoryBuilder();
+        ProcessDirectoryBuilder processDirBuilder = new ProcessDirectoryBuilder();
 
         assertThrows(IllegalArgumentException.class, () -> processDirBuilder
                 .withMeteringPoint("!§$&/(()="));
@@ -73,17 +73,12 @@ public class ProcessDirectoryBuilderTest {
 
         // Assign only one required attribute
         assertThrows(NullPointerException.class, () -> processDirBuilder
-                .withMessageId("Test")
+                .withMessageId("GC100007201912170930001230001234567")
                 .build());
 
         // Assign only two required attribute
         assertThrows(NullPointerException.class, () -> processDirBuilder
-                .withConversationId("Test")
-                .build());
-
-        // Assign only three required attribute
-        assertThrows(NullPointerException.class, () -> processDirBuilder
-                .withMeteringPoint("Test")
+                .withMeteringPoint("AT9999990699900000000000206868100")
                 .build());
     }
 }

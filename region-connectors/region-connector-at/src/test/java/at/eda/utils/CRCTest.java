@@ -3,6 +3,7 @@ package at.eda.utils;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -16,7 +17,7 @@ public class CRCTest {
         var input = "AT999999201812312359598880000000001";
         var expected = 0x45a2dff1;
 
-        assertEquals(expected, CRC.computeCRC32(input.getBytes()));
+        assertEquals(expected, CRC.computeCRC32(input.getBytes(StandardCharsets.UTF_8)));
     }
 
     /**
