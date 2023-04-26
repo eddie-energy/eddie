@@ -1,8 +1,13 @@
 package at.eda.utils;
 
 public class CRC {
+    private CRC() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * Computes the CRC32 for the given data.
+     *
      * @param data the data to compute the CRC32 for
      * @return the CRC32 value
      */
@@ -14,6 +19,7 @@ public class CRC {
 
     /**
      * Computes the CRC8 for the given data using the DVB-S2 polynomial.
+     *
      * @param data the data to compute the CRC8 for
      * @return the CRC8 value
      */

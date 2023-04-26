@@ -12,8 +12,8 @@ import java.util.Objects;
  * @see AdditionalData
  */
 public class AdditionalDataBuilder {
-    private final static int LEN_VALUE = 120;
-    private final static int LEN_NAME = 40;
+    private static final int LEN_VALUE = 120;
+    private static final int LEN_NAME = 40;
     @Nullable
     private String value;
     @Nullable

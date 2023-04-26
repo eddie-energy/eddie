@@ -47,8 +47,8 @@ public class CMRequestId {
             System.arraycopy(crc32Bytes, 0, concatenated, 0, crc32Bytes.length);
             concatenated[concatenated.length - 1] = (byte) crc8;
 
-            Base32 base32 = new Base32();
-            this.base32 = base32.encodeAsString(concatenated);
+            Base32 base32Obj = new Base32();
+            this.base32 = base32Obj.encodeAsString(concatenated);
         }
 
         return base32;

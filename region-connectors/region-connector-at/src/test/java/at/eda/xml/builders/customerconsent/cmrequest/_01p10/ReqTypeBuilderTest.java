@@ -3,6 +3,7 @@ package at.eda.xml.builders.customerconsent.cmrequest._01p10;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.EnergyDirection;
 import org.junit.jupiter.api.Test;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.Month;
 
@@ -51,15 +52,21 @@ public class ReqTypeBuilderTest {
 
         // Assign only one required attribute
         assertThrows(NullPointerException.class, () -> reqTypeBuilder1
-                .withReqDatType("Test")
+                .withReqDatType("EnergyCommunityRegistration")
                 .build());
         ReqTypeBuilder reqTypeBuilder2 = new ReqTypeBuilder();
         assertThrows(NullPointerException.class, () -> reqTypeBuilder2
                 .withDateFrom(LocalDate.of(2023, Month.FEBRUARY, 6))
                 .build());
+    }
+
+    @Test
+    public void testDateFromAfterDateTo() {
+        ReqTypeBuilder reqTypeBuilder1 = new ReqTypeBuilder();
 
         // Assign toDate which is before fromDate
-        assertThrows(NullPointerException.class, () -> reqTypeBuilder1
+        assertThrows(DateTimeException.class, () -> reqTypeBuilder1
+                .withReqDatType("EnergyCommunityRegistration")
                 .withDateFrom(LocalDate.of(2023, Month.MARCH, 6))
                 .withDateTo(LocalDate.of(2023, Month.FEBRUARY, 6))
                 .build());

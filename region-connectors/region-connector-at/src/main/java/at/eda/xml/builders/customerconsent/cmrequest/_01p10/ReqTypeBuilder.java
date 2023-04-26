@@ -9,6 +9,7 @@ import at.eda.xml.builders.helper.DateTimeConverter;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -155,13 +156,13 @@ public class ReqTypeBuilder {
     public ReqType build() {
         ReqType reqType = new ReqType();
         reqType.setReqDatType(Objects.requireNonNull(reqDatType, "Attribute `reqDatType` is required."));
-        reqType.setDateFrom(DateTimeConverter.dateToXMl(Objects.requireNonNull(dateFrom, "Attribute `dateFrom` is required.")));
+        reqType.setDateFrom(DateTimeConverter.dateToXml(Objects.requireNonNull(dateFrom, "Attribute `dateFrom` is required.")));
 
         if (dateTo != null) {
             if (dateFrom.isAfter(dateTo)) {
-                throw new NullPointerException("Attribute `dateFrom`(" + dateFrom + ") is after `dateTo`(" + dateTo + ").");
+                throw new DateTimeException("Attribute `dateFrom`(" + dateFrom + ") is after `dateTo`(" + dateTo + ").");
             } else {
-                reqType.setDateFrom(DateTimeConverter.dateToXMl(dateTo));
+                reqType.setDateTo(DateTimeConverter.dateToXml(dateTo));
             }
         }
 

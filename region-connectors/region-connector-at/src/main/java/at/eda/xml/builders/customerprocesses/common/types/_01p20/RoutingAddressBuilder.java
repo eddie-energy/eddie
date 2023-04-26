@@ -32,7 +32,7 @@ public class RoutingAddressBuilder {
             throw new IllegalArgumentException("`messageAddress` cannot be empty.");
         }
 
-        String regex = "[A-Za-z]{2}[0-9]{6}";
+        String regex = "[A-Za-z]{2}\\d{6}";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(messageAddress);
 

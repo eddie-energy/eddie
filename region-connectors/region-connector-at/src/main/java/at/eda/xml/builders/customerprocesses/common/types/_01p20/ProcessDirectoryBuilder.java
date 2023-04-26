@@ -15,9 +15,9 @@ import java.util.Objects;
  * @see ProcessDirectory
  */
 public class ProcessDirectoryBuilder {
-    private final static int LEN_MESSAGE_ID = 35;
-    private final static int LEN_CONVERSATION_ID = 35;
-    private final static int LEN_METERING_POINT = 33;
+    private static final int LEN_MESSAGE_ID = 35;
+    private static final int LEN_CONVERSATION_ID = 35;
+    private static final int LEN_METERING_POINT = 33;
     @Nullable
     private String messageId;
     @Nullable
@@ -116,7 +116,7 @@ public class ProcessDirectoryBuilder {
 
         processDir.setMessageId(Objects.requireNonNull(messageId, "Attribute `messageId` is required."));
         processDir.setConversationId(Objects.requireNonNull(conversationId, "Attribute `conversationId` is required."));
-        processDir.setProcessDate(DateTimeConverter.dateToXMl(Objects.requireNonNullElseGet(processDate, LocalDate::now)));
+        processDir.setProcessDate(DateTimeConverter.dateToXml(Objects.requireNonNullElseGet(processDate, LocalDate::now)));
         processDir.setMeteringPoint(Objects.requireNonNull(meteringPoint, "Attribute `meteringPoint` is required."));
 
         return processDir;

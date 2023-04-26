@@ -2,6 +2,8 @@ package at.eda.utils;
 
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
@@ -30,5 +32,21 @@ public class CRCTest {
         var expected = 0xF6;
 
         assertEquals(expected, CRC.computeCRC8DVBS2(ByteBuffer.allocate(Integer.BYTES).putInt(input).array()));
+    }
+
+    @Test
+    public void testIllegalStateException() throws Throwable {
+        // Create Object of Utility class
+        try {
+            Constructor<CRCTest> constructor = CRCTest.class.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            constructor.newInstance();
+        } catch (InvocationTargetException e) {
+            if (e.getCause() instanceof IllegalStateException) {
+                assertEquals("Utility class", e.getCause().getMessage());
+            } else {
+                throw e.getCause();
+            }
+        }
     }
 }
