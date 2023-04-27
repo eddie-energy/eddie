@@ -28,6 +28,7 @@ allprojects {
     plugins.withType<JavaPlugin> {
         dependencies {
             annotationProcessor(libraries.nullaway)
+            testAnnotationProcessor(libraries.nullaway)
             compileOnly(libraries.jsr305)
         }
     }
