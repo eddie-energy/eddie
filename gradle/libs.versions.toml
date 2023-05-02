@@ -10,6 +10,8 @@ jakarta-xml-bind = "4.0.0"
 jakarta-annotation = "2.1.0"
 sonar = "4.0.0.2929"
 commons-codec = "1.15"
+jsonschema2pojo = "1.2.1"
+jackson-databind = "2.14.2"
 
 [libraries]
 errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorpronecore" }
@@ -18,6 +20,10 @@ jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305"}
 
 # Aggregator artifact of junit5
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit"}
+
+
+# dependencies required by region-connector-api
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson-databind" }
 
 # dependencies required by region-connector-at
 jaxb-xjc = { module = "org.glassfish.jaxb:jaxb-xjc", version.ref = "jaxb"}
@@ -34,3 +40,4 @@ commons-codec = { module = "commons-codec:commons-codec" , version.ref = "common
 [plugins]
 errorprone = { id = "net.ltgt.errorprone", version.ref = "errorprone" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonar" }
+jsonschema2pojo = { id = "org.jsonschema2pojo", version.ref = "jsonschema2pojo" }

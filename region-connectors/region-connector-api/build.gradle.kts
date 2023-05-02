@@ -3,7 +3,7 @@ import net.ltgt.gradle.errorprone.errorprone
 
 plugins {
     id("java")
-    id("org.jsonschema2pojo") version "1.2.1"
+    alias(libs.plugins.jsonschema2pojo)
 }
 
 group = "energy.eddie"
@@ -16,7 +16,7 @@ repositories {
 dependencies {
     testImplementation(libs.junit.jupiter)
 
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
+    implementation(libs.jackson.databind)
 }
 
 tasks.getByName<Test>("test") {
