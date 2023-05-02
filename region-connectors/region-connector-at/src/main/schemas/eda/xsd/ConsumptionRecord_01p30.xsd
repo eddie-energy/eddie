@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Mit XMLSpy v2019 rel. 3 (x64) (http://www.altova.com) von Vorarlberger Kraftwerke AG (Vorarlberger Kraftwerke AG) bearbeitet -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ct="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20" xmlns:cp="http://www.ebutilities.at/schemata/customerprocesses/consumptionrecord/01p30" targetNamespace="http://www.ebutilities.at/schemata/customerprocesses/consumptionrecord/01p30" elementFormDefault="qualified">
+	<xsd:import namespace="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20" schemaLocation="CPCommonTypes_01p20.xsd"/>
+	<xsd:annotation>
+		<xsd:documentation>
+			schema version: 01.30
+			autor: Reinhold Hansmann
+			last update: 2021-04-01
+			Änderungen zu 1.30 (Auslöser: MSCONS-Ablöse)
+			- Umbenennung (hauptsächlich Kürzung) von diversen Feld-Bezeichnungen
+			- Der Konten Consumption (neu „Energy“) wird mehrfach verwendbar
+			- Entfernung AdministrativeContact
+			- Entfernung des Feldes „Consumption/ReferenceNumber“ (alte Bezeichnung)
+			- ConsumptionPosition/BillingUOM als Attribut UOM von EnergyData (früher ConsumptionData) 
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:element name="ConsumptionRecord">
+		<xsd:annotation>
+			<xsd:documentation>Energie-Daten-Übermittlung</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="MarketParticipantDirectory" type="cp:MarketParticipantDirectory"/>
+				<xsd:element name="ProcessDirectory" type="cp:ProcessDirectory"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:complexType name="MarketParticipantDirectory">
+		<xsd:complexContent>
+			<xsd:extension base="ct:MarketParticipantDirectory">
+				<xsd:sequence>
+					<xsd:element name="MessageCode">
+						<xsd:annotation>
+							<xsd:documentation>DATEN_CRMSG</xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="ct:MessageCode">
+								<xsd:enumeration value="DATEN_CRMSG"/>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+				</xsd:sequence>
+				<xsd:attribute name="SchemaVersion" type="cp:ConsumptionRecordVersion" use="required"/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="ProcessDirectory">
+		<xsd:complexContent>
+			<xsd:extension base="ct:ProcessDirectory">
+				<xsd:sequence>
+					<xsd:annotation>
+						<xsd:documentation>Lieferanschrift</xsd:documentation>
+					</xsd:annotation>
+					<xsd:element name="DeliveryPoint" type="ct:MessageAddress" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Lieferanschrift (EC-Nummer)</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="Energy" type="cp:Energy" maxOccurs="1000"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="Energy">
+		<xsd:annotation>
+			<xsd:documentation>Energie-Mengen</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="MeteringReason" type="cp:MeteringReason"/>
+			<xsd:element name="MeteringPeriodStart" type="cp:DateTimeU"/>
+			<xsd:element name="MeteringPeriodEnd" type="cp:DateTimeU"/>
+			<xsd:element name="MeteringIntervall" type="cp:MeteringIntervall"/>
+			<xsd:element name="NumberOfMeteringIntervall" type="xsd:integer"/>
+			<xsd:element name="EnergyData" type="cp:EnergyData" maxOccurs="1000"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="EnergyData">
+		<xsd:annotation>
+			<xsd:documentation>Energie-Positionen</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="EP" type="cp:EnergyPosition" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="MeterCode" use="required">
+			<xsd:annotation>
+				<xsd:documentation>OBIS-Code</xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="25"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="UOM" type="cp:UOMType" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Einheit</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="EnergyPosition">
+		<xsd:annotation>
+			<xsd:documentation>Energie-Position</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="DTF" type="cp:DateTimeU">
+				<xsd:annotation>
+					<xsd:documentation>Datum/Zeit von</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="DTT" type="cp:DateTimeU" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Datum/Zeit bis</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="MM" type="cp:MeteringMethod" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Ableseart</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="BQ" type="cp:BillingQuantity">
+				<xsd:annotation>
+					<xsd:documentation>Menge</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="BillingQuantity">
+		<xsd:annotation>
+			<xsd:documentation>Verbrauchsmenge Dezimalzahl -10.6</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:decimal">
+			<xsd:pattern value="[\-]?[0-9]{1,10}[\.]?[0-9]{0,6}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Competence">
+		<xsd:annotation>
+			<xsd:documentation>Zuständigkeit</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="40"/>
+			<xsd:minLength value="1"/>
+			<xsd:whiteSpace value="collapse"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ConsumptionRecordMessageCode">
+		<xsd:restriction base="cp:MessageCode">
+			<xsd:enumeration value="DATEN_MSG"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ConsumptionRecordVersion">
+		<xsd:annotation>
+			<xsd:documentation>Schema-Version</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="01.30"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Email">
+		<xsd:annotation>
+			<xsd:documentation>Email-Adresse</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="120"/>
+			<xsd:minLength value="1"/>
+			<xsd:whiteSpace value="collapse"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Fax">
+		<xsd:annotation>
+			<xsd:documentation>Faxnummer</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="30"/>
+			<xsd:minLength value="1"/>
+			<xsd:whiteSpace value="collapse"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="MeteringIntervall">
+		<xsd:annotation>
+			<xsd:documentation>Messintervall</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="QH"/>
+			<xsd:enumeration value="H"/>
+			<xsd:enumeration value="D"/>
+			<xsd:enumeration value="V"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="MeteringMethod">
+		<xsd:annotation>
+			<xsd:documentation>Ableseart</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="01"/>
+			<xsd:enumeration value="02"/>
+			<xsd:enumeration value="03"/>
+			<xsd:enumeration value="04"/>
+			<xsd:enumeration value="05"/>
+			<xsd:enumeration value="L1"/>
+			<xsd:enumeration value="L2"/>
+			<xsd:enumeration value="L3"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="MeteringReason">
+		<xsd:annotation>
+			<xsd:documentation>Ablesegrund</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="00"/>
+			<xsd:enumeration value="01"/>
+			<xsd:enumeration value="02"/>
+			<xsd:enumeration value="03"/>
+			<xsd:enumeration value="04"/>
+			<xsd:enumeration value="05"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Name">
+		<xsd:annotation>
+			<xsd:documentation>Name</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="40"/>
+			<xsd:minLength value="1"/>
+			<xsd:whiteSpace value="collapse"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Phone">
+		<xsd:annotation>
+			<xsd:documentation>Telefonnummer</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="30"/>
+			<xsd:minLength value="1"/>
+			<xsd:whiteSpace value="collapse"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ReferenceNumber">
+		<xsd:annotation>
+			<xsd:documentation>Referenznummer (z.B: Debitorenkontnummer, Vertragskontonummer)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+			<xsd:minLength value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="UOMType">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="PROZ"/>
+			<xsd:enumeration value="CELS"/>
+			<xsd:enumeration value="PCE"/>
+			<xsd:enumeration value="EUR"/>
+			<xsd:enumeration value="MB"/>
+			<xsd:enumeration value="GB"/>
+			<xsd:enumeration value="TB"/>
+			<xsd:enumeration value="H"/>
+			<xsd:enumeration value="TAG"/>
+			<xsd:enumeration value="MIN"/>
+			<xsd:enumeration value="MON"/>
+			<xsd:enumeration value="KVARH"/>
+			<xsd:enumeration value="MVARH"/>
+			<xsd:enumeration value="KWT"/>
+			<xsd:enumeration value="MWT"/>
+			<xsd:enumeration value="GWT"/>
+			<xsd:enumeration value="KWH"/>
+			<xsd:enumeration value="MWH"/>
+			<xsd:enumeration value="GWH"/>
+			<xsd:enumeration value="LE"/>
+			<xsd:enumeration value="M2"/>
+			<xsd:enumeration value="M3"/>
+			<xsd:enumeration value="BM3"/>
+			<xsd:enumeration value="NM3"/>
+			<xsd:enumeration value="BM3H"/>
+			<xsd:enumeration value="NM3H"/>
+			<xsd:enumeration value="KWHH"/>
+			<xsd:enumeration value="PAU"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="DateTimeS">
+		<xsd:annotation>
+			<xsd:documentation>Datum Uhrzeit Format JJJJ-MM-TT"T"HH:MM:SS</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:dateTime">
+			<xsd:pattern value="[12][0-9]{3}-[01][0-9]-[0-3][0-9]T[012][0-9]:[0-5][0-9]:[0-5][0-9]"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="DateTimeU">
+		<xsd:annotation>
+			<xsd:documentation>Datum Uhrzeit (Sekunden immer 00) mit UNC 2001-12-17T09:30:00+01:00</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:dateTime">
+			<xsd:pattern value="[12][0-9]{3}-[01][0-9]-[0-3][0-9]T[012][0-9]:[0-5][0-9]:00[\+]0[12]:00"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="DocumentMode">
+		<xsd:annotation>
+			<xsd:documentation>Produktiv-/Testkennzeichen</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="PROD"/>
+			<xsd:enumeration value="SIMU"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="GroupingId">
+		<xsd:annotation>
+			<xsd:documentation>Nachrichten- bzw. Prozessnummer</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+			<xsd:minLength value="1"/>
+			<xsd:pattern value="[0-9A-Za-z]*"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="MessageAddress">
+		<xsd:annotation>
+			<xsd:documentation>Adresse des Teilnehmers (Sender / Empfänger)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+			<xsd:minLength value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="MessageCode">
+		<xsd:annotation>
+			<xsd:documentation>Nachrichten-Code</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+			<xsd:minLength value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="MeteringPoint">
+		<xsd:annotation>
+			<xsd:documentation>Zählpunkt</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="33"/>
+			<xsd:minLength value="1"/>
+			<xsd:pattern value="[0-9A-Za-z]*"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>
