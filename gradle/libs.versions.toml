@@ -14,9 +14,13 @@ jsonschema2pojo = "1.2.1"
 jackson-databind = "2.14.2"
 
 [libraries]
+# Static analysis
 errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorpronecore" }
 nullaway = { module = "com.uber.nullaway:nullaway", version.ref = "nullaway"}
 jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305"}
+## Plugins
+errorprone = { module = "net.ltgt.gradle:gradle-errorprone-plugin", version.ref = "errorprone"}
+sonar = { module = "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin", version.ref = "sonar" }
 
 # Aggregator artifact of junit5
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit"}
