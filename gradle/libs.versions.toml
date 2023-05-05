@@ -3,7 +3,7 @@
 junit = "5.9.2"
 errorprone = "3.0.1"
 errorpronecore = "2.18.0"
-nullaway = "0.7.9"
+nullaway = "0.10.10"
 jsr305 = "3.0.2"
 jaxb = "4.0.2"
 jakarta-xml-bind = "4.0.0"
