@@ -28,6 +28,18 @@ dependencies {
     implementation(libs.jakarta.xml.bind.api)
     implementation(libs.jakarta.annotation.api)
     implementation(libs.commons.codec)
+
+    // sl4j
+    implementation("org.slf4j:slf4j-api:2.0.5")
+    implementation("org.slf4j:slf4j-simple:2.0.5")
+
+    // dependency for PontonXP Messenger
+    implementation(files("libs/adapterapi2.jar"))
+    implementation("io.projectreactor:reactor-core:3.5.5")
+
+    implementation(project(mapOf("path" to ":region-connectors:region-connector-api")))
+    implementation(libs.jackson.databind)
+
 }
 
 
