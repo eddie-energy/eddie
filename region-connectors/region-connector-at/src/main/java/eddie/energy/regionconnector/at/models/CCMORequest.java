@@ -25,7 +25,6 @@ public class CCMORequest {
     @Nullable
     private String meteringPoint;
     private String requestDataType = "MeteringData";
-    private EnergyDirection energyDirection = EnergyDirection.CONSUMPTION;
     private MeteringIntervallType meteringIntervallType = MeteringIntervallType.QH;
     private TransmissionCycle transmissionCycle = TransmissionCycle.D;
 
@@ -50,11 +49,6 @@ public class CCMORequest {
 
     public CCMORequest withMeteringPoint(String meteringPoint) {
         this.meteringPoint = meteringPoint;
-        return this;
-    }
-
-    public CCMORequest withEnergyDirection(EnergyDirection energyDirection) {
-        this.energyDirection = energyDirection;
         return this;
     }
 
@@ -121,9 +115,6 @@ public class CCMORequest {
         requestType.setDateFrom(datatypeFactory.newXMLGregorianCalendar(GregorianCalendar.from(from.toZonedDateTime())));
         requestType.setDateTo(datatypeFactory.newXMLGregorianCalendar(GregorianCalendar.from(to.toZonedDateTime())));
         requestType.setReqDatType(requestDataType);
-        if (energyDirection != null) {
-            requestType.setEnergyDirection(energyDirection);
-        }
         requestType.setMeteringIntervall(this.meteringIntervallType);
         requestType.setTransmissionCycle(this.transmissionCycle);
         processDirectory.setCMRequest(requestType);

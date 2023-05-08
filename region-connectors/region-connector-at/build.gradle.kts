@@ -30,8 +30,9 @@ dependencies {
     implementation(libs.commons.codec)
 
     // sl4j
-    implementation("org.slf4j:slf4j-api:2.0.5")
-    implementation("org.slf4j:slf4j-simple:2.0.5")
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.20.0")
+    implementation("org.apache.logging.log4j:log4j-api:2.20.0")
+    implementation("org.apache.logging.log4j:log4j-core:2.20.0")
 
     // dependency for PontonXP Messenger
     implementation(files("libs/adapterapi2.jar"))
@@ -40,6 +41,7 @@ dependencies {
     implementation(project(mapOf("path" to ":region-connectors:region-connector-api")))
     implementation(libs.jackson.databind)
 
+    implementation("org.apache.commons:commons-lang3:3.12.0")
 }
 
 
