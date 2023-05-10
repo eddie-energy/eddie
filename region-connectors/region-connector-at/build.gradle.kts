@@ -4,6 +4,7 @@ import java.util.*
 
 plugins {
     id("energy.eddie.java-conventions")
+    application
 }
 
 group = "energy.eddie"
@@ -33,6 +34,8 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.20.0")
     implementation("org.apache.logging.log4j:log4j-api:2.20.0")
     implementation("org.apache.logging.log4j:log4j-core:2.20.0")
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-jul
+    runtimeOnly("org.apache.logging.log4j:log4j-jul:2.20.0")
 
     // dependency for PontonXP Messenger
     implementation(files("libs/adapterapi2.jar"))
@@ -42,6 +45,7 @@ dependencies {
     implementation(libs.jackson.databind)
 
     implementation("org.apache.commons:commons-lang3:3.12.0")
+
 }
 
 
@@ -97,4 +101,13 @@ tasks.withType<JavaCompile>().configureEach {
             option("NullAway:AnnotatedPackages", "at.eda")
         }
     }
+}
+
+application {
+    mainClass.set("eddie.energy.regionconnector.at.ponton.Main")
+    applicationDefaultJvmArgs = listOf("-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager")
+}
+
+tasks.named<JavaExec>("run") {
+    standardInput = System.`in`
 }
