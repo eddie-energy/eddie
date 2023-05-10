@@ -10,6 +10,13 @@ repositories {
 group = "energy.eddie"
 version = "0.0.0"
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(19))
+    }
+}
+
+
 dependencies {
     // https://github.com/gradle/gradle/issues/15383
     implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))

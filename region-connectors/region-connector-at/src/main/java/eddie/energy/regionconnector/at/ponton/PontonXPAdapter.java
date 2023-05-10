@@ -38,7 +38,7 @@ class PontonXPAdapter implements EdaAdapter {
     final Flow.Publisher<CMRequestStatus> cmStatusPublisher = JdkFlowAdapter.publisherToFlowPublisher(cmStatusSink.asFlux());
     private final Logger logger = LoggerFactory.getLogger(PontonXPAdapter.class);
     MessengerConnection messengerConnection;
-    JAXBContext context = JAXBContext.newInstance(CMRequest.class, ConsumptionRecord.class, CMNotification.class, CMRevoke.class, MasterData.class);
+    JAXBContext context = JAXBContext.newInstance(CMRequest.class, ConsumptionRecord.class, CMNotification.class, CMRevoke.class, MasterData.class, CMRevoke.class);
     Marshaller marshaller = context.createMarshaller();
     Unmarshaller unmarshaller = context.createUnmarshaller();
 
@@ -105,8 +105,7 @@ class PontonXPAdapter implements EdaAdapter {
         return switch (messageType) {
             case MessageCodes.Notification.ANSWER ->
                     handleCMNotificationMessage(inboundMessage, new CMRequestStatus(CMRequestStatus.Status.DELIVERED, "CCMO request has been delivered.", conversationId));
-            case MessageCodes.Notification.ACCEPT ->
-                    handleCMNotificationMessage(inboundMessage, new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "CCMO request has been accepted.", conversationId));
+            case MessageCodes.Notification.ACCEPT -> handleCMAcceptNotificationMessage(inboundMessage);
             case MessageCodes.Notification.REJECT ->
                     handleCMNotificationMessage(inboundMessage, new CMRequestStatus(CMRequestStatus.Status.REJECTED, "CCMO request has been rejected.", conversationId));
             case MessageCodes.MASTER_DATA -> handleMasterDataMessage(inboundMessage);
@@ -131,6 +130,36 @@ class PontonXPAdapter implements EdaAdapter {
                 .setStatus(InboundStatusEnum.SUCCESS)
                 .setStatusText("CMNotification processed")
                 .build();
+    }
+
+    private InboundMessageStatusUpdate handleCMAcceptNotificationMessage(InboundMessage inboundMessage) {
+        try (InputStream inputStream = inboundMessage.createInputStream()) {
+            var notification = (CMNotification) unmarshaller.unmarshal(inputStream);
+            var consentId = notification.getProcessDirectory().getResponseData().get(0).getConsentId();
+            var status = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, consentId, notification.getProcessDirectory().getConversationId());
+
+            cmStatusSink.tryEmitNext(status);
+            logger.info("Received CMNotification update: {} for request {}, consentId: {}", status.status(), status.conversationId(), consentId);
+            return InboundMessageStatusUpdate.newBuilder()
+                    .setInboundMessage(inboundMessage)
+                    .setStatus(InboundStatusEnum.SUCCESS)
+                    .setStatusText("CMNotification processed")
+                    .build();
+        } catch (JAXBException e) {
+            logger.error("Error while trying to unmarshal CMNotification of schema-version {}", inboundMessage.getInboundMetaData().getMessageType().getVersion().getValue(), e);
+            return InboundMessageStatusUpdate.newBuilder()
+                    .setInboundMessage(inboundMessage)
+                    .setStatus(InboundStatusEnum.REJECTED)
+                    .setStatusText(e.getMessage())
+                    .build();
+        } catch (IOException e) {
+            logger.error("Error while reading CMNotification message", e);
+            return InboundMessageStatusUpdate.newBuilder()
+                    .setInboundMessage(inboundMessage)
+                    .setStatus(InboundStatusEnum.TEMPORARY_ERROR)
+                    .setStatusText(e.getMessage())
+                    .build();
+        }
     }
 
     private InboundMessageStatusUpdate handleMasterDataMessage(InboundMessage inboundMessage) {
@@ -254,6 +283,36 @@ class PontonXPAdapter implements EdaAdapter {
         }
 
         cmStatusSink.tryEmitNext(new CMRequestStatus(CMRequestStatus.Status.SENT, "CCMO request has been sent", request.getProcessDirectory().getConversationId()));
+    }
+
+
+    @Override
+    public void sendCMRevoke(CMRevoke revoke) throws TransmissionException, JAXBException {
+        // convert revoke to XML
+        var outputStream = new ByteArrayOutputStream();
+        marshaller.marshal(revoke, outputStream);
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        final OutboundMetaData outboundMetaData = OutboundMetaData.newBuilder()
+                .setSenderId(new SenderId(revoke.getMarketParticipantDirectory().getRoutingHeader().getSender().getMessageAddress()))
+                .setReceiverId(new ReceiverId(revoke.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress()))
+                .setMessageType(new MessageType.MessageTypeBuilder()
+                        .setSchemaSet(new SchemaSet(MessageCodes.Revoke.EligibleParty.SCHEMA))
+                        .setVersion(new MessageTypeVersion(MessageCodes.Revoke.VERSION))
+                        .setName(new MessageTypeName(MessageCodes.Revoke.EligibleParty.REVOKE))
+                        .setMimeType(new MimeType("text/xml"))
+                        .build())
+                .build();
+
+        final OutboundMessage outboundMessage = OutboundMessage.newBuilder()
+                .setInputStream(inputStream)
+                .setOutboundMetaData(outboundMetaData)
+                .build();
+
+        try {
+            messengerConnection.sendMessage(outboundMessage);
+        } catch (de.ponton.xp.adapter.api.TransmissionException e) {
+            throw new TransmissionException(e);
+        }
     }
 
     @Override

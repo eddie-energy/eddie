@@ -10,6 +10,15 @@ public class MessageCodes {
         public static final String CUSTOMER = "AUFHEBUNG_CCMC";
         public static final String IMPLICIT = "AUFHEBUNG_CCMI";
 
+        public static final String VERSION = "01.00";
+        public static class EligibleParty {
+
+            public static final String REVOKE = "AUFHEBUNG_CCMS";
+            public static final String ANSWER = "ANTWORT_CCMS";
+            public static final String DENIAL = "ABLEHNUNG_CCMS";
+
+            public static final String SCHEMA = "CM_REV_SP_01.02 ";
+        }
     }
 
     public static class Notification {

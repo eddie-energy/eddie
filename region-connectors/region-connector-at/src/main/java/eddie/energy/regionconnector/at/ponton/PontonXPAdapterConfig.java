@@ -26,11 +26,11 @@ public class PontonXPAdapterConfig {
 
     public static PontonXPAdapterConfig fromProperties(Properties properties) {
         return new Builder()
-                .adapterId(properties.getProperty(ADAPTER_ID_KEY))
-                .adapterVersion(properties.getProperty(ADAPTER_VERSION_KEY))
-                .hostname(properties.getProperty(HOSTNAME_KEY))
-                .port(Integer.parseInt(properties.getProperty(PORT_KEY)))
-                .workFolder(properties.getProperty(WORK_FOLDER_KEY))
+                .withAdapterId(properties.getProperty(ADAPTER_ID_KEY))
+                .withAdapterVersion(properties.getProperty(ADAPTER_VERSION_KEY))
+                .withHostname(properties.getProperty(HOSTNAME_KEY))
+                .withPort(Integer.parseInt(properties.getProperty(PORT_KEY)))
+                .withWorkFolder(properties.getProperty(WORK_FOLDER_KEY))
                 .build();
     }
 
@@ -66,22 +66,22 @@ public class PontonXPAdapterConfig {
         public Builder() {
         }
 
-        public Builder adapterId(String adapterId) {
+        public Builder withAdapterId(String adapterId) {
             this.adapterId = adapterId;
             return this;
         }
 
-        public Builder adapterVersion(String adapterVersion) {
+        public Builder withAdapterVersion(String adapterVersion) {
             this.adapterVersion = adapterVersion;
             return this;
         }
 
-        public Builder hostname(String hostname) {
+        public Builder withHostname(String hostname) {
             this.hostname = hostname;
             return this;
         }
 
-        public Builder port(int port) {
+        public Builder withPort(int port) {
             if (port <= 0) {
                 errorMessages.add("Invalid property: messenger.port");
             }
@@ -89,7 +89,7 @@ public class PontonXPAdapterConfig {
             return this;
         }
 
-        public Builder workFolder(String workFolder) {
+        public Builder withWorkFolder(String workFolder) {
             this.workFolder = workFolder;
             return this;
         }

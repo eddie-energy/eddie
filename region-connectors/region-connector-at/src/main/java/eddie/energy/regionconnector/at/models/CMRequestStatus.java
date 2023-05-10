@@ -4,7 +4,7 @@ public record CMRequestStatus(Status status, String message, String conversation
 
     @Override
     public String toString() {
-        return "{ status=" + status + ", message='" + message + ", conversationId='" + conversationId + " }";
+        return "{ status=\"" + status + "\", message=\"" + message + "\", conversationId=\"" + conversationId + "\" }";
     }
 
     public enum Status {
