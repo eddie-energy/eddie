@@ -1,23 +1,29 @@
 package eddie.energy.regionconnector.at.ponton;
 
-import at.ebutilities.schemata.customerconsent.cmrequest._01p10.EnergyDirection;
+import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
+import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.MarketParticipantDirectory;
+import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.ProcessDirectory;
+import at.ebutilities.schemata.customerprocesses.common.types._01p20.AddressType;
+import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMode;
+import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingAddress;
+import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
 import de.ponton.xp.adapter.api.ConnectionException;
-import de.ponton.xp.adapter.api.TransmissionException;
 import eddie.energy.regionconnector.api.v0.models.ConsumptionRecord;
 import eddie.energy.regionconnector.at.eda.EdaAdapter;
 import eddie.energy.regionconnector.at.models.CCMORequest;
 import eddie.energy.regionconnector.at.models.CMRequestStatus;
+import eddie.energy.regionconnector.at.models.MessageCodes;
 import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.GregorianCalendar;
+import java.util.UUID;
 import java.util.concurrent.Flow;
 
 public class Main {
@@ -33,14 +39,13 @@ public class Main {
             throw new IOException("Could not create path: " + workFolder.getAbsolutePath());
         }
         PontonXPAdapterConfig config = new PontonXPAdapterConfig.Builder()
-                .hostname("eddie.projekte.fh-hagenberg.at")
-                .port(2600)
-                .workFolder(workFolder.toString())
-                .adapterId("Fabian-Eddie")
-                .adapterVersion("1.0.0")
+                .withHostname("eddie.projekte.fh-hagenberg.at")
+                .withPort(2600)
+                .withWorkFolder(workFolder.toString())
+                .withAdapterId("Fabian-Eddie")
+                .withAdapterVersion("1.0.0")
                 .build();
-
-        var outputStream = new PrintStream(new FileOutputStream(path + File.separator + "consumptionRecords.txt"));
+        var outputStream = new PrintStream(new FileOutputStream(path + File.separator + "consumptionRecords.txt", true));
         var adapter = new PontonXPAdapter(config);
         adapter.subscribeToConsumptionRecordPublisher(new Flow.Subscriber<>() {
             private Flow.Subscription subscription;
@@ -53,14 +58,14 @@ public class Main {
 
             @Override
             public void onNext(ConsumptionRecord consumptionRecord) {
-                System.out.println("Received consumptionRecord from: " + consumptionRecord.getMeteringPoint() + " for: " + consumptionRecord.getStartDateTime());
+                logger.info("Received consumptionRecord from: " + consumptionRecord.getMeteringPoint() + " for: " + consumptionRecord.getStartDateTime());
                 outputStream.println(consumptionRecord);
                 subscription.request(1);
             }
 
             @Override
             public void onError(Throwable throwable) {
-                System.out.println("Error: " + throwable.getMessage());
+                logger.error("Error in consumption record stream: ", throwable);
                 subscription.request(1);
             }
 
@@ -81,13 +86,13 @@ public class Main {
 
             @Override
             public void onNext(CMRequestStatus cmRequestStatus) {
-                System.out.println("Received CMRequestStatus: " + cmRequestStatus);
+                logger.info("Received CMRequestStatus: " + cmRequestStatus);
                 subscription.request(1);
             }
 
             @Override
             public void onError(Throwable throwable) {
-                System.out.println("Error: " + throwable.getMessage());
+                logger.error("Error in status update stream: ", throwable);
             }
 
             @Override
@@ -111,18 +116,28 @@ public class Main {
             }
 
             // enter ReqDatType either HistoricalMeteringData or MeteringData
-            System.out.println("Enter ReqDatType (1 for HistoricalMeteringData, 2 for MeteringData, 3 for MasterData):");
+            System.out.println("Enter ReqDatType (1 for HistoricalMeteringData, 2 for MeteringData, 3 for MasterData, 4 for Revoke):");
             var reqDatType = switch (reader.readLine()) {
                 case "1" -> "HistoricalMeteringData";
                 case "3" -> "MasterData";
+                case "4" -> "Revoke";
                 default -> "MeteringData";
             };
+
+            if(reqDatType.equals("Revoke")) {
+                System.out.println("Enter consent id:");
+                var consentId = reader.readLine();
+
+                System.out.println("Enter end date (dd.MM.yyyy):");
+                var line = reader.readLine();
+                sendRevoke(adapter, consentId,meteringPoint, line.isBlank() ? null:  OffsetDateTime.of(LocalDate.parse(line, formatted).atStartOfDay(), ZoneOffset.UTC));
+                continue;
+            }
 
             // read from date
             System.out.println("Enter from date (dd.MM.yyyy):");
             // read input and parse to OffsetDateTime
             var fromDate = LocalDate.parse(reader.readLine(), formatted);
-
 
             // read to date
             System.out.println("Enter to date (dd.MM.yyyy):");
@@ -140,8 +155,7 @@ public class Main {
         String receiverID;
         if (!meteringPoint.isBlank()) {
             receiverID = meteringPoint.substring(0, 8);
-        }
-        else {
+        } else {
             // query for receiverID
             System.out.println("Enter DSO (e.g. AT003000):");
             receiverID = reader.readLine();
@@ -158,6 +172,49 @@ public class Main {
             adapter.sendCMRequest(cmRequest);
 
         } catch (eddie.energy.regionconnector.at.eda.TransmissionException e) {
+            logger.error("Error sending CMRequest: " + e.getMessage(), e);
+        }
+    }
+
+    private static void sendRevoke(EdaAdapter adapter, String consentId, String meteringPoint, OffsetDateTime end) {
+        CMRevoke cmRevoke = new CMRevoke();
+        DatatypeFactory datatypeFactory = DatatypeFactory.newDefaultInstance();
+        var senderID = "EP100129";
+        String receiverID = meteringPoint.substring(0, 8);
+        var sender = new RoutingAddress();
+        sender.setAddressType(AddressType.EC_NUMBER);
+        sender.setMessageAddress(senderID);
+        var receiver = new RoutingAddress();
+        receiver.setAddressType(AddressType.EC_NUMBER);
+        receiver.setMessageAddress(receiverID);
+
+        var marketParticipant = new at.ebutilities.schemata.customerconsent.cmrevoke._01p00.MarketParticipantDirectory();
+        var routingHeader = new RoutingHeader();
+        routingHeader.setSender(sender);
+        routingHeader.setReceiver(receiver);
+
+        routingHeader.setDocumentCreationDateTime(datatypeFactory.newXMLGregorianCalendar(GregorianCalendar.from(ZonedDateTime.now(ZoneOffset.UTC))));
+        marketParticipant.setRoutingHeader(routingHeader);
+        marketParticipant.setMessageCode(MessageCodes.Revoke.EligibleParty.REVOKE);
+        marketParticipant.setSector("01");
+        marketParticipant.setDocumentMode(DocumentMode.PROD);
+        marketParticipant.setSchemaVersion(MessageCodes.Revoke.VERSION);
+        cmRevoke.setMarketParticipantDirectory(marketParticipant);
+
+        var pd = new ProcessDirectory();
+        if (end != null) {
+            pd.setConsentEnd(datatypeFactory.newXMLGregorianCalendar(GregorianCalendar.from(end.toZonedDateTime())));
+        }
+        pd.setConsentId(consentId);
+        pd.setMeteringPoint(meteringPoint);
+        var id = senderID + "T" + Instant.now().toEpochMilli();
+        pd.setMessageId(id);
+        pd.setConversationId(id);
+        cmRevoke.setProcessDirectory(pd);
+
+        try {
+            adapter.sendCMRevoke(cmRevoke);
+        } catch (Exception e) {
             logger.error("Error sending CMRequest: " + e.getMessage(), e);
         }
     }
