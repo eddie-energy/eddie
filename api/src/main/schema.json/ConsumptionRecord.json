@@ -22,6 +22,8 @@
     "meteringInterval": {
       "type": "string",
       "enum": [
+        "PT5M",
+        "PT10M",
         "PT15M",
         "PT30M",
         "PT1H",

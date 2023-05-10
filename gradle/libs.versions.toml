@@ -24,6 +24,17 @@ log4j = "2.20.0"
 kafka-clients = "3.4.0"
 reactor-core = "3.5.6"
 
+slf4j-api = "2.0.7"
+
+javax-annotation-api-version = "1.3.2"
+swagger-codegen-version = "3.0.44"
+okhttp-version = "2.7.5"
+logging-interceptor-version = "2.7.5"
+gson-version = "2.10.1"
+gson-fire-version = "1.8.5"
+threetenbp-version = "1.6.8"
+dotenv-version = "5.2.2"
+
 [libraries]
 # Static analysis
 errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorpronecore" }
@@ -77,6 +88,16 @@ slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 # used by example-app
 jte = { module = "gg.jte:jte", version.ref = "jte" }
 javalin-rendering = { module = "io.javalin:javalin-rendering", version.ref = "javalin" }
+# dependencies required by region-connector-fr
+javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref = "javax-annotation-api-version" }
+swagger-codegen = { module = "io.swagger.codegen.v3:swagger-codegen-cli", version.ref = "swagger-codegen-version" }
+okhttp = { module = "com.squareup.okhttp:okhttp", version.ref = "okhttp-version" }
+logging-interceptor = { module = "com.squareup.okhttp:logging-interceptor", version.ref = "logging-interceptor-version" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson-version" }
+gson-fire = { module = "io.gsonfire:gson-fire", version.ref = "gson-fire-version" }
+threetenbp = { module = "org.threeten:threetenbp", version.ref = "threetenbp-version" }
+dotenv = { module = "io.github.cdimascio:java-dotenv", version.ref = "dotenv-version" }
+
 
 [bundles]
 
