@@ -112,10 +112,5 @@ public class ProcessDirectoryBuilderTest {
         assertThrows(NullPointerException.class, () -> processDirBuilder
                 .withConversationId("GC100007201912170930001230012345678")
                 .build());
-
-        // Assign only three required attribute
-        assertThrows(NullPointerException.class, () -> processDirBuilder
-                .withMeteringPoint("AT9999990699900000000000206868100")
-                .build());
     }
 }

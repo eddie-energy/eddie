@@ -15,28 +15,8 @@ jobs:
           java-version: '19'
           distribution: 'temurin'
 
-      - name: Restore Gradle Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches/
-            ~/.gradle/wrapper/
-            **/build
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle
-
       - name: Build with Gradle
         run: ./gradlew build
-
-      - name: Cache Gradle Outputs
-        uses: actions/cache/save@v3
-        with:
-          path: |
-            ~/.gradle/caches/
-            ~/.gradle/wrapper/
-            **/build
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties') }}
 
   test:
     runs-on: ubuntu-latest
@@ -52,17 +32,6 @@ jobs:
           java-version: '19'
           distribution: 'temurin'
 
-      - name: Restore Gradle Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches/
-            ~/.gradle/wrapper/
-            **/build
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
       - name: Test with Gradle
         run: ./gradlew test
 
@@ -73,7 +42,7 @@ jobs:
             ~/.gradle/caches/
             ~/.gradle/wrapper/
             **/build
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties') }}
+          key: ${{ runner.os }}-gradle-${{ github.sha }}
 
   analyze:
     runs-on: ubuntu-latest
@@ -96,9 +65,10 @@ jobs:
             ~/.gradle/caches/
             ~/.gradle/wrapper/
             **/build
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties') }}
+          key: ${{ runner.os }}-gradle-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-gradle-
+            ${{ runner.os }}-gradle-${{ github.sha }}
+            ${{ runner.os }}-gradle
 
       - name: Analyze with SonarCloud
         env:
