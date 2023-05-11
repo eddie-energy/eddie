@@ -45,6 +45,8 @@ dependencies {
     implementation(libs.jackson.databind)
 
     implementation("org.apache.commons:commons-lang3:3.12.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.4.1")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.4")
 
 }
 
