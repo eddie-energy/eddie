@@ -7,6 +7,10 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.AddressType
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMode;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingAddress;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.ponton.xp.adapter.api.ConnectionException;
 import eddie.energy.regionconnector.api.v0.models.ConsumptionRecord;
 import eddie.energy.regionconnector.at.eda.EdaAdapter;
@@ -14,6 +18,8 @@ import eddie.energy.regionconnector.at.models.CCMORequest;
 import eddie.energy.regionconnector.at.models.CMRequestStatus;
 import eddie.energy.regionconnector.at.models.MessageCodes;
 import jakarta.xml.bind.JAXBException;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +29,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.GregorianCalendar;
-import java.util.UUID;
 import java.util.concurrent.Flow;
 
 public class Main {
@@ -47,6 +52,7 @@ public class Main {
                 .build();
         var outputStream = new PrintStream(new FileOutputStream(path + File.separator + "consumptionRecords.txt", true));
         var adapter = new PontonXPAdapter(config);
+        var mapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
         adapter.subscribeToConsumptionRecordPublisher(new Flow.Subscriber<>() {
             private Flow.Subscription subscription;
 
@@ -59,7 +65,11 @@ public class Main {
             @Override
             public void onNext(ConsumptionRecord consumptionRecord) {
                 logger.info("Received consumptionRecord from: " + consumptionRecord.getMeteringPoint() + " for: " + consumptionRecord.getStartDateTime());
-                outputStream.println(consumptionRecord);
+                try {
+                    outputStream.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(consumptionRecord));
+                } catch (JsonProcessingException e) {
+                    logger.error("Error while writing consumption record to file: ", e);
+                }
                 subscription.request(1);
             }
 

@@ -106,8 +106,7 @@ class PontonXPAdapter implements EdaAdapter {
             case MessageCodes.Notification.ANSWER ->
                     handleCMNotificationMessage(inboundMessage, new CMRequestStatus(CMRequestStatus.Status.DELIVERED, "CCMO request has been delivered.", conversationId));
             case MessageCodes.Notification.ACCEPT -> handleCMAcceptNotificationMessage(inboundMessage);
-            case MessageCodes.Notification.REJECT ->
-                    handleCMNotificationMessage(inboundMessage, new CMRequestStatus(CMRequestStatus.Status.REJECTED, "CCMO request has been rejected.", conversationId));
+            case MessageCodes.Notification.REJECT -> handleCMRejectNotificationMessage(inboundMessage);
             case MessageCodes.MASTER_DATA -> handleMasterDataMessage(inboundMessage);
             case MessageCodes.CONSUMPTION_RECORD -> handleConsumptionRecordMessage(inboundMessage);
             case MessageCodes.Revoke.CUSTOMER, MessageCodes.Revoke.IMPLICIT -> handleRevokeMessage(inboundMessage);
@@ -139,7 +138,7 @@ class PontonXPAdapter implements EdaAdapter {
             var status = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, consentId, notification.getProcessDirectory().getConversationId());
 
             cmStatusSink.tryEmitNext(status);
-            logger.info("Received CMNotification update: {} for request {}, consentId: {}", status.status(), status.conversationId(), consentId);
+            logger.info("Received CMNotification: ACCEPTED for request {}, consentId: {}", status.conversationId(), consentId);
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
                     .setStatus(InboundStatusEnum.SUCCESS)
@@ -161,6 +160,51 @@ class PontonXPAdapter implements EdaAdapter {
                     .build();
         }
     }
+
+    private InboundMessageStatusUpdate handleCMRejectNotificationMessage(InboundMessage inboundMessage) {
+        try (InputStream inputStream = inboundMessage.createInputStream()) {
+            var notification = (CMNotification) unmarshaller.unmarshal(inputStream);
+            var responseCode = notification.getProcessDirectory().getResponseData().get(0).getResponseCode().get(0);
+            // maybe turn this into an enum that handles the mapping
+            var reason = switch (responseCode) {
+                case 56 -> "Metering point not found";
+                case 178 -> "Consent already exists";
+                case 174 -> "Requested data not deliverable";
+                case 173 -> "Time-out";
+                case 172 -> "Customer rejected the request";
+                case 82 -> "Invalid dates";
+                case 76 -> "Invalid request data";
+                case 57 -> "Metering point not supplied";
+                case 179 -> "ConsentId already exists";
+                default -> responseCode + " - Unknown response code";
+            };
+
+            var status = new CMRequestStatus(CMRequestStatus.Status.REJECTED, reason, notification.getProcessDirectory().getConversationId());
+
+            cmStatusSink.tryEmitNext(status);
+            logger.info("Received CMNotification REJECTED for request {}, reason {}", status.conversationId(), reason);
+            return InboundMessageStatusUpdate.newBuilder()
+                    .setInboundMessage(inboundMessage)
+                    .setStatus(InboundStatusEnum.SUCCESS)
+                    .setStatusText("CMNotification processed")
+                    .build();
+        } catch (JAXBException e) {
+            logger.error("Error while trying to unmarshal CMNotification of schema-version {}", inboundMessage.getInboundMetaData().getMessageType().getVersion().getValue(), e);
+            return InboundMessageStatusUpdate.newBuilder()
+                    .setInboundMessage(inboundMessage)
+                    .setStatus(InboundStatusEnum.REJECTED)
+                    .setStatusText(e.getMessage())
+                    .build();
+        } catch (IOException e) {
+            logger.error("Error while reading CMNotification message", e);
+            return InboundMessageStatusUpdate.newBuilder()
+                    .setInboundMessage(inboundMessage)
+                    .setStatus(InboundStatusEnum.TEMPORARY_ERROR)
+                    .setStatusText(e.getMessage())
+                    .build();
+        }
+    }
+
 
     private InboundMessageStatusUpdate handleMasterDataMessage(InboundMessage inboundMessage) {
         // send consumption record to OutboundDataStreamConnector
