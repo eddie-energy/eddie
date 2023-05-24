@@ -4,7 +4,7 @@ package at.eda.xml.builders.customerprocesses.common.types._01p20;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.ProcessDirectory;
 import at.eda.xml.builders.helper.DateTimeConverter;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Objects;
 

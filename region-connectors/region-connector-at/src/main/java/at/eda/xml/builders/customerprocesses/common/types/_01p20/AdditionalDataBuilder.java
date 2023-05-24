@@ -2,7 +2,7 @@ package at.eda.xml.builders.customerprocesses.common.types._01p20;
 
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.AdditionalData;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.Objects;
 
 /**

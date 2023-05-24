@@ -4,7 +4,7 @@ package at.eda.xml.builders.customerconsent.cmrequest._01p10;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.MeteringIntervallType;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ParamHistType;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.Objects;
 
 /**
