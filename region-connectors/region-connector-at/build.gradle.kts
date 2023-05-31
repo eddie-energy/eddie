@@ -14,6 +14,7 @@ repositories {
 }
 
 
+
 // JAXB configuration holds classpath for running the JAXB XJC compiler
 val jaxb: Configuration by configurations.creating
 
@@ -22,7 +23,6 @@ dependencies {
 
     // dependency for PontonXP Messenger
     implementation(files("libs/adapterapi2.jar"))
-
     // dependencies needed to generate code
     jaxb(libs.jaxb.xjc)
     jaxb(libs.jaxb.runtime)
@@ -31,6 +31,22 @@ dependencies {
     implementation(libs.jakarta.xml.bind.api)
     implementation(libs.jakarta.annotation.api)
     implementation(libs.commons.codec)
+
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    implementation(libs.slf4j.api)
+
+    // sl4j
+    implementation(libs.log4j.sl4j.impl)
+    implementation(libs.log4j.api)
+    implementation(libs.log4j.core)
+    runtimeOnly(libs.log4j.jul)
+
+
+    implementation(libs.reactor.core)
+
+    implementation(project(mapOf("path" to ":region-connectors:region-connector-api")))
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.datatype.jsr310)
 }
 
 

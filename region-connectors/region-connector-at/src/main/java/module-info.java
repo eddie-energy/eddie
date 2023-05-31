@@ -2,6 +2,9 @@ module energy.eddie.regionconnector.at {
     requires jakarta.annotation;
     requires jakarta.xml.bind;
     requires org.apache.commons.codec;
+    requires de.ponton.xp.adapterapi;
+    requires reactor.core;
+    requires org.slf4j;
 
     exports energy.eddie.regionconnector.at.eda.requests;
     exports energy.eddie.regionconnector.at.eda.requests.restricted.enums;
