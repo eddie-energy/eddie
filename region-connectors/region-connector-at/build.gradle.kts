@@ -20,6 +20,9 @@ val jaxb: Configuration by configurations.creating
 dependencies {
     testImplementation(libs.junit.jupiter)
 
+    // dependency for PontonXP Messenger
+    implementation(files("libs/adapterapi2.jar"))
+
     // dependencies needed to generate code
     jaxb(libs.jaxb.xjc)
     jaxb(libs.jaxb.runtime)
