@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ct="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20" targetNamespace="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20" elementFormDefault="qualified">
+	<xsd:annotation>
+		<xsd:documentation xml:lang="de">
+		Gemeinsame Definitionen für Marktteilnehmer-Daten
+		Änderungen zu 01.20:
+			Aufnahme VerificationDocument
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:complexType name="AdditionalData">
+		<xsd:annotation>
+			<xsd:documentation>Zusätzliche Daten</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="ct:AdditionalDataValue">
+				<xsd:attribute name="Name" type="ct:AdditionalDataName" use="required"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="MarketParticipantDirectory">
+		<xsd:annotation>
+			<xsd:documentation>Marktteilnehmer-Daten</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="RoutingHeader" type="ct:RoutingHeader"/>
+			<xsd:element name="Sector" type="ct:Sector"/>
+		</xsd:sequence>
+		<xsd:attribute name="DocumentMode" type="ct:DocumentMode" use="required"/>
+		<xsd:attribute name="Duplicate" type="xsd:boolean" use="required"/>
+	</xsd:complexType>
+	<xsd:complexType name="ProcessDirectory">
+		<xsd:annotation>
+			<xsd:documentation>Prozessdaten</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="MessageId" type="ct:GroupingId"/>
+			<xsd:element name="ConversationId" type="ct:GroupingId"/>
+			<xsd:element name="ProcessDate" type="xsd:date"/>
+			<xsd:element name="MeteringPoint" type="ct:MeteringPoint"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ProcessDirectoryS">
+		<xsd:annotation>
+			<xsd:documentation>Prozessdaten Kurz</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="MessageId" type="ct:GroupingId"/>
+			<xsd:element name="ConversationId" type="ct:GroupingId"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="RoutingAddress">
+		<xsd:annotation>
+			<xsd:documentation>Routing-Adresse</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="MessageAddress" type="ct:MessageAddress"/>
+		</xsd:sequence>
+		<xsd:attribute name="AddressType" type="ct:AddressType" use="required"/>
+	</xsd:complexType>
+	<xsd:complexType name="RoutingHeader">
+		<xsd:annotation>
+			<xsd:documentation>Routing Header</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Sender" type="ct:RoutingAddress"/>
+			<xsd:element name="Receiver" type="ct:RoutingAddress"/>
+			<xsd:element name="DocumentCreationDateTime" type="xsd:dateTime"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="VerificationDocument">
+		<xsd:annotation>
+			<xsd:documentation>Nachweis-Dokument</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="DOCNumber" type="ct:DOCNumber"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="AdditionalDataName">
+		<xsd:annotation>
+			<xsd:documentation>Zusätzliche Daten - Name</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="40"/>
+			<xsd:minLength value="1"/>
+			<xsd:whiteSpace value="collapse"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="AdditionalDataValue">
+		<xsd:annotation>
+			<xsd:documentation>Zusätzliche Daten - Inhalt</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="120"/>
+			<xsd:minLength value="1"/>
+			<xsd:whiteSpace value="collapse"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="AddressType">
+		<xsd:annotation>
+			<xsd:documentation>Adressierungsart (ECNumber, Other)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="ECNumber"/>
+			<xsd:enumeration value="Other"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="DateTimeS">
+		<xsd:annotation>
+			<xsd:documentation>Datum Uhrzeit Format JJJJ-MM-TT"T"HH:MM:SS</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:dateTime">
+			<xsd:pattern value="[12][0-9]{3}-[01][0-9]-[0-3][0-9]T[012][0-9]:[0-5][0-9]:[0-5][0-9]"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="DateTimeU">
+		<xsd:annotation>
+			<xsd:documentation>Datum Uhrzeit (Sekunden immer 00) mit UNC 2001-12-17T09:30:00+01:00</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:dateTime">
+			<xsd:pattern value="[12][0-9]{3}-[01][0-9]-[0-3][0-9]T[012][0-9]:[0-5][0-9]:00[\+]0[12]:00"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="DOCNumber">
+		<xsd:annotation>
+			<xsd:documentation>Dokumenten-ID</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+			<xsd:minLength value="1"/>
+			<xsd:pattern value="[0-9A-Za-z]*"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="DocumentMode">
+		<xsd:annotation>
+			<xsd:documentation>Produktiv-/Testkennzeichen</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="PROD"/>
+			<xsd:enumeration value="SIMU"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="GroupingId">
+		<xsd:annotation>
+			<xsd:documentation>Nachrichten- bzw. Prozessnummer</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+			<xsd:minLength value="1"/>
+			<xsd:pattern value="[0-9A-Za-z]*"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="MessageAddress">
+		<xsd:annotation>
+			<xsd:documentation>Adresse des Teilnehmers (Sender / Empfänger)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+			<xsd:minLength value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="MessageCode">
+		<xsd:annotation>
+			<xsd:documentation>Nachrichten-Code</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+			<xsd:minLength value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="MeteringPoint">
+		<xsd:annotation>
+			<xsd:documentation>Zählpunkt</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="33"/>
+			<xsd:minLength value="1"/>
+			<xsd:pattern value="[0-9A-Za-z]*"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Sector">
+		<xsd:annotation>
+			<xsd:documentation>Sparte</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="01"/>
+			<xsd:enumeration value="02"/>
+			<xsd:enumeration value="03"/>
+			<xsd:enumeration value="04"/>
+			<xsd:enumeration value="05"/>
+			<xsd:enumeration value="06"/>
+			<xsd:enumeration value="07"/>
+			<xsd:enumeration value="08"/>
+			<xsd:enumeration value="09"/>
+			<xsd:enumeration value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

@@ -61,9 +61,13 @@ val generateEDASchemaClasses = tasks.create<JavaExec>("generateEDASchemaClasses"
     file(generatedXJCJavaDir).mkdirs()
 
     // Path to XSD files
-    val edaSchemaFiles = "src/main/schemes/eda/xsd/"
+    val edaSchemaFiles = "src/main/schemas/eda/xsd/"
 
     args("-d", generatedXJCJavaDir, edaSchemaFiles, "-mark-generated", "-npa")
+
+    // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed
+    inputs.files(fileTree(edaSchemaFiles).include("**/*.xsd"))
+    outputs.dir(generatedXJCJavaDir)
 }
 
 
