@@ -15,7 +15,6 @@ repositories {
 }
 
 
-
 // JAXB configuration holds classpath for running the JAXB XJC compiler
 val jaxb: Configuration by configurations.creating
 
@@ -33,6 +32,8 @@ dependencies {
     implementation(libs.jakarta.xml.bind.api)
     implementation(libs.jakarta.annotation.api)
     implementation(libs.commons.codec)
+
+    implementation(libs.jackson.databind) // needed to suppress a compilation warning
 
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation(libs.slf4j.api)
