@@ -1,6 +1,9 @@
 rootProject.name = "eddie"
 include("region-connectors")
 
+include("api")
+findProject("api")?.name = "region-connector-api"
+
 include("region-connectors:region-connector-api")
 findProject(":region-connectors:region-connector-api")?.name = "region-connector-api"
 
