@@ -4,6 +4,7 @@ import java.util.*
 
 plugins {
     id("energy.eddie.java-conventions")
+    application
 }
 
 group = "energy.eddie"
@@ -102,4 +103,13 @@ tasks.withType<JavaCompile>().configureEach {
             option("NullAway:AnnotatedPackages", "energy.eddie")
         }
     }
+}
+
+application {
+    mainClass.set("energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterCliClient")
+    applicationDefaultJvmArgs = listOf("-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager")
+}
+
+tasks.named<JavaExec>("run") {
+    standardInput = System.`in`
 }
