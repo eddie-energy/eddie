@@ -22,7 +22,7 @@ public class ConsumptionRecordMapper {
             ConsumptionRecord clcRecord = new ConsumptionRecord();
 
             clcRecord.setMeteringPoint(clcMeterReading.getUsagePointId());
-            clcRecord.setStartDateTime(DateTimeConverter.ISODateToZonedDateTime(clcMeterReading.getStart()));
+            clcRecord.setStartDateTime(DateTimeConverter.isoDateToZonedDateTime(clcMeterReading.getStart()));
 
             ConsumptionLoadCurveIntervalReading intervalReading = clcMeterReading.getIntervalReading().get(0);
             clcRecord.setMeteringInterval(switch (intervalReading.getIntervalLength()) {
@@ -58,7 +58,7 @@ public class ConsumptionRecordMapper {
             ConsumptionRecord dcRecord = new ConsumptionRecord();
 
             dcRecord.setMeteringPoint(dcMeterReading.getUsagePointId());
-            dcRecord.setStartDateTime(DateTimeConverter.ISODateToZonedDateTime(dcMeterReading.getStart()));
+            dcRecord.setStartDateTime(DateTimeConverter.isoDateToZonedDateTime(dcMeterReading.getStart()));
             dcRecord.setMeteringInterval(switch (dcMeterReading.getReadingType().getMeasuringPeriod()) {
                 case P1D -> ConsumptionRecord.MeteringInterval.P_1_D;
                 default ->

@@ -34,8 +34,8 @@ public class EnedisApiClientConfiguration {
 
     public static EnedisApiClientConfiguration fromProperties(Properties properties) {
         return new Builder()
-                .withAdapterId(properties.getProperty(CLIENT_ID_KEY_PROP))
-                .withAdapterVersion(properties.getProperty(CLIENT_SECRET_KEY_PROP))
+                .withClientId(properties.getProperty(CLIENT_ID_KEY_PROP))
+                .withClientSecret(properties.getProperty(CLIENT_SECRET_KEY_PROP))
                 .withHostname(properties.getProperty(HOSTNAME_KEY_PROP))
                 .withBasePath(properties.getProperty(BASE_PATH_KEY_PROP))
                 .build();
@@ -49,8 +49,8 @@ public class EnedisApiClientConfiguration {
                 .load();
 
         return new Builder()
-                .withAdapterId(dotenv.get(CLIENT_ID_KEY_ENV))
-                .withAdapterVersion(dotenv.get(CLIENT_SECRET_KEY_ENV))
+                .withClientId(dotenv.get(CLIENT_ID_KEY_ENV))
+                .withClientSecret(dotenv.get(CLIENT_SECRET_KEY_ENV))
                 .withHostname(dotenv.get(HOSTNAME_KEY_ENV))
                 .withBasePath(dotenv.get(BASE_PATH_KEY_ENV))
                 .build();
@@ -88,13 +88,13 @@ public class EnedisApiClientConfiguration {
         public Builder() {
         }
 
-        public Builder withAdapterId(String adapterId) {
-            this.clientId = adapterId;
+        public Builder withClientId(String clientId) {
+            this.clientId = clientId;
             return this;
         }
 
-        public Builder withAdapterVersion(String adapterVersion) {
-            this.clientSecret = adapterVersion;
+        public Builder withClientSecret(String clientSecret) {
+            this.clientSecret = clientSecret;
             return this;
         }
 
@@ -110,16 +110,19 @@ public class EnedisApiClientConfiguration {
 
         public EnedisApiClientConfiguration build() {
             if (clientId == null) {
-                errorMessages.add("Missing property: messenger.adapterId");
+                errorMessages.add("Missing property: clientId");
             }
             if (clientSecret == null) {
-                errorMessages.add("Missing property: messenger.adapterVersion");
+                errorMessages.add("Missing property: clientSecret");
             }
             if (hostname == null) {
-                errorMessages.add("Missing property: messenger.hostname");
+                errorMessages.add("Missing property: hostname");
+            }
+            if (basePath == null) {
+                errorMessages.add("Missing property: basePath");
             }
             if (!errorMessages.isEmpty()) {
-                throw new IllegalArgumentException(String.join("; ", errorMessages));
+                throw new IllegalStateException(String.join("; ", errorMessages));
             }
             return new EnedisApiClientConfiguration(this);
         }
