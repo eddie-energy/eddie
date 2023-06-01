@@ -7,6 +7,7 @@ plugins {
     id("energy.eddie.java-conventions")
     id("java")
     id("idea")
+    application
     id("org.hidetake.swagger.generator") version "2.19.2"
 }
 
@@ -18,8 +19,10 @@ repositories {
 }
 
 dependencies {
-    swaggerCodegen(libs.swagger.codegen)
+    testImplementation(libs.junit.jupiter)
 
+    // swagger codegen dependencies
+    swaggerCodegen(libs.swagger.codegen)
     implementation(libs.swagger.codegen)
     implementation(libs.javax.annotation.api)
     implementation(libs.okhttp)
@@ -29,7 +32,18 @@ dependencies {
     implementation(libs.gson.fire)
     implementation(libs.dotenv)
 
+    // sl4j
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.20.0")
+    implementation("org.apache.logging.log4j:log4j-api:2.20.0")
+    implementation("org.apache.logging.log4j:log4j-core:2.20.0")
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-jul
+    runtimeOnly("org.apache.logging.log4j:log4j-jul:2.20.0")
+
     implementation(project(mapOf("path" to ":region-connectors:region-connector-api")))
+}
+
+tasks.getByName<Test>("test") {
+    useJUnitPlatform()
 }
 
 // Directory for generated java files
@@ -87,7 +101,6 @@ tasks.named("compileJava").configure {
     dependsOn(tasks.named("enedisApiClient"))
 }
 
-
 tasks.withType<JavaCompile>().configureEach {
     if (!name.lowercase(Locale.getDefault()).contains("test") && !name.lowercase(Locale.getDefault()).contains("generated")) {
         options.errorprone {
@@ -95,4 +108,9 @@ tasks.withType<JavaCompile>().configureEach {
             option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.fr.enedis.client")
         }
     }
+}
+
+application {
+    mainClass.set("eddie.energy.regionconnector.fr.enedis.Main")
+    applicationDefaultJvmArgs = listOf("-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager")
 }
