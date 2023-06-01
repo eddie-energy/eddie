@@ -3,7 +3,7 @@ package at.eda.xml.builders.customerprocesses.common.types._01p20;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.AddressType;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingAddress;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

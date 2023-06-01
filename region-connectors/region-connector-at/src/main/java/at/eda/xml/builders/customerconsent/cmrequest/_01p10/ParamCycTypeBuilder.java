@@ -4,7 +4,7 @@ import at.ebutilities.schemata.customerconsent.cmrequest._01p10.MeteringInterval
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ParamCycType;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.TransmissionCycle;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.Objects;
 
 /**

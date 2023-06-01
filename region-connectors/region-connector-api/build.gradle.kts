@@ -17,6 +17,8 @@ dependencies {
     testImplementation(libs.junit.jupiter)
 
     implementation(libs.jackson.databind)
+    implementation("jakarta.validation:jakarta.validation-api:3.0.0")
+    implementation("javax.annotation:javax.annotation-api:1.3.2")
 }
 
 tasks.getByName<Test>("test") {
@@ -35,7 +37,7 @@ jsonSchema2Pojo {
     isFormatDateTimes = true    // serialize ZonedDateTime to ISO 8601 string
     generateBuilders = true
     includeGetters = true
-    includeJsr305Annotations = true
+    includeJsr305Annotations = false
     includeHashcodeAndEquals = false
 }
 

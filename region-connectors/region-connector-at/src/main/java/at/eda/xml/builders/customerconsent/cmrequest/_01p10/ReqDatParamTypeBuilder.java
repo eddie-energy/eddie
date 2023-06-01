@@ -4,7 +4,7 @@ import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ParamCycType;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ParamHistType;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ReqDatParamType;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.Objects;
 
 

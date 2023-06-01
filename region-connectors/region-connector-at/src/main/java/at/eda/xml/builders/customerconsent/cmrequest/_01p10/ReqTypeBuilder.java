@@ -6,7 +6,7 @@ import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ReqType;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.TransmissionCycle;
 import at.eda.xml.builders.helper.DateTimeConverter;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.DateTimeException;

@@ -6,7 +6,7 @@ import at.eda.utils.CMRequestId;
 import at.eda.xml.builders.customerprocesses.common.types._01p20.ProcessDirectorySBuilder;
 import at.eda.xml.builders.helper.DateTimeConverter;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Objects;
 

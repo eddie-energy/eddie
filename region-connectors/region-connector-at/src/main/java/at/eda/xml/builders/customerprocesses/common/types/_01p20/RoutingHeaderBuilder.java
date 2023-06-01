@@ -4,7 +4,7 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingAddr
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
 import at.eda.xml.builders.helper.DateTimeConverter;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
