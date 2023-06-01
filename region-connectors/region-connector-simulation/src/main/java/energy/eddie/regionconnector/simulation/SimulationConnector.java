@@ -1,0 +1,73 @@
+package energy.eddie.regionconnector.simulation;
+
+import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.RegionConnector;
+import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.api.v0.ConsumptionRecord;
+import io.javalin.Javalin;
+import io.javalin.http.staticfiles.Location;
+import org.eclipse.jetty.server.Server;
+import reactor.adapter.JdkFlowAdapter;
+
+import java.net.InetSocketAddress;
+import java.util.concurrent.Flow;
+
+public class SimulationConnector implements RegionConnector {
+    public static final String MDA_CODE = "sim";
+    private static final String SRC_MAIN_PREFIX = "./region-connectors/region-connector-simulation/src/main/";
+
+    private Javalin javalin;
+
+    @Override
+    public RegionConnectorMetadata getMetadata() {
+        return new RegionConnectorMetadata(MDA_CODE, "Simulation", "de", basePath() + "/", 1);
+    }
+
+    @Override
+    public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+        return JdkFlowAdapter.publisherToFlowPublisher(ConnectionStatusHandler.INSTANCE.getConnectionStatusMessageStream());
+    }
+
+    @Override
+    public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
+        return JdkFlowAdapter.publisherToFlowPublisher(ConsumptionRecordHandler.INSTANCE.getConsumptionRecordStream());
+    }
+
+    @Override
+    public void revokePermission(String permissionId) {
+        throw new RuntimeException("not implemented yet");
+    }
+
+    public static String basePath() {
+        return "/region-connectors/" + MDA_CODE;
+    }
+
+    @Override
+    public int startWebapp(InetSocketAddress address, boolean devMode) {
+        javalin = Javalin.create(config -> config.staticFiles.add(staticFileConfig -> {
+            staticFileConfig.hostedPath = basePath();
+            if (devMode) {
+                staticFileConfig.directory = SRC_MAIN_PREFIX + "resources/public" + staticFileConfig.hostedPath;
+                staticFileConfig.location = Location.EXTERNAL;
+            } else {
+                staticFileConfig.directory = "public" + staticFileConfig.hostedPath;
+                staticFileConfig.location = Location.CLASSPATH;
+            }
+            staticFileConfig.mimeTypes.add("text/javascript", ".js");
+            config.jetty.server(() -> new Server(address));
+        }));
+        ConnectionStatusHandler.INSTANCE.initWebapp(javalin);
+        ConsumptionRecordHandler.INSTANCE.initWebapp(javalin);
+        javalin.start();
+        final var jetty = javalin.jettyServer();
+        if (null == jetty) {
+            throw new RuntimeException("cannot start jetty server");
+        }
+        return jetty.getServerPort();
+    }
+
+    @Override
+    public void close() {
+        javalin.close();
+    }
+}

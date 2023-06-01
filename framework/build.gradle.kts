@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "energy.eddie"
-version = "1.0-SNAPSHOT"
+version = "0.0.0"
 
 repositories {
     mavenCentral()
@@ -18,7 +18,7 @@ repositories {
 dependencies {
     implementation(project(":api"))
     runtimeOnly(project(":region-connectors:region-connector-at"))
-//    runtimeOnly(project(":region-connectors:region-connector-simulation"))
+    runtimeOnly(project(":region-connectors:region-connector-simulation"))
 
     implementation(libs.guice)
     implementation(libs.javalin)
