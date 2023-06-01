@@ -1,0 +1,89 @@
+package energy.eddie.framework.web;
+
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.inject.Inject;
+import energy.eddie.api.v0.RegionConnector;
+import energy.eddie.framework.Env;
+import io.javalin.Javalin;
+import io.javalin.http.staticfiles.Location;
+import io.javalin.json.JavalinJackson;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.eclipse.jetty.client.api.Response;
+import org.eclipse.jetty.proxy.AsyncProxyServlet;
+import org.eclipse.jetty.server.CustomRequestLog;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.Slf4jRequestLogWriter;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.net.InetSocketAddress;
+import java.util.Set;
+
+public class JavalinApp {
+
+    private static final Logger logger = LoggerFactory.getLogger(JavalinApp.class);
+
+    private static final String SRC_MAIN_PREFIX = "./framework/src/main/";
+
+    @Inject
+    private Set<JavalinPathHandler> javalinPathHandlers;
+
+    @Inject
+    private Set<RegionConnector> regionConnectors;
+
+    private static boolean inDevelopmentMode() {
+        return "true".equals(System.getProperty("developmentMode"));
+    }
+
+    public static final class HeaderAddingAsyncProxyServlet extends AsyncProxyServlet.Transparent {
+        @Override
+        protected void onServerResponseHeaders(HttpServletRequest clientRequest, HttpServletResponse proxyResponse, Response serverResponse) {
+            super.onServerResponseHeaders(clientRequest, proxyResponse, serverResponse);
+            proxyResponse.addHeader("Access-Control-Allow-Origin", "*");
+        }
+    }
+
+    public void init() {
+        var app = Javalin.create(config -> {
+            config.staticFiles.add(staticFileConfig -> {
+                staticFileConfig.hostedPath = "/lib";
+                staticFileConfig.mimeTypes.add("text/javascript", ".js");
+                if (inDevelopmentMode()) {
+                    staticFileConfig.directory = SRC_MAIN_PREFIX + "resources/public" + staticFileConfig.hostedPath;
+                    staticFileConfig.location = Location.EXTERNAL;
+                } else {
+                    staticFileConfig.directory = "public/lib";
+                    staticFileConfig.location = Location.CLASSPATH;
+                }
+            });
+            var mapper = JsonMapper.builder()
+                    .addModule(new JavaTimeModule())
+                    .build();
+            config.jsonMapper(new JavalinJackson(mapper));
+            var baseUrl = Env.PUBLIC_CONTEXT_PATH.get();
+            if (null != baseUrl && !baseUrl.isEmpty()) {
+                config.routing.contextPath = "/" + Env.PUBLIC_CONTEXT_PATH.get();
+            }
+            config.jetty.contextHandlerConfig(sch -> regionConnectors.forEach(rc -> {
+                var rcAddr = rc.startWebapp(new InetSocketAddress("localhost", 0), inDevelopmentMode());
+                var proxySource = rc.getMetadata().urlPath() + "*";
+                var proxyTarget = "http://localhost:" + rcAddr + "/";
+                var proxy = new ServletHolder(HeaderAddingAsyncProxyServlet.class);
+                proxy.setInitParameter("proxyTo", proxyTarget);
+                logger.info("proxying requests for {} to {}", proxySource, proxyTarget);
+                sch.addServlet(proxy, proxySource);
+            }));
+            config.jetty.server( () -> {
+                var server = new Server();
+                server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.NCSA_FORMAT));
+                return server;
+            });
+        });
+        app.after(ctx -> ctx.header("Access-Control-Allow-Origin", "*"));
+        javalinPathHandlers.forEach(ph -> ph.registerPathHandlers(app));
+        app.start(8080);
+    }
+}
