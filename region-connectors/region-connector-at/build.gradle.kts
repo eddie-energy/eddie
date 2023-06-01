@@ -20,6 +20,7 @@ repositories {
 val jaxb: Configuration by configurations.creating
 
 dependencies {
+    implementation(project(mapOf("path" to ":region-connectors:region-connector-api")))
     testImplementation(libs.junit.jupiter)
 
     // dependency for PontonXP Messenger
@@ -100,7 +101,7 @@ tasks.withType<JavaCompile>().configureEach {
     if (!name.lowercase(Locale.getDefault()).contains("test")) {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
-            option("NullAway:AnnotatedPackages", "energy.eddie")
+            option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.at")
         }
     }
 }
