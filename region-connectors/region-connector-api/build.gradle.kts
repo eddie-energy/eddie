@@ -31,7 +31,7 @@ jsonSchema2Pojo {
 
     sourceFiles = listOf(projectDir.resolve("src/main/resources/schemas/"))
     targetDirectory = buildDir.resolve("generated-sources")
-    targetPackage = "eddie.energy.regionconnector.api.v0.models"
+    targetPackage = "energy.eddie.regionconnector.api.v0.models"
     setAnnotationStyle("jackson2")
     dateTimeType = "java.time.ZonedDateTime"
     isFormatDateTimes = true    // serialize ZonedDateTime to ISO 8601 string
@@ -44,7 +44,7 @@ jsonSchema2Pojo {
 tasks.withType<JavaCompile>().configureEach {
     options.errorprone {
         check("NullAway", CheckSeverity.ERROR)
-        option("NullAway:AnnotatedPackages", "eddie.energy.regionconnector.api")
+        option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.api")
 
         // disable warnings for generated classes
         option("NullAway:TreatGeneratedAsUnannotated", true)

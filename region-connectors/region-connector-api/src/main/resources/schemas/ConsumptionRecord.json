@@ -29,7 +29,7 @@
       ],
       "description": "Interval of the readings. Use ISO-8601 duration notation."
     },
-    "consumptionPoint": {
+    "consumptionPoints": {
       "type": "array",
       "items": {
         "type": "object",
@@ -60,6 +60,6 @@
     "meteringPoint",
     "startDateTime",
     "meteringInterval",
-    "dataPoints"
+    "consumptionPoints"
   ]
 }
