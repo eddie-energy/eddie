@@ -13,14 +13,12 @@ public interface RegionConnector {
 
     /**
      * Subscribe to the connection status message publisher to receive updates on the status of permissions
-     * @param subscriber the subscriber to subscribe to the connection status message publisher
      */
-    void subscribeToConnectionStatusMessagePublisher(Flow.Subscriber<ConnectionStatusMessage> subscriber);
+    Flow.Publisher<ConnectionStatusMessage> connnectionStatusMessageStream();
 
     /**
      * Subscribe to the consumption record publisher to receive consumption records
-     * @param subscriber the subscriber to subscribe to the consumption record publisher
      */
-    void subscribeToConsumptionRecordPublisher(Flow.Subscriber<ConsumptionRecord> subscriber);
+    Flow.Publisher<ConsumptionRecord> consumptionRecordStream();
 
 }
