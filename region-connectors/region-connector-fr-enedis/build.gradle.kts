@@ -5,8 +5,6 @@ import java.util.*
 
 plugins {
     id("energy.eddie.java-conventions")
-    id("java")
-    id("idea")
     application
     id("org.hidetake.swagger.generator") version "2.19.2"
 }
@@ -24,7 +22,7 @@ dependencies {
     // swagger codegen dependencies
     swaggerCodegen(libs.swagger.codegen)
     implementation(libs.swagger.codegen)
-    implementation(libs.javax.annotation.api)
+    implementation(libs.jakarta.annotation.api)
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
     implementation(libs.threetenbp)
@@ -92,7 +90,8 @@ tasks.register<GenerateSwaggerCode>("enedisApiClient") {
             "modelPackage" to "energy.eddie.regionconnector.fr.enedis.model",
             "authPackage" to "energy.eddie.regionconnector.fr.enedis.auth",
             "sourceFolder" to "/",
-            "dateLibrary" to "java8"
+            "dateLibrary" to "java8",
+            "hideGenerationTimestamp" to "true"
     )
     components = listOf("models", "apis", "auths", "apiTests=false", supportingFiles)
 }

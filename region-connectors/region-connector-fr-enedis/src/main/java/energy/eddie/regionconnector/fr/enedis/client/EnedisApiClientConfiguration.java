@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.fr.enedis.client;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
