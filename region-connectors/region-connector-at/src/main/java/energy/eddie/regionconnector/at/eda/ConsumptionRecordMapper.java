@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.at.eda;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.ConsumptionRecord;
 import energy.eddie.regionconnector.api.v0.models.ConsumptionPoint;
+import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
 import jakarta.annotation.Nullable;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -62,9 +63,9 @@ public class ConsumptionRecordMapper {
 
         var energyData = crEnergy.getEnergyData().stream().findFirst().orElseThrow(() -> new InvalidMappingException("No EnergyData found in Energy of ConsumptionRecord"));
         var conversionFactor = switch (energyData.getUOM()) {
-            case KWH -> 1000;
-            case MWH -> 1000000;
-            case GWH -> 1000000000;
+            case KWH -> ConversionFactor.KWH_TO_WH;
+            case MWH -> ConversionFactor.MWH_TO_WH;
+            case GWH -> ConversionFactor.GWH_TO_WH;
             default -> throw new IllegalStateException("Unexpected value: " + energyData.getUOM());
         };
 
@@ -78,7 +79,7 @@ public class ConsumptionRecordMapper {
                 dataPoint.setMeteringType(ConsumptionPoint.MeteringType.EXTRAPOLATED_VALUE);
             }
 
-            dataPoint.setConsumption(energyPosition.getBQ().doubleValue() * conversionFactor);
+            dataPoint.setConsumption(energyPosition.getBQ().doubleValue() * conversionFactor.getFactor());
             consumptionPoints.add(dataPoint);
         });
         consumptionRecord.withConsumptionPoints(consumptionPoints);

@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.at.eda;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.*;
 import energy.eddie.regionconnector.api.v0.models.ConsumptionPoint;
+import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
 import energy.eddie.regionconnector.at.eda.xml.builders.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,10 +38,10 @@ class ConsumptionRecordMapperTest {
         var permissionId = "permissionId";
         var connectionId = "connectionId";
         var expectedMeteringType = meteringType.equals("L1") ? ConsumptionPoint.MeteringType.MEASURED_VALUE : ConsumptionPoint.MeteringType.EXTRAPOLATED_VALUE;
-        var factor = switch (unit) {
-            case KWH -> 1000;
-            case MWH -> 1000000;
-            case GWH -> 1000000000;
+        var conversionFactor = switch (unit) {
+                case KWH -> ConversionFactor.KWH_TO_WH;
+                case MWH -> ConversionFactor.MWH_TO_WH;
+                case GWH -> ConversionFactor.GWH_TO_WH;
             default -> throw new IllegalArgumentException("Unexpected value: " + unit);
         };
         var expectedMeteringInterval = switch (meteringInterval) {
@@ -48,7 +49,7 @@ class ConsumptionRecordMapperTest {
             case D -> energy.eddie.regionconnector.api.v0.models.ConsumptionRecord.MeteringInterval.P_1_D;
             default -> throw new IllegalArgumentException("Unexpected value: " + meteringInterval);
         };
-        var expectedWh = consumptionValue * factor;
+        var expectedWh = consumptionValue * conversionFactor.getFactor();
 
         var edaCR = createConsumptionRecord(meteringPoint, meteringType, ZonedDateTime.now(ZoneOffset.UTC), meteringInterval, consumptionValue, unit);
 
