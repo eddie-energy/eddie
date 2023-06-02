@@ -15,11 +15,11 @@ repositories {
 }
 
 
-
 // JAXB configuration holds classpath for running the JAXB XJC compiler
 val jaxb: Configuration by configurations.creating
 
 dependencies {
+    implementation(project(mapOf("path" to ":region-connectors:region-connector-api")))
     testImplementation(libs.junit.jupiter)
 
     // dependency for PontonXP Messenger
@@ -33,11 +33,13 @@ dependencies {
     implementation(libs.jakarta.annotation.api)
     implementation(libs.commons.codec)
 
+    implementation(libs.jackson.databind) // needed to suppress a compilation warning
+
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation(libs.slf4j.api)
 
     // sl4j
-    implementation(libs.log4j.sl4j.impl)
+    implementation(libs.log4j.sl4j2.impl)
     implementation(libs.log4j.api)
     implementation(libs.log4j.core)
     runtimeOnly(libs.log4j.jul)
@@ -100,7 +102,7 @@ tasks.withType<JavaCompile>().configureEach {
     if (!name.lowercase(Locale.getDefault()).contains("test")) {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
-            option("NullAway:AnnotatedPackages", "energy.eddie")
+            option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.at")
         }
     }
 }

@@ -11,13 +11,10 @@ jakarta-annotation = "2.1.0"
 sonar = "4.0.0.2929"
 commons-codec = "1.15"
 jsonschema2pojo = "1.2.1"
-jackson-databind = "2.14.2"
-jackson-datatype-jsr310 = "2.14.2"
+jackson = "2.15.2"
 reactor-core = "3.5.5"
-log4j-slf4j-impl = "2.20.0"
-log4j-api = "2.20.0"
-log4j-core = "2.20.0"
-log4j-jul = "2.20.0"
+log4j = "2.20.0"
+
 slf4j-api = "2.0.7"
 
 [libraries]
@@ -34,23 +31,25 @@ junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "jun
 
 
 # dependencies required by region-connector-api
-jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson-databind" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 
 # dependencies required by region-connector-at
 jaxb-xjc = { module = "org.glassfish.jaxb:jaxb-xjc", version.ref = "jaxb"}
 jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "jaxb"}
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
+
 
 jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakarta-xml-bind"}
 jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakarta-annotation"}
 
-jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson-datatype-jsr310" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 
 reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor-core" }
 
-log4j-sl4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j-slf4j-impl" }
-log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j-api" }
-log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j-core" }
-log4j-jul = { module = "org.apache.logging.log4j:log4j-jul", version.ref = "log4j-jul" }
+log4j-sl4j2-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
+log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
+log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
+log4j-jul = { module = "org.apache.logging.log4j:log4j-jul", version.ref = "log4j" }
 
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j-api" }
 
