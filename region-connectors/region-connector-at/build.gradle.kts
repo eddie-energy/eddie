@@ -4,6 +4,7 @@ import java.util.*
 
 plugins {
     id("energy.eddie.java-conventions")
+    application
 }
 
 group = "energy.eddie"
@@ -14,12 +15,15 @@ repositories {
 }
 
 
+
 // JAXB configuration holds classpath for running the JAXB XJC compiler
 val jaxb: Configuration by configurations.creating
 
 dependencies {
     testImplementation(libs.junit.jupiter)
 
+    // dependency for PontonXP Messenger
+    implementation(files("libs/adapterapi2.jar"))
     // dependencies needed to generate code
     jaxb(libs.jaxb.xjc)
     jaxb(libs.jaxb.runtime)
@@ -28,6 +32,22 @@ dependencies {
     implementation(libs.jakarta.xml.bind.api)
     implementation(libs.jakarta.annotation.api)
     implementation(libs.commons.codec)
+
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    implementation(libs.slf4j.api)
+
+    // sl4j
+    implementation(libs.log4j.sl4j.impl)
+    implementation(libs.log4j.api)
+    implementation(libs.log4j.core)
+    runtimeOnly(libs.log4j.jul)
+
+
+    implementation(libs.reactor.core)
+
+    implementation(project(mapOf("path" to ":region-connectors:region-connector-api")))
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.datatype.jsr310)
 }
 
 
@@ -83,4 +103,13 @@ tasks.withType<JavaCompile>().configureEach {
             option("NullAway:AnnotatedPackages", "energy.eddie")
         }
     }
+}
+
+application {
+    mainClass.set("energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterCliClient")
+    applicationDefaultJvmArgs = listOf("-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager")
+}
+
+tasks.named<JavaExec>("run") {
+    standardInput = System.`in`
 }
