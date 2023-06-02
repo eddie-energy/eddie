@@ -25,12 +25,12 @@ public class SimulationConnector implements RegionConnector {
 
     @Override
     public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(ConnectionStatusHandler.INSTANCE.getConnectionStatusMessageStream());
+        return JdkFlowAdapter.publisherToFlowPublisher(ConnectionStatusHandler.instance().getConnectionStatusMessageStream());
     }
 
     @Override
     public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(ConsumptionRecordHandler.INSTANCE.getConsumptionRecordStream());
+        return JdkFlowAdapter.publisherToFlowPublisher(ConsumptionRecordHandler.instance().getConsumptionRecordStream());
     }
 
     @Override
@@ -56,8 +56,8 @@ public class SimulationConnector implements RegionConnector {
             staticFileConfig.mimeTypes.add("text/javascript", ".js");
             config.jetty.server(() -> new Server(address));
         }));
-        ConnectionStatusHandler.INSTANCE.initWebapp(javalin);
-        ConsumptionRecordHandler.INSTANCE.initWebapp(javalin);
+        ConnectionStatusHandler.instance().initWebapp(javalin);
+        ConsumptionRecordHandler.instance().initWebapp(javalin);
         javalin.start();
         final var jetty = javalin.jettyServer();
         if (null == jetty) {

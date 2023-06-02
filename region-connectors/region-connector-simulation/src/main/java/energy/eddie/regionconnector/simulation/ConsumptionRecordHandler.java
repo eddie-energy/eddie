@@ -7,8 +7,9 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 
-public enum ConsumptionRecordHandler {
-    INSTANCE;
+public class ConsumptionRecordHandler {
+
+    private static ConsumptionRecordHandler singleton;
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumptionRecordHandler.class);
 
     ConsumptionRecordHandler() {
@@ -28,5 +29,12 @@ public enum ConsumptionRecordHandler {
             var consumptionRecord = ctx.bodyAsClass(ConsumptionRecord.class);
             consumptionRecordStreamSink.next(consumptionRecord);
         });
+    }
+
+    synchronized static public ConsumptionRecordHandler instance() {
+        if (null== singleton) {
+            ConsumptionRecordHandler.singleton = new ConsumptionRecordHandler();
+        }
+        return ConsumptionRecordHandler.singleton;
     }
 }

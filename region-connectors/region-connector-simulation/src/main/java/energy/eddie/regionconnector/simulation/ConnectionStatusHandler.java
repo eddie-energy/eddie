@@ -8,13 +8,16 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-public enum ConnectionStatusHandler {
-    INSTANCE;
+public class ConnectionStatusHandler {
+
+    private static ConnectionStatusHandler singleton;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusHandler.class);
 
-    ConnectionStatusHandler() {
+    private ConnectionStatusHandler() {
         connectionStatusStream = Flux.create(connectionStatusStreamSink -> this.connectionStatusStreamSink = connectionStatusStreamSink);
     }
 
@@ -36,7 +39,15 @@ public enum ConnectionStatusHandler {
         app.post(SimulationConnector.basePath() + "/api/consent-status", ctx -> {
             var req = ctx.bodyAsClass(SetConnectionStatusRequest.class);
             LOGGER.info("changing connection status of {} to {}", req.connectionId, req.consentStatus);
-            connectionStatusStreamSink.next(new ConnectionStatusMessage(req.connectionId, req.connectionId, ZonedDateTime.now(), req.consentStatus));
+            var now = ZonedDateTime.now(ZoneId.systemDefault());
+            connectionStatusStreamSink.next(new ConnectionStatusMessage(req.connectionId, req.connectionId, now, req.consentStatus));
         });
+    }
+
+    synchronized static public ConnectionStatusHandler instance() {
+        if (null== singleton) {
+            ConnectionStatusHandler.singleton = new ConnectionStatusHandler();
+        }
+        return ConnectionStatusHandler.singleton;
     }
 }
