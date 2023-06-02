@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.fr.enedis;
+package energy.eddie.regionconnector.fr.enedis.utils;
 
 import eddie.energy.regionconnector.api.v0.models.ConsumptionPoint;
 import eddie.energy.regionconnector.api.v0.models.ConsumptionRecord;
@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveInterval
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
 import energy.eddie.regionconnector.fr.enedis.model.DailyConsumptionIntervalReading;
 import energy.eddie.regionconnector.fr.enedis.model.DailyConsumptionMeterReading;
+import energy.eddie.regionconnector.fr.enedis.utils.DateTimeConverter;
 
 import java.util.ArrayList;
 import java.util.List;

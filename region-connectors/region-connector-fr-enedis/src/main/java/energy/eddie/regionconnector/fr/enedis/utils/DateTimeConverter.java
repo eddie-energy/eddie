@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.fr.enedis;
+package energy.eddie.regionconnector.fr.enedis.utils;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
