@@ -1,8 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis;
 
 import eddie.energy.regionconnector.api.v0.models.ConsumptionRecord;
-import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
-import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClientConfiguration;
+import energy.eddie.regionconnector.fr.enedis.utils.DateTimeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +18,7 @@ public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
-        final EnedisApiClient enedisApiClient = new EnedisApiClient(EnedisApiClientConfiguration.fromEnvironment());
+        final EnedisApiClientFacade enedisApiClient = new EnedisApiClientFacade();
         final Scanner scanner = new Scanner(System.in, Charset.defaultCharset());
         final File file = new File("region-connectors/region-connector-fr-enedis/bearer.txt");
 
@@ -76,7 +75,7 @@ public class Main {
         }
     }
 
-    private static void getConsumptionRecords(EnedisApiClient enedisApiClient, String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException, IOException {
+    private static void getConsumptionRecords(EnedisApiClientFacade enedisApiClient, String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException, IOException {
         ConsumptionRecord dcRecord = enedisApiClient.getDailyConsumption(usagePointId, start, end);
         logger.info("Daily Consumption Record received.");
         logger.info(dcRecord.toString(), dcRecord);

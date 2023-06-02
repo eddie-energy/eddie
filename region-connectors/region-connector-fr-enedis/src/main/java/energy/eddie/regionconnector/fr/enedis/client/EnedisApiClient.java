@@ -3,27 +3,21 @@ package energy.eddie.regionconnector.fr.enedis.client;
 import eddie.energy.regionconnector.api.v0.models.ConsumptionRecord;
 import energy.eddie.regionconnector.fr.enedis.ApiClient;
 import energy.eddie.regionconnector.fr.enedis.ApiException;
-import energy.eddie.regionconnector.fr.enedis.ConsumptionRecordMapper;
 import energy.eddie.regionconnector.fr.enedis.api.AuthorizationApi;
 import energy.eddie.regionconnector.fr.enedis.api.MeteringDataApi;
+import energy.eddie.regionconnector.fr.enedis.contracts.EnedisApiClientContract;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveResponse;
 import energy.eddie.regionconnector.fr.enedis.model.DailyConsumptionResponse;
 import energy.eddie.regionconnector.fr.enedis.model.TokenGenerationResponse;
+import energy.eddie.regionconnector.fr.enedis.utils.ConsumptionRecordMapper;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.*;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-public class EnedisApiClient extends ApiClient {
-    private final static String bearerTokenFile = "region-connectors/region-connector-fr-enedis/bearer.txt";
+public class EnedisApiClient extends ApiClient implements EnedisApiClientContract {
     private final AuthorizationApi authApi;
     private final MeteringDataApi meterApi;
     private final EnedisApiClientConfiguration configuration;
+    private String bearerToken = "";
 
     public EnedisApiClient(EnedisApiClientConfiguration configuration) {
         this.configuration = configuration;
@@ -37,9 +31,8 @@ public class EnedisApiClient extends ApiClient {
      * Request a bearer token and write it to the file
      *
      * @throws ApiException Something went wrong while retrieving data from the API
-     * @throws IOException  Something went wrong when accessing the file
      */
-    public void postToken() throws ApiException, IOException {
+    public void postToken() throws ApiException {
         String grantType = "client_credentials";
         String clientId = configuration.getClientId();
         String clientSecret = configuration.getClientSecret();
@@ -50,9 +43,7 @@ public class EnedisApiClient extends ApiClient {
         TokenGenerationResponse tokenGenerationResponse = authApi
                 .oauth2V3TokenPost(grantType, clientId, clientSecret, contentType, host, authorization, null);
 
-        try (BufferedWriter br = Files.newBufferedWriter(Paths.get(bearerTokenFile), UTF_8)) {
-            br.write(tokenGenerationResponse.getAccessToken());
-        }
+        bearerToken = tokenGenerationResponse.getAccessToken();
     }
 
     /**
@@ -60,10 +51,9 @@ public class EnedisApiClient extends ApiClient {
      *
      * @return Response with metering data
      * @throws ApiException Something went wrong while retrieving data from the API
-     * @throws IOException  Something went wrong when accessing the file
      */
-    public ConsumptionRecord getDailyConsumption(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException, IOException {
-        checkDate(start, end);
+    public ConsumptionRecord getDailyConsumption(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
+        throwIfInvalidTimeframe(start, end);
         // The end date is not in the response when requesting data, increment +1 day to prevent confusion
         end = end.plusDays(1);
 
@@ -71,11 +61,9 @@ public class EnedisApiClient extends ApiClient {
         String host = configuration.getHostname();
         ConsumptionRecord dcRecord;
 
-        try (BufferedReader br = Files.newBufferedReader(Paths.get(bearerTokenFile), UTF_8)) {
-            String authorization = "Bearer " + br.readLine();
-            DailyConsumptionResponse dcResponse = meterApi.meteringDataDcV5DailyConsumptionGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, null, null, host, null);
-            dcRecord = ConsumptionRecordMapper.dcReadingToCIM(dcResponse.getMeterReading());
-        }
+        String authorization = "Bearer " + bearerToken;
+        DailyConsumptionResponse dcResponse = meterApi.meteringDataDcV5DailyConsumptionGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, null, null, host, null);
+        dcRecord = ConsumptionRecordMapper.dcReadingToCIM(dcResponse.getMeterReading());
 
         return dcRecord;
     }
@@ -85,10 +73,9 @@ public class EnedisApiClient extends ApiClient {
      *
      * @return Response with metering data
      * @throws ApiException Something went wrong while retrieving data from the API
-     * @throws IOException  Something went wrong when accessing the file
      */
-    public ConsumptionRecord getConsumptionLoadCurve(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException, IOException {
-        checkDate(start, end);
+    public ConsumptionRecord getConsumptionLoadCurve(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
+        throwIfInvalidTimeframe(start, end);
         // The end date is not in the response when requesting data, increment +1 day to prevent confusion
         end = end.plusDays(1);
 
@@ -96,16 +83,14 @@ public class EnedisApiClient extends ApiClient {
         String host = configuration.getHostname();
         ConsumptionRecord clcRecord;
 
-        try (BufferedReader br = Files.newBufferedReader(Paths.get(bearerTokenFile), UTF_8)) {
-            String authorization = "Bearer " + br.readLine();
-            ConsumptionLoadCurveResponse clcResponse = meterApi.meteringDataClcV5ConsumptionLoadCurveGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, null, null, host, null);
-            clcRecord = ConsumptionRecordMapper.clcReadingToCIM(clcResponse.getMeterReading());
-        }
+        String authorization = "Bearer " + bearerToken;
+        ConsumptionLoadCurveResponse clcResponse = meterApi.meteringDataClcV5ConsumptionLoadCurveGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, null, null, host, null);
+        clcRecord = ConsumptionRecordMapper.clcReadingToCIM(clcResponse.getMeterReading());
 
         return clcRecord;
     }
 
-    private void checkDate(ZonedDateTime start, ZonedDateTime end) throws DateTimeException {
+    private void throwIfInvalidTimeframe(ZonedDateTime start, ZonedDateTime end) throws DateTimeException {
         LocalDate currentDate = LocalDate.ofInstant(Instant.now(), ZoneId.of("Europe/Paris"));
 
         if (start.isAfter(end)) {
