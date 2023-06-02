@@ -29,7 +29,7 @@ tasks.getByName<Test>("test") {
 jsonSchema2Pojo {
     // https://github.com/joelittlejohn/jsonschema2pojo/tree/master/jsonschema2pojo-gradle-plugin
 
-    sourceFiles = listOf(projectDir.resolve("src/main/resources/schemas/"))
+    sourceFiles = listOf(projectDir.resolve("src/main/resources/schemas/v0"))
     targetDirectory = buildDir.resolve("generated-sources")
     targetPackage = "energy.eddie.regionconnector.api.v0.models"
     setAnnotationStyle("jackson2")
