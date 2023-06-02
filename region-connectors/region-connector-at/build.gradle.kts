@@ -39,7 +39,7 @@ dependencies {
     implementation(libs.slf4j.api)
 
     // sl4j
-    implementation(libs.log4j.sl4j.impl)
+    implementation(libs.log4j.sl4j2.impl)
     implementation(libs.log4j.api)
     implementation(libs.log4j.core)
     runtimeOnly(libs.log4j.jul)

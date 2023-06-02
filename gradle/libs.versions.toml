@@ -15,7 +15,7 @@ jackson-databind = "2.15.2"
 jackson-annotations = "2.15.2"
 jackson-datatype-jsr310 = "2.14.2"
 reactor-core = "3.5.5"
-log4j-slf4j-impl = "2.20.0"
+log4j-slf4j2-impl = "2.20.0"
 log4j-api = "2.20.0"
 log4j-core = "2.20.0"
 log4j-jul = "2.20.0"
@@ -50,7 +50,7 @@ jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-dat
 
 reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor-core" }
 
-log4j-sl4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j-slf4j-impl" }
+log4j-sl4j2-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j-slf4j2-impl" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j-api" }
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j-core" }
 log4j-jul = { module = "org.apache.logging.log4j:log4j-jul", version.ref = "log4j-jul" }
