@@ -19,6 +19,7 @@ reactor = "3.5.3"
 slf4j = "2.0.6"
 guice = "5.1.0"
 jetty = "11.0.14"
+jte = "2.3.0"
 
 [libraries]
 # Static analysis
@@ -56,6 +57,9 @@ guice = { module = "com.google.inject:guice", version.ref = "guice" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
+# used by ep-demo-app
+jte = { module = "gg.jte:jte", version.ref = "jte" }
+javalin-rendering = { module = "io.javalin:javalin-rendering", version.ref = "javalin" }
 
 [bundles]
 
@@ -63,3 +67,5 @@ slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 errorprone = { id = "net.ltgt.errorprone", version.ref = "errorprone" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonar" }
 jsonschema2pojo = { id = "org.jsonschema2pojo", version.ref = "jsonschema2pojo" }
+# used by ep-demo-app
+jte-gradle = { id = "gg.jte.gradle", version.ref = "jte" }

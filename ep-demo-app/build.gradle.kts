@@ -1,0 +1,63 @@
+import net.ltgt.gradle.errorprone.CheckSeverity
+import net.ltgt.gradle.errorprone.errorprone
+import java.util.*
+
+plugins {
+    application
+    id("energy.eddie.java-conventions")
+    alias(libs.plugins.jte.gradle)
+}
+
+group = "energy.eddie"
+version = "1.0-SNAPSHOT"
+
+repositories {
+    mavenCentral()
+}
+
+jte {
+    generate()
+}
+
+dependencies {
+    implementation(libs.guice)
+    implementation(libs.javalin)
+    implementation(libs.javalin.rendering)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.jdbi3.core)
+    implementation(libs.reactor.core)
+    implementation(libs.jte)
+    implementation(libs.slf4j.simple)
+    runtimeOnly(libs.h2database)
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.jupiter)
+}
+
+application {
+    mainClass.set("energy.eddie.epdemoapp.EpDemoApp")
+}
+
+tasks.register("run-ep-demo-app", JavaExec::class) {
+    mainClass.set(application.mainClass)
+    classpath = sourceSets["main"].runtimeClasspath
+    systemProperties.set("developmentMode", "true")
+    group = "development"
+    description = "run the ep-demo-app in development mode (for Jte templates)"
+    environment["JDBC_URL"] = "jdbc:h2:tcp://localhost/./ep-demo-app"
+    environment["PUBLIC_CONTEXT_PATH"] = ""
+    environment["EDDIE_FRAMEWORK_PUBLIC_URL"] = "http://localhost:8080"
+}
+
+tasks.getByName<Test>("test") {
+    useJUnitPlatform()
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    if (!name.lowercase(Locale.getDefault()).contains("test")) {
+        options.errorprone {
+            check("NullAway", CheckSeverity.ERROR)
+            option("NullAway:AnnotatedPackages", "eddie.energy")
+        }
+    }
+}
