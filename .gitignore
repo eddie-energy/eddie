@@ -101,3 +101,6 @@ build
 
 ### IntelliJ
 .idea
+
+### jte template generated files ###
+**/jte-classes
