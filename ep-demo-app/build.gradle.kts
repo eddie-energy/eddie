@@ -16,7 +16,13 @@ repositories {
 }
 
 jte {
-    generate()
+    precompile() // use precompile instead of generate becouse errorprone would complain about generated code
+}
+tasks.jar {
+    dependsOn(tasks.precompileJte)
+    from(fileTree("jte-classes") {
+        include("**/*.class")
+    })
 }
 
 dependencies {
@@ -54,6 +60,7 @@ tasks.getByName<Test>("test") {
 }
 
 tasks.withType<JavaCompile>().configureEach {
+    println(">>>> ${name}")
     if (!name.lowercase(Locale.getDefault()).contains("test")) {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
