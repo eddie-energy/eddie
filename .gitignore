@@ -104,3 +104,6 @@ build
 
 ### jte template generated files ###
 **/jte-classes
+
+### local h2 database files
+*.mv.db
