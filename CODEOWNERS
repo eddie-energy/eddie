@@ -9,5 +9,12 @@
 # CI/CD
 .github/*           @eddie-energy/fh-dev
 
+# top level components
+api @h-carl
+env @h-carl
+ep-demo-app @h-carl
+framework @h-carl
+
 # Region Connectors
 region-connectors/* @eddie-energy/fh-dev
+region-connectors/region-connector-simulation @h-carl
