@@ -60,7 +60,6 @@ tasks.getByName<Test>("test") {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    println(">>>> ${name}")
     if (!name.lowercase(Locale.getDefault()).contains("test")) {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
