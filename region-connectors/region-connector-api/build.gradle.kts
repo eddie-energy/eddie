@@ -15,10 +15,7 @@ repositories {
 
 dependencies {
     testImplementation(libs.junit.jupiter)
-
     implementation(libs.jackson.databind)
-    implementation("jakarta.validation:jakarta.validation-api:3.0.0")
-    implementation("javax.annotation:javax.annotation-api:1.3.2")
 }
 
 tasks.getByName<Test>("test") {
