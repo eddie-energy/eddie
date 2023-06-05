@@ -33,23 +33,16 @@ dependencies {
     implementation(libs.jakarta.annotation.api)
     implementation(libs.commons.codec)
 
-    implementation(libs.jackson.databind) // needed to suppress a compilation warning
-
-    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-    implementation(libs.slf4j.api)
-
-    // sl4j
-    implementation(libs.log4j.sl4j2.impl)
-    implementation(libs.log4j.api)
-    implementation(libs.log4j.core)
-    runtimeOnly(libs.log4j.jul)
-
-
-    implementation(libs.reactor.core)
-
-    implementation(project(mapOf("path" to ":region-connectors:region-connector-api")))
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.slf4j.api)
+
+    runtimeOnly(libs.log4j.sl4j2.impl)
+    runtimeOnly(libs.log4j.api)
+    runtimeOnly(libs.log4j.core)
+    runtimeOnly(libs.log4j.jul)
+
+    implementation(libs.reactor.core)
 }
 
 
