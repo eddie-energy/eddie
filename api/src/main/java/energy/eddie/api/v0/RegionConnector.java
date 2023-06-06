@@ -17,18 +17,21 @@ import java.util.concurrent.Flow.Publisher;
 public interface RegionConnector extends AutoCloseable {
     /**
      * Get metadata describing this region connector.
+     *
      * @return metadata object
      */
     RegionConnectorMetadata getMetadata();
 
     /**
      * Data stream of all connection status updates created by this region connector.
+     *
      * @return connection status message stream that can be consumed only once
      */
     Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream();
 
     /**
      * Data stream of all consumption records received by this region connector.
+     *
      * @return consumption record stream that can be consumed only once
      */
     Publisher<ConsumptionRecord> getConsumptionRecordStream();

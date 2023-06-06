@@ -32,7 +32,7 @@ public class ConsumptionRecordHandler {
     }
 
     synchronized static public ConsumptionRecordHandler instance() {
-        if (null== singleton) {
+        if (null == singleton) {
             ConsumptionRecordHandler.singleton = new ConsumptionRecordHandler();
         }
         return ConsumptionRecordHandler.singleton;

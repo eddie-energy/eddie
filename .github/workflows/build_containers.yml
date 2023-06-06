@@ -22,44 +22,44 @@ jobs:
       packages: write
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK
-      uses: actions/setup-java@v3
-      with:
-        java-version: '19'
-        distribution: 'temurin'
-    - name: Gradle build
-      run: ./gradlew installDist
-    - name: "Docker build image: EDDIE framework"
-      run: docker build -f ./framework/src/main/docker/Dockerfile -t eddie-framework ./framework
-    - name: "Docker build image: EDDIE ep-demo-app"
-      run: docker build -f ./ep-demo-app/src/main/docker/Dockerfile -t eddie-ep-demo-app ./ep-demo-app
-    - name: Print some debugging information
-      run: |
-        echo github.repository_owner: ${{ github.repository_owner }}
-        echo github.ref: ${{ github.ref }}
-        echo GITHUB_RUN_ID: ${GITHUB_RUN_ID}
-    - name: ghcr.io login
-      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-    - name: "Docker push image: EDDIE ep-demo-app"
-      run: |
-        IMAGE_NAME=eddie-ep-demo-app
-        IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
-        VERSION=latest
-        echo IMAGE_NAME: $IMAGE_NAME
-        echo IMAGE_ID: $IMAGE_ID
-        echo VERSION: $VERSION
-        docker tag ${IMAGE_NAME} $IMAGE_ID:$VERSION
-        docker push $IMAGE_ID:$VERSION
-    - name: "Docker push image: EDDIE framework"
-      run: |
-        IMAGE_NAME=eddie-framework
-        IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
-        VERSION=latest
-        echo IMAGE_NAME: $IMAGE_NAME
-        echo IMAGE_ID: $IMAGE_ID
-        echo VERSION: $VERSION
-        docker tag ${IMAGE_NAME} $IMAGE_ID:$VERSION
-        docker push $IMAGE_ID:$VERSION
-    - name: Post ghcr.io login
-      run:  rm /home/runner/.docker/config.json
+      - uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '19'
+          distribution: 'temurin'
+      - name: Gradle build
+        run: ./gradlew installDist
+      - name: "Docker build image: EDDIE framework"
+        run: docker build -f ./framework/src/main/docker/Dockerfile -t eddie-framework ./framework
+      - name: "Docker build image: EDDIE ep-demo-app"
+        run: docker build -f ./ep-demo-app/src/main/docker/Dockerfile -t eddie-ep-demo-app ./ep-demo-app
+      - name: Print some debugging information
+        run: |
+          echo github.repository_owner: ${{ github.repository_owner }}
+          echo github.ref: ${{ github.ref }}
+          echo GITHUB_RUN_ID: ${GITHUB_RUN_ID}
+      - name: ghcr.io login
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+      - name: "Docker push image: EDDIE ep-demo-app"
+        run: |
+          IMAGE_NAME=eddie-ep-demo-app
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
+          VERSION=latest
+          echo IMAGE_NAME: $IMAGE_NAME
+          echo IMAGE_ID: $IMAGE_ID
+          echo VERSION: $VERSION
+          docker tag ${IMAGE_NAME} $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
+      - name: "Docker push image: EDDIE framework"
+        run: |
+          IMAGE_NAME=eddie-framework
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
+          VERSION=latest
+          echo IMAGE_NAME: $IMAGE_NAME
+          echo IMAGE_ID: $IMAGE_ID
+          echo VERSION: $VERSION
+          docker tag ${IMAGE_NAME} $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
+      - name: Post ghcr.io login
+        run: rm /home/runner/.docker/config.json

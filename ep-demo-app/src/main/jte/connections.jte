@@ -25,7 +25,8 @@ content = @`
                 <td>${status.connectionId()}</td>
                 <td>${status.timestamp().toString()}</td>
                 <td class="uk-text-center"><span class="uk-badge uk-text-small">${status.status()}</span></td>
-                <td><a class="uk-button uk-button-default uk-button-small" href="${contextPath}/connections/${status.connectionId()}">Show Data</a></td>
+                <td><a class="uk-button uk-button-default uk-button-small"
+                       href="${contextPath}/connections/${status.connectionId()}">Show Data</a></td>
             </tr>
         @endfor
         </tbody>

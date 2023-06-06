@@ -40,11 +40,11 @@ public class JavalinApp {
 
     /**
      * HTTP proxy that adds a CORS enabling header to the upstream response.
-     *
+     * <p>
      * Enabling CORS could be done by using web framework specific functions, e.g. with
      * <a href="https://javalin.io/plugins/cors">javalin CORS plugin</a>. But doing it at this place while proxying
      * has the benefit that it can be done here for all region connectors consistently at a single place.
-     *
+     * <p>
      * Enabling CORS is necessary for the eligible party app to use the custom elements provided by the framework and
      * region connectors.
      *
@@ -88,7 +88,7 @@ public class JavalinApp {
                 logger.info("proxying requests for {} to {}", proxySource, proxyTarget);
                 sch.addServlet(proxy, proxySource);
             }));
-            config.jetty.server( () -> {
+            config.jetty.server(() -> {
                 var server = new Server();
                 server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.NCSA_FORMAT));
                 return server;

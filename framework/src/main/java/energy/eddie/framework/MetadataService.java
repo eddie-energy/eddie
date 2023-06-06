@@ -1,8 +1,8 @@
 package energy.eddie.framework;
 
 import com.google.inject.Inject;
-import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.api.v0.RegionConnector;
+import energy.eddie.api.v0.RegionConnectorMetadata;
 
 import java.util.Collection;
 import java.util.Set;

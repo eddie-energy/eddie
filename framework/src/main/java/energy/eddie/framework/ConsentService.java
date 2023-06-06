@@ -19,7 +19,7 @@ public class ConsentService {
 
     public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
         Flux<ConnectionStatusMessage> result = null;
-        for (var connector: regionConnectors) {
+        for (var connector : regionConnectors) {
             try {
                 result = JdkFlowAdapter.flowPublisherToFlux(connector.getConnectionStatusMessageStream());
             } catch (Exception e) {

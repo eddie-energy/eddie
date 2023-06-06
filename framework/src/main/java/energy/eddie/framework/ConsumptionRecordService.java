@@ -18,7 +18,7 @@ public class ConsumptionRecordService {
 
     public Flux<ConsumptionRecord> getConsumptionRecordStream() {
         Flux<ConsumptionRecord> result = null;
-        for (var connector: regionConnectors) {
+        for (var connector : regionConnectors) {
             try {
                 result = JdkFlowAdapter.flowPublisherToFlux(connector.getConsumptionRecordStream());
             } catch (Exception e) {

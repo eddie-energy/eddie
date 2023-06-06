@@ -16,7 +16,7 @@
  *     transports mechanisms to deliver metering data to the EP applications, e.g. via a Kafka Topic or maybe written
  *     directly into a db.</li>
  * </ul>
- *
+ * <p>
  * Besides the plugin interfaces the data types needed for them are also defined in this package. The most important one
  * is the class {@link energy.eddie.api.v0.ConsumptionRecord} which defines energy consumption data in a CIM compliant
  * data format. These data types are defined as a JSON schema in <code>src/main/schema.json</code> and the Java classes
