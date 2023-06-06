@@ -36,8 +36,10 @@ public class Framework implements Runnable {
             bind(JavalinApp.class).toInstance(new JavalinApp());
             bind(Framework.class).toInstance(new Framework());
             bind(JdbcAdapter.class).toInstance(new JdbcAdapter(Env.JDBC_URL.get(), Env.JDBC_USER.get(), Env.JDBC_PASSWORD.get()));
+
             var pathHandlerBinder = Multibinder.newSetBinder(binder(), JavalinPathHandler.class);
             pathHandlerBinder.addBinding().to(PermissionFacade.class);
+
             var regionConnectorBinder = Multibinder.newSetBinder(binder(), RegionConnector.class);
             getAllConnectors().forEach(rc -> regionConnectorBinder.addBinding().toInstance(rc));
         }
