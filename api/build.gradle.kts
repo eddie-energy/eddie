@@ -48,7 +48,7 @@ sourceSets {
 tasks.withType<JavaCompile>().configureEach {
     options.errorprone {
         check("NullAway", CheckSeverity.ERROR)
-        option("NullAway:AnnotatedPackages", "eddie.energy.regionconnector.api")
+        option("NullAway:AnnotatedPackages", "energy.eddie")
 
         // disable warnings for generated classes
         option("NullAway:TreatGeneratedAsUnannotated", true)
