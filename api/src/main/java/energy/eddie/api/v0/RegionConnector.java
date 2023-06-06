@@ -13,8 +13,6 @@ import java.util.concurrent.Flow.Publisher;
  *     <li>a web-UI component for the consent process</li>
  *     <li>methods to perform administrative tasks like closing a connection</li>
  * </ul>
- *
- * TODO document web-app URL structure
  */
 public interface RegionConnector extends AutoCloseable {
     /**
