@@ -8,6 +8,7 @@ import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
 import org.eclipse.jetty.server.Server;
 import reactor.adapter.JdkFlowAdapter;
+import reactor.util.annotation.Nullable;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Flow;
@@ -16,6 +17,7 @@ public class SimulationConnector implements RegionConnector {
     public static final String MDA_CODE = "sim";
     private static final String SRC_MAIN_PREFIX = "./region-connectors/region-connector-simulation/src/main/";
 
+    @Nullable
     private Javalin javalin;
 
     @Override
@@ -68,6 +70,8 @@ public class SimulationConnector implements RegionConnector {
 
     @Override
     public void close() {
-        javalin.close();
+        if (null != javalin) {
+            javalin.close();
+        }
     }
 }

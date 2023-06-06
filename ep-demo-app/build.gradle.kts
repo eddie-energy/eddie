@@ -64,6 +64,7 @@ tasks.withType<JavaCompile>().configureEach {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
             option("NullAway:AnnotatedPackages", "energy.eddie")
+            option("NullAway:ExcludedFieldAnnotations", "com.google.inject.Inject")
         }
     }
 }

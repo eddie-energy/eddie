@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
+import reactor.util.annotation.Nullable;
 
 import java.util.Set;
 
@@ -16,6 +17,7 @@ public class ConsumptionRecordService {
     @Inject
     private Set<RegionConnector> regionConnectors;
 
+    @Nullable
     public Flux<ConsumptionRecord> getConsumptionRecordStream() {
         Flux<ConsumptionRecord> result = null;
         for (var connector : regionConnectors) {
