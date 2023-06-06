@@ -1,4 +1,4 @@
-import {html, css, LitElement} from "https://esm.sh/lit";
+import {css, html, LitElement} from "https://esm.sh/lit";
 
 class SimulationConnectorButtonCe extends LitElement {
 

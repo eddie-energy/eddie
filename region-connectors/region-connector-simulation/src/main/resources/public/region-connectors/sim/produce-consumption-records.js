@@ -1,5 +1,5 @@
 import {html, LitElement} from "https://esm.sh/lit";
-import {ref, createRef} from 'https://esm.sh/lit/directives/ref.js';
+import {createRef, ref} from 'https://esm.sh/lit/directives/ref.js';
 
 function range(n) {
     return [...Array(n).keys()];

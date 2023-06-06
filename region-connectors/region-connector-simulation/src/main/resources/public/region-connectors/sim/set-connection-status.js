@@ -1,4 +1,4 @@
-import {html, css, LitElement} from "https://esm.sh/lit";
+import {css, html, LitElement} from "https://esm.sh/lit";
 
 class SetConnectionStatusCe extends LitElement {
 
@@ -9,8 +9,8 @@ class SetConnectionStatusCe extends LitElement {
         super();
         this._statusValues = [];
         fetch("api/consent-status-values")
-            .then( res => res.json())
-            .then( json => this._statusValues = json);
+            .then(res => res.json())
+            .then(json => this._statusValues = json);
     }
 
     switchStatus(e) {

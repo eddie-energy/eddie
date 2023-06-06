@@ -25,27 +25,27 @@ log4j = "2.20.0"
 [libraries]
 # Static analysis
 errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorpronecore" }
-nullaway = { module = "com.uber.nullaway:nullaway", version.ref = "nullaway"}
-jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305"}
+nullaway = { module = "com.uber.nullaway:nullaway", version.ref = "nullaway" }
+jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305" }
 ## Plugins
-errorprone = { module = "net.ltgt.gradle:gradle-errorprone-plugin", version.ref = "errorprone"}
+errorprone = { module = "net.ltgt.gradle:gradle-errorprone-plugin", version.ref = "errorprone" }
 sonar = { module = "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin", version.ref = "sonar" }
 
 # Aggregator artifact of junit5
-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit"}
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 
 
 # dependencies required by region-connector-api
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 
 # dependencies required by region-connector-at
-jaxb-xjc = { module = "org.glassfish.jaxb:jaxb-xjc", version.ref = "jaxb"}
-jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "jaxb"}
+jaxb-xjc = { module = "org.glassfish.jaxb:jaxb-xjc", version.ref = "jaxb" }
+jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "jaxb" }
 jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 
 
-jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakarta-xml-bind"}
-jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakarta-annotation"}
+jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakarta-xml-bind" }
+jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakarta-annotation" }
 
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 
@@ -58,7 +58,7 @@ log4j-jul = { module = "org.apache.logging.log4j:log4j-jul", version.ref = "log4
 
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
-commons-codec = { module = "commons-codec:commons-codec" , version.ref = "commons-codec" }
+commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
 
 # used by framework
 h2database = { module = "com.h2database:h2", version.ref = "h2database" }

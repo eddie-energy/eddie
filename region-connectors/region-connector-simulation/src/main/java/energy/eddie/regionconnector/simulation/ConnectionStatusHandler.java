@@ -45,7 +45,7 @@ public class ConnectionStatusHandler {
     }
 
     synchronized static public ConnectionStatusHandler instance() {
-        if (null== singleton) {
+        if (null == singleton) {
             ConnectionStatusHandler.singleton = new ConnectionStatusHandler();
         }
         return ConnectionStatusHandler.singleton;

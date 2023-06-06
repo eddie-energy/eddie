@@ -28,13 +28,14 @@
 <header>
     <div class="uk-container uk-flex uk-flex-between">
 
-        <h1 class="uk-margin-top uk-margin-small-bottom">Awesome energy service&trade;<span class="uk-badge">demo app</span></h1>
+        <h1 class="uk-margin-top uk-margin-small-bottom">Awesome energy service&trade;<span
+                    class="uk-badge">demo app</span></h1>
         @if (showMenu)
-        !{var contextPath = Env.PUBLIC_CONTEXT_PATH.get();}
-        <ul class="uk-subnav uk-subnav-divider">
-            <li class="uk-active"><a href="${contextPath}/connections/">Connections</a></li>
-            <li><a href="${contextPath}/login">Logout</a></li>
-        </ul>
+            !{var contextPath = Env.PUBLIC_CONTEXT_PATH.get();}
+            <ul class="uk-subnav uk-subnav-divider">
+                <li class="uk-active"><a href="${contextPath}/connections/">Connections</a></li>
+                <li><a href="${contextPath}/login">Logout</a></li>
+            </ul>
         @endif
     </div>
 </header>

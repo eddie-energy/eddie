@@ -28,7 +28,7 @@ content = @`
                             label: mp,
                             data: dataPointsForMeteringPointId[mp]
                                 .map(dp =>
-                                    ({x: dp.start*1000, y: dp.consumption}))
+                                    ({x: dp.start * 1000, y: dp.consumption}))
                         }));
                     new Chart(document.getElementById("chart"), {
                         type: 'line',
@@ -39,13 +39,13 @@ content = @`
                             scales: {
                                 x: {
                                     type: "time",
-                                    time: { unit: "day" },
-                                    title: { display: true, text: "Time"},
+                                    time: {unit: "day"},
+                                    title: {display: true, text: "Time"},
                                     display: true,
                                 },
                                 y: {
                                     type: "linear",
-                                    title: { display: true, text: "Consumption"},
+                                    title: {display: true, text: "Consumption"},
                                     display: true,
                                     suggestedMin: 0,
                                     suggestedMax: 10,

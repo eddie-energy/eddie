@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.simulation;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
-import energy.eddie.api.v0.ConsumptionRecord;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
 import org.eclipse.jetty.server.Server;

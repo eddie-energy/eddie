@@ -1,4 +1,5 @@
 # Development
+
 Philosophy: A developer should be able to clone this repository and be able to build it with one command.
 
 ## Links and references
@@ -18,8 +19,10 @@ Philosophy: A developer should be able to clone this repository and be able to b
 
 
 - [MDM Using custom elements](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements)
-- [Lit Documentation](https://lit.dev/docs/) and [Lit Tutorials](https://lit.dev/tutorials/) - Simple. Fast. Web Components.
+- [Lit Documentation](https://lit.dev/docs/) and [Lit Tutorials](https://lit.dev/tutorials/) - Simple. Fast. Web
+  Components.
 - [Bootstrap Docs](https://getbootstrap.com/docs/) - CSS Framework
 
 ## Writing a region connector
+
 TBD.

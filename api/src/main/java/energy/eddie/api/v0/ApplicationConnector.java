@@ -13,12 +13,14 @@ import java.util.concurrent.Flow;
 public interface ApplicationConnector {
     /**
      * Sets the stream of connection status messages to be sent to the EP app.
+     *
      * @param csmsFlow stream of connection status messages
      */
     void setConnectionStatusMessageStream(Flow.Publisher<ConnectionStatusMessage> csmsFlow);
 
     /**
      * Sets the stream of consumption records to be sent to the EP app.
+     *
      * @param crsFlow stream of consumption records
      */
     void setConsumptionRecordStream(Flow.Publisher<ConsumptionRecord> crsFlow);
