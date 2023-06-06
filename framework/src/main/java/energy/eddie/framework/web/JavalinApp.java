@@ -38,7 +38,19 @@ public class JavalinApp {
         return "true".equals(System.getProperty("developmentMode"));
     }
 
-    public static final class HeaderAddingAsyncProxyServlet extends AsyncProxyServlet.Transparent {
+    /**
+     * HTTP proxy that adds a CORS enabling header to the upstream response.
+     *
+     * Enabling CORS could be done by using web framework specific functions, e.g. with
+     * <a href="https://javalin.io/plugins/cors">javalin CORS plugin</a>. But doing it at this place while proxying
+     * has the benefit that it can be done here for all region connectors consistently at a single place.
+     *
+     * Enabling CORS is necessary for the eligible party app to use the custom elements provided by the framework and
+     * region connectors.
+     *
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS">mdn: Cross-Origin Resource Sharing (CORS)</a>
+     */
+    public static final class CorsEnablingProxyServlet extends AsyncProxyServlet.Transparent {
         @Override
         protected void onServerResponseHeaders(HttpServletRequest clientRequest, HttpServletResponse proxyResponse, Response serverResponse) {
             super.onServerResponseHeaders(clientRequest, proxyResponse, serverResponse);
@@ -71,7 +83,7 @@ public class JavalinApp {
                 var rcAddr = rc.startWebapp(new InetSocketAddress("localhost", 0), inDevelopmentMode());
                 var proxySource = rc.getMetadata().urlPath() + "*";
                 var proxyTarget = "http://localhost:" + rcAddr + "/";
-                var proxy = new ServletHolder(HeaderAddingAsyncProxyServlet.class);
+                var proxy = new ServletHolder(CorsEnablingProxyServlet.class);
                 proxy.setInitParameter("proxyTo", proxyTarget);
                 logger.info("proxying requests for {} to {}", proxySource, proxyTarget);
                 sch.addServlet(proxy, proxySource);
