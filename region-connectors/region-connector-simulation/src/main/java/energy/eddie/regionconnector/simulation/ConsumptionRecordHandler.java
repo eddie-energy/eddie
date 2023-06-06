@@ -6,9 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
+import reactor.util.annotation.Nullable;
 
 public class ConsumptionRecordHandler {
 
+    @Nullable
     private static ConsumptionRecordHandler singleton;
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumptionRecordHandler.class);
 
@@ -17,6 +19,7 @@ public class ConsumptionRecordHandler {
     }
 
     private final Flux<ConsumptionRecord> consumptionRecordStream;
+    @Nullable
     private FluxSink<ConsumptionRecord> consumptionRecordStreamSink;
 
     public Flux<ConsumptionRecord> getConsumptionRecordStream() {
@@ -27,7 +30,11 @@ public class ConsumptionRecordHandler {
         LOGGER.info("initializing Javalin app");
         app.post(SimulationConnector.basePath() + "/api/consumption-records", ctx -> {
             var consumptionRecord = ctx.bodyAsClass(ConsumptionRecord.class);
-            consumptionRecordStreamSink.next(consumptionRecord);
+            if (null != consumptionRecordStreamSink) {
+                consumptionRecordStreamSink.next(consumptionRecord);
+            } else {
+                throw new RuntimeException("initialization error");
+            }
         });
     }
 

@@ -7,12 +7,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
+import reactor.util.annotation.Nullable;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 public class ConnectionStatusHandler {
 
+    @Nullable
     private static ConnectionStatusHandler singleton;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusHandler.class);
@@ -22,6 +24,7 @@ public class ConnectionStatusHandler {
     }
 
     private final Flux<ConnectionStatusMessage> connectionStatusStream;
+    @Nullable
     private FluxSink<ConnectionStatusMessage> connectionStatusStreamSink;
 
     public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
@@ -29,7 +32,9 @@ public class ConnectionStatusHandler {
     }
 
     public static class SetConnectionStatusRequest {
+        @Nullable
         public String connectionId;
+        @Nullable
         public ConsentStatus consentStatus;
     }
 
@@ -40,7 +45,11 @@ public class ConnectionStatusHandler {
             var req = ctx.bodyAsClass(SetConnectionStatusRequest.class);
             LOGGER.info("changing connection status of {} to {}", req.connectionId, req.consentStatus);
             var now = ZonedDateTime.now(ZoneId.systemDefault());
-            connectionStatusStreamSink.next(new ConnectionStatusMessage(req.connectionId, req.connectionId, now, req.consentStatus));
+            if (null != connectionStatusStreamSink && null != req.connectionId && null != req.consentStatus) {
+                connectionStatusStreamSink.next(new ConnectionStatusMessage(req.connectionId, req.connectionId, now, req.consentStatus));
+            } else {
+                throw new RuntimeException("initialization error");
+            }
         });
     }
 
