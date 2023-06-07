@@ -6,6 +6,7 @@ import io.javalin.http.Context;
 import org.jdbi.v3.core.Jdbi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.util.annotation.Nullable;
 
 import java.util.Map;
 
@@ -28,6 +29,7 @@ public class ShowConnectionListHandler implements JavalinHandler {
                 """));
     }
 
+    @Nullable
     private String getNextIdFor(String user) {
         var id = jdbi.withHandle(h -> h.createQuery("""
                         SELECT connection_id FROM CONNECTIONS AS c WHERE
@@ -47,7 +49,8 @@ public class ShowConnectionListHandler implements JavalinHandler {
                     .mapTo(String.class)
                     .findFirst());
         }
-        return id.get();
+
+        return id.orElse(null);
     }
 
     private void listConnections(Context ctx) {
