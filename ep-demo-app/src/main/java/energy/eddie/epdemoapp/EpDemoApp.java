@@ -52,7 +52,8 @@ public class EpDemoApp {
         } else {
             JavalinJte.init(TemplateEngine.createPrecompiled(Path.of("jte-classes"), ContentType.Html));
         }
-        var app = Javalin.create(config -> {
+
+        try (var app = Javalin.create(config -> {
             config.staticFiles.add(staticFileConfig -> {
                 staticFileConfig.hostedPath = "/";
                 if (inDevelopmentMode()) {
@@ -69,22 +70,22 @@ public class EpDemoApp {
             if (null != baseUrl && !baseUrl.isEmpty()) {
                 config.routing.contextPath = Env.PUBLIC_CONTEXT_PATH.get();
             }
-        });
-        app.before(ctx -> {
-            var path = ctx.path().substring(ctx.contextPath().length());
-            if (null == ctx.sessionAttribute("user") && !path.startsWith("/login")) {
-                var dest = ctx.contextPath() + "/login";
-                logger.info("user isn't logged in, redirecting to {}", dest);
-                ctx.redirect(dest);
-            }
-        });
-        app.get("/", ctx -> ctx.redirect("login"));
-        var injector = Guice.createInjector(new Module());
+        })) {
+            app.before(ctx -> {
+                var path = ctx.path().substring(ctx.contextPath().length());
+                if (null == ctx.sessionAttribute("user") && !path.startsWith("/login")) {
+                    var dest = ctx.contextPath() + "/login";
+                    logger.info("user isn't logged in, redirecting to {}", dest);
+                    ctx.redirect(dest);
+                }
+            });
+            app.get("/", ctx -> ctx.redirect("login"));
+            var injector = Guice.createInjector(new Module());
 
-        List.of(LoginHandler.class, ShowConnectionListHandler.class, ShowConnectionHandler.class).stream()
-                .map(injector::getInstance)
-                .forEach(handler -> handler.register(app));
-        app.start(8081);
+            List.of(LoginHandler.class, ShowConnectionListHandler.class, ShowConnectionHandler.class).stream()
+                    .map(injector::getInstance)
+                    .forEach(handler -> handler.register(app));
+            app.start(8081);
+        }
     }
-
 }
