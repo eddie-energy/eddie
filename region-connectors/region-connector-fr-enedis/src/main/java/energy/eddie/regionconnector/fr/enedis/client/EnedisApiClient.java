@@ -1,11 +1,11 @@
 package energy.eddie.regionconnector.fr.enedis.client;
 
-import eddie.energy.regionconnector.api.v0.models.ConsumptionRecord;
-import energy.eddie.regionconnector.fr.enedis.ApiClient;
-import energy.eddie.regionconnector.fr.enedis.ApiException;
+import energy.eddie.regionconnector.api.v0.models.ConsumptionRecord;
+import energy.eddie.regionconnector.fr.enedis.invoker.ApiClient;
 import energy.eddie.regionconnector.fr.enedis.api.AuthorizationApi;
 import energy.eddie.regionconnector.fr.enedis.api.MeteringDataApi;
 import energy.eddie.regionconnector.fr.enedis.contracts.EnedisApiClientContract;
+import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveResponse;
 import energy.eddie.regionconnector.fr.enedis.model.DailyConsumptionResponse;
 import energy.eddie.regionconnector.fr.enedis.model.TokenGenerationResponse;
@@ -22,7 +22,7 @@ public class EnedisApiClient extends ApiClient implements EnedisApiClientContrac
     public EnedisApiClient(EnedisApiClientConfiguration configuration) {
         this.configuration = configuration;
 
-        this.setBasePath(configuration.getBasePath());
+        this.updateBaseUri(configuration.getBasePath());
         this.authApi = new AuthorizationApi(this);
         this.meterApi = new MeteringDataApi(this);
     }
@@ -32,16 +32,16 @@ public class EnedisApiClient extends ApiClient implements EnedisApiClientContrac
      *
      * @throws ApiException Something went wrong while retrieving data from the API
      */
+    @Override
     public void postToken() throws ApiException {
         String grantType = "client_credentials";
         String clientId = configuration.getClientId();
         String clientSecret = configuration.getClientSecret();
         String contentType = "application/x-www-form-urlencoded";
-        String host = configuration.getHostname();
         String authorization = "No auth";
 
         TokenGenerationResponse tokenGenerationResponse = authApi
-                .oauth2V3TokenPost(grantType, clientId, clientSecret, contentType, host, authorization, null);
+                .oauth2V3TokenPost(contentType, authorization, grantType, null, clientId, clientSecret);
 
         bearerToken = tokenGenerationResponse.getAccessToken();
     }
@@ -52,17 +52,18 @@ public class EnedisApiClient extends ApiClient implements EnedisApiClientContrac
      * @return Response with metering data
      * @throws ApiException Something went wrong while retrieving data from the API
      */
+    @Override
     public ConsumptionRecord getDailyConsumption(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
         throwIfInvalidTimeframe(start, end);
         // The end date is not in the response when requesting data, increment +1 day to prevent confusion
         end = end.plusDays(1);
 
         String accept = "application/json";
-        String host = configuration.getHostname();
         ConsumptionRecord dcRecord;
 
         String authorization = "Bearer " + bearerToken;
-        DailyConsumptionResponse dcResponse = meterApi.meteringDataDcV5DailyConsumptionGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, null, null, host, null);
+
+        DailyConsumptionResponse dcResponse = meterApi.meteringDataDcV5DailyConsumptionGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, null, null, null);
         dcRecord = ConsumptionRecordMapper.dcReadingToCIM(dcResponse.getMeterReading());
 
         return dcRecord;
@@ -74,17 +75,17 @@ public class EnedisApiClient extends ApiClient implements EnedisApiClientContrac
      * @return Response with metering data
      * @throws ApiException Something went wrong while retrieving data from the API
      */
+    @Override
     public ConsumptionRecord getConsumptionLoadCurve(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
         throwIfInvalidTimeframe(start, end);
         // The end date is not in the response when requesting data, increment +1 day to prevent confusion
         end = end.plusDays(1);
 
         String accept = "application/json";
-        String host = configuration.getHostname();
         ConsumptionRecord clcRecord;
 
         String authorization = "Bearer " + bearerToken;
-        ConsumptionLoadCurveResponse clcResponse = meterApi.meteringDataClcV5ConsumptionLoadCurveGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, null, null, host, null);
+        ConsumptionLoadCurveResponse clcResponse = meterApi.meteringDataClcV5ConsumptionLoadCurveGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, null, null, null);
         clcRecord = ConsumptionRecordMapper.clcReadingToCIM(clcResponse.getMeterReading());
 
         return clcRecord;
