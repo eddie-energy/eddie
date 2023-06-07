@@ -26,13 +26,10 @@ reactor-core = "3.5.6"
 
 slf4j-api = "2.0.7"
 
-swagger-codegen-version = "3.0.44"
-okhttp-version = "2.7.5"
-logging-interceptor-version = "2.7.5"
-gson-version = "2.10.1"
-gson-fire-version = "1.8.5"
-threetenbp-version = "1.6.8"
-dotenv-version = "5.2.2"
+swagger-codegen-version = "3.0.45"
+apache-httpcomponents-version = "4.5.14"
+jackson-databind-nullable-version = "0.2.6"
+dotenv-version = "3.0.0"
 
 [libraries]
 # Static analysis
@@ -89,12 +86,10 @@ jte = { module = "gg.jte:jte", version.ref = "jte" }
 javalin-rendering = { module = "io.javalin:javalin-rendering", version.ref = "javalin" }
 # dependencies required by region-connector-fr
 swagger-codegen = { module = "io.swagger.codegen.v3:swagger-codegen-cli", version.ref = "swagger-codegen-version" }
-okhttp = { module = "com.squareup.okhttp:okhttp", version.ref = "okhttp-version" }
-logging-interceptor = { module = "com.squareup.okhttp:logging-interceptor", version.ref = "logging-interceptor-version" }
-gson = { module = "com.google.code.gson:gson", version.ref = "gson-version" }
-gson-fire = { module = "io.gsonfire:gson-fire", version.ref = "gson-fire-version" }
-threetenbp = { module = "org.threeten:threetenbp", version.ref = "threetenbp-version" }
-dotenv = { module = "io.github.cdimascio:java-dotenv", version.ref = "dotenv-version" }
+jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullable", version.ref = "jackson-databind-nullable-version" }
+apache-http-client = { module = "org.apache.httpcomponents:httpclient", version.ref = "apache-httpcomponents-version" }
+apache-http-mime = { module = "org.apache.httpcomponents:httpmime", version.ref = "apache-httpcomponents-version" }
+dotenv = { module = "io.github.cdimascio:dotenv-java", version.ref = "dotenv-version" }
 
 
 [bundles]

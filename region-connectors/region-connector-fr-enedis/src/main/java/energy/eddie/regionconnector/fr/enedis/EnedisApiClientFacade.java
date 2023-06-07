@@ -1,9 +1,10 @@
 package energy.eddie.regionconnector.fr.enedis;
 
-import eddie.energy.regionconnector.api.v0.models.ConsumptionRecord;
+import energy.eddie.regionconnector.api.v0.models.ConsumptionRecord;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClientConfiguration;
 import energy.eddie.regionconnector.fr.enedis.contracts.EnedisApiClientContract;
+import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 
 import java.net.HttpURLConnection;
 import java.time.ZonedDateTime;

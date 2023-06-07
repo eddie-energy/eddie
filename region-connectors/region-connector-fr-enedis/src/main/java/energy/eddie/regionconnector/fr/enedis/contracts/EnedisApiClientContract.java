@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.contracts;
 
-import eddie.energy.regionconnector.api.v0.models.ConsumptionRecord;
-import energy.eddie.regionconnector.fr.enedis.ApiException;
+import energy.eddie.regionconnector.api.v0.models.ConsumptionRecord;
+import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 
 import java.time.ZonedDateTime;
 
@@ -12,6 +12,7 @@ public interface EnedisApiClientContract {
      * @throws ApiException Something went wrong while retrieving data from the API
      */
     void postToken() throws ApiException;
+
     /**
      * Request daily consumption metering data
      *
@@ -19,6 +20,7 @@ public interface EnedisApiClientContract {
      * @throws ApiException Something went wrong while retrieving data from the API
      */
     ConsumptionRecord getDailyConsumption(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException;
+
     /**
      * Request consumption load curve metering data
      *

@@ -1,15 +1,15 @@
 package energy.eddie.regionconnector.fr.enedis.utils;
 
-import eddie.energy.regionconnector.api.v0.models.ConsumptionPoint;
-import eddie.energy.regionconnector.api.v0.models.ConsumptionRecord;
+import energy.eddie.regionconnector.api.v0.models.ConsumptionPoint;
+import energy.eddie.regionconnector.api.v0.models.ConsumptionRecord;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveIntervalReading;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
 import energy.eddie.regionconnector.fr.enedis.model.DailyConsumptionIntervalReading;
 import energy.eddie.regionconnector.fr.enedis.model.DailyConsumptionMeterReading;
-import energy.eddie.regionconnector.fr.enedis.utils.DateTimeConverter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ConsumptionRecordMapper {
     private ConsumptionRecordMapper() {
@@ -39,14 +39,14 @@ public class ConsumptionRecordMapper {
             for (ConsumptionLoadCurveIntervalReading clcInterval : clcMeterReading.getIntervalReading()) {
                 ConsumptionPoint consumptionPoint = new ConsumptionPoint();
                 consumptionPoint.setConsumption(Double.valueOf(clcInterval.getValue()));
-                consumptionPoint.setMeteringType(switch (clcInterval.getMeasureType()) {
+                consumptionPoint.setMeteringType(switch (Objects.requireNonNull(clcInterval.getMeasureType())) {
                     case B -> ConsumptionPoint.MeteringType.MEASURED_VALUE;
                     default -> ConsumptionPoint.MeteringType.EXTRAPOLATED_VALUE;
                 });
 
                 consumptionPoints.add(consumptionPoint);
             }
-            clcRecord.setConsumptionPoint(consumptionPoints);
+            clcRecord.setConsumptionPoints(consumptionPoints);
 
             return clcRecord;
         }
@@ -79,7 +79,7 @@ public class ConsumptionRecordMapper {
 
                 consumptionPoints.add(consumptionPoint);
             }
-            dcRecord.setConsumptionPoint(consumptionPoints);
+            dcRecord.setConsumptionPoints(consumptionPoints);
 
             return dcRecord;
         }

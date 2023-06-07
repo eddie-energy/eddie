@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis;
 
-import eddie.energy.regionconnector.api.v0.models.ConsumptionRecord;
+import energy.eddie.regionconnector.api.v0.models.ConsumptionRecord;
+import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import energy.eddie.regionconnector.fr.enedis.utils.DateTimeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,5 +87,7 @@ public class Main {
 
     private static void showApiExceptionError(ApiException e) {
         logger.error("API Exception occured: " + e.getMessage(), e);
+        logger.error(e.getCode() + "", e);
+        logger.error(e.getResponseBody(), e);
     }
 }

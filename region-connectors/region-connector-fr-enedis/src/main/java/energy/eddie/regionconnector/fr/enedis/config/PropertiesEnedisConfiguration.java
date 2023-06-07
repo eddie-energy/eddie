@@ -1,4 +1,4 @@
-package energy.eddie.regionconnectors.fr.enedis.config;
+package energy.eddie.regionconnector.fr.enedis.config;
 
 import java.util.Properties;
 
