@@ -39,6 +39,13 @@ jobs:
           echo github.repository_owner: ${{ github.repository_owner }}
           echo github.ref: ${{ github.ref }}
           echo GITHUB_RUN_ID: ${GITHUB_RUN_ID}
+      # Usage of docker is done through direct commands instead of using predefined actions for these reasons:
+      # - Usage of the docker command line is well documented and already understood by all developers that
+      #   used docker before. Usage of a docker-related action requires additional knowledge that is seldomly present.
+      # - Security tokens are not passed through an action to give less surface to supply chain attacks that might be
+      #   used for stealing docker related secrets. That supply chain attack may occur in the used GitHub action or any
+      #   library that is used by that action explicitly or implicitly. Especially in the Node.js/npm ecosystem that
+      #   must be used by all GitHub actions, supply chain attacks became common in recent times.
       - name: ghcr.io login
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
       - name: "Docker push image: EDDIE ep-demo-app"
