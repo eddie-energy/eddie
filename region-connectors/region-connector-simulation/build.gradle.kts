@@ -18,6 +18,7 @@ dependencies {
     implementation(libs.javalin)
     compileOnly(libs.slf4j.api)
     implementation(libs.reactor.core)
+    compileOnly(libs.jackson.annotations)
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.jupiter)
 }

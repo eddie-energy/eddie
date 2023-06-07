@@ -13,7 +13,7 @@ module energy.eddie.framework {
     uses RegionConnector;
 
     // needed requires for runtime that aren't inferred
-    requires kotlin.stdlib.jdk8;
+    requires kotlin.stdlib;
     requires org.eclipse.jetty.webapp;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
