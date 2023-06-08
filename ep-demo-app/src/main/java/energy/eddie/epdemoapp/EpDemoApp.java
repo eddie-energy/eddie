@@ -46,7 +46,7 @@ public class EpDemoApp {
 
     public static void main(String[] args) {
         if (inDevelopmentMode()) {
-            logger.info("executing JteTemplates in development mode");
+            logger.info("Executing JteTemplates in development mode");
             var resolver = new DirectoryCodeResolver(Path.of(SRC_MAIN_PREFIX, "jte"));
             JavalinJte.init(TemplateEngine.create(resolver, ContentType.Html));
         } else {
@@ -77,7 +77,7 @@ public class EpDemoApp {
                 var path = ctx.path().substring(ctx.contextPath().length());
                 if (null == ctx.sessionAttribute("user") && !path.startsWith("/login")) {
                     var dest = ctx.contextPath() + "/login";
-                    logger.info("user isn't logged in, redirecting to {}", dest);
+                    logger.info("User isn't logged in, redirecting to {}", dest);
                     ctx.redirect(dest);
                 }
             });

@@ -24,7 +24,7 @@ public class ConsumptionRecordService {
             try {
                 result = JdkFlowAdapter.flowPublisherToFlux(connector.getConsumptionRecordStream());
             } catch (Exception e) {
-                LOGGER.warn("got no consumption record stream for connector {}", connector.getMetadata().mdaCode(), e);
+                LOGGER.warn("Got no consumption record stream for connector {}", connector.getMetadata().mdaCode(), e);
             }
         }
         return result;

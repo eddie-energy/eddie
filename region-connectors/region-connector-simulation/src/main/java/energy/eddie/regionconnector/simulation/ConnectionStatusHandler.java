@@ -40,11 +40,11 @@ public class ConnectionStatusHandler {
     }
 
     void initWebapp(Javalin app) {
-        LOGGER.info("initializing Javalin app");
+        LOGGER.info("Initializing Javalin app");
         app.get(SimulationConnector.basePath() + "/api/consent-status-values", ctx -> ctx.json(ConsentStatus.values()));
         app.post(SimulationConnector.basePath() + "/api/consent-status", ctx -> {
             var req = ctx.bodyAsClass(SetConnectionStatusRequest.class);
-            LOGGER.info("changing connection status of {} to {}", req.connectionId, req.consentStatus);
+            LOGGER.info("Changing connection status of {} to {}", req.connectionId, req.consentStatus);
             var now = ZonedDateTime.now(ZoneId.systemDefault());
             if (null == connectionStatusStreamSink) {
                 throw new IllegalStateException("connectionStatusStreamSink not initialized yet");

@@ -17,7 +17,7 @@ public class LoginHandler implements JavalinHandler {
         app.get("/login", ctx -> ctx.render("login-user.jte"));
         app.post("/login", ctx -> {
             var email = ctx.formParam("input-user");
-            logger.info("login with user: {}", email);
+            logger.info("Login with user: {}", email);
             if (null == email || email.isEmpty()) {
                 ctx.redirect("login");
             } else {
@@ -43,7 +43,7 @@ public class LoginHandler implements JavalinHandler {
                         .mapTo(String.class)
                         .findOne().isPresent()).booleanValue();
         if (!isUserFoundInDb) {
-            logger.warn("user not found, creating user with email in db: {}", email);
+            logger.warn("User not found, creating user with email in db: {}", email);
             jdbi.withHandle(h -> h.execute("INSERT INTO USERS(email) VALUES (?)", email));
         }
     }

@@ -25,7 +25,7 @@ public class ConsentService {
             try {
                 result = JdkFlowAdapter.flowPublisherToFlux(connector.getConnectionStatusMessageStream());
             } catch (Exception e) {
-                LOGGER.warn("got no connection status message stream for connector {}", connector.getMetadata().mdaCode(), e);
+                LOGGER.warn("Got no connection status message stream for connector {}", connector.getMetadata().mdaCode(), e);
             }
         }
         return result;

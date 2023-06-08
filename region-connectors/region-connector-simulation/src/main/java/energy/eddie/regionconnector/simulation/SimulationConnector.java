@@ -37,7 +37,7 @@ public class SimulationConnector implements RegionConnector {
 
     @Override
     public void revokePermission(String permissionId) {
-        throw new UnsupportedOperationException("not implemented yet");
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     public static String basePath() {
@@ -63,7 +63,7 @@ public class SimulationConnector implements RegionConnector {
         javalin.start();
         final var jetty = javalin.jettyServer();
         if (null == jetty) { // that's accepted by all code checkers.. :-D
-            throw new NullPointerException("cannot start Javalin");
+            throw new NullPointerException("Cannot start Javalin");
         }
         return jetty.getServerPort();
     }

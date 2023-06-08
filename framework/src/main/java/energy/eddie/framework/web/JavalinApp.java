@@ -93,7 +93,7 @@ public class JavalinApp {
                 var proxyTarget = "http://localhost:" + rcAddr + "/";
                 var proxy = new ServletHolder(CorsEnablingProxyServlet.class);
                 proxy.setInitParameter("proxyTo", proxyTarget);
-                logger.info("proxying requests for {} to {}", proxySource, proxyTarget);
+                logger.info("Proxying requests for {} to {}", proxySource, proxyTarget);
                 sch.addServlet(proxy, proxySource);
             }));
             config.jetty.server(() -> {

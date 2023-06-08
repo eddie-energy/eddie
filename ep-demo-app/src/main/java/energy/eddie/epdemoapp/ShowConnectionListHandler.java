@@ -57,7 +57,7 @@ public class ShowConnectionListHandler implements JavalinHandler {
     private void listConnections(Context ctx) {
         String user = ctx.sessionAttribute("user");
         String nextConnectionId = getNextIdFor(user);
-        logger.info("next connection id for user {} is {}", user, nextConnectionId);
+        logger.info("Next connection id for user {} is {}", user, nextConnectionId);
         final var selectConnectionStatusesSql = """
                 select CONNECTION_ID, TIMESTAMP_, CONSENT_STATUS
                 from CONNECTION_STATUS as out

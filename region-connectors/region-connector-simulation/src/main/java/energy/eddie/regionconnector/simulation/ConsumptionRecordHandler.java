@@ -27,7 +27,7 @@ public class ConsumptionRecordHandler {
     }
 
     void initWebapp(Javalin app) {
-        LOGGER.info("initializing Javalin app");
+        LOGGER.info("Initializing Javalin app");
         app.post(SimulationConnector.basePath() + "/api/consumption-records", ctx -> {
             var consumptionRecord = ctx.bodyAsClass(ConsumptionRecord.class);
             if (null == consumptionRecordStreamSink) {

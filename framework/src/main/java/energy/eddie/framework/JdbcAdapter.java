@@ -28,7 +28,7 @@ public class JdbcAdapter implements energy.eddie.api.v0.ApplicationConnector {
     public void setConnectionStatusMessageStream(Flow.Publisher<ConnectionStatusMessage> csmsFlow) {
         var csms = JdkFlowAdapter.flowPublisherToFlux(csmsFlow);
         csms.subscribe(csm -> {
-            LOGGER.info("writing connection status for {}: {}", csm.connectionId(), csm.status());
+            LOGGER.info("Writing connection status for {}: {}", csm.connectionId(), csm.status());
             jdbi.withHandle(h ->
                     h.createUpdate("insert into connection_status (connection_id, timestamp_, consent_status) values (?,?,?)")
                             .bind(0, csm.connectionId())
@@ -40,10 +40,10 @@ public class JdbcAdapter implements energy.eddie.api.v0.ApplicationConnector {
 
     @Override
     public void setConsumptionRecordStream(Flow.Publisher<ConsumptionRecord> crsFlow) {
-        LOGGER.error("calling unimplemented interface method JdbcAdapter.setConsumptionRecordStream(..)");
+        LOGGER.error("Calling unimplemented interface method JdbcAdapter.setConsumptionRecordStream(..)");
         var crs = JdkFlowAdapter.flowPublisherToFlux(crsFlow);
         crs.subscribe(cr -> {
-            LOGGER.info("writing consumption records for connection {} with metering point {} with {} data points",
+            LOGGER.info("Writing consumption records for connection {} with metering point {} with {} data points",
                     cr.getConnectionId(), cr.getMeteringPoint(), cr.getConsumptionPoints().size());
             jdbi.withHandle(h -> {
                 var id = h.createUpdate("""
@@ -74,7 +74,7 @@ public class JdbcAdapter implements energy.eddie.api.v0.ApplicationConnector {
 
     @Override
     public void init() {
-        LOGGER.info("initializing db schema");
+        LOGGER.info("Initializing db schema");
         final var createTablesSql = """
                 CREATE TABLE IF NOT EXISTS CONNECTION_STATUS (
                     connection_id  VARCHAR(255) NOT NULL,

@@ -33,7 +33,7 @@ public final class CCMOTimeFrame {
         if (end != null) {
             end = new TruncatedZonedDateTime(end).zonedDateTime();
             if (!start.isBefore(end) && !start.equals(end)) {
-                throw new IllegalArgumentException("end date has to be after/equal start date");
+                throw new IllegalArgumentException("End date has to be after/equal start date");
             }
         }
         this.start = start;

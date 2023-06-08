@@ -49,10 +49,10 @@ public class Framework implements Runnable {
                     .toList();
             if (!allConnectors.isEmpty()) {
                 var paNames = allConnectors.stream().map(RegionConnector::getMetadata).map(RegionConnectorMetadata::mdaCode).toArray();
-                LOGGER.info("found {} Connectors: {}", allConnectors.size(), paNames);
+                LOGGER.info("Found {} Connectors: {}", allConnectors.size(), paNames);
             } else {
-                LOGGER.error("no Connectors found, cannot receive any data");
-                throw new InitializationException("no Connectors found, cannot receive any data");
+                LOGGER.error("No Connectors found, cannot receive any data");
+                throw new InitializationException("No Connectors found, cannot receive any data");
             }
             return allConnectors;
         }
