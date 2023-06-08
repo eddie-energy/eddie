@@ -87,7 +87,8 @@ class ProduceConsumptionRecordCe extends LitElement {
                     console.error(`unable to send consumption records for connectionId:${cr.connectionId} meteringPoint:${cr.meteringPoint}`,
                         res.statusText);
                 }
-            });
+            })
+            .catch(console.error);
     }
 
     render() {
