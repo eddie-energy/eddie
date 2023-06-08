@@ -7,9 +7,9 @@
 * 
 
 # CI/CD
-.github/*           @eddie-energy/fh-dev
+.github/* @eddie-energy/fh-dev
 
-# top level components
+# Top level components
 api @h-carl
 env @h-carl
 ep-demo-app @h-carl
