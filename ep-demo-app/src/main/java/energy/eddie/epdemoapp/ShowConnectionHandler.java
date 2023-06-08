@@ -17,6 +17,18 @@ public class ShowConnectionHandler implements JavalinHandler {
 
     @Override
     public void register(Javalin app) {
+        final var selectConsumptionPointsSql = """
+                select METERING_POINT,
+                       DATEADD(SECOND, ORD*crs.METERING_INTERVAL_SECS, START_DATE_TIME)     AS START,
+                       DATEADD(SECOND, (ORD+1)*crs.METERING_INTERVAL_SECS, START_DATE_TIME) AS END_,
+                       ORD,
+                       CONSUMPTION,
+                       METERING_TYPE
+                from CONSUMPTION_RECORDS as crs
+                         left join CONSUMPTION_POINTS dps on crs.ID = dps.CONSUMPTION_RECORD_ID
+                where CONNECTION_ID = ? and CONSUMPTION is not null
+                order by START_DATE_TIME, ORD
+                """;
         app.get("/connections/{connectionId}", ctx -> {
             var connectionId = ctx.pathParam("connectionId");
             var consumptionRecordSummaries = jdbi.withHandle(h ->
@@ -25,18 +37,7 @@ public class ShowConnectionHandler implements JavalinHandler {
                             .mapTo(String.class)
                             .list());
             var dataPointsWithMeteringPoint = jdbi.withHandle(h ->
-                    h.createQuery("""
-                                    select METERING_POINT,
-                                           DATEADD(SECOND, ORD*crs.METERING_INTERVAL_SECS, START_DATE_TIME)     AS START,
-                                           DATEADD(SECOND, (ORD+1)*crs.METERING_INTERVAL_SECS, START_DATE_TIME) AS END_,
-                                           ORD,
-                                           CONSUMPTION,
-                                           METERING_TYPE
-                                    from CONSUMPTION_RECORDS as crs
-                                             left join CONSUMPTION_POINTS dps on crs.ID = dps.CONSUMPTION_RECORD_ID
-                                    where CONNECTION_ID = ? and CONSUMPTION is not null
-                                    order by START_DATE_TIME, ORD
-                                    """).bind(0, connectionId)
+                    h.createQuery(selectConsumptionPointsSql).bind(0, connectionId)
                             .mapToMap()
                             .list());
             var dataPointMap = dataPointsWithMeteringPoint.stream()

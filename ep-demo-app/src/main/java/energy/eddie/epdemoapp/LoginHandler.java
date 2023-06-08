@@ -26,13 +26,14 @@ public class LoginHandler implements JavalinHandler {
                 ctx.redirect(ctx.contextPath() + "/connections/");
             }
         });
-        jdbi.withHandle(h -> h.execute("""                
+        final var createUserTableSql = """                
                 CREATE TABLE IF NOT EXISTS USERS (
                     id SERIAL PRIMARY KEY,
                     email VARCHAR(80)
                 );
                 CREATE INDEX IF NOT EXISTS INDEX_USER_EMAIL ON USERS (email);
-                """));
+                """;
+        jdbi.withHandle(h -> h.execute(createUserTableSql));
     }
 
     private void loginUser(String email) {
@@ -40,7 +41,7 @@ public class LoginHandler implements JavalinHandler {
                 h.createQuery("SELECT email FROM USERS WHERE email=?")
                         .bind(0, email)
                         .mapTo(String.class)
-                        .findOne().isPresent());
+                        .findOne().isPresent()).booleanValue();
         if (!isUserFoundInDb) {
             logger.warn("user not found, creating user with email in db: {}", email);
             jdbi.withHandle(h -> h.execute("INSERT INTO USERS(email) VALUES (?)", email));
