@@ -13,6 +13,15 @@ import java.util.concurrent.Flow;
 
 public class JdbcAdapter implements energy.eddie.api.v0.ApplicationConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcAdapter.class);
+    private static final Map<String, Integer> meteringIntervalForCode;
+
+    static {
+        meteringIntervalForCode = new HashMap<>();
+        meteringIntervalForCode.put("PT15M", 900);
+        meteringIntervalForCode.put("PT30M", 1800);
+        meteringIntervalForCode.put("PT1H", 3600);
+        meteringIntervalForCode.put("PT1D", 86400);
+    }
 
     private final Jdbi jdbi;
 
@@ -120,15 +129,5 @@ public class JdbcAdapter implements energy.eddie.api.v0.ApplicationConnector {
             });
             return null;
         });
-    }
-
-    private static final Map<String, Integer> meteringIntervalForCode;
-
-    static {
-        meteringIntervalForCode = new HashMap<>();
-        meteringIntervalForCode.put("PT15M", 900);
-        meteringIntervalForCode.put("PT30M", 1800);
-        meteringIntervalForCode.put("PT1H", 3600);
-        meteringIntervalForCode.put("PT1D", 86400);
     }
 }
