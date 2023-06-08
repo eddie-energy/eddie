@@ -15,7 +15,6 @@ import reactor.adapter.JdkFlowAdapter;
 
 import java.util.Collection;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
 
 public class Framework implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Framework.class);
@@ -47,13 +46,13 @@ public class Framework implements Runnable {
         private Collection<RegionConnector> getAllConnectors() {
             var allConnectors = ServiceLoader.load(RegionConnector.class).stream()
                     .map(ServiceLoader.Provider::get)
-                    .collect(Collectors.toList());
-            if (0 < allConnectors.size()) {
+                    .toList();
+            if (!allConnectors.isEmpty()) {
                 var paNames = allConnectors.stream().map(RegionConnector::getMetadata).map(RegionConnectorMetadata::mdaCode).toArray();
                 LOGGER.info("found {} Connectors: {}", allConnectors.size(), paNames);
             } else {
                 LOGGER.error("no Connectors found, cannot receive any data");
-                throw new RuntimeException("no Connectors found, cannot receive any data");
+                throw new InitializationException("no Connectors found, cannot receive any data");
             }
             return allConnectors;
         }
@@ -73,5 +72,11 @@ public class Framework implements Runnable {
         var consumptionRecordMessageStream = JdkFlowAdapter.publisherToFlowPublisher(consumptionRecordService.getConsumptionRecordStream());
         jdbcAdapter.setConsumptionRecordStream(consumptionRecordMessageStream);
         javalinApp.init();
+    }
+
+    public static final class InitializationException extends RuntimeException {
+        public InitializationException(String message) {
+            super(message);
+        }
     }
 }

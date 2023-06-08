@@ -58,9 +58,15 @@ public class JavalinApp {
         }
     }
 
+    @java.lang.SuppressWarnings("java:S1075") // causes false-positive findings on the lines marked below
     public void init() {
-        var app = Javalin.create(config -> {
+        // Using try-with-resources with the Javalin instance isn't really intuitive, but: Sonar considers using
+        // an AutoClosable without ensuring a close to be a major issue. To keep Javalin running the current thread
+        // is suspended in a forever-sleep loop below.
+        try (var app = Javalin.create(config -> {
             config.staticFiles.add(staticFileConfig -> {
+                // Sonar false positive on following line(java:S1075): This externally visible URL path shouldn't be
+                // configurable despite Sonar's recommendation.
                 staticFileConfig.hostedPath = "/lib";
                 staticFileConfig.mimeTypes.add("text/javascript", ".js");
                 if (inDevelopmentMode()) {
@@ -77,6 +83,8 @@ public class JavalinApp {
             config.jsonMapper(new JavalinJackson(mapper));
             var baseUrl = Env.PUBLIC_CONTEXT_PATH.get();
             if (null != baseUrl && !baseUrl.isEmpty()) {
+                // Sonar false positive on following line(java:S1075): This shouldn't be externally configurable
+                // because it already is, this is just a fallback value.
                 config.routing.contextPath = "/" + Env.PUBLIC_CONTEXT_PATH.get();
             }
             config.jetty.contextHandlerConfig(sch -> regionConnectors.forEach(rc -> {
@@ -93,9 +101,16 @@ public class JavalinApp {
                 server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.NCSA_FORMAT));
                 return server;
             });
-        });
-        app.after(ctx -> ctx.header("Access-Control-Allow-Origin", "*"));
-        javalinPathHandlers.forEach(ph -> ph.registerPathHandlers(app));
-        app.start(8080);
+        })) {
+            app.after(ctx -> ctx.header("Access-Control-Allow-Origin", "*"));
+            javalinPathHandlers.forEach(ph -> ph.registerPathHandlers(app));
+            app.start(8080);
+            while (!Thread.interrupted()) {
+                Thread.sleep(Long.MAX_VALUE);
+            }
+        } catch (InterruptedException e) {
+            logger.info("Exiting.");
+            Thread.currentThread().interrupt();
+        }
     }
 }
