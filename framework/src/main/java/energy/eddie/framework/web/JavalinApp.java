@@ -88,9 +88,9 @@ public class JavalinApp {
                 config.routing.contextPath = "/" + Env.PUBLIC_CONTEXT_PATH.get();
             }
             config.jetty.contextHandlerConfig(sch -> regionConnectors.forEach(rc -> {
-                var rcAddr = rc.startWebapp(new InetSocketAddress("localhost", 0), inDevelopmentMode());
+                var regionConnectorAddress = rc.startWebapp(new InetSocketAddress("localhost", 0), inDevelopmentMode());
                 var proxySource = rc.getMetadata().urlPath() + "*";
-                var proxyTarget = "http://localhost:" + rcAddr + "/";
+                var proxyTarget = "http://localhost:" + regionConnectorAddress + "/";
                 var proxy = new ServletHolder(CorsEnablingProxyServlet.class);
                 proxy.setInitParameter("proxyTo", proxyTarget);
                 logger.info("Proxying requests for {} to {}", proxySource, proxyTarget);
