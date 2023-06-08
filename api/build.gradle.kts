@@ -30,7 +30,7 @@ jsonSchema2Pojo {
     targetPackage = "energy.eddie.api.v0"
     setAnnotationStyle("jackson2")
     dateTimeType = "java.time.ZonedDateTime"
-    isFormatDateTimes = true    // serialize ZonedDateTime to ISO 8601 string; should be named FormatDateTimes according to documentation...
+    isFormatDateTimes = true    // serialize ZonedDateTime to ISO 8601 string
     generateBuilders = true
     includeGetters = true
     includeJsr305Annotations = false

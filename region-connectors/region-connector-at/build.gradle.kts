@@ -19,7 +19,7 @@ repositories {
 val jaxb: Configuration by configurations.creating
 
 dependencies {
-    implementation(project(mapOf("path" to ":region-connectors:region-connector-api")))
+    implementation(project(":api"))
     testImplementation(libs.junit.jupiter)
 
     // dependency for PontonXP Messenger

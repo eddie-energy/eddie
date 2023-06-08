@@ -8,7 +8,7 @@ module energy.eddie.regionconnector.at {
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
-    requires energy.eddie.regionconnector.api;
+    requires energy.eddie.api;
 
     exports energy.eddie.regionconnector.at.eda.requests;
     exports energy.eddie.regionconnector.at.eda.requests.restricted.enums;
