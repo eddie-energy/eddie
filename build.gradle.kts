@@ -16,7 +16,7 @@ dependencies {
 tasks.register("run-db-server-create-db", JavaExec::class) {
     mainClass.set("org.h2.tools.Shell")
     classpath = sourceSets["main"].runtimeClasspath
-    args = listOf("-url", "jdbc:h2:./ep-demo-app")
+    args = listOf("-url", "jdbc:h2:./examples/example-app")
     group = "development"
     description = "create the local H2 database"
 }

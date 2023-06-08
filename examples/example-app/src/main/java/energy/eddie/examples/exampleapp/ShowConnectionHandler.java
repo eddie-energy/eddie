@@ -1,4 +1,4 @@
-package energy.eddie.epdemoapp;
+package energy.eddie.examples.exampleapp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;

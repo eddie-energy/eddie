@@ -1,4 +1,4 @@
-package energy.eddie.epdemoapp;
+package energy.eddie.examples.exampleapp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -18,9 +18,9 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.util.List;
 
-public class EpDemoApp {
+public class ExampleApp {
 
-    private static final Logger logger = LoggerFactory.getLogger(EpDemoApp.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExampleApp.class);
 
     public static final String SRC_MAIN_PREFIX = "./src/main/";
 

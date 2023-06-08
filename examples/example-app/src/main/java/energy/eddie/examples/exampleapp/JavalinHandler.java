@@ -1,4 +1,4 @@
-package energy.eddie.epdemoapp;
+package energy.eddie.examples.exampleapp;
 
 import io.javalin.Javalin;
 

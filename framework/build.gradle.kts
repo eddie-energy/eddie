@@ -78,7 +78,7 @@ tasks.register("run-framework", JavaExec::class) {
     workingDir = parent?.projectDir ?: projectDir
     group = "development"
     description = "run the EDDIE framework"
-    environment["JDBC_URL"] = "jdbc:h2:tcp://localhost/./ep-demo-app"
+    environment["JDBC_URL"] = "jdbc:h2:tcp://localhost/./examples/example-app"
     environment["PUBLIC_CONTEXT_PATH"] = ""
 }
 

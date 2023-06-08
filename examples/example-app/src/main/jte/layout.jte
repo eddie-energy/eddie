@@ -1,4 +1,4 @@
-@import energy.eddie.epdemoapp.Env
+@import energy.eddie.examples.exampleapp.Env
 @import gg.jte.Content
 
 @param String title

@@ -12,7 +12,7 @@
 # Top level components
 api @eddie-energy/fh-dev
 env @eddie-energy/fh-dev
-ep-demo-app @eddie-energy/fh-dev
+examples/example-app @eddie-energy/fh-dev
 framework @eddie-energy/fh-dev
 
 # Region Connectors

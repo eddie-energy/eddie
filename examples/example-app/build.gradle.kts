@@ -41,16 +41,16 @@ dependencies {
 }
 
 application {
-    mainClass.set("energy.eddie.epdemoapp.EpDemoApp")
+    mainClass.set("energy.eddie.examples.exampleapp.ExampleApp")
 }
 
-tasks.register("run-ep-demo-app", JavaExec::class) {
+tasks.register("run-example-app", JavaExec::class) {
     mainClass.set(application.mainClass)
     classpath = sourceSets["main"].runtimeClasspath
     systemProperties.set("developmentMode", "true")
     group = "development"
-    description = "run the ep-demo-app in development mode (for Jte templates)"
-    environment["JDBC_URL"] = "jdbc:h2:tcp://localhost/./ep-demo-app"
+    description = "run the example-app in development mode (for Jte templates)"
+    environment["JDBC_URL"] = "jdbc:h2:tcp://localhost/./examples/example-app"
     environment["PUBLIC_CONTEXT_PATH"] = ""
     environment["EDDIE_FRAMEWORK_PUBLIC_URL"] = "http://localhost:8080"
 }

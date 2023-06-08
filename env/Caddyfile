@@ -3,5 +3,5 @@
     reverse_proxy {$PUBLIC_CONTEXT_PATH:}/lib/* eddie-framework:8080
     reverse_proxy {$PUBLIC_CONTEXT_PATH:}/region-connectors/* eddie-framework:8080
     reverse_proxy {$PUBLIC_CONTEXT_PATH:}/api/* eddie-framework:8080
-    reverse_proxy {$PUBLIC_CONTEXT_PATH:}/* eddie-ep-demo-app:8081
+    reverse_proxy {$PUBLIC_CONTEXT_PATH:}/* eddie-example-app:8081
 }

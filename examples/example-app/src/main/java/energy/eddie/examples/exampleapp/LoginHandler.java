@@ -1,4 +1,4 @@
-package energy.eddie.epdemoapp;
+package energy.eddie.examples.exampleapp;
 
 import com.google.inject.Inject;
 import io.javalin.Javalin;

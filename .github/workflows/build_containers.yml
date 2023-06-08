@@ -32,8 +32,8 @@ jobs:
         run: ./gradlew installDist
       - name: "Docker build image: EDDIE framework"
         run: docker build -f ./framework/src/main/docker/Dockerfile -t eddie-framework ./framework
-      - name: "Docker build image: EDDIE ep-demo-app"
-        run: docker build -f ./ep-demo-app/src/main/docker/Dockerfile -t eddie-ep-demo-app ./ep-demo-app
+      - name: "Docker build image: EDDIE example-app"
+        run: docker build -f ./examples/example-app/src/main/docker/Dockerfile -t eddie-example-app ./examples/example-app
       - name: Print some debugging information
         run: |
           echo github.repository_owner: ${{ github.repository_owner }}
@@ -48,9 +48,9 @@ jobs:
       #   must be used by all GitHub actions, supply chain attacks became common in recent times.
       - name: ghcr.io login
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-      - name: "Docker push image: EDDIE ep-demo-app"
+      - name: "Docker push image: EDDIE example-app"
         run: |
-          IMAGE_NAME=eddie-ep-demo-app
+          IMAGE_NAME=eddie-example-app
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
           VERSION=latest
           echo IMAGE_NAME: $IMAGE_NAME

@@ -4,7 +4,7 @@ showMenu = false,
 content = @`
     <div class="uk-card uk-card-body uk-card-primary uk-width-2-3@m">
         <h3 class="uk-card-title">Login to our awesome service</h3>
-        !{var contextPath = energy.eddie.epdemoapp.Env.PUBLIC_CONTEXT_PATH.get();}
+        !{var contextPath = energy.eddie.examples.exampleapp.Env.PUBLIC_CONTEXT_PATH.get();}
         <form class="uk-form-horizontal uk-margin-large" action="${contextPath}/login" method="post">
             <div class="uk-margin">
                 <label for="input-user" class="uk-form-label">Email</label>

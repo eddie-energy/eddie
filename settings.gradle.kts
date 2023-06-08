@@ -13,8 +13,8 @@ findProject(":region-connectors:region-connector-fr-enedis")?.name = "region-con
 include("region-connectors:region-connector-simulation")
 findProject(":region-connectors:region-connector-simulation")?.name = "region-connector-simulation"
 
-include("ep-demo-app")
-findProject("ep-demo-app")?.name = "ep-demo-app"
+include("examples:example-app")
+findProject(":examples:example-app")?.name = "example-app"
 
 include("framework")
 findProject("framework")?.name = "framework"

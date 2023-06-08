@@ -15,11 +15,11 @@ services:
       JDBC_USER: "sa"
       JDBC_PASSWORD: ""
       PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
-  eddie-ep-demo-app:
-    image: ghcr.io/eddie-energy/eddie-ep-demo-app:latest
+  eddie-example:
+    image: ghcr.io/eddie-energy/eddie-example-app:latest
     build:
       dockerfile: src/main/docker/Dockerfile
-      context: ../ep-demo-app
+      context: ../examples/example-app
     environment:
       JDBC_URL: "jdbc:h2:tcp://h2/demo-db"
       JDBC_USER: "sa"

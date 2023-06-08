@@ -68,7 +68,7 @@ jdbi3-core = { module = "org.jdbi:jdbi3-core", version.ref = "jdbi3" }
 guice = { module = "com.google.inject:guice", version.ref = "guice" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
-# used by ep-demo-app
+# used by example-app
 jte = { module = "gg.jte:jte", version.ref = "jte" }
 javalin-rendering = { module = "io.javalin:javalin-rendering", version.ref = "javalin" }
 
@@ -78,5 +78,5 @@ javalin-rendering = { module = "io.javalin:javalin-rendering", version.ref = "ja
 errorprone = { id = "net.ltgt.errorprone", version.ref = "errorprone" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonar" }
 jsonschema2pojo = { id = "org.jsonschema2pojo", version.ref = "jsonschema2pojo" }
-# used by ep-demo-app
+# used by example-app
 jte-gradle = { id = "gg.jte.gradle", version.ref = "jte" }

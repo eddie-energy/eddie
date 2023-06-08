@@ -1,12 +1,12 @@
 @param String user
 @param String nextConnectionId
-@param java.util.List<energy.eddie.epdemoapp.ConnectionStatus> connectionStatuses
+@param java.util.List<energy.eddie.examples.exampleapp.ConnectionStatus> connectionStatuses
 
 @template.layout(
 title = "Your data connections",
 content = @`
-    !{String eddieUrl = energy.eddie.epdemoapp.Env.EDDIE_FRAMEWORK_PUBLIC_URL.get();}
-    !{var contextPath = energy.eddie.epdemoapp.Env.PUBLIC_CONTEXT_PATH.get();}
+    !{String eddieUrl = energy.eddie.examples.exampleapp.Env.EDDIE_FRAMEWORK_PUBLIC_URL.get();}
+    !{var contextPath = energy.eddie.examples.exampleapp.Env.PUBLIC_CONTEXT_PATH.get();}
     <script type="module" src="${eddieUrl}/lib/eddie-components.js"></script>
     Hi ${user} here is your latest consumption data.
     <h3>Connections</h3>
@@ -20,7 +20,7 @@ content = @`
         </tr>
         </thead>
         <tbody>
-        @for(energy.eddie.epdemoapp.ConnectionStatus status : connectionStatuses)
+        @for(energy.eddie.examples.exampleapp.ConnectionStatus status : connectionStatuses)
             <tr>
                 <td>${status.connectionId()}</td>
                 <td>${status.timestamp().toString()}</td>

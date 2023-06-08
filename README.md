@@ -11,7 +11,7 @@ There are three tasks in the **development** group that have to run at the same 
 
 - `./gradlew run-db-server`
 - `./gradlew run-framework`
-- `./gradlew run-ep-demo-app`
+- `./gradlew run-example-app`
 
 The three processes are:
 
@@ -20,7 +20,7 @@ The three processes are:
 [H2 Database Engine](https://www.h2database.com/html/main.html) started as a network server.
 
 - the databases interface is acessible through <http://localhost:8082>
-- JDBC connection through: `jdbc:h2:tcp://localhost/./ep-demo-app` (username and password empty)
+- JDBC connection through: `jdbc:h2:tcp://localhost/./examples/example-app` (username and password empty)
 
 #### Eligible party demo app
 
