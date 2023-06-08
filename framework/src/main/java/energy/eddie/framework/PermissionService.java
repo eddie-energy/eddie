@@ -11,9 +11,9 @@ import reactor.util.annotation.Nullable;
 
 import java.util.Set;
 
-public class ConsentService {
+public class PermissionService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConsentService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
 
     @Inject
     private Set<RegionConnector> regionConnectors;

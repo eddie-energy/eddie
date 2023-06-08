@@ -24,7 +24,7 @@ public class Framework implements Runnable {
     @Inject
     private JavalinApp javalinApp;
     @Inject
-    private ConsentService consentService;
+    private PermissionService permissionService;
     @Inject
     private ConsumptionRecordService consumptionRecordService;
 
@@ -67,7 +67,7 @@ public class Framework implements Runnable {
     public void run() {
         LOGGER.info("Starting up EDDIE framework");
         jdbcAdapter.init();
-        var connectionStatusMessageStream = JdkFlowAdapter.publisherToFlowPublisher(consentService.getConnectionStatusMessageStream());
+        var connectionStatusMessageStream = JdkFlowAdapter.publisherToFlowPublisher(permissionService.getConnectionStatusMessageStream());
         jdbcAdapter.setConnectionStatusMessageStream(connectionStatusMessageStream);
         var consumptionRecordMessageStream = JdkFlowAdapter.publisherToFlowPublisher(consumptionRecordService.getConsumptionRecordStream());
         jdbcAdapter.setConsumptionRecordStream(consumptionRecordMessageStream);
