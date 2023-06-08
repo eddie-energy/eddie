@@ -10,10 +10,10 @@
 .github/* @eddie-energy/fh-dev
 
 # Top level components
-api @h-carl
-env @h-carl
-ep-demo-app @h-carl
-framework @h-carl
+api @eddie-energy/fh-dev
+env @eddie-energy/fh-dev
+ep-demo-app @eddie-energy/fh-dev
+framework @eddie-energy/fh-dev
 
 # Region Connectors
 region-connectors/* @eddie-energy/fh-dev
