@@ -5,10 +5,6 @@ import java.util.concurrent.Flow;
 /**
  * An application connector delivers data to the eligible party's application. All messages from the region connectors
  * are passed on to the EP application using their transport of choice, e.g. Kafka or RDBMS access.
- *
- * <hr><b>TODO</b> This interface should be refined and re-documented as the timing can be quite diverse (e.g. should
- * the set methods be called before or after init() ? What happends if events are sent before init is called?
- * Do we also neeed a stop method?)
  */
 public interface ApplicationConnector {
     /**
