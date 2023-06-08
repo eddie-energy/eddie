@@ -15,7 +15,7 @@ public class ConsumptionRecordHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumptionRecordHandler.class);
 
     ConsumptionRecordHandler() {
-        consumptionRecordStream = Flux.create(consumptionRecordStreamSink -> this.consumptionRecordStreamSink = consumptionRecordStreamSink);
+        consumptionRecordStream = Flux.create(newConsumptionRecordStreamSink -> this.consumptionRecordStreamSink = newConsumptionRecordStreamSink);
     }
 
     private final Flux<ConsumptionRecord> consumptionRecordStream;
@@ -30,15 +30,14 @@ public class ConsumptionRecordHandler {
         LOGGER.info("initializing Javalin app");
         app.post(SimulationConnector.basePath() + "/api/consumption-records", ctx -> {
             var consumptionRecord = ctx.bodyAsClass(ConsumptionRecord.class);
-            if (null != consumptionRecordStreamSink) {
-                consumptionRecordStreamSink.next(consumptionRecord);
-            } else {
-                throw new RuntimeException("initialization error");
+            if (null == consumptionRecordStreamSink) {
+                throw new IllegalStateException("consumptionRecordStreamSink not initialized yet");
             }
+            consumptionRecordStreamSink.next(consumptionRecord);
         });
     }
 
-    synchronized static public ConsumptionRecordHandler instance() {
+    public static synchronized ConsumptionRecordHandler instance() {
         if (null == singleton) {
             ConsumptionRecordHandler.singleton = new ConsumptionRecordHandler();
         }

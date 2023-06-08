@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.simulation;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsentStatus;
 import io.javalin.Javalin;
+import io.javalin.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -20,7 +21,7 @@ public class ConnectionStatusHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusHandler.class);
 
     private ConnectionStatusHandler() {
-        connectionStatusStream = Flux.create(connectionStatusStreamSink -> this.connectionStatusStreamSink = connectionStatusStreamSink);
+        connectionStatusStream = Flux.create(newConnectionStatusStreamSink -> this.connectionStatusStreamSink = newConnectionStatusStreamSink);
     }
 
     private final Flux<ConnectionStatusMessage> connectionStatusStream;
@@ -45,15 +46,18 @@ public class ConnectionStatusHandler {
             var req = ctx.bodyAsClass(SetConnectionStatusRequest.class);
             LOGGER.info("changing connection status of {} to {}", req.connectionId, req.consentStatus);
             var now = ZonedDateTime.now(ZoneId.systemDefault());
-            if (null != connectionStatusStreamSink && null != req.connectionId && null != req.consentStatus) {
+            if (null == connectionStatusStreamSink) {
+                throw new IllegalStateException("connectionStatusStreamSink not initialized yet");
+            }
+            if (null != req.connectionId && null != req.consentStatus) {
                 connectionStatusStreamSink.next(new ConnectionStatusMessage(req.connectionId, req.connectionId, now, req.consentStatus));
             } else {
-                throw new RuntimeException("initialization error");
+                ctx.status(HttpStatus.BAD_REQUEST);
             }
         });
     }
 
-    synchronized static public ConnectionStatusHandler instance() {
+    public static synchronized ConnectionStatusHandler instance() {
         if (null == singleton) {
             ConnectionStatusHandler.singleton = new ConnectionStatusHandler();
         }
