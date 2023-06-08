@@ -6,7 +6,6 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class MetadataService {
 
@@ -16,6 +15,6 @@ public class MetadataService {
     public Collection<RegionConnectorMetadata> getRegionConnectorMetadata() {
         return regionConnectors.stream()
                 .map(RegionConnector::getMetadata)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

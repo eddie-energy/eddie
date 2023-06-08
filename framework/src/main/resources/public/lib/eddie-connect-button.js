@@ -8,7 +8,7 @@ class EddieConnectButton extends LitElement {
         _availableConnectors: {},
     };
 
-    static CONTEXT_PATH = (new URL(import.meta.url)).pathname.replace(new RegExp("/lib/.*$"), "");
+    static CONTEXT_PATH = (new URL(import.meta.url)).pathname.replace(/\/lib\/.*$/, "");
 
     dialogRef = createRef();
     connectorPlaceholderRef = createRef();
@@ -77,14 +77,15 @@ class EddieConnectButton extends LitElement {
                     console.error(res);
                     return null;
                 }
-            }).then(json => this._availableConnectors = Object.fromEntries(json.map(it => [it.mdaCode, it])));
+            }).then(json => this._availableConnectors = Object.fromEntries(json.map(it => [it.mdaCode, it])))
+            .catch(err => console.error(err));
     }
 
     selectPa(event) {
         const paName = event.target.value;
         if (paName) {
             console.log(`selected pa ${paName}, loading it's custom element`);
-            this.loadPaSpecificCustomElement(event.target.value);
+            this.loadPaSpecificCustomElement(event.target.value).catch(console.error);
         } else {
             console.log("unselected the pa");
             this.connectorPlaceholderRef.value.innerHTML = "... no PA selected ...";
@@ -112,8 +113,10 @@ class EddieConnectButton extends LitElement {
                 <label for="connector-select">Please select a PA:</label>
                 <select id="connector-select" @change="${this.selectPa}">
                     <option value="">..please select</option>
-                    ${Object.keys(this._availableConnectors).sort().map(con => html`
-                        <option value="${con}">${con}</option>`)}
+                    ${Object.keys(this._availableConnectors)
+                            .sort((a, b) => a.localeCompare(b))
+                            .map(con => html`
+                                <option value="${con}">${con}</option>`)}
                 </select>
                 <div ${ref(this.connectorPlaceholderRef)}>... no PA selected yet...</div>
             </dialog>
