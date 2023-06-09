@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.ConsumptionRecord;
-import energy.eddie.regionconnector.api.v0.models.ConsumptionPoint;
+import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
 import jakarta.annotation.Nullable;
 
@@ -39,15 +39,16 @@ public class ConsumptionRecordMapper {
 
     /**
      * Maps an EDA consumption record to a CIM consumption record
+     *
      * @param externalConsumptionRecord The external consumption record to map
      * @param permissionId              The permissionId to set on the mapped consumption record
      * @param connectionId              The connectionId to set on the mapped consumption record
      * @return a CIM consumption record
      */
-    public energy.eddie.regionconnector.api.v0.models.ConsumptionRecord mapToCIM(ConsumptionRecord externalConsumptionRecord, @Nullable String permissionId, @Nullable String connectionId) throws InvalidMappingException {
+    public energy.eddie.api.v0.ConsumptionRecord mapToCIM(ConsumptionRecord externalConsumptionRecord, @Nullable String permissionId, @Nullable String connectionId) throws InvalidMappingException {
         requireNonNull(externalConsumptionRecord);
 
-        var consumptionRecord = new energy.eddie.regionconnector.api.v0.models.ConsumptionRecord();
+        var consumptionRecord = new energy.eddie.api.v0.ConsumptionRecord();
         consumptionRecord.setPermissionId(permissionId); // permissionId is optional so setting null is ok
         consumptionRecord.setConnectionId(connectionId); // connectionId is optional so setting null is ok
 
@@ -55,8 +56,8 @@ public class ConsumptionRecordMapper {
         consumptionRecord.setMeteringPoint(externalConsumptionRecord.getProcessDirectory().getMeteringPoint());
         consumptionRecord.setStartDateTime(toZonedDateTime(crEnergy.getMeteringPeriodStart()));
         consumptionRecord.setMeteringInterval(switch (crEnergy.getMeteringIntervall()) {
-            case D -> energy.eddie.regionconnector.api.v0.models.ConsumptionRecord.MeteringInterval.P_1_D;
-            case QH -> energy.eddie.regionconnector.api.v0.models.ConsumptionRecord.MeteringInterval.PT_15_M;
+            case D -> energy.eddie.api.v0.ConsumptionRecord.MeteringInterval.PT_1_D;
+            case QH -> energy.eddie.api.v0.ConsumptionRecord.MeteringInterval.PT_15_M;
             default ->
                     throw new IllegalStateException("Unexpected value: " + crEnergy.getMeteringIntervall()); // according to the schema documentation, EnergyData can only ever have D or QH as MeteringInterval https://www.ebutilities.at/schemas/149 look for the `datantypen.pdf
         });
@@ -71,7 +72,7 @@ public class ConsumptionRecordMapper {
 
         List<ConsumptionPoint> consumptionPoints = new ArrayList<>(crEnergy.getNumberOfMeteringIntervall().intValue());
         energyData.getEP().forEach(energyPosition -> {
-            var dataPoint = new energy.eddie.regionconnector.api.v0.models.ConsumptionPoint();
+            var dataPoint = new energy.eddie.api.v0.ConsumptionPoint();
 
             if (Objects.equals(energyPosition.getMM(), "L1")) {
                 dataPoint.setMeteringType(ConsumptionPoint.MeteringType.MEASURED_VALUE);

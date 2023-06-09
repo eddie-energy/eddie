@@ -1,0 +1,40 @@
+version: "3.9"
+name: eddie-test
+services:
+  h2:
+    image: "pcarmona/h2database"
+    environment:
+      H2_DBNAME: demo-db
+  eddie-framework:
+    image: ghcr.io/eddie-energy/eddie-framework:latest
+    build:
+      dockerfile: src/main/docker/Dockerfile
+      context: ../framework
+    environment:
+      JDBC_URL: "jdbc:h2:tcp://h2/demo-db"
+      JDBC_USER: "sa"
+      JDBC_PASSWORD: ""
+      PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
+  eddie-example:
+    image: ghcr.io/eddie-energy/eddie-example-app:latest
+    build:
+      dockerfile: src/main/docker/Dockerfile
+      context: ../examples/example-app
+    environment:
+      JDBC_URL: "jdbc:h2:tcp://h2/demo-db"
+      JDBC_USER: "sa"
+      JDBC_PASSWORD: ""
+      EDDIE_FRAMEWORK_PUBLIC_URL: ${PUBLIC_CONTEXT_PATH}
+      PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
+  caddy:
+    image: caddy:alpine
+    ports:
+      - "127.0.0.1:9000:8080"
+    environment:
+      PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+
+volumes:
+  caddy_data:

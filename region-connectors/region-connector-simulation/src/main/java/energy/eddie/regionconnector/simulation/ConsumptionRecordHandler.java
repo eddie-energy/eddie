@@ -1,0 +1,46 @@
+package energy.eddie.regionconnector.simulation;
+
+import energy.eddie.api.v0.ConsumptionRecord;
+import io.javalin.Javalin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
+import reactor.util.annotation.Nullable;
+
+public class ConsumptionRecordHandler {
+
+    @Nullable
+    private static ConsumptionRecordHandler singleton;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsumptionRecordHandler.class);
+
+    ConsumptionRecordHandler() {
+        consumptionRecordStream = Flux.create(newConsumptionRecordStreamSink -> this.consumptionRecordStreamSink = newConsumptionRecordStreamSink);
+    }
+
+    private final Flux<ConsumptionRecord> consumptionRecordStream;
+    @Nullable
+    private FluxSink<ConsumptionRecord> consumptionRecordStreamSink;
+
+    public Flux<ConsumptionRecord> getConsumptionRecordStream() {
+        return consumptionRecordStream;
+    }
+
+    void initWebapp(Javalin app) {
+        LOGGER.info("Initializing Javalin app");
+        app.post(SimulationConnector.basePath() + "/api/consumption-records", ctx -> {
+            var consumptionRecord = ctx.bodyAsClass(ConsumptionRecord.class);
+            if (null == consumptionRecordStreamSink) {
+                throw new IllegalStateException("consumptionRecordStreamSink not initialized yet");
+            }
+            consumptionRecordStreamSink.next(consumptionRecord);
+        });
+    }
+
+    public static synchronized ConsumptionRecordHandler instance() {
+        if (null == singleton) {
+            ConsumptionRecordHandler.singleton = new ConsumptionRecordHandler();
+        }
+        return ConsumptionRecordHandler.singleton;
+    }
+}

@@ -26,7 +26,7 @@ tasks.withType<JavaCompile>().configureEach {
     if (!name.lowercase(Locale.getDefault()).contains("test")) {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
-            option("NullAway:AnnotatedPackages", "eddie.energy")
+            option("NullAway:AnnotatedPackages", "energy.eddie")
         }
     }
 }

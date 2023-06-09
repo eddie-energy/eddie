@@ -101,3 +101,9 @@ build
 
 ### IntelliJ
 .idea
+
+### jte template generated files ###
+**/jte-classes
+
+### Local h2 database files
+*.mv.db

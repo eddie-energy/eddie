@@ -14,11 +14,8 @@ repositories {
 }
 
 dependencies {
-    testImplementation(libs.junit.jupiter)
-
     implementation(libs.jackson.databind)
-    implementation("jakarta.validation:jakarta.validation-api:3.0.0")
-    implementation("javax.annotation:javax.annotation-api:1.3.2")
+    testImplementation(libs.junit.jupiter)
 }
 
 tasks.getByName<Test>("test") {
@@ -28,10 +25,9 @@ tasks.getByName<Test>("test") {
 
 jsonSchema2Pojo {
     // https://github.com/joelittlejohn/jsonschema2pojo/tree/master/jsonschema2pojo-gradle-plugin
-
-    sourceFiles = listOf(projectDir.resolve("src/main/resources/schemas/v0"))
+    sourceFiles = listOf(projectDir.resolve("src/main/schema.json"))
     targetDirectory = buildDir.resolve("generated-sources")
-    targetPackage = "energy.eddie.regionconnector.api.v0.models"
+    targetPackage = "energy.eddie.api.v0"
     setAnnotationStyle("jackson2")
     dateTimeType = "java.time.ZonedDateTime"
     isFormatDateTimes = true    // serialize ZonedDateTime to ISO 8601 string
@@ -41,10 +37,18 @@ jsonSchema2Pojo {
     includeHashcodeAndEquals = false
 }
 
+sourceSets {
+    create("schema") {
+        java {
+            srcDir(projectDir.resolve("src/main/schema.json"))
+        }
+    }
+}
+
 tasks.withType<JavaCompile>().configureEach {
     options.errorprone {
         check("NullAway", CheckSeverity.ERROR)
-        option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.api")
+        option("NullAway:AnnotatedPackages", "energy.eddie")
 
         // disable warnings for generated classes
         option("NullAway:TreatGeneratedAsUnannotated", true)

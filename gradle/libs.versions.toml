@@ -12,49 +12,65 @@ sonar = "4.0.0.2929"
 commons-codec = "1.15"
 jsonschema2pojo = "1.2.1"
 jackson = "2.15.2"
-reactor-core = "3.5.5"
+h2database = "2.1.212"
+javalin = "5.5.0"
+jdbi3 = "3.37.1"
+reactor = "3.5.5"
+slf4j = "2.0.7"
+guice = "5.1.0"
+jetty = "11.0.14"
+jte = "2.3.0"
 log4j = "2.20.0"
-
-slf4j-api = "2.0.7"
 
 [libraries]
 # Static analysis
 errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorpronecore" }
-nullaway = { module = "com.uber.nullaway:nullaway", version.ref = "nullaway"}
-jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305"}
+nullaway = { module = "com.uber.nullaway:nullaway", version.ref = "nullaway" }
+jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305" }
 ## Plugins
-errorprone = { module = "net.ltgt.gradle:gradle-errorprone-plugin", version.ref = "errorprone"}
+errorprone = { module = "net.ltgt.gradle:gradle-errorprone-plugin", version.ref = "errorprone" }
 sonar = { module = "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin", version.ref = "sonar" }
 
 # Aggregator artifact of junit5
-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit"}
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 
 
 # dependencies required by region-connector-api
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 
 # dependencies required by region-connector-at
-jaxb-xjc = { module = "org.glassfish.jaxb:jaxb-xjc", version.ref = "jaxb"}
-jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "jaxb"}
+jaxb-xjc = { module = "org.glassfish.jaxb:jaxb-xjc", version.ref = "jaxb" }
+jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "jaxb" }
 jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 
 
-jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakarta-xml-bind"}
-jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakarta-annotation"}
+jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakarta-xml-bind" }
+jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakarta-annotation" }
 
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 
-reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor-core" }
+reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor" }
 
 log4j-sl4j2-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 log4j-jul = { module = "org.apache.logging.log4j:log4j-jul", version.ref = "log4j" }
 
-slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j-api" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
-commons-codec = { module = "commons-codec:commons-codec" , version.ref = "commons-codec" }
+commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
 
+# used by framework
+h2database = { module = "com.h2database:h2", version.ref = "h2database" }
+javalin = { module = "io.javalin:javalin", version.ref = "javalin" }
+jetty-proxy = { module = "org.eclipse.jetty:jetty-proxy", version.ref = "jetty" }
+jdbi3-core = { module = "org.jdbi:jdbi3-core", version.ref = "jdbi3" }
+guice = { module = "com.google.inject:guice", version.ref = "guice" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+
+# used by example-app
+jte = { module = "gg.jte:jte", version.ref = "jte" }
+javalin-rendering = { module = "io.javalin:javalin-rendering", version.ref = "javalin" }
 
 [bundles]
 
@@ -62,3 +78,5 @@ commons-codec = { module = "commons-codec:commons-codec" , version.ref = "common
 errorprone = { id = "net.ltgt.errorprone", version.ref = "errorprone" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonar" }
 jsonschema2pojo = { id = "org.jsonschema2pojo", version.ref = "jsonschema2pojo" }
+# used by example-app
+jte-gradle = { id = "gg.jte.gradle", version.ref = "jte" }
