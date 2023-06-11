@@ -107,3 +107,6 @@ build
 
 ### Local h2 database files
 *.mv.db
+
+### Node ###
+node_modules/
