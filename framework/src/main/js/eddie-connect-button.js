@@ -1,5 +1,5 @@
-import {css, html, LitElement} from "https://esm.sh/lit";
-import {createRef, ref} from 'https://esm.sh/lit/directives/ref.js';
+import { html, css, LitElement } from "lit";
+import { ref, createRef } from "lit/directives/ref.js";
 
 class EddieConnectButton extends LitElement {
 
