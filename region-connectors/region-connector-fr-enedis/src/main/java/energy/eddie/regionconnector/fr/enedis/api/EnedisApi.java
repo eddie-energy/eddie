@@ -1,11 +1,11 @@
-package energy.eddie.regionconnector.fr.enedis.contracts;
+package energy.eddie.regionconnector.fr.enedis.api;
 
-import energy.eddie.regionconnector.api.v0.models.ConsumptionRecord;
+import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 
 import java.time.ZonedDateTime;
 
-public interface EnedisApiClientContract {
+public interface EnedisApi {
     /**
      * Request a bearer token and write it to the file
      *

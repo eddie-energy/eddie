@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.utils;
 
-import energy.eddie.regionconnector.api.v0.models.ConsumptionPoint;
-import energy.eddie.regionconnector.api.v0.models.ConsumptionRecord;
+import energy.eddie.api.v0.ConsumptionPoint;
+import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveIntervalReading;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
 import energy.eddie.regionconnector.fr.enedis.model.DailyConsumptionIntervalReading;

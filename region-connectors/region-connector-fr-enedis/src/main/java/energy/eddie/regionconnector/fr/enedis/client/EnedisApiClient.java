@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.fr.enedis.client;
 
-import energy.eddie.regionconnector.api.v0.models.ConsumptionRecord;
-import energy.eddie.regionconnector.fr.enedis.invoker.ApiClient;
+import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.fr.enedis.api.AuthorizationApi;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.api.MeteringDataApi;
-import energy.eddie.regionconnector.fr.enedis.contracts.EnedisApiClientContract;
+import energy.eddie.regionconnector.fr.enedis.invoker.ApiClient;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveResponse;
 import energy.eddie.regionconnector.fr.enedis.model.DailyConsumptionResponse;
@@ -12,8 +12,9 @@ import energy.eddie.regionconnector.fr.enedis.model.TokenGenerationResponse;
 import energy.eddie.regionconnector.fr.enedis.utils.ConsumptionRecordMapper;
 
 import java.time.*;
+import java.util.Objects;
 
-public class EnedisApiClient extends ApiClient implements EnedisApiClientContract {
+public class EnedisApiClient extends ApiClient implements EnedisApi {
     private final AuthorizationApi authApi;
     private final MeteringDataApi meterApi;
     private final EnedisApiClientConfiguration configuration;
@@ -22,7 +23,7 @@ public class EnedisApiClient extends ApiClient implements EnedisApiClientContrac
     public EnedisApiClient(EnedisApiClientConfiguration configuration) {
         this.configuration = configuration;
 
-        this.updateBaseUri(configuration.getBasePath());
+        this.updateBaseUri(configuration.basePath());
         this.authApi = new AuthorizationApi(this);
         this.meterApi = new MeteringDataApi(this);
     }
@@ -35,15 +36,15 @@ public class EnedisApiClient extends ApiClient implements EnedisApiClientContrac
     @Override
     public void postToken() throws ApiException {
         String grantType = "client_credentials";
-        String clientId = configuration.getClientId();
-        String clientSecret = configuration.getClientSecret();
+        String clientId = configuration.clientId();
+        String clientSecret = configuration.clientSecret();
         String contentType = "application/x-www-form-urlencoded";
         String authorization = "No auth";
 
         TokenGenerationResponse tokenGenerationResponse = authApi
-                .oauth2V3TokenPost(contentType, authorization, grantType, null, clientId, clientSecret);
+                .oauth2V3TokenPost(contentType, authorization, grantType, "eddie", clientId, clientSecret);
 
-        bearerToken = tokenGenerationResponse.getAccessToken();
+        bearerToken = Objects.requireNonNull( tokenGenerationResponse.getAccessToken());
     }
 
     /**
@@ -63,7 +64,7 @@ public class EnedisApiClient extends ApiClient implements EnedisApiClientContrac
 
         String authorization = "Bearer " + bearerToken;
 
-        DailyConsumptionResponse dcResponse = meterApi.meteringDataDcV5DailyConsumptionGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, null, null, null);
+        DailyConsumptionResponse dcResponse = meterApi.meteringDataDcV5DailyConsumptionGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, "application/json", "eddie", "");
         dcRecord = ConsumptionRecordMapper.dcReadingToCIM(dcResponse.getMeterReading());
 
         return dcRecord;
@@ -85,7 +86,7 @@ public class EnedisApiClient extends ApiClient implements EnedisApiClientContrac
         ConsumptionRecord clcRecord;
 
         String authorization = "Bearer " + bearerToken;
-        ConsumptionLoadCurveResponse clcResponse = meterApi.meteringDataClcV5ConsumptionLoadCurveGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, null, null, null);
+        ConsumptionLoadCurveResponse clcResponse = meterApi.meteringDataClcV5ConsumptionLoadCurveGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, "application/json", "eddie", "");
         clcRecord = ConsumptionRecordMapper.clcReadingToCIM(clcResponse.getMeterReading());
 
         return clcRecord;

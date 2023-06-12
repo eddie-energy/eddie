@@ -1,5 +1,5 @@
 module energy.eddie.regionconnector.fr.enedis {
-    requires energy.eddie.regionconnector.api;
+    requires energy.eddie.api;
     requires com.fasterxml.jackson.annotation;
     requires io.github.cdimascio.dotenv.java;
     requires com.fasterxml.jackson.databind;
@@ -16,6 +16,6 @@ module energy.eddie.regionconnector.fr.enedis {
 
     exports energy.eddie.regionconnector.fr.enedis;
     exports energy.eddie.regionconnector.fr.enedis.api;
-    exports energy.eddie.regionconnector.fr.enedis.invoker;
     exports energy.eddie.regionconnector.fr.enedis.model;
+    exports energy.eddie.regionconnector.fr.enedis.invoker;
 }

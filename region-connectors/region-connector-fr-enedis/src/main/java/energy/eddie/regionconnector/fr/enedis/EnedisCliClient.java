@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis;
 
-import energy.eddie.regionconnector.api.v0.models.ConsumptionRecord;
+import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import energy.eddie.regionconnector.fr.enedis.utils.DateTimeConverter;
 import org.slf4j.Logger;
@@ -10,22 +10,21 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
-import java.time.DateTimeException;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Scanner;
 
-public class Main {
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+public class EnedisCliClient {
+    private static final Logger logger = LoggerFactory.getLogger(EnedisCliClient.class);
 
     public static void main(String[] args) {
-        final EnedisApiClientFacade enedisApiClient = new EnedisApiClientFacade();
+        final EnedisApiFacade enedisApiClient = new EnedisApiFacade();
         final Scanner scanner = new Scanner(System.in, Charset.defaultCharset());
         final File file = new File("region-connectors/region-connector-fr-enedis/bearer.txt");
 
         String usagePointId = "";
-        ZonedDateTime start = null;
-        ZonedDateTime end = null;
+        ZonedDateTime reference = LocalDate.MIN.atStartOfDay(ZoneId.of("Europe/Paris"));
+        ZonedDateTime start = LocalDate.MIN.atStartOfDay(ZoneId.of("Europe/Paris"));
+        ZonedDateTime end = LocalDate.MIN.atStartOfDay(ZoneId.of("Europe/Paris"));
 
         try {
             if (!file.exists()) {
@@ -40,11 +39,11 @@ public class Main {
                 usagePointId = "11453290002823";
             }
 
-            while (start == null) {
+            while (start.equals(reference)) {
                 System.out.println("Please enter the date from data should be retrieved (YYYY-MM-DD)");
                 start = DateTimeConverter.isoDateToZonedDateTime(scanner.nextLine());
             }
-            while (end == null) {
+            while (end.equals(reference)) {
                 System.out.println("Please enter the date until data should be retrieved (YYYY-MM-DD)");
                 end = DateTimeConverter.isoDateToZonedDateTime(scanner.nextLine());
             }
@@ -55,7 +54,7 @@ public class Main {
                 try {
                     logger.warn("Unauthorised, retry with new token.");
 
-                    if (start == null) {
+                    if (start.equals(reference)) {
                         start = ZonedDateTime.now(ZoneId.of("Europe/Paris")).minusDays(2);
                         end = ZonedDateTime.now(ZoneId.of("Europe/Paris")).minusDays(1);
                     }
@@ -76,7 +75,7 @@ public class Main {
         }
     }
 
-    private static void getConsumptionRecords(EnedisApiClientFacade enedisApiClient, String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException, IOException {
+    private static void getConsumptionRecords(EnedisApiFacade enedisApiClient, String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException, IOException {
         ConsumptionRecord dcRecord = enedisApiClient.getDailyConsumption(usagePointId, start, end);
         logger.info("Daily Consumption Record received.");
         logger.info(dcRecord.toString(), dcRecord);
