@@ -84,7 +84,7 @@ class EdaRegionConnectorTest {
 
         // when
         // then
-        assertDoesNotThrow(connector::consumptionRecordStream);
+        assertDoesNotThrow(connector::getConsumptionRecordStream);
     }
 
     @Test
@@ -112,7 +112,7 @@ class EdaRegionConnectorTest {
                         JdkFlowAdapter
                                 .flowPublisherToFlux(
                                         new EdaRegionConnector(config, adapter, mapper)
-                                                .consumptionRecordStream()
+                                                .getConsumptionRecordStream()
                                 )
                 )
                 // then
