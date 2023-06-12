@@ -46,7 +46,7 @@ class ConsumptionRecordMapperTest {
         };
         var expectedMeteringInterval = switch (meteringInterval) {
             case QH -> energy.eddie.api.v0.ConsumptionRecord.MeteringInterval.PT_15_M;
-            case D -> energy.eddie.api.v0.ConsumptionRecord.MeteringInterval.PT_1_D;
+            case D -> energy.eddie.api.v0.ConsumptionRecord.MeteringInterval.P_1_D;
             default -> throw new IllegalArgumentException("Unexpected value: " + meteringInterval);
         };
         var expectedWh = consumptionValue * conversionFactor.getFactor();
