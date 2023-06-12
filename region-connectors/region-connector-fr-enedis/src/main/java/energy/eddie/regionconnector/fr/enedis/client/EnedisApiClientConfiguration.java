@@ -3,11 +3,11 @@ package energy.eddie.regionconnector.fr.enedis.client;
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.annotation.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
-public class EnedisApiClientConfiguration {
+import static java.util.Objects.requireNonNull;
+
+public record EnedisApiClientConfiguration(String clientId, String clientSecret, String hostname, String basePath) {
     private static final String CLIENT_ID_KEY_PROP = "enedis.clientId";
     private static final String CLIENT_SECRET_KEY_PROP = "enedis.clientSecret";
     private static final String HOSTNAME_KEY_PROP = "enedis.hostname";
@@ -16,29 +16,18 @@ public class EnedisApiClientConfiguration {
     private static final String CLIENT_SECRET_KEY_ENV = "CLIENT_SECRET";
     private static final String HOSTNAME_KEY_ENV = "HOSTNAME";
     private static final String BASE_PATH_KEY_ENV = "BASE_PATH";
-    @Nullable
-    private final String clientId;
-    @Nullable
-    private final String clientSecret;
-    @Nullable
-    private final String hostname;
-    @Nullable
-    private final String basePath;
-
-    private EnedisApiClientConfiguration(Builder builder) {
-        this.clientId = builder.clientId;
-        this.clientSecret = builder.clientSecret;
-        this.hostname = builder.hostname;
-        this.basePath = builder.basePath;
-    }
 
     public static EnedisApiClientConfiguration fromProperties(Properties properties) {
-        return new Builder()
-                .withClientId(properties.getProperty(CLIENT_ID_KEY_PROP))
-                .withClientSecret(properties.getProperty(CLIENT_SECRET_KEY_PROP))
-                .withHostname(properties.getProperty(HOSTNAME_KEY_PROP))
-                .withBasePath(properties.getProperty(BASE_PATH_KEY_PROP))
-                .build();
+        var clientId = properties.getProperty(CLIENT_ID_KEY_PROP);
+        requireNonNull(clientId, "Missing property: " + CLIENT_ID_KEY_PROP);
+        var clientSecret = properties.getProperty(CLIENT_SECRET_KEY_PROP);
+        requireNonNull(clientSecret, "Missing property: " + CLIENT_SECRET_KEY_PROP);
+        var hostname = properties.getProperty(HOSTNAME_KEY_PROP);
+        requireNonNull(hostname, "Missing property: " + HOSTNAME_KEY_PROP);
+        var basePath = properties.getProperty(BASE_PATH_KEY_PROP);
+        requireNonNull(basePath, "Missing property: " + BASE_PATH_KEY_PROP);
+
+        return new EnedisApiClientConfiguration(clientId, clientSecret, hostname, basePath);
     }
 
     public static EnedisApiClientConfiguration fromEnvironment() {
@@ -48,34 +37,19 @@ public class EnedisApiClientConfiguration {
                 .ignoreIfMalformed()
                 .load();
 
-        return new Builder()
-                .withClientId(dotenv.get(CLIENT_ID_KEY_ENV))
-                .withClientSecret(dotenv.get(CLIENT_SECRET_KEY_ENV))
-                .withHostname(dotenv.get(HOSTNAME_KEY_ENV))
-                .withBasePath(dotenv.get(BASE_PATH_KEY_ENV))
-                .build();
-    }
+        var clientId = dotenv.get(CLIENT_ID_KEY_ENV);
+        requireNonNull(clientId, "Missing variable: " + CLIENT_ID_KEY_ENV);
+        var clientSecret = dotenv.get(CLIENT_SECRET_KEY_ENV);
+        requireNonNull(clientSecret, "Missing variable: " + CLIENT_SECRET_KEY_ENV);
+        var hostname = dotenv.get(CLIENT_ID_KEY_ENV);
+        requireNonNull(hostname, "Missing variable: " + HOSTNAME_KEY_ENV);
+        var basePath = dotenv.get(CLIENT_ID_KEY_ENV);
+        requireNonNull(basePath, "Missing variable: " + BASE_PATH_KEY_ENV);
 
-    // Getters for the properties
-    @Nullable
-    public String getClientId() {
-        return clientId;
-    }
-    @Nullable
-    public String getClientSecret() {
-        return clientSecret;
-    }
-    @Nullable
-    public String getHostname() {
-        return hostname;
-    }
-    @Nullable
-    public String getBasePath() {
-        return basePath;
+        return new EnedisApiClientConfiguration(clientId, clientSecret, hostname, basePath);
     }
 
     public static class Builder {
-        private final List<String> errorMessages = new ArrayList<>();
         @Nullable
         private String clientId;
         @Nullable
@@ -109,22 +83,12 @@ public class EnedisApiClientConfiguration {
         }
 
         public EnedisApiClientConfiguration build() {
-            if (clientId == null) {
-                errorMessages.add("Missing property: clientId");
-            }
-            if (clientSecret == null) {
-                errorMessages.add("Missing property: clientSecret");
-            }
-            if (hostname == null) {
-                errorMessages.add("Missing property: hostname");
-            }
-            if (basePath == null) {
-                errorMessages.add("Missing property: basePath");
-            }
-            if (!errorMessages.isEmpty()) {
-                throw new IllegalStateException(String.join("; ", errorMessages));
-            }
-            return new EnedisApiClientConfiguration(this);
+            requireNonNull(clientId);
+            requireNonNull(clientSecret);
+            requireNonNull(hostname);
+            requireNonNull(basePath);
+
+            return new EnedisApiClientConfiguration(clientId, clientSecret, hostname, basePath);
         }
     }
 }

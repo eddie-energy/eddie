@@ -15,6 +15,6 @@ public class EnedisApiClientConfigurationTest {
     public void testApiClientConfigurationBuilderMissingAttribute() {
         EnedisApiClientConfiguration.Builder builder = new EnedisApiClientConfiguration.Builder();
         builder.withClientId("Test");
-        Assertions.assertThrows(IllegalStateException.class, builder::build);
+        Assertions.assertThrows(NullPointerException.class, builder::build);
     }
 }
