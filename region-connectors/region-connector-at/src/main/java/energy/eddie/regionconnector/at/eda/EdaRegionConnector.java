@@ -6,7 +6,10 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.at.api.RegionConnectorAT;
 import energy.eddie.regionconnector.at.api.SendCCMORequestResult;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import energy.eddie.regionconnector.at.eda.config.PropertiesAtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
+import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
+import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfig;
 import energy.eddie.regionconnector.at.eda.requests.*;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
@@ -17,8 +20,11 @@ import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.Disposable;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.ZonedDateTime;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Flow;
 import java.util.concurrent.SubmissionPublisher;
@@ -65,6 +71,36 @@ public class EdaRegionConnector implements RegionConnectorAT {
         edaAdapter.getConsumptionRecordStream().subscribe(this::processConsumptionRecords);
 
         edaAdapter.start();
+    }
+
+    public static void main(String[] args) throws Exception {
+        Properties properties = new Properties();
+        var in = EdaRegionConnector.class.getClassLoader().getResourceAsStream("regionconnector-at.properties");
+        properties.load(in);
+
+        var atConfiguration = PropertiesAtConfiguration.fromProperties(properties);
+
+        PontonXPAdapterConfig pontonXPAdapterConfig = PontonXPAdapterConfig.fromProperties(properties);
+
+        var workFolder = new File(pontonXPAdapterConfig.workFolder());
+        if (workFolder.exists() || workFolder.mkdirs()) {
+            System.out.println("Path exists: " + workFolder.getAbsolutePath());
+        } else {
+            throw new IOException("Could not create path: " + workFolder.getAbsolutePath());
+        }
+
+        EdaAdapter edaAdapter = new PontonXPAdapter(pontonXPAdapterConfig);
+        try (RegionConnectorAT regionConnectorAT = new EdaRegionConnector(atConfiguration, edaAdapter, new InMemoryEdaIdMapper())) {
+            var hostname = properties.getProperty("hostname", "localhost");
+            var port = Integer.parseInt(properties.getProperty("port", "8080"));
+
+            regionConnectorAT.startWebapp(new InetSocketAddress(hostname, port), true);
+            System.out.println("Started webapp on " + hostname + ":" + port);
+
+            // wait for the user to press enter
+            System.in.read();
+        }
+        System.exit(0);
     }
 
     @Override
