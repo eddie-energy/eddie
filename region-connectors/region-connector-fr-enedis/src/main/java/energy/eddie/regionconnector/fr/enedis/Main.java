@@ -87,7 +87,7 @@ public class Main {
 
     private static void showApiExceptionError(ApiException e) {
         logger.error("API Exception occured: " + e.getMessage(), e);
-        logger.error(e.getCode() + "", e);
+        logger.error(String.valueOf(e.getCode()), e);
         logger.error(e.getResponseBody(), e);
     }
 }

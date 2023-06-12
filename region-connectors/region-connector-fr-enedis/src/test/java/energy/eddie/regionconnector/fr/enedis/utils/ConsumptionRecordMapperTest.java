@@ -1,6 +1,6 @@
-package energy.eddie.regionconnector.fr.enedis;
+package energy.eddie.regionconnector.fr.enedis.utils;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
 import energy.eddie.regionconnector.fr.enedis.model.DailyConsumptionMeterReading;
 import org.junit.jupiter.api.Test;
@@ -19,8 +19,8 @@ public class ConsumptionRecordMapperTest {
 
         try {
             String content = Files.readString(Paths.get(Objects.requireNonNull(url).getFile()));
-            Gson gson = new Gson();
-            ConsumptionLoadCurveMeterReading consumptionLoadCurveMeterReading = gson.fromJson(content, ConsumptionLoadCurveMeterReading.class);
+            ObjectMapper objectMapper = new ObjectMapper();
+            ConsumptionLoadCurveMeterReading consumptionLoadCurveMeterReading = objectMapper.readValue(content, ConsumptionLoadCurveMeterReading.class);
             System.out.println(consumptionLoadCurveMeterReading);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -34,8 +34,8 @@ public class ConsumptionRecordMapperTest {
 
         try {
             String content = Files.readString(Paths.get(Objects.requireNonNull(url).getFile()));
-            Gson gson = new Gson();
-            DailyConsumptionMeterReading dailyConsumptionMeterReading = gson.fromJson(content, DailyConsumptionMeterReading.class);
+            ObjectMapper objectMapper = new ObjectMapper();
+            DailyConsumptionMeterReading dailyConsumptionMeterReading = objectMapper.readValue(content, DailyConsumptionMeterReading.class);
             System.out.println(dailyConsumptionMeterReading);
         } catch (IOException e) {
             throw new RuntimeException(e);

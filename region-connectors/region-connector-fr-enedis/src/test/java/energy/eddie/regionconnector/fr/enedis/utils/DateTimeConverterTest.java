@@ -1,6 +1,5 @@
-package energy.eddie.regionconnector.fr.enedis;
+package energy.eddie.regionconnector.fr.enedis.utils;
 
-import energy.eddie.regionconnector.fr.enedis.utils.DateTimeConverter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
