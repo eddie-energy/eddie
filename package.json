@@ -1,0 +1,16 @@
+{
+  "name": "eddie",
+  "private": true,
+  "type": "module",
+  "homepage": "https://eddie.energy",
+  "scripts": {
+    "build": "pnpm -r --filter='./region-connectors/*' --filter='./framework' run build"
+  },
+  "engines": {
+    "node": ">=18.14.0",
+    "pnpm": ">=8.5.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.8.8"
+  }
+}
