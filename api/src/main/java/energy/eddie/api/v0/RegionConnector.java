@@ -39,7 +39,7 @@ public interface RegionConnector extends AutoCloseable {
     /**
      * Revokes the permission at the permission administrator's system and closes the associated connection.
      *
-     * @param permissionId permission id that was published via the consumption record stream or connection status message stream
+     * @param permissionId unique id of the permission
      */
     void revokePermission(String permissionId);
 
