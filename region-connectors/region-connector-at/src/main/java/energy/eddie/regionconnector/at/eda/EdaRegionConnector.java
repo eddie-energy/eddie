@@ -1,7 +1,8 @@
 package energy.eddie.regionconnector.at.eda;
 
-import energy.eddie.regionconnector.api.v0.ConnectionStatusMessage;
-import energy.eddie.regionconnector.api.v0.models.ConsumptionRecord;
+import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.at.api.RegionConnectorAT;
 import energy.eddie.regionconnector.at.api.SendCCMORequestResult;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
@@ -12,6 +13,7 @@ import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.concurrent.Flow;
@@ -20,6 +22,18 @@ import java.util.concurrent.SubmissionPublisher;
 import static java.util.Objects.requireNonNull;
 
 public class EdaRegionConnector implements RegionConnectorAT {
+
+    public static final String COUNTRY_CODE = "at";
+    public static final String MDA_CODE = COUNTRY_CODE + "-eda";
+    public static final String MDA_DISPLAY_NAME = "Austria EDA";
+    /**
+     * The base path of the region connector. COUNTRY_CODE is enough, as in austria we only need one region connector
+     */
+    public static final String BASE_PATH = "/region-connectors/" + COUNTRY_CODE;
+    /**
+     * The number of metering points covered by EDA, i.e. all metering points in Austria
+     */
+    public static final int COVERED_METERING_POINTS = 5977915;
 
     private final AtConfiguration atConfiguration;
     private final EdaAdapter edaAdapter;
@@ -49,8 +63,13 @@ public class EdaRegionConnector implements RegionConnectorAT {
     }
 
     @Override
-    public Flow.Publisher<ConsumptionRecord> consumptionRecordStream() {
+    public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
         return consumptionRecordSubmissionPublisher;
+    }
+
+    @Override
+    public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+        return permissionStatusPublisher;
     }
 
     @Override
@@ -69,11 +88,6 @@ public class EdaRegionConnector implements RegionConnectorAT {
         edaAdapter.sendCMRequest(cmRequest);
 
         return new SendCCMORequestResult(permissionId, cmRequest.getProcessDirectory().getCMRequestId());
-    }
-
-    @Override
-    public Flow.Publisher<ConnectionStatusMessage> connnectionStatusMessageStream() {
-        return permissionStatusPublisher;
     }
 
     /**
@@ -129,5 +143,20 @@ public class EdaRegionConnector implements RegionConnectorAT {
             // TODO In the future this should also inform the administrative console about the invalid mapping
             logger.error("Could not map consumption record to CIM consumption record", e);
         }
+    }
+
+    @Override
+    public RegionConnectorMetadata getMetadata() {
+        return new RegionConnectorMetadata(MDA_CODE, MDA_DISPLAY_NAME, COUNTRY_CODE, BASE_PATH + "/", COVERED_METERING_POINTS);
+    }
+
+    @Override
+    public int startWebapp(InetSocketAddress address, boolean devMode) {
+        throw new UnsupportedOperationException("startWebapp is not yet implemented");
+    }
+
+    @Override
+    public void close() throws Exception {
+        edaAdapter.close();
     }
 }

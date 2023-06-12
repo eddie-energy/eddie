@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.api;
 
-import energy.eddie.regionconnector.api.v0.RegionConnector;
+import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.InvalidDsoIdException;
