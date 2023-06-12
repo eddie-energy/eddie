@@ -52,6 +52,7 @@ jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api",
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 
 reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor" }
+reactor-test = { module = "io.projectreactor:reactor-test", version.ref = "reactor" }
 
 log4j-sl4j2-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }

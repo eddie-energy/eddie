@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.simulation;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.ConsentStatus;
 import io.javalin.Javalin;
 import io.javalin.http.HttpStatus;
 import org.slf4j.Logger;
@@ -36,21 +35,21 @@ public class ConnectionStatusHandler {
         @Nullable
         public String connectionId;
         @Nullable
-        public ConsentStatus consentStatus;
+        public ConnectionStatusMessage.Status connectionStatus;
     }
 
     void initWebapp(Javalin app) {
         LOGGER.info("Initializing Javalin app");
-        app.get(SimulationConnector.basePath() + "/api/consent-status-values", ctx -> ctx.json(ConsentStatus.values()));
+        app.get(SimulationConnector.basePath() + "/api/consent-status-values", ctx -> ctx.json(ConnectionStatusMessage.Status.values()));
         app.post(SimulationConnector.basePath() + "/api/consent-status", ctx -> {
             var req = ctx.bodyAsClass(SetConnectionStatusRequest.class);
-            LOGGER.info("Changing connection status of {} to {}", req.connectionId, req.consentStatus);
+            LOGGER.info("Changing connection status of {} to {}", req.connectionId, req.connectionStatus);
             var now = ZonedDateTime.now(ZoneId.systemDefault());
             if (null == connectionStatusStreamSink) {
                 throw new IllegalStateException("connectionStatusStreamSink not initialized yet");
             }
-            if (null != req.connectionId && null != req.consentStatus) {
-                connectionStatusStreamSink.next(new ConnectionStatusMessage(req.connectionId, req.connectionId, now, req.consentStatus));
+            if (null != req.connectionId && null != req.connectionStatus) {
+                connectionStatusStreamSink.next(new ConnectionStatusMessage(req.connectionId, req.connectionId, now, req.connectionStatus, req.connectionStatus.toString()));
             } else {
                 ctx.status(HttpStatus.BAD_REQUEST);
             }

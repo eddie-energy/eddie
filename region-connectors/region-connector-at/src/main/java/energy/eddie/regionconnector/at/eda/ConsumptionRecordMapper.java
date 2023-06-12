@@ -17,6 +17,7 @@ import static java.util.Objects.requireNonNull;
 
 public class ConsumptionRecordMapper {
 
+    public static final String MEASURED_VALUE = "L1";
     private final ZoneId zoneId;
 
     /**
@@ -44,6 +45,7 @@ public class ConsumptionRecordMapper {
      * @param permissionId              The permissionId to set on the mapped consumption record
      * @param connectionId              The connectionId to set on the mapped consumption record
      * @return a CIM consumption record
+     * @throws InvalidMappingException if the mapping cant be completed because of invalid {@link ConsumptionRecord}. This can happen if the {@link ConsumptionRecord} is missing required fields such as Energy and EnergyData
      */
     public energy.eddie.api.v0.ConsumptionRecord mapToCIM(ConsumptionRecord externalConsumptionRecord, @Nullable String permissionId, @Nullable String connectionId) throws InvalidMappingException {
         requireNonNull(externalConsumptionRecord);
@@ -74,7 +76,7 @@ public class ConsumptionRecordMapper {
         energyData.getEP().forEach(energyPosition -> {
             var dataPoint = new energy.eddie.api.v0.ConsumptionPoint();
 
-            if (Objects.equals(energyPosition.getMM(), "L1")) {
+            if (Objects.equals(energyPosition.getMM(), MEASURED_VALUE)) {
                 dataPoint.setMeteringType(ConsumptionPoint.MeteringType.MEASURED_VALUE);
             } else {
                 dataPoint.setMeteringType(ConsumptionPoint.MeteringType.EXTRAPOLATED_VALUE);

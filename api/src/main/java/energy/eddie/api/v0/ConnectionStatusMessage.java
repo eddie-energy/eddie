@@ -3,17 +3,24 @@ package energy.eddie.api.v0;
 import java.time.ZonedDateTime;
 
 /**
- * Message from the region connector describing the current consent status.
+ * Represents a generic status message for a permission
  *
- * @param connectionId connection id as given from the EP application
- * @param permissionId associated with this connection
- * @param timestamp    current timestamp
- * @param status       current status of the consent process
+ * @param connectionId id of the connection (a connectionId can be associated with multiple permissions)
+ * @param permissionId unique id of the permission
+ * @param timestamp    timestamp of the message
+ * @param status       status of the message
+ * @param message      contains additional information about the status
  */
-public record ConnectionStatusMessage(
-        String connectionId,
-        String permissionId,
-        ZonedDateTime timestamp,
-        ConsentStatus status
-) {
+public record ConnectionStatusMessage(String connectionId, String permissionId,
+                                      ZonedDateTime timestamp, ConnectionStatusMessage.Status status,
+                                      String message) {
+
+
+    public enum Status {
+        REQUESTED,
+        GRANTED,
+        REJECTED,
+        ERROR,
+        REVOKED
+    }
 }
