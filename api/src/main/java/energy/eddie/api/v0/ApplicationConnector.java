@@ -10,19 +10,21 @@ public interface ApplicationConnector {
     /**
      * Sets the stream of connection status messages to be sent to the EP app.
      *
-     * @param csmsFlow stream of connection status messages
+     * @param connectionStatusMessageStream stream of connection status messages
      */
-    void setConnectionStatusMessageStream(Flow.Publisher<ConnectionStatusMessage> csmsFlow);
+    void setConnectionStatusMessageStream(Flow.Publisher<ConnectionStatusMessage> connectionStatusMessageStream);
 
     /**
      * Sets the stream of consumption records to be sent to the EP app.
      *
-     * @param crsFlow stream of consumption records
+     * @param consumptionRecordStream stream of consumption records
      */
-    void setConsumptionRecordStream(Flow.Publisher<ConsumptionRecord> crsFlow);
+    void setConsumptionRecordStream(Flow.Publisher<ConsumptionRecord> consumptionRecordStream);
 
     /**
      * Initialize and start application connector (life-cycle method).
+     * @deprecated since it introduces temporal coupling
      */
+    @Deprecated(since = "it introduces temporal coupling")
     void init();
 }

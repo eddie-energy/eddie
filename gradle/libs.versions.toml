@@ -21,6 +21,8 @@ guice = "5.1.0"
 jetty = "11.0.14"
 jte = "2.3.0"
 log4j = "2.20.0"
+kafka-clients = "3.4.0"
+reactor-core = "3.5.6"
 
 [libraries]
 # Static analysis
@@ -59,6 +61,9 @@ log4j-jul = { module = "org.apache.logging.log4j:log4j-jul", version.ref = "log4
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
+
+# dependencies required by kafka-outbound
+kafka-clients = {module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients"}
 
 # used by framework
 h2database = { module = "com.h2database:h2", version.ref = "h2database" }

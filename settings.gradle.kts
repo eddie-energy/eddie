@@ -9,6 +9,7 @@ findProject(":region-connectors:region-connector-at")?.name = "region-connector-
 
 include("region-connectors:region-connector-fr-enedis")
 findProject(":region-connectors:region-connector-fr-enedis")?.name = "region-connector-fr-enedis"
+include("outbound-kafka")
 
 include("region-connectors:region-connector-simulation")
 findProject(":region-connectors:region-connector-simulation")?.name = "region-connector-simulation"
