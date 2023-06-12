@@ -1,3 +1,4 @@
+
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
 import java.util.*
@@ -37,7 +38,7 @@ dependencies {
     runtimeOnly(libs.log4j.sl4j2.impl)
     runtimeOnly(libs.log4j.jul)
 
-    implementation(project(mapOf("path" to ":region-connectors:region-connector-api")))
+    implementation(project(mapOf("path" to ":api")))
 }
 
 tasks.getByName<Test>("test") {
@@ -73,7 +74,11 @@ openApiGenerate {
 
     generateApiTests.set(false)
     generateModelTests.set(false)
-    configOptions.set(mapOf("sourceFolder" to "/", "useJakartaEe" to "true", "dateLibrary" to "java8"))
+    configOptions.set(mapOf(
+            "sourceFolder" to "/",
+            "useJakartaEe" to "true",
+            "dateLibrary" to "java8",
+    ))
 
     library.set("native")
     cleanupOutput.set(true)
@@ -87,12 +92,14 @@ tasks.withType<JavaCompile>().configureEach {
     if (!name.lowercase(Locale.getDefault()).contains("test") && !name.lowercase(Locale.getDefault()).contains("generated")) {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
-            option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.fr.enedis.client")
+            option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.fr.enedis")
+            option("NullAway:TreatGeneratedAsUnannotated", true)
+            this.excludedPaths.set("${generatedSwaggerJavaDir}/energy/eddie/regionconnector/fr/enedis/invoker/*.*")
         }
     }
 }
 
 application {
-    mainClass.set("energy.eddie.regionconnector.fr.enedis.Main")
+    mainClass.set("energy.eddie.regionconnector.fr.enedis.EnedisCliClient")
     applicationDefaultJvmArgs = listOf("-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager")
 }
