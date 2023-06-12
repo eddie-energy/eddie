@@ -44,6 +44,8 @@ dependencies {
 
     implementation(libs.reactor.core)
     testImplementation(libs.reactor.test)
+
+    implementation(libs.javalin)
 }
 
 

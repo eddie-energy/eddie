@@ -7,11 +7,15 @@ import energy.eddie.regionconnector.at.api.RegionConnectorAT;
 import energy.eddie.regionconnector.at.api.SendCCMORequestResult;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
-import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
-import energy.eddie.regionconnector.at.eda.requests.InvalidDsoIdException;
+import energy.eddie.regionconnector.at.eda.requests.*;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
+import io.javalin.Javalin;
 import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.adapter.JdkFlowAdapter;
+import reactor.core.Disposable;
 
 import java.net.InetSocketAddress;
 import java.time.ZonedDateTime;
@@ -44,6 +48,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
 
     private final SubmissionPublisher<ConnectionStatusMessage> permissionStatusPublisher = new SubmissionPublisher<>();
     private final SubmissionPublisher<ConsumptionRecord> consumptionRecordSubmissionPublisher = new SubmissionPublisher<>();
+    private final Javalin javalin = Javalin.create();
 
     public EdaRegionConnector(AtConfiguration atConfiguration, EdaAdapter edaAdapter, EdaIdMapper edaIdMapper) throws TransmissionException {
         requireNonNull(atConfiguration);
@@ -152,11 +157,55 @@ public class EdaRegionConnector implements RegionConnectorAT {
 
     @Override
     public int startWebapp(InetSocketAddress address, boolean devMode) {
-        throw new UnsupportedOperationException("startWebapp is not yet implemented");
+        javalin
+                .ws("/permission-status", wsEndpoint -> wsEndpoint.onConnect(wsContext -> {
+                    var permissionId = wsContext.queryParam("permissionId");
+
+                    Disposable subscribe = JdkFlowAdapter.flowPublisherToFlux(getConnectionStatusMessageStream())
+                            .filter(connectionStatusMessage -> connectionStatusMessage.permissionId().equals(permissionId))
+                            .subscribe(wsContext::send);
+
+                    logger.info("New connection to websocket endpoint from SessionId '{}'for PermissionId '{}'", wsContext.getSessionId(), permissionId);
+
+                    wsEndpoint.onClose(context -> {
+                        subscribe.dispose();
+                        logger.info("Closed connection to websocket endpoint from SessionId '{}'for PermissionId '{}'", wsContext.getSessionId(), permissionId);
+                    });
+                }))
+                .post("/permission-request", ctx -> {
+                    var connectionId = ctx.queryParam("connectionId");
+                    requireNonNull(connectionId, "connectionId must not be null");
+                    var meteringPointId = ctx.queryParam("meteringPointId");
+                    var dsoId = ctx.queryParam("dsoId");
+                    var start = ctx.queryParam("start");
+                    requireNonNull(start, "start must not be null");
+                    var end = ctx.queryParam("end");
+                    var requestType = ctx.queryParam("requestType");
+                    requireNonNull(requestType, "requestType must not be null");
+                    var requestDataType = RequestDataType.valueOf(requestType);
+
+                    ZonedDateTime startDateTime = ZonedDateTime.parse(start);
+                    ZonedDateTime endDateTime = end == null ? null : ZonedDateTime.parse(end);
+
+                    var ccmoRequest = new CCMORequest(
+                            new DsoIdAndMeteringPoint(dsoId, meteringPointId),
+                            new CCMOTimeFrame(startDateTime, endDateTime),
+                            this.atConfiguration,
+                            requestDataType,
+                            AllowedMeteringIntervalType.QH,
+                            AllowedTransmissionCycle.D);
+
+                    var result = sendCCMORequest(connectionId, ccmoRequest);
+
+                    ctx.json(result);
+                })
+                .start(address.getHostName(), address.getPort());
+        return javalin.port();
     }
 
     @Override
     public void close() throws Exception {
+        javalin.close();
         edaAdapter.close();
     }
 }
