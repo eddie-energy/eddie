@@ -3,7 +3,6 @@ package energy.eddie.outbound.kafka;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.ConsentStatus;
 import energy.eddie.api.v0.ConsumptionRecord;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,8 +33,8 @@ class CustomSerializerTest {
     void testSerialize_StatusMessageData() throws JsonProcessingException {
         String topic = "test";
         ZonedDateTime now = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        ConnectionStatusMessage data = new ConnectionStatusMessage("connectionId", "permissionId", now, ConsentStatus.ACCEPTED);
-        byte[] expected = "{\"connectionId\":\"connectionId\",\"permissionId\":\"permissionId\",\"timestamp\":1672531200.000000000,\"status\":\"ACCEPTED\"}"
+        ConnectionStatusMessage data = new ConnectionStatusMessage("connectionId", "permissionId", now, ConnectionStatusMessage.Status.GRANTED, "Granted");
+        byte[] expected = "{\"connectionId\":\"connectionId\",\"permissionId\":\"permissionId\",\"timestamp\":1672531200.000000000,\"status\":\"GRANTED\",\"message\":\"Granted\"}"
                 .getBytes(StandardCharsets.UTF_8);
 
         byte[] result = customSerializer.serialize(topic, data);
