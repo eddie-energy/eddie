@@ -15,9 +15,9 @@ class SetConnectionStatusCe extends LitElement {
     }
 
     switchStatus(e) {
-        const consentStatus = e.target.value;
-        console.log(`switching connection status of ${this.connectionid} to ${consentStatus}`);
-        const body = JSON.stringify({connectionId: this.connectionid, consentStatus});
+        const connectionStatus = e.target.value;
+        console.log(`switching connection status of ${this.connectionid} to ${connectionStatus}`);
+        const body = JSON.stringify({connectionId: this.connectionid, connectionStatus});
         fetch("api/consent-status", {method: "POST", body})
             .catch(console.error);
     }
