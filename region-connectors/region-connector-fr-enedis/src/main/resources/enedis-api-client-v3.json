@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.0.3",
   "info": {
     "title": "ENEDIS REST Client",
     "description": "# Authorization\nThis authorization is materialized by an access token, also called a token, which must be presented by the application each time a catalog API is called. The authorization API allows you to retrieve an access token to the APIs in the catalog to which you have subscribed.\nEnedis has chosen to implement the OAUTH 2.0 protocol to manage access to its APIs, more precisely through the Client Credentials Grant Flow scenario.\n\nThe version of this API (v3) corresponds to an alignment with the Oauth2 standard.\n\n# Metering Data\nThis API makes it possible to recover the daily energy consumption for the delivery point of customers equipped with Linky communicating meters. Access to this resource is conditioned by the prior collection of client consent by Enedis.\n\n## Additional Information\nIn the sandbox, use the URL : https://ext.hml.api.enedis.fr\nIn production, use the URL : https://ext.prod.api.enedis.fr",
@@ -8,8 +8,8 @@
   },
   "servers": [
     {
-      "url": "https://ext.hml.api.enedis.fr/",
-      "description": "Sandbox"
+      "url": "https://ext.prod.api.enedis.fr/",
+      "description": "Production"
     }
   ],
   "tags": [
