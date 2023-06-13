@@ -24,6 +24,13 @@ log4j = "2.20.0"
 kafka-clients = "3.4.0"
 reactor-core = "3.5.6"
 
+slf4j-api = "2.0.7"
+
+swagger-codegen-version = "3.0.45"
+apache-httpcomponents-version = "4.5.14"
+jackson-databind-nullable-version = "0.2.6"
+dotenv-version = "3.0.0"
+
 [libraries]
 # Static analysis
 errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorpronecore" }
@@ -77,6 +84,13 @@ slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 # used by example-app
 jte = { module = "gg.jte:jte", version.ref = "jte" }
 javalin-rendering = { module = "io.javalin:javalin-rendering", version.ref = "javalin" }
+# dependencies required by region-connector-fr
+swagger-codegen = { module = "io.swagger.codegen.v3:swagger-codegen-cli", version.ref = "swagger-codegen-version" }
+jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullable", version.ref = "jackson-databind-nullable-version" }
+apache-http-client = { module = "org.apache.httpcomponents:httpclient", version.ref = "apache-httpcomponents-version" }
+apache-http-mime = { module = "org.apache.httpcomponents:httpmime", version.ref = "apache-httpcomponents-version" }
+dotenv = { module = "io.github.cdimascio:dotenv-java", version.ref = "dotenv-version" }
+
 
 [bundles]
 

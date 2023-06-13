@@ -1,0 +1,18 @@
+{
+  "usage_point_id": "11453290002823",
+  "start": "2023-05-29",
+  "end": "2023-05-30",
+  "quality": "BRUT",
+  "reading_type": {
+    "unit": "Wh",
+    "measurement_kind": "energy",
+    "aggregate": "sum",
+    "measuring_period": "P1D"
+  },
+  "interval_reading": [
+    {
+      "value": "17060",
+      "date": "2023-05-29"
+    }
+  ]
+}
