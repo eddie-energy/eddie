@@ -95,6 +95,7 @@ tasks.withType<JavaCompile>().configureEach {
             option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.fr.enedis")
             option("NullAway:TreatGeneratedAsUnannotated", true)
             this.excludedPaths.set("${generatedSwaggerJavaDir}/energy/eddie/regionconnector/fr/enedis/invoker/*.*")
+            option("NullawayExcludedClasses=EnedisApiClient.java")
         }
     }
 }

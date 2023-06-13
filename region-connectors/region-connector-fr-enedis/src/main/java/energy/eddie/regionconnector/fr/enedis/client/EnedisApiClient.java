@@ -49,6 +49,7 @@ public class EnedisApiClient extends ApiClient implements EnedisApi {
 
     /**
      * Request daily consumption metering data
+     * TODO: Fix null value
      *
      * @return Response with metering data
      * @throws ApiException Something went wrong while retrieving data from the API
@@ -64,7 +65,7 @@ public class EnedisApiClient extends ApiClient implements EnedisApi {
 
         String authorization = "Bearer " + bearerToken;
 
-        DailyConsumptionResponse dcResponse = meterApi.meteringDataDcV5DailyConsumptionGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, "application/json", "eddie", "");
+        DailyConsumptionResponse dcResponse = meterApi.meteringDataDcV5DailyConsumptionGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, "application/json", "eddie", null);
         dcRecord = ConsumptionRecordMapper.dcReadingToCIM(dcResponse.getMeterReading());
 
         return dcRecord;
@@ -72,6 +73,7 @@ public class EnedisApiClient extends ApiClient implements EnedisApi {
 
     /**
      * Request consumption load curve metering data
+     * TODO: Fix null value
      *
      * @return Response with metering data
      * @throws ApiException Something went wrong while retrieving data from the API
@@ -86,7 +88,7 @@ public class EnedisApiClient extends ApiClient implements EnedisApi {
         ConsumptionRecord clcRecord;
 
         String authorization = "Bearer " + bearerToken;
-        ConsumptionLoadCurveResponse clcResponse = meterApi.meteringDataClcV5ConsumptionLoadCurveGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, "application/json", "eddie", "");
+        ConsumptionLoadCurveResponse clcResponse = meterApi.meteringDataClcV5ConsumptionLoadCurveGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, "application/json", "eddie", null);
         clcRecord = ConsumptionRecordMapper.clcReadingToCIM(clcResponse.getMeterReading());
 
         return clcRecord;
