@@ -15,7 +15,7 @@ content = @`
         <tr>
             <th class="uk-width-small">connection id</th>
             <th class="uk-width-small">time</th>
-            <th class="uk-width-small">consent status</th>
+            <th class="uk-width-small">connection status</th>
             <th class="uk-width-small"></th>
         </tr>
         </thead>

@@ -40,8 +40,8 @@ public class ConnectionStatusHandler {
 
     void initWebapp(Javalin app) {
         LOGGER.info("Initializing Javalin app");
-        app.get(SimulationConnector.basePath() + "/api/consent-status-values", ctx -> ctx.json(ConnectionStatusMessage.Status.values()));
-        app.post(SimulationConnector.basePath() + "/api/consent-status", ctx -> {
+        app.get(SimulationConnector.basePath() + "/api/connection-status-values", ctx -> ctx.json(ConnectionStatusMessage.Status.values()));
+        app.post(SimulationConnector.basePath() + "/api/connection-status", ctx -> {
             var req = ctx.bodyAsClass(SetConnectionStatusRequest.class);
             LOGGER.info("Changing connection status of {} to {}", req.connectionId, req.connectionStatus);
             var now = ZonedDateTime.now(ZoneId.systemDefault());
