@@ -10,6 +10,7 @@ module energy.eddie.regionconnector.at {
     requires com.fasterxml.jackson.datatype.jsr310;
     requires energy.eddie.api;
     requires io.javalin;
+    requires kotlin.stdlib;
 
 
     exports energy.eddie.regionconnector.at.eda.requests;

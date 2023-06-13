@@ -14,6 +14,8 @@ import energy.eddie.regionconnector.at.eda.requests.*;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import io.javalin.Javalin;
+import io.javalin.http.HttpStatus;
+import io.javalin.validation.JavalinValidation;
 import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Flow;
@@ -193,6 +196,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
 
     @Override
     public int startWebapp(InetSocketAddress address, boolean devMode) {
+        JavalinValidation.register(ZonedDateTime.class, ZonedDateTime::parse);
         javalin
                 .ws("/permission-status", wsEndpoint -> wsEndpoint.onConnect(wsContext -> {
                     var permissionId = wsContext.queryParam("permissionId");
@@ -209,35 +213,54 @@ public class EdaRegionConnector implements RegionConnectorAT {
                     });
                 }))
                 .post("/permission-request", ctx -> {
-                    var connectionId = ctx.queryParam("connectionId");
-                    requireNonNull(connectionId, "connectionId must not be null");
-                    var meteringPointId = ctx.queryParam("meteringPointId");
-                    var dsoId = ctx.queryParam("dsoId");
-                    var start = ctx.queryParam("start");
-                    requireNonNull(start, "start must not be null");
-                    var end = ctx.queryParam("end");
-                    var requestType = ctx.queryParam("requestType");
-                    requireNonNull(requestType, "requestType must not be null");
-                    var requestDataType = RequestDataType.valueOf(requestType);
+                    // TODO rework validation after mvp1
+                    var connectionIdValidator = ctx.formParamAsClass("connectionId", String.class)
+                            .check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
 
-                    ZonedDateTime startDateTime = ZonedDateTime.parse(start);
-                    ZonedDateTime endDateTime = end == null ? null : ZonedDateTime.parse(end);
+                    var meteringPointIdValidator = ctx.formParamAsClass("meteringPointId", String.class)
+                            .check(s -> s != null && s.length() == 33, "meteringPointId must be 33 characters long");
+
+                    var startValidator = ctx.formParamAsClass("start", ZonedDateTime.class)
+                            .check(Objects::nonNull, "start must not be null");
+                    var endValidator = ctx.formParamAsClass("end", ZonedDateTime.class)
+                            .allowNullable()
+                            .check(end -> end == null || end.isAfter(startValidator.get()), "end must be after start");
+
+                    var errors = JavalinValidation.collectErrors(connectionIdValidator, meteringPointIdValidator, startValidator, endValidator);
+                    if (!errors.isEmpty()) {
+                        ctx.status(HttpStatus.BAD_REQUEST);
+                        ctx.json(errors);
+                        return;
+                    }
+
+                    var start = startValidator.get();
+                    var end = Objects.requireNonNullElseGet(endValidator.get(), () -> ZonedDateTime.now(start.getZone()).minusDays(1));
+                    DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint(null, meteringPointIdValidator.get());
 
                     var ccmoRequest = new CCMORequest(
-                            new DsoIdAndMeteringPoint(dsoId, meteringPointId),
-                            new CCMOTimeFrame(startDateTime, endDateTime),
+                            dsoIdAndMeteringPoint,
+                            new CCMOTimeFrame(start, end),
                             this.atConfiguration,
-                            requestDataType,
+                            RequestDataType.METERING_DATA, // for now only allow metering data
                             AllowedMeteringIntervalType.QH,
                             AllowedTransmissionCycle.D);
 
-                    var result = sendCCMORequest(connectionId, ccmoRequest);
 
+                    var connectionId = connectionIdValidator.get();
+
+                    var result = sendCCMORequest(connectionId, ccmoRequest);
+                    ctx.status(HttpStatus.OK);
                     ctx.json(result);
+                })
+                .exception(Exception.class, (e, ctx) -> {
+                    logger.error("Exception occurred while processing request", e);
+                    ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+                    ctx.result("Internal Server Error");
                 })
                 .start(address.getHostName(), address.getPort());
         return javalin.port();
     }
+
 
     @Override
     public void close() throws Exception {
