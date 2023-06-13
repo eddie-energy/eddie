@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.at.eda;
 
+import de.ponton.xp.adapter.api.ConnectionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.RegionConnectorMetadata;
@@ -76,12 +77,13 @@ public class EdaRegionConnector implements RegionConnectorAT {
         edaAdapter.start();
     }
 
-    public static void main(String[] args) throws Exception {
+    public EdaRegionConnector() throws IOException, JAXBException, ConnectionException, TransmissionException {
         Properties properties = new Properties();
         var in = EdaRegionConnector.class.getClassLoader().getResourceAsStream("regionconnector-at.properties");
         properties.load(in);
 
-        var atConfiguration = PropertiesAtConfiguration.fromProperties(properties);
+        this.atConfiguration = PropertiesAtConfiguration.fromProperties(properties);
+        this.consumptionRecordMapper = new ConsumptionRecordMapper(atConfiguration.timeZone());
 
         PontonXPAdapterConfig pontonXPAdapterConfig = PontonXPAdapterConfig.fromProperties(properties);
 
@@ -92,8 +94,21 @@ public class EdaRegionConnector implements RegionConnectorAT {
             throw new IOException("Could not create path: " + workFolder.getAbsolutePath());
         }
 
-        EdaAdapter edaAdapter = new PontonXPAdapter(pontonXPAdapterConfig);
-        try (RegionConnectorAT regionConnectorAT = new EdaRegionConnector(atConfiguration, edaAdapter, new InMemoryEdaIdMapper())) {
+        this.edaAdapter = new PontonXPAdapter(pontonXPAdapterConfig);
+        this.edaIdMapper = new InMemoryEdaIdMapper();
+
+
+        this.edaAdapter.getCMRequestStatusStream().subscribe(this::processCMRequestStatus);
+        this.edaAdapter.getConsumptionRecordStream().subscribe(this::processConsumptionRecords);
+        this.edaAdapter.start();
+    }
+
+    public static void main(String[] args) throws Exception {
+        Properties properties = new Properties();
+        var in = EdaRegionConnector.class.getClassLoader().getResourceAsStream("regionconnector-at.properties");
+        properties.load(in);
+
+        try (RegionConnectorAT regionConnectorAT = new EdaRegionConnector()) {
             var hostname = properties.getProperty("hostname", "localhost");
             var port = Integer.parseInt(properties.getProperty("port", "8080"));
 
