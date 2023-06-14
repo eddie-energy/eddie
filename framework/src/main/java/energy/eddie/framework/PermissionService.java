@@ -23,7 +23,12 @@ public class PermissionService {
         Flux<ConnectionStatusMessage> result = null;
         for (var connector : regionConnectors) {
             try {
-                result = JdkFlowAdapter.flowPublisherToFlux(connector.getConnectionStatusMessageStream());
+                Flux<ConnectionStatusMessage> stream = JdkFlowAdapter.flowPublisherToFlux(connector.getConnectionStatusMessageStream());
+                if (result == null) {
+                    result = stream;
+                } else {
+                    result = result.concatWith(stream);
+                }
             } catch (Exception e) {
                 LOGGER.warn("Got no connection status message stream for connector {}", connector.getMetadata().mdaCode(), e);
             }
