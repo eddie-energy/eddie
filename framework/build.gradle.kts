@@ -17,6 +17,7 @@ repositories {
 
 dependencies {
     implementation(project(":api"))
+    implementation(project(mapOf("path" to ":outbound-kafka")))
     runtimeOnly(project(":region-connectors:region-connector-at"))
     runtimeOnly(project(":region-connectors:region-connector-simulation"))
 
@@ -59,6 +60,8 @@ extraJavaModuleInfo {
     automaticModule("org.pcollections:pcollections", "org.pcollections:pcollections")
     automaticModule("com.github.kevinstern:software-and-algorithms", "com.github.kevinstern:software-and-algorithms")
     automaticModule("org.eclipse.jgit:org.eclipse.jgit", "org.eclipse.jgit:org.eclipse.jgit")
+    automaticModule("org.xerial.snappy:snappy-java", "snappy.java")
+    automaticModule("org.apache.kafka:kafka-clients", "kafka.clients")
 }
 
 application {
