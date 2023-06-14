@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis;
 
 import energy.eddie.api.v0.ConsumptionRecord;
-import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClientConfiguration;
+import energy.eddie.regionconnector.fr.enedis.config.PropertiesEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import energy.eddie.regionconnector.fr.enedis.utils.DateTimeConverter;
 import org.slf4j.Logger;
@@ -11,14 +11,23 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
-import java.time.*;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Properties;
 import java.util.Scanner;
 
 public class EnedisCliClient {
     private static final Logger logger = LoggerFactory.getLogger(EnedisCliClient.class);
 
-    public static void main(String[] args) {
-        final EnedisApiFacade enedisApiClient = new EnedisApiFacade(EnedisApiClientConfiguration.fromEnvironment());
+    public static void main(String[] args) throws IOException {
+        Properties properties = new Properties();
+        var in = EnedisCliClient.class.getClassLoader().getResourceAsStream("regionconnector-fr-enedis.properties");
+        properties.load(in);
+        PropertiesEnedisConfiguration propertiesEnedisConfiguration = new PropertiesEnedisConfiguration(properties);
+
+        final EnedisApiFacade enedisApiClient = new EnedisApiFacade(propertiesEnedisConfiguration);
         final Scanner scanner = new Scanner(System.in, Charset.defaultCharset());
         final File file = new File("region-connectors/region-connector-fr-enedis/bearer.txt");
 
