@@ -17,4 +17,3 @@ framework @eddie-energy/fh-dev
 
 # Region Connectors
 region-connectors/* @eddie-energy/fh-dev
-region-connectors/region-connector-simulation @h-carl
