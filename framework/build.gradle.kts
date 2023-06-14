@@ -62,6 +62,7 @@ extraJavaModuleInfo {
     automaticModule("org.eclipse.jgit:org.eclipse.jgit", "org.eclipse.jgit:org.eclipse.jgit")
     automaticModule("org.xerial.snappy:snappy-java", "snappy.java")
     automaticModule("org.apache.kafka:kafka-clients", "kafka.clients")
+    automaticModule("commons-logging:commons-logging", "commons.logging")
 }
 
 application {
