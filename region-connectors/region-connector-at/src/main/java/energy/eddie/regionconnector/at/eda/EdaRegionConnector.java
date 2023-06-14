@@ -1,21 +1,39 @@
 package energy.eddie.regionconnector.at.eda;
 
+import de.ponton.xp.adapter.api.ConnectionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.at.api.RegionConnectorAT;
 import energy.eddie.regionconnector.at.api.SendCCMORequestResult;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import energy.eddie.regionconnector.at.eda.config.PropertiesAtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
-import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
-import energy.eddie.regionconnector.at.eda.requests.InvalidDsoIdException;
+import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
+import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfig;
+import energy.eddie.regionconnector.at.eda.requests.*;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
+import io.javalin.Javalin;
+import io.javalin.http.ContentType;
+import io.javalin.http.HttpStatus;
+import io.javalin.validation.JavalinValidation;
 import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Flow;
 import java.util.concurrent.SubmissionPublisher;
 
@@ -29,11 +47,15 @@ public class EdaRegionConnector implements RegionConnectorAT {
     /**
      * The base path of the region connector. COUNTRY_CODE is enough, as in austria we only need one region connector
      */
-    public static final String BASE_PATH = "/region-connectors/" + COUNTRY_CODE;
+    public static final String BASE_PATH = "/region-connectors/at-eda/";
     /**
      * The number of metering points covered by EDA, i.e. all metering points in Austria
      */
     public static final int COVERED_METERING_POINTS = 5977915;
+    /**
+     * DSOs in Austria are only allowed to store data for the last 36 months
+     */
+    public static final int MAXIMUM_MONTHS_IN_THE_PAST = 36;
 
     private final AtConfiguration atConfiguration;
     private final EdaAdapter edaAdapter;
@@ -44,6 +66,12 @@ public class EdaRegionConnector implements RegionConnectorAT {
 
     private final SubmissionPublisher<ConnectionStatusMessage> permissionStatusPublisher = new SubmissionPublisher<>();
     private final SubmissionPublisher<ConsumptionRecord> consumptionRecordSubmissionPublisher = new SubmissionPublisher<>();
+    private final Javalin javalin = Javalin.create();
+
+    /**
+     * Workaround because ws are currently not working
+     */
+    private final ConcurrentMap<String, ConnectionStatusMessage> permissionIdToConnectionStatusMessages = new ConcurrentHashMap<>();
 
     public EdaRegionConnector(AtConfiguration atConfiguration, EdaAdapter edaAdapter, EdaIdMapper edaIdMapper) throws TransmissionException {
         requireNonNull(atConfiguration);
@@ -60,6 +88,50 @@ public class EdaRegionConnector implements RegionConnectorAT {
         edaAdapter.getConsumptionRecordStream().subscribe(this::processConsumptionRecords);
 
         edaAdapter.start();
+    }
+
+    public EdaRegionConnector() throws IOException, JAXBException, ConnectionException, TransmissionException {
+        Properties properties = new Properties();
+        var in = EdaRegionConnector.class.getClassLoader().getResourceAsStream("regionconnector-at.properties");
+        properties.load(in);
+
+        this.atConfiguration = PropertiesAtConfiguration.fromProperties(properties);
+        this.consumptionRecordMapper = new ConsumptionRecordMapper(atConfiguration.timeZone());
+
+        PontonXPAdapterConfig pontonXPAdapterConfig = PontonXPAdapterConfig.fromProperties(properties);
+
+        var workFolder = new File(pontonXPAdapterConfig.workFolder());
+        if (workFolder.exists() || workFolder.mkdirs()) {
+            System.out.println("Path exists: " + workFolder.getAbsolutePath());
+        } else {
+            throw new IOException("Could not create path: " + workFolder.getAbsolutePath());
+        }
+
+        this.edaAdapter = new PontonXPAdapter(pontonXPAdapterConfig);
+        this.edaIdMapper = new InMemoryEdaIdMapper();
+
+
+        this.edaAdapter.getCMRequestStatusStream().subscribe(this::processCMRequestStatus);
+        this.edaAdapter.getConsumptionRecordStream().subscribe(this::processConsumptionRecords);
+        this.edaAdapter.start();
+    }
+
+    public static void main(String[] args) throws Exception {
+        Properties properties = new Properties();
+        var in = EdaRegionConnector.class.getClassLoader().getResourceAsStream("regionconnector-at.properties");
+        properties.load(in);
+
+        try (RegionConnectorAT regionConnectorAT = new EdaRegionConnector()) {
+            var hostname = properties.getProperty("hostname", "localhost");
+            var port = Integer.parseInt(properties.getProperty("port", "8080"));
+
+            regionConnectorAT.startWebapp(new InetSocketAddress(hostname, port), true);
+            System.out.println("Started webapp on " + hostname + ":" + port);
+
+            // wait for the user to press enter
+            System.in.read();
+        }
+        System.exit(0);
     }
 
     @Override
@@ -116,8 +188,11 @@ public class EdaRegionConnector implements RegionConnectorAT {
             case REJECTED -> ConnectionStatusMessage.Status.REJECTED;
             case SENT, RECEIVED, DELIVERED -> ConnectionStatusMessage.Status.REQUESTED;
         };
+        var connectionStatusMessage = new ConnectionStatusMessage(connectionId, permissionId, now, status, message);
+        permissionStatusPublisher.submit(connectionStatusMessage);
+        // workaround because ws are currently not working
+        permissionIdToConnectionStatusMessages.put(permissionId, connectionStatusMessage);
 
-        permissionStatusPublisher.submit(new ConnectionStatusMessage(connectionId, permissionId, now, status, message));
     }
 
     /**
@@ -147,16 +222,88 @@ public class EdaRegionConnector implements RegionConnectorAT {
 
     @Override
     public RegionConnectorMetadata getMetadata() {
-        return new RegionConnectorMetadata(MDA_CODE, MDA_DISPLAY_NAME, COUNTRY_CODE, BASE_PATH + "/", COVERED_METERING_POINTS);
+        return new RegionConnectorMetadata(MDA_CODE, MDA_DISPLAY_NAME, COUNTRY_CODE, BASE_PATH, COVERED_METERING_POINTS);
     }
 
     @Override
     public int startWebapp(InetSocketAddress address, boolean devMode) {
-        throw new UnsupportedOperationException("startWebapp is not yet implemented");
+        JavalinValidation.register(ZonedDateTime.class, value -> value != null && !value.isBlank() ? LocalDate.parse(value, DateTimeFormatter.ISO_DATE).atStartOfDay(atConfiguration.timeZone()) : null);
+
+        javalin.get(BASE_PATH + "/ce.js", context -> {
+            context.contentType(ContentType.TEXT_JS);
+            context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js")));
+        });
+
+        javalin.get(BASE_PATH + "/permission-status", ctx -> {
+            var permissionId = ctx.queryParamAsClass("permissionId", String.class).get();
+            var connectionStatusMessage = permissionIdToConnectionStatusMessages.get(permissionId);
+            if (connectionStatusMessage == null) {
+                ctx.status(HttpStatus.NOT_FOUND);
+                return;
+            }
+            ctx.json(connectionStatusMessage);
+        });
+
+        javalin.post(BASE_PATH + "/permission-request", ctx -> {
+            // TODO rework validation after mvp1
+            var connectionIdValidator = ctx.formParamAsClass("connectionId", String.class)
+                    .check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
+
+            var meteringPointIdValidator = ctx.formParamAsClass("meteringPointId", String.class)
+                    .check(s -> s != null && s.length() == 33, "meteringPointId must be 33 characters long");
+
+            var startValidator = ctx.formParamAsClass("start", ZonedDateTime.class)
+                    .check(Objects::nonNull, "start must not be null")
+                    .check(start -> start.isAfter(ZonedDateTime.now(start.getZone()).minusMonths(MAXIMUM_MONTHS_IN_THE_PAST)), "start must not be older than 36 months");
+
+            var endValidator = ctx.formParamAsClass("end", ZonedDateTime.class)
+                    //.allowNullable() // disable for now as we don't support Future data yet
+                    .check(Objects::nonNull, "end must not be null")
+                    .check(end -> end.isAfter(startValidator.get()), "end must be after start")
+                    .check(end -> end.isBefore(ZonedDateTime.now(end.getZone()).minusDays(1)), "end must be in the past"); // for now, we only support historical data
+
+            var errors = JavalinValidation.collectErrors(connectionIdValidator, meteringPointIdValidator, startValidator, endValidator);
+            if (!errors.isEmpty()) {
+                ctx.status(HttpStatus.BAD_REQUEST);
+                ctx.json(errors);
+                return;
+            }
+
+            var start = startValidator.get();
+            var end = Objects.requireNonNullElseGet(endValidator.get(), () -> ZonedDateTime.now(start.getZone()).minusDays(1));
+            DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint(null, meteringPointIdValidator.get());
+
+            var ccmoRequest = new CCMORequest(
+                    dsoIdAndMeteringPoint,
+                    new CCMOTimeFrame(start, end),
+                    this.atConfiguration,
+                    RequestDataType.METERING_DATA, // for now only allow metering data
+                    AllowedMeteringIntervalType.QH,
+                    AllowedTransmissionCycle.D);
+
+
+            var connectionId = connectionIdValidator.get();
+
+            var result = sendCCMORequest(connectionId, ccmoRequest);
+            ctx.status(HttpStatus.OK);
+            ctx.json(result);
+        });
+
+        javalin.exception(Exception.class, (e, ctx) -> {
+            logger.error("Exception occurred while processing request", e);
+            ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            ctx.result("Internal Server Error");
+        });
+
+        javalin.start(address.getHostName(), address.getPort());
+
+        return javalin.port();
     }
+
 
     @Override
     public void close() throws Exception {
+        javalin.close();
         edaAdapter.close();
     }
 }

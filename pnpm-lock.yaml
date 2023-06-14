@@ -32,6 +32,16 @@ importers:
         specifier: ^4.3.9
         version: 4.3.9
 
+  region-connectors/region-connector-at:
+    dependencies:
+      lit:
+        specifier: ^2.7.5
+        version: 2.7.5
+    devDependencies:
+      vite:
+        specifier: ^4.3.9
+        version: 4.3.9
+
 packages:
 
   /@esbuild/android-arm64@0.17.19:

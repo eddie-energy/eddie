@@ -44,6 +44,8 @@ dependencies {
 
     implementation(libs.reactor.core)
     testImplementation(libs.reactor.test)
+
+    implementation(libs.javalin)
 }
 
 
@@ -102,10 +104,19 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 application {
-    mainClass.set("energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterCliClient")
+    mainClass.set("energy.eddie.regionconnector.at.eda.EdaRegionConnector")
     applicationDefaultJvmArgs = listOf("-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager")
 }
 
 tasks.named<JavaExec>("run") {
     standardInput = System.`in`
+}
+
+// create additional run task
+tasks.register<JavaExec>("runCliClient") {
+    group = "application"
+    standardInput = System.`in`
+    mainClass.set("energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterCliClient")
+    classpath = sourceSets["main"].runtimeClasspath
+    jvmArgs = listOf("-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager")
 }

@@ -28,7 +28,7 @@ import reactor.core.publisher.Sinks;
 import java.io.*;
 
 
-class PontonXPAdapter implements EdaAdapter {
+public class PontonXPAdapter implements EdaAdapter {
     final Sinks.Many<CMRequestStatus> requestStatusSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<CMRevoke> cmRevokeSink = Sinks.many().multicast().onBackpressureBuffer();
@@ -39,7 +39,7 @@ class PontonXPAdapter implements EdaAdapter {
     Marshaller marshaller = context.createMarshaller();
     Unmarshaller unmarshaller = context.createUnmarshaller();
 
-    PontonXPAdapter(PontonXPAdapterConfig config) throws IOException, ConnectionException, JAXBException {
+    public PontonXPAdapter(PontonXPAdapterConfig config) throws IOException, ConnectionException, JAXBException {
         final String adapterId = config.adapterId();
         final String adapterVersion = config.adapterVersion();
         final String hostname = config.hostname();
