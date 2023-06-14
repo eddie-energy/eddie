@@ -101,6 +101,7 @@ build
 
 ### IntelliJ
 .idea
+!.idea/prettier.xml
 
 ### jte template generated files ###
 **/jte-classes

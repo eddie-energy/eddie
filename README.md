@@ -7,6 +7,13 @@ To get started with the development process see [DEVELOPMENT.md](./DEVELOPMENT.m
 
 ## How to run
 
+Some modules provide custom web elements that need to be built with pnpm:
+
+```bash
+pnpm install
+pnpm run build
+```
+
 There are three tasks in the **development** group that have to run at the same time, e.g. in different windows:
 
 - `./gradlew run-db-server`
