@@ -13,6 +13,9 @@ module energy.eddie.regionconnector.fr.enedis {
     requires org.slf4j;
     requires org.apache.logging.log4j;
     requires org.openapitools.jackson.nullable;
+    requires reactor.core;
+    requires io.javalin;
+    requires kotlin.stdlib;
 
     exports energy.eddie.regionconnector.fr.enedis;
     exports energy.eddie.regionconnector.fr.enedis.api;
