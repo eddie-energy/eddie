@@ -16,9 +16,8 @@ import reactor.adapter.JdkFlowAdapter;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.Properties;
-import java.util.ServiceLoader;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Framework implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Framework.class);
@@ -33,6 +32,26 @@ public class Framework implements Runnable {
     private ConsumptionRecordService consumptionRecordService;
     @Inject
     private KafkaConnector kafkaConnector;
+
+    public static void main(String[] args) {
+        var injector = Guice.createInjector(new Module());
+        injector.getInstance(Framework.class).run();
+    }
+
+    @Override
+    public void run() {
+        LOGGER.info("Starting up EDDIE framework");
+        jdbcAdapter.init();
+
+        var connectionStatusMessageStream = JdkFlowAdapter.publisherToFlowPublisher(permissionService.getConnectionStatusMessageStream());
+        jdbcAdapter.setConnectionStatusMessageStream(connectionStatusMessageStream);
+        kafkaConnector.setConnectionStatusMessageStream(connectionStatusMessageStream);
+
+        var consumptionRecordMessageStream = JdkFlowAdapter.publisherToFlowPublisher(consumptionRecordService.getConsumptionRecordStream());
+        jdbcAdapter.setConsumptionRecordStream(consumptionRecordMessageStream);
+        kafkaConnector.setConsumptionRecordStream(consumptionRecordMessageStream);
+        javalinApp.init();
+    }
 
     private static class Module extends AbstractModule {
 
@@ -66,8 +85,19 @@ public class Framework implements Runnable {
 
         private Collection<RegionConnector> getAllConnectors() {
             var allConnectors = ServiceLoader.load(RegionConnector.class).stream()
-                    .map(ServiceLoader.Provider::get)
-                    .toList();
+                    .map(provider -> {
+                        try {
+                            // instantiate all connectors and ignore those that can't be constructed
+                            return Optional.of(provider.get());
+                        } catch (ServiceConfigurationError e) {
+                            LOGGER.error("Could not load/create RegionConnector '{}'", provider.type().getName(), e);
+                            return Optional.<RegionConnector>empty();
+                        }
+                    })
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toList());
+
             if (!allConnectors.isEmpty()) {
                 var paNames = allConnectors.stream().map(RegionConnector::getMetadata).map(RegionConnectorMetadata::mdaCode).toArray();
                 LOGGER.info("Found {} Connectors: {}", allConnectors.size(), paNames);
@@ -77,26 +107,6 @@ public class Framework implements Runnable {
             }
             return allConnectors;
         }
-    }
-
-    public static void main(String[] args) {
-        var injector = Guice.createInjector(new Module());
-        injector.getInstance(Framework.class).run();
-    }
-
-    @Override
-    public void run() {
-        LOGGER.info("Starting up EDDIE framework");
-        jdbcAdapter.init();
-
-        var connectionStatusMessageStream = JdkFlowAdapter.publisherToFlowPublisher(permissionService.getConnectionStatusMessageStream());
-        jdbcAdapter.setConnectionStatusMessageStream(connectionStatusMessageStream);
-        kafkaConnector.setConnectionStatusMessageStream(connectionStatusMessageStream);
-
-        var consumptionRecordMessageStream = JdkFlowAdapter.publisherToFlowPublisher(consumptionRecordService.getConsumptionRecordStream());
-        jdbcAdapter.setConsumptionRecordStream(consumptionRecordMessageStream);
-        kafkaConnector.setConsumptionRecordStream(consumptionRecordMessageStream);
-        javalinApp.init();
     }
 
     public static final class InitializationException extends RuntimeException {
