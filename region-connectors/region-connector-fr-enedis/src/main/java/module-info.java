@@ -19,6 +19,8 @@ module energy.eddie.regionconnector.fr.enedis {
 
     exports energy.eddie.regionconnector.fr.enedis;
     exports energy.eddie.regionconnector.fr.enedis.api;
-    exports energy.eddie.regionconnector.fr.enedis.model;
+    exports energy.eddie.regionconnector.fr.enedis.client;
+    exports energy.eddie.regionconnector.fr.enedis.config;
     exports energy.eddie.regionconnector.fr.enedis.invoker;
+    exports energy.eddie.regionconnector.fr.enedis.model;
 }
