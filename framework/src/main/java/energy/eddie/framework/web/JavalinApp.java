@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.Set;
 
 public class JavalinApp {
@@ -101,6 +102,8 @@ public class JavalinApp {
                 server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.NCSA_FORMAT));
                 return server;
             });
+
+            config.jetty.wsFactoryConfig(wsConfig -> wsConfig.setIdleTimeout(Duration.ofHours(1)));
         })) {
             app.after(ctx -> ctx.header("Access-Control-Allow-Origin", "*"));
             javalinPathHandlers.forEach(ph -> ph.registerPathHandlers(app));

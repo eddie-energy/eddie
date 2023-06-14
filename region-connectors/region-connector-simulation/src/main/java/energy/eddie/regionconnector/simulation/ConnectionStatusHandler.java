@@ -6,7 +6,7 @@ import io.javalin.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxSink;
+import reactor.core.publisher.Sinks;
 import reactor.util.annotation.Nullable;
 
 import java.time.ZoneId;
@@ -20,15 +20,12 @@ public class ConnectionStatusHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusHandler.class);
 
     private ConnectionStatusHandler() {
-        connectionStatusStream = Flux.create(newConnectionStatusStreamSink -> this.connectionStatusStreamSink = newConnectionStatusStreamSink);
     }
 
-    private final Flux<ConnectionStatusMessage> connectionStatusStream;
-    @Nullable
-    private FluxSink<ConnectionStatusMessage> connectionStatusStreamSink;
+    private Sinks.Many<ConnectionStatusMessage> connectionStatusStreamSink = Sinks.many().multicast().onBackpressureBuffer();
 
     public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-        return connectionStatusStream;
+        return connectionStatusStreamSink.asFlux();
     }
 
     public static class SetConnectionStatusRequest {
@@ -49,7 +46,7 @@ public class ConnectionStatusHandler {
                 throw new IllegalStateException("connectionStatusStreamSink not initialized yet");
             }
             if (null != req.connectionId && null != req.connectionStatus) {
-                connectionStatusStreamSink.next(new ConnectionStatusMessage(req.connectionId, req.connectionId, now, req.connectionStatus, req.connectionStatus.toString()));
+                connectionStatusStreamSink.tryEmitNext(new ConnectionStatusMessage(req.connectionId, req.connectionId, now, req.connectionStatus, req.connectionStatus.toString()));
             } else {
                 ctx.status(HttpStatus.BAD_REQUEST);
             }

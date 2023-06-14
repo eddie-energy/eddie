@@ -1,0 +1,47 @@
+:root {
+    --eddie-blue: #007aa2;
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        color: #213547;
+        background-color: #ffffff;
+    }
+
+    h1, h2, h3 {
+        color: var(--eddie-blue);
+    }
+}
+
+#menu-bar {
+    background-color: white;
+    border-bottom: var(--eddie-blue) solid 0.05rem;
+    height: 5rem;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+}
+
+#logo {
+    margin-right: 10px;
+}
+
+#content-root {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    place-items: baseline;
+    min-width: 320px;
+}
