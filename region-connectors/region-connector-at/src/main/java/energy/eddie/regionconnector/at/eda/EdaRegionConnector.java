@@ -15,15 +15,12 @@ import energy.eddie.regionconnector.at.eda.requests.*;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import io.javalin.Javalin;
+import io.javalin.http.ContentType;
 import io.javalin.http.HttpStatus;
 import io.javalin.validation.JavalinValidation;
-import io.javalin.http.ContentType;
-import io.javalin.validation.Validator;
 import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.adapter.JdkFlowAdapter;
-import reactor.core.Disposable;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +29,11 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Flow;
 import java.util.concurrent.SubmissionPublisher;
 
@@ -66,6 +67,11 @@ public class EdaRegionConnector implements RegionConnectorAT {
     private final SubmissionPublisher<ConnectionStatusMessage> permissionStatusPublisher = new SubmissionPublisher<>();
     private final SubmissionPublisher<ConsumptionRecord> consumptionRecordSubmissionPublisher = new SubmissionPublisher<>();
     private final Javalin javalin = Javalin.create();
+
+    /**
+     * Workaround because ws are currently not working
+     */
+    private final ConcurrentMap<String, ConnectionStatusMessage> permissionIdToConnectionStatusMessages = new ConcurrentHashMap<>();
 
     public EdaRegionConnector(AtConfiguration atConfiguration, EdaAdapter edaAdapter, EdaIdMapper edaIdMapper) throws TransmissionException {
         requireNonNull(atConfiguration);
@@ -182,8 +188,11 @@ public class EdaRegionConnector implements RegionConnectorAT {
             case REJECTED -> ConnectionStatusMessage.Status.REJECTED;
             case SENT, RECEIVED, DELIVERED -> ConnectionStatusMessage.Status.REQUESTED;
         };
+        var connectionStatusMessage = new ConnectionStatusMessage(connectionId, permissionId, now, status, message);
+        permissionStatusPublisher.submit(connectionStatusMessage);
+        // workaround because ws are currently not working
+        permissionIdToConnectionStatusMessages.put(permissionId, connectionStatusMessage);
 
-        permissionStatusPublisher.submit(new ConnectionStatusMessage(connectionId, permissionId, now, status, message));
     }
 
     /**
@@ -224,20 +233,17 @@ public class EdaRegionConnector implements RegionConnectorAT {
             context.contentType(ContentType.TEXT_JS);
             context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js")));
         });
-        javalin.ws(BASE_PATH + "/permission-status", wsEndpoint -> wsEndpoint.onConnect(wsContext -> {
-            var permissionId = wsContext.queryParam("permissionId");
 
-            Disposable subscribe = JdkFlowAdapter.flowPublisherToFlux(getConnectionStatusMessageStream())
-                    .filter(connectionStatusMessage -> connectionStatusMessage.permissionId().equals(permissionId))
-                    .subscribe(wsContext::send);
+        javalin.get(BASE_PATH + "/permission-status", ctx -> {
+            var permissionId = ctx.queryParamAsClass("permissionId", String.class).get();
+            var connectionStatusMessage = permissionIdToConnectionStatusMessages.get(permissionId);
+            if (connectionStatusMessage == null) {
+                ctx.status(HttpStatus.NOT_FOUND);
+                return;
+            }
+            ctx.json(connectionStatusMessage);
+        });
 
-            logger.info("New connection to websocket endpoint from SessionId '{}'for PermissionId '{}'", wsContext.getSessionId(), permissionId);
-
-            wsEndpoint.onClose(context -> {
-                subscribe.dispose();
-                logger.info("Closed connection to websocket endpoint from SessionId '{}'for PermissionId '{}'", wsContext.getSessionId(), permissionId);
-            });
-        }));
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
             // TODO rework validation after mvp1
             var connectionIdValidator = ctx.formParamAsClass("connectionId", String.class)
@@ -282,12 +288,15 @@ public class EdaRegionConnector implements RegionConnectorAT {
             ctx.status(HttpStatus.OK);
             ctx.json(result);
         });
+
         javalin.exception(Exception.class, (e, ctx) -> {
             logger.error("Exception occurred while processing request", e);
             ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
             ctx.result("Internal Server Error");
         });
+
         javalin.start(address.getHostName(), address.getPort());
+
         return javalin.port();
     }
 
