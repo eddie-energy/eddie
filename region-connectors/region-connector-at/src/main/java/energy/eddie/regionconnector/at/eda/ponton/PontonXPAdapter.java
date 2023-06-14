@@ -81,9 +81,9 @@ class PontonXPAdapter implements EdaAdapter {
         logger.info("Received status update for ConversationId: '{}' with result: '{}'", conversationId, outboundMessageStatusUpdate.getResult());
         switch (outboundMessageStatusUpdate.getResult()) {
             case SUCCESS ->  // success just indicates that the message was received by the other party (dso)
-                requestStatusSink.tryEmitNext(new CMRequestStatus(CMRequestStatus.Status.RECEIVED, outboundMessageStatusUpdate.getDetailText(), conversationId));
+                    requestStatusSink.tryEmitNext(new CMRequestStatus(CMRequestStatus.Status.RECEIVED, outboundMessageStatusUpdate.getDetailText(), conversationId));
             case CONFIG_ERROR, CONTENT_ERROR, TRANSMISSION_ERROR, FAILED ->
-                requestStatusSink.tryEmitNext(new CMRequestStatus(CMRequestStatus.Status.ERROR, outboundMessageStatusUpdate.getDetailText(), conversationId));
+                    requestStatusSink.tryEmitNext(new CMRequestStatus(CMRequestStatus.Status.ERROR, outboundMessageStatusUpdate.getDetailText(), conversationId));
             default -> {
                 // Ignore the other status updates
             }
@@ -142,7 +142,6 @@ class PontonXPAdapter implements EdaAdapter {
             requestStatusSink.tryEmitNext(status);
             logger.info("Received CMNotification '{}' for CMRequestId '{}' with ConversationId '{}'", status.getStatus(), cmRequestId, status.getConversationId());
 
-            logger.info("Received CMNotification update: {} for request {}", status.getStatus(), status.getConversationId());
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
                     .setStatus(InboundStatusEnum.SUCCESS)
@@ -200,7 +199,7 @@ class PontonXPAdapter implements EdaAdapter {
             status.setMeteringPoint(meteringPoint);
 
             requestStatusSink.tryEmitNext(status);
-            logger.info("Received CMNotification: REJECTED for CMRequestId '{}' with  ConversationId '{}', reason '{}'", status.getConversationId(), status.getConversationId(), reason);
+            logger.info("Received CMNotification: REJECTED for CMRequestId '{}' with  ConversationId '{}', reason '{}'", cmRequestId, status.getConversationId(), reason);
 
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
