@@ -17,6 +17,8 @@ import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTran
 import io.javalin.Javalin;
 import io.javalin.http.HttpStatus;
 import io.javalin.validation.JavalinValidation;
+import io.javalin.http.ContentType;
+import io.javalin.validation.Validator;
 import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +28,11 @@ import reactor.core.Disposable;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.UUID;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.concurrent.Flow;
 import java.util.concurrent.SubmissionPublisher;
 
@@ -38,16 +41,20 @@ import static java.util.Objects.requireNonNull;
 public class EdaRegionConnector implements RegionConnectorAT {
 
     public static final String COUNTRY_CODE = "at";
-    public static final String MDA_CODE = COUNTRY_CODE + "-eda";
+    public static final String MDA_CODE = "eda";
     public static final String MDA_DISPLAY_NAME = "Austria EDA";
     /**
      * The base path of the region connector. COUNTRY_CODE is enough, as in austria we only need one region connector
      */
-    public static final String BASE_PATH = "/region-connectors/" + COUNTRY_CODE;
+    public static final String BASE_PATH = "/region-connectors/eda/";
     /**
      * The number of metering points covered by EDA, i.e. all metering points in Austria
      */
     public static final int COVERED_METERING_POINTS = 5977915;
+    /**
+     * DSOs in Austria are only allowed to store data for the last 36 months
+     */
+    public static final int MAXIMUM_MONTHS_IN_THE_PAST = 36;
 
     private final AtConfiguration atConfiguration;
     private final EdaAdapter edaAdapter;
@@ -206,73 +213,81 @@ public class EdaRegionConnector implements RegionConnectorAT {
 
     @Override
     public RegionConnectorMetadata getMetadata() {
-        return new RegionConnectorMetadata(MDA_CODE, MDA_DISPLAY_NAME, COUNTRY_CODE, BASE_PATH + "/", COVERED_METERING_POINTS);
+        return new RegionConnectorMetadata(MDA_CODE, MDA_DISPLAY_NAME, COUNTRY_CODE, BASE_PATH, COVERED_METERING_POINTS);
     }
 
     @Override
     public int startWebapp(InetSocketAddress address, boolean devMode) {
-        JavalinValidation.register(ZonedDateTime.class, ZonedDateTime::parse);
-        javalin
-                .ws("/permission-status", wsEndpoint -> wsEndpoint.onConnect(wsContext -> {
-                    var permissionId = wsContext.queryParam("permissionId");
+        JavalinValidation.register(ZonedDateTime.class, value -> value != null && !value.isBlank() ? LocalDate.parse(value, DateTimeFormatter.ISO_DATE).atStartOfDay(atConfiguration.timeZone()) : null);
 
-                    Disposable subscribe = JdkFlowAdapter.flowPublisherToFlux(getConnectionStatusMessageStream())
-                            .filter(connectionStatusMessage -> connectionStatusMessage.permissionId().equals(permissionId))
-                            .subscribe(wsContext::send);
+        javalin.get(BASE_PATH + "/ce.js", context -> {
+            context.contentType(ContentType.TEXT_JS);
+            context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js")));
+        });
+        javalin.ws(BASE_PATH + "/permission-status", wsEndpoint -> wsEndpoint.onConnect(wsContext -> {
+            var permissionId = wsContext.queryParam("permissionId");
 
-                    logger.info("New connection to websocket endpoint from SessionId '{}'for PermissionId '{}'", wsContext.getSessionId(), permissionId);
+            Disposable subscribe = JdkFlowAdapter.flowPublisherToFlux(getConnectionStatusMessageStream())
+                    .filter(connectionStatusMessage -> connectionStatusMessage.permissionId().equals(permissionId))
+                    .subscribe(wsContext::send);
 
-                    wsEndpoint.onClose(context -> {
-                        subscribe.dispose();
-                        logger.info("Closed connection to websocket endpoint from SessionId '{}'for PermissionId '{}'", wsContext.getSessionId(), permissionId);
-                    });
-                }))
-                .post("/permission-request", ctx -> {
-                    // TODO rework validation after mvp1
-                    var connectionIdValidator = ctx.formParamAsClass("connectionId", String.class)
-                            .check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
+            logger.info("New connection to websocket endpoint from SessionId '{}'for PermissionId '{}'", wsContext.getSessionId(), permissionId);
 
-                    var meteringPointIdValidator = ctx.formParamAsClass("meteringPointId", String.class)
-                            .check(s -> s != null && s.length() == 33, "meteringPointId must be 33 characters long");
+            wsEndpoint.onClose(context -> {
+                subscribe.dispose();
+                logger.info("Closed connection to websocket endpoint from SessionId '{}'for PermissionId '{}'", wsContext.getSessionId(), permissionId);
+            });
+        }));
+        javalin.post(BASE_PATH + "/permission-request", ctx -> {
+            // TODO rework validation after mvp1
+            var connectionIdValidator = ctx.formParamAsClass("connectionId", String.class)
+                    .check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
 
-                    var startValidator = ctx.formParamAsClass("start", ZonedDateTime.class)
-                            .check(Objects::nonNull, "start must not be null");
-                    var endValidator = ctx.formParamAsClass("end", ZonedDateTime.class)
-                            .allowNullable()
-                            .check(end -> end == null || end.isAfter(startValidator.get()), "end must be after start");
+            var meteringPointIdValidator = ctx.formParamAsClass("meteringPointId", String.class)
+                    .check(s -> s != null && s.length() == 33, "meteringPointId must be 33 characters long");
 
-                    var errors = JavalinValidation.collectErrors(connectionIdValidator, meteringPointIdValidator, startValidator, endValidator);
-                    if (!errors.isEmpty()) {
-                        ctx.status(HttpStatus.BAD_REQUEST);
-                        ctx.json(errors);
-                        return;
-                    }
+            var startValidator = ctx.formParamAsClass("start", ZonedDateTime.class)
+                    .check(Objects::nonNull, "start must not be null")
+                    .check(start -> start.isAfter(ZonedDateTime.now(start.getZone()).minusMonths(MAXIMUM_MONTHS_IN_THE_PAST)), "start must not be older than 36 months");
 
-                    var start = startValidator.get();
-                    var end = Objects.requireNonNullElseGet(endValidator.get(), () -> ZonedDateTime.now(start.getZone()).minusDays(1));
-                    DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint(null, meteringPointIdValidator.get());
+            var endValidator = ctx.formParamAsClass("end", ZonedDateTime.class)
+                    //.allowNullable() // disable for now as we don't support Future data yet
+                    .check(Objects::nonNull, "end must not be null")
+                    .check(end -> end.isAfter(startValidator.get()), "end must be after start")
+                    .check(end -> end.isBefore(ZonedDateTime.now(end.getZone()).minusDays(1)), "end must be in the past"); // for now, we only support historical data
 
-                    var ccmoRequest = new CCMORequest(
-                            dsoIdAndMeteringPoint,
-                            new CCMOTimeFrame(start, end),
-                            this.atConfiguration,
-                            RequestDataType.METERING_DATA, // for now only allow metering data
-                            AllowedMeteringIntervalType.QH,
-                            AllowedTransmissionCycle.D);
+            var errors = JavalinValidation.collectErrors(connectionIdValidator, meteringPointIdValidator, startValidator, endValidator);
+            if (!errors.isEmpty()) {
+                ctx.status(HttpStatus.BAD_REQUEST);
+                ctx.json(errors);
+                return;
+            }
+
+            var start = startValidator.get();
+            var end = Objects.requireNonNullElseGet(endValidator.get(), () -> ZonedDateTime.now(start.getZone()).minusDays(1));
+            DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint(null, meteringPointIdValidator.get());
+
+            var ccmoRequest = new CCMORequest(
+                    dsoIdAndMeteringPoint,
+                    new CCMOTimeFrame(start, end),
+                    this.atConfiguration,
+                    RequestDataType.METERING_DATA, // for now only allow metering data
+                    AllowedMeteringIntervalType.QH,
+                    AllowedTransmissionCycle.D);
 
 
-                    var connectionId = connectionIdValidator.get();
+            var connectionId = connectionIdValidator.get();
 
-                    var result = sendCCMORequest(connectionId, ccmoRequest);
-                    ctx.status(HttpStatus.OK);
-                    ctx.json(result);
-                })
-                .exception(Exception.class, (e, ctx) -> {
-                    logger.error("Exception occurred while processing request", e);
-                    ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
-                    ctx.result("Internal Server Error");
-                })
-                .start(address.getHostName(), address.getPort());
+            var result = sendCCMORequest(connectionId, ccmoRequest);
+            ctx.status(HttpStatus.OK);
+            ctx.json(result);
+        });
+        javalin.exception(Exception.class, (e, ctx) -> {
+            logger.error("Exception occurred while processing request", e);
+            ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            ctx.result("Internal Server Error");
+        });
+        javalin.start(address.getHostName(), address.getPort());
         return javalin.port();
     }
 
