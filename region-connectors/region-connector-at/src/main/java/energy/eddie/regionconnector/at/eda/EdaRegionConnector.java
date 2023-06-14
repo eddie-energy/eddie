@@ -42,12 +42,12 @@ import static java.util.Objects.requireNonNull;
 public class EdaRegionConnector implements RegionConnectorAT {
 
     public static final String COUNTRY_CODE = "at";
-    public static final String MDA_CODE = "eda";
+    public static final String MDA_CODE = COUNTRY_CODE + "-eda";
     public static final String MDA_DISPLAY_NAME = "Austria EDA";
     /**
      * The base path of the region connector. COUNTRY_CODE is enough, as in austria we only need one region connector
      */
-    public static final String BASE_PATH = "/region-connectors/eda/";
+    public static final String BASE_PATH = "/region-connectors/at-eda/";
     /**
      * The number of metering points covered by EDA, i.e. all metering points in Austria
      */
