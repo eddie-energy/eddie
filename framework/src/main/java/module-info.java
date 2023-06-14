@@ -18,4 +18,5 @@ module energy.eddie.framework {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
     requires org.eclipse.jetty.websocket.jetty.server;
+    requires energy.eddie.outbound.kafka;
 }

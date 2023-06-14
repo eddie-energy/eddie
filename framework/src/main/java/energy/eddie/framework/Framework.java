@@ -9,11 +9,15 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.framework.web.JavalinApp;
 import energy.eddie.framework.web.JavalinPathHandler;
 import energy.eddie.framework.web.PermissionFacade;
+import energy.eddie.outbound.kafka.KafkaConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
+import java.util.Properties;
 import java.util.ServiceLoader;
 
 public class Framework implements Runnable {
@@ -27,8 +31,12 @@ public class Framework implements Runnable {
     private PermissionService permissionService;
     @Inject
     private ConsumptionRecordService consumptionRecordService;
+    @Inject
+    private KafkaConnector kafkaConnector;
 
     private static class Module extends AbstractModule {
+
+        private static final String APPLICATION_PROPERTIES = "application.properties";
 
         @Override
         protected void configure() {
@@ -36,11 +44,24 @@ public class Framework implements Runnable {
             bind(Framework.class).toInstance(new Framework());
             bind(JdbcAdapter.class).toInstance(new JdbcAdapter(Env.JDBC_URL.get(), Env.JDBC_USER.get(), Env.JDBC_PASSWORD.get()));
 
+            Properties properties = loadApplicationProperties();
+            bind(KafkaConnector.class).toInstance(new KafkaConnector(properties));
+
             var pathHandlerBinder = Multibinder.newSetBinder(binder(), JavalinPathHandler.class);
             pathHandlerBinder.addBinding().to(PermissionFacade.class);
 
             var regionConnectorBinder = Multibinder.newSetBinder(binder(), RegionConnector.class);
             getAllConnectors().forEach(rc -> regionConnectorBinder.addBinding().toInstance(rc));
+        }
+
+        private Properties loadApplicationProperties() {
+            Properties properties = new Properties();
+            try (InputStream is = getClass().getClassLoader().getResourceAsStream(APPLICATION_PROPERTIES)) {
+                properties.load(is);
+            } catch (IOException e) {
+                LOGGER.warn("Could not load application properties");
+            }
+            return properties;
         }
 
         private Collection<RegionConnector> getAllConnectors() {
@@ -67,10 +88,14 @@ public class Framework implements Runnable {
     public void run() {
         LOGGER.info("Starting up EDDIE framework");
         jdbcAdapter.init();
+
         var connectionStatusMessageStream = JdkFlowAdapter.publisherToFlowPublisher(permissionService.getConnectionStatusMessageStream());
         jdbcAdapter.setConnectionStatusMessageStream(connectionStatusMessageStream);
+        kafkaConnector.setConnectionStatusMessageStream(connectionStatusMessageStream);
+
         var consumptionRecordMessageStream = JdkFlowAdapter.publisherToFlowPublisher(consumptionRecordService.getConsumptionRecordStream());
         jdbcAdapter.setConsumptionRecordStream(consumptionRecordMessageStream);
+        kafkaConnector.setConsumptionRecordStream(consumptionRecordMessageStream);
         javalinApp.init();
     }
 

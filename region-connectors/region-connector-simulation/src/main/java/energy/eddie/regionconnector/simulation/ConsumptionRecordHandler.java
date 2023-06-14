@@ -5,7 +5,7 @@ import io.javalin.Javalin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxSink;
+import reactor.core.publisher.Sinks;
 import reactor.util.annotation.Nullable;
 
 public class ConsumptionRecordHandler {
@@ -15,25 +15,19 @@ public class ConsumptionRecordHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumptionRecordHandler.class);
 
     ConsumptionRecordHandler() {
-        consumptionRecordStream = Flux.create(newConsumptionRecordStreamSink -> this.consumptionRecordStreamSink = newConsumptionRecordStreamSink);
     }
 
-    private final Flux<ConsumptionRecord> consumptionRecordStream;
-    @Nullable
-    private FluxSink<ConsumptionRecord> consumptionRecordStreamSink;
+    private final Sinks.Many<ConsumptionRecord> consumptionRecordStreamSink = Sinks.many().multicast().onBackpressureBuffer();
 
     public Flux<ConsumptionRecord> getConsumptionRecordStream() {
-        return consumptionRecordStream;
+        return consumptionRecordStreamSink.asFlux();
     }
 
     void initWebapp(Javalin app) {
         LOGGER.info("Initializing Javalin app");
         app.post(SimulationConnector.basePath() + "/api/consumption-records", ctx -> {
             var consumptionRecord = ctx.bodyAsClass(ConsumptionRecord.class);
-            if (null == consumptionRecordStreamSink) {
-                throw new IllegalStateException("consumptionRecordStreamSink not initialized yet");
-            }
-            consumptionRecordStreamSink.next(consumptionRecord);
+            consumptionRecordStreamSink.tryEmitNext(consumptionRecord);
         });
     }
 
