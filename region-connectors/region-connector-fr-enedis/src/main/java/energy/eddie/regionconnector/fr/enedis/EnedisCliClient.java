@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis;
 
 import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClientConfiguration;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import energy.eddie.regionconnector.fr.enedis.utils.DateTimeConverter;
 import org.slf4j.Logger;
@@ -17,7 +18,7 @@ public class EnedisCliClient {
     private static final Logger logger = LoggerFactory.getLogger(EnedisCliClient.class);
 
     public static void main(String[] args) {
-        final EnedisApiFacade enedisApiClient = new EnedisApiFacade();
+        final EnedisApiFacade enedisApiClient = new EnedisApiFacade(EnedisApiClientConfiguration.fromEnvironment());
         final Scanner scanner = new Scanner(System.in, Charset.defaultCharset());
         final File file = new File("region-connectors/region-connector-fr-enedis/bearer.txt");
 

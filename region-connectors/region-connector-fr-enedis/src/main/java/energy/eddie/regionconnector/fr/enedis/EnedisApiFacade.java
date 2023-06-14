@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.fr.enedis;
 
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
+import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClientConfiguration;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 
@@ -11,8 +12,8 @@ import java.time.ZonedDateTime;
 public class EnedisApiFacade implements EnedisApi {
     private final energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient enedisApiClient;
 
-    public EnedisApiFacade() {
-        enedisApiClient = new energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient(EnedisApiClientConfiguration.fromEnvironment());
+    public EnedisApiFacade(EnedisApiClientConfiguration configuration) {
+        enedisApiClient = new EnedisApiClient(configuration);
     }
 
     @Override
