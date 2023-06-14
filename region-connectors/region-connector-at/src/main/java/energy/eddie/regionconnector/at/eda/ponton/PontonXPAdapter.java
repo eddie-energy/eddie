@@ -199,7 +199,7 @@ class PontonXPAdapter implements EdaAdapter {
             status.setMeteringPoint(meteringPoint);
 
             requestStatusSink.tryEmitNext(status);
-            logger.info("Received CMNotification: REJECTED for CMRequestId '{}' with  ConversationId '{}', reason '{}'", status.getConversationId(), status.getConversationId(), reason);
+            logger.info("Received CMNotification: REJECTED for CMRequestId '{}' with  ConversationId '{}', reason '{}'", cmRequestId, status.getConversationId(), reason);
 
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
