@@ -6,6 +6,7 @@ import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
+import energy.eddie.regionconnector.fr.enedis.config.PropertiesEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import io.javalin.Javalin;
 import io.javalin.http.HttpStatus;
@@ -16,10 +17,12 @@ import reactor.adapter.JdkFlowAdapter;
 import reactor.core.Disposable;
 import reactor.core.publisher.Sinks;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -41,6 +44,15 @@ public class EnedisRegionConnector implements RegionConnector {
     private final EnedisConfiguration configuration;
 
     private final ConcurrentMap<String, RequestInfo> permissionIdToRequestInfo = new ConcurrentHashMap<>();
+
+    public EnedisRegionConnector() throws IOException {
+        Properties properties = new Properties();
+        var in = EnedisCliClient.class.getClassLoader().getResourceAsStream("regionconnector-fr-enedis.properties");
+        properties.load(in);
+
+        this.configuration = new PropertiesEnedisConfiguration(properties);
+        this.enedisApi = new EnedisApiFacade(configuration);
+    }
 
     public EnedisRegionConnector(EnedisConfiguration configuration, EnedisApi enedisApi) {
         requireNonNull(configuration);
