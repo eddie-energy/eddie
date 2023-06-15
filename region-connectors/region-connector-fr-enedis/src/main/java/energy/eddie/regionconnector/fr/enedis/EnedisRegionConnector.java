@@ -5,6 +5,7 @@ import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
+import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClientFacade;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.config.PropertiesEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
@@ -55,7 +56,7 @@ public class EnedisRegionConnector implements RegionConnector {
         properties.load(in);
 
         this.configuration = new PropertiesEnedisConfiguration(properties);
-        this.enedisApi = new EnedisApiFacade(configuration);
+        this.enedisApi = new EnedisApiClientFacade(configuration);
     }
 
     public EnedisRegionConnector(EnedisConfiguration configuration, EnedisApi enedisApi) {
