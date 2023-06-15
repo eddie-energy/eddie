@@ -4,7 +4,7 @@ import { ref, createRef } from "lit/directives/ref.js";
 class EddieConnectButton extends LitElement {
 
     static properties = {
-        connectionId: {},
+        connectionid: {},
         _availableConnectors: {},
     };
 

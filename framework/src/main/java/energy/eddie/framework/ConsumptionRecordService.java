@@ -9,6 +9,8 @@ import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 import reactor.util.annotation.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class ConsumptionRecordService {
@@ -19,14 +21,14 @@ public class ConsumptionRecordService {
 
     @Nullable
     public Flux<ConsumptionRecord> getConsumptionRecordStream() {
-        Flux<ConsumptionRecord> result = null;
+        List<Flux<ConsumptionRecord>> consumptionRecordFluxes = new ArrayList<>(regionConnectors.size());
         for (var connector : regionConnectors) {
             try {
-                result = JdkFlowAdapter.flowPublisherToFlux(connector.getConsumptionRecordStream());
+                consumptionRecordFluxes.add(JdkFlowAdapter.flowPublisherToFlux(connector.getConsumptionRecordStream()));
             } catch (Exception e) {
                 LOGGER.warn("Got no consumption record stream for connector {}", connector.getMetadata().mdaCode(), e);
             }
         }
-        return result;
+        return Flux.merge(consumptionRecordFluxes).share();
     }
 }

@@ -62,10 +62,13 @@ public class ShowConnectionListHandler implements JavalinHandler {
                 select CONNECTION_ID, TIMESTAMP_, CONSENT_STATUS
                 from CONNECTION_STATUS as out
                 where TIMESTAMP_ = (select max(TIMESTAMP_) from CONNECTION_STATUS as inn where out.CONNECTION_ID = inn.CONNECTION_ID)
+                    and CONNECTION_ID in (select CONNECTION_ID from CONNECTIONS
+                        where USER_ID=(select ID from USERS where EMAIL=?))
                 order by CONNECTION_ID
                 """;
         var connectionStatuses = jdbi.withHandle(h ->
                 h.createQuery(selectConnectionStatusesSql)
+                        .bind(0, user)
                         .map((rs, ct) -> new ConnectionStatus(rs.getString(1), rs.getObject(2), rs.getString(3)))
                         .list());
         Map<String, Object> x = Map.of("user", user,

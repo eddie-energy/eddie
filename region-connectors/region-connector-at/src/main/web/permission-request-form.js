@@ -5,6 +5,8 @@ import { createRef, ref } from "lit/directives/ref.js";
 class PermissionRequestForm extends LitElement {
   static styles = unsafeCSS(shared);
 
+  static properties = { connectionid: {} };
+
   cmRequestIdElement = createRef();
   requestStatusElement = createRef();
   intervalId = null;
@@ -19,8 +21,11 @@ class PermissionRequestForm extends LitElement {
     const url = new URL(import.meta.url).href.replace("ce.js", "");
     const requestUrl = url + "permission-request";
 
+    console.log(this);
+    console.log(this.connectionid);
+
     const formData = new FormData(event.target);
-    formData.append("connectionId", window.crypto.randomUUID());
+    formData.append("connectionId", this.connectionid);
 
     fetch(requestUrl, {
       body: formData,

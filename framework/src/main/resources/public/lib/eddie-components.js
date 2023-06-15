@@ -55,7 +55,7 @@ var A1=Object.defineProperty;var E1=(o,t,e)=>t in o?A1(o,t,{enumerable:!0,config
 
                 <button class="dialog-close" @click=${this.closePopup}>&times;</button>
             </dialog>
-        `}};let E=L;g(E,"properties",{connectionId:{},_availableConnectors:{}}),g(E,"CONTEXT_PATH",new URL(import.meta.url).pathname.replace(/\/lib\/.*$/,"")),g(E,"styles",M1`
+        `}};let E=L;g(E,"properties",{connectionid:{},_availableConnectors:{}}),g(E,"CONTEXT_PATH",new URL(import.meta.url).pathname.replace(/\/lib\/.*$/,"")),g(E,"styles",M1`
       .eddie-connect-button {
         display: flex;
         align-items: center;
