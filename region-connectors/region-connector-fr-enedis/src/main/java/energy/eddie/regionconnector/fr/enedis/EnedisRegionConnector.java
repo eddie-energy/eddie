@@ -16,7 +16,6 @@ import io.javalin.validation.JavalinValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
-import reactor.core.Disposable;
 import reactor.core.publisher.Sinks;
 
 import java.io.IOException;
@@ -48,7 +47,6 @@ public class EnedisRegionConnector implements RegionConnector {
     private final Logger logger = LoggerFactory.getLogger(EnedisRegionConnector.class);
     private final Javalin javalin = Javalin.create();
     private final EnedisConfiguration configuration;
-
     private final ConcurrentMap<String, RequestInfo> permissionIdToRequestInfo = new ConcurrentHashMap<>();
 
     public EnedisRegionConnector() throws IOException {
@@ -93,9 +91,46 @@ public class EnedisRegionConnector implements RegionConnector {
     public int startWebapp(InetSocketAddress address, boolean devMode) {
         JavalinValidation.register(ZonedDateTime.class, value -> value != null && !value.isBlank() ? LocalDate.parse(value, DateTimeFormatter.ISO_DATE).atStartOfDay(ZoneOffset.UTC) : null);
 
+        javalin.updateConfig(config -> config.staticFiles.add(staticFileConfig -> {
+            staticFileConfig.hostedPath = BASE_PATH;
+            if (devMode) {
+                staticFileConfig.directory = SRC_MAIN_PREFIX + "resources/public";
+                staticFileConfig.location = Location.EXTERNAL;
+            } else {
+                staticFileConfig.directory = "public" + staticFileConfig.hostedPath;
+                staticFileConfig.location = Location.CLASSPATH;
+            }
+            staticFileConfig.mimeTypes.add("text/javascript", ".js");
+        }));
+
         javalin.get(BASE_PATH + "/ce.js", context -> {
             context.contentType(ContentType.TEXT_JS);
             context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js")));
+        });
+
+        // Disabled for now as with the current proxy routing setup, the websocket endpoint can't be reached, instead for now we use a polling approach
+        /*javalin.ws(BASE_PATH + "/permission-status", wsEndpoint -> wsEndpoint.onConnect(wsContext -> {
+            var permissionId = wsContext.queryParam("permissionId");
+
+                    Disposable subscribe = JdkFlowAdapter.flowPublisherToFlux(getConnectionStatusMessageStream())
+                            .filter(connectionStatusMessage -> connectionStatusMessage.permissionId().equals(permissionId))
+                            .subscribe(wsContext::send);
+
+                    logger.info("New connection to websocket endpoint from SessionId '{}'for PermissionId '{}'", wsContext.getSessionId(), permissionId);
+
+                    wsEndpoint.onClose(context -> {
+                        subscribe.dispose();
+                        logger.info("Closed connection to websocket endpoint from SessionId '{}'for PermissionId '{}'", wsContext.getSessionId(), permissionId);
+                    });
+                }))*/
+        javalin.get(BASE_PATH + "/permission-status", ctx -> {
+            var permissionId = ctx.queryParamAsClass("permissionId", String.class).get();
+            var requestInfo = permissionIdToRequestInfo.get(permissionId);
+            if (requestInfo == null) {
+                ctx.status(HttpStatus.NOT_FOUND);
+                return;
+            }
+            ctx.json(requestInfo);
         });
 
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
