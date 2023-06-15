@@ -9,6 +9,8 @@ import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 import reactor.util.annotation.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class PermissionService {
@@ -20,19 +22,15 @@ public class PermissionService {
 
     @Nullable
     public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-        Flux<ConnectionStatusMessage> result = null;
+
+        List<Flux<ConnectionStatusMessage>> connectionStatusFluxes = new ArrayList<>(regionConnectors.size());
         for (var connector : regionConnectors) {
             try {
-                Flux<ConnectionStatusMessage> stream = JdkFlowAdapter.flowPublisherToFlux(connector.getConnectionStatusMessageStream());
-                if (result == null) {
-                    result = stream;
-                } else {
-                    result = result.concatWith(stream);
-                }
+                connectionStatusFluxes.add(JdkFlowAdapter.flowPublisherToFlux(connector.getConnectionStatusMessageStream()));
             } catch (Exception e) {
                 LOGGER.warn("Got no connection status message stream for connector {}", connector.getMetadata().mdaCode(), e);
             }
         }
-        return result;
+        return Flux.merge(connectionStatusFluxes).share();
     }
 }
