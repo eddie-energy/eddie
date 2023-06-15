@@ -38,6 +38,10 @@ dependencies {
     runtimeOnly(libs.log4j.sl4j2.impl)
     runtimeOnly(libs.log4j.jul)
 
+    implementation(libs.reactor.core)
+    testImplementation(libs.reactor.test)
+    implementation(libs.javalin)
+
     implementation(project(mapOf("path" to ":api")))
 }
 

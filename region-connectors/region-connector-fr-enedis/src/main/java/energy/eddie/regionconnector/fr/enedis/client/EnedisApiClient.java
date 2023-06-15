@@ -4,6 +4,7 @@ import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.fr.enedis.api.AuthorizationApi;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.api.MeteringDataApi;
+import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiClient;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveResponse;
@@ -17,10 +18,10 @@ import java.util.Objects;
 public class EnedisApiClient extends ApiClient implements EnedisApi {
     private final AuthorizationApi authApi;
     private final MeteringDataApi meterApi;
-    private final EnedisApiClientConfiguration configuration;
+    private final EnedisConfiguration configuration;
     private String bearerToken = "";
 
-    public EnedisApiClient(EnedisApiClientConfiguration configuration) {
+    public EnedisApiClient(EnedisConfiguration configuration) {
         this.configuration = configuration;
 
         this.updateBaseUri(configuration.basePath());
@@ -44,7 +45,7 @@ public class EnedisApiClient extends ApiClient implements EnedisApi {
         TokenGenerationResponse tokenGenerationResponse = authApi
                 .oauth2V3TokenPost(contentType, authorization, grantType, "eddie", clientId, clientSecret);
 
-        bearerToken = Objects.requireNonNull( tokenGenerationResponse.getAccessToken());
+        bearerToken = Objects.requireNonNull(tokenGenerationResponse.getAccessToken());
     }
 
     /**

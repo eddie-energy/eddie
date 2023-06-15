@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":api"))
     implementation(project(mapOf("path" to ":outbound-kafka")))
     runtimeOnly(project(":region-connectors:region-connector-at"))
+    runtimeOnly(project(":region-connectors:region-connector-fr-enedis"))
     runtimeOnly(project(":region-connectors:region-connector-simulation"))
 
     implementation(libs.guice)
@@ -62,6 +63,7 @@ extraJavaModuleInfo {
     automaticModule("org.eclipse.jgit:org.eclipse.jgit", "org.eclipse.jgit:org.eclipse.jgit")
     automaticModule("org.xerial.snappy:snappy-java", "snappy.java")
     automaticModule("org.apache.kafka:kafka-clients", "kafka.clients")
+    automaticModule("commons-logging:commons-logging", "commons.logging")
 }
 
 application {

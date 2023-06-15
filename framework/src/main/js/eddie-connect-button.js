@@ -38,8 +38,9 @@ class EddieConnectButton extends LitElement {
         background: white;
         border: none;
         border-radius: 1em;
-        min-width: 50%;
-        min-height: 50%;
+        width: max(400px, 50%);
+        max-height: calc(100% - 4rem);
+        max-width: calc(100% - 4rem);
         overflow-x: hidden;
       }
 

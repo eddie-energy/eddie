@@ -5,10 +5,6 @@ import { createRef, ref } from "lit/directives/ref.js";
 class PermissionRequestForm extends LitElement {
   static styles = unsafeCSS(shared);
 
-  static properties = {
-    messages: {},
-  };
-
   cmRequestIdElement = createRef();
   requestStatusElement = createRef();
   intervalId = null;

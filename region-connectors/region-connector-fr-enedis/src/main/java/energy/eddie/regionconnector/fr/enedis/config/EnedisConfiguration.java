@@ -6,4 +6,6 @@ public interface EnedisConfiguration {
     String clientId();
 
     String clientSecret();
+
+    String basePath();
 }
