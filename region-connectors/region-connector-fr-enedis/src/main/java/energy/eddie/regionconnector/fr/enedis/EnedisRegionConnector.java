@@ -128,9 +128,9 @@ public class EnedisRegionConnector implements RegionConnector {
 
             var redirectUri = "https://mon-compte-particulier.enedis.fr/dataconnect/v1/oauth2/authorize" +
                     "?client_id=" + configuration.clientId() +
-                    "?response_type=code" +
-                    "?state=" + permissionId +
-                    "?duration=" + "P1Y"; // TODO move to config
+                    "&response_type=code" +
+                    "&state=" + permissionId +
+                    "&duration=" + "P1Y"; // TODO move to config
 
             ctx.json(Map.of("permissionId", permissionId, "redirectUri", redirectUri));
 
