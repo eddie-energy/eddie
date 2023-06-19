@@ -164,14 +164,14 @@ public class EnedisRegionConnector implements RegionConnector {
             }
 
             var usagePointId = ctx.queryParam("usage_point_id");
-            if (usagePointId == null) { // probably when request was denied
-                // TODO when ENEDIS authorization api is up again, look what happens if request gets denied and get message
+            if (usagePointId == null || ctx.status() == HttpStatus.FORBIDDEN) { // probably when request was denied
                 connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), ConnectionStatusMessage.Status.REJECTED, "Access to data rejected"));
-                ctx.redirect("error dont know where to redirect to");
+                ctx.html("<h1>Access to data denied, you can close this window.</h1>");
                 return;
             }
 
             connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), ConnectionStatusMessage.Status.GRANTED, "Access to data granted"));
+            ctx.html("<h1>Access to data granted, you can close this window.</h1>");
 
             new Thread(() -> {
                 try {
