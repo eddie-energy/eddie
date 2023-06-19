@@ -164,24 +164,22 @@ public class EnedisRegionConnector implements RegionConnector {
 
             connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), ConnectionStatusMessage.Status.GRANTED, "Access to data granted"));
 
-            try {
-                // TODO should be done in the background
-                // request data from enedis
-                enedisApi.postToken(); // fetch jwt token
-                var consumptionRecord = enedisApi.getConsumptionLoadCurve(usagePointId, requestInfo.start(), requestInfo.end());
-                // map ids
-                consumptionRecord.setConnectionId(requestInfo.connectionId());
-                consumptionRecord.setPermissionId(permissionId);
-                // publish
-                consumptionRecordSink.tryEmitNext(consumptionRecord);
+            new Thread(() -> {
+                try {
+                    // request data from enedis
+                    enedisApi.postToken(); // fetch jwt token
+                    var consumptionRecord = enedisApi.getConsumptionLoadCurve(usagePointId, requestInfo.start(), requestInfo.end());
+                    // map ids
+                    consumptionRecord.setConnectionId(requestInfo.connectionId());
+                    consumptionRecord.setPermissionId(permissionId);
+                    // publish
+                    consumptionRecordSink.tryEmitNext(consumptionRecord);
 
-                ctx.redirect("back to microfrontend");
-            } catch (ApiException e) {
-                // TODO map errors and publish messages
-                logger.error("Something went wrong while fetching data from ENEDIS:", e);
-                ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
-                ctx.result("Internal Server Error"); // TODO maybe redirect somewhere else
-            }
+                } catch (ApiException e) {
+                    // TODO map errors and publish messages
+                    logger.error("Something went wrong while fetching data from ENEDIS:", e);
+                }
+            }).start();
         });
 
         javalin.exception(Exception.class, (e, ctx) -> {
