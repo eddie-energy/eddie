@@ -12,7 +12,6 @@ import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 import io.javalin.http.HttpStatus;
-import io.javalin.http.staticfiles.Location;
 import io.javalin.validation.JavalinValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +40,6 @@ public class EnedisRegionConnector implements RegionConnector {
     public static final String BASE_PATH = "/region-connectors/" + MDA_CODE;
     public static final String MDA_DISPLAY_NAME = "France ENEDIS";
     public static final int COVERED_METERING_POINTS = 36951446;
-    private static final String SRC_MAIN_PREFIX = "./region-connectors/region-connector-fr-enedis/src/main/";
     final Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
     private final EnedisApi enedisApi;
@@ -91,18 +89,6 @@ public class EnedisRegionConnector implements RegionConnector {
     @Override
     public int startWebapp(InetSocketAddress address, boolean devMode) {
         JavalinValidation.register(ZonedDateTime.class, value -> value != null && !value.isBlank() ? LocalDate.parse(value, DateTimeFormatter.ISO_DATE).atStartOfDay(ZoneOffset.UTC) : null);
-
-        javalin.updateConfig(config -> config.staticFiles.add(staticFileConfig -> {
-            staticFileConfig.hostedPath = BASE_PATH;
-            if (devMode) {
-                staticFileConfig.directory = SRC_MAIN_PREFIX + "resources/public";
-                staticFileConfig.location = Location.EXTERNAL;
-            } else {
-                staticFileConfig.directory = "public" + staticFileConfig.hostedPath;
-                staticFileConfig.location = Location.CLASSPATH;
-            }
-            staticFileConfig.mimeTypes.add("text/javascript", ".js");
-        }));
 
         javalin.get(BASE_PATH + "/ce.js", context -> {
             context.contentType(ContentType.TEXT_JS);
