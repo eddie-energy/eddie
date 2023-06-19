@@ -47,6 +47,8 @@ public class EnedisRegionConnector implements RegionConnector {
     private final Javalin javalin = Javalin.create();
     private final EnedisConfiguration configuration;
     private final ConcurrentMap<String, RequestInfo> permissionIdToRequestInfo = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConnectionStatusMessage> permissionIdToConnectionStatusMessages = new ConcurrentHashMap<>();
+
 
     public EnedisRegionConnector() throws IOException {
         Properties properties = new Properties();
@@ -55,6 +57,13 @@ public class EnedisRegionConnector implements RegionConnector {
 
         this.configuration = new PropertiesEnedisConfiguration(properties);
         this.enedisApi = new EnedisApiClientDecorator(configuration);
+
+        connectionStatusSink.asFlux().subscribe(connectionStatusMessage -> {
+            var permissionId = connectionStatusMessage.permissionId();
+            if (permissionId != null) {
+                permissionIdToConnectionStatusMessages.put(permissionId, connectionStatusMessage);
+            }
+        });
     }
 
     public EnedisRegionConnector(EnedisConfiguration configuration, EnedisApi enedisApi) {
@@ -97,12 +106,12 @@ public class EnedisRegionConnector implements RegionConnector {
 
         javalin.get(BASE_PATH + "/permission-status", ctx -> {
             var permissionId = ctx.queryParamAsClass("permissionId", String.class).get();
-            var requestInfo = permissionIdToRequestInfo.get(permissionId);
-            if (requestInfo == null) {
+            var connectionStatusMessage = permissionIdToConnectionStatusMessages.get(permissionId);
+            if (connectionStatusMessage == null) {
                 ctx.status(HttpStatus.NOT_FOUND);
                 return;
             }
-            ctx.json(requestInfo);
+            ctx.json(connectionStatusMessage);
         });
 
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
