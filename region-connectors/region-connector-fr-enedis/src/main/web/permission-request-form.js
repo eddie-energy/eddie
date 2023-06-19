@@ -31,7 +31,10 @@ class PermissionRequestForm extends LitElement {
         let permissionId = result["permissionId"];
 
         this.requestPermissionStatus(url, permissionId);
-
+        this.intervalId = setInterval(
+            this.requestPermissionStatus(url, permissionId),
+            5000
+        );
         window.open(result["redirectUri"], "_blank");
       })
       .catch((error) => console.log("error", error));
