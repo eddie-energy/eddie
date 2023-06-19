@@ -8,10 +8,10 @@ import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import java.net.HttpURLConnection;
 import java.time.ZonedDateTime;
 
-public class EnedisApiClientFacade implements EnedisApi {
+public class EnedisApiClientDecorator implements EnedisApi {
     private final EnedisApiClient enedisApiClient;
 
-    public EnedisApiClientFacade(EnedisConfiguration enedisConfiguration) {
+    public EnedisApiClientDecorator(EnedisConfiguration enedisConfiguration) {
         enedisApiClient = new EnedisApiClient(enedisConfiguration);
     }
 
