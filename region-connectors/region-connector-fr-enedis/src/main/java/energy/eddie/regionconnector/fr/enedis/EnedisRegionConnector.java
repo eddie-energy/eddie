@@ -47,6 +47,8 @@ public class EnedisRegionConnector implements RegionConnector {
     private final Javalin javalin = Javalin.create();
     private final EnedisConfiguration configuration;
     private final ConcurrentMap<String, RequestInfo> permissionIdToRequestInfo = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConnectionStatusMessage> permissionIdToConnectionStatusMessages = new ConcurrentHashMap<>();
+
 
     public EnedisRegionConnector() throws IOException {
         Properties properties = new Properties();
@@ -55,6 +57,13 @@ public class EnedisRegionConnector implements RegionConnector {
 
         this.configuration = new PropertiesEnedisConfiguration(properties);
         this.enedisApi = new EnedisApiClientDecorator(configuration);
+
+        connectionStatusSink.asFlux().subscribe(connectionStatusMessage -> {
+            var permissionId = connectionStatusMessage.permissionId();
+            if (permissionId != null) {
+                permissionIdToConnectionStatusMessages.put(permissionId, connectionStatusMessage);
+            }
+        });
     }
 
     public EnedisRegionConnector(EnedisConfiguration configuration, EnedisApi enedisApi) {
@@ -97,12 +106,12 @@ public class EnedisRegionConnector implements RegionConnector {
 
         javalin.get(BASE_PATH + "/permission-status", ctx -> {
             var permissionId = ctx.queryParamAsClass("permissionId", String.class).get();
-            var requestInfo = permissionIdToRequestInfo.get(permissionId);
-            if (requestInfo == null) {
+            var connectionStatusMessage = permissionIdToConnectionStatusMessages.get(permissionId);
+            if (connectionStatusMessage == null) {
                 ctx.status(HttpStatus.NOT_FOUND);
                 return;
             }
-            ctx.json(requestInfo);
+            ctx.json(connectionStatusMessage);
         });
 
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
@@ -155,33 +164,31 @@ public class EnedisRegionConnector implements RegionConnector {
             }
 
             var usagePointId = ctx.queryParam("usage_point_id");
-            if (usagePointId == null) { // probably when request was denied
-                // TODO when ENEDIS authorization api is up again, look what happens if request gets denied and get message
+            if (usagePointId == null || ctx.status() == HttpStatus.FORBIDDEN) { // probably when request was denied
                 connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), ConnectionStatusMessage.Status.REJECTED, "Access to data rejected"));
-                ctx.redirect("error dont know where to redirect to");
+                ctx.html("<h1>Access to data denied, you can close this window.</h1>");
                 return;
             }
 
             connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), ConnectionStatusMessage.Status.GRANTED, "Access to data granted"));
+            ctx.html("<h1>Access to data granted, you can close this window.</h1>");
 
-            try {
-                // TODO should be done in the background
-                // request data from enedis
-                enedisApi.postToken(); // fetch jwt token
-                var consumptionRecord = enedisApi.getConsumptionLoadCurve(usagePointId, requestInfo.start(), requestInfo.end());
-                // map ids
-                consumptionRecord.setConnectionId(requestInfo.connectionId());
-                consumptionRecord.setPermissionId(permissionId);
-                // publish
-                consumptionRecordSink.tryEmitNext(consumptionRecord);
+            new Thread(() -> {
+                try {
+                    // request data from enedis
+                    enedisApi.postToken(); // fetch jwt token
+                    var consumptionRecord = enedisApi.getConsumptionLoadCurve(usagePointId, requestInfo.start(), requestInfo.end());
+                    // map ids
+                    consumptionRecord.setConnectionId(requestInfo.connectionId());
+                    consumptionRecord.setPermissionId(permissionId);
+                    // publish
+                    consumptionRecordSink.tryEmitNext(consumptionRecord);
 
-                ctx.redirect("back to microfrontend");
-            } catch (ApiException e) {
-                // TODO map errors and publish messages
-                logger.error("Something went wrong while fetching data from ENEDIS:", e);
-                ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
-                ctx.result("Internal Server Error"); // TODO maybe redirect somewhere else
-            }
+                } catch (ApiException e) {
+                    // TODO map errors and publish messages
+                    logger.error("Something went wrong while fetching data from ENEDIS:", e);
+                }
+            }).start();
         });
 
         javalin.exception(Exception.class, (e, ctx) -> {
