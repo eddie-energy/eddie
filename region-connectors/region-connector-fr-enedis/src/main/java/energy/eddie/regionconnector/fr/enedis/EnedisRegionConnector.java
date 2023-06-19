@@ -95,21 +95,6 @@ public class EnedisRegionConnector implements RegionConnector {
             context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js")));
         });
 
-        // Disabled for now as with the current proxy routing setup, the websocket endpoint can't be reached, instead for now we use a polling approach
-        /*javalin.ws(BASE_PATH + "/permission-status", wsEndpoint -> wsEndpoint.onConnect(wsContext -> {
-            var permissionId = wsContext.queryParam("permissionId");
-
-                    Disposable subscribe = JdkFlowAdapter.flowPublisherToFlux(getConnectionStatusMessageStream())
-                            .filter(connectionStatusMessage -> connectionStatusMessage.permissionId().equals(permissionId))
-                            .subscribe(wsContext::send);
-
-                    logger.info("New connection to websocket endpoint from SessionId '{}'for PermissionId '{}'", wsContext.getSessionId(), permissionId);
-
-                    wsEndpoint.onClose(context -> {
-                        subscribe.dispose();
-                        logger.info("Closed connection to websocket endpoint from SessionId '{}'for PermissionId '{}'", wsContext.getSessionId(), permissionId);
-                    });
-                }))*/
         javalin.get(BASE_PATH + "/permission-status", ctx -> {
             var permissionId = ctx.queryParamAsClass("permissionId", String.class).get();
             var requestInfo = permissionIdToRequestInfo.get(permissionId);

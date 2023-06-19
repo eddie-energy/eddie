@@ -38,9 +38,30 @@ class PermissionRequestForm extends LitElement {
   }
 
   requestPermissionStatus(url, permissionId) {
-    this.requestStatusElement.value.textContent =
-      "Request status is currently not supported for Enedis.";
-    this.requestStatusElement.value.hidden = false;
+    return () => {
+      fetch(url + "permission-status?permissionId=" + permissionId)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("HTTP status " + response.status);
+            }
+
+            return response.json();
+          })
+          .then((result) => {
+            if (
+                result["status"] === "GRANTED" ||
+                result["status"] === "REJECTED" ||
+                result["status"] === "ERROR"
+            ) {
+              clearInterval(this.intervalId);
+            }
+            console.log("Status:" + result);
+            this.requestStatusElement.value.textContent =
+                "Request status: " + result["status"];
+            this.requestStatusElement.value.hidden = false;
+          })
+          .catch((error) => console.error(error));
+    };
   }
 
   render() {
