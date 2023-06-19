@@ -1,18 +1,17 @@
-package energy.eddie.regionconnector.fr.enedis;
+package energy.eddie.regionconnector.fr.enedis.client;
 
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
-import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 
 import java.net.HttpURLConnection;
 import java.time.ZonedDateTime;
 
-public class EnedisApiFacade implements EnedisApi {
+public class EnedisApiClientDecorator implements EnedisApi {
     private final EnedisApiClient enedisApiClient;
 
-    public EnedisApiFacade(EnedisConfiguration enedisConfiguration) {
+    public EnedisApiClientDecorator(EnedisConfiguration enedisConfiguration) {
         enedisApiClient = new EnedisApiClient(enedisConfiguration);
     }
 

@@ -5,18 +5,17 @@ import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
+import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClientDecorator;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.config.PropertiesEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 import io.javalin.http.HttpStatus;
-import io.javalin.http.staticfiles.Location;
 import io.javalin.validation.JavalinValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
-import reactor.core.Disposable;
 import reactor.core.publisher.Sinks;
 
 import java.io.IOException;
@@ -41,14 +40,12 @@ public class EnedisRegionConnector implements RegionConnector {
     public static final String BASE_PATH = "/region-connectors/" + MDA_CODE;
     public static final String MDA_DISPLAY_NAME = "France ENEDIS";
     public static final int COVERED_METERING_POINTS = 36951446;
-    private static final String SRC_MAIN_PREFIX = "./region-connectors/region-connector-fr-enedis/src/main/";
     final Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
     private final EnedisApi enedisApi;
     private final Logger logger = LoggerFactory.getLogger(EnedisRegionConnector.class);
     private final Javalin javalin = Javalin.create();
     private final EnedisConfiguration configuration;
-
     private final ConcurrentMap<String, RequestInfo> permissionIdToRequestInfo = new ConcurrentHashMap<>();
 
     public EnedisRegionConnector() throws IOException {
@@ -57,7 +54,7 @@ public class EnedisRegionConnector implements RegionConnector {
         properties.load(in);
 
         this.configuration = new PropertiesEnedisConfiguration(properties);
-        this.enedisApi = new EnedisApiFacade(configuration);
+        this.enedisApi = new EnedisApiClientDecorator(configuration);
     }
 
     public EnedisRegionConnector(EnedisConfiguration configuration, EnedisApi enedisApi) {
@@ -96,6 +93,16 @@ public class EnedisRegionConnector implements RegionConnector {
         javalin.get(BASE_PATH + "/ce.js", context -> {
             context.contentType(ContentType.TEXT_JS);
             context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js")));
+        });
+
+        javalin.get(BASE_PATH + "/permission-status", ctx -> {
+            var permissionId = ctx.queryParamAsClass("permissionId", String.class).get();
+            var requestInfo = permissionIdToRequestInfo.get(permissionId);
+            if (requestInfo == null) {
+                ctx.status(HttpStatus.NOT_FOUND);
+                return;
+            }
+            ctx.json(requestInfo);
         });
 
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
