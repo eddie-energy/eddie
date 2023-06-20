@@ -13,6 +13,7 @@ import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 import io.javalin.http.HttpStatus;
 import io.javalin.validation.JavalinValidation;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
@@ -134,14 +135,18 @@ public class EnedisRegionConnector implements RegionConnector {
             var permissionId = UUID.randomUUID().toString();
             var requestInfo = new RequestInfo(connectionIdValidator.get(), startValidator.get(), endValidator.get());
             permissionIdToRequestInfo.put(permissionId, requestInfo);
+            
+            var redirectUri = new URIBuilder()
+                    .setScheme("https")
+                    .setHost("mon-compte-particulier.enedis.fr")
+                    .setPath("/dataconnect/v1/oauth2/authorize")
+                    .addParameter("client_id", configuration.clientId())
+                    .addParameter("response_type", "code")
+                    .addParameter("state", permissionId)
+                    .addParameter("duration", "P1Y") // TODO move to config
+                    .build();
 
-            var redirectUri = "https://mon-compte-particulier.enedis.fr/dataconnect/v1/oauth2/authorize" +
-                    "?client_id=" + configuration.clientId() +
-                    "&response_type=code" +
-                    "&state=" + permissionId +
-                    "&duration=" + "P1Y"; // TODO move to config
-
-            ctx.json(Map.of("permissionId", permissionId, "redirectUri", redirectUri));
+            ctx.json(Map.of("permissionId", permissionId, "redirectUri", redirectUri.toString()));
 
             connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), ConnectionStatusMessage.Status.REQUESTED, "Access to data requested"));
         });
