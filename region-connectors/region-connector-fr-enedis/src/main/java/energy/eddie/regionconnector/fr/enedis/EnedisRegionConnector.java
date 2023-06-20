@@ -179,19 +179,45 @@ public class EnedisRegionConnector implements RegionConnector {
             ctx.html("<h1>Access to data granted, you can close this window.</h1>");
 
             new Thread(() -> {
+                // TODO rework the retry logic after mvp1
                 try {
-                    // request data from enedis
                     enedisApi.postToken(); // fetch jwt token
-                    var consumptionRecord = enedisApi.getConsumptionLoadCurve(usagePointId, requestInfo.start(), requestInfo.end());
-                    // map ids
-                    consumptionRecord.setConnectionId(requestInfo.connectionId());
-                    consumptionRecord.setPermissionId(permissionId);
-                    // publish
-                    consumptionRecordSink.tryEmitNext(consumptionRecord);
-
                 } catch (ApiException e) {
-                    // TODO map errors and publish messages
-                    logger.error("Something went wrong while fetching data from ENEDIS:", e);
+                    logger.error("Something went wrong while fetching token from ENEDIS:", e);
+                }
+                // request data from enedis
+                var start = requestInfo.start();
+                var end = requestInfo.end();
+                var tryCount = 0;
+                // the api allows for a maximum of 7 days per request, so we need to split the request
+                while (start.isBefore(end)) {
+                    try {
+                        var endOfRequest = start.plusDays(6); // including the start date, so 7 days
+                        if (endOfRequest.isAfter(end)) {
+                            endOfRequest = end;
+                        }
+                        logger.info("Fetching data from ENEDIS for usage_point '{}' from '{}' to '{}'", usagePointId, start, endOfRequest);
+                        var consumptionRecord = enedisApi.getConsumptionLoadCurve(usagePointId, start, endOfRequest);
+                        // map ids
+                        consumptionRecord.setConnectionId(requestInfo.connectionId());
+                        consumptionRecord.setPermissionId(permissionId);
+                        // publish
+                        consumptionRecordSink.tryEmitNext(consumptionRecord);
+                        start = endOfRequest;
+                    } catch (ApiException e) {
+                        // TODO map errors and publish messages
+                        logger.error("Something went wrong while fetching data from ENEDIS:", e);
+                        if (tryCount++ > 10) {
+                            logger.error("Too many retries, giving up");
+                            return;
+                        }
+                        try {
+                            Thread.sleep(1200);
+                        } catch (InterruptedException interruptedException) {
+                            logger.error("Interrupted while sleeping", interruptedException);
+                            return;
+                        }
+                    }
                 }
             }).start();
         });
