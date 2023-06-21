@@ -8,6 +8,8 @@ module energy.eddie.framework {
     requires org.jdbi.v3.core;
     requires java.sql;
     requires com.google.guice;
+    requires eclipse.microprofile.config.api;
+    requires jakarta.annotation;
     opens energy.eddie.framework;
     opens energy.eddie.framework.web;
     uses RegionConnector;
@@ -19,4 +21,8 @@ module energy.eddie.framework {
     requires com.fasterxml.jackson.datatype.jsr310;
     requires org.eclipse.jetty.websocket.jetty.server;
     requires energy.eddie.outbound.kafka;
+    requires io.smallrye.common.function;
+    requires io.smallrye.common.classloader;
+    requires io.smallrye.common.expression;
+    requires io.smallrye.config.core;
 }

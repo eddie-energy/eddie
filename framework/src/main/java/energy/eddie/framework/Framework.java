@@ -10,12 +10,18 @@ import energy.eddie.framework.web.JavalinApp;
 import energy.eddie.framework.web.JavalinPathHandler;
 import energy.eddie.framework.web.PermissionFacade;
 import energy.eddie.outbound.kafka.KafkaConnector;
+import io.smallrye.config.PropertiesConfigSource;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.spi.ConfigBuilder;
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,7 +48,6 @@ public class Framework implements Runnable {
     public void run() {
         LOGGER.info("Starting up EDDIE framework");
         jdbcAdapter.init();
-
         var connectionStatusMessageStream = JdkFlowAdapter.publisherToFlowPublisher(permissionService.getConnectionStatusMessageStream());
         jdbcAdapter.setConnectionStatusMessageStream(connectionStatusMessageStream);
         kafkaConnector.setConnectionStatusMessageStream(connectionStatusMessageStream);
@@ -59,9 +64,10 @@ public class Framework implements Runnable {
 
         @Override
         protected void configure() {
-            bind(JavalinApp.class).toInstance(new JavalinApp());
+            Config config = loadExternalConfig();
+            bind(JavalinApp.class).toInstance(new JavalinApp(config));
             bind(Framework.class).toInstance(new Framework());
-            bind(JdbcAdapter.class).toInstance(new JdbcAdapter(Env.JDBC_URL.get(), Env.JDBC_USER.get(), Env.JDBC_PASSWORD.get()));
+            bind(JdbcAdapter.class).toInstance(new JdbcAdapter(config));
 
             Properties properties = loadApplicationProperties();
             bind(KafkaConnector.class).toInstance(new KafkaConnector(properties));
@@ -107,11 +113,39 @@ public class Framework implements Runnable {
             }
             return allConnectors;
         }
+
+        private Config loadExternalConfig() {
+            try {
+                ConfigProviderResolver resolver = ConfigProviderResolver.instance();
+                ConfigBuilder builder = resolver
+                        .getBuilder()
+                        .addDefaultSources();
+                URL applicationProperties = getClass().getClassLoader().getResource(APPLICATION_PROPERTIES);
+                if (applicationProperties != null) {
+                    builder
+                            .withSources(new PropertiesConfigSource(applicationProperties, 110));
+                }
+                File externalApplicationProperties = new File("./" + APPLICATION_PROPERTIES);
+                if (externalApplicationProperties.exists()) {
+                    builder
+                            .withSources(new PropertiesConfigSource(externalApplicationProperties.toURI().toURL(), 120));
+                }
+                return builder.build();
+            } catch (IOException e) {
+                throw new ConfigurationException(e);
+            }
+        }
     }
 
     public static final class InitializationException extends RuntimeException {
         public InitializationException(String message) {
             super(message);
+        }
+    }
+
+    static class ConfigurationException extends RuntimeException {
+        ConfigurationException(Throwable e) {
+            super(e);
         }
     }
 }
