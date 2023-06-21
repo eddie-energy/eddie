@@ -2,6 +2,8 @@ package energy.eddie.framework;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
+import jakarta.annotation.Nullable;
+import org.eclipse.microprofile.config.Config;
 import org.jdbi.v3.core.Jdbi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,12 +18,20 @@ public class JdbcAdapter implements energy.eddie.api.v0.ApplicationConnector {
 
     private final Jdbi jdbi;
 
-    public JdbcAdapter(String jdbcUrl, String userName, String password) {
+    public JdbcAdapter(String jdbcUrl, @Nullable String userName, @Nullable String password) {
         if (null != userName && null != password) {
             jdbi = Jdbi.create(jdbcUrl, userName, password);
         } else {
             jdbi = Jdbi.create(jdbcUrl);
         }
+    }
+
+    public JdbcAdapter(Config config) {
+        this(
+                config.getValue(Env.JDBC_URL.name(), String.class),
+                config.getOptionalValue(Env.JDBC_USER.name(), String.class).orElse(null),
+                config.getOptionalValue(Env.JDBC_PASSWORD.name(), String.class).orElse(null)
+        );
     }
 
     @Override

@@ -16,6 +16,7 @@ import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.Slf4jRequestLogWriter;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +29,10 @@ public class JavalinApp {
     private static final Logger logger = LoggerFactory.getLogger(JavalinApp.class);
 
     private static final String SRC_MAIN_PREFIX = "./framework/src/main/";
+    private static final String DEVELOPMENT_MODE = "developmentMode";
+
+    private final Boolean devMode;
+    private final String baseUrl;
 
     @Inject
     private Set<JavalinPathHandler> javalinPathHandlers;
@@ -35,8 +40,14 @@ public class JavalinApp {
     @Inject
     private Set<RegionConnector> regionConnectors;
 
-    private static boolean inDevelopmentMode() {
-        return "true".equals(System.getProperty("developmentMode"));
+    @Inject
+    public JavalinApp(Config config) {
+        devMode = config.getOptionalValue(DEVELOPMENT_MODE, Boolean.class).orElse(true);
+        baseUrl = config.getOptionalValue(Env.PUBLIC_CONTEXT_PATH.name(), String.class).orElse("");
+    }
+
+    private boolean inDevelopmentMode() {
+        return devMode;
     }
 
     /**
@@ -82,11 +93,10 @@ public class JavalinApp {
                     .addModule(new JavaTimeModule())
                     .build();
             config.jsonMapper(new JavalinJackson(mapper));
-            var baseUrl = Env.PUBLIC_CONTEXT_PATH.get();
             if (null != baseUrl && !baseUrl.isEmpty()) {
                 // Sonar false positive on following line(java:S1075): This shouldn't be externally configurable
                 // because it already is, this is just a fallback value.
-                config.routing.contextPath = "/" + Env.PUBLIC_CONTEXT_PATH.get();
+                config.routing.contextPath = "/" + baseUrl;
             }
             config.jetty.contextHandlerConfig(sch -> regionConnectors.forEach(rc -> {
                 var regionConnectorAddress = rc.startWebapp(new InetSocketAddress("localhost", 0), inDevelopmentMode());

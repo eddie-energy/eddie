@@ -1,9 +1,5 @@
 package energy.eddie.framework;
 
 public enum Env {
-    JDBC_URL, JDBC_USER, JDBC_PASSWORD, PUBLIC_CONTEXT_PATH;
-
-    public String get() {
-        return System.getenv(this.name());
-    }
+    JDBC_URL, JDBC_USER, JDBC_PASSWORD, PUBLIC_CONTEXT_PATH
 }
