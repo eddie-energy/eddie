@@ -8,8 +8,8 @@ import static java.util.Objects.requireNonNull;
 public class PropertiesAtConfiguration implements AtConfiguration {
     private static final String PREFIX = "region-connector.at.eda.";
 
-    private static final String ELIGIBLE_PARTY_ID = PREFIX + "eligiblePartyId";
-    private static final String TIME_ZONE = PREFIX + "timeZone";
+    public static final String ELIGIBLE_PARTY_ID_KEY = PREFIX + "eligiblePartyId";
+    public static final String TIME_ZONE_KEY = PREFIX + "timeZone";
     private final Properties properties;
 
     private PropertiesAtConfiguration(Properties properties) {
@@ -17,22 +17,21 @@ public class PropertiesAtConfiguration implements AtConfiguration {
     }
 
     public static PropertiesAtConfiguration fromProperties(Properties properties) {
-        requireNonNull(properties.getProperty(ELIGIBLE_PARTY_ID), "Property %s is required".formatted(ELIGIBLE_PARTY_ID));
+        requireNonNull(properties.getProperty(ELIGIBLE_PARTY_ID_KEY), "Property %s is required".formatted(ELIGIBLE_PARTY_ID_KEY));
 
-        ZoneId zoneId = ZoneId.of(requireNonNull(properties.getProperty(TIME_ZONE), "Property %s is required".formatted(TIME_ZONE)));
-        ;
+        ZoneId.of(requireNonNull(properties.getProperty(TIME_ZONE_KEY), "Property %s is required".formatted(TIME_ZONE_KEY)));
 
         return new PropertiesAtConfiguration(properties);
     }
 
     @Override
     public String eligiblePartyId() {
-        return get(ELIGIBLE_PARTY_ID);
+        return get(ELIGIBLE_PARTY_ID_KEY);
     }
 
     @Override
     public ZoneId timeZone() {
-        return ZoneId.of(get(TIME_ZONE));
+        return ZoneId.of(get(TIME_ZONE_KEY));
     }
 
     private String get(String key) {
