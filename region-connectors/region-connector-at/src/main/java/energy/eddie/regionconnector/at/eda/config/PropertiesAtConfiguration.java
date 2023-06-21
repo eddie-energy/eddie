@@ -6,33 +6,36 @@ import java.util.Properties;
 import static java.util.Objects.requireNonNull;
 
 public class PropertiesAtConfiguration implements AtConfiguration {
+    private static final String PREFIX = "region-connector.at.eda.";
 
-    private static final String ELIGIBLE_PARTY_ID = "eligiblePartyId";
-    private static final String TIME_ZONE = "timeZone";
-    private final String eligiblePartyId;
-    private final ZoneId timeZone;
+    private static final String ELIGIBLE_PARTY_ID = PREFIX + "eligiblePartyId";
+    private static final String TIME_ZONE = PREFIX + "timeZone";
+    private final Properties properties;
 
-    private PropertiesAtConfiguration(String eligiblePartyId, ZoneId timeZone) {
-        this.eligiblePartyId = eligiblePartyId;
-        this.timeZone = timeZone;
+    private PropertiesAtConfiguration(Properties properties) {
+        this.properties = requireNonNull(properties);
     }
 
     public static PropertiesAtConfiguration fromProperties(Properties properties) {
-        var eligiblePartyId = properties.getProperty(ELIGIBLE_PARTY_ID);
-        requireNonNull(eligiblePartyId, "Missing property: " + ELIGIBLE_PARTY_ID);
-        var timeZone = properties.getProperty(TIME_ZONE);
-        requireNonNull(timeZone, "Missing property: " + TIME_ZONE);
-        ZoneId zoneId = ZoneId.of(timeZone);
-        return new PropertiesAtConfiguration(eligiblePartyId, zoneId);
+        requireNonNull(properties.getProperty(ELIGIBLE_PARTY_ID), "Property %s is required".formatted(ELIGIBLE_PARTY_ID));
+
+        ZoneId zoneId = ZoneId.of(requireNonNull(properties.getProperty(TIME_ZONE), "Property %s is required".formatted(TIME_ZONE)));
+        ;
+
+        return new PropertiesAtConfiguration(properties);
     }
 
     @Override
     public String eligiblePartyId() {
-        return eligiblePartyId;
+        return get(ELIGIBLE_PARTY_ID);
     }
 
     @Override
     public ZoneId timeZone() {
-        return timeZone;
+        return ZoneId.of(get(TIME_ZONE));
+    }
+
+    private String get(String key) {
+        return requireNonNull(properties.getProperty(key), "Property %s is required".formatted(key));
     }
 }

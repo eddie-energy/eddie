@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.GregorianCalendar;
+import java.util.Properties;
 
 public class PontonXPAdapterCliClient {
 
@@ -36,35 +37,14 @@ public class PontonXPAdapterCliClient {
 
     public static void main(String[] args) throws ConnectionException, IOException, JAXBException, TransmissionException {
         var reader = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
-        // query for eligiblePartyId
-        System.out.println("Enter eligiblePartyId:");
-        var eligiblePartyId = reader.readLine();
-        atConfiguration.setEligiblePartyId(eligiblePartyId);
 
-        // query for hostname
-        System.out.println("Enter hostname (location of ponton xp messanger):");
-        var hostname = reader.readLine();
+        Properties properties = new Properties();
+        var in = PontonXPAdapterCliClient.class.getClassLoader().getResourceAsStream("regionconnector-at.properties");
+        properties.load(in);
 
-        // query for adapter id 
-        System.out.println("Enter adapterId:");
-        var adapterId = reader.readLine();
+        PontonXPAdapterConfiguration config = PropertiesPontonXPAdapterConfiguration.fromProperties(properties);
 
-        
-
-        String path = System.getProperty("user.home") + File.separator + "pontonxp" + File.separator + "work";
-        var workFolder = new File(path);
-        if (workFolder.exists() || workFolder.mkdirs()) {
-            System.out.println("Path exists: " + workFolder.getAbsolutePath());
-        } else {
-            throw new IOException("Could not create path: " + workFolder.getAbsolutePath());
-        }
-        PontonXPAdapterConfig config = new PontonXPAdapterConfig.Builder()
-                .withHostname(hostname)
-                .withWorkFolder(workFolder.toString())
-                .withAdapterId(adapterId)
-                .withAdapterVersion("1.0.0")
-                .build();
-        var outputStream = new PrintStream(new FileOutputStream(path + File.separator + "consumptionRecords.txt", true));
+        var outputStream = new PrintStream(new FileOutputStream(config.workFolder() + File.separator + "consumptionRecords.txt", true));
         var adapter = new PontonXPAdapter(config);
         var mapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
 

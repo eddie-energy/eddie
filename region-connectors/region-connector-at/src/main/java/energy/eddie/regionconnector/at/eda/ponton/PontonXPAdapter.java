@@ -39,7 +39,7 @@ public class PontonXPAdapter implements EdaAdapter {
     Marshaller marshaller = context.createMarshaller();
     Unmarshaller unmarshaller = context.createUnmarshaller();
 
-    public PontonXPAdapter(PontonXPAdapterConfig config) throws IOException, ConnectionException, JAXBException {
+    public PontonXPAdapter(PontonXPAdapterConfiguration config) throws IOException, ConnectionException, JAXBException {
         final String adapterId = config.adapterId();
         final String adapterVersion = config.adapterVersion();
         final String hostname = config.hostname();

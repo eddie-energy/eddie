@@ -10,7 +10,7 @@ import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PropertiesAtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
-import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfig;
+import energy.eddie.regionconnector.at.eda.ponton.PropertiesPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.*;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
@@ -97,7 +97,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
         this.atConfiguration = PropertiesAtConfiguration.fromProperties(properties);
         this.consumptionRecordMapper = new ConsumptionRecordMapper(atConfiguration.timeZone());
 
-        PontonXPAdapterConfig pontonXPAdapterConfig = PontonXPAdapterConfig.fromProperties(properties);
+        PropertiesPontonXPAdapterConfiguration pontonXPAdapterConfig = PropertiesPontonXPAdapterConfiguration.fromProperties(properties);
 
         var workFolder = new File(pontonXPAdapterConfig.workFolder());
         if (workFolder.exists() || workFolder.mkdirs()) {

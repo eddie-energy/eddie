@@ -1,0 +1,31 @@
+package energy.eddie.regionconnector.at.eda.ponton;
+
+/**
+ * This interface defines all information needed for a PontonXPAdapter to establish a connection to a Ponton XP Messenger.
+ */
+public interface PontonXPAdapterConfiguration {
+    /**
+     * ID of the adapter that will be used by the Ponton XP Messenger. The value used for this should be configured as the default adapter in the messenger
+     */
+    String adapterId();
+
+    /**
+     * Version of the adapter
+     */
+    String adapterVersion();
+
+    /**
+     * Address of the Ponton XP Messenger
+     */
+    String hostname();
+
+    /**
+     * Port of the Ponton XP Messenger adapter interface (default: 2600)
+     */
+    int port();
+
+    /**
+     * Path to the folder where the Ponton XP Adapter will store its files like id.dat which is used by the messenger to identify the adapter.
+     */
+    String workFolder();
+}
