@@ -55,14 +55,11 @@ public class EdaRegionConnector implements RegionConnectorAT {
      * DSOs in Austria are only allowed to store data for the last 36 months
      */
     public static final int MAXIMUM_MONTHS_IN_THE_PAST = 36;
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
     private final AtConfiguration atConfiguration;
     private final EdaAdapter edaAdapter;
     private final ConsumptionRecordMapper consumptionRecordMapper;
     private final EdaIdMapper edaIdMapper;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
-
     private final SubmissionPublisher<ConnectionStatusMessage> permissionStatusPublisher = new SubmissionPublisher<>();
     private final SubmissionPublisher<ConsumptionRecord> consumptionRecordSubmissionPublisher = new SubmissionPublisher<>();
     private final Javalin javalin = Javalin.create();
@@ -209,7 +206,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
         var mappingInfo = edaIdMapper.getMappingInfoForConversationIdOrRequestID(consumptionRecord.getProcessDirectory().getConversationId(), null);
         var permissionId = mappingInfo.map(MappingInfo::permissionId).orElse(null);
         var connectionId = mappingInfo.map(MappingInfo::connectionId).orElse(null);
-
+        LOGGER.info("Received consumption record (ConversationId '{}') for permissionId {} and connectionId {}", consumptionRecord.getProcessDirectory().getConversationId(), permissionId, connectionId);
         try {
             ConsumptionRecord cimConsumptionRecord = consumptionRecordMapper.mapToCIM(consumptionRecord, permissionId, connectionId);
             consumptionRecordSubmissionPublisher.submit(cimConsumptionRecord);
