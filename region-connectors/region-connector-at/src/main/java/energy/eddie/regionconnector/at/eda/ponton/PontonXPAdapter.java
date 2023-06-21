@@ -33,7 +33,7 @@ public class PontonXPAdapter implements EdaAdapter {
     final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<CMRevoke> cmRevokeSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<MasterData> masterDataSink = Sinks.many().multicast().onBackpressureBuffer();
-    private final Logger logger = LoggerFactory.getLogger(PontonXPAdapter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PontonXPAdapter.class);
     MessengerConnection messengerConnection;
     JAXBContext context = JAXBContext.newInstance(CMRequest.class, ConsumptionRecord.class, CMNotification.class, CMRevoke.class, MasterData.class, CMRevoke.class);
     Marshaller marshaller = context.createMarshaller();
@@ -69,7 +69,7 @@ public class PontonXPAdapter implements EdaAdapter {
     public void start() throws TransmissionException {
         try {
             messengerConnection.start();
-            logger.info("Ponton XP adapter started.");
+            LOGGER.info("Ponton XP adapter started.");
         } catch (de.ponton.xp.adapter.api.TransmissionException e) {
             throw new TransmissionException(e);
         }
@@ -78,7 +78,7 @@ public class PontonXPAdapter implements EdaAdapter {
     private void outboundMessageStatusUpdateHandler(OutboundMessageStatusUpdate outboundMessageStatusUpdate) {
         var conversationId = outboundMessageStatusUpdate.getStatusMetaData().getConversationId().getValue();
 
-        logger.info("Received status update for ConversationId: '{}' with result: '{}'", conversationId, outboundMessageStatusUpdate.getResult());
+        LOGGER.info("Received status update for ConversationId: '{}' with result: '{}'", conversationId, outboundMessageStatusUpdate.getResult());
         switch (outboundMessageStatusUpdate.getResult()) {
             case SUCCESS ->  // success just indicates that the message was received by the other party (dso)
                     requestStatusSink.tryEmitNext(new CMRequestStatus(CMRequestStatus.Status.RECEIVED, outboundMessageStatusUpdate.getDetailText(), conversationId));
@@ -93,7 +93,7 @@ public class PontonXPAdapter implements EdaAdapter {
     private InboundMessageStatusUpdate inboundMessageHandler(InboundMessage inboundMessage) {
         var messageType = inboundMessage.getInboundMetaData().getMessageType().getName().getValue();
         var messageVersion = inboundMessage.getInboundMetaData().getMessageType().getVersion().getValue();
-        logger.info("Received message type: '{}' (version '{}') with ConversationId: '{}'", messageType, messageVersion, inboundMessage.getInboundMetaData().getConversationId().getValue());
+        LOGGER.info("Received message type: '{}' (version '{}') with ConversationId: '{}'", messageType, messageVersion, inboundMessage.getInboundMetaData().getConversationId().getValue());
 
         try {
             return switch (messageType) {
@@ -104,7 +104,7 @@ public class PontonXPAdapter implements EdaAdapter {
                 case MessageCodes.CONSUMPTION_RECORD -> handleConsumptionRecordMessage(inboundMessage);
                 case MessageCodes.Revoke.CUSTOMER, MessageCodes.Revoke.IMPLICIT -> handleRevokeMessage(inboundMessage);
                 default -> {
-                    logger.warn("Received message type '{}' (version '{}') is not supported.", messageType, messageVersion);
+                    LOGGER.warn("Received message type '{}' (version '{}') is not supported.", messageType, messageVersion);
                     yield InboundMessageStatusUpdate.newBuilder()
                             .setInboundMessage(inboundMessage)
                             .setStatus(InboundStatusEnum.REJECTED)
@@ -113,14 +113,14 @@ public class PontonXPAdapter implements EdaAdapter {
                 }
             };
         } catch (JAXBException e) {
-            logger.error("Error while trying to unmarshal contents of message type '{}' in schema-version '{}'", messageType, messageVersion, e);
+            LOGGER.error("Error while trying to unmarshal contents of message type '{}' in schema-version '{}'", messageType, messageVersion, e);
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
                     .setStatus(InboundStatusEnum.REJECTED)
                     .setStatusText(e.getMessage())
                     .build();
         } catch (IOException e) {
-            logger.error("Error while reading input stream of message", e);
+            LOGGER.error("Error while reading input stream of message", e);
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
                     .setStatus(InboundStatusEnum.TEMPORARY_ERROR)
@@ -140,7 +140,7 @@ public class PontonXPAdapter implements EdaAdapter {
             status.setMeteringPoint(meteringPoint);
 
             requestStatusSink.tryEmitNext(status);
-            logger.info("Received CMNotification '{}' for CMRequestId '{}' with ConversationId '{}'", status.getStatus(), cmRequestId, status.getConversationId());
+            LOGGER.info("Received CMNotification '{}' for CMRequestId '{}' with ConversationId '{}'", status.getStatus(), cmRequestId, status.getConversationId());
 
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
@@ -163,7 +163,7 @@ public class PontonXPAdapter implements EdaAdapter {
             status.setMeteringPoint(meteringPoint);
 
             requestStatusSink.tryEmitNext(status);
-            logger.info("Received CMNotification: ACCEPTED for CMRequestId '{}' with ConversationId '{}' and ConsentId: '{}'", cmRequestId, status.getConversationId(), consentId);
+            LOGGER.info("Received CMNotification: ACCEPTED for CMRequestId '{}' with ConversationId '{}' and ConsentId: '{}'", cmRequestId, status.getConversationId(), consentId);
 
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
@@ -199,7 +199,7 @@ public class PontonXPAdapter implements EdaAdapter {
             status.setMeteringPoint(meteringPoint);
 
             requestStatusSink.tryEmitNext(status);
-            logger.info("Received CMNotification: REJECTED for CMRequestId '{}' with  ConversationId '{}', reason '{}'", cmRequestId, status.getConversationId(), reason);
+            LOGGER.info("Received CMNotification: REJECTED for CMRequestId '{}' with  ConversationId '{}', reason '{}'", cmRequestId, status.getConversationId(), reason);
 
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
@@ -215,7 +215,7 @@ public class PontonXPAdapter implements EdaAdapter {
             var masterData = (MasterData) unmarshaller.unmarshal(inputStream);
             masterDataSink.tryEmitNext(masterData);
 
-            logger.info("Received master data for MeteringPoint '{}' with ConversationId '{}'", masterData.getProcessDirectory().getMeteringPoint(), masterData.getProcessDirectory().getConversationId());
+            LOGGER.info("Received master data for MeteringPoint '{}' with ConversationId '{}'", masterData.getProcessDirectory().getMeteringPoint(), masterData.getProcessDirectory().getConversationId());
 
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
@@ -231,7 +231,7 @@ public class PontonXPAdapter implements EdaAdapter {
             // the process is documented here https://www.ebutilities.at/prozesse/230
             // we might have to create a ABLEHNUNG_CRMSG (CPNotification) if the message was not valid, see https://www.ebutilities.at/prozesse/230/marktnachrichten/615
             consumptionRecordSink.tryEmitNext(consumptionRecord);
-            logger.info("Received consumption record for MeteringPoint '{}' with ConversationId '{}'", consumptionRecord.getProcessDirectory().getMeteringPoint(), consumptionRecord.getProcessDirectory().getConversationId());
+            LOGGER.info("Received consumption record for MeteringPoint '{}' with ConversationId '{}'", consumptionRecord.getProcessDirectory().getMeteringPoint(), consumptionRecord.getProcessDirectory().getConversationId());
 
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
@@ -247,7 +247,7 @@ public class PontonXPAdapter implements EdaAdapter {
             var cmRevoke = (CMRevoke) unmarshaller.unmarshal(inputStream);
 
             cmRevokeSink.tryEmitNext(cmRevoke);
-            logger.info("Received revoke message for MeteringPoint '{}' of ConsentId '{}' with ConversationId '{}'", cmRevoke.getProcessDirectory().getConsentId(), cmRevoke.getProcessDirectory().getMeteringPoint(), cmRevoke.getProcessDirectory().getConversationId());
+            LOGGER.info("Received revoke message for MeteringPoint '{}' of ConsentId '{}' with ConversationId '{}'", cmRevoke.getProcessDirectory().getConsentId(), cmRevoke.getProcessDirectory().getMeteringPoint(), cmRevoke.getProcessDirectory().getConversationId());
 
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
@@ -282,10 +282,10 @@ public class PontonXPAdapter implements EdaAdapter {
                 .build();
 
         try {
-            logger.info("Sending CCMO request to DSO '{}' with RequestID '{}'", request.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress(), request.getProcessDirectory().getCMRequestId());
+            LOGGER.info("Sending CCMO request to DSO '{}' with RequestID '{}'", request.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress(), request.getProcessDirectory().getCMRequestId());
             messengerConnection.sendMessage(outboundMessage);
         } catch (de.ponton.xp.adapter.api.TransmissionException e) {
-            logger.error("Error sending CCMO request to DSO '{}'", request.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress(), e);
+            LOGGER.error("Error sending CCMO request to DSO '{}'", request.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress(), e);
             throw new TransmissionException(e);
         }
 
@@ -316,10 +316,10 @@ public class PontonXPAdapter implements EdaAdapter {
                 .build();
 
         try {
-            logger.info("Sending CMRevoke to DSO '{}' with ConsentId '{}'", revoke.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress(), revoke.getProcessDirectory().getConsentId());
+            LOGGER.info("Sending CMRevoke to DSO '{}' with ConsentId '{}'", revoke.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress(), revoke.getProcessDirectory().getConsentId());
             messengerConnection.sendMessage(outboundMessage);
         } catch (de.ponton.xp.adapter.api.TransmissionException e) {
-            logger.error("Error sending CMRevoke to DSO '{}'", revoke.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress(), e);
+            LOGGER.error("Error sending CMRevoke to DSO '{}'", revoke.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress(), e);
             throw new TransmissionException(e);
         }
     }

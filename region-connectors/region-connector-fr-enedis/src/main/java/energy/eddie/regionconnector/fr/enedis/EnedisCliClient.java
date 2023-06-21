@@ -20,7 +20,7 @@ import java.util.Properties;
 import java.util.Scanner;
 
 public class EnedisCliClient {
-    private static final Logger logger = LoggerFactory.getLogger(EnedisCliClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EnedisCliClient.class);
 
     public static void main(String[] args) throws IOException {
         Properties properties = new Properties();
@@ -63,7 +63,7 @@ public class EnedisCliClient {
         } catch (ApiException e) {
             if (e.getCode() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 try {
-                    logger.warn("Unauthorised, retry with new token.");
+                    LOGGER.warn("Unauthorised, retry with new token.");
 
                     if (start.equals(reference)) {
                         start = ZonedDateTime.now(ZoneId.of("Europe/Paris")).minusDays(2);
@@ -74,30 +74,30 @@ public class EnedisCliClient {
                 } catch (ApiException e2) {
                     showApiExceptionError(e2);
                 } catch (IOException e2) {
-                    logger.error("IO Error: " + e2.getMessage(), e2);
+                    LOGGER.error("IO Error: " + e2.getMessage(), e2);
                 }
             } else {
                 showApiExceptionError(e);
             }
         } catch (DateTimeException e) {
-            logger.error("Date Time Error Occured: " + e.getMessage(), e);
+            LOGGER.error("Date Time Error Occured: " + e.getMessage(), e);
         } catch (IOException e) {
-            logger.error("IO Error: " + e.getMessage(), e);
+            LOGGER.error("IO Error: " + e.getMessage(), e);
         }
     }
 
     private static void getConsumptionRecords(EnedisApiClientDecorator enedisApiClient, String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException, IOException {
         ConsumptionRecord dcRecord = enedisApiClient.getDailyConsumption(usagePointId, start, end);
-        logger.info("Daily Consumption Record received.");
-        logger.info(dcRecord.toString(), dcRecord);
+        LOGGER.info("Daily Consumption Record received.");
+        LOGGER.info(dcRecord.toString(), dcRecord);
         ConsumptionRecord clcRecord = enedisApiClient.getConsumptionLoadCurve(usagePointId, start, end);
-        logger.info("Consumption Load Curve Record received.");
-        logger.info(clcRecord.toString(), clcRecord);
+        LOGGER.info("Consumption Load Curve Record received.");
+        LOGGER.info(clcRecord.toString(), clcRecord);
     }
 
     private static void showApiExceptionError(ApiException e) {
-        logger.error("API Exception occured: " + e.getMessage(), e);
-        logger.error(String.valueOf(e.getCode()), e);
-        logger.error(e.getResponseBody(), e);
+        LOGGER.error("API Exception occured: " + e.getMessage(), e);
+        LOGGER.error(String.valueOf(e.getCode()), e);
+        LOGGER.error(e.getResponseBody(), e);
     }
 }

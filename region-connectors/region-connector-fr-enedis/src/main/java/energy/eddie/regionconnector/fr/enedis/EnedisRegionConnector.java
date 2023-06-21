@@ -36,6 +36,7 @@ import java.util.concurrent.Flow;
 import static java.util.Objects.requireNonNull;
 
 public class EnedisRegionConnector implements RegionConnector {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
     public static final String COUNTRY_CODE = "fr";
     public static final String MDA_CODE = COUNTRY_CODE + "-enedis";
     public static final String BASE_PATH = "/region-connectors/" + MDA_CODE;
@@ -44,7 +45,6 @@ public class EnedisRegionConnector implements RegionConnector {
     final Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
     private final EnedisApi enedisApi;
-    private final Logger logger = LoggerFactory.getLogger(EnedisRegionConnector.class);
     private final Javalin javalin = Javalin.create();
     private final EnedisConfiguration configuration;
     private final ConcurrentMap<String, RequestInfo> permissionIdToRequestInfo = new ConcurrentHashMap<>();
@@ -156,14 +156,14 @@ public class EnedisRegionConnector implements RegionConnector {
             var permissionId = ctx.queryParam("state");
             if (permissionId == null || !permissionIdToRequestInfo.containsKey(permissionId)) {
                 // unknown state / permissionId => not coming / initiated by our frontend
-                logger.warn("authorization-callback called with unknown state '{}'", permissionId);
+                LOGGER.warn("authorization-callback called with unknown state '{}'", permissionId);
                 ctx.status(HttpStatus.BAD_REQUEST);
                 return;
             }
 
             var requestInfo = permissionIdToRequestInfo.get(permissionId);
             if (requestInfo == null) {
-                logger.warn("authorization-callback called with unknown state (permissionId) '{}', can't find requestInfo", permissionId);
+                LOGGER.warn("authorization-callback called with unknown state (permissionId) '{}', can't find requestInfo", permissionId);
                 ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
                 return;
             }
@@ -183,7 +183,7 @@ public class EnedisRegionConnector implements RegionConnector {
                 try {
                     enedisApi.postToken(); // fetch jwt token
                 } catch (ApiException e) {
-                    logger.error("Something went wrong while fetching token from ENEDIS:", e);
+                    LOGGER.error("Something went wrong while fetching token from ENEDIS:", e);
                 }
                 // request data from enedis
                 var start = requestInfo.start();
@@ -196,7 +196,7 @@ public class EnedisRegionConnector implements RegionConnector {
                         if (endOfRequest.isAfter(end)) {
                             endOfRequest = end;
                         }
-                        logger.info("Fetching data from ENEDIS for usage_point '{}' from '{}' to '{}'", usagePointId, start, endOfRequest);
+                        LOGGER.info("Fetching data from ENEDIS for usage_point '{}' from '{}' to '{}'", usagePointId, start, endOfRequest);
                         var consumptionRecord = enedisApi.getConsumptionLoadCurve(usagePointId, start, endOfRequest);
                         // map ids
                         consumptionRecord.setConnectionId(requestInfo.connectionId());
@@ -206,15 +206,15 @@ public class EnedisRegionConnector implements RegionConnector {
                         start = endOfRequest;
                     } catch (ApiException e) {
                         // TODO map errors and publish messages
-                        logger.error("Something went wrong while fetching data from ENEDIS:", e);
+                        LOGGER.error("Something went wrong while fetching data from ENEDIS:", e);
                         if (tryCount++ > 10) {
-                            logger.error("Too many retries, giving up");
+                            LOGGER.error("Too many retries, giving up");
                             return;
                         }
                         try {
                             Thread.sleep(1200);
                         } catch (InterruptedException interruptedException) {
-                            logger.error("Interrupted while sleeping", interruptedException);
+                            LOGGER.error("Interrupted while sleeping", interruptedException);
                             return;
                         }
                     }
@@ -223,7 +223,7 @@ public class EnedisRegionConnector implements RegionConnector {
         });
 
         javalin.exception(Exception.class, (e, ctx) -> {
-            logger.error("Exception occurred while processing request", e);
+            LOGGER.error("Exception occurred while processing request", e);
             ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
             ctx.result("Internal Server Error");
         });

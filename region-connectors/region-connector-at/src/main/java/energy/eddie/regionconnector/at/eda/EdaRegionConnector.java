@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
@@ -62,7 +61,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
     private final ConsumptionRecordMapper consumptionRecordMapper;
     private final EdaIdMapper edaIdMapper;
 
-    private final Logger logger = LoggerFactory.getLogger(EdaRegionConnector.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
 
     private final SubmissionPublisher<ConnectionStatusMessage> permissionStatusPublisher = new SubmissionPublisher<>();
     private final SubmissionPublisher<ConsumptionRecord> consumptionRecordSubmissionPublisher = new SubmissionPublisher<>();
@@ -172,7 +171,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
         if (mappingInfo.isEmpty()) {
             // should not happen if a persistent mapping is used
             // TODO inform the administrative console if it happens
-            logger.warn("Received CMRequestStatus for unknown conversationId or requestId: {}", cmRequestStatus);
+            LOGGER.warn("Received CMRequestStatus for unknown conversationId or requestId: {}", cmRequestStatus);
             return;
         }
 
@@ -216,7 +215,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
             consumptionRecordSubmissionPublisher.submit(cimConsumptionRecord);
         } catch (InvalidMappingException e) {
             // TODO In the future this should also inform the administrative console about the invalid mapping
-            logger.error("Could not map consumption record to CIM consumption record", e);
+            LOGGER.error("Could not map consumption record to CIM consumption record", e);
         }
     }
 
@@ -290,7 +289,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
         });
 
         javalin.exception(Exception.class, (e, ctx) -> {
-            logger.error("Exception occurred while processing request", e);
+            LOGGER.error("Exception occurred while processing request", e);
             ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
             ctx.result("Internal Server Error");
         });

@@ -35,11 +35,10 @@ dependencies {
 
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
-    implementation(libs.slf4j.api)
 
-    runtimeOnly(libs.log4j.sl4j2.impl)
-    runtimeOnly(libs.log4j.api)
-    runtimeOnly(libs.log4j.core)
+    // sl4j
+    implementation(libs.slf4j.api)
+    implementation(libs.log4j.sl4j2.impl)
     runtimeOnly(libs.log4j.jul)
 
     implementation(libs.reactor.core)

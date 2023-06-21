@@ -31,8 +31,8 @@ import java.util.GregorianCalendar;
 
 public class PontonXPAdapterCliClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(PontonXPAdapterCliClient.class);
-    private static SimpleAtConfiguration atConfiguration = new SimpleAtConfiguration();
+    private static final Logger LOGGER = LoggerFactory.getLogger(PontonXPAdapterCliClient.class);
+    private static final SimpleAtConfiguration atConfiguration = new SimpleAtConfiguration();
 
     public static void main(String[] args) throws ConnectionException, IOException, JAXBException, TransmissionException {
         var reader = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
@@ -40,7 +40,7 @@ public class PontonXPAdapterCliClient {
         System.out.println("Enter eligiblePartyId:");
         var eligiblePartyId = reader.readLine();
         atConfiguration.setEligiblePartyId(eligiblePartyId);
-        
+
         // query for hostname
         System.out.println("Enter hostname (location of ponton xp messanger):");
         var hostname = reader.readLine();
@@ -69,16 +69,16 @@ public class PontonXPAdapterCliClient {
         var mapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
 
         adapter.getConsumptionRecordStream().subscribe(consumptionRecord -> {
-            logger.info("Received consumptionRecord from: " + consumptionRecord.getProcessDirectory().getMeteringPoint() + " for: " + consumptionRecord.getProcessDirectory().getEnergy().get(0).getMeteringPeriodStart());
+            LOGGER.info("Received consumptionRecord from: " + consumptionRecord.getProcessDirectory().getMeteringPoint() + " for: " + consumptionRecord.getProcessDirectory().getEnergy().get(0).getMeteringPeriodStart());
             try {
                 outputStream.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(consumptionRecord));
             } catch (JsonProcessingException e) {
-                logger.error("Error while writing consumption record to file: ", e);
+                LOGGER.error("Error while writing consumption record to file: ", e);
             }
         });
 
         adapter.getCMRequestStatusStream().subscribe(cmRequestStatus -> {
-            logger.info("Received CMRequestStatus: " + cmRequestStatus);
+            LOGGER.info("Received CMRequestStatus: " + cmRequestStatus);
         });
 
         adapter.start();
@@ -153,7 +153,7 @@ public class PontonXPAdapterCliClient {
             adapter.sendCMRequest(cmRequest);
 
         } catch (TransmissionException e) {
-            logger.error("Error sending CMRequest: " + e.getMessage(), e);
+            LOGGER.error("Error sending CMRequest: " + e.getMessage(), e);
         }
     }
 
@@ -195,7 +195,7 @@ public class PontonXPAdapterCliClient {
         try {
             adapter.sendCMRevoke(cmRevoke);
         } catch (Exception e) {
-            logger.error("Error sending CMRequest: " + e.getMessage(), e);
+            LOGGER.error("Error sending CMRequest: " + e.getMessage(), e);
         }
     }
 
