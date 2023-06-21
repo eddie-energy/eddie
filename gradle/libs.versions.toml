@@ -22,9 +22,6 @@ jetty = "11.0.14"
 jte = "2.3.0"
 log4j = "2.20.0"
 kafka-clients = "3.4.0"
-reactor-core = "3.5.6"
-
-slf4j-api = "2.0.7"
 
 swagger-codegen-version = "3.0.45"
 apache-httpcomponents-version = "4.5.14"
@@ -62,8 +59,6 @@ reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "react
 reactor-test = { module = "io.projectreactor:reactor-test", version.ref = "reactor" }
 
 log4j-sl4j2-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
-log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
-log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 log4j-jul = { module = "org.apache.logging.log4j:log4j-jul", version.ref = "log4j" }
 
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }

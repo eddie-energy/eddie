@@ -29,13 +29,9 @@ dependencies {
     implementation(libs.apache.http.client)
     implementation(libs.apache.http.mime)
 
-    implementation(libs.slf4j.api)
-
     // sl4j
+    implementation(libs.slf4j.api)
     implementation(libs.log4j.sl4j2.impl)
-
-    runtimeOnly(libs.slf4j.api)
-    runtimeOnly(libs.log4j.sl4j2.impl)
     runtimeOnly(libs.log4j.jul)
 
     implementation(libs.reactor.core)
