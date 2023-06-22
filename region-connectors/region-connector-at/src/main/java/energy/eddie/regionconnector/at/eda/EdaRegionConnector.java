@@ -10,7 +10,7 @@ import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PropertiesAtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
-import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfig;
+import energy.eddie.regionconnector.at.eda.ponton.PropertiesPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.*;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
@@ -55,14 +55,11 @@ public class EdaRegionConnector implements RegionConnectorAT {
      * DSOs in Austria are only allowed to store data for the last 36 months
      */
     public static final int MAXIMUM_MONTHS_IN_THE_PAST = 36;
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
     private final AtConfiguration atConfiguration;
     private final EdaAdapter edaAdapter;
     private final ConsumptionRecordMapper consumptionRecordMapper;
     private final EdaIdMapper edaIdMapper;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
-
     private final SubmissionPublisher<ConnectionStatusMessage> permissionStatusPublisher = new SubmissionPublisher<>();
     private final SubmissionPublisher<ConsumptionRecord> consumptionRecordSubmissionPublisher = new SubmissionPublisher<>();
     private final Javalin javalin = Javalin.create();
@@ -97,7 +94,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
         this.atConfiguration = PropertiesAtConfiguration.fromProperties(properties);
         this.consumptionRecordMapper = new ConsumptionRecordMapper(atConfiguration.timeZone());
 
-        PontonXPAdapterConfig pontonXPAdapterConfig = PontonXPAdapterConfig.fromProperties(properties);
+        PropertiesPontonXPAdapterConfiguration pontonXPAdapterConfig = PropertiesPontonXPAdapterConfiguration.fromProperties(properties);
 
         var workFolder = new File(pontonXPAdapterConfig.workFolder());
         if (workFolder.exists() || workFolder.mkdirs()) {
@@ -209,7 +206,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
         var mappingInfo = edaIdMapper.getMappingInfoForConversationIdOrRequestID(consumptionRecord.getProcessDirectory().getConversationId(), null);
         var permissionId = mappingInfo.map(MappingInfo::permissionId).orElse(null);
         var connectionId = mappingInfo.map(MappingInfo::connectionId).orElse(null);
-
+        LOGGER.info("Received consumption record (ConversationId '{}') for permissionId {} and connectionId {}", consumptionRecord.getProcessDirectory().getConversationId(), permissionId, connectionId);
         try {
             ConsumptionRecord cimConsumptionRecord = consumptionRecordMapper.mapToCIM(consumptionRecord, permissionId, connectionId);
             consumptionRecordSubmissionPublisher.submit(cimConsumptionRecord);

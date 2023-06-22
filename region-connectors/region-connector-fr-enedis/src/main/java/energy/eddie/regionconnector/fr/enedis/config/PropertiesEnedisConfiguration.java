@@ -9,7 +9,7 @@ public class PropertiesEnedisConfiguration implements EnedisConfiguration {
      * BasePath is optional and can be changed to sandbox environment - default is production
      */
     private static final String ENEDIS_DEFAULT_BASE_PATH = "https://ext.prod.api.enedis.fr";
-    private static final String PREFIX = "regionconnectors.fr.enedis.";
+    private static final String PREFIX = "region-connector.fr.enedis.";
     public static final String ENEDIS_CLIENT_ID_KEY = PREFIX + "clientId";
     public static final String ENEDIS_CLIENT_SECRET_KEY = PREFIX + "clientSecret";
     public static final String ENEDIS_BASE_PATH_ID_KEY = PREFIX + "basePath";
@@ -19,9 +19,9 @@ public class PropertiesEnedisConfiguration implements EnedisConfiguration {
         this.properties = requireNonNull(properties);
 
         var clientId = properties.getProperty(ENEDIS_CLIENT_ID_KEY);
-        requireNonNull(clientId, "Missing property: " + ENEDIS_CLIENT_ID_KEY);
+        requireNonNull(clientId, "Property %s is required".formatted(ENEDIS_CLIENT_ID_KEY));
         var clientSecret = properties.getProperty(ENEDIS_CLIENT_SECRET_KEY);
-        requireNonNull(clientSecret, "Missing property: " + ENEDIS_CLIENT_SECRET_KEY);
+        requireNonNull(clientSecret, "Property %s is required".formatted(ENEDIS_CLIENT_SECRET_KEY));
     }
 
     @Override
