@@ -1,4 +1,3 @@
-
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
 import java.util.*
@@ -94,7 +93,9 @@ tasks.withType<JavaCompile>().configureEach {
             check("NullAway", CheckSeverity.ERROR)
             option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.fr.enedis")
             option("NullAway:TreatGeneratedAsUnannotated", true)
-            this.excludedPaths.set("${generatedSwaggerJavaDir}/energy/eddie/regionconnector/fr/enedis/invoker/*.*")
+            // Regex fits to Windows and Unix-style path separators. CAVEAT: excludedPaths needs a rexex string!
+            val regexString = ".*/energy/eddie/regionconnector/fr/enedis/invoker/.*".replace("/", "[/\\\\]")
+            this.excludedPaths.set(regexString)
             option("NullawayExcludedClasses=EnedisApiClient.java")
         }
     }
