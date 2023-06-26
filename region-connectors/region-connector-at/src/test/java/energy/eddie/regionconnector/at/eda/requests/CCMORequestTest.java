@@ -6,7 +6,6 @@ import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTran
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 import static java.util.Objects.requireNonNull;
@@ -166,9 +165,5 @@ class CCMORequestTest {
             requireNonNull(eligiblePartyId);
         }
 
-        @Override
-        public ZoneId timeZone() {
-            return ZoneOffset.UTC;
-        }
     }
 }

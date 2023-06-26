@@ -77,7 +77,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
 
         this.atConfiguration = atConfiguration;
         this.edaAdapter = edaAdapter;
-        this.consumptionRecordMapper = new ConsumptionRecordMapper(atConfiguration.timeZone());
+        this.consumptionRecordMapper = new ConsumptionRecordMapper();
         this.edaIdMapper = edaIdMapper;
 
         edaAdapter.getCMRequestStatusStream().subscribe(this::processCMRequestStatus);
@@ -93,7 +93,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
         properties.load(in);
 
         this.atConfiguration = PropertiesAtConfiguration.fromProperties(properties);
-        this.consumptionRecordMapper = new ConsumptionRecordMapper(atConfiguration.timeZone());
+        this.consumptionRecordMapper = new ConsumptionRecordMapper();
 
         PropertiesPontonXPAdapterConfiguration pontonXPAdapterConfig = PropertiesPontonXPAdapterConfiguration.fromProperties(properties);
 
@@ -177,7 +177,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
         var connectionId = mappingInfo.get().connectionId();
 
         var message = cmRequestStatus.getMessage();
-        var now = ZonedDateTime.now(atConfiguration.timeZone());
+        var now = ZonedDateTime.now(ZoneId.systemDefault());
 
         var status = switch (cmRequestStatus.getStatus()) {
             case ACCEPTED -> ConnectionStatusMessage.Status.GRANTED;

@@ -21,7 +21,10 @@ import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.*;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.concurrent.Flow;
 
@@ -220,10 +223,6 @@ class EdaRegionConnectorTest {
             requireNonNull(eligiblePartyId);
         }
 
-        @Override
-        public ZoneId timeZone() {
-            return ZoneOffset.UTC;
-        }
     }
 
     private static class MockEdaAdapter implements EdaAdapter {

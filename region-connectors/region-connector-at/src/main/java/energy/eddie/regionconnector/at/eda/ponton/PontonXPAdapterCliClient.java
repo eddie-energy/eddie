@@ -13,10 +13,12 @@ import de.ponton.xp.adapter.api.ConnectionException;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import energy.eddie.regionconnector.at.eda.config.PropertiesAtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.requests.*;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
+import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import jakarta.annotation.Nullable;
 import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
@@ -25,14 +27,19 @@ import org.slf4j.LoggerFactory;
 import javax.xml.datatype.DatatypeFactory;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
+
+import static java.util.Objects.requireNonNull;
 
 public class PontonXPAdapterCliClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PontonXPAdapterCliClient.class);
-    private static final SimpleAtConfiguration atConfiguration = new SimpleAtConfiguration();
+    @Nullable
+    private static AtConfiguration atConfiguration;
 
     public static void main(String[] args) throws ConnectionException, IOException, JAXBException, TransmissionException {
         var reader = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
@@ -41,6 +48,7 @@ public class PontonXPAdapterCliClient {
         var in = PontonXPAdapterCliClient.class.getClassLoader().getResourceAsStream("regionconnector-at.properties");
         properties.load(in);
 
+        atConfiguration = PropertiesAtConfiguration.fromProperties(properties);
         PontonXPAdapterConfiguration config = PropertiesPontonXPAdapterConfiguration.fromProperties(properties);
 
         var outputStream = new PrintStream(new FileOutputStream(config.workFolder() + File.separator + "consumptionRecords.txt", true));
@@ -56,9 +64,7 @@ public class PontonXPAdapterCliClient {
             }
         });
 
-        adapter.getCMRequestStatusStream().subscribe(cmRequestStatus -> {
-            LOGGER.info("Received CMRequestStatus: " + cmRequestStatus);
-        });
+        adapter.getCMRequestStatusStream().subscribe(cmRequestStatus -> LOGGER.info("Received CMRequestStatus: " + cmRequestStatus));
 
         adapter.start();
         System.out.println("Adapter started");
@@ -124,6 +130,8 @@ public class PontonXPAdapterCliClient {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(from, to);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint(receiverID, meteringPoint);
 
+        requireNonNull(atConfiguration, "atConfiguration must not be null");
+
         var ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration, reqDatType, AllowedMeteringIntervalType.QH, AllowedTransmissionCycle.D);
         var cmRequest = ccmoRequest.toCMRequest();
 
@@ -152,7 +160,7 @@ public class PontonXPAdapterCliClient {
         routingHeader.setSender(sender);
         routingHeader.setReceiver(receiver);
 
-        routingHeader.setDocumentCreationDateTime(datatypeFactory.newXMLGregorianCalendar(LocalDateTime.now().toString()));
+        routingHeader.setDocumentCreationDateTime(datatypeFactory.newXMLGregorianCalendar(LocalDateTime.now(DateTimeConstants.AT_ZONE_ID).toString()));
         marketParticipant.setRoutingHeader(routingHeader);
         marketParticipant.setMessageCode(MessageCodes.Revoke.EligibleParty.REVOKE);
         marketParticipant.setSector("01");
@@ -175,25 +183,6 @@ public class PontonXPAdapterCliClient {
             adapter.sendCMRevoke(cmRevoke);
         } catch (Exception e) {
             LOGGER.error("Error sending CMRequest: " + e.getMessage(), e);
-        }
-    }
-
-    private static class SimpleAtConfiguration implements AtConfiguration {
-
-        private String eligiblePartyId = "";
-
-        public void setEligiblePartyId(String eligiblePartyId) {
-            this.eligiblePartyId = eligiblePartyId;
-        }
-
-        @Override
-        public String eligiblePartyId() {
-            return eligiblePartyId;
-        }
-
-        @Override
-        public ZoneId timeZone() {
-            return ZoneOffset.UTC;
         }
     }
 }

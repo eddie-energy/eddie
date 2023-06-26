@@ -12,6 +12,7 @@ import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import energy.eddie.regionconnector.at.eda.utils.CMRequestId;
+import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import energy.eddie.regionconnector.at.eda.xml.builders.customerconsent.cmrequest._01p10.CMRequestBuilder;
 import energy.eddie.regionconnector.at.eda.xml.builders.customerconsent.cmrequest._01p10.MarketParticipantDirectoryBuilder;
 import energy.eddie.regionconnector.at.eda.xml.builders.customerconsent.cmrequest._01p10.ProcessDirectoryBuilder;
@@ -20,6 +21,8 @@ import energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.common
 import energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.common.types._01p20.RoutingHeaderBuilder;
 import energy.eddie.regionconnector.at.eda.xml.builders.helper.Sector;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -86,13 +89,13 @@ public class CCMORequest {
                 .withReqDatType(requestDataType.toString(timeframe))
                 .withMeteringIntervall(this.meteringIntervalType)
                 .withTransmissionCycle(this.transmissionCycle);
-        timeframe.end().ifPresent(end -> requestType.withDateTo(end));
+        timeframe.end().ifPresent(requestType::withDateTo);
         processDirectory
                 .withCMRequest(requestType.build())
                 .withCMRequestId(requestId.toString())
                 .withMessageId(messageId.toString())
                 .withConversationId(messageId.toString())
-                .withProcessDate(ZonedDateTime.now(configuration.timeZone()).toLocalDate());
+                .withProcessDate(LocalDate.now(DateTimeConstants.AT_ZONE_ID));
         dsoIdAndMeteringPoint
                 .meteringPoint()
                 .ifPresent(processDirectory::withMeteringPoint);
@@ -107,7 +110,7 @@ public class CCMORequest {
         var routingHeader = new RoutingHeaderBuilder()
                 .withSender(toRoutingAddress(configuration.eligiblePartyId()))
                 .withReceiver(toRoutingAddress(dsoIdAndMeteringPoint.dsoId()))
-                .withDocCreationDateTime(ZonedDateTime.now(configuration.timeZone()).toLocalDateTime())
+                .withDocCreationDateTime(LocalDateTime.now(DateTimeConstants.AT_ZONE_ID))
                 .build();
 
         return MARKET_PARTICIPANT_DIRECTORY_BUILDER
