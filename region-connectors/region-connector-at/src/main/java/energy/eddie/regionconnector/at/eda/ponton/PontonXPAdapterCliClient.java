@@ -27,7 +27,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.GregorianCalendar;
 import java.util.Properties;
 
 public class PontonXPAdapterCliClient {
@@ -84,7 +83,7 @@ public class PontonXPAdapterCliClient {
 
                     System.out.println("Enter end date (dd.MM.yyyy):");
                     var line = reader.readLine();
-                    sendRevoke(adapter, consentId, meteringPoint, line.isBlank() ? null : OffsetDateTime.of(LocalDate.parse(line, formatted).atStartOfDay(), ZoneOffset.UTC));
+                    sendRevoke(adapter, consentId, meteringPoint, line.isBlank() ? null : LocalDate.parse(line, formatted));
                     continue;
                 }
 
@@ -103,7 +102,7 @@ public class PontonXPAdapterCliClient {
                 System.out.println("Enter to date (dd.MM.yyyy):");
                 var toDate = LocalDate.parse(reader.readLine(), formatted);
 
-                sendRequest(adapter, reader, meteringPoint, reqDatType, OffsetDateTime.of(fromDate.atStartOfDay(), ZoneOffset.UTC), OffsetDateTime.of(toDate.atStartOfDay(), ZoneOffset.UTC));
+                sendRequest(adapter, reader, meteringPoint, reqDatType, fromDate, toDate);
             } catch (Exception e) {
                 System.err.println("Input error:" + e.getMessage());
             }
@@ -113,7 +112,7 @@ public class PontonXPAdapterCliClient {
         System.exit(0);
     }
 
-    private static void sendRequest(EdaAdapter adapter, BufferedReader reader, String meteringPoint, RequestDataType reqDatType, OffsetDateTime from, OffsetDateTime to) throws JAXBException, IOException, InvalidDsoIdException {
+    private static void sendRequest(EdaAdapter adapter, BufferedReader reader, String meteringPoint, RequestDataType reqDatType, LocalDate from, LocalDate to) throws JAXBException, IOException, InvalidDsoIdException {
         String receiverID = null;
         if (meteringPoint.isBlank()) {
             meteringPoint = null;
@@ -122,7 +121,7 @@ public class PontonXPAdapterCliClient {
             receiverID = reader.readLine();
         }
 
-        CCMOTimeFrame timeFrame = new CCMOTimeFrame(from.toZonedDateTime(), to.toZonedDateTime());
+        CCMOTimeFrame timeFrame = new CCMOTimeFrame(from, to);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint(receiverID, meteringPoint);
 
         var ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration, reqDatType, AllowedMeteringIntervalType.QH, AllowedTransmissionCycle.D);
@@ -137,7 +136,7 @@ public class PontonXPAdapterCliClient {
         }
     }
 
-    private static void sendRevoke(EdaAdapter adapter, String consentId, String meteringPoint, @Nullable OffsetDateTime end) {
+    private static void sendRevoke(EdaAdapter adapter, String consentId, String meteringPoint, @Nullable LocalDate end) {
         CMRevoke cmRevoke = new CMRevoke();
         DatatypeFactory datatypeFactory = DatatypeFactory.newDefaultInstance();
         var senderID = "EP100129";
@@ -153,7 +152,7 @@ public class PontonXPAdapterCliClient {
         routingHeader.setSender(sender);
         routingHeader.setReceiver(receiver);
 
-        routingHeader.setDocumentCreationDateTime(datatypeFactory.newXMLGregorianCalendar(GregorianCalendar.from(ZonedDateTime.now(ZoneOffset.UTC))));
+        routingHeader.setDocumentCreationDateTime(datatypeFactory.newXMLGregorianCalendar(LocalDateTime.now().toString()));
         marketParticipant.setRoutingHeader(routingHeader);
         marketParticipant.setMessageCode(MessageCodes.Revoke.EligibleParty.REVOKE);
         marketParticipant.setSector("01");
@@ -163,7 +162,7 @@ public class PontonXPAdapterCliClient {
 
         var pd = new ProcessDirectory();
         if (end != null) {
-            pd.setConsentEnd(datatypeFactory.newXMLGregorianCalendar(GregorianCalendar.from(end.toZonedDateTime())));
+            pd.setConsentEnd(datatypeFactory.newXMLGregorianCalendar(end.toString()));
         }
         pd.setConsentId(consentId);
         pd.setMeteringPoint(meteringPoint);

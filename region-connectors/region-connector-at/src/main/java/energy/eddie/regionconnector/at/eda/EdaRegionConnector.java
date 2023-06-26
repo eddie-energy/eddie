@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
@@ -223,7 +224,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
 
     @Override
     public int startWebapp(InetSocketAddress address, boolean devMode) {
-        JavalinValidation.register(ZonedDateTime.class, value -> value != null && !value.isBlank() ? LocalDate.parse(value, DateTimeFormatter.ISO_DATE).atStartOfDay(atConfiguration.timeZone()) : null);
+        JavalinValidation.register(LocalDate.class, value -> value != null && !value.isBlank() ? LocalDate.parse(value, DateTimeFormatter.ISO_DATE) : null);
 
         javalin.get(BASE_PATH + "/ce.js", context -> {
             context.contentType(ContentType.TEXT_JS);
@@ -248,15 +249,16 @@ public class EdaRegionConnector implements RegionConnectorAT {
             var meteringPointIdValidator = ctx.formParamAsClass("meteringPointId", String.class)
                     .check(s -> s != null && s.length() == 33, "meteringPointId must be 33 characters long");
 
-            var startValidator = ctx.formParamAsClass("start", ZonedDateTime.class)
+            LocalDate now = LocalDate.now(ZoneId.of("Europe/Vienna"));
+            var startValidator = ctx.formParamAsClass("start", LocalDate.class)
                     .check(Objects::nonNull, "start must not be null")
-                    .check(start -> start.isAfter(ZonedDateTime.now(start.getZone()).minusMonths(MAXIMUM_MONTHS_IN_THE_PAST)), "start must not be older than 36 months");
+                    .check(start -> start.isAfter(now.minusMonths(MAXIMUM_MONTHS_IN_THE_PAST)), "start must not be older than 36 months");
 
-            var endValidator = ctx.formParamAsClass("end", ZonedDateTime.class)
+            var endValidator = ctx.formParamAsClass("end", LocalDate.class)
                     //.allowNullable() // disable for now as we don't support Future data yet
                     .check(Objects::nonNull, "end must not be null")
                     .check(end -> end.isAfter(startValidator.get()), "end must be after start")
-                    .check(end -> end.isBefore(ZonedDateTime.now(end.getZone()).minusDays(1)), "end must be in the past"); // for now, we only support historical data
+                    .check(end -> end.isBefore(now.minusDays(1)), "end must be in the past"); // for now, we only support historical data
 
             var errors = JavalinValidation.collectErrors(connectionIdValidator, meteringPointIdValidator, startValidator, endValidator);
             if (!errors.isEmpty()) {
@@ -266,7 +268,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
             }
 
             var start = startValidator.get();
-            var end = Objects.requireNonNullElseGet(endValidator.get(), () -> ZonedDateTime.now(start.getZone()).minusDays(1));
+            var end = Objects.requireNonNullElseGet(endValidator.get(), () -> now.minusDays(1));
             DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint(null, meteringPointIdValidator.get());
 
             var ccmoRequest = new CCMORequest(

@@ -1,8 +1,6 @@
 package energy.eddie.regionconnector.at.eda.requests;
 
-import energy.eddie.regionconnector.at.eda.utils.TruncatedZonedDateTime;
-
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.Optional;
 
 public enum RequestDataType {
@@ -17,9 +15,8 @@ public enum RequestDataType {
         if (this.equals(MASTER_DATA)) {
             return MASTER_DATA_STRING;
         }
-        ZonedDateTime now = new TruncatedZonedDateTime(ZonedDateTime.now(timeFrame.start().getZone()))
-                .zonedDateTime();
-        Optional<ZonedDateTime> end = timeFrame.end();
+        LocalDate now = LocalDate.now();
+        Optional<LocalDate> end = timeFrame.end();
         if (timeFrame.start().isBefore(now) && end.isPresent() && end.get().isAfter(now)) {
             throw new IllegalArgumentException("TimeFrame has to lie completely in the past or completely in the future");
         }

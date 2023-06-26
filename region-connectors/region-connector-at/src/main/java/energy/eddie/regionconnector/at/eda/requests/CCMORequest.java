@@ -82,11 +82,11 @@ public class CCMORequest {
 
 
         var requestType = new ReqTypeBuilder()
-                .withDateFrom(timeframe.start().toLocalDate())
+                .withDateFrom(timeframe.start())
                 .withReqDatType(requestDataType.toString(timeframe))
                 .withMeteringIntervall(this.meteringIntervalType)
                 .withTransmissionCycle(this.transmissionCycle);
-        timeframe.end().ifPresent(end -> requestType.withDateTo(end.toLocalDate()));
+        timeframe.end().ifPresent(end -> requestType.withDateTo(end));
         processDirectory
                 .withCMRequest(requestType.build())
                 .withCMRequestId(requestId.toString())

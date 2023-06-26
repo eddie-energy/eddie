@@ -21,10 +21,7 @@ import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.Duration;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Optional;
 import java.util.concurrent.Flow;
 
@@ -141,8 +138,8 @@ class EdaRegionConnectorTest {
         var adapter = new MockEdaAdapter();
         var mapper = new InMemoryEdaIdMapper();
         var connector = new EdaRegionConnector(config, adapter, mapper);
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusHours(1);
-        ZonedDateTime end = start.plusMonths(1);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
+        LocalDate end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new SimpleAtConfiguration("RC100007");
@@ -163,8 +160,8 @@ class EdaRegionConnectorTest {
         var adapter = new MockEdaAdapter();
         var mapper = new InMemoryEdaIdMapper();
         var connector = new EdaRegionConnector(config, adapter, mapper);
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusHours(1);
-        ZonedDateTime end = start.plusMonths(1);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
+        LocalDate end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new SimpleAtConfiguration("RC100007");
