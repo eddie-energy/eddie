@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.at.eda.requests;
 
+import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
@@ -22,7 +23,7 @@ public final class CCMOTimeFrame {
         requireNonNull(start);
 
         // start lies in the past
-        LocalDate now = LocalDate.now();
+        LocalDate now = LocalDate.now(DateTimeConstants.AT_ZONE_ID);
         if (start.isBefore(now)) {
             requireNonNull(end);
         }

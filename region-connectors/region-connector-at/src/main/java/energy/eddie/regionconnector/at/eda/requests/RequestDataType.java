@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.at.eda.requests;
 
+import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
+
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -15,7 +17,7 @@ public enum RequestDataType {
         if (this.equals(MASTER_DATA)) {
             return MASTER_DATA_STRING;
         }
-        LocalDate now = LocalDate.now();
+        LocalDate now = LocalDate.now(DateTimeConstants.AT_ZONE_ID);
         Optional<LocalDate> end = timeFrame.end();
         if (timeFrame.start().isBefore(now) && end.isPresent() && end.get().isAfter(now)) {
             throw new IllegalArgumentException("TimeFrame has to lie completely in the past or completely in the future");
