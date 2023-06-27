@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.at.eda.requests;
 
-import energy.eddie.regionconnector.at.eda.utils.TruncatedZonedDateTime;
+import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import jakarta.annotation.Nullable;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -15,36 +15,31 @@ import static java.util.Objects.requireNonNull;
  * It allows for the end date to be null, if start lies in the future
  */
 public final class CCMOTimeFrame {
-    private final ZonedDateTime start;
+    private final LocalDate start;
     @Nullable
-    private final ZonedDateTime end;
+    private final LocalDate end;
 
-    public CCMOTimeFrame(ZonedDateTime start, @Nullable ZonedDateTime end) {
+    public CCMOTimeFrame(LocalDate start, @Nullable LocalDate end) {
         requireNonNull(start);
-        start = new TruncatedZonedDateTime(start).zonedDateTime();
 
         // start lies in the past
-        ZonedDateTime now = new TruncatedZonedDateTime(ZonedDateTime
-                .now(start.getZone())).zonedDateTime();
+        LocalDate now = LocalDate.now(DateTimeConstants.AT_ZONE_ID);
         if (start.isBefore(now)) {
             requireNonNull(end);
         }
 
-        if (end != null) {
-            end = new TruncatedZonedDateTime(end).zonedDateTime();
-            if (!start.isBefore(end) && !start.equals(end)) {
-                throw new IllegalArgumentException("End date has to be after/equal start date");
-            }
+        if (end != null && !start.isBefore(end) && !start.equals(end)) {
+            throw new IllegalArgumentException("End date has to be after/equal start date");
         }
         this.start = start;
         this.end = end;
     }
 
-    public ZonedDateTime start() {
+    public LocalDate start() {
         return start;
     }
 
-    public Optional<ZonedDateTime> end() {
+    public Optional<LocalDate> end() {
         return Optional.ofNullable(end);
     }
 

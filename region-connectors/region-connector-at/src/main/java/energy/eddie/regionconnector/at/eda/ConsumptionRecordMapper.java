@@ -3,10 +3,10 @@ package energy.eddie.regionconnector.at.eda;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.ConsumptionRecord;
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
+import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import jakarta.annotation.Nullable;
 
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -18,24 +18,11 @@ import static java.util.Objects.requireNonNull;
 public class ConsumptionRecordMapper {
 
     public static final String MEASURED_VALUE = "L1";
-    private final ZoneId zoneId;
-
-    /**
-     * @param zoneId The zoneId of the time zone the dates should be converted to
-     */
-    public ConsumptionRecordMapper(ZoneId zoneId) {
-        this.zoneId = zoneId;
-    }
 
     private ZonedDateTime toZonedDateTime(XMLGregorianCalendar xmlGregorianCalendar) {
         // Convert XMLGregorianCalendar to GregorianCalendar
         GregorianCalendar gregorianCalendar = xmlGregorianCalendar.toGregorianCalendar();
-
-        java.time.Instant instant = gregorianCalendar.toZonedDateTime().toInstant();
-        ZoneId zoneId = gregorianCalendar.getTimeZone().toZoneId();
-
-        // Create ZonedDateTime using Instant and ZoneId
-        return ZonedDateTime.ofInstant(instant, zoneId).withZoneSameLocal(this.zoneId);
+        return gregorianCalendar.toZonedDateTime().withZoneSameLocal(DateTimeConstants.AT_ZONE_ID);
     }
 
     /**

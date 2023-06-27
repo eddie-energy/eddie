@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.at.eda;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.*;
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
+import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import energy.eddie.regionconnector.at.eda.xml.builders.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -11,8 +12,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.stream.Stream;
@@ -53,7 +52,7 @@ class ConsumptionRecordMapperTest {
 
         var edaCR = createConsumptionRecord(meteringPoint, meteringType, ZonedDateTime.now(ZoneOffset.UTC), meteringInterval, consumptionValue, unit);
 
-        var uut = new ConsumptionRecordMapper(ZoneOffset.UTC);
+        var uut = new ConsumptionRecordMapper();
 
         var cimCR = uut.mapToCIM(edaCR, permissionId, connectionId);
 
@@ -71,7 +70,7 @@ class ConsumptionRecordMapperTest {
     void mapToCIM_EdaConsumptionRecordWithEmptyProcessDirectory_throwsInvalidMappingException() {
         var edaCR = new ConsumptionRecord();
         edaCR.setProcessDirectory(new ProcessDirectory());
-        var uut = new ConsumptionRecordMapper(ZoneOffset.UTC);
+        var uut = new ConsumptionRecordMapper();
 
         assertThrows(InvalidMappingException.class, () -> uut.mapToCIM(edaCR, null, null));
     }
@@ -80,14 +79,14 @@ class ConsumptionRecordMapperTest {
     void mapToCIM_EdaConsumptionRecordWithEmptyEnergy_throwsInvalidMappingException() {
         var edaCR = createConsumptionRecord("test", "L1", ZonedDateTime.now(ZoneOffset.UTC), MeteringIntervall.QH, 1, UOMType.KWH);
         edaCR.getProcessDirectory().getEnergy().forEach(e -> e.getEnergyData().clear());
-        var uut = new ConsumptionRecordMapper(ZoneOffset.UTC);
+        var uut = new ConsumptionRecordMapper();
 
         assertThrows(InvalidMappingException.class, () -> uut.mapToCIM(edaCR, null, null));
     }
 
     @Test
     void mapToCIM_EdaConsumptionRecordIsNull_throwsNullPointerException() {
-        var uut = new ConsumptionRecordMapper(ZoneOffset.UTC);
+        var uut = new ConsumptionRecordMapper();
 
         assertThrows(NullPointerException.class, () -> uut.mapToCIM(null, null, null));
     }
@@ -97,7 +96,7 @@ class ConsumptionRecordMapperTest {
         var meteringPoint = "meteringPoint";
         var edaCR = createConsumptionRecord(meteringPoint, "L1", ZonedDateTime.now(ZoneOffset.UTC), MeteringIntervall.QH, 1, UOMType.KWH);
 
-        var uut = new ConsumptionRecordMapper(ZoneOffset.UTC);
+        var uut = new ConsumptionRecordMapper();
 
         var cimCR = uut.mapToCIM(edaCR, null, null);
 
@@ -111,22 +110,18 @@ class ConsumptionRecordMapperTest {
     }
 
     @Test
-    void mapToCIM_mapsEDAConsumptionRecordWithSingleConsumptionPoint_toGivenTimeZone() throws InvalidMappingException {
-        var austrianTime = LocalDate.now(ZoneId.systemDefault()).atStartOfDay(ZoneId.of("Europe/Vienna"));
+    void mapToCIM_mapsEDAConsumptionRecordWithSingleConsumptionPoint_returnsAtTimeZoneInformation() throws InvalidMappingException {
+        var austrianTime = ZonedDateTime.of(2021, 1, 1, 0, 0, 0, 0, DateTimeConstants.AT_ZONE_ID);
         var edaCR = createConsumptionRecord("xxx", "L1", austrianTime, MeteringIntervall.QH, 10, UOMType.KWH);
 
-        var spainZone = ZoneId.of("Europe/Madrid");
-        var spainTime = austrianTime.withZoneSameInstant(spainZone);
-        var uut = new ConsumptionRecordMapper(spainZone);
+        var uut = new ConsumptionRecordMapper();
 
         var cimCR = uut.mapToCIM(edaCR, null, null);
 
         assertNotNull(cimCR.getConsumptionPoints());
         assertEquals(1, cimCR.getConsumptionPoints().size());
-        // check if the time is converted to the given time zone
-        assertEquals(spainTime, cimCR.getStartDateTime());
-        assertNotEquals(austrianTime, cimCR.getStartDateTime());
-        assertEquals(spainZone, cimCR.getStartDateTime().getZone());
+        assertEquals(austrianTime, cimCR.getStartDateTime());
+        assertEquals(DateTimeConstants.AT_ZONE_ID, cimCR.getStartDateTime().getZone());
     }
 
 
