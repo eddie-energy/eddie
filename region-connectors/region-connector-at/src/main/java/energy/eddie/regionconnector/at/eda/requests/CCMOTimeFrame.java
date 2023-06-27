@@ -28,10 +28,8 @@ public final class CCMOTimeFrame {
             requireNonNull(end);
         }
 
-        if (end != null) {
-            if (!start.isBefore(end) && !start.equals(end)) {
-                throw new IllegalArgumentException("End date has to be after/equal start date");
-            }
+        if (end != null && !start.isBefore(end) && !start.equals(end)) {
+            throw new IllegalArgumentException("End date has to be after/equal start date");
         }
         this.start = start;
         this.end = end;

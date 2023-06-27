@@ -56,7 +56,7 @@ public class PontonXPAdapterCliClient {
         var mapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
 
         adapter.getConsumptionRecordStream().subscribe(consumptionRecord -> {
-            LOGGER.info("Received consumptionRecord from: " + consumptionRecord.getProcessDirectory().getMeteringPoint() + " for: " + consumptionRecord.getProcessDirectory().getEnergy().get(0).getMeteringPeriodStart());
+            LOGGER.info("Received consumptionRecord from: {} for: {}", consumptionRecord.getProcessDirectory().getMeteringPoint(), consumptionRecord.getProcessDirectory().getEnergy().get(0).getMeteringPeriodStart());
             try {
                 outputStream.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(consumptionRecord));
             } catch (JsonProcessingException e) {
@@ -64,7 +64,7 @@ public class PontonXPAdapterCliClient {
             }
         });
 
-        adapter.getCMRequestStatusStream().subscribe(cmRequestStatus -> LOGGER.info("Received CMRequestStatus: " + cmRequestStatus));
+        adapter.getCMRequestStatusStream().subscribe(cmRequestStatus -> LOGGER.info("Received CMRequestStatus: {}", cmRequestStatus));
 
         adapter.start();
         System.out.println("Adapter started");
@@ -140,7 +140,7 @@ public class PontonXPAdapterCliClient {
             adapter.sendCMRequest(cmRequest);
 
         } catch (TransmissionException e) {
-            LOGGER.error("Error sending CMRequest: " + e.getMessage(), e);
+            LOGGER.error("Error sending CMRequest: {}", e.getMessage(), e);
         }
     }
 
@@ -182,7 +182,7 @@ public class PontonXPAdapterCliClient {
         try {
             adapter.sendCMRevoke(cmRevoke);
         } catch (Exception e) {
-            LOGGER.error("Error sending CMRequest: " + e.getMessage(), e);
+            LOGGER.error("Error sending CMRequest: {}", e.getMessage(), e);
         }
     }
 }
