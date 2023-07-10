@@ -34,16 +34,15 @@ public class JavalinApp {
     private final Boolean devMode;
     private final String baseUrl;
 
-    @Inject
-    private Set<JavalinPathHandler> javalinPathHandlers;
+    private final Set<JavalinPathHandler> javalinPathHandlers;
+    private final Set<RegionConnector> regionConnectors;
 
     @Inject
-    private Set<RegionConnector> regionConnectors;
-
-    @Inject
-    public JavalinApp(Config config) {
+    public JavalinApp(Config config, Set<JavalinPathHandler> javalinPathHandlers, Set<RegionConnector> regionConnectors) {
         devMode = config.getOptionalValue(DEVELOPMENT_MODE, Boolean.class).orElse(true);
         baseUrl = config.getOptionalValue(Env.PUBLIC_CONTEXT_PATH.name(), String.class).orElse("");
+        this.javalinPathHandlers = javalinPathHandlers;
+        this.regionConnectors = regionConnectors;
     }
 
     private boolean inDevelopmentMode() {

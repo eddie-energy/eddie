@@ -9,8 +9,12 @@ import org.slf4j.LoggerFactory;
 public class LoginHandler implements JavalinHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(LoginHandler.class);
+    private final Jdbi jdbi;
+
     @Inject
-    private Jdbi jdbi;
+    public LoginHandler(Jdbi jdbi) {
+        this.jdbi = jdbi;
+    }
 
     @Override
     public void register(Javalin app) {

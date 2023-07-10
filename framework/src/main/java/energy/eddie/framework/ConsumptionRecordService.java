@@ -16,8 +16,12 @@ import java.util.Set;
 public class ConsumptionRecordService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumptionRecordService.class);
 
+    private final Set<RegionConnector> regionConnectors;
+
     @Inject
-    private Set<RegionConnector> regionConnectors;
+    public ConsumptionRecordService(Set<RegionConnector> regionConnectors) {
+        this.regionConnectors = regionConnectors;
+    }
 
     @Nullable
     public Flux<ConsumptionRecord> getConsumptionRecordStream() {

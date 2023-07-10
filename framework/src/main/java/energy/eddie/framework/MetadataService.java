@@ -9,8 +9,12 @@ import java.util.Set;
 
 public class MetadataService {
 
+    private final Set<RegionConnector> regionConnectors;
+
     @Inject
-    private Set<RegionConnector> regionConnectors;
+    public MetadataService(Set<RegionConnector> regionConnectors) {
+        this.regionConnectors = regionConnectors;
+    }
 
     public Collection<RegionConnectorMetadata> getRegionConnectorMetadata() {
         return regionConnectors.stream()
