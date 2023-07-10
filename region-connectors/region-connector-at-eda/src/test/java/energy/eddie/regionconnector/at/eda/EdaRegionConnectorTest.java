@@ -7,7 +7,6 @@ import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMete
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import energy.eddie.regionconnector.at.eda.xml.builders.helper.DateTimeConverter;
 import jakarta.xml.bind.JAXBException;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
@@ -85,7 +84,6 @@ class EdaRegionConnectorTest {
     }
 
     @Test
-    @Disabled("GH-100 Test never finishes so never fully tests the streaming component of the EdaRegionConnector.")
     void subscribeToConsumptionRecordPublisher_returnsCorrectlyMappedRecords() throws TransmissionException {
         var config = mock(AtConfiguration.class);
         var consumptionRecord = createConsumptionRecord();
