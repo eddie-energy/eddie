@@ -23,21 +23,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Framework implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Framework.class);
 
+    private final JdbcAdapter jdbcAdapter;
+    private final JavalinApp javalinApp;
+    private final PermissionService permissionService;
+    private final ConsumptionRecordService consumptionRecordService;
+    private final KafkaConnector kafkaConnector;
+
     @Inject
-    private JdbcAdapter jdbcAdapter;
-    @Inject
-    private JavalinApp javalinApp;
-    @Inject
-    private PermissionService permissionService;
-    @Inject
-    private ConsumptionRecordService consumptionRecordService;
-    @Inject
-    private KafkaConnector kafkaConnector;
+    public Framework(JdbcAdapter jdbcAdapter,
+                     JavalinApp javalinApp,
+                     PermissionService permissionService,
+                     ConsumptionRecordService consumptionRecordService,
+                     KafkaConnector kafkaConnector) {
+        this.jdbcAdapter = jdbcAdapter;
+        this.javalinApp = javalinApp;
+        this.permissionService = permissionService;
+        this.consumptionRecordService = consumptionRecordService;
+        this.kafkaConnector = kafkaConnector;
+    }
 
     public static void main(String[] args) {
         var injector = Guice.createInjector(new Module());
@@ -65,9 +72,7 @@ public class Framework implements Runnable {
         @Override
         protected void configure() {
             Config config = loadExternalConfig();
-            bind(JavalinApp.class).toInstance(new JavalinApp(config));
-            bind(Framework.class).toInstance(new Framework());
-            bind(JdbcAdapter.class).toInstance(new JdbcAdapter(config));
+            bind(Config.class).toInstance(config);
 
             Properties properties = loadApplicationProperties();
             bind(KafkaConnector.class).toInstance(new KafkaConnector(properties));
@@ -102,7 +107,7 @@ public class Framework implements Runnable {
                     })
                     .filter(Optional::isPresent)
                     .map(Optional::get)
-                    .collect(Collectors.toList());
+                    .toList();
 
             if (!allConnectors.isEmpty()) {
                 var paNames = allConnectors.stream().map(RegionConnector::getMetadata).map(RegionConnectorMetadata::mdaCode).toArray();

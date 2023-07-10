@@ -9,11 +9,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ShowConnectionHandler implements JavalinHandler {
-    @Inject
-    private Jdbi jdbi;
+    private final Jdbi jdbi;
+    private final ObjectMapper jackson;
 
     @Inject
-    private ObjectMapper jackson;
+    public ShowConnectionHandler(Jdbi jdbi, ObjectMapper jackson) {
+        this.jdbi = jdbi;
+        this.jackson = jackson;
+    }
 
     @Override
     public void register(Javalin app) {

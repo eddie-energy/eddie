@@ -1,5 +1,6 @@
 package energy.eddie.framework;
 
+import com.google.inject.Inject;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import jakarta.annotation.Nullable;
@@ -26,6 +27,7 @@ public class JdbcAdapter implements energy.eddie.api.v0.ApplicationConnector {
         }
     }
 
+    @Inject
     public JdbcAdapter(Config config) {
         this(
                 config.getValue(Env.JDBC_URL.name(), String.class),

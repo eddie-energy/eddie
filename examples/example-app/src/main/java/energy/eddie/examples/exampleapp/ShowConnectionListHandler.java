@@ -14,8 +14,12 @@ public class ShowConnectionListHandler implements JavalinHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ShowConnectionListHandler.class);
 
+    private final Jdbi jdbi;
+
     @Inject
-    private Jdbi jdbi;
+    public ShowConnectionListHandler(Jdbi jdbi) {
+        this.jdbi = jdbi;
+    }
 
     @Override
     public void register(Javalin app) {
