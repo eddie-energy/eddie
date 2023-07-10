@@ -18,7 +18,7 @@ repositories {
 dependencies {
     implementation(project(":api"))
     implementation(project(mapOf("path" to ":outbound-kafka")))
-    runtimeOnly(project(":region-connectors:region-connector-at"))
+    runtimeOnly(project(":region-connectors:region-connector-at-eda"))
     runtimeOnly(project(":region-connectors:region-connector-fr-enedis"))
     runtimeOnly(project(":region-connectors:region-connector-simulation"))
 

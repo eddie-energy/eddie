@@ -4,8 +4,8 @@ include("region-connectors")
 include("api")
 findProject("api")?.name = "api"
 
-include("region-connectors:region-connector-at")
-findProject(":region-connectors:region-connector-at")?.name = "region-connector-at"
+include("region-connectors:region-connector-at-eda")
+findProject(":region-connectors:region-connector-at-eda")?.name = "region-connector-at-eda"
 
 include("region-connectors:region-connector-fr-enedis")
 findProject(":region-connectors:region-connector-fr-enedis")?.name = "region-connector-fr-enedis"
