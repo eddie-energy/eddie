@@ -1,43 +1,39 @@
 package energy.eddie.regionconnector.at.eda;
 
-import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
-import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.*;
-import at.ebutilities.schemata.customerprocesses.masterdata._01p30.MasterData;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
-import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.requests.*;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import energy.eddie.regionconnector.at.eda.xml.builders.helper.DateTimeConverter;
-import jakarta.annotation.Nullable;
 import jakarta.xml.bind.JAXBException;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
+import reactor.test.publisher.TestPublisher;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
-import java.util.concurrent.Flow;
 
-import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class EdaRegionConnectorTest {
 
     @Test
     void connectorThrows_ifConfigurationNull() {
         // given
-        var adapter = new MockEdaAdapter();
-        var mapper = new InMemoryEdaIdMapper();
+        var adapter = mock(EdaAdapter.class);
+        var mapper = mock(EdaIdMapper.class);
         // when
         // then
         assertThrows(NullPointerException.class, () -> new EdaRegionConnector(null, adapter, mapper));
@@ -46,8 +42,8 @@ class EdaRegionConnectorTest {
     @Test
     void connectorThrows_ifEdaAdapterNull() {
         // given
-        var config = new SimpleAtConfiguration("bla");
-        var mapper = new InMemoryEdaIdMapper();
+        var config = mock(AtConfiguration.class);
+        var mapper = mock(EdaIdMapper.class);
         // when
         // then
         assertThrows(NullPointerException.class, () -> new EdaRegionConnector(config, null, mapper));
@@ -56,8 +52,8 @@ class EdaRegionConnectorTest {
     @Test
     void connectorThrows_ifEdaIdMapperNull() {
         // given
-        var config = new SimpleAtConfiguration("bla");
-        var adapter = new MockEdaAdapter();
+        var config = mock(AtConfiguration.class);
+        var adapter = mock(EdaAdapter.class);
         // when
         // then
         assertThrows(NullPointerException.class, () -> new EdaRegionConnector(config, adapter, null));
@@ -66,9 +62,9 @@ class EdaRegionConnectorTest {
     @Test
     void connectorConstructs() {
         // given
-        var config = new SimpleAtConfiguration("bla");
-        var adapter = new MockEdaAdapter();
-        var mapper = new InMemoryEdaIdMapper();
+        var config = mock(AtConfiguration.class);
+        var adapter = mock(EdaAdapter.class);
+        var mapper = mock(EdaIdMapper.class);
         // when
         // then
         assertDoesNotThrow(() -> new EdaRegionConnector(config, adapter, mapper));
@@ -77,9 +73,10 @@ class EdaRegionConnectorTest {
     @Test
     void subscribeToConsumptionRecordPublisher_doesNotThrow() throws TransmissionException {
         // given
-        var config = new SimpleAtConfiguration("bla");
-        var adapter = new MockEdaAdapter();
-        var mapper = new InMemoryEdaIdMapper();
+        var config = mock(AtConfiguration.class);
+        var adapter = mock(EdaAdapter.class);
+        when(adapter.getConsumptionRecordStream()).thenReturn(Flux.empty());
+        var mapper = mock(EdaIdMapper.class);
         var connector = new EdaRegionConnector(config, adapter, mapper);
 
         // when
@@ -89,44 +86,48 @@ class EdaRegionConnectorTest {
 
     @Test
     @Disabled("GH-100 Test never finishes so never fully tests the streaming component of the EdaRegionConnector.")
-    void subscribeToConsumptionRecordPublisher_returnsRecords() throws TransmissionException {
-        // given
-        var config = new SimpleAtConfiguration("bla");
+    void subscribeToConsumptionRecordPublisher_returnsCorrectlyMappedRecords() throws TransmissionException {
+        var config = mock(AtConfiguration.class);
         var consumptionRecord = createConsumptionRecord();
-        Sinks.Many<ConsumptionRecord> crSink = Sinks.many().multicast().onBackpressureBuffer();
-        var adapter = new MockEdaAdapter() {
-            @Override
-            public Flux<ConsumptionRecord> getConsumptionRecordStream() {
-                return Flux.just(consumptionRecord).delaySequence(Duration.ofSeconds(1));
-            }
-        };
-        var mapper = new InMemoryEdaIdMapper() {
-            @Override
-            public Optional<MappingInfo> getMappingInfoForConversationIdOrRequestID(String conversationId, @Nullable String requestId) {
-                return Optional.of(new MappingInfo("permissionId", "connectionId"));
-            }
-        };
+        consumptionRecord.getProcessDirectory().setConversationId("test");
 
-        // when
-        StepVerifier.create(
-                        JdkFlowAdapter
-                                .flowPublisherToFlux(
-                                        new EdaRegionConnector(config, adapter, mapper)
-                                                .getConsumptionRecordStream()
-                                )
-                )
-                // then
-                .assertNext(cr -> assertEquals("connectionId", cr.getConnectionId()))
-                .verifyComplete();
+        var consumptionRecord2 = createConsumptionRecord();
+        consumptionRecord2.getProcessDirectory().setConversationId("test2");
 
+        var adapter = mock(EdaAdapter.class);
+        TestPublisher<ConsumptionRecord> testPublisher = TestPublisher.create();
+        when(adapter.getConsumptionRecordStream()).thenReturn(testPublisher.flux());
+
+        var mapper = mock(EdaIdMapper.class);
+        when(mapper.getMappingInfoForConversationIdOrRequestID(eq("test"), any())).thenReturn(Optional.of(new MappingInfo("permissionId", "connectionId")));
+        when(mapper.getMappingInfoForConversationIdOrRequestID(eq("test2"), any())).thenReturn(Optional.of(new MappingInfo("test", "test")));
+
+        var uut = new EdaRegionConnector(config, adapter, mapper);
+
+        var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConsumptionRecordStream());
+
+        var unmapableConsumptionRecord = createConsumptionRecord();
+        unmapableConsumptionRecord.getProcessDirectory().getEnergy().clear();
+
+        StepVerifier.create(source)
+                .then(() -> testPublisher.emit(unmapableConsumptionRecord, consumptionRecord, consumptionRecord2))
+                .assertNext(cr -> {
+                    assertEquals("connectionId", cr.getConnectionId());
+                    assertEquals("permissionId", cr.getPermissionId());
+                })
+                .assertNext(cr -> {
+                    assertEquals("test", cr.getConnectionId());
+                    assertEquals("test", cr.getPermissionId());
+                })
+                .expectComplete().verify();
     }
 
     @Test
     void revokePermissionTest_notImplemented() throws TransmissionException {
         // given
-        var config = new SimpleAtConfiguration("bla");
-        var adapter = new MockEdaAdapter();
-        var mapper = new InMemoryEdaIdMapper();
+        var config = mock(AtConfiguration.class);
+        var adapter = mock(EdaAdapter.class);
+        var mapper = mock(EdaIdMapper.class);
         var connector = new EdaRegionConnector(config, adapter, mapper);
 
         // when
@@ -137,15 +138,16 @@ class EdaRegionConnectorTest {
     @Test
     void sendCCMORequest_returnsRequest() throws TransmissionException, JAXBException, InvalidDsoIdException {
         // given
-        var config = new SimpleAtConfiguration("bla");
-        var adapter = new MockEdaAdapter();
-        var mapper = new InMemoryEdaIdMapper();
+        var config = mock(AtConfiguration.class);
+        var adapter = mock(EdaAdapter.class);
+        var mapper = mock(EdaIdMapper.class);
         var connector = new EdaRegionConnector(config, adapter, mapper);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
         LocalDate end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new SimpleAtConfiguration("RC100007");
+        AtConfiguration atConfiguration = mock(AtConfiguration.class);
+        when(atConfiguration.eligiblePartyId()).thenReturn("RC100007");
         CCMORequest ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
                 RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D);
 
@@ -159,15 +161,16 @@ class EdaRegionConnectorTest {
     @Test
     void sendCCMORequest_throwsIfConnectionIdNull() throws TransmissionException {
         // given
-        var config = new SimpleAtConfiguration("bla");
-        var adapter = new MockEdaAdapter();
-        var mapper = new InMemoryEdaIdMapper();
+        var config = mock(AtConfiguration.class);
+        var adapter = mock(EdaAdapter.class);
+        var mapper = mock(EdaIdMapper.class);
         var connector = new EdaRegionConnector(config, adapter, mapper);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
         LocalDate end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new SimpleAtConfiguration("RC100007");
+        AtConfiguration atConfiguration = mock(AtConfiguration.class);
+        when(atConfiguration.eligiblePartyId()).thenReturn("RC100007");
         CCMORequest ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
                 RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D);
 
@@ -179,9 +182,9 @@ class EdaRegionConnectorTest {
     @Test
     void sendCCMORequest_throwsIfCcmoRequestNull() throws TransmissionException {
         // given
-        var config = new SimpleAtConfiguration("bla");
-        var adapter = new MockEdaAdapter();
-        var mapper = new InMemoryEdaIdMapper();
+        var config = mock(AtConfiguration.class);
+        var adapter = mock(EdaAdapter.class);
+        var mapper = mock(EdaIdMapper.class);
         var connector = new EdaRegionConnector(config, adapter, mapper);
 
         // when
@@ -218,75 +221,4 @@ class EdaRegionConnectorTest {
         return edaCR;
     }
 
-    private record SimpleAtConfiguration(String eligiblePartyId) implements AtConfiguration {
-        SimpleAtConfiguration {
-            requireNonNull(eligiblePartyId);
-        }
-
-    }
-
-    private static class MockEdaAdapter implements EdaAdapter {
-        @Override
-        public Flux<CMRequestStatus> getCMRequestStatusStream() {
-            return Flux.empty();
-        }
-
-        @Override
-        public Flux<ConsumptionRecord> getConsumptionRecordStream() {
-            return Flux.empty();
-        }
-
-        @Override
-        public Flux<CMRevoke> getCMRevokeStream() {
-            return Flux.empty();
-        }
-
-        @Override
-        public Flux<MasterData> getMasterDataStream() {
-            return Flux.empty();
-        }
-
-        @Override
-        public void sendCMRequest(CMRequest request) throws TransmissionException, JAXBException {
-
-        }
-
-        @Override
-        public void sendCMRevoke(CMRevoke revoke) throws TransmissionException, JAXBException {
-
-        }
-
-        @Override
-        public void start() throws TransmissionException {
-
-        }
-
-        @Override
-        public void close() throws Exception {
-
-        }
-    }
-
-    private static class EmptySubscriber<T> implements Flow.Subscriber<T> {
-
-        @Override
-        public void onSubscribe(Flow.Subscription subscription) {
-
-        }
-
-        @Override
-        public void onNext(T item) {
-
-        }
-
-        @Override
-        public void onError(Throwable throwable) {
-
-        }
-
-        @Override
-        public void onComplete() {
-
-        }
-    }
 }
