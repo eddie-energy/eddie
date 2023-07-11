@@ -22,7 +22,7 @@ dependencies {
     runtimeOnly(project(":region-connectors:region-connector-fr-enedis"))
     runtimeOnly(project(":region-connectors:region-connector-simulation"))
 
-    implementation("org.eclipse.microprofile.config:microprofile-config-api:3.0.3")
+    implementation(libs.microprofile.config)
     implementation("io.smallrye.config:smallrye-config:3.3.0")
     // Needed for JPMS modules
     implementation("io.smallrye.common:smallrye-common-function:2.1.0")
