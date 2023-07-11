@@ -60,7 +60,7 @@ class EdaRegionConnectorTest {
 
     @Test
     void connectorConstructs() {
-        // given
+        // givenps
         var config = mock(AtConfiguration.class);
         var adapter = mock(EdaAdapter.class);
         var mapper = mock(EdaIdMapper.class);
@@ -225,6 +225,38 @@ class EdaRegionConnectorTest {
         // when
         // then
         assertThrows(NullPointerException.class, () -> connector.sendCCMORequest("connectionId", null));
+    }
+
+    @Test
+    void getMetadata_returnExpectedMetadata() throws TransmissionException {
+        // given
+        var config = mock(AtConfiguration.class);
+        var adapter = mock(EdaAdapter.class);
+        var mapper = mock(EdaIdMapper.class);
+        var connector = new EdaRegionConnector(config, adapter, mapper);
+
+        // when
+        var result = connector.getMetadata();
+
+        // then
+        assertEquals("at", result.countryCode());
+        assertEquals("at-eda", result.mdaCode());
+        assertEquals("Austria EDA", result.mdaDisplayName());
+        assertEquals(5977915, result.coveredMeteringPoints());
+        assertEquals("/region-connectors/at-eda/", result.urlPath());
+    }
+
+    @Test
+    void close_ClosesRelatedResources() throws Exception {
+        var config = mock(AtConfiguration.class);
+        var adapter = mock(EdaAdapter.class);
+        var mapper = mock(EdaIdMapper.class);
+
+        var connector = new EdaRegionConnector(config, adapter, mapper);
+
+        connector.close();
+
+        verify(adapter).close();
     }
 
     private ConsumptionRecord createConsumptionRecord() {
