@@ -1,6 +1,7 @@
 # See: https://docs.gradle.org/current/userguide/platforms.html#sub:conventional-dependencies-toml
 [versions]
 junit = "5.9.2"
+mockito-junit = "5.4.0"
 errorprone = "3.0.1"
 errorpronecore = "2.18.0"
 nullaway = "0.10.10"
@@ -39,7 +40,7 @@ sonar = { module = "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin", ver
 
 # Aggregator artifact of junit5
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
-
+junit-mockito = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito-junit" }
 
 # dependencies required by region-connector-api
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
@@ -66,7 +67,7 @@ slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
 
 # dependencies required by kafka-outbound
-kafka-clients = {module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients"}
+kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients" }
 
 # used by framework
 h2database = { module = "com.h2database:h2", version.ref = "h2database" }
