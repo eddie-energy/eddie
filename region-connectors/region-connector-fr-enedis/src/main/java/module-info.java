@@ -19,6 +19,7 @@ module energy.eddie.regionconnector.fr.enedis {
     requires reactor.core;
     requires io.javalin;
     requires kotlin.stdlib;
+    requires eclipse.microprofile.config.api;
 
     exports energy.eddie.regionconnector.fr.enedis;
     exports energy.eddie.regionconnector.fr.enedis.api;
