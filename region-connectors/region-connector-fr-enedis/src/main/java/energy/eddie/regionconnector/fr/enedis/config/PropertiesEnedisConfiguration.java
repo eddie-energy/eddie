@@ -5,14 +5,7 @@ import java.util.Properties;
 import static java.util.Objects.requireNonNull;
 
 public class PropertiesEnedisConfiguration implements EnedisConfiguration {
-    /**
-     * BasePath is optional and can be changed to sandbox environment - default is production
-     */
-    private static final String ENEDIS_DEFAULT_BASE_PATH = "https://ext.prod.api.enedis.fr";
-    private static final String PREFIX = "region-connector.fr.enedis.";
-    public static final String ENEDIS_CLIENT_ID_KEY = PREFIX + "clientId";
-    public static final String ENEDIS_CLIENT_SECRET_KEY = PREFIX + "clientSecret";
-    public static final String ENEDIS_BASE_PATH_ID_KEY = PREFIX + "basePath";
+
     private final Properties properties;
 
     public PropertiesEnedisConfiguration(Properties properties) {
