@@ -1,9 +1,19 @@
 package energy.eddie.regionconnector.at.eda.ponton;
 
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+
 /**
  * This interface defines all information needed for a PontonXPAdapter to establish a connection to a Ponton XP Messenger.
  */
 public interface PontonXPAdapterConfiguration {
+    int DEFAULT_PORT = 2600;
+    String PREFIX = AtConfiguration.PREFIX + "ponton.messenger.";
+    String ADAPTER_ID_KEY = PREFIX + "adapterId";
+    String ADAPTER_VERSION_KEY = PREFIX + "adapterVersion";
+    String HOSTNAME_KEY = PREFIX + "hostname";
+    String PORT_KEY = PREFIX + "port";
+    String WORK_FOLDER_KEY = PREFIX + "workFolder";
+
     /**
      * ID of the adapter that will be used by the Ponton XP Messenger. The value used for this should be configured as the default adapter in the messenger
      */

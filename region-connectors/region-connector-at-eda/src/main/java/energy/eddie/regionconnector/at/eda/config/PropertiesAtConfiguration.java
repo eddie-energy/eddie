@@ -5,9 +5,6 @@ import java.util.Properties;
 import static java.util.Objects.requireNonNull;
 
 public class PropertiesAtConfiguration implements AtConfiguration {
-    private static final String PREFIX = "region-connector.at.eda.";
-
-    public static final String ELIGIBLE_PARTY_ID_KEY = PREFIX + "eligiblePartyId";
     private final Properties properties;
 
     private PropertiesAtConfiguration(Properties properties) {
