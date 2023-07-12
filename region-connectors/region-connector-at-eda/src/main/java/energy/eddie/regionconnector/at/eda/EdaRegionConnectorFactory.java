@@ -17,7 +17,10 @@ import java.io.IOException;
 import static java.util.Objects.requireNonNull;
 
 public class EdaRegionConnectorFactory implements RegionConnectorFactory {
+
     @Override
+    // sonarcloud complains about not using try-with-resources, but using it would close the adapter upon returning, which is not what we want
+    @SuppressWarnings("java:S2095")
     public RegionConnector create(Config config) throws RegionConnectorProvisioningException {
         requireNonNull(config);
         AtConfiguration atConfiguration = new ConfigAtConfiguration(config);
@@ -33,5 +36,4 @@ public class EdaRegionConnectorFactory implements RegionConnectorFactory {
             throw new RegionConnectorProvisioningException(e);
         }
     }
-
 }
