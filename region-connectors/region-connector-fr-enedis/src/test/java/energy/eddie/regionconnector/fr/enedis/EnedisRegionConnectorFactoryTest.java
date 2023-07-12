@@ -10,24 +10,17 @@ import static org.mockito.Mockito.mock;
 class EnedisRegionConnectorFactoryTest {
     @Test
     void create_withNullConfig_throwsException() {
-        // Arrange
-        EnedisRegionConnectorFactory sut = new EnedisRegionConnectorFactory();
+        EnedisRegionConnectorFactory uut = new EnedisRegionConnectorFactory();
 
-        assertThrows(NullPointerException.class, () -> {
-            // Act
-            sut.create(null);
-        });
+        assertThrows(NullPointerException.class, () -> uut.create(null));
     }
 
     @Test
     void create_withValidConfig_returnsRegionConnector() throws Exception {
-        // Arrange
-        EnedisRegionConnectorFactory sut = new EnedisRegionConnectorFactory();
-
         var config = mock(Config.class);
 
-        // Act
-        var connector = sut.create(config);
+        EnedisRegionConnectorFactory uut = new EnedisRegionConnectorFactory();
+        var connector = uut.create(config);
 
         assertNotNull(connector);
     }

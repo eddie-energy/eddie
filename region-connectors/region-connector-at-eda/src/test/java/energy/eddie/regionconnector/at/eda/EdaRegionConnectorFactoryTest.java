@@ -12,25 +12,18 @@ class EdaRegionConnectorFactoryTest {
 
     @Test
     void create_withNullConfig_throwsException() {
-        // Arrange
-        EdaRegionConnectorFactory sut = new EdaRegionConnectorFactory();
+        EdaRegionConnectorFactory uut = new EdaRegionConnectorFactory();
 
-        assertThrows(NullPointerException.class, () -> {
-            // Act
-            sut.create(null);
-        });
+        assertThrows(NullPointerException.class, () -> uut.create(null));
     }
 
     @Test
     @Disabled("This test can't be run, as the created EdaAdapter needs a working connection to a PontonXPMessenger and a folder existing on the system.")
     void create_withValidConfig_returnsRegionConnector() throws Exception {
-        // Arrange
-        EdaRegionConnectorFactory sut = new EdaRegionConnectorFactory();
-
         var config = mock(Config.class);
 
-        // Act
-        var connector = sut.create(config);
+        EdaRegionConnectorFactory uut = new EdaRegionConnectorFactory();
+        var connector = uut.create(config);
 
         assertNotNull(connector);
     }
