@@ -5,9 +5,7 @@ import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
-import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClientDecorator;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
-import energy.eddie.regionconnector.fr.enedis.config.PropertiesEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
@@ -19,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -27,7 +24,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -36,12 +32,12 @@ import java.util.concurrent.Flow;
 import static java.util.Objects.requireNonNull;
 
 public class EnedisRegionConnector implements RegionConnector {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
     public static final String COUNTRY_CODE = "fr";
     public static final String MDA_CODE = COUNTRY_CODE + "-enedis";
     public static final String BASE_PATH = "/region-connectors/" + MDA_CODE;
     public static final String MDA_DISPLAY_NAME = "France ENEDIS";
     public static final int COVERED_METERING_POINTS = 36951446;
+    private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
     final Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
     private final EnedisApi enedisApi;
@@ -50,14 +46,12 @@ public class EnedisRegionConnector implements RegionConnector {
     private final ConcurrentMap<String, RequestInfo> permissionIdToRequestInfo = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, ConnectionStatusMessage> permissionIdToConnectionStatusMessages = new ConcurrentHashMap<>();
 
+    public EnedisRegionConnector(EnedisConfiguration configuration, EnedisApi enedisApi) {
+        requireNonNull(configuration);
+        requireNonNull(enedisApi);
 
-    public EnedisRegionConnector() throws IOException {
-        Properties properties = new Properties();
-        var in = EnedisCliClient.class.getClassLoader().getResourceAsStream("regionconnector-fr-enedis.properties");
-        properties.load(in);
-
-        this.configuration = new PropertiesEnedisConfiguration(properties);
-        this.enedisApi = new EnedisApiClientDecorator(configuration);
+        this.configuration = configuration;
+        this.enedisApi = enedisApi;
 
         connectionStatusSink.asFlux().subscribe(connectionStatusMessage -> {
             var permissionId = connectionStatusMessage.permissionId();
@@ -65,14 +59,6 @@ public class EnedisRegionConnector implements RegionConnector {
                 permissionIdToConnectionStatusMessages.put(permissionId, connectionStatusMessage);
             }
         });
-    }
-
-    public EnedisRegionConnector(EnedisConfiguration configuration, EnedisApi enedisApi) {
-        requireNonNull(configuration);
-        requireNonNull(enedisApi);
-
-        this.configuration = configuration;
-        this.enedisApi = enedisApi;
     }
 
     @Override
@@ -135,7 +121,7 @@ public class EnedisRegionConnector implements RegionConnector {
             var permissionId = UUID.randomUUID().toString();
             var requestInfo = new RequestInfo(connectionIdValidator.get(), startValidator.get(), endValidator.get());
             permissionIdToRequestInfo.put(permissionId, requestInfo);
-            
+
             var redirectUri = new URIBuilder()
                     .setScheme("https")
                     .setHost("mon-compte-particulier.enedis.fr")
