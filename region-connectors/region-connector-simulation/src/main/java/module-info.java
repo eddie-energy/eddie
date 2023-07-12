@@ -14,4 +14,6 @@ module energy.eddie.regionconnector.simulation {
 
     // needed requires for compilation that aren't inferred
     requires kotlin.stdlib;
+    requires eclipse.microprofile.config.api;
+
 }
