@@ -1,5 +1,5 @@
-import energy.eddie.api.v0.RegionConnector;
-import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector;
+import energy.eddie.api.v0.RegionConnectorFactory;
+import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorFactory;
 
 module energy.eddie.regionconnector.fr.enedis {
     requires energy.eddie.api;
@@ -28,5 +28,5 @@ module energy.eddie.regionconnector.fr.enedis {
     exports energy.eddie.regionconnector.fr.enedis.invoker;
     exports energy.eddie.regionconnector.fr.enedis.model;
 
-    provides RegionConnector with EnedisRegionConnector;
+    provides RegionConnectorFactory with EnedisRegionConnectorFactory;
 }

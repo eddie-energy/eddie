@@ -1,5 +1,5 @@
-import energy.eddie.api.v0.RegionConnector;
-import energy.eddie.regionconnector.simulation.SimulationConnector;
+import energy.eddie.api.v0.RegionConnectorFactory;
+import energy.eddie.regionconnector.simulation.SimulationRegionConnectorFactory;
 
 module energy.eddie.regionconnector.simulation {
     requires energy.eddie.api;
@@ -7,7 +7,7 @@ module energy.eddie.regionconnector.simulation {
     requires org.slf4j;
     requires reactor.core;
     requires org.eclipse.jetty.server;
-    provides RegionConnector with SimulationConnector;
+    provides RegionConnectorFactory with SimulationRegionConnectorFactory;
 
     // exported to give reflective access to Jackson
     exports energy.eddie.regionconnector.simulation;
