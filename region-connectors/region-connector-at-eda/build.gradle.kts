@@ -133,7 +133,7 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 application {
-    mainClass.set("energy.eddie.regionconnector.at.eda.EdaRegionConnector")
+    mainClass.set("energy.eddie.regionconnector.at.eda.main.Main")
     applicationDefaultJvmArgs = listOf("-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager")
 }
 

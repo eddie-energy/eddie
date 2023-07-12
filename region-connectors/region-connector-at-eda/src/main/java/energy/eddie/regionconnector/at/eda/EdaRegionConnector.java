@@ -6,10 +6,7 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.at.api.RegionConnectorAT;
 import energy.eddie.regionconnector.at.api.SendCCMORequestResult;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
-import energy.eddie.regionconnector.at.eda.config.PropertiesAtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
-import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
-import energy.eddie.regionconnector.at.eda.ponton.PropertiesPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.*;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
@@ -29,7 +26,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -77,30 +73,6 @@ public class EdaRegionConnector implements RegionConnectorAT {
         this.edaIdMapper = edaIdMapper;
 
         edaAdapter.start();
-    }
-
-    /**
-     * Starts the region connector and webapp so it can be tested without running the framework
-     */
-    public static void main(String[] args) throws Exception {
-        Properties properties = new Properties();
-        var in = EdaRegionConnector.class.getClassLoader().getResourceAsStream("regionconnector-at.properties");
-        properties.load(in);
-
-        PropertiesAtConfiguration atConfiguration = PropertiesAtConfiguration.fromProperties(properties);
-        PontonXPAdapter edaAdapter = new PontonXPAdapter(new PropertiesPontonXPAdapterConfiguration(properties));
-
-        try (RegionConnectorAT regionConnectorAT = new EdaRegionConnector(atConfiguration, edaAdapter, new InMemoryEdaIdMapper())) {
-            var hostname = properties.getProperty("hostname", "localhost");
-            var port = Integer.parseInt(properties.getProperty("port", "8080"));
-
-            regionConnectorAT.startWebapp(new InetSocketAddress(hostname, port), true);
-            System.out.println("Started webapp on " + hostname + ":" + port);
-
-            // wait for the user to press enter
-            System.in.read();
-        }
-        System.exit(0);
     }
 
     @Override
