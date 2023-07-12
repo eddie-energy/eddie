@@ -8,11 +8,11 @@ import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 public interface PontonXPAdapterConfiguration {
     int DEFAULT_PORT = 2600;
     String PREFIX = AtConfiguration.PREFIX + "ponton.messenger.";
-    String ADAPTER_ID_KEY = PREFIX + "adapterId";
-    String ADAPTER_VERSION_KEY = PREFIX + "adapterVersion";
+    String ADAPTER_ID_KEY = PREFIX + "adapter.id";
+    String ADAPTER_VERSION_KEY = PREFIX + "adapter.version";
     String HOSTNAME_KEY = PREFIX + "hostname";
     String PORT_KEY = PREFIX + "port";
-    String WORK_FOLDER_KEY = PREFIX + "workFolder";
+    String WORK_FOLDER_KEY = PREFIX + "folder";
 
     /**
      * ID of the adapter that will be used by the Ponton XP Messenger. The value used for this should be configured as the default adapter in the messenger

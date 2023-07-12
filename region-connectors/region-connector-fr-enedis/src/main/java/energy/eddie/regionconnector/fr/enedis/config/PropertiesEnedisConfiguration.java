@@ -29,7 +29,7 @@ public class PropertiesEnedisConfiguration implements EnedisConfiguration {
 
     @Override
     public String basePath() {
-        return properties.getProperty(ENEDIS_BASE_PATH_ID_KEY, ENEDIS_DEFAULT_BASE_PATH);
+        return properties.getProperty(ENEDIS_BASE_PATH_KEY, ENEDIS_DEFAULT_BASE_PATH);
     }
 
     private String get(String key) {
