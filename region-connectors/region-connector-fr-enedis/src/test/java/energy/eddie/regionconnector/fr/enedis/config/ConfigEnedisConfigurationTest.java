@@ -4,7 +4,6 @@ import org.eclipse.microprofile.config.Config;
 import org.junit.jupiter.api.Test;
 
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -34,7 +33,7 @@ class ConfigEnedisConfigurationTest {
 
         when(config.getValue(ConfigEnedisConfiguration.ENEDIS_CLIENT_ID_KEY, String.class)).thenReturn(expectedId);
         when(config.getValue(ConfigEnedisConfiguration.ENEDIS_CLIENT_SECRET_KEY, String.class)).thenReturn(expectedSecret);
-        when(config.getOptionalValue(ConfigEnedisConfiguration.ENEDIS_BASE_PATH_KEY, String.class)).thenReturn(Optional.of(expectedPath));
+        when(config.getValue(ConfigEnedisConfiguration.ENEDIS_BASE_PATH_KEY, String.class)).thenReturn(expectedPath);
 
         var uut = new ConfigEnedisConfiguration(config);
 
@@ -48,7 +47,7 @@ class ConfigEnedisConfigurationTest {
         var config = mock(Config.class);
         when(config.getValue(ConfigEnedisConfiguration.ENEDIS_CLIENT_ID_KEY, String.class)).thenThrow(NoSuchElementException.class);
         when(config.getValue(ConfigEnedisConfiguration.ENEDIS_CLIENT_SECRET_KEY, String.class)).thenThrow(NoSuchElementException.class);
-        when(config.getOptionalValue(ConfigEnedisConfiguration.ENEDIS_BASE_PATH_KEY, String.class)).thenThrow(NoSuchElementException.class);
+        when(config.getValue(ConfigEnedisConfiguration.ENEDIS_BASE_PATH_KEY, String.class)).thenThrow(NoSuchElementException.class);
 
         var uut = new ConfigEnedisConfiguration(config);
         assertThrows(NoSuchElementException.class, uut::clientId);
@@ -73,9 +72,9 @@ class ConfigEnedisConfigurationTest {
         when(config.getValue(ConfigEnedisConfiguration.ENEDIS_CLIENT_SECRET_KEY, String.class))
                 .thenReturn(expectedSecret)
                 .thenReturn(updatedSecret);
-        when(config.getOptionalValue(ConfigEnedisConfiguration.ENEDIS_BASE_PATH_KEY, String.class))
-                .thenReturn(Optional.of(expectedPath))
-                .thenReturn(Optional.of(updatedPath));
+        when(config.getValue(ConfigEnedisConfiguration.ENEDIS_BASE_PATH_KEY, String.class))
+                .thenReturn(expectedPath)
+                .thenReturn(updatedPath);
 
 
         var uut = new ConfigEnedisConfiguration(config);
@@ -93,15 +92,5 @@ class ConfigEnedisConfigurationTest {
                 () -> assertEquals(updatedSecret, uut.clientSecret()),
                 () -> assertEquals(updatedPath, uut.basePath())
         );
-    }
-
-    @Test
-    void basePath_withMissingValue_returnsDefault() {
-        var config = mock(Config.class);
-        when(config.getOptionalValue(ConfigEnedisConfiguration.ENEDIS_BASE_PATH_KEY, Integer.class)).thenReturn(Optional.empty());
-
-        var uut = new ConfigEnedisConfiguration(config);
-
-        assertEquals(ConfigEnedisConfiguration.ENEDIS_DEFAULT_BASE_PATH, uut.basePath());
     }
 }

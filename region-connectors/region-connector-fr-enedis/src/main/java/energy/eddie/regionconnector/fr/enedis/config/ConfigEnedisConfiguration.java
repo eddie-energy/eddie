@@ -24,6 +24,6 @@ public class ConfigEnedisConfiguration implements EnedisConfiguration {
 
     @Override
     public String basePath() {
-        return config.getOptionalValue(ENEDIS_BASE_PATH_KEY, String.class).orElse(ENEDIS_DEFAULT_BASE_PATH);
+        return config.getValue(ENEDIS_BASE_PATH_KEY, String.class);
     }
 }
