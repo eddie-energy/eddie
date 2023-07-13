@@ -20,6 +20,6 @@ public class PropertiesAtConfiguration implements AtConfiguration {
 
     @Override
     public String eligiblePartyId() {
-        return requireNonNull(properties.getProperty(PropertiesAtConfiguration.ELIGIBLE_PARTY_ID_KEY), "Property %s is required".formatted(PropertiesAtConfiguration.ELIGIBLE_PARTY_ID_KEY));
+        return requireNonNull(properties.getProperty(ELIGIBLE_PARTY_ID_KEY), "Property %s is required".formatted(ELIGIBLE_PARTY_ID_KEY));
     }
 }
