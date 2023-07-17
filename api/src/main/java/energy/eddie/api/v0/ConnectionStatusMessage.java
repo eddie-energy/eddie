@@ -1,5 +1,6 @@
 package energy.eddie.api.v0;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 /**
@@ -12,15 +13,12 @@ import java.time.ZonedDateTime;
  * @param message      contains additional information about the status
  */
 public record ConnectionStatusMessage(String connectionId, String permissionId,
-                                      ZonedDateTime timestamp, ConnectionStatusMessage.Status status,
+                                      ZonedDateTime timestamp, PermissionProcessStatus status,
                                       String message) {
 
 
-    public enum Status {
-        REQUESTED,
-        GRANTED,
-        REJECTED,
-        ERROR,
-        REVOKED
+    public ConnectionStatusMessage(String connectionId, String permissionId, PermissionProcessStatus status) {
+        this(connectionId, permissionId, ZonedDateTime.now(ZoneId.systemDefault()), status, "");
     }
+
 }

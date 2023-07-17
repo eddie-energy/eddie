@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.at.api;
 
+import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
-import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.InvalidDsoIdException;
 import jakarta.xml.bind.JAXBException;
 
@@ -21,7 +21,7 @@ public interface RegionConnectorAT extends RegionConnector {
      * The PermissionID can be used to identify which StatusUpdates belong to this request.
      * @throws TransmissionException if the request could not be sent to EDA
      */
-    SendCCMORequestResult sendCCMORequest(String connectionId, CCMORequest request) throws TransmissionException, InvalidDsoIdException, JAXBException;
+    SendCCMORequestResult sendCCMORequest(String connectionId, CMRequest request) throws TransmissionException, InvalidDsoIdException, JAXBException;
 
 }
 

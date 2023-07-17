@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,11 +31,11 @@ class CustomSerializerTest {
     }
 
     @Test
-    void testSerialize_StatusMessageData() throws JsonProcessingException {
+    void testSerialize_StatusMessageData() {
         String topic = "test";
         ZonedDateTime now = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        ConnectionStatusMessage data = new ConnectionStatusMessage("connectionId", "permissionId", now, ConnectionStatusMessage.Status.GRANTED, "Granted");
-        byte[] expected = "{\"connectionId\":\"connectionId\",\"permissionId\":\"permissionId\",\"timestamp\":1672531200.000000000,\"status\":\"GRANTED\",\"message\":\"Granted\"}"
+        ConnectionStatusMessage data = new ConnectionStatusMessage("connectionId", "permissionId", now, PermissionProcessStatus.ACCEPTED, "Granted");
+        byte[] expected = "{\"connectionId\":\"connectionId\",\"permissionId\":\"permissionId\",\"timestamp\":1672531200.000000000,\"status\":\"ACCEPTED\",\"message\":\"Granted\"}"
                 .getBytes(StandardCharsets.UTF_8);
 
         byte[] result = customSerializer.serialize(topic, data);

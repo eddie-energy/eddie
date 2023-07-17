@@ -1,13 +1,18 @@
 package energy.eddie.regionconnector.at.eda;
 
+import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.at.api.RegionConnectorAT;
 import energy.eddie.regionconnector.at.api.SendCCMORequestResult;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
-import energy.eddie.regionconnector.at.eda.requests.*;
+import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
+import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
+import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import io.javalin.Javalin;
@@ -19,6 +24,8 @@ import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 
 import java.net.InetSocketAddress;
 import java.time.LocalDate;
@@ -51,11 +58,20 @@ public class EdaRegionConnector implements RegionConnectorAT {
      */
     public static final int MAXIMUM_MONTHS_IN_THE_PAST = 36;
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
+    private static final String CONNECTION_ID = "connectionId";
     private final AtConfiguration atConfiguration;
     private final EdaAdapter edaAdapter;
     private final ConsumptionRecordMapper consumptionRecordMapper;
     private final EdaIdMapper edaIdMapper;
     private final Javalin javalin = Javalin.create();
+
+    /**
+     * Used to send permission state messages.
+     */
+    private final Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks
+            .many()
+            .multicast()
+            .onBackpressureBuffer();
 
     /**
      * Workaround because ws are currently not working
@@ -77,30 +93,51 @@ public class EdaRegionConnector implements RegionConnectorAT {
 
     @Override
     public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(edaAdapter.getConsumptionRecordStream().mapNotNull(this::mapConsumptionRecordToCIMConsumptionRecord));
+        return JdkFlowAdapter.publisherToFlowPublisher(
+                edaAdapter.getConsumptionRecordStream()
+                        .mapNotNull(this::mapConsumptionRecordToCIMConsumptionRecord)
+        );
     }
 
     @Override
     public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(edaAdapter.getCMRequestStatusStream().mapNotNull(this::mapCMRequestStatusToConnectionStatusMessage));
+        Flux<ConnectionStatusMessage> merged = edaAdapter
+                .getCMRequestStatusStream()
+                .mapNotNull(this::mapCMRequestStatusToConnectionStatusMessage)
+                .mergeWith(permissionStateMessages.asFlux());
+        return JdkFlowAdapter.publisherToFlowPublisher(merged);
     }
 
     @Override
-    public void revokePermission(String permissionId) {
+    public void terminatePermission(String permissionId) {
+        String connectionId = edaIdMapper
+                .getMappingInfoForConsentId(permissionId)
+                .map(MappingInfo::connectionId)
+                .orElse(null);
+        permissionStateMessages.tryEmitNext(
+                new ConnectionStatusMessage(
+                        connectionId,
+                        permissionId,
+                        PermissionProcessStatus.TERMINATED
+                )
+        );
         throw new UnsupportedOperationException("Revoke permission is not yet implemented");
     }
 
     @Override
-    public SendCCMORequestResult sendCCMORequest(String connectionId, CCMORequest request) throws TransmissionException, InvalidDsoIdException, JAXBException {
+    public SendCCMORequestResult sendCCMORequest(String connectionId, CMRequest request) throws TransmissionException, JAXBException {
         requireNonNull(connectionId);
         requireNonNull(request);
-        var cmRequest = request.toCMRequest();
         var permissionId = UUID.randomUUID().toString();
-        edaIdMapper.addMappingInfo(cmRequest.getProcessDirectory().getConversationId(), cmRequest.getProcessDirectory().getCMRequestId(), new MappingInfo(permissionId, connectionId));
+        permissionStateMessages.tryEmitNext(new ConnectionStatusMessage(
+                connectionId,
+                permissionId,
+                PermissionProcessStatus.VALIDATED)
+        );
+        edaIdMapper.addMappingInfo(request.getProcessDirectory().getConversationId(), request.getProcessDirectory().getCMRequestId(), new MappingInfo(permissionId, connectionId));
 
-        edaAdapter.sendCMRequest(cmRequest);
-
-        return new SendCCMORequestResult(permissionId, cmRequest.getProcessDirectory().getCMRequestId());
+        edaAdapter.sendCMRequest(request);
+        return new SendCCMORequestResult(permissionId, request.getProcessDirectory().getCMRequestId());
     }
 
     @Override
@@ -126,10 +163,16 @@ public class EdaRegionConnector implements RegionConnectorAT {
             }
             ctx.json(connectionStatusMessage);
         });
-
+        javalin.before("/permission-request", ctx -> permissionStateMessages.tryEmitNext(
+                new ConnectionStatusMessage(
+                        ctx.formParam(CONNECTION_ID),
+                        null,
+                        PermissionProcessStatus.CREATED
+                )
+        ));
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
             // TODO rework validation after mvp1
-            var connectionIdValidator = ctx.formParamAsClass("connectionId", String.class).check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
+            var connectionIdValidator = ctx.formParamAsClass(CONNECTION_ID, String.class).check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
 
             var meteringPointIdValidator = ctx.formParamAsClass("meteringPointId", String.class).check(s -> s != null && s.length() == 33, "meteringPointId must be 33 characters long");
 
@@ -138,9 +181,16 @@ public class EdaRegionConnector implements RegionConnectorAT {
 
             var endValidator = ctx.formParamAsClass("end", LocalDate.class)
                     //.allowNullable() // disable for now as we don't support Future data yet
-                    .check(Objects::nonNull, "end must not be null").check(end -> end.isAfter(startValidator.get()), "end must be after start").check(end -> end.isBefore(now.minusDays(1)), "end must be in the past"); // for now, we only support historical data
+                    .check(Objects::nonNull, "end must not be null")
+                    .check(end -> end.isAfter(startValidator.get()), "end must be after start")
+                    .check(end -> end.isBefore(now.minusDays(1)), "end must be in the past"); // for now, we only support historical data
 
-            var errors = JavalinValidation.collectErrors(connectionIdValidator, meteringPointIdValidator, startValidator, endValidator);
+            var errors = JavalinValidation.collectErrors(
+                    connectionIdValidator,
+                    meteringPointIdValidator,
+                    startValidator,
+                    endValidator
+            );
             if (!errors.isEmpty()) {
                 ctx.status(HttpStatus.BAD_REQUEST);
                 ctx.json(errors);
@@ -157,7 +207,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
 
             var connectionId = connectionIdValidator.get();
 
-            var result = sendCCMORequest(connectionId, ccmoRequest);
+            var result = sendCCMORequest(connectionId, ccmoRequest.toCMRequest());
             ctx.status(HttpStatus.OK);
             ctx.json(result);
         });
@@ -178,6 +228,7 @@ public class EdaRegionConnector implements RegionConnectorAT {
     public void close() throws Exception {
         javalin.close();
         edaAdapter.close();
+        permissionStateMessages.tryEmitComplete();
     }
 
     /**
@@ -202,10 +253,10 @@ public class EdaRegionConnector implements RegionConnectorAT {
         var now = ZonedDateTime.now(ZoneId.systemDefault());
 
         var status = switch (cmRequestStatus.getStatus()) {
-            case ACCEPTED -> ConnectionStatusMessage.Status.GRANTED;
-            case ERROR -> ConnectionStatusMessage.Status.ERROR;
-            case REJECTED -> ConnectionStatusMessage.Status.REJECTED;
-            case SENT, RECEIVED, DELIVERED -> ConnectionStatusMessage.Status.REQUESTED;
+            case ACCEPTED -> PermissionProcessStatus.ACCEPTED;
+            case ERROR -> PermissionProcessStatus.INVALID;
+            case REJECTED -> PermissionProcessStatus.REJECTED;
+            case SENT, RECEIVED, DELIVERED -> PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR;
         };
         var connectionStatusMessage = new ConnectionStatusMessage(connectionId, permissionId, now, status, message);
         // workaround because ws are currently not working

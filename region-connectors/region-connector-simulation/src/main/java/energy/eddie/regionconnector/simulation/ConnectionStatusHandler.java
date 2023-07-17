@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.simulation;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import io.javalin.Javalin;
 import io.javalin.http.HttpStatus;
 import org.slf4j.Logger;
@@ -22,22 +23,15 @@ public class ConnectionStatusHandler {
     private ConnectionStatusHandler() {
     }
 
-    private Sinks.Many<ConnectionStatusMessage> connectionStatusStreamSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<ConnectionStatusMessage> connectionStatusStreamSink = Sinks.many().multicast().onBackpressureBuffer();
 
     public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
         return connectionStatusStreamSink.asFlux();
     }
 
-    public static class SetConnectionStatusRequest {
-        @Nullable
-        public String connectionId;
-        @Nullable
-        public ConnectionStatusMessage.Status connectionStatus;
-    }
-
     void initWebapp(Javalin app) {
         LOGGER.info("Initializing Javalin app");
-        app.get(SimulationConnector.basePath() + "/api/connection-status-values", ctx -> ctx.json(ConnectionStatusMessage.Status.values()));
+        app.get(SimulationConnector.basePath() + "/api/connection-status-values", ctx -> ctx.json(PermissionProcessStatus.values()));
         app.post(SimulationConnector.basePath() + "/api/connection-status", ctx -> {
             var req = ctx.bodyAsClass(SetConnectionStatusRequest.class);
             LOGGER.info("Changing connection status of {} to {}", req.connectionId, req.connectionStatus);
@@ -51,6 +45,13 @@ public class ConnectionStatusHandler {
                 ctx.status(HttpStatus.BAD_REQUEST);
             }
         });
+    }
+
+    public static class SetConnectionStatusRequest {
+        @Nullable
+        public String connectionId;
+        @Nullable
+        public PermissionProcessStatus connectionStatus;
     }
 
     public static synchronized ConnectionStatusHandler instance() {

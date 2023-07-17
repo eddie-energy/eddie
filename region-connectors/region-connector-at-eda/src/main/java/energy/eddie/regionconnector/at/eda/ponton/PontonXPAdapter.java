@@ -327,6 +327,9 @@ public class PontonXPAdapter implements EdaAdapter {
     @Override
     public void close() {
         requestStatusSink.tryEmitComplete();
+        consumptionRecordSink.tryEmitComplete();
+        masterDataSink.tryEmitComplete();
+        cmRevokeSink.tryEmitComplete();
         messengerConnection.close();
     }
 

@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.at.eda;
 
+import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.*;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
@@ -130,8 +131,42 @@ class EdaRegionConnectorTest {
         when(adapter.getCMRequestStatusStream()).thenReturn(testPublisher.flux());
 
         var mapper = mock(EdaIdMapper.class);
-        when(mapper.getMappingInfoForConversationIdOrRequestID(eq("test"), any())).thenReturn(Optional.of(new MappingInfo("permissionId", "connectionId")));
-        when(mapper.getMappingInfoForConversationIdOrRequestID(eq("test2"), any())).thenReturn(Optional.of(new MappingInfo("test", "test")));
+        when(mapper.getMappingInfoForConversationIdOrRequestID(eq("test"), any()))
+                .thenReturn(Optional.of(new MappingInfo("permissionId", "connectionId")));
+
+        var uut = new EdaRegionConnector(config, adapter, mapper);
+
+        var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
+        var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "test");
+
+        StepVerifier.create(source)
+                .then(() -> {
+                    testPublisher.emit(cmRequestStatus);
+                    try {
+                        uut.close();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .assertNext(cr -> {
+                    assertEquals("connectionId", cr.connectionId());
+                    assertEquals("permissionId", cr.permissionId());
+                })
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
+    void subscribeToConnectionStatusMessagePublisher_doesNotReturnUnmappedMessages() throws TransmissionException {
+        var config = mock(AtConfiguration.class);
+
+        var adapter = mock(EdaAdapter.class);
+        TestPublisher<CMRequestStatus> testPublisher = TestPublisher.create();
+        when(adapter.getCMRequestStatusStream()).thenReturn(testPublisher.flux());
+
+        var mapper = mock(EdaIdMapper.class);
+        when(mapper.getMappingInfoForConversationIdOrRequestID(eq("test"), any()))
+                .thenReturn(Optional.of(new MappingInfo("permissionId", "connectionId")));
 
         var uut = new EdaRegionConnector(config, adapter, mapper);
 
@@ -139,24 +174,21 @@ class EdaRegionConnectorTest {
 
         var unmapableCMRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "");
 
-        var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "test");
-        var cmRequestStatus2 = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "test2");
-
         StepVerifier.create(source)
-                .then(() -> testPublisher.emit(unmapableCMRequestStatus, cmRequestStatus, cmRequestStatus2))
-                .assertNext(cr -> {
-                    assertEquals("connectionId", cr.connectionId());
-                    assertEquals("permissionId", cr.permissionId());
+                .then(() -> {
+                    testPublisher.emit(unmapableCMRequestStatus);
+                    try {
+                        uut.close();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                 })
-                .assertNext(cr -> {
-                    assertEquals("test", cr.connectionId());
-                    assertEquals("test", cr.permissionId());
-                })
-                .expectComplete().verify();
+                .expectComplete()
+                .verify();
     }
 
     @Test
-    void revokePermissionTest_notImplemented() throws TransmissionException {
+    void terminatePermissionTest_throwsNotImplemented() throws TransmissionException {
         // given
         var config = mock(AtConfiguration.class);
         var adapter = mock(EdaAdapter.class);
@@ -165,7 +197,7 @@ class EdaRegionConnectorTest {
 
         // when
         // then
-        assertThrows(UnsupportedOperationException.class, () -> connector.revokePermission("permissionId"));
+        assertThrows(UnsupportedOperationException.class, () -> connector.terminatePermission("permissionId"));
     }
 
     @Test
@@ -182,11 +214,12 @@ class EdaRegionConnectorTest {
         AtConfiguration atConfiguration = mock(AtConfiguration.class);
         when(atConfiguration.eligiblePartyId()).thenReturn("RC100007");
 
-        CCMORequest ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
-                RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D);
+        CMRequest cmRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
+                RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D)
+                .toCMRequest();
 
         // when
-        var result = connector.sendCCMORequest("connectionId", ccmoRequest);
+        var result = connector.sendCCMORequest("connectionId", cmRequest);
 
         // then
         assertNotNull(result);
@@ -194,7 +227,7 @@ class EdaRegionConnectorTest {
     }
 
     @Test
-    void sendCCMORequest_throwsIfConnectionIdNull() throws TransmissionException {
+    void sendCCMORequest_throwsIfConnectionIdNull() throws TransmissionException, InvalidDsoIdException {
         // given
         var config = mock(AtConfiguration.class);
         var adapter = mock(EdaAdapter.class);
@@ -206,12 +239,13 @@ class EdaRegionConnectorTest {
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = mock(AtConfiguration.class);
         when(atConfiguration.eligiblePartyId()).thenReturn("RC100007");
-        CCMORequest ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
-                RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D);
+        CMRequest cmRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
+                RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D)
+                .toCMRequest();
 
         // when
         // then
-        assertThrows(NullPointerException.class, () -> connector.sendCCMORequest(null, ccmoRequest));
+        assertThrows(NullPointerException.class, () -> connector.sendCCMORequest(null, cmRequest));
     }
 
     @Test

@@ -37,11 +37,11 @@ public interface RegionConnector extends AutoCloseable {
     Publisher<ConsumptionRecord> getConsumptionRecordStream();
 
     /**
-     * Revokes the permission at the permission administrator's system and closes the associated connection.
+     * Terminates the permission at the permission administrator's system and closes the associated connection.
      *
      * @param permissionId unique id of the permission
      */
-    void revokePermission(String permissionId);
+    void terminatePermission(String permissionId);
 
     /**
      * Starts the web-application handling the PA specifics of the consent workflow.
