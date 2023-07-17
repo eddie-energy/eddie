@@ -1,5 +1,5 @@
-import energy.eddie.api.v0.RegionConnector;
-import energy.eddie.regionconnector.at.eda.EdaRegionConnector;
+import energy.eddie.api.v0.RegionConnectorFactory;
+import energy.eddie.regionconnector.at.eda.EdaRegionConnectorFactory;
 
 module energy.eddie.regionconnector.at {
     requires jakarta.annotation;
@@ -14,7 +14,7 @@ module energy.eddie.regionconnector.at {
     requires energy.eddie.api;
     requires io.javalin;
     requires kotlin.stdlib;
-
+    requires eclipse.microprofile.config.api;
 
     exports energy.eddie.regionconnector.at.eda.requests;
     exports energy.eddie.regionconnector.at.eda.requests.restricted.enums;
@@ -32,5 +32,5 @@ module energy.eddie.regionconnector.at {
     opens at.ebutilities.schemata.customerprocesses.masterdata._01p30 to jakarta.xml.bind;
     opens at.ebutilities.schemata.customerprocesses.common.types._01p20 to org.glassfish.jaxb.core, org.glassfish.jaxb.runtime;
 
-    provides RegionConnector with EdaRegionConnector;
+    provides RegionConnectorFactory with EdaRegionConnectorFactory;
 }

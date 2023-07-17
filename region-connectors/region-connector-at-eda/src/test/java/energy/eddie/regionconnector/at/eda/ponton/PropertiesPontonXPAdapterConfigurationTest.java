@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PropertiesPontonXPAdapterConfigurationTest {
 
     @Test
-    void fromProperties_WithValidInput_SetsExpectedProperties() {
+    void fromProperties_withValidInput_setsExpectedProperties() {
         Properties properties = new Properties();
         var expectedAdapterId = "1";
         var expectedAdapterVersion = "1.0.0";
@@ -33,7 +33,7 @@ class PropertiesPontonXPAdapterConfigurationTest {
     }
 
     @Test
-    void fromProperties_WithInvalidPort_ThrowsIllegalArgumentException() {
+    void fromProperties_withInvalidPort_throwsIllegalArgumentException() {
         Properties properties = new Properties();
         properties.setProperty(PropertiesPontonXPAdapterConfiguration.ADAPTER_ID_KEY, "2");
         properties.setProperty(PropertiesPontonXPAdapterConfiguration.ADAPTER_VERSION_KEY, "1.0.0");
@@ -47,7 +47,7 @@ class PropertiesPontonXPAdapterConfigurationTest {
     }
 
     @Test
-    void fromProperties_WithNoPort_ReturnsDefaultPort() {
+    void fromProperties_withNoPort_returnsDefaultPort() {
         Properties properties = new Properties();
         properties.setProperty(PropertiesPontonXPAdapterConfiguration.ADAPTER_ID_KEY, "3");
         properties.setProperty(PropertiesPontonXPAdapterConfiguration.ADAPTER_VERSION_KEY, "1.0.0");
@@ -60,7 +60,7 @@ class PropertiesPontonXPAdapterConfigurationTest {
     }
 
     @Test
-    void fromProperties_WithMissingAdapterId_ThrowsNullPointerException() {
+    void fromProperties_withMissingAdapterId_throwsNullPointerException() {
         Properties properties = new Properties();
         properties.setProperty(PropertiesPontonXPAdapterConfiguration.ADAPTER_VERSION_KEY, "1.0.0");
         properties.setProperty(PropertiesPontonXPAdapterConfiguration.HOSTNAME_KEY, "localhost");
@@ -70,7 +70,7 @@ class PropertiesPontonXPAdapterConfigurationTest {
     }
 
     @Test
-    void fromProperties_WithMissingAdapterVersion_ThrowsNullPointerException() {
+    void fromProperties_withMissingAdapterVersion_throwsNullPointerException() {
         Properties properties = new Properties();
         properties.setProperty(PropertiesPontonXPAdapterConfiguration.ADAPTER_ID_KEY, "5");
         properties.setProperty(PropertiesPontonXPAdapterConfiguration.HOSTNAME_KEY, "localhost");
@@ -80,7 +80,7 @@ class PropertiesPontonXPAdapterConfigurationTest {
     }
 
     @Test
-    void fromProperties_WithMissingHostname_ThrowsNullPointerException() {
+    void fromProperties_withMissingHostname_throwsNullPointerException() {
         Properties properties = new Properties();
         properties.setProperty(PropertiesPontonXPAdapterConfiguration.ADAPTER_ID_KEY, "6");
         properties.setProperty(PropertiesPontonXPAdapterConfiguration.ADAPTER_VERSION_KEY, "1.0.0");
@@ -90,7 +90,7 @@ class PropertiesPontonXPAdapterConfigurationTest {
     }
 
     @Test
-    void fromProperties_WithMissingWorkFolder_ThrowsNullPointerException() {
+    void fromProperties_withMissingWorkFolder_throwsNullPointerException() {
         Properties properties = new Properties();
         properties.setProperty(PropertiesPontonXPAdapterConfiguration.ADAPTER_ID_KEY, "7");
         properties.setProperty(PropertiesPontonXPAdapterConfiguration.ADAPTER_VERSION_KEY, "1.0.0");
@@ -100,7 +100,7 @@ class PropertiesPontonXPAdapterConfigurationTest {
     }
 
     @Test
-    void getters_WhenPropertiesAreRemoved_ThrowNullPointerException() {
+    void getters_whenPropertiesAreRemoved_throwNullPointerException() {
         Properties properties = new Properties();
         properties.setProperty(PropertiesPontonXPAdapterConfiguration.ADAPTER_ID_KEY, "8");
         properties.setProperty(PropertiesPontonXPAdapterConfiguration.ADAPTER_VERSION_KEY, "1.0.0");
@@ -121,7 +121,7 @@ class PropertiesPontonXPAdapterConfigurationTest {
     }
 
     @Test
-    void getters_WhenPropertiesAreChanged_ReturnNewValue() {
+    void getters_whenPropertiesAreChanged_returnNewValue() {
         Properties properties = new Properties();
         var beforeAdapterId = "10";
         var beforeAdapterVersion = "1.0.0";
@@ -160,7 +160,7 @@ class PropertiesPontonXPAdapterConfigurationTest {
     }
 
     @Test
-    void port_WhenPortPropertyIsRemoved_ReturnsDefaultPort() {
+    void port_whenPortPropertyIsRemoved_returnsDefaultPort() {
         Properties properties = new Properties();
         var expectedPort = 1234;
         properties.setProperty(PropertiesPontonXPAdapterConfiguration.ADAPTER_ID_KEY, "9");

@@ -14,4 +14,6 @@ module energy.eddie.api {
 
     requires com.fasterxml.jackson.annotation;
     requires java.compiler;
+    requires eclipse.microprofile.config.api;
+
 }

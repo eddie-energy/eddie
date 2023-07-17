@@ -5,9 +5,6 @@ import java.util.Properties;
 import static java.util.Objects.requireNonNull;
 
 public class PropertiesAtConfiguration implements AtConfiguration {
-    private static final String PREFIX = "region-connector.at.eda.";
-
-    public static final String ELIGIBLE_PARTY_ID_KEY = PREFIX + "eligiblePartyId";
     private final Properties properties;
 
     private PropertiesAtConfiguration(Properties properties) {
@@ -23,6 +20,6 @@ public class PropertiesAtConfiguration implements AtConfiguration {
 
     @Override
     public String eligiblePartyId() {
-        return requireNonNull(properties.getProperty(PropertiesAtConfiguration.ELIGIBLE_PARTY_ID_KEY), "Property %s is required".formatted(PropertiesAtConfiguration.ELIGIBLE_PARTY_ID_KEY));
+        return requireNonNull(properties.getProperty(ELIGIBLE_PARTY_ID_KEY), "Property %s is required".formatted(ELIGIBLE_PARTY_ID_KEY));
     }
 }

@@ -8,13 +8,6 @@ import static java.util.Objects.requireNonNull;
  * This class contains all information needed for a PontonXPAdapter to establish a connection to a Ponton XP Messenger.
  */
 public final class PropertiesPontonXPAdapterConfiguration implements PontonXPAdapterConfiguration {
-    public static final int DEFAULT_PORT = 2600;
-    private static final String PREFIX = "region-connector.at.eda.ponton.messenger.";
-    public static final String ADAPTER_ID_KEY = PREFIX + "adapterId";
-    public static final String ADAPTER_VERSION_KEY = PREFIX + "adapterVersion";
-    public static final String HOSTNAME_KEY = PREFIX + "hostname";
-    public static final String PORT_KEY = PREFIX + "port";
-    public static final String WORK_FOLDER_KEY = PREFIX + "workFolder";
     private final Properties properties;
 
     public PropertiesPontonXPAdapterConfiguration(Properties properties) {

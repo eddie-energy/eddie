@@ -41,22 +41,6 @@ class PropertiesEnedisConfigurationTest {
     }
 
     @Test
-    void basePathHasDefaultValue() {
-        // given
-        Properties props = new Properties();
-        props.put(PropertiesEnedisConfiguration.ENEDIS_CLIENT_ID_KEY, "clientId");
-        props.put(PropertiesEnedisConfiguration.ENEDIS_CLIENT_SECRET_KEY, "clientSecret");
-        String expected = "https://ext.prod.api.enedis.fr";
-        PropertiesEnedisConfiguration enedisConfiguration = new PropertiesEnedisConfiguration(props);
-
-        // when
-        var actual = enedisConfiguration.basePath();
-
-        // then
-        assertEquals(expected, actual);
-    }
-
-    @Test
     void constructorThrowsWhenRequiredPropertiesNotSet() {
         // given
         Properties props = new Properties();

@@ -5,6 +5,7 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.multibindings.Multibinder;
 import energy.eddie.api.v0.RegionConnector;
+import energy.eddie.api.v0.RegionConnectorFactory;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.framework.web.JavalinApp;
 import energy.eddie.framework.web.JavalinPathHandler;
@@ -22,7 +23,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.ServiceLoader;
 
 public class Framework implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Framework.class);
@@ -81,7 +85,7 @@ public class Framework implements Runnable {
             pathHandlerBinder.addBinding().to(PermissionFacade.class);
 
             var regionConnectorBinder = Multibinder.newSetBinder(binder(), RegionConnector.class);
-            getAllConnectors().forEach(rc -> regionConnectorBinder.addBinding().toInstance(rc));
+            getAllConnectors(config).forEach(rc -> regionConnectorBinder.addBinding().toInstance(rc));
         }
 
         private Properties loadApplicationProperties() {
@@ -94,13 +98,13 @@ public class Framework implements Runnable {
             return properties;
         }
 
-        private Collection<RegionConnector> getAllConnectors() {
-            var allConnectors = ServiceLoader.load(RegionConnector.class).stream()
+        private Collection<RegionConnector> getAllConnectors(Config config) {
+            var allConnectors = ServiceLoader.load(RegionConnectorFactory.class).stream()
                     .map(provider -> {
                         try {
                             // instantiate all connectors and ignore those that can't be constructed
-                            return Optional.of(provider.get());
-                        } catch (ServiceConfigurationError e) {
+                            return Optional.of(provider.get().create(config));
+                        } catch (Exception e) {
                             LOGGER.error("Could not load/create RegionConnector '{}'", provider.type().getName(), e);
                             return Optional.<RegionConnector>empty();
                         }

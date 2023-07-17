@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PropertiesAtConfigurationTest {
 
     @Test
-    void fromProperties_WithValidInput_SetsExpectedProperties() {
+    void fromProperties_withValidInput_setsExpectedProperties() {
         Properties properties = new Properties();
         var expectedEligiblePartyId = "12345";
         properties.setProperty(PropertiesAtConfiguration.ELIGIBLE_PARTY_ID_KEY, expectedEligiblePartyId);
@@ -21,14 +21,14 @@ class PropertiesAtConfigurationTest {
     }
 
     @Test
-    void fromProperties_WithMissingEligiblePartyId_ThrowsNullPointerException() {
+    void fromProperties_withMissingEligiblePartyId_throwsNullPointerException() {
         Properties properties = new Properties();
 
         assertThrows(NullPointerException.class, () -> PropertiesAtConfiguration.fromProperties(properties));
     }
 
     @Test
-    void getters_WhenPropertiesAreRemoved_ThrowNullPointerException() {
+    void eligiblePartyId_whenPropertyIsRemoved_throwNullPointerException() {
         Properties properties = new Properties();
         properties.setProperty(PropertiesAtConfiguration.ELIGIBLE_PARTY_ID_KEY, "xxx");
 
@@ -39,7 +39,7 @@ class PropertiesAtConfigurationTest {
     }
 
     @Test
-    void getters_WhenPropertiesAreChanged_ReturnNewValue() {
+    void eligiblePartyId_whenPropertyIsChanged_returnNewValue() {
         Properties properties = new Properties();
         var beforeEligiblePartyId = "12345";
         properties.setProperty(PropertiesAtConfiguration.ELIGIBLE_PARTY_ID_KEY, beforeEligiblePartyId);

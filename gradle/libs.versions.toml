@@ -23,6 +23,7 @@ jetty = "11.0.14"
 jte = "2.3.0"
 log4j = "2.20.0"
 kafka-clients = "3.4.0"
+microprofile-config = "3.0.3"
 
 swagger-codegen-version = "3.0.45"
 apache-httpcomponents-version = "4.5.14"
@@ -87,6 +88,8 @@ apache-http-client = { module = "org.apache.httpcomponents:httpclient", version.
 apache-http-mime = { module = "org.apache.httpcomponents:httpmime", version.ref = "apache-httpcomponents-version" }
 dotenv = { module = "io.github.cdimascio:dotenv-java", version.ref = "dotenv-version" }
 
+# microprofile
+microprofile-config = { module = "org.eclipse.microprofile.config:microprofile-config-api", version.ref = "microprofile-config" }
 
 [bundles]
 

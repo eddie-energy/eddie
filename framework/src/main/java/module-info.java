@@ -13,6 +13,7 @@ module energy.eddie.framework {
     opens energy.eddie.framework;
     opens energy.eddie.framework.web;
     uses RegionConnector;
+    uses energy.eddie.api.v0.RegionConnectorFactory;
 
     // needed requires for runtime that aren't inferred
     requires kotlin.stdlib;
