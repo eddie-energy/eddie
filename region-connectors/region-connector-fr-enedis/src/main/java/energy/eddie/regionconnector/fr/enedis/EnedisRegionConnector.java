@@ -1,9 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis;
 
-import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.ConsumptionRecord;
-import energy.eddie.api.v0.RegionConnector;
-import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.api.v0.*;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
@@ -24,6 +21,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -38,6 +36,7 @@ public class EnedisRegionConnector implements RegionConnector {
     public static final String MDA_DISPLAY_NAME = "France ENEDIS";
     public static final int COVERED_METERING_POINTS = 36951446;
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
+    private static final String CONNECTION_ID = "connectionId";
     final Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
     private final EnedisApi enedisApi;
@@ -77,7 +76,17 @@ public class EnedisRegionConnector implements RegionConnector {
     }
 
     @Override
-    public void revokePermission(String permissionId) {
+    public void terminatePermission(String permissionId) {
+        String connectionId = Optional.ofNullable(permissionIdToRequestInfo.get(permissionId))
+                .map(RequestInfo::connectionId)
+                .orElse(null);
+        connectionStatusSink.tryEmitNext(
+                new ConnectionStatusMessage(
+                        connectionId,
+                        permissionId,
+                        PermissionProcessStatus.TERMINATED
+                )
+        );
         // Nothing to implement yet, needs to be done after we support pulling data from the future
         throw new UnsupportedOperationException("revokePermission is not yet implemented");
     }
@@ -103,8 +112,10 @@ public class EnedisRegionConnector implements RegionConnector {
 
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
             // TODO rework validation after mvp1
-            var connectionIdValidator = ctx.formParamAsClass("connectionId", String.class)
-                    .check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
+            connectionStatusSink.tryEmitNext(
+                    new ConnectionStatusMessage(ctx.formParam(CONNECTION_ID), null, PermissionProcessStatus.CREATED)
+            );
+            var connectionIdValidator = ctx.formParamAsClass(CONNECTION_ID, String.class).check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
 
             var startValidator = ctx.formParamAsClass("start", ZonedDateTime.class)
                     .check(Objects::nonNull, "start must not be null");
@@ -119,6 +130,11 @@ public class EnedisRegionConnector implements RegionConnector {
             }
 
             var permissionId = UUID.randomUUID().toString();
+            connectionStatusSink.tryEmitNext(
+                    new ConnectionStatusMessage(
+                            connectionIdValidator.get(), permissionId, PermissionProcessStatus.VALIDATED
+                    )
+            );
             var requestInfo = new RequestInfo(connectionIdValidator.get(), startValidator.get(), endValidator.get());
             permissionIdToRequestInfo.put(permissionId, requestInfo);
 
@@ -134,7 +150,7 @@ public class EnedisRegionConnector implements RegionConnector {
 
             ctx.json(Map.of("permissionId", permissionId, "redirectUri", redirectUri.toString()));
 
-            connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), ConnectionStatusMessage.Status.REQUESTED, "Access to data requested"));
+            connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, "Access to data requested"));
         });
 
         javalin.get(BASE_PATH + "/authorization-callback", ctx -> {
@@ -156,14 +172,13 @@ public class EnedisRegionConnector implements RegionConnector {
 
             var usagePointId = ctx.queryParam("usage_point_id");
             if (usagePointId == null || ctx.status() == HttpStatus.FORBIDDEN) { // probably when request was denied
-                connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), ConnectionStatusMessage.Status.REJECTED, "Access to data rejected"));
+                connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), PermissionProcessStatus.REJECTED, "Access to data rejected"));
                 ctx.html("<h1>Access to data denied, you can close this window.</h1>");
                 return;
             }
 
-            connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), ConnectionStatusMessage.Status.GRANTED, "Access to data granted"));
+            connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), PermissionProcessStatus.ACCEPTED, "Access to data granted"));
             ctx.html("<h1>Access to data granted, you can close this window.</h1>");
-
             new Thread(() -> {
                 // TODO rework the retry logic after mvp1
                 try {
@@ -220,7 +235,9 @@ public class EnedisRegionConnector implements RegionConnector {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         javalin.close();
+        connectionStatusSink.tryEmitComplete();
+        consumptionRecordSink.tryEmitComplete();
     }
 }

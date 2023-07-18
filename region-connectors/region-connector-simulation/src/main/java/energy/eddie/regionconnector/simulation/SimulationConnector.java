@@ -36,7 +36,7 @@ public class SimulationConnector implements RegionConnector {
     }
 
     @Override
-    public void revokePermission(String permissionId) {
+    public void terminatePermission(String permissionId) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
