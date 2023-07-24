@@ -39,6 +39,7 @@ dependencies {
     runtimeOnly(libs.h2database)
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.jupiter)
+    testImplementation(libs.junit.mockito)
 }
 
 extraJavaModuleInfo {

@@ -21,11 +21,9 @@ import reactor.adapter.JdkFlowAdapter;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.ServiceLoader;
 
 public class Framework implements Runnable {
@@ -78,24 +76,13 @@ public class Framework implements Runnable {
             Config config = loadExternalConfig();
             bind(Config.class).toInstance(config);
 
-            Properties properties = loadApplicationProperties();
-            bind(KafkaConnector.class).toInstance(new KafkaConnector(properties));
+            bind(KafkaConnector.class).toInstance(new KafkaConnector(KafkaProperties.fromConfig(config)));
 
             var pathHandlerBinder = Multibinder.newSetBinder(binder(), JavalinPathHandler.class);
             pathHandlerBinder.addBinding().to(PermissionFacade.class);
 
             var regionConnectorBinder = Multibinder.newSetBinder(binder(), RegionConnector.class);
             getAllConnectors(config).forEach(rc -> regionConnectorBinder.addBinding().toInstance(rc));
-        }
-
-        private Properties loadApplicationProperties() {
-            Properties properties = new Properties();
-            try (InputStream is = getClass().getClassLoader().getResourceAsStream(APPLICATION_PROPERTIES)) {
-                properties.load(is);
-            } catch (IOException e) {
-                LOGGER.warn("Could not load application properties");
-            }
-            return properties;
         }
 
         private Collection<RegionConnector> getAllConnectors(Config config) {
