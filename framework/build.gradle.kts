@@ -98,6 +98,7 @@ tasks.register("run-framework", JavaExec::class) {
     description = "run the EDDIE framework"
     environment["JDBC_URL"] = "jdbc:h2:tcp://localhost/./examples/example-app"
     environment["PUBLIC_CONTEXT_PATH"] = ""
+    environment["FRAMEWORK_PORT"] = 8080
 }
 
 tasks.withType<JavaCompile>().configureEach {

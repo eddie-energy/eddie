@@ -30,9 +30,11 @@ public class JavalinApp {
 
     private static final String SRC_MAIN_PREFIX = "./framework/src/main/";
     private static final String DEVELOPMENT_MODE = "developmentMode";
+    private static final int DEFAULT_PORT = 8080;
 
     private final Boolean devMode;
     private final String baseUrl;
+    private final int port;
 
     private final Set<JavalinPathHandler> javalinPathHandlers;
     private final Set<RegionConnector> regionConnectors;
@@ -41,6 +43,7 @@ public class JavalinApp {
     public JavalinApp(Config config, Set<JavalinPathHandler> javalinPathHandlers, Set<RegionConnector> regionConnectors) {
         devMode = config.getOptionalValue(DEVELOPMENT_MODE, Boolean.class).orElse(true);
         baseUrl = config.getOptionalValue(Env.PUBLIC_CONTEXT_PATH.name(), String.class).orElse("");
+        port = config.getOptionalValue(Env.FRAMEWORK_PORT.name(), Integer.class).orElse(DEFAULT_PORT);
         this.javalinPathHandlers = javalinPathHandlers;
         this.regionConnectors = regionConnectors;
     }
@@ -116,7 +119,7 @@ public class JavalinApp {
         })) {
             app.after(ctx -> ctx.header("Access-Control-Allow-Origin", "*"));
             javalinPathHandlers.forEach(ph -> ph.registerPathHandlers(app));
-            app.start(8080);
+            app.start(port);
             while (!Thread.interrupted()) {
                 Thread.sleep(Long.MAX_VALUE);
             }

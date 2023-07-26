@@ -43,6 +43,14 @@ This doesn't offer a full-fledged web-interface.
 - It's operation can be checked by accessing <http://localhost:8080/lib/eddie-components.js> which just delivers a JS
   file.
 
+There are several parameters to configure the framework via the environment:
+
+- `JDBC_URL`: URL to the database
+- `JDBC_USER`: Username for the database
+- `JDBC_PASSWORD`: Password for the data
+- `PUBLIC_CONTEXT_PATH`: Base path for reaching the application and the web components
+- `FRAMEWORK_PORT`: The port were the framework should run
+
 ## How to build docker images locally
 
 Building and running can be done using `docker compose` with the files provided in the `/env` folder. For performing a
