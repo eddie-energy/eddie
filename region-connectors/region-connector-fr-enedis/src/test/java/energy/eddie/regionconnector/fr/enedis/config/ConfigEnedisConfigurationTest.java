@@ -45,9 +45,9 @@ class ConfigEnedisConfigurationTest {
     @Test
     void getters_withMissingValues_throwsNoSuchElementException() {
         var config = mock(Config.class);
-        when(config.getValue(ConfigEnedisConfiguration.ENEDIS_CLIENT_ID_KEY, String.class)).thenThrow(NoSuchElementException.class);
-        when(config.getValue(ConfigEnedisConfiguration.ENEDIS_CLIENT_SECRET_KEY, String.class)).thenThrow(NoSuchElementException.class);
-        when(config.getValue(ConfigEnedisConfiguration.ENEDIS_BASE_PATH_KEY, String.class)).thenThrow(NoSuchElementException.class);
+        when(config.getValue(ConfigEnedisConfiguration.ENEDIS_CLIENT_ID_KEY, String.class)).thenReturn("id").thenThrow(NoSuchElementException.class);
+        when(config.getValue(ConfigEnedisConfiguration.ENEDIS_CLIENT_SECRET_KEY, String.class)).thenReturn("secret").thenThrow(NoSuchElementException.class);
+        when(config.getValue(ConfigEnedisConfiguration.ENEDIS_BASE_PATH_KEY, String.class)).thenReturn("path").thenThrow(NoSuchElementException.class);
 
         var uut = new ConfigEnedisConfiguration(config);
         assertThrows(NoSuchElementException.class, uut::clientId);
@@ -68,11 +68,14 @@ class ConfigEnedisConfigurationTest {
 
         when(config.getValue(ConfigEnedisConfiguration.ENEDIS_CLIENT_ID_KEY, String.class))
                 .thenReturn(expectedId)
+                .thenReturn(expectedId)
                 .thenReturn(updatedId);
         when(config.getValue(ConfigEnedisConfiguration.ENEDIS_CLIENT_SECRET_KEY, String.class))
                 .thenReturn(expectedSecret)
+                .thenReturn(expectedSecret)
                 .thenReturn(updatedSecret);
         when(config.getValue(ConfigEnedisConfiguration.ENEDIS_BASE_PATH_KEY, String.class))
+                .thenReturn(expectedPath)
                 .thenReturn(expectedPath)
                 .thenReturn(updatedPath);
 

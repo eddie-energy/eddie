@@ -9,10 +9,19 @@ import energy.eddie.regionconnector.fr.enedis.config.ConfigEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import org.eclipse.microprofile.config.Config;
 
+import static java.util.Objects.requireNonNull;
+
 public class EnedisRegionConnectorFactory implements RegionConnectorFactory {
     @Override
     public RegionConnector create(Config config) throws RegionConnectorProvisioningException {
-        EnedisConfiguration configuration = new ConfigEnedisConfiguration(config);
+        requireNonNull(config);
+
+        EnedisConfiguration configuration;
+        try {
+            configuration = new ConfigEnedisConfiguration(config);
+        } catch (Exception e) {
+            throw new RegionConnectorProvisioningException(e);
+        }
 
         EnedisApi enedisApi = new EnedisApiClientDecorator(configuration);
 

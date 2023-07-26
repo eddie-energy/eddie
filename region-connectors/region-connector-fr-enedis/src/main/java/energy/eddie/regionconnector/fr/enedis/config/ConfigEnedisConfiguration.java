@@ -10,6 +10,11 @@ public class ConfigEnedisConfiguration implements EnedisConfiguration {
     public ConfigEnedisConfiguration(Config config) {
         requireNonNull(config);
         this.config = config;
+
+        // check for the presence of the required configuration keys
+        clientId();
+        clientSecret();
+        basePath();
     }
 
     @Override
