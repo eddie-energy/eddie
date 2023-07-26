@@ -52,10 +52,10 @@ class ConfigPontonXPAdapterConfigurationTest {
     @Test
     void getter_withMissingValues_throwsNoSuchElementException() {
         var config = mock(Config.class);
-        when(config.getValue(ConfigPontonXPAdapterConfiguration.ADAPTER_ID_KEY, String.class)).thenThrow(NoSuchElementException.class);
-        when(config.getValue(ConfigPontonXPAdapterConfiguration.ADAPTER_VERSION_KEY, String.class)).thenThrow(NoSuchElementException.class);
-        when(config.getValue(ConfigPontonXPAdapterConfiguration.HOSTNAME_KEY, String.class)).thenThrow(NoSuchElementException.class);
-        when(config.getValue(ConfigPontonXPAdapterConfiguration.WORK_FOLDER_KEY, String.class)).thenThrow(NoSuchElementException.class);
+        when(config.getValue(ConfigPontonXPAdapterConfiguration.ADAPTER_ID_KEY, String.class)).thenReturn("id").thenThrow(NoSuchElementException.class);
+        when(config.getValue(ConfigPontonXPAdapterConfiguration.ADAPTER_VERSION_KEY, String.class)).thenReturn("version").thenThrow(NoSuchElementException.class);
+        when(config.getValue(ConfigPontonXPAdapterConfiguration.HOSTNAME_KEY, String.class)).thenReturn("host").thenThrow(NoSuchElementException.class);
+        when(config.getValue(ConfigPontonXPAdapterConfiguration.WORK_FOLDER_KEY, String.class)).thenReturn("folder").thenThrow(NoSuchElementException.class);
 
         var uut = new ConfigPontonXPAdapterConfiguration(config);
         assertThrows(NoSuchElementException.class, uut::adapterId);
@@ -80,17 +80,21 @@ class ConfigPontonXPAdapterConfigurationTest {
 
         when(config.getValue(ConfigPontonXPAdapterConfiguration.ADAPTER_ID_KEY, String.class))
                 .thenReturn(expectedAdapterId)
+                .thenReturn(expectedAdapterId)
                 .thenReturn(updatedAdapterId);
         when(config.getValue(ConfigPontonXPAdapterConfiguration.ADAPTER_VERSION_KEY, String.class))
                 .thenReturn(expectedAdapterVersion)
+                .thenReturn(expectedAdapterVersion)
                 .thenReturn(updatedAdapterVersion);
         when(config.getValue(ConfigPontonXPAdapterConfiguration.HOSTNAME_KEY, String.class))
+                .thenReturn(expectedHostname)
                 .thenReturn(expectedHostname)
                 .thenReturn(updatedHostname);
         when(config.getOptionalValue(ConfigPontonXPAdapterConfiguration.PORT_KEY, Integer.class))
                 .thenReturn(Optional.of(expectedPort))
                 .thenReturn(Optional.of(updatedPort));
         when(config.getValue(ConfigPontonXPAdapterConfiguration.WORK_FOLDER_KEY, String.class))
+                .thenReturn(expectedWorkFolder)
                 .thenReturn(expectedWorkFolder)
                 .thenReturn(updatedWorkFolder);
 

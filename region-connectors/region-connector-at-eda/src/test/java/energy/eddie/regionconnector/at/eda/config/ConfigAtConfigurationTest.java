@@ -43,7 +43,9 @@ class ConfigAtConfigurationTest {
     @Test
     void eligiblePartyId_withMissingValue_throwsNoSuchElementException() {
         var config = mock(Config.class);
-        when(config.getValue(AtConfiguration.ELIGIBLE_PARTY_ID_KEY, String.class)).thenThrow(NoSuchElementException.class);
+        when(config.getValue(AtConfiguration.ELIGIBLE_PARTY_ID_KEY, String.class))
+                .thenReturn("12345")
+                .thenThrow(NoSuchElementException.class);
 
         var uut = new ConfigAtConfiguration(config);
         assertThrows(NoSuchElementException.class, uut::eligiblePartyId);
@@ -55,6 +57,7 @@ class ConfigAtConfigurationTest {
         var expectedEligiblePartyId = "12345";
         var updatedEligiblePartyId = "54321";
         when(config.getValue(AtConfiguration.ELIGIBLE_PARTY_ID_KEY, String.class))
+                .thenReturn(expectedEligiblePartyId)
                 .thenReturn(expectedEligiblePartyId)
                 .thenReturn(updatedEligiblePartyId);
 

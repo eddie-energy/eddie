@@ -10,6 +10,9 @@ public class ConfigAtConfiguration implements AtConfiguration {
     public ConfigAtConfiguration(Config config) {
         requireNonNull(config);
         this.config = config;
+
+        // check for the presence of the required configuration keys
+        eligiblePartyId();
     }
 
     @Override

@@ -23,11 +23,22 @@ public class EdaRegionConnectorFactory implements RegionConnectorFactory {
     @SuppressWarnings("java:S2095")
     public RegionConnector create(Config config) throws RegionConnectorProvisioningException {
         requireNonNull(config);
-        AtConfiguration atConfiguration = new ConfigAtConfiguration(config);
+
+        AtConfiguration atConfiguration;
+        try {
+            atConfiguration = new ConfigAtConfiguration(config);
+        } catch (Exception e) {
+            throw new RegionConnectorProvisioningException(e);
+        }
 
         EdaIdMapper idMapper = new InMemoryEdaIdMapper();
 
-        PontonXPAdapterConfiguration pontonConfiguration = new ConfigPontonXPAdapterConfiguration(config);
+        PontonXPAdapterConfiguration pontonConfiguration;
+        try {
+            pontonConfiguration = new ConfigPontonXPAdapterConfiguration(config);
+        } catch (Exception e) {
+            throw new RegionConnectorProvisioningException(e);
+        }
 
         try {
             var adapter = new PontonXPAdapter(pontonConfiguration);

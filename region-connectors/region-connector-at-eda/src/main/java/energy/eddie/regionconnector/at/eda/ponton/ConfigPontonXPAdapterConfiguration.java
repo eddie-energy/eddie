@@ -10,6 +10,12 @@ public class ConfigPontonXPAdapterConfiguration implements PontonXPAdapterConfig
     public ConfigPontonXPAdapterConfiguration(Config config) {
         requireNonNull(config);
         this.config = config;
+
+        // check for the presence of the required configuration keys
+        adapterId();
+        adapterVersion();
+        hostname();
+        workFolder();
     }
 
     @Override
