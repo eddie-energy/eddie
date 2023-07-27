@@ -9,7 +9,6 @@ import gg.jte.ContentType;
 import gg.jte.TemplateEngine;
 import gg.jte.resolve.DirectoryCodeResolver;
 import io.javalin.Javalin;
-import io.javalin.http.staticfiles.Location;
 import io.javalin.rendering.template.JavalinJte;
 import org.jdbi.v3.core.Jdbi;
 import org.slf4j.Logger;
@@ -20,28 +19,11 @@ import java.util.List;
 
 public class ExampleApp {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExampleApp.class);
-
     public static final String SRC_MAIN_PREFIX = "./src/main/";
+    private static final Logger logger = LoggerFactory.getLogger(ExampleApp.class);
 
     private static boolean inDevelopmentMode() {
         return "true".equals(System.getProperty("developmentMode"));
-    }
-
-    private static class Module extends AbstractModule {
-        @Override
-        protected void configure() {
-            bind(ObjectMapper.class).toInstance(JsonMapper.builder()
-                    .addModule(new JavaTimeModule())
-                    .build());
-            var jdbcUserName = Env.JDBC_USER.get();
-            var jdbcPassword = Env.JDBC_PASSWORD.get();
-            if (null != jdbcUserName && null != jdbcPassword) {
-                bind(Jdbi.class).toInstance(Jdbi.create(Env.JDBC_URL.get(), jdbcUserName, jdbcPassword));
-            } else {
-                bind(Jdbi.class).toInstance(Jdbi.create(Env.JDBC_URL.get()));
-            }
-        }
     }
 
     public static void main(String[] args) {
@@ -56,16 +38,6 @@ public class ExampleApp {
         // an AutoClosable without ensuring a close to be a major issue. To keep Javalin running the current thread
         // is suspended in a forever-sleep loop below.
         try (var app = Javalin.create(config -> {
-            config.staticFiles.add(staticFileConfig -> {
-                staticFileConfig.hostedPath = "/";
-                if (inDevelopmentMode()) {
-                    staticFileConfig.directory = SRC_MAIN_PREFIX + "resources/public";
-                    staticFileConfig.location = Location.EXTERNAL;
-                } else {
-                    staticFileConfig.directory = "public";
-                    staticFileConfig.location = Location.CLASSPATH;
-                }
-            });
             config.requestLogger.http((ctx, executionTimeMs) ->
                     logger.info("{} {} -> {} {}ms", ctx.method(), ctx.url(), ctx.statusCode(), executionTimeMs));
             var baseUrl = Env.PUBLIC_CONTEXT_PATH.get();
@@ -81,6 +53,7 @@ public class ExampleApp {
                     ctx.redirect(dest);
                 }
             });
+
             app.get("/", ctx -> ctx.redirect("login"));
             var injector = Guice.createInjector(new Module());
 
@@ -94,6 +67,22 @@ public class ExampleApp {
         } catch (InterruptedException e) {
             logger.info("Exiting.");
             Thread.currentThread().interrupt();
+        }
+    }
+
+    private static class Module extends AbstractModule {
+        @Override
+        protected void configure() {
+            bind(ObjectMapper.class).toInstance(JsonMapper.builder()
+                    .addModule(new JavaTimeModule())
+                    .build());
+            var jdbcUserName = Env.JDBC_USER.get();
+            var jdbcPassword = Env.JDBC_PASSWORD.get();
+            if (null != jdbcUserName && null != jdbcPassword) {
+                bind(Jdbi.class).toInstance(Jdbi.create(Env.JDBC_URL.get(), jdbcUserName, jdbcPassword));
+            } else {
+                bind(Jdbi.class).toInstance(Jdbi.create(Env.JDBC_URL.get()));
+            }
         }
     }
 
