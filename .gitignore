@@ -116,3 +116,6 @@ node_modules/
 # Ignore regionconnector property files
 regionconnector-at.properties
 regionconnector-fr-enedis.properties
+
+# ignore ponton authentification file
+id.dat
