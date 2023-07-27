@@ -54,6 +54,7 @@ public class EnedisRegionConnector implements RegionConnector {
 
         connectionStatusSink.asFlux().subscribe(connectionStatusMessage -> {
             var permissionId = connectionStatusMessage.permissionId();
+            LOGGER.info("Received connectionStatusMessage for permissionId '{}': {}", permissionId, connectionStatusMessage);
             if (permissionId != null) {
                 permissionIdToConnectionStatusMessages.put(permissionId, connectionStatusMessage);
             }
