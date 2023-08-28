@@ -12,5 +12,4 @@ public interface DataApi {
     Mono<List<Supply>> getSupplies(String authorizedNif, @Nullable String distributorCode);
 
     Mono<List<MeteringData>> getConsumptionKwh(MeteringDataRequest meteringDataRequest);
-
 }

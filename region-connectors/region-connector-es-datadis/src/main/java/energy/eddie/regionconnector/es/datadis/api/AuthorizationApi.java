@@ -5,5 +5,4 @@ import reactor.core.publisher.Mono;
 
 public interface AuthorizationApi {
     Mono<Void> postAuthorizationRequest(AuthorizationRequest authorizationRequest);
-
 }
