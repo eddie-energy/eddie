@@ -9,7 +9,9 @@ findProject(":region-connectors:region-connector-at-eda")?.name = "region-connec
 
 include("region-connectors:region-connector-fr-enedis")
 findProject(":region-connectors:region-connector-fr-enedis")?.name = "region-connector-fr-enedis"
-include("outbound-kafka")
+
+include("region-connectors:region-connector-es-datadis")
+findProject(":region-connectors:region-connector-es-datadis")?.name = "region-connector-es-datadis"
 
 include("region-connectors:region-connector-simulation")
 findProject(":region-connectors:region-connector-simulation")?.name = "region-connector-simulation"
@@ -18,4 +20,6 @@ include("examples:example-app")
 findProject(":examples:example-app")?.name = "example-app"
 
 include("framework")
+include("outbound-kafka")
+
 findProject("framework")?.name = "framework"
