@@ -1,9 +1,11 @@
 package energy.eddie.regionconnector.fr.enedis.api;
 
 import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 
 import java.time.ZonedDateTime;
+import java.util.Map;
 
 public interface EnedisApi {
     /**
@@ -28,4 +30,8 @@ public interface EnedisApi {
      * @throws ApiException Something went wrong while retrieving data from the API
      */
     ConsumptionRecord getConsumptionLoadCurve(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException;
+
+    default Map<String, HealthState> health() {
+        throw new IllegalStateException("Not implemented yet");
+    }
 }

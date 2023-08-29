@@ -2,6 +2,7 @@ package energy.eddie.framework.web;
 
 import com.google.inject.Inject;
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.framework.HealthService;
 import energy.eddie.framework.MetadataService;
 import energy.eddie.framework.PermissionService;
 import io.javalin.Javalin;
@@ -19,9 +20,12 @@ public class PermissionFacade implements JavalinPathHandler {
     private final Logger logger = LoggerFactory.getLogger(PermissionFacade.class);
     private final List<WsContext> users = new ArrayList<>();
     private final MetadataService metadataService;
+    private final HealthService healthService;
+
     @Inject
-    public PermissionFacade(MetadataService metadataService, PermissionService permissionService) {
+    public PermissionFacade(MetadataService metadataService, HealthService healthService, PermissionService permissionService) {
         this.metadataService = metadataService;
+        this.healthService = healthService;
         Optional.ofNullable(permissionService.getConnectionStatusMessageStream())
                 .ifPresent(this::subscribe);
     }
@@ -29,6 +33,7 @@ public class PermissionFacade implements JavalinPathHandler {
     @Override
     public void registerPathHandlers(Javalin app) {
         app.get("/api/region-connectors-metadata", ctx -> ctx.json(metadataService.getRegionConnectorMetadata()));
+        app.get("/api/region-connectors-health", ctx -> ctx.json(healthService.getRegionConnectorHealth()));
         app.ws("/api/connection-status-messages", ws -> {
                     ws.onConnect(users::add);
                     ws.onClose(users::remove);
