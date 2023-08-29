@@ -20,7 +20,7 @@ import java.util.List;
 public class ExampleApp {
 
     public static final String SRC_MAIN_PREFIX = "./src/main/";
-    private static final Logger logger = LoggerFactory.getLogger(ExampleApp.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExampleApp.class);
 
     private static boolean inDevelopmentMode() {
         return "true".equals(System.getProperty("developmentMode"));
@@ -28,7 +28,7 @@ public class ExampleApp {
 
     public static void main(String[] args) {
         if (inDevelopmentMode()) {
-            logger.info("Executing JteTemplates in development mode");
+            LOGGER.info("Executing JteTemplates in development mode");
             var resolver = new DirectoryCodeResolver(Path.of(SRC_MAIN_PREFIX, "jte"));
             JavalinJte.init(TemplateEngine.create(resolver, ContentType.Html));
         } else {
@@ -39,7 +39,7 @@ public class ExampleApp {
         // is suspended in a forever-sleep loop below.
         try (var app = Javalin.create(config -> {
             config.requestLogger.http((ctx, executionTimeMs) ->
-                    logger.info("{} {} -> {} {}ms", ctx.method(), ctx.url(), ctx.statusCode(), executionTimeMs));
+                    LOGGER.info("{} {} -> {} {}ms", ctx.method(), ctx.url(), ctx.statusCode(), executionTimeMs));
             var baseUrl = Env.PUBLIC_CONTEXT_PATH.get();
             if (null != baseUrl && !baseUrl.isEmpty()) {
                 config.routing.contextPath = Env.PUBLIC_CONTEXT_PATH.get();
@@ -49,7 +49,7 @@ public class ExampleApp {
                 var path = ctx.path().substring(ctx.contextPath().length());
                 if (null == ctx.sessionAttribute("user") && !path.startsWith("/login")) {
                     var dest = ctx.contextPath() + "/login";
-                    logger.info("User isn't logged in, redirecting to {}", dest);
+                    LOGGER.info("User isn't logged in, redirecting to {}", dest);
                     ctx.redirect(dest);
                 }
             });
@@ -65,7 +65,7 @@ public class ExampleApp {
                 Thread.sleep(Long.MAX_VALUE);
             }
         } catch (InterruptedException e) {
-            logger.info("Exiting.");
+            LOGGER.info("Exiting.");
             Thread.currentThread().interrupt();
         }
     }
@@ -78,7 +78,7 @@ public class ExampleApp {
                     .build());
             var jdbcUserName = Env.JDBC_USER.get();
             var jdbcPassword = Env.JDBC_PASSWORD.get();
-            if (null != jdbcUserName && null != jdbcPassword) {
+            if (jdbcUserName != null && jdbcPassword != null) {
                 bind(Jdbi.class).toInstance(Jdbi.create(Env.JDBC_URL.get(), jdbcUserName, jdbcPassword));
             } else {
                 bind(Jdbi.class).toInstance(Jdbi.create(Env.JDBC_URL.get()));
