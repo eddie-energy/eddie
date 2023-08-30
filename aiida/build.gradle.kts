@@ -32,6 +32,8 @@ dependencies {
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
     errorprone("com.google.errorprone:error_prone_core:2.18.0")
     errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
+
+    testImplementation("org.testcontainers:postgresql:1.19.0")
 }
 
 tasks.withType<Test> {
