@@ -180,21 +180,4 @@ public class Permission {
     public KafkaStreamingConfig kafkaStreamingConfig() {
         return kafkaStreamingConfig;
     }
-
-    // TODO remove all toStrings before pushing
-    @Override
-    public String toString() {
-        String sb = "Permission{" + "permissionId='" + permissionId + '\'' +
-                ", status=" + status +
-                ", serviceName='" + serviceName + '\'' +
-                ", startTime=" + startTime +
-                ", expirationTime=" + expirationTime +
-                ", grantTime=" + grantTime +
-                ", terminateTime=" + terminateTime +
-                ", connectionId='" + connectionId + '\'' +
-                ", requestedCodes=" + requestedCodes +
-                ", kafkaStreamingConfig=" + kafkaStreamingConfig +
-                '}';
-        return sb;
-    }
 }

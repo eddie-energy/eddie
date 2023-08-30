@@ -70,15 +70,4 @@ public class KafkaStreamingConfig {
     public String subscribeTopic() {
         return subscribeTopic;
     }
-
-    @Override
-    public String toString() {
-        String sb = "KafkaStreamingConfig{" + "id=" + id +
-                ", bootstrapServers='" + bootstrapServers + '\'' +
-                ", dataTopic='" + dataTopic + '\'' +
-                ", statusTopic='" + statusTopic + '\'' +
-                ", subscribeTopic='" + subscribeTopic + '\'' +
-                '}';
-        return sb;
-    }
 }
