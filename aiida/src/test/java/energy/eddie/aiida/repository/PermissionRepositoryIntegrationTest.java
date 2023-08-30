@@ -27,11 +27,12 @@ import static org.junit.jupiter.api.Assertions.*;
 // deactivate the default behaviour, instead use testcontainer
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @TestPropertySource(properties = {
-        "spring.jpa.hibernate.ddl-auto=create-drop"
+        "spring.jpa.hibernate.ddl-auto=create-drop"     // TODO: once AIIDA is more final, use a custom schema
 })
-class PermissionRepositoryTest {
+class PermissionRepositoryIntegrationTest {
     static PostgreSQLContainer<?> timescale = new PostgreSQLContainer<>(
-            DockerImageName.parse("timescale/timescaledb:2.11.2-pg15").asCompatibleSubstituteFor("postgres")
+            DockerImageName.parse("timescale/timescaledb:2.11.2-pg15")
+                    .asCompatibleSubstituteFor("postgres")
     );
 
     @Autowired
@@ -92,6 +93,50 @@ class PermissionRepositoryTest {
         assertEquals(connectionId, permission.connectionId());
         assertNull(permission.terminateTime());
         assertEquals(PermissionStatus.ACCEPTED, permission.status());
+
+        assertThat(codes).hasSameElementsAs(permission.requestedCodes());
+        assertEquals(bootstrapServers, permission.kafkaStreamingConfig().bootstrapServers());
+        assertEquals(validDataTopic, permission.kafkaStreamingConfig().dataTopic());
+        assertEquals(validStatusTopic, permission.kafkaStreamingConfig().statusTopic());
+        assertEquals(validSubscribeTopic, permission.kafkaStreamingConfig().subscribeTopic());
+    }
+
+    @Test
+    void testWithTerminatedPermission() {
+        var start = Instant.now().plusSeconds(100_000);
+        var end = start.plusSeconds(400_000);
+
+        var codes = Set.of("1.8.0", "2.8.0");
+        var validDataTopic = "ValidPublishTopic";
+        var validStatusTopic = "ValidStatusTopic";
+        var validSubscribeTopic = "ValidSubscribeTopic";
+        var bootstrapServers = "localhost:9092";
+        var streamingConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
+
+        String name = "My NewAIIDA Test Service";
+        String connectionId = "NewAiidaRandomConnectionId";
+        Instant grant = Instant.now();
+        Instant terminateTime = grant.plusSeconds(1000);
+
+        Permission permission = new Permission(name, start, end, grant,
+                connectionId, codes, streamingConfig);
+        // DB should set permissionId
+        assertNull(permission.permissionId());
+        assertEquals(PermissionStatus.ACCEPTED, permission.status());
+
+        permission.updateStatus(PermissionStatus.REVOKED);
+        permission.terminateTime(terminateTime);
+
+        permissionRepository.save(permission);
+        assertNotNull(permission.permissionId());
+
+        assertEquals(name, permission.serviceName());
+        assertEquals(start, permission.startTime());
+        assertEquals(end, permission.expirationTime());
+        assertEquals(grant, permission.grantTime());
+        assertEquals(connectionId, permission.connectionId());
+        assertEquals(terminateTime, permission.terminateTime());
+        assertEquals(PermissionStatus.REVOKED, permission.status());
 
         assertThat(codes).hasSameElementsAs(permission.requestedCodes());
         assertEquals(bootstrapServers, permission.kafkaStreamingConfig().bootstrapServers());

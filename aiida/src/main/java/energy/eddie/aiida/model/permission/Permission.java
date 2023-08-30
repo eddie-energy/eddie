@@ -118,13 +118,6 @@ public class Permission {
     }
 
     /**
-     * Sets the grantTime to the specified time.
-     */
-    public void grantTime(Instant grantTime) {
-        this.grantTime = requireNonNull(grantTime);
-    }
-
-    /**
      * Returns the UTC timestamp when the customer either rejected the permission during the permission setup,
      * or when the customer terminated the permission.
      * The status field provides information about whether this field represents the rejection or the termination timestamp.
@@ -143,7 +136,12 @@ public class Permission {
      * @param terminateTime The rejection or termination timestamp.
      */
     public void terminateTime(Instant terminateTime) {
-        this.terminateTime = requireNonNull(terminateTime);
+        requireNonNull(terminateTime);
+
+        if (terminateTime.isBefore(grantTime))
+            throw new IllegalArgumentException("terminateTime mustn't be before grantTime.");
+
+        this.terminateTime = terminateTime;
     }
 
     /**
@@ -172,6 +170,15 @@ public class Permission {
      */
     public PermissionStatus status() {
         return status;
+    }
+
+    /**
+     * Updates the status of this permission to <i>newStatus</i>.
+     *
+     * @param newStatus New status for this permission.
+     */
+    public void updateStatus(PermissionStatus newStatus) {
+        this.status = requireNonNull(newStatus);
     }
 
     /**

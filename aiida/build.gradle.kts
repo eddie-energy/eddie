@@ -48,3 +48,31 @@ tasks.withType<JavaCompile>().configureEach {
         }
     }
 }
+
+tasks.named<Test>("test") {
+    description = "Runs all tests except integration tests."
+    useJUnitPlatform {
+        filter {
+            // exclude all integration tests
+            excludeTestsMatching("*IntegrationTest")
+        }
+    }
+
+    testLogging {
+        events("passed")
+    }
+}
+
+tasks.register<Test>("integrationTest") {
+    description = "Runs only integration tests."
+    group = "verification"
+    useJUnitPlatform {
+        filter {
+            includeTestsMatching("*IntegrationTest")
+        }
+    }
+
+    testLogging {
+        events("passed")
+    }
+}

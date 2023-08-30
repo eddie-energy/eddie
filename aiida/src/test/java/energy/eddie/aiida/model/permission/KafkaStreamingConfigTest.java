@@ -38,18 +38,10 @@ class KafkaStreamingConfigTest {
 
     @Test
     void givenNull_throws() {
-        assertThrows(NullPointerException.class, () -> {
-            new KafkaStreamingConfig(null, dataTopic, statusTopic, subscribeTopic);
-        });
-        assertThrows(NullPointerException.class, () -> {
-            new KafkaStreamingConfig(bootstrapServers, null, statusTopic, subscribeTopic);
-        });
-        assertThrows(NullPointerException.class, () -> {
-            new KafkaStreamingConfig(bootstrapServers, dataTopic, null, subscribeTopic);
-        });
-        assertThrows(NullPointerException.class, () -> {
-            new KafkaStreamingConfig(bootstrapServers, dataTopic, statusTopic, null);
-        });
+        assertThrows(NullPointerException.class, () -> new KafkaStreamingConfig(null, dataTopic, statusTopic, subscribeTopic));
+        assertThrows(NullPointerException.class, () -> new KafkaStreamingConfig(bootstrapServers, null, statusTopic, subscribeTopic));
+        assertThrows(NullPointerException.class, () -> new KafkaStreamingConfig(bootstrapServers, dataTopic, null, subscribeTopic));
+        assertThrows(NullPointerException.class, () -> new KafkaStreamingConfig(bootstrapServers, dataTopic, statusTopic, null))
     }
 
     @ParameterizedTest

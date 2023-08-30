@@ -91,6 +91,10 @@ class PermissionTest {
         assertThrows(NullPointerException.class, () -> new Permission(name, start, end, grant, null, codes, streamingConfig));
         assertThrows(NullPointerException.class, () -> new Permission(name, start, end, grant, connectionId, null, streamingConfig));
         assertThrows(NullPointerException.class, () -> new Permission(name, start, end, grant, connectionId, codes, null));
+
+        var permission = new Permission(name, start, end, grant, connectionId, codes, streamingConfig);
+        assertThrows(NullPointerException.class, () -> permission.updateStatus(null));
+        assertThrows(NullPointerException.class, () -> permission.terminateTime(null));
     }
 
     @Test
@@ -104,6 +108,14 @@ class PermissionTest {
         assertEquals(1, violations.size());
         var first = violations.iterator().next();
         assertEquals("bootstrapServers mustn't be null or blank.", first.getMessage());
+    }
+
+    @Test
+    void givenTerminateTimeBeforeGrantTime_terminationTime_throws() {
+        var permission = new Permission(name, start, end, grant, connectionId, codes, streamingConfig);
+        var terminate = start.minusSeconds(1000);
+
+        assertThrows(IllegalArgumentException.class, () -> permission.terminateTime(terminate));
     }
 
     @Test
