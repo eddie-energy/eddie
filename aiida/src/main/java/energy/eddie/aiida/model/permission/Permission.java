@@ -1,14 +1,20 @@
 package energy.eddie.aiida.model.permission;
 
+import energy.eddie.aiida.constraints.ExpirationTimeAfterStartTime;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
-import java.util.Objects;
 import java.util.Set;
 
+import static java.util.Objects.requireNonNull;
+
 @Entity
+@ExpirationTimeAfterStartTime
 public class Permission {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -19,16 +25,21 @@ public class Permission {
     @Column(nullable = false)
     private PermissionStatus status;
     @Column(nullable = false)
+    @NotBlank(message = "serviceName mustn't be null or blank.")
     private String serviceName;
     @Column(nullable = false)
+    @NotNull(message = "startTime mustn't be null.")
     private Instant startTime;
     @Column(nullable = false)
+    @NotNull(message = "expirationTime mustn't be null.")
     private Instant expirationTime;
     @Column(nullable = false)
+    @NotNull(message = "grantTime mustn't be null.")
     private Instant grantTime;
     @Nullable
     private Instant terminateTime = null;
     @Column(nullable = false)
+    @NotBlank(message = "connectionId mustn't be null or blank.")
     private String connectionId;
     @Column(nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
@@ -36,6 +47,7 @@ public class Permission {
     private Set<String> requestedCodes;
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "kafka_streaming_config_id", referencedColumnName = "id")
+    @Valid  // if Permission is validated, also validate kafkaStreamingConfig
     private KafkaStreamingConfig kafkaStreamingConfig;
 
 
@@ -55,13 +67,13 @@ public class Permission {
      * @param kafkaStreamingConfig StreamingInfo object containing configuration how data shall be shared.
      */
     public Permission(String serviceName, Instant startTime, Instant expirationTime, Instant grantTime, String connectionId, Set<String> requestedCodes, KafkaStreamingConfig kafkaStreamingConfig) {
-        this.serviceName = Objects.requireNonNull(serviceName);
-        this.startTime = Objects.requireNonNull(startTime);
-        this.expirationTime = Objects.requireNonNull(expirationTime);
-        this.grantTime = Objects.requireNonNull(grantTime);
-        this.connectionId = Objects.requireNonNull(connectionId);
-        this.requestedCodes = Objects.requireNonNull(requestedCodes);
-        this.kafkaStreamingConfig = Objects.requireNonNull(kafkaStreamingConfig);
+        this.serviceName = requireNonNull(serviceName);
+        this.startTime = requireNonNull(startTime);
+        this.expirationTime = requireNonNull(expirationTime);
+        this.grantTime = requireNonNull(grantTime);
+        this.connectionId = requireNonNull(connectionId);
+        this.requestedCodes = requireNonNull(requestedCodes);
+        this.kafkaStreamingConfig = requireNonNull(kafkaStreamingConfig);
 
         this.status = PermissionStatus.ACCEPTED;
     }
@@ -108,7 +120,7 @@ public class Permission {
      * Sets the grantTime to the specified time.
      */
     public void grantTime(Instant grantTime) {
-        this.grantTime = Objects.requireNonNull(grantTime);
+        this.grantTime = requireNonNull(grantTime);
     }
 
     /**
@@ -130,7 +142,7 @@ public class Permission {
      * @param terminateTime The rejection or termination timestamp.
      */
     public void terminateTime(Instant terminateTime) {
-        this.terminateTime = Objects.requireNonNull(terminateTime);
+        this.terminateTime = requireNonNull(terminateTime);
     }
 
     /**
@@ -138,6 +150,13 @@ public class Permission {
      */
     public String connectionId() {
         return connectionId;
+    }
+
+    /**
+     * Returns the Set of OBIS codes that the EP wants to receive.
+     */
+    public Set<String> requestedCodes() {
+        return requestedCodes;
     }
 
     /**
@@ -157,7 +176,24 @@ public class Permission {
     /**
      * Returns the KafkaStreamingConfig object that holds the configuration for the streaming protocol.
      */
-    public KafkaStreamingConfig streamingInfo() {
+    public KafkaStreamingConfig kafkaStreamingConfig() {
         return kafkaStreamingConfig;
+    }
+
+    // TODO remove all toStrings before pushing
+    @Override
+    public String toString() {
+        String sb = "Permission{" + "permissionId='" + permissionId + '\'' +
+                ", status=" + status +
+                ", serviceName='" + serviceName + '\'' +
+                ", startTime=" + startTime +
+                ", expirationTime=" + expirationTime +
+                ", grantTime=" + grantTime +
+                ", terminateTime=" + terminateTime +
+                ", connectionId='" + connectionId + '\'' +
+                ", requestedCodes=" + requestedCodes +
+                ", kafkaStreamingConfig=" + kafkaStreamingConfig +
+                '}';
+        return sb;
     }
 }

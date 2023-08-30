@@ -9,16 +9,19 @@ import static java.util.Objects.requireNonNull;
 @Entity
 public class KafkaStreamingConfig {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Nullable
+    @Column(name = "id")
     private Long id;
-
     @Column(nullable = false)
     @NotBlank(message = "bootstrapServers mustn't be null or blank.")
     private String bootstrapServers;
     @Column(nullable = false)
-    @NotBlank(message = "publishTopic mustn't be null or blank.")
-    private String publishTopic;
+    @NotBlank(message = "dataTopic mustn't be null or blank.")
+    private String dataTopic;
+    @Column(nullable = false)
+    @NotBlank(message = "statusTopic mustn't be null or blank.")
+    private String statusTopic;
     @Column(nullable = false)
     @NotBlank(message = "subscribeTopic mustn't be null or blank.")
     private String subscribeTopic;
@@ -27,12 +30,14 @@ public class KafkaStreamingConfig {
      * Creates a new KafkaConfig with the specified configuration.
      *
      * @param bootstrapServers Comma separated list of Kafka servers to connect to.
-     * @param publishTopic     Topic to which AIIDA should publish the data messages.
+     * @param dataTopic        Topic to which AIIDA should publish the data messages.
+     * @param statusTopic      Topic to which AIIDA should publish messages resulting from the permission process model (e.g. permission accepted).
      * @param subscribeTopic   Topic on which AIIDA should subscribe to, where the framework publishes EP termination requests.
      */
-    public KafkaStreamingConfig(String bootstrapServers, String publishTopic, String subscribeTopic) {
+    public KafkaStreamingConfig(String bootstrapServers, String dataTopic, String statusTopic, String subscribeTopic) {
         this.bootstrapServers = requireNonNull(bootstrapServers);
-        this.publishTopic = requireNonNull(publishTopic);
+        this.dataTopic = requireNonNull(dataTopic);
+        this.statusTopic = requireNonNull(statusTopic);
         this.subscribeTopic = requireNonNull(subscribeTopic);
     }
 
@@ -44,11 +49,35 @@ public class KafkaStreamingConfig {
         return bootstrapServers;
     }
 
-    public String publishTopic() {
-        return publishTopic;
+    /**
+     * Returns the topic to which AIIDA should publish the data messages.
+     */
+    public String dataTopic() {
+        return dataTopic;
     }
 
+    /**
+     * Returns the topic to which AIIDA should publish messages resulting from the permission process model (e.g. permission accepted).
+     */
+    public String statusTopic() {
+        return statusTopic;
+    }
+
+    /**
+     * Returns the topic on which AIIDA should subscribe to, where the framework publishes EP termination requests.
+     */
     public String subscribeTopic() {
         return subscribeTopic;
+    }
+
+    @Override
+    public String toString() {
+        String sb = "KafkaStreamingConfig{" + "id=" + id +
+                ", bootstrapServers='" + bootstrapServers + '\'' +
+                ", dataTopic='" + dataTopic + '\'' +
+                ", statusTopic='" + statusTopic + '\'' +
+                ", subscribeTopic='" + subscribeTopic + '\'' +
+                '}';
+        return sb;
     }
 }
