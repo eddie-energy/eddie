@@ -1,0 +1,77 @@
+name: Gradle Build, Test, and Analyze
+
+on: [ push ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '19'
+          distribution: 'temurin'
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+  test:
+    runs-on: ubuntu-latest
+
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '19'
+          distribution: 'temurin'
+
+      - name: Test with Gradle
+        run: ./gradlew test
+
+      - name: Cache Gradle Outputs
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            ~/.gradle/caches/
+            ~/.gradle/wrapper/
+            **/build
+          key: ${{ runner.os }}-gradle-${{ github.sha }}
+
+  analyze:
+    runs-on: ubuntu-latest
+
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '19'
+          distribution: 'temurin'
+
+      - name: Restore Gradle Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches/
+            ~/.gradle/wrapper/
+            **/build
+          key: ${{ runner.os }}-gradle-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-${{ github.sha }}
+            ${{ runner.os }}-gradle
+
+      - name: Analyze with SonarCloud
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew sonar --info
