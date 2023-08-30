@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import static java.util.Objects.requireNonNull;
 
 @Entity
+@Table(name = "kafka_streaming_config")
 public class KafkaStreamingConfig {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

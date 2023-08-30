@@ -14,6 +14,7 @@ import java.util.Set;
 import static java.util.Objects.requireNonNull;
 
 @Entity
+@Table(name = "permission")
 @ExpirationTimeAfterStartTime
 public class Permission {
     @Id
