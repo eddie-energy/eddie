@@ -118,11 +118,8 @@ public class Permission {
     }
 
     /**
-     * Returns the UTC timestamp when the customer either rejected the permission during the permission setup,
-     * or when the customer terminated the permission.
-     * The status field provides information about whether this field represents the rejection or the termination timestamp.
-     *
-     * @return The rejection or termination timestamp.
+     * Returns the time at which either the EP terminated the permission or the customer revoked the permission.
+     * The return value of {@link #status()} indicates which of the two cases occurred.
      */
     @Nullable
     public Instant terminateTime() {
@@ -130,8 +127,8 @@ public class Permission {
     }
 
     /**
-     * Set the UTC timestamp when the customer either rejected the permission during the permission setup,
-     * or when the customer terminated the permission.
+     * Set the UTC timestamp when either the EP terminated the permission or the customer revoked the permission.
+     * Use {@link #updateStatus(PermissionStatus)} to indicate which of the two cases occurred.
      *
      * @param terminateTime The rejection or termination timestamp.
      */

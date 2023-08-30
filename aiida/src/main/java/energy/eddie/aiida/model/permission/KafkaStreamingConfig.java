@@ -46,6 +46,9 @@ public class KafkaStreamingConfig {
     protected KafkaStreamingConfig() {
     }
 
+    /**
+     * Returns the comma separated list of servers that the Kafka client should connect to.
+     */
     public String bootstrapServers() {
         return bootstrapServers;
     }
