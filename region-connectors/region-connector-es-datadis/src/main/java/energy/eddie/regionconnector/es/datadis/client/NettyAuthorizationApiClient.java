@@ -20,13 +20,15 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
 
     private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     private final DatadisTokenProvider tokenProvider;
+    private final DatadisEndpoints endpoints;
 
-    public NettyAuthorizationApiClient(HttpClient httpClient, DatadisTokenProvider tokenProvider) {
+    public NettyAuthorizationApiClient(HttpClient httpClient, DatadisTokenProvider tokenProvider, DatadisEndpoints endpoints) {
         requireNonNull(httpClient);
         requireNonNull(tokenProvider);
 
         this.httpClient = httpClient;
         this.tokenProvider = tokenProvider;
+        this.endpoints = endpoints;
     }
 
     @Override
@@ -43,7 +45,7 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
                 .headers(headers -> headers.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON))
                 .headers(headers -> headers.add(HttpHeaderNames.AUTHORIZATION, "Bearer " + token))
                 .post()
-                .uri(DatadisEndpoints.AUTHORIZATION_REQUEST_ENDPOINT)
+                .uri(endpoints.authorizationRequestEndpoint())
                 .send(ByteBufMono.fromString(Mono.just(body)))
                 .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono.asString().flatMap(bodyString -> {
                     if (httpClientResponse.status().code() == HttpResponseStatus.OK.code() && bodyString.contains("ok")) {

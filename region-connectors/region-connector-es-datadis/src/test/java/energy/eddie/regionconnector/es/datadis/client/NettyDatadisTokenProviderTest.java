@@ -18,8 +18,9 @@ class NettyDatadisTokenProviderTest {
     @Disabled("Integration test, that needs real credentials")
     void getToken_withValidCredentials_returnsToken() {
         NettyDatadisTokenProvider uut = new NettyDatadisTokenProvider(
-                new MyDatadisConfig("replace_me", "replace_me"),
-                HttpClient.create(), new DatadisEndpoints());
+                new MyDatadisConfig("replace", "replace"),
+                HttpClient.create(),
+                new DatadisEndpoints());
 
         StepVerifier.create(uut.getToken())
                 .expectNextMatches(token -> token.length() > 0)

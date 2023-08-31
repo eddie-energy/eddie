@@ -31,18 +31,20 @@ public class NettyDataApiClient implements DataApi {
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM");
     private final DatadisTokenProvider tokenProvider;
+    private final DatadisEndpoints endpoints;
 
-    public NettyDataApiClient(HttpClient httpClient, DatadisTokenProvider tokenProvider) {
+    public NettyDataApiClient(HttpClient httpClient, DatadisTokenProvider tokenProvider, DatadisEndpoints endpoints) {
         requireNonNull(httpClient);
         requireNonNull(tokenProvider);
 
         this.httpClient = httpClient;
         this.tokenProvider = tokenProvider;
+        this.endpoints = endpoints;
     }
 
     @Override
     public Mono<List<Supply>> getSupplies(String authorizedNif, @Nullable String distributorCode) {
-        QueryStringEncoder encoder = new QueryStringEncoder(DatadisEndpoints.SUPPLIES_ENDPOINT.toString());
+        QueryStringEncoder encoder = new QueryStringEncoder(endpoints.suppliesEndpoint().toString());
         encoder.addParam("authorizedNif", authorizedNif);
         if (distributorCode != null) {
             encoder.addParam("distributorCode", distributorCode);
@@ -76,7 +78,7 @@ public class NettyDataApiClient implements DataApi {
 
     @Override
     public Mono<List<MeteringData>> getConsumptionKwh(MeteringDataRequest meteringDataRequest) {
-        QueryStringEncoder encoder = new QueryStringEncoder(DatadisEndpoints.CONSUMPTION_KWH_ENDPOINT.toString());
+        QueryStringEncoder encoder = new QueryStringEncoder(endpoints.consumptionKwhEndpoint().toString());
         encoder.addParam("authorizedNif", meteringDataRequest.authorizedNif());
         encoder.addParam("cups", meteringDataRequest.meteringPoint());
         encoder.addParam("distributorCode", meteringDataRequest.distributorCode());

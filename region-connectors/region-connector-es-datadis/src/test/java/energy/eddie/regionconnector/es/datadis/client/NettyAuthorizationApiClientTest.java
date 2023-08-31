@@ -9,6 +9,7 @@ import reactor.netty.http.client.HttpClient;
 import reactor.test.StepVerifier;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 
 class NettyAuthorizationApiClientTest {
@@ -21,11 +22,12 @@ class NettyAuthorizationApiClientTest {
     void postAuthorizationRequest_withValidInput_doesNotReturnError() {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
-                new MyTokenProvider());
+                new MyTokenProvider(),
+                new DatadisEndpoints());
 
         AuthorizationRequest request = new AuthorizationRequest(
-                LocalDate.now(),
-                LocalDate.now().plusMonths(1),
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC).plusMonths(1),
                 requestNif,
                 new ArrayList<>()
         );
@@ -38,11 +40,12 @@ class NettyAuthorizationApiClientTest {
     void postAuthorizationRequest_withInvalidToken_returnsError() {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
-                () -> Mono.just("invalid token"));
+                () -> Mono.just("invalid token"),
+                new DatadisEndpoints());
 
         AuthorizationRequest request = new AuthorizationRequest(
-                LocalDate.now(),
-                LocalDate.now().plusMonths(1),
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC).plusMonths(1),
                 requestNif,
                 new ArrayList<>()
         );
@@ -57,11 +60,12 @@ class NettyAuthorizationApiClientTest {
     void postAuthorizationRequest_withInvalidNif_returnsError() {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
-                new MyTokenProvider());
+                new MyTokenProvider(),
+                new DatadisEndpoints());
 
         AuthorizationRequest request = new AuthorizationRequest(
-                LocalDate.now(),
-                LocalDate.now().plusMonths(1),
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC).plusMonths(1),
                 "invalid nif",
                 new ArrayList<>()
         );

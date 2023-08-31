@@ -16,7 +16,7 @@ class NettyDataApiClientTest {
 
     DataApi dataApi = new NettyDataApiClient(
             HttpClient.create(),
-            new MyTokenProvider());
+            new MyTokenProvider(), new DatadisEndpoints());
 
     @Test
     @Disabled("Integration test, that needs real credentials")
