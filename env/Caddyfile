@@ -1,5 +1,13 @@
 :8080 {
     log
+
+    # Add trailing slash if missing
+    @missingSlash {
+        not path */
+        not path *.*
+    }
+    rewrite @missingSlash {http.request.uri.path}/
+
     reverse_proxy {$PUBLIC_CONTEXT_PATH:}/lib/* eddie-framework:8080
     reverse_proxy {$PUBLIC_CONTEXT_PATH:}/region-connectors/* eddie-framework:8080
     reverse_proxy {$PUBLIC_CONTEXT_PATH:}/api/* eddie-framework:8080
