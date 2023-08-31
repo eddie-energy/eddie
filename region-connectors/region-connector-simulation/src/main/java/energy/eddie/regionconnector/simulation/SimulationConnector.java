@@ -5,20 +5,24 @@ import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import io.javalin.Javalin;
-import io.javalin.http.staticfiles.Location;
+import io.javalin.http.ContentType;
 import org.eclipse.jetty.server.Server;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.util.annotation.Nullable;
 
 import java.net.InetSocketAddress;
+import java.util.Objects;
 import java.util.concurrent.Flow;
 
 public class SimulationConnector implements RegionConnector {
     public static final String MDA_CODE = "sim";
-    private static final String SRC_MAIN_PREFIX = "./region-connectors/region-connector-simulation/src/main/";
 
     @Nullable
     private Javalin javalin;
+
+    public static String basePath() {
+        return "/region-connectors/" + MDA_CODE;
+    }
 
     @Override
     public RegionConnectorMetadata getMetadata() {
@@ -40,24 +44,31 @@ public class SimulationConnector implements RegionConnector {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    public static String basePath() {
-        return "/region-connectors/" + MDA_CODE;
-    }
-
     @Override
     public int startWebapp(InetSocketAddress address, boolean devMode) {
-        javalin = Javalin.create(config -> config.staticFiles.add(staticFileConfig -> {
-            staticFileConfig.hostedPath = basePath();
-            if (devMode) {
-                staticFileConfig.directory = SRC_MAIN_PREFIX + "resources/public" + staticFileConfig.hostedPath;
-                staticFileConfig.location = Location.EXTERNAL;
-            } else {
-                staticFileConfig.directory = "public" + staticFileConfig.hostedPath;
-                staticFileConfig.location = Location.CLASSPATH;
-            }
-            staticFileConfig.mimeTypes.add("text/javascript", ".js");
-            config.jetty.server(() -> new Server(address));
-        }));
+        javalin = Javalin.create(config -> config.jetty.server(() -> new Server(address)));
+
+        javalin.get(basePath() + "/ce.js", context -> {
+            context.contentType(ContentType.TEXT_JS);
+            context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js")));
+        });
+
+        javalin.get(basePath() + "/produce-consumption-records.js", context -> {
+            context.contentType(ContentType.TEXT_JS);
+            context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/produce-consumption-records.js")));
+        });
+
+        javalin.get(basePath() + "/set-connection-status.js", context -> {
+            context.contentType(ContentType.TEXT_JS);
+            context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/set-connection-status.js")));
+        });
+
+        javalin.get(basePath() + "/simulation.html", context -> {
+            context.contentType(ContentType.TEXT_HTML);
+            context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/simulation.html")));
+        });
+
+
         ConnectionStatusHandler.instance().initWebapp(javalin);
         ConsumptionRecordHandler.instance().initWebapp(javalin);
         javalin.start();
