@@ -7,6 +7,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.2"
     id("net.ltgt.errorprone") version "3.0.1"
     id("org.sonarqube") version "4.0.0.2929"
+    jacoco
 }
 
 group = "energy.eddie.aiida"
@@ -22,6 +23,7 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
@@ -31,6 +33,8 @@ dependencies {
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
     errorprone("com.google.errorprone:error_prone_core:2.18.0")
     errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
+
+    testImplementation("org.testcontainers:postgresql:1.19.0")
 }
 
 tasks.withType<Test> {
@@ -43,5 +47,47 @@ tasks.withType<JavaCompile>().configureEach {
             check("NullAway", CheckSeverity.ERROR)
             option("NullAway:AnnotatedPackages", "energy.eddie")
         }
+    }
+}
+
+tasks.named<Test>("test") {
+    description = "Runs all tests except integration tests."
+    useJUnitPlatform {
+        filter {
+            // exclude all integration tests
+            excludeTestsMatching("*IntegrationTest")
+        }
+    }
+
+    testLogging {
+        events("passed")
+    }
+}
+
+tasks.register<Test>("integrationTest") {
+    description = "Runs only integration tests."
+    group = "verification"
+    useJUnitPlatform {
+        filter {
+            includeTestsMatching("*IntegrationTest")
+        }
+    }
+
+    testLogging {
+        events("passed")
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.9"
+}
+
+tasks.withType<Test>().configureEach {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.withType<JacocoReport> {
+    reports {
+        xml.required.set(true)
     }
 }
