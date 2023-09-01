@@ -1,5 +1,7 @@
 package energy.eddie.aiida.model.permission;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -8,6 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 @Entity
 @Table(name = "kafka_streaming_config")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class KafkaStreamingConfig {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -16,15 +19,19 @@ public class KafkaStreamingConfig {
     private Long id;
     @Column(nullable = false)
     @NotBlank(message = "bootstrapServers mustn't be null or blank.")
+    @JsonProperty(required = true)
     private String bootstrapServers;
     @Column(nullable = false)
     @NotBlank(message = "dataTopic mustn't be null or blank.")
+    @JsonProperty(required = true)
     private String dataTopic;
     @Column(nullable = false)
     @NotBlank(message = "statusTopic mustn't be null or blank.")
+    @JsonProperty(required = true)
     private String statusTopic;
     @Column(nullable = false)
     @NotBlank(message = "subscribeTopic mustn't be null or blank.")
+    @JsonProperty(required = true)
     private String subscribeTopic;
 
     /**

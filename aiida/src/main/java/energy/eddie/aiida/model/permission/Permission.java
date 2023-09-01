@@ -1,5 +1,7 @@
 package energy.eddie.aiida.model.permission;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.constraints.ExpirationTimeAfterStartTime;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
@@ -16,39 +18,50 @@ import static java.util.Objects.requireNonNull;
 @Entity
 @Table(name = "permission")
 @ExpirationTimeAfterStartTime
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Permission {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Nullable
     @Column(nullable = false, name = "permission_id")
+    @JsonProperty
     private String permissionId;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @JsonProperty
     private PermissionStatus status;
     @Column(nullable = false)
     @NotBlank(message = "serviceName mustn't be null or blank.")
+    @JsonProperty(required = true)
     private String serviceName;
     @Column(nullable = false)
     @NotNull(message = "startTime mustn't be null.")
+    @JsonProperty(required = true)
     private Instant startTime;
     @Column(nullable = false)
     @NotNull(message = "expirationTime mustn't be null.")
+    @JsonProperty(required = true)
     private Instant expirationTime;
     @Column(nullable = false)
     @NotNull(message = "grantTime mustn't be null.")
+    @JsonProperty(required = true)
     private Instant grantTime;
     @Nullable
+    @JsonProperty
     private Instant terminateTime = null;
     @Column(nullable = false)
     @NotBlank(message = "connectionId mustn't be null or blank.")
+    @JsonProperty(required = true)
     private String connectionId;
     @Column(nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
     @NotEmpty(message = "At least one OBIS code needs to be requested.")
+    @JsonProperty(required = true)
     private Set<String> requestedCodes;
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "kafka_streaming_config_id", referencedColumnName = "id")
     @Valid  // if Permission is validated, also validate kafkaStreamingConfig
+    @JsonProperty(required = true)
     private KafkaStreamingConfig kafkaStreamingConfig;
 
 
