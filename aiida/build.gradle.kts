@@ -6,6 +6,7 @@ plugins {
     id("org.springframework.boot") version "3.1.2"
     id("io.spring.dependency-management") version "1.1.2"
     id("net.ltgt.errorprone") version "3.0.1"
+    id("org.sonarqube") version "4.0.0.2929"
 }
 
 group = "energy.eddie.aiida"
