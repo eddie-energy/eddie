@@ -7,6 +7,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.2"
     id("net.ltgt.errorprone") version "3.0.1"
     id("org.sonarqube") version "4.0.0.2929"
+    jacoco
 }
 
 group = "energy.eddie.aiida"
@@ -74,5 +75,19 @@ tasks.register<Test>("integrationTest") {
 
     testLogging {
         events("passed")
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.9"
+}
+
+tasks.withType<Test>().configureEach {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.withType<JacocoReport> {
+    reports {
+        xml.required.set(true)
     }
 }
