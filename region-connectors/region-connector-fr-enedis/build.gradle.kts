@@ -124,6 +124,8 @@ tasks.withType<JavaCompile>().configureEach {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
             option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.fr.enedis")
+            option("NullAway:UnannotatedClasses", "energy.eddie.regionconnector.fr.enedis.api.MeteringDataApi")
+            option("NullAway:UnannotatedClasses", "energy.eddie.regionconnector.fr.enedis.api.AuthorizationApi")
             option("NullAway:TreatGeneratedAsUnannotated", true)
             // Regex fits to Windows and Unix-style path separators. CAVEAT: excludedPaths needs a rexex string!
             val regexString = ".*/energy/eddie/regionconnector/fr/enedis/invoker/.*".replace("/", "[/\\\\]")

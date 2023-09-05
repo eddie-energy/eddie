@@ -4,9 +4,12 @@ import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
 import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.ConsumptionRecord;
 import at.ebutilities.schemata.customerprocesses.masterdata._01p30.MasterData;
+import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import jakarta.xml.bind.JAXBException;
 import reactor.core.publisher.Flux;
+
+import java.util.Map;
 
 
 /**
@@ -61,6 +64,8 @@ public interface EdaAdapter extends AutoCloseable {
      * @throws TransmissionException If the connection to EDA could not be established.
      */
     void start() throws TransmissionException;
+
+    Map<String, HealthState> health();
 
 }
 

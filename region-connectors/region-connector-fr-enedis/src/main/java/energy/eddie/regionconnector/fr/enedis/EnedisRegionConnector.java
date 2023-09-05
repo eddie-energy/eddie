@@ -236,9 +236,15 @@ public class EnedisRegionConnector implements RegionConnector {
     }
 
     @Override
+    public Map<String, HealthState> health() {
+        return enedisApi.health();
+    }
+
+    @Override
     public void close() {
         javalin.close();
         connectionStatusSink.tryEmitComplete();
         consumptionRecordSink.tryEmitComplete();
     }
+
 }

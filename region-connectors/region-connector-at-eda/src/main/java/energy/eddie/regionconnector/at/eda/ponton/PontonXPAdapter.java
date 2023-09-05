@@ -12,6 +12,7 @@ import de.ponton.xp.adapter.api.messages.InboundMessage;
 import de.ponton.xp.adapter.api.messages.InboundMessageStatusUpdate;
 import de.ponton.xp.adapter.api.messages.OutboundMessage;
 import de.ponton.xp.adapter.api.messages.OutboundMessageStatusUpdate;
+import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
@@ -26,20 +27,27 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.io.*;
+import java.net.InetAddress;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class PontonXPAdapter implements EdaAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(PontonXPAdapter.class);
-    final Sinks.Many<CMRequestStatus> requestStatusSink = Sinks.many().multicast().onBackpressureBuffer();
-    final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
-    final Sinks.Many<CMRevoke> cmRevokeSink = Sinks.many().multicast().onBackpressureBuffer();
-    final Sinks.Many<MasterData> masterDataSink = Sinks.many().multicast().onBackpressureBuffer();
-    MessengerConnection messengerConnection;
-    JAXBContext context = JAXBContext.newInstance(CMRequest.class, ConsumptionRecord.class, CMNotification.class, CMRevoke.class, MasterData.class, CMRevoke.class);
-    Marshaller marshaller = context.createMarshaller();
-    Unmarshaller unmarshaller = context.createUnmarshaller();
+    private static final String PONTON_HOST = "pontonHost";
+    private static final int PING_TIMEOUT = 2000;
+    private final Sinks.Many<CMRequestStatus> requestStatusSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<CMRevoke> cmRevokeSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<MasterData> masterDataSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final MessengerConnection messengerConnection;
+    private final JAXBContext context = JAXBContext.newInstance(CMRequest.class, ConsumptionRecord.class, CMNotification.class, CMRevoke.class, MasterData.class, CMRevoke.class);
+    private final Marshaller marshaller = context.createMarshaller();
+    private final Unmarshaller unmarshaller = context.createUnmarshaller();
+    private final PontonXPAdapterConfiguration config;
 
     public PontonXPAdapter(PontonXPAdapterConfiguration config) throws IOException, ConnectionException, JAXBException {
+        this.config = config;
         final String adapterId = config.adapterId();
         final String adapterVersion = config.adapterVersion();
         final String hostname = config.hostname();
@@ -322,6 +330,19 @@ public class PontonXPAdapter implements EdaAdapter {
             LOGGER.error("Error sending CMRevoke to DSO '{}'", revoke.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress(), e);
             throw new TransmissionException(e);
         }
+    }
+
+    @Override
+    public Map<String, HealthState> health() {
+        Map<String, HealthState> healthChecks = new HashMap<>();
+        try {
+            InetAddress address = InetAddress.getByName(config.hostname());
+            healthChecks.put(PONTON_HOST, address.isReachable(PING_TIMEOUT) ? HealthState.UP : HealthState.DOWN);
+        } catch (IOException e) {
+            LOGGER.warn("Ponton  XP Messenger Host not reachable", e);
+            healthChecks.put(PONTON_HOST, HealthState.DOWN);
+        }
+        return healthChecks;
     }
 
     @Override

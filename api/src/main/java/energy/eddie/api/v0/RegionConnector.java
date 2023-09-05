@@ -1,6 +1,7 @@
 package energy.eddie.api.v0;
 
 import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.concurrent.Flow.Publisher;
 
 /**
@@ -57,4 +58,11 @@ public interface RegionConnector extends AutoCloseable {
      *                          be used
      */
     int startWebapp(InetSocketAddress address, boolean devMode);
+
+    /**
+     * Returns the health of the region connectors and its services.
+     *
+     * @return a map of the health of the used services by the region connector.
+     */
+    Map<String, HealthState> health();
 }

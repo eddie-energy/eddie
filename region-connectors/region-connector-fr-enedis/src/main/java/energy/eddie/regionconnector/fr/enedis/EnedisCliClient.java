@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis;
 
 import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClientDecorator;
 import energy.eddie.regionconnector.fr.enedis.config.PropertiesEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
@@ -28,7 +29,9 @@ public class EnedisCliClient {
         properties.load(in);
         PropertiesEnedisConfiguration propertiesEnedisConfiguration = new PropertiesEnedisConfiguration(properties);
 
-        final EnedisApiClientDecorator enedisApiClient = new EnedisApiClientDecorator(propertiesEnedisConfiguration);
+        final EnedisApiClientDecorator enedisApiClient = new EnedisApiClientDecorator(
+                new EnedisApiClient(propertiesEnedisConfiguration)
+        );
         final Scanner scanner = new Scanner(System.in, Charset.defaultCharset());
         final File file = new File("region-connectors/region-connector-fr-enedis/bearer.txt");
 

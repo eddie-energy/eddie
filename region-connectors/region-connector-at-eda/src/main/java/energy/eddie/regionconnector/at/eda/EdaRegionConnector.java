@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -206,6 +207,11 @@ public class EdaRegionConnector implements RegionConnector {
         javalin.start(address.getHostName(), address.getPort());
 
         return javalin.port();
+    }
+
+    @Override
+    public Map<String, HealthState> health() {
+        return edaAdapter.health();
     }
 
 

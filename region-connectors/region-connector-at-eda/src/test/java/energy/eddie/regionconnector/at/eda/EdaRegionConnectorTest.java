@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.at.eda;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.*;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.PermissionRequest;
+import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
@@ -21,6 +22,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -395,6 +398,22 @@ class EdaRegionConnectorTest {
         connector.close();
 
         verify(adapter).close();
+    }
+
+    @Test
+    void health_returnsHealthChecks() throws TransmissionException {
+        // Given
+        var edaAdapter = mock(EdaAdapter.class);
+        var config = mock(AtConfiguration.class);
+        var mapper = mock(EdaIdMapper.class);
+        when(edaAdapter.health()).thenReturn(Map.of("service", HealthState.UP));
+        var rc = new EdaRegionConnector(config, edaAdapter, mapper);
+
+        // When
+        var res = rc.health();
+
+        // Then
+        assertEquals(Map.of("service", HealthState.UP), res);
     }
 
     private ConsumptionRecord createConsumptionRecord() {
