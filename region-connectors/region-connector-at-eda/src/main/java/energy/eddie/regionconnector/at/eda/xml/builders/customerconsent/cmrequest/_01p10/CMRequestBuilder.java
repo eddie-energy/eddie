@@ -4,8 +4,8 @@ package energy.eddie.regionconnector.at.eda.xml.builders.customerconsent.cmreque
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.MarketParticipantDirectory;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ProcessDirectory;
-
 import jakarta.annotation.Nullable;
+
 import java.util.Objects;
 
 /**

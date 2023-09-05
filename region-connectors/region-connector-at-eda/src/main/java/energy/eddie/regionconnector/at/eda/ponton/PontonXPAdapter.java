@@ -29,11 +29,11 @@ import java.io.*;
 
 
 public class PontonXPAdapter implements EdaAdapter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PontonXPAdapter.class);
     final Sinks.Many<CMRequestStatus> requestStatusSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<CMRevoke> cmRevokeSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<MasterData> masterDataSink = Sinks.many().multicast().onBackpressureBuffer();
-    private static final Logger LOGGER = LoggerFactory.getLogger(PontonXPAdapter.class);
     MessengerConnection messengerConnection;
     JAXBContext context = JAXBContext.newInstance(CMRequest.class, ConsumptionRecord.class, CMNotification.class, CMRevoke.class, MasterData.class, CMRevoke.class);
     Marshaller marshaller = context.createMarshaller();

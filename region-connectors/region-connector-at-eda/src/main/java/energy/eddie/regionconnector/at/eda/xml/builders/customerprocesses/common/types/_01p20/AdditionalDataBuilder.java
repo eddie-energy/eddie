@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.common.types._01p20;
 
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.AdditionalData;
-
 import jakarta.annotation.Nullable;
+
 import java.util.Objects;
 
 /**

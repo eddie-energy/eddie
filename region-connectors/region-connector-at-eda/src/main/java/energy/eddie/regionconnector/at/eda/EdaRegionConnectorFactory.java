@@ -6,6 +6,7 @@ import energy.eddie.api.v0.RegionConnectorFactory;
 import energy.eddie.api.v0.RegionConnectorProvisioningException;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.ConfigAtConfiguration;
+import energy.eddie.regionconnector.at.eda.permission.request.InMemoryPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.ponton.ConfigPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
@@ -24,14 +25,11 @@ public class EdaRegionConnectorFactory implements RegionConnectorFactory {
     public RegionConnector create(Config config) throws RegionConnectorProvisioningException {
         requireNonNull(config);
         AtConfiguration atConfiguration = new ConfigAtConfiguration(config);
-
-        EdaIdMapper idMapper = new InMemoryEdaIdMapper();
-
         PontonXPAdapterConfiguration pontonConfiguration = new ConfigPontonXPAdapterConfiguration(config);
 
         try {
             var adapter = new PontonXPAdapter(pontonConfiguration);
-            return new EdaRegionConnector(atConfiguration, adapter, idMapper);
+            return new EdaRegionConnector(atConfiguration, adapter, new InMemoryPermissionRequestRepository());
         } catch (IOException | ConnectionException | JAXBException | TransmissionException e) {
             throw new RegionConnectorProvisioningException(e);
         }

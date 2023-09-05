@@ -17,6 +17,10 @@ public enum PermissionProcessStatus {
      * The permission request has been sent to the permission administrator.
      * The process waits for an answer by the PA.
      */
+    RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE,
+    /**
+     * The permission request is now being processed by the PA.
+     */
     SENT_TO_PERMISSION_ADMINISTRATOR,
     /**
      * Not implemented or fully defined.

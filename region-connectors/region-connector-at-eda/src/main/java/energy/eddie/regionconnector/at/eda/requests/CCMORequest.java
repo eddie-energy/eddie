@@ -43,19 +43,22 @@ public class CCMORequest {
     private final MeteringIntervallType meteringIntervalType;
     private final TransmissionCycle transmissionCycle;
     private final AtConfiguration configuration;
+    private final ZonedDateTime timestamp;
 
     public CCMORequest(DsoIdAndMeteringPoint dsoIdAndMeteringPoint,
                        CCMOTimeFrame timeframe,
                        AtConfiguration atConfiguration,
                        RequestDataType requestDataType,
                        AllowedMeteringIntervalType meteringIntervalType,
-                       AllowedTransmissionCycle transmissionCycle) {
+                       AllowedTransmissionCycle transmissionCycle,
+                       ZonedDateTime timestamp) {
         requireNonNull(dsoIdAndMeteringPoint);
         requireNonNull(timeframe);
         requireNonNull(atConfiguration);
         requireNonNull(requestDataType);
         requireNonNull(meteringIntervalType);
         requireNonNull(transmissionCycle);
+        requireNonNull(timestamp);
 
         this.dsoIdAndMeteringPoint = dsoIdAndMeteringPoint;
         this.timeframe = timeframe;
@@ -63,6 +66,17 @@ public class CCMORequest {
         this.requestDataType = requestDataType;
         this.meteringIntervalType = meteringIntervalType.value();
         this.transmissionCycle = transmissionCycle.value();
+        this.timestamp = timestamp;
+    }
+
+    public CCMORequest(DsoIdAndMeteringPoint dsoIdAndMeteringPoint,
+                       CCMOTimeFrame timeframe,
+                       AtConfiguration atConfiguration,
+                       RequestDataType requestDataType,
+                       AllowedMeteringIntervalType meteringIntervalType,
+                       AllowedTransmissionCycle transmissionCycle) {
+        this(dsoIdAndMeteringPoint, timeframe, atConfiguration,
+                requestDataType, meteringIntervalType, transmissionCycle, ZonedDateTime.now(ZoneOffset.UTC));
     }
 
     private static RoutingAddress toRoutingAddress(String address) {
@@ -76,13 +90,23 @@ public class CCMORequest {
                 .build();
     }
 
+    /**
+     * The messageId also known as conversation id.
+     *
+     * @return the messageId, also known as conversation id.
+     */
+    public String messageId() {
+        return new MessageId(toRoutingAddress(configuration.eligiblePartyId()), timestamp).toString();
+    }
+
+    public String cmRequestId() {
+        return new CMRequestId(messageId()).toString();
+    }
+
     public CMRequest toCMRequest() throws InvalidDsoIdException {
         var marketParticipant = makeMarketParticipantDirectory();
-        var now = ZonedDateTime.now(ZoneOffset.UTC);
         var processDirectory = new ProcessDirectoryBuilder();
-        var messageId = new MessageId(toRoutingAddress(configuration.eligiblePartyId()), now);
-        var requestId = new CMRequestId(messageId.toString());
-
+        var messageId = messageId();
 
         var requestType = new ReqTypeBuilder()
                 .withDateFrom(timeframe.start())
@@ -92,9 +116,9 @@ public class CCMORequest {
         timeframe.end().ifPresent(requestType::withDateTo);
         processDirectory
                 .withCMRequest(requestType.build())
-                .withCMRequestId(requestId.toString())
-                .withMessageId(messageId.toString())
-                .withConversationId(messageId.toString())
+                .withCMRequestId(cmRequestId())
+                .withMessageId(messageId)
+                .withConversationId(messageId)
                 .withProcessDate(LocalDate.now(DateTimeConstants.AT_ZONE_ID));
         dsoIdAndMeteringPoint
                 .meteringPoint()

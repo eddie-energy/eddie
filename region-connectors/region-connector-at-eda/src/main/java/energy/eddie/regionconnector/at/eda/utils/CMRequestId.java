@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.at.eda.utils;
 
+import jakarta.annotation.Nullable;
 import org.apache.commons.codec.binary.Base32;
 
-import jakarta.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 

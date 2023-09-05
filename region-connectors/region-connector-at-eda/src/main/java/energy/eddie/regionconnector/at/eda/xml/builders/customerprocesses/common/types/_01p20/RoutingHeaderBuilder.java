@@ -3,8 +3,8 @@ package energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.commo
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingAddress;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
 import energy.eddie.regionconnector.at.eda.xml.builders.helper.DateTimeConverter;
-
 import jakarta.annotation.Nullable;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
