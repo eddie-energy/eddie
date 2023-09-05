@@ -5,8 +5,8 @@ import at.ebutilities.schemata.customerconsent.cmrequest._01p10.MeteringInterval
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ReqType;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.TransmissionCycle;
 import energy.eddie.regionconnector.at.eda.xml.builders.helper.DateTimeConverter;
-
 import jakarta.annotation.Nullable;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.DateTimeException;

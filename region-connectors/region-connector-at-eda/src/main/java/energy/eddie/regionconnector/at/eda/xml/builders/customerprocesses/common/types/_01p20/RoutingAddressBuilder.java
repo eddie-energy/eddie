@@ -2,8 +2,8 @@ package energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.commo
 
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.AddressType;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingAddress;
-
 import jakarta.annotation.Nullable;
+
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

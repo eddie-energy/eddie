@@ -39,22 +39,25 @@ public interface EdaAdapter extends AutoCloseable {
 
     /**
      * This method sends a CMRequest to EDA. A CMRequest can be used to request either metering or master data.
+     *
      * @param request The CMRequest message that should be sent to EDA.
      * @throws TransmissionException If the request could not be sent. Reasons can be a connection error or a malformed request.
-     * @throws JAXBException If the request could not be serialized.
+     * @throws JAXBException         If the request could not be serialized.
      */
     void sendCMRequest(CMRequest request) throws TransmissionException, JAXBException;
 
     /**
      * This method sends a CMRevoke to EDA. A CMRevoke can be used to revoke an active permission/consent.
+     *
      * @param revoke The CMRevoke message that should be sent to EDA.
      * @throws TransmissionException If the request could not be sent. Reasons can be a connection error or a malformed request.
-     * @throws JAXBException If the request could not be serialized.
+     * @throws JAXBException         If the request could not be serialized.
      */
     void sendCMRevoke(CMRevoke revoke) throws TransmissionException, JAXBException;
 
     /**
      * This method starts the connection to EDA. It must be called before any of the methods that use the connection can be used.
+     *
      * @throws TransmissionException If the connection to EDA could not be established.
      */
     void start() throws TransmissionException;

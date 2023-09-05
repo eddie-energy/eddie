@@ -4,8 +4,8 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMod
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.MarketParticipantDirectory;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
 import energy.eddie.regionconnector.at.eda.xml.builders.helper.Sector;
-
 import jakarta.annotation.Nullable;
+
 import java.util.Objects;
 
 /**

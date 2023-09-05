@@ -3,8 +3,8 @@ package energy.eddie.regionconnector.at.eda.xml.builders.customerconsent.cmreque
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ParamCycType;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ParamHistType;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.ReqDatParamType;
-
 import jakarta.annotation.Nullable;
+
 import java.util.Objects;
 
 
