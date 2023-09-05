@@ -15,7 +15,7 @@ public interface PermissionRequestRepository {
      *
      * @param request the permission request to be saved.
      */
-    void save(PermissionRequest request);
+    void save(AtPermissionRequest request);
 
     /**
      * Finds a permission request by its permission id.
@@ -24,7 +24,7 @@ public interface PermissionRequestRepository {
      * @param permissionId the id of the permission request.
      * @return an optional that contains the permission request if it exists.
      */
-    Optional<PermissionRequest> findByPermissionId(String permissionId);
+    Optional<AtPermissionRequest> findByPermissionId(String permissionId);
 
     /**
      * Finds a permission request by either its conversation id or its CMRequest id.
@@ -33,7 +33,7 @@ public interface PermissionRequestRepository {
      * @param cmRequestId    the request id of the original CM Request.
      * @return an optional, which is empty if there is no matching permission request.
      */
-    Optional<PermissionRequest> findByConversationIdOrCMRequestId(String conversationId, @Nullable String cmRequestId);
+    Optional<AtPermissionRequest> findByConversationIdOrCMRequestId(String conversationId, @Nullable String cmRequestId);
 
     /**
      * Removes a permission request by its permission id.

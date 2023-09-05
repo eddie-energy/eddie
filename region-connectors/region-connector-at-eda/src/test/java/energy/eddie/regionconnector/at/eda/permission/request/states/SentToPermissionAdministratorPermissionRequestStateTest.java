@@ -1,8 +1,7 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
-import energy.eddie.regionconnector.at.api.FutureStateException;
-import energy.eddie.regionconnector.at.api.PastStateException;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.junit.jupiter.api.Test;
@@ -20,7 +19,7 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
         SentToPermissionAdministratorPermissionRequestState state = new SentToPermissionAdministratorPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 
@@ -37,7 +36,7 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
         SentToPermissionAdministratorPermissionRequestState state = new SentToPermissionAdministratorPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 
@@ -54,7 +53,7 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
         SentToPermissionAdministratorPermissionRequestState state = new SentToPermissionAdministratorPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 

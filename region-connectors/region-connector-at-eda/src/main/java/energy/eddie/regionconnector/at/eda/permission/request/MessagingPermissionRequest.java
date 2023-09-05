@@ -2,18 +2,18 @@ package energy.eddie.regionconnector.at.eda.permission.request;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.at.api.FutureStateException;
-import energy.eddie.regionconnector.at.api.PastStateException;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
-import energy.eddie.regionconnector.at.api.PermissionRequestState;
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
+import energy.eddie.api.v0.process.model.PermissionRequestState;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import reactor.core.publisher.Sinks;
 
-public class MessagingPermissionRequest implements PermissionRequest {
+public class MessagingPermissionRequest implements AtPermissionRequest {
 
-    private final PermissionRequest permissionRequest;
+    private final AtPermissionRequest permissionRequest;
     private final Sinks.Many<ConnectionStatusMessage> permissionStateMessages;
 
-    public MessagingPermissionRequest(PermissionRequest permissionRequest, Sinks.Many<ConnectionStatusMessage> permissionStateMessages) {
+    public MessagingPermissionRequest(AtPermissionRequest permissionRequest, Sinks.Many<ConnectionStatusMessage> permissionStateMessages) {
         this.permissionRequest = permissionRequest;
         this.permissionStateMessages = permissionStateMessages;
         emitState(PermissionProcessStatus.CREATED);

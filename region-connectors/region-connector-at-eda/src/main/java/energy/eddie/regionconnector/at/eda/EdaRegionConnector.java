@@ -1,9 +1,10 @@
 package energy.eddie.regionconnector.at.eda;
 
 import energy.eddie.api.v0.*;
-import energy.eddie.regionconnector.at.api.FutureStateException;
-import energy.eddie.regionconnector.at.api.PastStateException;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
+import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.PermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
@@ -190,7 +191,7 @@ public class EdaRegionConnector implements RegionConnector {
 
             var connectionId = connectionIdValidator.get();
             // Created State as root state
-            PermissionRequest permissionRequest = permissionRequestFactory.create(connectionId, ccmoRequest);
+            AtPermissionRequest permissionRequest = permissionRequestFactory.create(connectionId, ccmoRequest);
             permissionRequestRepository.save(permissionRequest);
             permissionRequest.validate();
             permissionRequest.sendToPermissionAdministrator();
@@ -280,7 +281,7 @@ public class EdaRegionConnector implements RegionConnector {
         // map an EDA consumption record it to a CIM consumption record
         // and add connectionId and permissionId for identification
         String conversationId = consumptionRecord.getProcessDirectory().getConversationId();
-        Optional<PermissionRequest> permissionRequest = permissionRequestRepository
+        Optional<AtPermissionRequest> permissionRequest = permissionRequestRepository
                 .findByConversationIdOrCMRequestId(conversationId, null);
         String permissionId = permissionRequest.map(PermissionRequest::permissionId).orElse(null);
         String connectionId = permissionRequest.map(PermissionRequest::connectionId).orElse(null);

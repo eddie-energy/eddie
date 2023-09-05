@@ -1,9 +1,8 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
-import energy.eddie.regionconnector.at.api.FutureStateException;
-import energy.eddie.regionconnector.at.api.PastStateException;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
@@ -24,7 +23,7 @@ class ValidatedPermissionRequestStateTest {
         // Given
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
         ValidatedPermissionRequestState state = new ValidatedPermissionRequestState(permissionRequest, new CMRequest(), edaAdapter);
         permissionRequest.changeState(state);
 
@@ -41,7 +40,7 @@ class ValidatedPermissionRequestStateTest {
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
         doThrow(new JAXBException("msg")).when(edaAdapter).sendCMRequest(any());
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
         ValidatedPermissionRequestState state = new ValidatedPermissionRequestState(permissionRequest, new CMRequest(), edaAdapter);
         permissionRequest.changeState(state);
 
@@ -58,7 +57,7 @@ class ValidatedPermissionRequestStateTest {
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
         doThrow(new TransmissionException(new Exception())).when(edaAdapter).sendCMRequest(any());
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
         ValidatedPermissionRequestState state = new ValidatedPermissionRequestState(permissionRequest, new CMRequest(), edaAdapter);
         permissionRequest.changeState(state);
 

@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.at.eda;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.*;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
@@ -202,7 +201,7 @@ class EdaRegionConnectorTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
+        var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
         request.changeState(new SentToPermissionAdministratorPermissionRequestState(request));
 
         var repo = new InMemoryPermissionRequestRepository();
@@ -242,7 +241,7 @@ class EdaRegionConnectorTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
+        var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
         request.changeState(new SentToPermissionAdministratorPermissionRequestState(request));
 
         var repo = new InMemoryPermissionRequestRepository();
@@ -282,7 +281,7 @@ class EdaRegionConnectorTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
+        var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
         request.changeState(new PendingAcknowledgmentPermissionRequestState(request));
 
         var repo = new InMemoryPermissionRequestRepository();
@@ -322,7 +321,7 @@ class EdaRegionConnectorTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
+        var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
         request.changeState(new PendingAcknowledgmentPermissionRequestState(request));
 
         var repo = new InMemoryPermissionRequestRepository();

@@ -1,17 +1,17 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
-import energy.eddie.regionconnector.at.api.ContextualizedPermissionRequestState;
-import energy.eddie.regionconnector.at.api.PastStateException;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
+import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.v0.process.model.PastStateException;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 
 /**
  * The UnableToSendPermissionRequestState indicates that we were not able to send the permission request to the 3rd party service.
  * This state is recoverable, by retrying to send the permission request.
  */
-public class UnableToSendPermissionRequestState extends ContextualizedPermissionRequestState {
+public class UnableToSendPermissionRequestState extends ContextualizedPermissionRequestState<AtPermissionRequest> {
     private final Throwable cause;
 
-    protected UnableToSendPermissionRequestState(PermissionRequest permissionRequest, Throwable cause) {
+    protected UnableToSendPermissionRequestState(AtPermissionRequest permissionRequest, Throwable cause) {
         super(permissionRequest);
         this.cause = cause;
     }
