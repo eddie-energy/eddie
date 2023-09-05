@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
-import energy.eddie.regionconnector.at.api.ContextualizedPermissionRequestState;
-import energy.eddie.regionconnector.at.api.FutureStateException;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
+import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.InvalidDsoIdException;
@@ -12,11 +12,11 @@ import energy.eddie.regionconnector.at.eda.requests.InvalidDsoIdException;
  * The first state a PermissionRequest is in.
  * After it is constructed the PermissionRequest is in a created state.
  */
-public class CreatedPermissionRequestState extends ContextualizedPermissionRequestState {
+public class CreatedPermissionRequestState extends ContextualizedPermissionRequestState<AtPermissionRequest> {
     private final CCMORequest ccmoRequest;
     private final EdaAdapter edaAdapter;
 
-    public CreatedPermissionRequestState(PermissionRequest permissionRequest, CCMORequest ccmoRequest, EdaAdapter edaAdapter) {
+    public CreatedPermissionRequestState(AtPermissionRequest permissionRequest, CCMORequest ccmoRequest, EdaAdapter edaAdapter) {
         super(permissionRequest);
         this.ccmoRequest = ccmoRequest;
         this.edaAdapter = edaAdapter;

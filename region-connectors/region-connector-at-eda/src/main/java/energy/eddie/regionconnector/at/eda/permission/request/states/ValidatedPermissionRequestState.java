@@ -1,20 +1,20 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
-import energy.eddie.regionconnector.at.api.ContextualizedPermissionRequestState;
-import energy.eddie.regionconnector.at.api.FutureStateException;
-import energy.eddie.regionconnector.at.api.PastStateException;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
+import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import jakarta.xml.bind.JAXBException;
 
-public class ValidatedPermissionRequestState extends ContextualizedPermissionRequestState {
+public class ValidatedPermissionRequestState extends ContextualizedPermissionRequestState<AtPermissionRequest> {
     private final EdaAdapter edaAdapter;
     private final CMRequest cmRequest;
 
 
-    protected ValidatedPermissionRequestState(PermissionRequest permissionRequest, CMRequest cmRequest, EdaAdapter edaAdapter) {
+    protected ValidatedPermissionRequestState(AtPermissionRequest permissionRequest, CMRequest cmRequest, EdaAdapter edaAdapter) {
         super(permissionRequest);
         this.edaAdapter = edaAdapter;
         this.cmRequest = cmRequest;

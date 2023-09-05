@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda.permission.request;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.PermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -19,7 +19,7 @@ public class PermissionRequestFactory {
         this.permissionRequestRepository = permissionRequestRepository;
     }
 
-    public PermissionRequest create(String connectionId, CCMORequest ccmoRequest) {
+    public AtPermissionRequest create(String connectionId, CCMORequest ccmoRequest) {
         return new MessagingPermissionRequest(
                 new SavingPermissionRequest(
                         new EdaPermissionRequest(connectionId, ccmoRequest, edaAdapter),

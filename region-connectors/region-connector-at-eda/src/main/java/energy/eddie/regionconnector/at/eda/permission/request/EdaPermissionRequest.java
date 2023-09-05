@@ -1,9 +1,7 @@
 package energy.eddie.regionconnector.at.eda.permission.request;
 
-import energy.eddie.regionconnector.at.api.FutureStateException;
-import energy.eddie.regionconnector.at.api.PastStateException;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
-import energy.eddie.regionconnector.at.api.PermissionRequestState;
+import energy.eddie.api.v0.process.model.PermissionRequestState;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.permission.request.states.CreatedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -11,7 +9,7 @@ import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import java.util.Objects;
 import java.util.UUID;
 
-public class EdaPermissionRequest implements PermissionRequest {
+public class EdaPermissionRequest implements AtPermissionRequest {
     private final String connectionId;
     private final String permissionId;
     private final String cmRequestId;
@@ -61,44 +59,9 @@ public class EdaPermissionRequest implements PermissionRequest {
     }
 
     @Override
-    public void validate() throws FutureStateException, PastStateException {
-        state.validate();
-    }
-
-    @Override
-    public void sendToPermissionAdministrator() throws FutureStateException, PastStateException {
-        state.sendToPermissionAdministrator();
-    }
-
-    @Override
-    public void receivedPermissionAdministratorResponse() throws FutureStateException, PastStateException {
-        state.receivedPermissionAdministratorResponse();
-    }
-
-    @Override
-    public void terminate() throws FutureStateException, PastStateException {
-        state.terminate();
-    }
-
-    @Override
-    public void accept() throws FutureStateException, PastStateException {
-        state.accept();
-    }
-
-    @Override
-    public void invalid() throws FutureStateException, PastStateException {
-        state.invalid();
-    }
-
-    @Override
-    public void rejected() throws FutureStateException, PastStateException {
-        state.reject();
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof PermissionRequest that)) return false;
+        if (!(o instanceof AtPermissionRequest that)) return false;
 
 
         if (!Objects.equals(connectionId, that.connectionId())) return false;

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda.permission.request;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
+import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.regionconnector.at.api.PermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;

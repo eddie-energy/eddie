@@ -2,9 +2,9 @@ package energy.eddie.regionconnector.at.eda.permission.request;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.at.api.FutureStateException;
-import energy.eddie.regionconnector.at.api.PastStateException;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.states.CreatedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -24,7 +24,7 @@ class MessagingPermissionRequestTest {
         // Given
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
         CreatedPermissionRequestState createdState = new CreatedPermissionRequestState(null, null, null);
-        PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", "rid", "cid", createdState);
+        AtPermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", "rid", "cid", createdState);
         MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When
@@ -40,7 +40,7 @@ class MessagingPermissionRequestTest {
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
         CreatedPermissionRequestState createdState = new CreatedPermissionRequestState(null, null, null);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
         MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When
@@ -57,7 +57,7 @@ class MessagingPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
         MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When
@@ -74,7 +74,7 @@ class MessagingPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
         MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When
@@ -88,7 +88,7 @@ class MessagingPermissionRequestTest {
     void messagingPermissionRequest_emitsCreatedState_uponCreation() {
         // Given
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
-        PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
 
         // When
         new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
@@ -108,7 +108,7 @@ class MessagingPermissionRequestTest {
     void messagingPermissionRequest_emitsValidated_whenValidated() throws FutureStateException, PastStateException {
         // Given
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
-        PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
         MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When
@@ -131,7 +131,7 @@ class MessagingPermissionRequestTest {
     void messagingPermissionRequest_emitsSentToPermissionAdministrator_whenSentToPermissionAdministrator() throws FutureStateException, PastStateException {
         // Given
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
-        PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
         MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When
@@ -154,7 +154,7 @@ class MessagingPermissionRequestTest {
     void messagingPermissionRequest_emitsReceivedPermissionAdministratorResponse_whenReceivedPermissionAdministratorResponse() throws FutureStateException, PastStateException {
         // Given
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
-        PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
         MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When
@@ -177,7 +177,7 @@ class MessagingPermissionRequestTest {
     void messagingPermissionRequest_emitsTerminated_whenTerminated() throws FutureStateException, PastStateException {
         // Given
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
-        PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
         MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When
@@ -200,7 +200,7 @@ class MessagingPermissionRequestTest {
     void messagingPermissionRequest_emitsAccepted_whenAccepted() throws FutureStateException, PastStateException {
         // Given
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
-        PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
         MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When
@@ -223,7 +223,7 @@ class MessagingPermissionRequestTest {
     void messagingPermissionRequest_emitsInvalid_whenInvalid() throws FutureStateException, PastStateException {
         // Given
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
-        PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
         MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When
@@ -246,7 +246,7 @@ class MessagingPermissionRequestTest {
     void messagingPermissionRequest_emitsRejected_whenRejected() throws FutureStateException, PastStateException {
         // Given
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
-        PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId");
         MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When

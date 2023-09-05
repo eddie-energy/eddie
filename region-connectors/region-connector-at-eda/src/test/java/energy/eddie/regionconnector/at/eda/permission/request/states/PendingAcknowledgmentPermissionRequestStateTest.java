@@ -1,8 +1,7 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
-import energy.eddie.regionconnector.at.api.FutureStateException;
-import energy.eddie.regionconnector.at.api.PastStateException;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -22,7 +21,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("conversationId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, edaAdapter);
+        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, edaAdapter);
         PendingAcknowledgmentPermissionRequestState state = new PendingAcknowledgmentPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 

@@ -1,13 +1,13 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
-import energy.eddie.regionconnector.at.api.ContextualizedPermissionRequestState;
-import energy.eddie.regionconnector.at.api.FutureStateException;
-import energy.eddie.regionconnector.at.api.PastStateException;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
+import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 
-public class SentToPermissionAdministratorPermissionRequestState extends ContextualizedPermissionRequestState {
+public class SentToPermissionAdministratorPermissionRequestState extends ContextualizedPermissionRequestState<AtPermissionRequest> {
 
-    public SentToPermissionAdministratorPermissionRequestState(PermissionRequest permissionRequest) {
+    public SentToPermissionAdministratorPermissionRequestState(AtPermissionRequest permissionRequest) {
         super(permissionRequest);
     }
 

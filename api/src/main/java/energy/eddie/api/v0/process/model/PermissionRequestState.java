@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.at.api;
+package energy.eddie.api.v0.process.model;
 
 /**
  * This is the state of a permission request.

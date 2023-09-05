@@ -1,11 +1,11 @@
 package energy.eddie.regionconnector.at.eda;
 
-import energy.eddie.regionconnector.at.api.PermissionRequest;
-import energy.eddie.regionconnector.at.api.PermissionRequestState;
+import energy.eddie.api.v0.process.model.PermissionRequestState;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 
 public record SimplePermissionRequest(String permissionId, String connectionId, String cmRequestId,
                                       String conversationId,
-                                      PermissionRequestState state) implements PermissionRequest {
+                                      PermissionRequestState state) implements AtPermissionRequest {
 
     public SimplePermissionRequest(String permissionId, String connectionId) {
         this(permissionId, connectionId, null, null, null);
