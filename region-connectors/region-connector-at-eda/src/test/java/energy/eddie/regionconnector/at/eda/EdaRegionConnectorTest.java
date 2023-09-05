@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.at.eda;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.*;
+import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.PermissionRequest;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
@@ -23,7 +23,6 @@ import java.math.BigInteger;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -405,9 +404,10 @@ class EdaRegionConnectorTest {
         // Given
         var edaAdapter = mock(EdaAdapter.class);
         var config = mock(AtConfiguration.class);
-        var mapper = mock(EdaIdMapper.class);
+        var repo = new InMemoryPermissionRequestRepository();
         when(edaAdapter.health()).thenReturn(Map.of("service", HealthState.UP));
-        var rc = new EdaRegionConnector(config, edaAdapter, mapper);
+        when(edaAdapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
+        var rc = new EdaRegionConnector(config, edaAdapter, repo);
 
         // When
         var res = rc.health();
