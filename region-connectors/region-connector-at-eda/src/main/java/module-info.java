@@ -31,6 +31,10 @@ module energy.eddie.regionconnector.at {
     opens at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30 to jakarta.xml.bind;
     opens at.ebutilities.schemata.customerprocesses.masterdata._01p30 to jakarta.xml.bind;
     opens at.ebutilities.schemata.customerprocesses.common.types._01p20 to org.glassfish.jaxb.core, org.glassfish.jaxb.runtime;
+    exports energy.eddie.regionconnector.at.eda to com.fasterxml.jackson.databind;
+    exports energy.eddie.regionconnector.at.eda.permission.request to com.fasterxml.jackson.databind;
+    exports energy.eddie.regionconnector.at.eda.permission.request.states to com.fasterxml.jackson.databind;
+    exports energy.eddie.regionconnector.at.eda.permission.request.dtos;
 
     provides RegionConnectorFactory with EdaRegionConnectorFactory;
 }
