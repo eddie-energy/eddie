@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda.permission.request;
 
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
-import energy.eddie.regionconnector.at.api.PermissionRequestRepository;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import jakarta.annotation.Nullable;
 
 import java.util.Map;
@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class InMemoryPermissionRequestRepository implements PermissionRequestRepository {
+public class InMemoryPermissionRequestRepository implements AtPermissionRequestRepository {
 
     private final Map<String, AtPermissionRequest> requests = new ConcurrentHashMap<>();
 

@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.at.eda.permission.request;
 
 import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
-import energy.eddie.regionconnector.at.api.PermissionRequestRepository;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.states.CreatedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -18,7 +18,7 @@ class SavingPermissionRequestTest {
     @Test
     void savingPermissionRequest_returnsStateOfWrappedPermissionRequest() {
         // Given
-        PermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
+        AtPermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
         CreatedPermissionRequestState createdState = new CreatedPermissionRequestState(null, null, null);
         var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", "rid", "cid", createdState);
         SavingPermissionRequest savingPermissionRequest = new SavingPermissionRequest(permissionRequest, repo);
@@ -33,7 +33,7 @@ class SavingPermissionRequestTest {
     @Test
     void savingPermissionRequest_changesStateOfWrappedPermissionRequest() {
         // Given
-        PermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
+        AtPermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
         CreatedPermissionRequestState createdState = new CreatedPermissionRequestState(null, null, null);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
@@ -49,7 +49,7 @@ class SavingPermissionRequestTest {
     @Test
     void savingPermissionRequest_returnsCMRequestId() {
         // Given
-        PermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
+        AtPermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
@@ -66,7 +66,7 @@ class SavingPermissionRequestTest {
     @Test
     void savingPermissionRequest_returnsConversationId() {
         // Given
-        PermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
+        AtPermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
@@ -83,7 +83,7 @@ class SavingPermissionRequestTest {
     @Test
     void savingPermissionRequest_returnsPermissionId() {
         // Given
-        PermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
+        AtPermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
@@ -100,7 +100,7 @@ class SavingPermissionRequestTest {
     @Test
     void savingPermissionRequest_returnsConnectionId() {
         // Given
-        PermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
+        AtPermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
@@ -117,7 +117,7 @@ class SavingPermissionRequestTest {
     @Test
     void savingPermissionRequest_validateUpdatesSave() throws FutureStateException, PastStateException {
         // Given
-        PermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
+        AtPermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
         var permissionRequest = new SimplePermissionRequest("pid", "connectionId", "cmRequestId", "conversationId", null);
         SavingPermissionRequest savingPermissionRequest = new SavingPermissionRequest(permissionRequest, repo);
         repo.removeByPermissionId("pid");
@@ -131,7 +131,7 @@ class SavingPermissionRequestTest {
     @Test
     void savingPermissionRequest_sendToPermissionAdministratorUpdatesSave() throws FutureStateException, PastStateException {
         // Given
-        PermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
+        AtPermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
         var permissionRequest = new SimplePermissionRequest("pid", "connectionId", "cmRequestId", "conversationId", null);
         SavingPermissionRequest savingPermissionRequest = new SavingPermissionRequest(permissionRequest, repo);
         repo.removeByPermissionId("pid");
@@ -145,7 +145,7 @@ class SavingPermissionRequestTest {
     @Test
     void savingPermissionRequest_receivedPermissionAdministratorResponseUpdatesSave() throws FutureStateException, PastStateException {
         // Given
-        PermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
+        AtPermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
         var permissionRequest = new SimplePermissionRequest("pid", "connectionId", "cmRequestId", "conversationId", null);
         SavingPermissionRequest savingPermissionRequest = new SavingPermissionRequest(permissionRequest, repo);
         repo.removeByPermissionId("pid");
@@ -159,7 +159,7 @@ class SavingPermissionRequestTest {
     @Test
     void savingPermissionRequest_invalidUpdatesSave() throws FutureStateException, PastStateException {
         // Given
-        PermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
+        AtPermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
         var permissionRequest = new SimplePermissionRequest("pid", "connectionId", "cmRequestId", "conversationId", null);
         SavingPermissionRequest savingPermissionRequest = new SavingPermissionRequest(permissionRequest, repo);
         repo.removeByPermissionId("pid");
@@ -173,7 +173,7 @@ class SavingPermissionRequestTest {
     @Test
     void savingPermissionRequest_acceptUpdatesSave() throws FutureStateException, PastStateException {
         // Given
-        PermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
+        AtPermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
         var permissionRequest = new SimplePermissionRequest("pid", "connectionId", "cmRequestId", "conversationId", null);
         SavingPermissionRequest savingPermissionRequest = new SavingPermissionRequest(permissionRequest, repo);
         repo.removeByPermissionId("pid");
@@ -187,7 +187,7 @@ class SavingPermissionRequestTest {
     @Test
     void savingPermissionRequest_rejectedUpdatesSave() throws FutureStateException, PastStateException {
         // Given
-        PermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
+        AtPermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
         var permissionRequest = new SimplePermissionRequest("pid", "connectionId", "cmRequestId", "conversationId", null);
         SavingPermissionRequest savingPermissionRequest = new SavingPermissionRequest(permissionRequest, repo);
         repo.removeByPermissionId("pid");
@@ -201,7 +201,7 @@ class SavingPermissionRequestTest {
     @Test
     void savingPermissionRequest_terminateUpdatesSave() throws FutureStateException, PastStateException {
         // Given
-        PermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
+        AtPermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
         var permissionRequest = new SimplePermissionRequest("pid", "connectionId", "cmRequestId", "conversationId", null);
         SavingPermissionRequest savingPermissionRequest = new SavingPermissionRequest(permissionRequest, repo);
         repo.removeByPermissionId("pid");
