@@ -4,16 +4,16 @@ import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
-import energy.eddie.regionconnector.at.api.PermissionRequestRepository;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 
 /**
  * This class will save a permission request everytime a potential state change has happened.
  */
 public class SavingPermissionRequest implements AtPermissionRequest {
     private final AtPermissionRequest permissionRequest;
-    private final PermissionRequestRepository permissionRequestRepository;
+    private final AtPermissionRequestRepository permissionRequestRepository;
 
-    public SavingPermissionRequest(AtPermissionRequest permissionRequest, PermissionRequestRepository permissionRequestRepository) {
+    public SavingPermissionRequest(AtPermissionRequest permissionRequest, AtPermissionRequestRepository permissionRequestRepository) {
         this.permissionRequest = permissionRequest;
         this.permissionRequestRepository = permissionRequestRepository;
         permissionRequestRepository.save(permissionRequest);
