@@ -22,20 +22,20 @@ class PendingAcknowledgmentPermissionRequestStateTest {
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("conversationId");
         var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, edaAdapter);
-        PendingAcknowledgmentPermissionRequestState state = new PendingAcknowledgmentPermissionRequestState(permissionRequest);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 
         // When
         state.receivedPermissionAdministratorResponse();
 
         // Then
-        assertEquals(SentToPermissionAdministratorPermissionRequestState.class, permissionRequest.state().getClass());
+        assertEquals(AtSentToPermissionAdministratorPermissionRequestState.class, permissionRequest.state().getClass());
     }
 
     @Test
     void validate_throws() {
         // Given
-        PendingAcknowledgmentPermissionRequestState state = new PendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
 
         // When
         // Then
@@ -45,7 +45,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void sendToPermissionAdministrator_throws() {
         // Given
-        PendingAcknowledgmentPermissionRequestState state = new PendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
 
         // When
         // Then
@@ -55,7 +55,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void accept_throws() {
         // Given
-        PendingAcknowledgmentPermissionRequestState state = new PendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
 
         // When
         // Then
@@ -65,7 +65,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void invalid_throws() {
         // Given
-        PendingAcknowledgmentPermissionRequestState state = new PendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
 
         // When
         // Then
@@ -75,7 +75,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void reject_throws() {
         // Given
-        PendingAcknowledgmentPermissionRequestState state = new PendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
 
         // When
         // Then
@@ -85,7 +85,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void terminate_throws() {
         // Given
-        PendingAcknowledgmentPermissionRequestState state = new PendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
 
         // When
         // Then

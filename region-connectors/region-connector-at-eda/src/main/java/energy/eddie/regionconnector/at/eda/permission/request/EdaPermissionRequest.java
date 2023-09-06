@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.at.eda.permission.request;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
-import energy.eddie.regionconnector.at.eda.permission.request.states.CreatedPermissionRequestState;
+import energy.eddie.regionconnector.at.eda.permission.request.states.AtCreatedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 
 import java.util.Objects;
@@ -25,7 +25,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
         this.permissionId = permissionId;
         this.cmRequestId = ccmoRequest.cmRequestId();
         this.conversationId = ccmoRequest.messageId();
-        this.state = new CreatedPermissionRequestState(this, ccmoRequest, edaAdapter);
+        this.state = new AtCreatedPermissionRequestState(this, ccmoRequest, edaAdapter);
     }
 
     @Override

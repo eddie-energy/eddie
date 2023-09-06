@@ -20,14 +20,14 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
-        SentToPermissionAdministratorPermissionRequestState state = new SentToPermissionAdministratorPermissionRequestState(permissionRequest);
+        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 
         // When
         state.accept();
 
         // Then
-        assertEquals(AcceptedPermissionRequestState.class, permissionRequest.state().getClass());
+        assertEquals(AtAcceptedPermissionRequestState.class, permissionRequest.state().getClass());
     }
 
     @Test
@@ -37,14 +37,14 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
-        SentToPermissionAdministratorPermissionRequestState state = new SentToPermissionAdministratorPermissionRequestState(permissionRequest);
+        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 
         // When
         state.invalid();
 
         // Then
-        assertEquals(InvalidPermissionRequestState.class, permissionRequest.state().getClass());
+        assertEquals(AtInvalidPermissionRequestState.class, permissionRequest.state().getClass());
     }
 
     @Test
@@ -54,20 +54,20 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
-        SentToPermissionAdministratorPermissionRequestState state = new SentToPermissionAdministratorPermissionRequestState(permissionRequest);
+        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 
         // When
         state.reject();
 
         // Then
-        assertEquals(RejectedPermissionRequestState.class, permissionRequest.state().getClass());
+        assertEquals(AtRejectedPermissionRequestState.class, permissionRequest.state().getClass());
     }
 
     @Test
     void validate_throws() {
         // Given
-        SentToPermissionAdministratorPermissionRequestState state = new SentToPermissionAdministratorPermissionRequestState(null);
+        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(null);
 
         // When
         // Then
@@ -77,7 +77,7 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
     @Test
     void sendToPermissionAdministrator_throws() {
         // Given
-        SentToPermissionAdministratorPermissionRequestState state = new SentToPermissionAdministratorPermissionRequestState(null);
+        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(null);
 
         // When
         // Then
@@ -87,7 +87,7 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
     @Test
     void receivedPermissionAdministratorResponse_throws() {
         // Given
-        SentToPermissionAdministratorPermissionRequestState state = new SentToPermissionAdministratorPermissionRequestState(null);
+        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(null);
 
         // When
         // Then
@@ -97,7 +97,7 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
     @Test
     void terminate_throws() {
         // Given
-        SentToPermissionAdministratorPermissionRequestState state = new SentToPermissionAdministratorPermissionRequestState(null);
+        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(null);
 
         // When
         // Then
