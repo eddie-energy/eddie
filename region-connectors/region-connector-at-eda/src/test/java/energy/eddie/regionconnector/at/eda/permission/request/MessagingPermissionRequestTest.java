@@ -6,7 +6,7 @@ import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
-import energy.eddie.regionconnector.at.eda.permission.request.states.CreatedPermissionRequestState;
+import energy.eddie.regionconnector.at.eda.permission.request.states.AtCreatedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Sinks;
@@ -23,7 +23,7 @@ class MessagingPermissionRequestTest {
     void messagingPermissionRequest_returnsStateOfWrappedPermissionRequest() {
         // Given
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
-        CreatedPermissionRequestState createdState = new CreatedPermissionRequestState(null, null, null);
+        AtCreatedPermissionRequestState createdState = new AtCreatedPermissionRequestState(null, null, null);
         AtPermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", "rid", "cid", createdState);
         MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
@@ -38,7 +38,7 @@ class MessagingPermissionRequestTest {
     void messagingPermissionRequest_changesStateOfWrappedPermissionRequest() {
         // Given
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
-        CreatedPermissionRequestState createdState = new CreatedPermissionRequestState(null, null, null);
+        AtCreatedPermissionRequestState createdState = new AtCreatedPermissionRequestState(null, null, null);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
         MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);

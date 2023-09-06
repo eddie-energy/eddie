@@ -4,7 +4,7 @@ import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
-import energy.eddie.regionconnector.at.eda.permission.request.states.CreatedPermissionRequestState;
+import energy.eddie.regionconnector.at.eda.permission.request.states.AtCreatedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +19,7 @@ class SavingPermissionRequestTest {
     void savingPermissionRequest_returnsStateOfWrappedPermissionRequest() {
         // Given
         AtPermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
-        CreatedPermissionRequestState createdState = new CreatedPermissionRequestState(null, null, null);
+        AtCreatedPermissionRequestState createdState = new AtCreatedPermissionRequestState(null, null, null);
         var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", "rid", "cid", createdState);
         SavingPermissionRequest savingPermissionRequest = new SavingPermissionRequest(permissionRequest, repo);
 
@@ -34,7 +34,7 @@ class SavingPermissionRequestTest {
     void savingPermissionRequest_changesStateOfWrappedPermissionRequest() {
         // Given
         AtPermissionRequestRepository repo = new InMemoryPermissionRequestRepository();
-        CreatedPermissionRequestState createdState = new CreatedPermissionRequestState(null, null, null);
+        AtCreatedPermissionRequestState createdState = new AtCreatedPermissionRequestState(null, null, null);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
         SavingPermissionRequest savingPermissionRequest = new SavingPermissionRequest(permissionRequest, repo);

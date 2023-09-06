@@ -7,8 +7,8 @@ import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.InMemoryPermissionRequestRepository;
-import energy.eddie.regionconnector.at.eda.permission.request.states.PendingAcknowledgmentPermissionRequestState;
-import energy.eddie.regionconnector.at.eda.permission.request.states.SentToPermissionAdministratorPermissionRequestState;
+import energy.eddie.regionconnector.at.eda.permission.request.states.AtPendingAcknowledgmentPermissionRequestState;
+import energy.eddie.regionconnector.at.eda.permission.request.states.AtSentToPermissionAdministratorPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.xml.builders.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
@@ -202,7 +202,7 @@ class EdaRegionConnectorTest {
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
-        request.changeState(new SentToPermissionAdministratorPermissionRequestState(request));
+        request.changeState(new AtSentToPermissionAdministratorPermissionRequestState(request));
 
         var repo = new InMemoryPermissionRequestRepository();
         repo.save(request);
@@ -242,7 +242,7 @@ class EdaRegionConnectorTest {
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
-        request.changeState(new SentToPermissionAdministratorPermissionRequestState(request));
+        request.changeState(new AtSentToPermissionAdministratorPermissionRequestState(request));
 
         var repo = new InMemoryPermissionRequestRepository();
         repo.save(request);
@@ -282,7 +282,7 @@ class EdaRegionConnectorTest {
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
-        request.changeState(new PendingAcknowledgmentPermissionRequestState(request));
+        request.changeState(new AtPendingAcknowledgmentPermissionRequestState(request));
 
         var repo = new InMemoryPermissionRequestRepository();
         repo.save(request);
@@ -322,7 +322,7 @@ class EdaRegionConnectorTest {
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
-        request.changeState(new PendingAcknowledgmentPermissionRequestState(request));
+        request.changeState(new AtPendingAcknowledgmentPermissionRequestState(request));
 
         var repo = new InMemoryPermissionRequestRepository();
         repo.save(request);
