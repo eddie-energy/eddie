@@ -15,6 +15,7 @@ module energy.eddie.regionconnector.at {
     requires io.javalin;
     requires kotlin.stdlib;
     requires eclipse.microprofile.config.api;
+    requires energy.eddie.region.connector.shared;
 
     exports energy.eddie.regionconnector.at.eda.requests;
     exports energy.eddie.regionconnector.at.eda.requests.restricted.enums;
