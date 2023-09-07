@@ -22,4 +22,7 @@ findProject(":examples:example-app")?.name = "example-app"
 include("framework")
 include("outbound-kafka")
 
+include("region-connectors:shared")
+findProject(":region-connectors:shared")?.name = "shared"
+
 findProject("framework")?.name = "framework"
