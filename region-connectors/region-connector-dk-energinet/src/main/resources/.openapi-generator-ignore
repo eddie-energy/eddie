@@ -1,0 +1,11 @@
+/**
+!**/docs/**
+!**/api/**
+!**/model/**
+!**/invoker/ApiClient.java
+!**/invoker/ApiException.java
+!**/invoker/ApiResponse.java
+!**/invoker/Configuration.java
+!**/invoker/JSON.java
+!**/invoker/Pair.java
+!**/invoker/RFC3339DateFormat.java

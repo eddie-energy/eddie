@@ -7,6 +7,9 @@ findProject("api")?.name = "api"
 include("region-connectors:region-connector-at-eda")
 findProject(":region-connectors:region-connector-at-eda")?.name = "region-connector-at-eda"
 
+include("region-connectors:region-connector-dk-energinet")
+findProject(":region-connectors:region-connector-dk-energinet")?.name = "region-connector-dk-energinet"
+
 include("region-connectors:region-connector-fr-enedis")
 findProject(":region-connectors:region-connector-fr-enedis")?.name = "region-connector-fr-enedis"
 
