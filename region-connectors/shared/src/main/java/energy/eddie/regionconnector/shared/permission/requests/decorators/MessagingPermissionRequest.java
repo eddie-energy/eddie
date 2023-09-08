@@ -8,12 +8,12 @@ import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import reactor.core.publisher.Sinks;
 
-public abstract class MessagingPermissionRequest<T extends PermissionRequest> implements PermissionRequest {
+public class MessagingPermissionRequest<T extends PermissionRequest> implements PermissionRequest {
 
     protected final T permissionRequest;
     private final Sinks.Many<ConnectionStatusMessage> permissionStateMessages;
 
-    protected MessagingPermissionRequest(T permissionRequest, Sinks.Many<ConnectionStatusMessage> permissionStateMessages) {
+    public MessagingPermissionRequest(T permissionRequest, Sinks.Many<ConnectionStatusMessage> permissionStateMessages) {
         this.permissionRequest = permissionRequest;
         this.permissionStateMessages = permissionStateMessages;
         emitState(PermissionProcessStatus.CREATED);

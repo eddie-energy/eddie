@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.at.eda.permission.request;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
@@ -20,12 +21,12 @@ public class PermissionRequestFactory {
     }
 
     public AtPermissionRequest create(String connectionId, CCMORequest ccmoRequest) {
-        return new MessagingPermissionRequest(
-                new SavingPermissionRequest(
-                        new EdaPermissionRequest(connectionId, ccmoRequest, edaAdapter),
-                        permissionRequestRepository
-                ),
-                permissionStateMessages
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest(connectionId, ccmoRequest, edaAdapter);
+        PermissionRequest savingPermissionRequest = new energy.eddie.regionconnector.shared.permission.requests.decorators.SavingPermissionRequest<>(permissionRequest, permissionRequestRepository);
+        PermissionRequest messagingPermissionRequest = new energy.eddie.regionconnector.shared.permission.requests.decorators.MessagingPermissionRequest<>(permissionRequest, permissionStateMessages);
+        return new EdaPermissionRequestAdapter(
+                new EdaPermissionRequestAdapter(permissionRequest, messagingPermissionRequest),
+                savingPermissionRequest
         );
     }
 }
