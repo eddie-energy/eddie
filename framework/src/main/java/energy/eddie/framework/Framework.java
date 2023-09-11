@@ -11,6 +11,9 @@ import energy.eddie.framework.web.JavalinApp;
 import energy.eddie.framework.web.JavalinPathHandler;
 import energy.eddie.framework.web.PermissionFacade;
 import energy.eddie.outbound.kafka.KafkaConnector;
+import energy.eddie.regionconnector.at.eda.EdaRegionConnectorFactory;
+import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorFactory;
+import energy.eddie.regionconnector.simulation.SimulationRegionConnectorFactory;
 import io.smallrye.config.PropertiesConfigSource;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
@@ -23,10 +26,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
-import java.util.ServiceLoader;
 
-public class Framework implements Runnable {
+public class Framework {
     private static final Logger LOGGER = LoggerFactory.getLogger(Framework.class);
 
     private final JdbcAdapter jdbcAdapter;
@@ -50,11 +53,10 @@ public class Framework implements Runnable {
 
     public static void main(String[] args) {
         var injector = Guice.createInjector(new Module());
-        injector.getInstance(Framework.class).run();
+        injector.getInstance(Framework.class).run(args);
     }
 
-    @Override
-    public void run() {
+    public void run(String[] args) {
         LOGGER.info("Starting up EDDIE framework");
         jdbcAdapter.init();
         var connectionStatusMessageStream = JdkFlowAdapter.publisherToFlowPublisher(permissionService.getConnectionStatusMessageStream());
@@ -64,6 +66,7 @@ public class Framework implements Runnable {
         var consumptionRecordMessageStream = JdkFlowAdapter.publisherToFlowPublisher(consumptionRecordService.getConsumptionRecordStream());
         jdbcAdapter.setConsumptionRecordStream(consumptionRecordMessageStream);
         kafkaConnector.setConsumptionRecordStream(consumptionRecordMessageStream);
+        FrameworkSpringConfig.main(args);
         javalinApp.init();
     }
 
@@ -86,13 +89,16 @@ public class Framework implements Runnable {
         }
 
         private Collection<RegionConnector> getAllConnectors(Config config) {
-            var allConnectors = ServiceLoader.load(RegionConnectorFactory.class).stream()
-                    .map(provider -> {
+            List<RegionConnectorFactory> regionConnectorFactories = List.of(
+                    new SimulationRegionConnectorFactory(),
+                    new EnedisRegionConnectorFactory(),
+                    new EdaRegionConnectorFactory());
+            var allConnectors = regionConnectorFactories.stream()
+                    .map(regionConnectorFactory -> {
                         try {
-                            // instantiate all connectors and ignore those that can't be constructed
-                            return Optional.of(provider.get().create(config));
+                            return Optional.of(regionConnectorFactory.create(config));
                         } catch (Exception e) {
-                            LOGGER.error("Could not load/create RegionConnector '{}'", provider.type().getName(), e);
+                            LOGGER.error("Could not load/create RegionConnector '{}'", regionConnectorFactory.getClass().getName(), e);
                             return Optional.<RegionConnector>empty();
                         }
                     })

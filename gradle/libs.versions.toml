@@ -1,5 +1,7 @@
 # See: https://docs.gradle.org/current/userguide/platforms.html#sub:conventional-dependencies-toml
 [versions]
+spring-boot = "3.1.2"
+spring-dependency-management = "1.1.2"
 junit = "5.9.2"
 mockito-junit = "5.4.0"
 errorprone = "3.0.1"
@@ -91,6 +93,9 @@ dotenv = { module = "io.github.cdimascio:dotenv-java", version.ref = "dotenv-ver
 # microprofile
 microprofile-config = { module = "org.eclipse.microprofile.config:microprofile-config-api", version.ref = "microprofile-config" }
 
+# Spring Boot
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+
 [bundles]
 
 [plugins]
@@ -99,3 +104,5 @@ sonarqube = { id = "org.sonarqube", version.ref = "sonar" }
 jsonschema2pojo = { id = "org.jsonschema2pojo", version.ref = "jsonschema2pojo" }
 # used by example-app
 jte-gradle = { id = "gg.jte.gradle", version.ref = "jte" }
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
