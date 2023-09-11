@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
-import energy.eddie.regionconnector.at.api.FutureStateException;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.InvalidDsoIdException;
@@ -20,14 +20,14 @@ class CreatedPermissionRequestStateTest {
         // Given
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.toCMRequest()).thenReturn(mock(CMRequest.class));
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
-        CreatedPermissionRequestState permissionRequestState = new CreatedPermissionRequestState(permissionRequest, ccmoRequest, null);
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        AtCreatedPermissionRequestState permissionRequestState = new AtCreatedPermissionRequestState(permissionRequest, ccmoRequest, null);
 
         // When
         permissionRequestState.validate();
 
         // Then
-        assertEquals(ValidatedPermissionRequestState.class, permissionRequest.state().getClass());
+        assertEquals(AtValidatedPermissionRequestState.class, permissionRequest.state().getClass());
     }
 
     @Test
@@ -35,21 +35,21 @@ class CreatedPermissionRequestStateTest {
         // Given
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.toCMRequest()).thenThrow(new InvalidDsoIdException("msg"));
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
-        CreatedPermissionRequestState permissionRequestState = new CreatedPermissionRequestState(permissionRequest, ccmoRequest, null);
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        AtCreatedPermissionRequestState permissionRequestState = new AtCreatedPermissionRequestState(permissionRequest, ccmoRequest, null);
 
         // When
         permissionRequestState.validate();
 
         // Then
-        assertEquals(MalformedPermissionRequestState.class, permissionRequest.state().getClass());
+        assertEquals(AtMalformedPermissionRequestState.class, permissionRequest.state().getClass());
     }
 
 
     @Test
     void sendToPermissionAdministrator_throws() {
         // Given
-        CreatedPermissionRequestState state = new CreatedPermissionRequestState(null, null, null);
+        AtCreatedPermissionRequestState state = new AtCreatedPermissionRequestState(null, null, null);
 
         // When
         // Then
@@ -59,7 +59,7 @@ class CreatedPermissionRequestStateTest {
     @Test
     void receivedPermissionAdministratorResponse_throws() {
         // Given
-        CreatedPermissionRequestState state = new CreatedPermissionRequestState(null, null, null);
+        AtCreatedPermissionRequestState state = new AtCreatedPermissionRequestState(null, null, null);
 
         // When
         // Then
@@ -69,7 +69,7 @@ class CreatedPermissionRequestStateTest {
     @Test
     void accept_throws() {
         // Given
-        CreatedPermissionRequestState state = new CreatedPermissionRequestState(null, null, null);
+        AtCreatedPermissionRequestState state = new AtCreatedPermissionRequestState(null, null, null);
 
         // When
         // Then
@@ -79,7 +79,7 @@ class CreatedPermissionRequestStateTest {
     @Test
     void invalid_throws() {
         // Given
-        CreatedPermissionRequestState state = new CreatedPermissionRequestState(null, null, null);
+        AtCreatedPermissionRequestState state = new AtCreatedPermissionRequestState(null, null, null);
 
         // When
         // Then
@@ -89,7 +89,7 @@ class CreatedPermissionRequestStateTest {
     @Test
     void reject_throws() {
         // Given
-        CreatedPermissionRequestState state = new CreatedPermissionRequestState(null, null, null);
+        AtCreatedPermissionRequestState state = new AtCreatedPermissionRequestState(null, null, null);
 
         // When
         // Then
@@ -99,7 +99,7 @@ class CreatedPermissionRequestStateTest {
     @Test
     void terminate_throws() {
         // Given
-        CreatedPermissionRequestState state = new CreatedPermissionRequestState(null, null, null);
+        AtCreatedPermissionRequestState state = new AtCreatedPermissionRequestState(null, null, null);
 
         // When
         // Then

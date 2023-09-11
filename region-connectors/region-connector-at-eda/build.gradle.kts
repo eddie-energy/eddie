@@ -22,6 +22,7 @@ val jaxb: Configuration by configurations.creating
 
 dependencies {
     implementation(project(":api"))
+    implementation(project(":region-connectors:shared"))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
 

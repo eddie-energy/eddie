@@ -1,8 +1,7 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
-import energy.eddie.regionconnector.at.api.FutureStateException;
-import energy.eddie.regionconnector.at.api.PastStateException;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -22,21 +21,21 @@ class PendingAcknowledgmentPermissionRequestStateTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("conversationId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, edaAdapter);
-        PendingAcknowledgmentPermissionRequestState state = new PendingAcknowledgmentPermissionRequestState(permissionRequest);
+        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, edaAdapter);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 
         // When
         state.receivedPermissionAdministratorResponse();
 
         // Then
-        assertEquals(SentToPermissionAdministratorPermissionRequestState.class, permissionRequest.state().getClass());
+        assertEquals(AtSentToPermissionAdministratorPermissionRequestState.class, permissionRequest.state().getClass());
     }
 
     @Test
     void validate_throws() {
         // Given
-        PendingAcknowledgmentPermissionRequestState state = new PendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
 
         // When
         // Then
@@ -46,7 +45,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void sendToPermissionAdministrator_throws() {
         // Given
-        PendingAcknowledgmentPermissionRequestState state = new PendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
 
         // When
         // Then
@@ -56,7 +55,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void accept_throws() {
         // Given
-        PendingAcknowledgmentPermissionRequestState state = new PendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
 
         // When
         // Then
@@ -66,7 +65,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void invalid_throws() {
         // Given
-        PendingAcknowledgmentPermissionRequestState state = new PendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
 
         // When
         // Then
@@ -76,7 +75,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void reject_throws() {
         // Given
-        PendingAcknowledgmentPermissionRequestState state = new PendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
 
         // When
         // Then
@@ -86,7 +85,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void terminate_throws() {
         // Given
-        PendingAcknowledgmentPermissionRequestState state = new PendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
 
         // When
         // Then

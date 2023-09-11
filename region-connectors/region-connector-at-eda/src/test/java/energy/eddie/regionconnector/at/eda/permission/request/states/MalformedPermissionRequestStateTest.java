@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
-import energy.eddie.regionconnector.at.api.PastStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -11,7 +11,7 @@ class MalformedPermissionRequestStateTest {
     @Test
     void malformedStateToString_containsCause() {
         // Given
-        var malformed = new MalformedPermissionRequestState(null, new Exception());
+        var malformed = new AtMalformedPermissionRequestState(null, new Exception());
 
         // When
         var res = malformed.toString();
@@ -23,7 +23,7 @@ class MalformedPermissionRequestStateTest {
     @Test
     void validate_throws() {
         // Given
-        MalformedPermissionRequestState state = new MalformedPermissionRequestState(null, null);
+        AtMalformedPermissionRequestState state = new AtMalformedPermissionRequestState(null, null);
 
         // When
         // Then
@@ -33,7 +33,7 @@ class MalformedPermissionRequestStateTest {
     @Test
     void sendToPermissionAdministrator_throws() {
         // Given
-        MalformedPermissionRequestState state = new MalformedPermissionRequestState(null, null);
+        AtMalformedPermissionRequestState state = new AtMalformedPermissionRequestState(null, null);
 
         // When
         // Then
@@ -43,7 +43,7 @@ class MalformedPermissionRequestStateTest {
     @Test
     void receivedPermissionAdministratorResponse_throws() {
         // Given
-        MalformedPermissionRequestState state = new MalformedPermissionRequestState(null, null);
+        AtMalformedPermissionRequestState state = new AtMalformedPermissionRequestState(null, null);
 
         // When
         // Then
@@ -53,7 +53,7 @@ class MalformedPermissionRequestStateTest {
     @Test
     void accept_throws() {
         // Given
-        MalformedPermissionRequestState state = new MalformedPermissionRequestState(null, null);
+        AtMalformedPermissionRequestState state = new AtMalformedPermissionRequestState(null, null);
 
         // When
         // Then
@@ -63,7 +63,7 @@ class MalformedPermissionRequestStateTest {
     @Test
     void invalid_throws() {
         // Given
-        MalformedPermissionRequestState state = new MalformedPermissionRequestState(null, null);
+        AtMalformedPermissionRequestState state = new AtMalformedPermissionRequestState(null, null);
 
         // When
         // Then
@@ -73,7 +73,7 @@ class MalformedPermissionRequestStateTest {
     @Test
     void reject_throws() {
         // Given
-        MalformedPermissionRequestState state = new MalformedPermissionRequestState(null, null);
+        AtMalformedPermissionRequestState state = new AtMalformedPermissionRequestState(null, null);
 
         // When
         // Then
@@ -83,7 +83,7 @@ class MalformedPermissionRequestStateTest {
     @Test
     void terminate_throws() {
         // Given
-        MalformedPermissionRequestState state = new MalformedPermissionRequestState(null, null);
+        AtMalformedPermissionRequestState state = new AtMalformedPermissionRequestState(null, null);
 
         // When
         // Then

@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
-import energy.eddie.regionconnector.at.api.PastStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,7 +10,7 @@ class UnableToSendPermissionRequestStateTest {
     @Test
     void unableToSendPermissionRequestStateToString_containsCause() {
         // Given
-        var malformed = new UnableToSendPermissionRequestState(null, new Exception());
+        var malformed = new AtUnableToSendPermissionRequestState(null, new Exception());
 
         // When
         var res = malformed.toString();
@@ -22,7 +22,7 @@ class UnableToSendPermissionRequestStateTest {
     @Test
     void validate_throws() {
         // Given
-        UnableToSendPermissionRequestState state = new UnableToSendPermissionRequestState(null, null);
+        AtUnableToSendPermissionRequestState state = new AtUnableToSendPermissionRequestState(null, null);
 
         // When
         // Then
@@ -32,7 +32,7 @@ class UnableToSendPermissionRequestStateTest {
     @Test
     void sendToPermissionAdministrator_throws() {
         // Given
-        UnableToSendPermissionRequestState state = new UnableToSendPermissionRequestState(null, null);
+        AtUnableToSendPermissionRequestState state = new AtUnableToSendPermissionRequestState(null, null);
 
         // When
         // Then
@@ -42,7 +42,7 @@ class UnableToSendPermissionRequestStateTest {
     @Test
     void receivedPermissionAdministratorResponse_throws() {
         // Given
-        UnableToSendPermissionRequestState state = new UnableToSendPermissionRequestState(null, null);
+        AtUnableToSendPermissionRequestState state = new AtUnableToSendPermissionRequestState(null, null);
 
         // When
         // Then
@@ -52,7 +52,7 @@ class UnableToSendPermissionRequestStateTest {
     @Test
     void accept_throws() {
         // Given
-        UnableToSendPermissionRequestState state = new UnableToSendPermissionRequestState(null, null);
+        AtUnableToSendPermissionRequestState state = new AtUnableToSendPermissionRequestState(null, null);
 
         // When
         // Then
@@ -62,7 +62,7 @@ class UnableToSendPermissionRequestStateTest {
     @Test
     void invalid_throws() {
         // Given
-        UnableToSendPermissionRequestState state = new UnableToSendPermissionRequestState(null, null);
+        AtUnableToSendPermissionRequestState state = new AtUnableToSendPermissionRequestState(null, null);
 
         // When
         // Then
@@ -72,7 +72,7 @@ class UnableToSendPermissionRequestStateTest {
     @Test
     void reject_throws() {
         // Given
-        UnableToSendPermissionRequestState state = new UnableToSendPermissionRequestState(null, null);
+        AtUnableToSendPermissionRequestState state = new AtUnableToSendPermissionRequestState(null, null);
 
         // When
         // Then
@@ -82,7 +82,7 @@ class UnableToSendPermissionRequestStateTest {
     @Test
     void terminate_throws() {
         // Given
-        UnableToSendPermissionRequestState state = new UnableToSendPermissionRequestState(null, null);
+        AtUnableToSendPermissionRequestState state = new AtUnableToSendPermissionRequestState(null, null);
 
         // When
         // Then

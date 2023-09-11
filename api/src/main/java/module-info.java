@@ -11,6 +11,8 @@
  */
 module energy.eddie.api {
     exports energy.eddie.api.v0;
+    exports energy.eddie.api.v0.process.model;
+    exports energy.eddie.api.v0.process.model.states;
 
     requires com.fasterxml.jackson.annotation;
     requires java.compiler;

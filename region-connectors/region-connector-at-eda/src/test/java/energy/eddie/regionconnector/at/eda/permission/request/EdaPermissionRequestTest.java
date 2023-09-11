@@ -1,8 +1,9 @@
 package energy.eddie.regionconnector.at.eda.permission.request;
 
-import energy.eddie.regionconnector.at.api.FutureStateException;
-import energy.eddie.regionconnector.at.api.PastStateException;
-import energy.eddie.regionconnector.at.api.PermissionRequest;
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
+import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.permission.request.states.*;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -24,13 +25,13 @@ class EdaPermissionRequestTest {
         var state = permissionRequest.state();
 
         // Then
-        assertEquals(CreatedPermissionRequestState.class, state.getClass());
+        assertEquals(AtCreatedPermissionRequestState.class, state.getClass());
     }
 
     @Test
     void edaPermissionRequest_changesState() {
         // Given
-        CreatedPermissionRequestState createdState = new CreatedPermissionRequestState(null, null, null);
+        AtCreatedPermissionRequestState createdState = new AtCreatedPermissionRequestState(null, null, null);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         PermissionRequest permissionRequest = new EdaPermissionRequest("cid", ccmoRequest, null);
 
@@ -47,7 +48,7 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
 
         // When
         String cmRequestId = permissionRequest.cmRequestId();
@@ -62,7 +63,7 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
 
         // When
         String conversationId = permissionRequest.conversationId();
@@ -180,7 +181,7 @@ class EdaPermissionRequestTest {
         when(ccmoRequest.messageId()).thenReturn("messageId");
         PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid1", ccmoRequest, null);
         PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid2", ccmoRequest, null);
-        permissionRequest2.changeState(new InvalidPermissionRequestState(permissionRequest2));
+        permissionRequest2.changeState(new AtInvalidPermissionRequestState(permissionRequest2));
 
         // When
         boolean res = permissionRequest1.equals(permissionRequest2);
@@ -235,7 +236,7 @@ class EdaPermissionRequestTest {
         permissionRequest.validate();
 
         // Then
-        assertEquals(ValidatedPermissionRequestState.class, permissionRequest.state().getClass());
+        assertEquals(AtValidatedPermissionRequestState.class, permissionRequest.state().getClass());
     }
 
     @Test
@@ -253,7 +254,7 @@ class EdaPermissionRequestTest {
 
 
         // Then
-        assertEquals(PendingAcknowledgmentPermissionRequestState.class, permissionRequest.state().getClass());
+        assertEquals(AtPendingAcknowledgmentPermissionRequestState.class, permissionRequest.state().getClass());
     }
 
     @Test
@@ -271,7 +272,7 @@ class EdaPermissionRequestTest {
         permissionRequest.receivedPermissionAdministratorResponse();
 
         // Then
-        assertEquals(SentToPermissionAdministratorPermissionRequestState.class, permissionRequest.state().getClass());
+        assertEquals(AtSentToPermissionAdministratorPermissionRequestState.class, permissionRequest.state().getClass());
     }
 
     @Test
@@ -290,7 +291,7 @@ class EdaPermissionRequestTest {
         permissionRequest.accept();
 
         // Then
-        assertEquals(AcceptedPermissionRequestState.class, permissionRequest.state().getClass());
+        assertEquals(AtAcceptedPermissionRequestState.class, permissionRequest.state().getClass());
     }
 
     @Test
@@ -309,7 +310,7 @@ class EdaPermissionRequestTest {
         permissionRequest.invalid();
 
         // Then
-        assertEquals(InvalidPermissionRequestState.class, permissionRequest.state().getClass());
+        assertEquals(AtInvalidPermissionRequestState.class, permissionRequest.state().getClass());
     }
 
     @Test
@@ -328,7 +329,7 @@ class EdaPermissionRequestTest {
         permissionRequest.rejected();
 
         // Then
-        assertEquals(RejectedPermissionRequestState.class, permissionRequest.state().getClass());
+        assertEquals(AtRejectedPermissionRequestState.class, permissionRequest.state().getClass());
     }
 
     @Test
@@ -338,8 +339,8 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, edaAdapter);
-        permissionRequest.changeState(new AcceptedPermissionRequestState(permissionRequest));
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, edaAdapter);
+        permissionRequest.changeState(new AtAcceptedPermissionRequestState(permissionRequest));
 
         // When
         // Then

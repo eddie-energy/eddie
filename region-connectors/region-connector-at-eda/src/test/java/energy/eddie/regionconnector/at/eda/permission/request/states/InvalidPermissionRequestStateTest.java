@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
-import energy.eddie.regionconnector.at.api.PastStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -9,7 +9,7 @@ class InvalidPermissionRequestStateTest {
     @Test
     void validate_throws() {
         // Given
-        InvalidPermissionRequestState state = new InvalidPermissionRequestState(null);
+        AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
 
         // When
         // Then
@@ -19,7 +19,7 @@ class InvalidPermissionRequestStateTest {
     @Test
     void sendToPermissionAdministrator_throws() {
         // Given
-        InvalidPermissionRequestState state = new InvalidPermissionRequestState(null);
+        AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
 
         // When
         // Then
@@ -29,7 +29,7 @@ class InvalidPermissionRequestStateTest {
     @Test
     void receivedPermissionAdministratorResponse_throws() {
         // Given
-        InvalidPermissionRequestState state = new InvalidPermissionRequestState(null);
+        AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
 
         // When
         // Then
@@ -39,7 +39,7 @@ class InvalidPermissionRequestStateTest {
     @Test
     void accept_throws() {
         // Given
-        InvalidPermissionRequestState state = new InvalidPermissionRequestState(null);
+        AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
 
         // When
         // Then
@@ -49,7 +49,7 @@ class InvalidPermissionRequestStateTest {
     @Test
     void invalid_throws() {
         // Given
-        InvalidPermissionRequestState state = new InvalidPermissionRequestState(null);
+        AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
 
         // When
         // Then
@@ -59,7 +59,7 @@ class InvalidPermissionRequestStateTest {
     @Test
     void reject_throws() {
         // Given
-        InvalidPermissionRequestState state = new InvalidPermissionRequestState(null);
+        AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
 
         // When
         // Then
@@ -69,7 +69,7 @@ class InvalidPermissionRequestStateTest {
     @Test
     void terminate_throws() {
         // Given
-        InvalidPermissionRequestState state = new InvalidPermissionRequestState(null);
+        AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
 
         // When
         // Then
