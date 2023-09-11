@@ -10,7 +10,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -18,7 +17,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ExpirationTimeAfterStartTimeValidatorTest {
+class ExpirationTimeAfterStartTimePermissionValidatorTest {
     private ValidatorFactory validatorFactory;
     private Validator validator;
     private Instant start;
@@ -58,40 +57,28 @@ class ExpirationTimeAfterStartTimeValidatorTest {
     @Test
     void givenExpirationTimeBeforeStartTime_validation_willFail() {
         end = start.minusSeconds(1000);
-        var permission = new Permission(name, start, end, grant, connectionId, codes, streamingConfig);
+        var dto = new Permission(name, start, end, grant, connectionId, codes, streamingConfig);
 
-        var violations = validator.validate(permission);
+        var violations = validator.validate(dto);
         assertEquals(1, violations.size());
         var first = violations.iterator().next();
         assertEquals("expirationTime has to be after startTime.", first.getMessage());
     }
 
     @Test
-    void givenNull_validation_willFail() throws NoSuchFieldException, IllegalAccessException {
-        var permission = new Permission(name, start, end, grant, connectionId, codes, streamingConfig);
+    void givenNull_validation_willFail() {
+        var dto = new Permission(name, null, end, grant, connectionId, codes, streamingConfig);
 
-        // use reflection to set field because constructor doesn't allow null values
-        Field startTime = permission.getClass()
-                .getDeclaredField("startTime");
-        startTime.setAccessible(true);
-        startTime.set(permission, null);
-
-
-        var violations = validator.validate(permission);
+        var violations = validator.validate(dto);
         assertEquals(2, violations.size());
         List<String> list = violations.stream().map(ConstraintViolation::getMessage).toList();
         assertThat(list).hasSameElementsAs(List.of("startTime and expirationTime mustn't be null.",
                 "startTime mustn't be null."));
 
 
-        permission = new Permission(name, start, end, grant, connectionId, codes, streamingConfig);
+        dto = new Permission(name, start, null, grant, connectionId, codes, streamingConfig);
 
-        Field expirationTime = permission.getClass()
-                .getDeclaredField("expirationTime");
-        expirationTime.setAccessible(true);
-        expirationTime.set(permission, null);
-
-        violations = validator.validate(permission);
+        violations = validator.validate(dto);
         assertEquals(2, violations.size());
         list = violations.stream().map(ConstraintViolation::getMessage).toList();
         assertThat(list).hasSameElementsAs(List.of("startTime and expirationTime mustn't be null.",
@@ -100,9 +87,9 @@ class ExpirationTimeAfterStartTimeValidatorTest {
 
     @Test
     void givenValidInput_validation_passes() {
-        var permission = new Permission(name, start, end, grant, connectionId, codes, streamingConfig);
+        var dto = new Permission(name, start, end, grant, connectionId, codes, streamingConfig);
 
-        var violations = validator.validate(permission);
+        var violations = validator.validate(dto);
         assertEquals(0, violations.size());
     }
 }

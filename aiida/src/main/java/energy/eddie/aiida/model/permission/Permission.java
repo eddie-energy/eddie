@@ -17,13 +17,13 @@ import static java.util.Objects.requireNonNull;
 
 @Entity
 @Table(name = "permission")
-@ExpirationTimeAfterStartTime
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@ExpirationTimeAfterStartTime
 public class Permission {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Nullable
     @Column(nullable = false, name = "permission_id")
+    @Nullable
     @JsonProperty
     private String permissionId;
     @Enumerated(EnumType.STRING)
@@ -31,37 +31,38 @@ public class Permission {
     @JsonProperty
     private PermissionStatus status;
     @Column(nullable = false)
-    @NotBlank(message = "serviceName mustn't be null or blank.")
     @JsonProperty(required = true)
+    @NotBlank(message = "serviceName mustn't be null or blank.")
     private String serviceName;
     @Column(nullable = false)
-    @NotNull(message = "startTime mustn't be null.")
     @JsonProperty(required = true)
+    @NotNull(message = "startTime mustn't be null.")
     private Instant startTime;
     @Column(nullable = false)
-    @NotNull(message = "expirationTime mustn't be null.")
     @JsonProperty(required = true)
+    @NotNull(message = "expirationTime mustn't be null.")
     private Instant expirationTime;
     @Column(nullable = false)
-    @NotNull(message = "grantTime mustn't be null.")
     @JsonProperty(required = true)
+    @NotNull(message = "grantTime mustn't be null.")
     private Instant grantTime;
-    @Nullable
     @JsonProperty
+    @Nullable
     private Instant terminateTime = null;
     @Column(nullable = false)
-    @NotBlank(message = "connectionId mustn't be null or blank.")
     @JsonProperty(required = true)
+    @NotBlank(message = "connectionId mustn't be null or blank.")
     private String connectionId;
     @Column(nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
-    @NotEmpty(message = "At least one OBIS code needs to be requested.")
     @JsonProperty(required = true)
+    @NotEmpty(message = "At least one OBIS code needs to be requested.")
     private Set<String> requestedCodes;
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "kafka_streaming_config_id", referencedColumnName = "id")
-    @Valid  // if Permission is validated, also validate kafkaStreamingConfig
     @JsonProperty(required = true)
+    @Valid
+    @NotNull(message = "kafkaStreamingConfig mustn't be null.")
     private KafkaStreamingConfig kafkaStreamingConfig;
 
 
@@ -81,13 +82,13 @@ public class Permission {
      * @param kafkaStreamingConfig StreamingInfo object containing configuration how data shall be shared.
      */
     public Permission(String serviceName, Instant startTime, Instant expirationTime, Instant grantTime, String connectionId, Set<String> requestedCodes, KafkaStreamingConfig kafkaStreamingConfig) {
-        this.serviceName = requireNonNull(serviceName);
-        this.startTime = requireNonNull(startTime);
-        this.expirationTime = requireNonNull(expirationTime);
-        this.grantTime = requireNonNull(grantTime);
-        this.connectionId = requireNonNull(connectionId);
-        this.requestedCodes = requireNonNull(requestedCodes);
-        this.kafkaStreamingConfig = requireNonNull(kafkaStreamingConfig);
+        this.serviceName = serviceName;
+        this.startTime = startTime;
+        this.expirationTime = expirationTime;
+        this.grantTime = grantTime;
+        this.connectionId = connectionId;
+        this.requestedCodes = requestedCodes;
+        this.kafkaStreamingConfig = kafkaStreamingConfig;
 
         this.status = PermissionStatus.ACCEPTED;
     }

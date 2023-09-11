@@ -1,19 +1,15 @@
 package energy.eddie.aiida.constraints;
 
-import energy.eddie.aiida.model.permission.Permission;
+import energy.eddie.aiida.dto.PermissionDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 import java.time.Instant;
 
-public class ExpirationTimeAfterStartTimeValidator implements ConstraintValidator<ExpirationTimeAfterStartTime, Permission> {
-    @Override
-    public boolean isValid(Permission permission, ConstraintValidatorContext context) {
-        Instant exp = permission.expirationTime();
-        Instant start = permission.startTime();
-
+public class ExpirationTimeAfterStartTimePermissionDtoValidator implements ConstraintValidator<ExpirationTimeAfterStartTime, PermissionDto> {
+    public static boolean validate(Instant start, Instant expiration, ConstraintValidatorContext context) {
         // null check is required, because it's not guaranteed, that @NotNull annotation is validated before this one
-        if (exp == null || start == null) {
+        if (expiration == null || start == null) {
             // disable default error message and set a custom one
             context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate("startTime and expirationTime mustn't be null.")
@@ -21,6 +17,11 @@ public class ExpirationTimeAfterStartTimeValidator implements ConstraintValidato
             return false;
         }
 
-        return exp.isAfter(start);
+        return expiration.isAfter(start);
+    }
+
+    @Override
+    public boolean isValid(PermissionDto dto, ConstraintValidatorContext context) {
+        return validate(dto.startTime(), dto.expirationTime(), context);
     }
 }

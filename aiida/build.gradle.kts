@@ -36,6 +36,9 @@ dependencies {
     errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
 
     testImplementation("org.testcontainers:postgresql:1.19.0")
+
+    // catches invalid hibernate validation annotations, e.g. a String annotated with @Past
+    annotationProcessor("org.hibernate.validator:hibernate-validator-annotation-processor:8.0.1.Final")
 }
 
 tasks.withType<Test> {
