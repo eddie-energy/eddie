@@ -111,6 +111,7 @@ tasks.register("run-framework", JavaExec::class) {
     environment["JDBC_URL"] = "jdbc:h2:tcp://localhost/./examples/example-app"
     environment["PUBLIC_CONTEXT_PATH"] = ""
     environment["FRAMEWORK_PORT"] = 8080
+    environment["IMPORT_CONFIG_FILE"] = "file:./framework/src/test/resources/data-needs.yml"
 }
 
 tasks.withType<JavaCompile>().configureEach {
