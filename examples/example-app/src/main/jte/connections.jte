@@ -32,6 +32,7 @@ content = @`
         </tbody>
     </table>
     <span>add data subscription:</span>
-    <eddie-connect-button connectionid="${nextConnectionId}"></eddie-connect-button>
+    <eddie-connect-button connectionid="${nextConnectionId}"
+                          data-need-id="HISTORICAL_VALIDATED_3_MONTHS"></eddie-connect-button>
 `
 )

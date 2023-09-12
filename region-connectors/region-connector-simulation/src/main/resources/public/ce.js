@@ -1,35 +1,103 @@
-import {css, html, LitElement} from "https://esm.sh/lit";
+import { css, html, LitElement } from "https://esm.sh/lit";
 
 class SimulationConnectorButtonCe extends LitElement {
-
-    static properties = {connectionid: {}};
-    static styles = css``;
-
-    constructor() {
-        super();
+  static properties = {
+    connectionid: {},
+    allowDataNeedModifications: {
+      type: Boolean,
+      attribute: "allow-data-need-modifications",
+    },
+    dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
+  };
+  /**
+   * CSS variables for Bootstrap. Unfortunately, Bootstrap defines it's variables
+   * on :root only and not on :host. So they need to be redefined to make them
+   * usable inside of a custom element.
+   *
+   * @type {CSS}
+   */
+  static styles = css`
+    :host {
+      --bs-border-width: 1px;
+      --bs-border-color: #dee2e6;
     }
+  `;
 
-    launchSimulation() {
-        const url = new URL(import.meta.url);
-        url.pathname = url.pathname.replace(/\/[^/]*$/, "/simulation.html");
-        url.hash = "?connectionid=" + this.connectionid;
-        window.open(url, "_blank");
-    }
+  constructor() {
+    super();
+  }
 
-    render() {
-        return html`
-            <link rel="stylesheet"
-                  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css">
-            <div class="container">
-                <h4>Simulation MDA</h4>
-                <p> Please open window for starting the simulation for connection id
-                    <span class="font-monospace">${this.connectionid}</span>.</p>
-                <button @click=${this.launchSimulation} type="button" class="btn btn-primary">
-                    Launch simulation
-                </button>
-            </div>
-        `;
-    }
+  launchSimulation() {
+    const url = new URL(import.meta.url);
+    url.pathname = url.pathname.replace(/\/[^/]*$/, "/simulation.html");
+    url.hash = "?connectionid=" + this.connectionid;
+    window.open(url, "_blank");
+  }
+
+  render() {
+    return html`
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+      />
+      <div class="container">
+        <h4>Simulation MDA</h4>
+        <p>
+          The following information about the data need of the EP application
+          was given:
+        </p>
+        <table class="table table-striped table-bordered">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>connectionId</td>
+              <td>${this.connectionid}</td>
+            </tr>
+            <tr>
+              <td>allowDataNeedModifications</td>
+              <td>${this.allowDataNeedModifications}</td>
+            </tr>
+            <tr>
+              <td>description</td>
+              <td>${this.dataNeedAttributes.description}</td>
+            </tr>
+            <tr>
+              <td>type</td>
+              <td>${this.dataNeedAttributes.type}</td>
+            </tr>
+            <tr>
+              <td>granularity</td>
+              <td>${this.dataNeedAttributes.granularity}</td>
+            </tr>
+            <tr>
+              <td>durationStart</td>
+              <td>${this.dataNeedAttributes.durationStart}</td>
+            </tr>
+            <tr>
+              <td>durationOpenEnd</td>
+              <td>${this.dataNeedAttributes.durationOpenEnd}</td>
+            </tr>
+            <tr>
+              <td>durationEnd</td>
+              <td>${this.dataNeedAttributes.durationEnd}</td>
+            </tr>
+          </tbody>
+        </table>
+        <button
+          @click="${this.launchSimulation}"
+          type="button"
+          class="btn btn-primary"
+        >
+          Launch simulation
+        </button>
+      </div>
+    `;
+  }
 }
 
 export default SimulationConnectorButtonCe;
