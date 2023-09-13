@@ -10,6 +10,7 @@ module energy.eddie.framework {
     requires jakarta.annotation;
     requires com.google.code.findbugs.jsr305;
     opens energy.eddie.framework;
+    opens energy.eddie.framework.dataneeds;
     opens energy.eddie.framework.web;
     // TODO the JPMS ServiceLoader is not working with Spring included, so the RegionConnector s and
     //  RegionConnectorFactory s are instantiated directly in energy.eddie.framework.Framework.java
