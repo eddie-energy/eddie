@@ -23,6 +23,7 @@ public class Permission {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(nullable = false, name = "permission_id")
+    // Just nullable because id is set by DB and not in constructor
     @Nullable
     @JsonProperty
     private String permissionId;
@@ -48,7 +49,7 @@ public class Permission {
     private Instant grantTime;
     @JsonProperty
     @Nullable
-    private Instant terminateTime = null;
+    private Instant revokeTime = null;
     @Column(nullable = false)
     @JsonProperty(required = true)
     @NotBlank(message = "connectionId mustn't be null or blank.")
@@ -136,23 +137,23 @@ public class Permission {
      * The return value of {@link #status()} indicates which of the two cases occurred.
      */
     @Nullable
-    public Instant terminateTime() {
-        return terminateTime;
+    public Instant revokeTime() {
+        return revokeTime;
     }
 
     /**
      * Set the UTC timestamp when either the EP terminated the permission or the customer revoked the permission.
      * Use {@link #updateStatus(PermissionStatus)} to indicate which of the two cases occurred.
      *
-     * @param terminateTime The rejection or termination timestamp.
+     * @param revokeTime The revocation or termination timestamp.
      */
-    public void terminateTime(Instant terminateTime) {
-        requireNonNull(terminateTime);
+    public void revokeTime(Instant revokeTime) {
+        requireNonNull(revokeTime);
 
-        if (terminateTime.isBefore(grantTime))
-            throw new IllegalArgumentException("terminateTime mustn't be before grantTime.");
+        if (revokeTime.isBefore(grantTime))
+            throw new IllegalArgumentException("revokeTime mustn't be before grantTime.");
 
-        this.terminateTime = terminateTime;
+        this.revokeTime = revokeTime;
     }
 
     /**

@@ -35,6 +35,9 @@ dependencies {
     errorprone("com.google.errorprone:error_prone_core:2.18.0")
     errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
 
+    // testcontainers
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.0")
     testImplementation("org.testcontainers:postgresql:1.19.0")
 
     // catches invalid hibernate validation annotations, e.g. a String annotated with @Past

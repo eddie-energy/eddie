@@ -11,10 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Instant;
@@ -27,9 +30,12 @@ import static org.junit.jupiter.api.Assertions.*;
 // deactivate the default behaviour, instead use testcontainer
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @TestPropertySource(properties = {
-        "spring.jpa.hibernate.ddl-auto=create-drop"     // TODO: once AIIDA is more final, use a custom schema
+        "spring.jpa.hibernate.ddl-auto=create"     // TODO: once AIIDA is more final, use a custom schema
 })
+@Testcontainers
 class PermissionRepositoryIntegrationTest {
+    @Container
+    @ServiceConnection
     static PostgreSQLContainer<?> timescale = new PostgreSQLContainer<>(
             DockerImageName.parse("timescale/timescaledb:2.11.2-pg15")
                     .asCompatibleSubstituteFor("postgres")
@@ -91,7 +97,7 @@ class PermissionRepositoryIntegrationTest {
         assertEquals(end, permission.expirationTime());
         assertEquals(grant, permission.grantTime());
         assertEquals(connectionId, permission.connectionId());
-        assertNull(permission.terminateTime());
+        assertNull(permission.revokeTime());
         assertEquals(PermissionStatus.ACCEPTED, permission.status());
 
         assertThat(codes).hasSameElementsAs(permission.requestedCodes());
@@ -102,7 +108,7 @@ class PermissionRepositoryIntegrationTest {
     }
 
     @Test
-    void testWithTerminatedPermission() {
+    void givenRevokedPermission_save_asExpected() {
         var start = Instant.now().plusSeconds(100_000);
         var end = start.plusSeconds(400_000);
 
@@ -116,7 +122,7 @@ class PermissionRepositoryIntegrationTest {
         String name = "My NewAIIDA Test Service";
         String connectionId = "NewAiidaRandomConnectionId";
         Instant grant = Instant.now();
-        Instant terminateTime = grant.plusSeconds(1000);
+        Instant revokeTime = grant.plusSeconds(1000);
 
         Permission permission = new Permission(name, start, end, grant,
                 connectionId, codes, streamingConfig);
@@ -125,7 +131,7 @@ class PermissionRepositoryIntegrationTest {
         assertEquals(PermissionStatus.ACCEPTED, permission.status());
 
         permission.updateStatus(PermissionStatus.REVOKED);
-        permission.terminateTime(terminateTime);
+        permission.revokeTime(revokeTime);
 
         permissionRepository.save(permission);
         assertNotNull(permission.permissionId());
@@ -135,7 +141,7 @@ class PermissionRepositoryIntegrationTest {
         assertEquals(end, permission.expirationTime());
         assertEquals(grant, permission.grantTime());
         assertEquals(connectionId, permission.connectionId());
-        assertEquals(terminateTime, permission.terminateTime());
+        assertEquals(revokeTime, permission.revokeTime());
         assertEquals(PermissionStatus.REVOKED, permission.status());
 
         assertThat(codes).hasSameElementsAs(permission.requestedCodes());
@@ -145,4 +151,3 @@ class PermissionRepositoryIntegrationTest {
         assertEquals(validSubscribeTopic, permission.kafkaStreamingConfig().subscribeTopic());
     }
 }
-
