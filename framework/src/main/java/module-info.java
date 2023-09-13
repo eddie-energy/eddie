@@ -12,11 +12,8 @@ module energy.eddie.framework {
     opens energy.eddie.framework;
     opens energy.eddie.framework.dataneeds;
     opens energy.eddie.framework.web;
-    // TODO the JPMS ServiceLoader is not working with Spring included, so the RegionConnector s and
-    //  RegionConnectorFactory s are instantiated directly in energy.eddie.framework.Framework.java
-    requires energy.eddie.regionconnector.simulation;
-    requires energy.eddie.regionconnector.at;
-    requires energy.eddie.regionconnector.fr.enedis;
+    uses energy.eddie.api.v0.RegionConnector;
+    uses energy.eddie.api.v0.RegionConnectorFactory;
 
     // needed requires for runtime that aren't inferred
     requires kotlin.stdlib;

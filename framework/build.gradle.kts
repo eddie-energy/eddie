@@ -101,7 +101,7 @@ tasks.getByName<Test>("test") {
 }
 
 tasks.register("run-framework", JavaExec::class) {
-//    mainModule.set("energy.eddie.framework")
+    mainModule.set("energy.eddie.framework")
     mainClass.set("energy.eddie.framework.Framework")
     classpath = sourceSets["main"].runtimeClasspath
     systemProperties.set("developmentMode", "true")
