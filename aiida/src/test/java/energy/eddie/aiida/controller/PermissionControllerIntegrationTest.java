@@ -1,28 +1,30 @@
 package energy.eddie.aiida.controller;
 
+import energy.eddie.aiida.dto.PatchOperation;
+import energy.eddie.aiida.dto.PatchPermissionDto;
 import energy.eddie.aiida.dto.PermissionDto;
 import energy.eddie.aiida.model.permission.KafkaStreamingConfig;
 import energy.eddie.aiida.model.permission.Permission;
 import energy.eddie.aiida.model.permission.PermissionStatus;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Instant;
@@ -40,8 +42,11 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestPropertySource(properties = {
         "spring.jpa.hibernate.ddl-auto=create"     // TODO: once AIIDA is more final, use a custom schema
 })
+@Testcontainers
 class PermissionControllerIntegrationTest {
-    static PostgreSQLContainer<?> timescale = new PostgreSQLContainer<>(
+    @Container
+    @ServiceConnection
+    private static final PostgreSQLContainer<?> timescale = new PostgreSQLContainer<>(
             DockerImageName.parse("timescale/timescaledb:2.11.2-pg15")
                     .asCompatibleSubstituteFor("postgres")
     );
@@ -52,21 +57,18 @@ class PermissionControllerIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @BeforeAll
-    static void beforeAll() {
-        timescale.start();
-    }
+    private static PermissionDto getPermissionDto(Instant start, Instant expiration) {
+        var name = "My NewAIIDA Test Service";
+        var grant = Instant.now();
+        var connectionId = "NewAiidaRandomConnectionId";
+        var codes = Set.of("1.8.0", "2.8.0");
+        var bootstrapServers = "localhost:9092";
+        var validDataTopic = "ValidPublishTopic";
+        var validStatusTopic = "ValidStatusTopic";
+        var validSubscribeTopic = "ValidSubscribeTopic";
+        var streamingConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
 
-    @AfterAll
-    static void afterAll() {
-        timescale.stop();
-    }
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", timescale::getJdbcUrl);
-        registry.add("spring.datasource.username", timescale::getUsername);
-        registry.add("spring.datasource.password", timescale::getPassword);
+        return new PermissionDto(name, start, expiration, grant, connectionId, codes, streamingConfig);
     }
 
     @Test
@@ -98,20 +100,6 @@ class PermissionControllerIntegrationTest {
 
         assertNotNull(permissions);
         assertEquals(0, permissions.size());
-    }
-
-    private static PermissionDto getPermissionDto(Instant start, Instant expiration) {
-        var name = "My NewAIIDA Test Service";
-        var grant = Instant.now();
-        var connectionId = "NewAiidaRandomConnectionId";
-        var codes = Set.of("1.8.0", "2.8.0");
-        var bootstrapServers = "localhost:9092";
-        var validDataTopic = "ValidPublishTopic";
-        var validStatusTopic = "ValidStatusTopic";
-        var validSubscribeTopic = "ValidSubscribeTopic";
-        var streamingConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
-
-        return new PermissionDto(name, start, expiration, grant, connectionId, codes, streamingConfig);
     }
 
     @Test
@@ -180,6 +168,60 @@ class PermissionControllerIntegrationTest {
         assertEquals(dto.kafkaStreamingConfig().subscribeTopic(), permission.kafkaStreamingConfig().subscribeTopic());
         assertEquals(PermissionStatus.ACCEPTED, permission.status());
         assertNull(permission.revokeTime());
+    }
+
+    @Test
+    @Sql(scripts = {"/revokePermission_insertSamplePermissions.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/revokePermission_insertSamplePermissions_cleanup.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void givenPermissionInInvalidState_revokePermission_returnsBadRequest() {
+        var permissionId = "592c372e-bced-45b7-a4a9-5f39e66b8d30";
+        var dto = new PatchPermissionDto(PatchOperation.REVOKE_PERMISSION);
+
+        String expected = "{\"errors\":[\"Permission with id 592c372e-bced-45b7-a4a9-5f39e66b8d30 cannot be revoked. Only a permission with status ACCEPTED, WAITING_FOR_START or STREAMING_DATA may be revoked.\"]}";
+
+        RequestEntity<PatchPermissionDto> request = RequestEntity
+                .patch(getPermissionsUrl() + "/" + permissionId)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(dto);
+
+        // use custom factory because default one doesn't support Patch operation
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
+
+        HttpClientErrorException.BadRequest badRequestException = assertThrows(HttpClientErrorException.BadRequest.class,
+                () -> restTemplate.exchange(request, String.class));
+
+        assertEquals(HttpStatus.BAD_REQUEST, badRequestException.getStatusCode());
+        assertEquals(expected, badRequestException.getResponseBodyAsString());
+    }
+
+    @Test
+    @Sql(scripts = {"/revokePermission_insertSamplePermissions.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/revokePermission_insertSamplePermissions_cleanup.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void givenPermissionInValidState_revokePermission_asExpected() {
+        var permissionId = "1a1c5995-71fc-4078-acd3-46027a2faa51";
+
+        var dto = new PatchPermissionDto(PatchOperation.REVOKE_PERMISSION);
+
+        RequestEntity<PatchPermissionDto> request = RequestEntity
+                .patch(getPermissionsUrl() + "/" + permissionId)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(dto);
+
+
+        // use custom factory because default one doesn't support Patch operation
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
+        ResponseEntity<Permission> responseEntity = restTemplate.exchange(request, Permission.class);
+        var permission = responseEntity.getBody();
+
+        assertNotNull(permission);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(permissionId, permission.permissionId());
+        assertEquals(PermissionStatus.REVOKED, permission.status());
+        var revokeTime = permission.revokeTime();
+        assertNotNull(revokeTime);
+        assertTrue(revokeTime.isBefore(Instant.now()));
     }
 
     private String getPermissionsUrl() {

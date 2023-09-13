@@ -3,17 +3,12 @@ package energy.eddie.aiida.repository;
 import energy.eddie.aiida.model.permission.KafkaStreamingConfig;
 import energy.eddie.aiida.model.permission.Permission;
 import energy.eddie.aiida.model.permission.PermissionStatus;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -36,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PermissionRepositoryIntegrationTest {
     @Container
     @ServiceConnection
-    static PostgreSQLContainer<?> timescale = new PostgreSQLContainer<>(
+    private static final PostgreSQLContainer<?> timescale = new PostgreSQLContainer<>(
             DockerImageName.parse("timescale/timescaledb:2.11.2-pg15")
                     .asCompatibleSubstituteFor("postgres")
     );
@@ -46,28 +41,6 @@ class PermissionRepositoryIntegrationTest {
 
     @Autowired
     TestEntityManager entityManager;
-
-    @BeforeAll
-    static void beforeAll() {
-        timescale.start();
-    }
-
-    @AfterAll
-    static void afterAll() {
-        timescale.stop();
-    }
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", timescale::getJdbcUrl);
-        registry.add("spring.datasource.username", timescale::getUsername);
-        registry.add("spring.datasource.password", timescale::getPassword);
-    }
-
-    @BeforeEach
-    void setUp() {
-        permissionRepository.deleteAll();
-    }
 
     @Test
     void testThatDbSetsPermissionId() {

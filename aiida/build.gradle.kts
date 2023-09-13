@@ -42,6 +42,9 @@ dependencies {
 
     // catches invalid hibernate validation annotations, e.g. a String annotated with @Past
     annotationProcessor("org.hibernate.validator:hibernate-validator-annotation-processor:8.0.1.Final")
+
+    // required for making PATCH requests in integration test
+    testImplementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
 }
 
 tasks.withType<Test> {

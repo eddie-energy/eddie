@@ -1,6 +1,9 @@
 package energy.eddie.aiida.controller;
 
+import energy.eddie.aiida.dto.PatchOperation;
+import energy.eddie.aiida.dto.PatchPermissionDto;
 import energy.eddie.aiida.dto.PermissionDto;
+import energy.eddie.aiida.error.InvalidPatchOperationException;
 import energy.eddie.aiida.model.permission.Permission;
 import energy.eddie.aiida.service.PermissionService;
 import jakarta.validation.Valid;
@@ -41,5 +44,17 @@ public class PermissionController {
                 .expand(permission.permissionId());
 
         return ResponseEntity.created(location).body(permission);
+    }
+
+    @PatchMapping(value = "/{permissionId}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Permission> revokePermission(@Valid @RequestBody PatchPermissionDto patchPermissionDto,
+                                                @PathVariable String permissionId) {
+        if (patchPermissionDto.operation() != PatchOperation.REVOKE_PERMISSION) {
+            throw new InvalidPatchOperationException();
+        }
+
+        return ResponseEntity.ok(permissionService.revokePermission(permissionId));
     }
 }

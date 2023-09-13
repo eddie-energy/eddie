@@ -4,14 +4,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.aiida.dto.PermissionDto;
+import energy.eddie.aiida.error.InvalidPermissionRevocationException;
+import energy.eddie.aiida.error.PermissionNotFoundException;
 import energy.eddie.aiida.model.permission.KafkaStreamingConfig;
 import energy.eddie.aiida.model.permission.Permission;
 import energy.eddie.aiida.model.permission.PermissionStatus;
 import energy.eddie.aiida.service.PermissionService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -29,9 +28,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
@@ -312,6 +311,124 @@ class PermissionControllerTest {
 
             // grant time order is permission3, permission2, permission1
             return List.of(permission3, permission2, permission1);
+        }
+    }
+
+    @Nested
+    @DisplayName("Test revoke a permission")
+    class RevokePermissionTest {
+        private String uuid;
+        private String validPatchOperationBody;
+
+        @BeforeEach
+        void setUp() {
+            uuid = "72831e2c-a01c-41b8-9db6-3f51670df7a5";
+            validPatchOperationBody = "{\"operation\": \"REVOKE_PERMISSION\"}";
+        }
+
+        @Test
+        void givenInvalidMediaType_revokePermission_returnsUnsupportedMediaType() throws Exception {
+            mockMvc.perform(patch("/permissions/{permissionId}", uuid)
+                            .contentType(MediaType.APPLICATION_NDJSON))
+                    .andExpect(status().isUnsupportedMediaType());
+        }
+
+        @Test
+        void givenInvalidAcceptMediaType_revokePermission_returnsNotAcceptable() throws Exception {
+            mockMvc.perform(patch("/permissions/{permissionId}", uuid)
+                            .accept(MediaType.APPLICATION_XML)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNotAcceptable());
+        }
+
+        @Test
+        void givenEmptyPatchBody_revokePermission_returnsBadRequest() throws Exception {
+            mockMvc.perform(patch("/permissions/{permissionId}", uuid)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(""))
+                    .andExpect(jsonPath("$.errors", allOf(
+                            iterableWithSize(1),
+                            hasItem("Failed to read request")
+                    )));
+        }
+
+        @Test
+        @Disabled("Cannot be tested right now, as PatchOperation enum only contains one value.")
+        void givenInvalidOperation_revokePermission_returnsBadRequest() throws Exception {
+            mockMvc.perform(patch("/permissions/{permissionId}", uuid)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"operation\": \"MY_BLA\"}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.errors", allOf(
+                            iterableWithSize(1),
+                            hasItem("Invalid PatchOperation, permitted values are: REVOKE_PERMISSION.")
+                    )));
+        }
+
+        @Test
+        void givenInvalidPermissionId_revokePermission_returnsNotFound() throws Exception {
+            var invalidId = "NotExistingId";
+
+            when(permissionService.revokePermission(invalidId)).then(i -> {
+                throw new PermissionNotFoundException(i.getArgument(0));
+            });
+
+            mockMvc.perform(
+                            patch("/permissions/{permissionId}", invalidId)
+                                    .content(validPatchOperationBody)
+                                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.errors", allOf(
+                            iterableWithSize(1),
+                            hasItem("No permission with id %s found.".formatted(invalidId))
+                    )));
+        }
+
+        @Test
+        void givenPermissionInInvalidState_revokePermission_returnsBadRequest() throws
+                Exception {
+
+            when(permissionService.revokePermission(uuid)).then(i -> {
+                throw new InvalidPermissionRevocationException(i.getArgument(0));
+            });
+
+            mockMvc.perform(patch("/permissions/{permissionId}", uuid)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(validPatchOperationBody))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.errors", allOf(
+                            iterableWithSize(1),
+                            hasItem(("Permission with id " + uuid + " cannot be revoked. Only a permission with status " +
+                                    "ACCEPTED, WAITING_FOR_START or STREAMING_DATA may be revoked."))
+                    )));
+        }
+
+        @Test
+        void givenValidPermission_revokePermission_returnsAsExpected() throws Exception {
+            var permission = new Permission(serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
+            var revokeTime = Instant.now();
+
+            when(permissionService.revokePermission(uuid)).then(i -> {
+                ReflectionTestUtils.setField(permission, "permissionId", uuid);
+                permission.revokeTime(revokeTime);
+                permission.updateStatus(PermissionStatus.REVOKED);
+                return permission;
+            });
+
+            var responseString = mockMvc.perform(patch("/permissions/" + uuid)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(validPatchOperationBody))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            var response = mapper.readValue(responseString, Permission.class);
+
+            verify(permissionService, atLeast(1)).revokePermission(any());
+
+            // these fields mustn't have been modified
+            assertEquals(uuid, response.permissionId());
+            assertEquals(revokeTime, response.revokeTime());
+            assertEquals(PermissionStatus.REVOKED, response.status());
         }
     }
 }
