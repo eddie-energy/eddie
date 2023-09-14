@@ -11,6 +11,18 @@ import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.Set;
 
+/**
+ * This data transfer object is expected by the permission API endpoint to set up a new permission.
+ * All parameters are required.
+ *
+ * @param serviceName          Name of the service that the permission is for.
+ * @param startTime            UTC start timestamp, from when on data should be shared with the EP.
+ * @param expirationTime       UTC timestamp until which data should be shared.
+ * @param grantTime            UTC timestamp when the customer granted the permission.
+ * @param connectionId         UUID string, that should be sent along with every message related to the requested permission.
+ * @param requestedCodes       Set of OBIS codes, that the EP wants to receive from the customer. If the customer's AIIDA system cannot provide <b>all</b> codes, the permission cannot be setup.
+ * @param kafkaStreamingConfig Configuration for the streaming via Kafka.
+ */
 @ExpirationTimeAfterStartTime
 public record PermissionDto(
         @NotBlank(message = "serviceName mustn't be null or blank.")

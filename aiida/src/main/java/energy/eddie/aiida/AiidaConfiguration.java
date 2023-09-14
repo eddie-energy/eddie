@@ -7,7 +7,9 @@ import java.time.Clock;
 
 @Configuration
 public class AiidaConfiguration {
-
+    /**
+     * @return Clock instance that should be used for timestamps.
+     */
     @Bean
     public Clock clock() {
         return Clock.systemUTC();

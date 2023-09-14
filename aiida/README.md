@@ -9,3 +9,5 @@ Use the following gradle task to run this spring boot application.
 Configuring the datasource via the _application.properties_ file is necessary.
 
 - `./gradlew bootRun`
+
+The permissions REST API will be exposed on the [default Spring Boot port (localhost:8080)](http://localhost:8080)

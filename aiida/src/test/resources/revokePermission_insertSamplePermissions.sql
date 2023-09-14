@@ -1,4 +1,4 @@
--- one valid and one invalid for termination permission
+-- Insert one permission that is eligible for revocation and one that is not.
 
 INSERT INTO public.kafka_streaming_config (id, bootstrap_servers, data_topic, status_topic, subscribe_topic)
 VALUES (2, 'localhost:9092', 'ValidPublishTopic', 'ValidStatusTopic', 'ValidSubscribeTopic'),
