@@ -81,6 +81,19 @@ public class MessagingPermissionRequest<T extends PermissionRequest> implements 
         emitState(PermissionProcessStatus.REJECTED);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof PermissionRequest) {
+            return permissionRequest.equals(obj);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return permissionRequest.hashCode();
+    }
+
     private void emitState(PermissionProcessStatus processStatus) {
         permissionStateMessages.tryEmitNext(
                 new ConnectionStatusMessage(

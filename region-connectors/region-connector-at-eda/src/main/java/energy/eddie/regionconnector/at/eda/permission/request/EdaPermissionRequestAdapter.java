@@ -83,4 +83,18 @@ public final class EdaPermissionRequestAdapter implements AtPermissionRequest {
     public void rejected() throws FutureStateException, PastStateException {
         adaptee.rejected();
     }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof PermissionRequest) {
+            return edaPermissionRequest.equals(obj);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return edaPermissionRequest.hashCode();
+    }
 }

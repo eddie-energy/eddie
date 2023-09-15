@@ -6,6 +6,8 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import energy.eddie.regionconnector.shared.permission.requests.decorators.MessagingPermissionRequest;
+import energy.eddie.regionconnector.shared.permission.requests.decorators.SavingPermissionRequest;
 import reactor.core.publisher.Sinks;
 
 public class PermissionRequestFactory {
@@ -22,10 +24,13 @@ public class PermissionRequestFactory {
 
     public AtPermissionRequest create(String connectionId, CCMORequest ccmoRequest) {
         AtPermissionRequest permissionRequest = new EdaPermissionRequest(connectionId, ccmoRequest, edaAdapter);
-        PermissionRequest savingPermissionRequest = new energy.eddie.regionconnector.shared.permission.requests.decorators.SavingPermissionRequest<>(permissionRequest, permissionRequestRepository);
-        PermissionRequest messagingPermissionRequest = new energy.eddie.regionconnector.shared.permission.requests.decorators.MessagingPermissionRequest<>(permissionRequest, permissionStateMessages);
-        return new EdaPermissionRequestAdapter(
+        PermissionRequest messagingPermissionRequest = new MessagingPermissionRequest<>(permissionRequest, permissionStateMessages);
+        PermissionRequest savingPermissionRequest = new SavingPermissionRequest<>(
                 new EdaPermissionRequestAdapter(permissionRequest, messagingPermissionRequest),
+                permissionRequestRepository
+        );
+        return new EdaPermissionRequestAdapter(
+                permissionRequest,
                 savingPermissionRequest
         );
     }

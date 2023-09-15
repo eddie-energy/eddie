@@ -8,8 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class SavingPermissionRequestTest {
     @Test
@@ -168,6 +167,52 @@ class SavingPermissionRequestTest {
         savingPermissionRequest.terminate();
 
         assertTrue(repo.findByPermissionId("permissionId").isPresent());
+    }
+
+
+    @Test
+    void savingPermissionRequest_equalsReturnsTrueForDecoratee() {
+        // Given
+        PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
+        SimpleState createdState = new SimpleState();
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
+        SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
+
+        // When
+        var res = savingPermissionRequest.equals(permissionRequest);
+
+        // Then
+        assertTrue(res);
+    }
+
+    @Test
+    void savingPermissionRequest_equalsReturnsFalse() {
+        // Given
+        PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
+        SimpleState createdState = new SimpleState();
+        var permissionRequest1 = new SimplePermissionRequest("permissionId", "connectionId", createdState);
+        SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest1, repo);
+
+        // When
+        var res = savingPermissionRequest.equals(new Object());
+
+        // Then
+        assertFalse(res);
+    }
+
+    @Test
+    void savingPermissionRequest_hashCodeIsSameForDecoratee() {
+        // Given
+        PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
+        SimpleState createdState = new SimpleState();
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
+        SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
+
+        // When
+        var res = savingPermissionRequest.hashCode();
+
+        // Then
+        assertEquals(permissionRequest.hashCode(), res);
     }
 
     private final static class SimplePermissionRequestRepository implements PermissionRequestRepository<PermissionRequest> {
