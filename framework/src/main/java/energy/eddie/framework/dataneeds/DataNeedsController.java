@@ -1,12 +1,19 @@
 package energy.eddie.framework.dataneeds;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Nullable;
-
+/**
+ * REST controller for DataNeeds, limited to getting single data needs.
+ * <ul>
+ *     <li>GET /api/data-needs/{id} : retrieve a data need by it's id</li>
+ * </ul>
+ */
 @RestController
+@RequestMapping("/api/data-needs")
 public class DataNeedsController {
 
     private DataNeedsService dataNeedsService;
@@ -15,9 +22,9 @@ public class DataNeedsController {
         this.dataNeedsService = dataNeedsService;
     }
 
-    @Nullable
-    @GetMapping("/api/data-needs/{id}")
-    public DataNeed getDataNeeds(@PathVariable String id) {
-        return dataNeedsService.getDataNeed(id);
+    @GetMapping("/{id}")
+    public ResponseEntity<DataNeed> getDataNeeds(@PathVariable String id) {
+        final var result = dataNeedsService.getDataNeed(id);
+        return null != result ? ResponseEntity.ok(result) : ResponseEntity.notFound().build();
     }
 }

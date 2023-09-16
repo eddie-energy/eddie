@@ -40,6 +40,7 @@ dependencies {
     implementation(libs.reactor.core)
     runtimeOnly(libs.h2database)
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.spring.boot.starter.test)
     testRuntimeOnly(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
 }
@@ -81,6 +82,13 @@ extraJavaModuleInfo {
     automaticModule("io.smallrye.config:smallrye-config-core", "io.smallrye.config.core")
     automaticModule("io.smallrye.config:smallrye-config-common", "io.smallrye.config.common")
     automaticModule("org.eclipse.microprofile.config:microprofile-config-api", "eclipse.microprofile.config.api")
+
+    // for spring test
+    automaticModule("com.jayway.jsonpath:json-path", "")
+    automaticModule("net.minidev:json-smart", "")
+    automaticModule("org.skyscreamer:jsonassert", "")
+    automaticModule("net.minidev:accessors-smart", "")
+    automaticModule("com.vaadin.external.google:android-json", "")
 }
 
 configurations.all() {
