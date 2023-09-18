@@ -158,7 +158,7 @@ The following parameters are of special interest:
 
 | Parameter               | Type                                            | Description                           |
 |-------------------------|-------------------------------------------------|---------------------------------------|
-| kafka.bootstrap.servers | comma-separated _host:port_  tuples (mandatory) | Bootstrap servers where kafka brokers |
+| kafka.bootstrap.servers | comma-separated _host:port_  tuples (mandatory) | A list of host/port pairs to use for establishing the initial connection to the Kafka cluster. |
 
 E.g. if Kafka is installed locally:
 
