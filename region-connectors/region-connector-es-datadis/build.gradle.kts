@@ -15,6 +15,12 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":api"))
+    implementation(project(":region-connectors:shared"))
+
+    implementation(libs.javalin)
+    implementation(libs.microprofile.config)
+
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
 
