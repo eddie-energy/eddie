@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.at.eda.permission.request;
 
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.permission.requests.decorators.SavingPermissionRequest;
 import jakarta.annotation.Nullable;
 
 import java.util.Map;
@@ -25,14 +26,20 @@ public class InMemoryPermissionRequestRepository implements AtPermissionRequestR
 
     @Override
     public Optional<AtPermissionRequest> findByPermissionId(String permissionId) {
-        return Optional.ofNullable(requests.get(permissionId));
+        // wrap the request with a SavingPermissionRequest so changes will be persisted
+        // TODO this is a temporary workaround
+        return Optional.ofNullable(requests.get(permissionId))
+                .map(r -> new EdaPermissionRequestAdapter(r, new SavingPermissionRequest<>(r, this)));
     }
 
     @Override
     public Optional<AtPermissionRequest> findByConversationIdOrCMRequestId(String conversationId, @Nullable String cmRequestId) {
         for (AtPermissionRequest request : requests.values()) {
             if (matchesConversationIdOrCMRequestId(conversationId, cmRequestId, request)) {
-                return Optional.of(request);
+                // wrap the request with a SavingPermissionRequest so changes will be persisted
+                // TODO this is a temporary workaround
+                return Optional.of(request)
+                        .map(r -> new EdaPermissionRequestAdapter(r, new SavingPermissionRequest<>(r, this)));
             }
         }
         return Optional.empty();

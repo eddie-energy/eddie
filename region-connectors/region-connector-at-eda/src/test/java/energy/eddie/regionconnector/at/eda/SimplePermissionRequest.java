@@ -50,4 +50,12 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     public void rejected() {
 
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AtPermissionRequest)) return false;
+        AtPermissionRequest that = (AtPermissionRequest) o;
+        return permissionId.equals(that.permissionId()) && connectionId.equals(that.connectionId()) && cmRequestId.equals(that.cmRequestId()) && conversationId.equals(that.conversationId()) && state == that.state();
+    }
 }
