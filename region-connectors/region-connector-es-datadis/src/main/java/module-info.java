@@ -24,6 +24,7 @@ module energy.eddie.regionconnector.es {
     exports energy.eddie.regionconnector.es.datadis.config;
     exports energy.eddie.regionconnector.es.datadis.dtos;
     exports energy.eddie.regionconnector.es.datadis.dtos.exceptions;
+    exports energy.eddie.regionconnector.es.datadis.permission.request.api;
     opens energy.eddie.regionconnector.es.datadis.dtos to com.fasterxml.jackson.databind;
 
     provides RegionConnectorFactory with DatadisRegionConnectorFactory;
