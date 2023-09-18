@@ -1,5 +1,3 @@
-import energy.eddie.api.v0.RegionConnector;
-
 module energy.eddie.framework {
     requires energy.eddie.api;
     requires io.javalin;
@@ -10,9 +8,11 @@ module energy.eddie.framework {
     requires com.google.guice;
     requires eclipse.microprofile.config.api;
     requires jakarta.annotation;
+    requires com.google.code.findbugs.jsr305;
     opens energy.eddie.framework;
+    opens energy.eddie.framework.dataneeds;
     opens energy.eddie.framework.web;
-    uses RegionConnector;
+    uses energy.eddie.api.v0.RegionConnector;
     uses energy.eddie.api.v0.RegionConnectorFactory;
 
     // needed requires for runtime that aren't inferred
@@ -26,4 +26,8 @@ module energy.eddie.framework {
     requires io.smallrye.common.classloader;
     requires io.smallrye.common.expression;
     requires io.smallrye.config.core;
+    requires spring.boot;
+    requires spring.boot.autoconfigure;
+    requires spring.web;
+    requires spring.context;
 }

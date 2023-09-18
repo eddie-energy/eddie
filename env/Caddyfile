@@ -5,6 +5,7 @@
     @missingSlash {
         not path */
         not path *.*
+        not path */api/data-needs/*
     }
     rewrite @missingSlash {http.request.uri.path}/
 

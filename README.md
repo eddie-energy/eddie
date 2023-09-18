@@ -5,7 +5,9 @@ found [here](https://github.com/eddie-energy/eddie/wiki/EDDIE-Development-&-Depl
 
 To get started with the development process see [DEVELOPMENT.md](./DEVELOPMENT.md)
 
-## How to run
+To install, integrate and operate the EDDIE Framework, see the operation manual: [OPERATION.md](OPERATION.md)
+
+## How to run in development
 
 Some modules provide custom web elements that need to be built with pnpm:
 

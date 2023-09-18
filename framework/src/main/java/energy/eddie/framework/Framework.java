@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.ServiceLoader;
 
-public class Framework implements Runnable {
+public class Framework {
     private static final Logger LOGGER = LoggerFactory.getLogger(Framework.class);
 
     private final JdbcAdapter jdbcAdapter;
@@ -50,11 +50,10 @@ public class Framework implements Runnable {
 
     public static void main(String[] args) {
         var injector = Guice.createInjector(new Module());
-        injector.getInstance(Framework.class).run();
+        injector.getInstance(Framework.class).run(args);
     }
 
-    @Override
-    public void run() {
+    public void run(String[] args) {
         LOGGER.info("Starting up EDDIE framework");
         jdbcAdapter.init();
         var connectionStatusMessageStream = JdkFlowAdapter.publisherToFlowPublisher(permissionService.getConnectionStatusMessageStream());
@@ -64,6 +63,7 @@ public class Framework implements Runnable {
         var consumptionRecordMessageStream = JdkFlowAdapter.publisherToFlowPublisher(consumptionRecordService.getConsumptionRecordStream());
         jdbcAdapter.setConsumptionRecordStream(consumptionRecordMessageStream);
         kafkaConnector.setConsumptionRecordStream(consumptionRecordMessageStream);
+        FrameworkSpringConfig.main(args);
         javalinApp.init();
     }
 
