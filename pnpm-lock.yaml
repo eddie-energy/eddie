@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 importers:
 
   .:
@@ -28,6 +32,16 @@ importers:
         version: 4.3.9
 
   region-connectors/region-connector-at-eda:
+    dependencies:
+      lit:
+        specifier: ^2.7.5
+        version: 2.7.5
+    devDependencies:
+      vite:
+        specifier: ^4.3.9
+        version: 4.3.9
+
+  region-connectors/region-connector-es-datadis:
     dependencies:
       lit:
         specifier: ^2.7.5
@@ -360,7 +374,3 @@ packages:
       rollup: 3.25.0
     optionalDependencies:
       fsevents: 2.3.2
-
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
