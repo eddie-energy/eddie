@@ -9,8 +9,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class MessagingPermissionRequestTest {
     @Test
@@ -230,5 +229,47 @@ class MessagingPermissionRequestTest {
                         () -> assertEquals("connectionId", cr.connectionId())
                 ))
                 .verifyComplete();
+    }
+
+    @Test
+    void messagingPermissionRequest_equalsReturnsTrueForDecoratee() {
+        Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
+        SimpleState createdState = new SimpleState();
+        PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
+        MessagingPermissionRequest<PermissionRequest> messagingPermissionRequest = new MessagingPermissionRequest<>(permissionRequest, permissionStateMessages);
+
+        // When
+        var res = messagingPermissionRequest.equals(permissionRequest);
+
+        // Then
+        assertTrue(res);
+    }
+
+    @Test
+    void messagingPermissionRequest_equalsReturnsFalse() {
+        Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
+        SimpleState createdState = new SimpleState();
+        PermissionRequest permissionRequest1 = new SimplePermissionRequest("permissionId", "connectionId", createdState);
+        MessagingPermissionRequest<PermissionRequest> messagingPermissionRequest = new MessagingPermissionRequest<>(permissionRequest1, permissionStateMessages);
+
+        // When
+        var res = messagingPermissionRequest.equals(new Object());
+
+        // Then
+        assertFalse(res);
+    }
+
+    @Test
+    void messagingPermissionRequest_hashCodeIsSameForDecoratee() {
+        Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
+        SimpleState createdState = new SimpleState();
+        PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
+        MessagingPermissionRequest<PermissionRequest> messagingPermissionRequest = new MessagingPermissionRequest<>(permissionRequest, permissionStateMessages);
+
+        // When
+        var res = messagingPermissionRequest.hashCode();
+
+        // Then
+        assertEquals(permissionRequest.hashCode(), res);
     }
 }

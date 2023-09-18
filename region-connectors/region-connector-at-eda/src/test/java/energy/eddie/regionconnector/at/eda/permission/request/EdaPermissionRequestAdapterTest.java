@@ -8,8 +8,7 @@ import energy.eddie.regionconnector.at.eda.permission.request.states.AtInvalidPe
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 class EdaPermissionRequestAdapterTest {
@@ -190,6 +189,51 @@ class EdaPermissionRequestAdapterTest {
         // When
         // Then
         assertThrows(IllegalStateException.class, adapter::rejected);
+    }
+
+    @Test
+    void adapter_equalsReturnsTrueForPermissionRequest() {
+        // Given
+        AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", state);
+        PermissionRequest decorator = new ThrowingPermissionRequest(request);
+        EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
+
+        // When
+        var res = adapter.equals(request);
+
+        // Then
+        assertTrue(res);
+    }
+
+    @Test
+    void adapter_equalsReturnsFalse() {
+        // Given
+        AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", state);
+        PermissionRequest decorator = new ThrowingPermissionRequest(request);
+        EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
+
+        // When
+        var res = adapter.equals(new Object());
+
+        // Then
+        assertFalse(res);
+    }
+
+    @Test
+    void adapter_hashCodeIsEqualToPermissionRequestHashCode() {
+        // Given
+        AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", state);
+        PermissionRequest decorator = new ThrowingPermissionRequest(request);
+        EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
+
+        // When
+        var res = adapter.hashCode();
+
+        // Then
+        assertEquals(request.hashCode(), res);
     }
 
     private record ThrowingPermissionRequest(PermissionRequest request) implements PermissionRequest {

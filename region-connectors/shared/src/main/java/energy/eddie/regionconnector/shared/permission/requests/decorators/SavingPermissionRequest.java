@@ -70,6 +70,19 @@ public class SavingPermissionRequest<T extends PermissionRequest> implements Per
         executeAndSave(permissionRequest::rejected);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof PermissionRequest) {
+            return permissionRequest.equals(obj);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return permissionRequest.hashCode();
+    }
+
     private void executeAndSave(Transition transition) throws FutureStateException, PastStateException {
         transition.transit();
         permissionRequestRepository.save(permissionRequest);
