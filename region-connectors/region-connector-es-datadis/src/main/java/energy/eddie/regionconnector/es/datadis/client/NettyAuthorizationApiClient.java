@@ -1,14 +1,18 @@
 package energy.eddie.regionconnector.es.datadis.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
+import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.netty.ByteBufMono;
 import reactor.netty.http.client.HttpClient;
@@ -16,6 +20,7 @@ import reactor.netty.http.client.HttpClient;
 import static java.util.Objects.requireNonNull;
 
 public class NettyAuthorizationApiClient implements AuthorizationApi {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NettyAuthorizationApiClient.class);
     private final HttpClient httpClient;
 
     private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
@@ -32,11 +37,12 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
     }
 
     @Override
-    public Mono<Void> postAuthorizationRequest(AuthorizationRequest authorizationRequest) {
+    public Mono<AuthorizationRequestResponse> postAuthorizationRequest(AuthorizationRequest authorizationRequest) {
         String body;
 
         try {
             body = mapper.writeValueAsString(authorizationRequest);
+            LOGGER.debug("Authorization request body: {}", body);
         } catch (JsonProcessingException e) {
             return Mono.error(new DatadisApiException(e));
         }
@@ -48,12 +54,23 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
                 .uri(endpoints.authorizationRequestEndpoint())
                 .send(ByteBufMono.fromString(Mono.just(body)))
                 .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono.asString().flatMap(bodyString -> {
-                    if (httpClientResponse.status().code() == HttpResponseStatus.OK.code() && bodyString.contains("ok")) {
-                        return Mono.empty();
+                    if (httpClientResponse.status().code() == HttpResponseStatus.OK.code()) {
+                        try {
+                            JsonNode jsonNode = mapper.readTree(bodyString);
+                            return switch (jsonNode.get("response").asText()) {
+                                case "ok" -> Mono.just(AuthorizationRequestResponse.OK);
+                                case "nonif" -> Mono.just(AuthorizationRequestResponse.NO_NIF);
+                                case "noSupplies" -> Mono.just(AuthorizationRequestResponse.NO_SUPPLIES);
+                                default ->
+                                        Mono.error(new DatadisApiException("Unexpected response: " + jsonNode.get("response").asText()));
+                            };
+                        } catch (JsonProcessingException e) {
+                            return Mono.error(new DatadisApiException(e));
+                        }
                     } else {
                         return Mono.error(new DatadisApiException("Failed to post authorization request: " + httpClientResponse.status().code() + " " + bodyString));
                     }
                 }))
-                .then());
+        );
     }
 }
