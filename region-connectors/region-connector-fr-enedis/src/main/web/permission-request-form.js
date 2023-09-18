@@ -32,8 +32,8 @@ class PermissionRequestForm extends LitElement {
 
         this.requestPermissionStatus(url, permissionId);
         this.intervalId = setInterval(
-            this.requestPermissionStatus(url, permissionId),
-            5000
+          this.requestPermissionStatus(url, permissionId),
+          5000
         );
         window.open(result["redirectUri"], "_blank");
       })
@@ -43,27 +43,28 @@ class PermissionRequestForm extends LitElement {
   requestPermissionStatus(url, permissionId) {
     return () => {
       fetch(url + "permission-status?permissionId=" + permissionId)
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("HTTP status " + response.status);
-            }
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("HTTP status " + response.status);
+          }
 
-            return response.json();
-          })
-          .then((result) => {
-            if (
-                result["status"] === "GRANTED" ||
-                result["status"] === "REJECTED" ||
-                result["status"] === "ERROR"
-            ) {
-              clearInterval(this.intervalId);
-            }
-            console.log("Status:" + result);
-            this.requestStatusElement.value.textContent =
-                "Request status: " + result["status"];
-            this.requestStatusElement.value.hidden = false;
-          })
-          .catch((error) => console.error(error));
+          return response.json();
+        })
+        .then((result) => {
+          if (
+            result["status"] === "ACCEPTED" ||
+            result["status"] === "REJECTED" ||
+            result["status"] === "INVALID" ||
+            result["status"] === "TERMINATED"
+          ) {
+            clearInterval(this.intervalId);
+          }
+          console.log("Status:" + result);
+          this.requestStatusElement.value.textContent =
+            "Request status: " + result["status"];
+          this.requestStatusElement.value.hidden = false;
+        })
+        .catch((error) => console.error(error));
     };
   }
 
