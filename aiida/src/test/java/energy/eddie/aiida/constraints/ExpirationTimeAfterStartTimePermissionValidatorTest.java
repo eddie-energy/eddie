@@ -72,8 +72,8 @@ class ExpirationTimeAfterStartTimePermissionValidatorTest {
         var violations = validator.validate(dto);
         assertEquals(2, violations.size());
         List<String> list = violations.stream().map(ConstraintViolation::getMessage).toList();
-        assertThat(list).hasSameElementsAs(List.of("startTime and expirationTime mustn't be null.",
-                "startTime mustn't be null."));
+        assertThat(list).hasSameElementsAs(List.of("startTime and expirationTime must not be null.",
+                "startTime must not be null."));
 
 
         dto = new Permission(name, start, null, grant, connectionId, codes, streamingConfig);
@@ -81,8 +81,8 @@ class ExpirationTimeAfterStartTimePermissionValidatorTest {
         violations = validator.validate(dto);
         assertEquals(2, violations.size());
         list = violations.stream().map(ConstraintViolation::getMessage).toList();
-        assertThat(list).hasSameElementsAs(List.of("startTime and expirationTime mustn't be null.",
-                "expirationTime mustn't be null."));
+        assertThat(list).hasSameElementsAs(List.of("startTime and expirationTime must not be null.",
+                "expirationTime must not be null."));
     }
 
     @Test

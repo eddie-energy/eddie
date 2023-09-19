@@ -8,7 +8,7 @@ import java.time.Clock;
 @Configuration
 public class AiidaConfiguration {
     /**
-     * @return Clock instance that should be used for timestamps.
+     * Returns a clock instance that should be used for timestamps (e.g. when a permission is revoked).
      */
     @Bean
     public Clock clock() {

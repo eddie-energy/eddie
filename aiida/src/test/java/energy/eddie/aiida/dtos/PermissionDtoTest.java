@@ -92,37 +92,37 @@ class PermissionDtoTest {
         var violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         var first = violations.iterator().next();
-        assertEquals("serviceName mustn't be null or blank.", first.getMessage());
+        assertEquals("serviceName must not be null or blank.", first.getMessage());
 
 
         permissionDto = new PermissionDto(name, null, end, grant, connectionId, codes, streamingConfig);
         violations = validator.validate(permissionDto);
         assertEquals(2, violations.size());
         var violationMessages = violations.stream().map(ConstraintViolation::getMessage);
-        assertThat(violationMessages).hasSameElementsAs(List.of("startTime mustn't be null.",
-                "startTime and expirationTime mustn't be null."));
+        assertThat(violationMessages).hasSameElementsAs(List.of("startTime must not be null.",
+                "startTime and expirationTime must not be null."));
 
 
         permissionDto = new PermissionDto(name, start, null, grant, connectionId, codes, streamingConfig);
         violations = validator.validate(permissionDto);
         assertEquals(2, violations.size());
         violationMessages = violations.stream().map(ConstraintViolation::getMessage);
-        assertThat(violationMessages).hasSameElementsAs(List.of("expirationTime mustn't be null.",
-                "startTime and expirationTime mustn't be null."));
+        assertThat(violationMessages).hasSameElementsAs(List.of("expirationTime must not be null.",
+                "startTime and expirationTime must not be null."));
 
 
         permissionDto = new PermissionDto(name, start, end, null, connectionId, codes, streamingConfig);
         violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         first = violations.iterator().next();
-        assertEquals("grantTime mustn't be null.", first.getMessage());
+        assertEquals("grantTime must not be null.", first.getMessage());
 
 
         permissionDto = new PermissionDto(name, start, end, grant, null, codes, streamingConfig);
         violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         first = violations.iterator().next();
-        assertEquals("connectionId mustn't be null or blank.", first.getMessage());
+        assertEquals("connectionId must not be null or blank.", first.getMessage());
 
 
         permissionDto = new PermissionDto(name, start, end, grant, connectionId, null, streamingConfig);
@@ -136,7 +136,7 @@ class PermissionDtoTest {
         violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         first = violations.iterator().next();
-        assertEquals("kafkaStreamingConfig mustn't be null.", first.getMessage());
+        assertEquals("kafkaStreamingConfig must not be null.", first.getMessage());
     }
 
     @Test
@@ -149,7 +149,7 @@ class PermissionDtoTest {
         var violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         var first = violations.iterator().next();
-        assertEquals("bootstrapServers mustn't be null or blank.", first.getMessage());
+        assertEquals("bootstrapServers must not be null or blank.", first.getMessage());
     }
 
     @Test

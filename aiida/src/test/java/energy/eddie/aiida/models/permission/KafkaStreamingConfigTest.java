@@ -42,7 +42,7 @@ class KafkaStreamingConfigTest {
 
         var violations = validator.validate(kafkaConfig);
         assertEquals(1, violations.size());
-        assertEquals("bootstrapServers mustn't be null or blank.", violations.iterator().next().getMessage());
+        assertEquals("bootstrapServers must not be null or blank.", violations.iterator().next().getMessage());
 
         kafkaConfig = new KafkaStreamingConfig(bootstrapServers, null, statusTopic, subscribeTopic);
         violations = validator.validate(kafkaConfig);
@@ -50,17 +50,17 @@ class KafkaStreamingConfigTest {
             System.out.println(violation.getMessage());
         }
         assertEquals(1, violations.size());
-        assertEquals("dataTopic mustn't be null or blank.", violations.iterator().next().getMessage());
+        assertEquals("dataTopic must not be null or blank.", violations.iterator().next().getMessage());
 
         kafkaConfig = new KafkaStreamingConfig(bootstrapServers, dataTopic, null, subscribeTopic);
         violations = validator.validate(kafkaConfig);
         assertEquals(1, violations.size());
-        assertEquals("statusTopic mustn't be null or blank.", violations.iterator().next().getMessage());
+        assertEquals("statusTopic must not be null or blank.", violations.iterator().next().getMessage());
 
         kafkaConfig = new KafkaStreamingConfig(bootstrapServers, dataTopic, statusTopic, null);
         violations = validator.validate(kafkaConfig);
         assertEquals(1, violations.size());
-        assertEquals("subscribeTopic mustn't be null or blank.", violations.iterator().next().getMessage());
+        assertEquals("subscribeTopic must not be null or blank.", violations.iterator().next().getMessage());
     }
 
     @ParameterizedTest

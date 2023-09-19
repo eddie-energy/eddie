@@ -156,7 +156,7 @@ class PermissionServiceTest {
 
             Permission revokedPermission = service.revokePermission(uuid);
 
-            // these fields mustn't have been modified
+            // these fields must not have been modified
             assertEquals(uuid, revokedPermission.permissionId());
             assertEquals(serviceName, revokedPermission.serviceName());
             assertEquals(start, revokedPermission.startTime());

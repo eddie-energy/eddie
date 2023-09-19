@@ -89,31 +89,31 @@ class PermissionTest {
         var permission = new Permission(null, start, expiration, grant, connectionId, codes, streamingConfig);
         var violations = validator.validate(permission);
         assertEquals(1, violations.size());
-        assertEquals("serviceName mustn't be null or blank.", violations.iterator().next().getMessage());
+        assertEquals("serviceName must not be null or blank.", violations.iterator().next().getMessage());
 
         permission = new Permission(name, null, expiration, grant, connectionId, codes, streamingConfig);
         violations = validator.validate(permission);
         assertEquals(2, violations.size());
         var violationMessages = violations.stream().map(ConstraintViolation::getMessage);
-        assertThat(violationMessages).hasSameElementsAs(List.of("startTime mustn't be null.",
-                "startTime and expirationTime mustn't be null."));
+        assertThat(violationMessages).hasSameElementsAs(List.of("startTime must not be null.",
+                "startTime and expirationTime must not be null."));
 
         permission = new Permission(name, start, null, grant, connectionId, codes, streamingConfig);
         violations = validator.validate(permission);
         assertEquals(2, violations.size());
         violationMessages = violations.stream().map(ConstraintViolation::getMessage);
-        assertThat(violationMessages).hasSameElementsAs(List.of("expirationTime mustn't be null.",
-                "startTime and expirationTime mustn't be null."));
+        assertThat(violationMessages).hasSameElementsAs(List.of("expirationTime must not be null.",
+                "startTime and expirationTime must not be null."));
 
         permission = new Permission(name, start, expiration, null, connectionId, codes, streamingConfig);
         violations = validator.validate(permission);
         assertEquals(1, violations.size());
-        assertEquals("grantTime mustn't be null.", violations.iterator().next().getMessage());
+        assertEquals("grantTime must not be null.", violations.iterator().next().getMessage());
 
         permission = new Permission(name, start, expiration, grant, null, codes, streamingConfig);
         violations = validator.validate(permission);
         assertEquals(1, violations.size());
-        assertEquals("connectionId mustn't be null or blank.", violations.iterator().next().getMessage());
+        assertEquals("connectionId must not be null or blank.", violations.iterator().next().getMessage());
 
         permission = new Permission(name, start, expiration, grant, connectionId, null, streamingConfig);
         violations = validator.validate(permission);
@@ -123,7 +123,7 @@ class PermissionTest {
         permission = new Permission(name, start, expiration, grant, connectionId, codes, null);
         violations = validator.validate(permission);
         assertEquals(1, violations.size());
-        assertEquals("kafkaStreamingConfig mustn't be null.", violations.iterator().next().getMessage());
+        assertEquals("kafkaStreamingConfig must not be null.", violations.iterator().next().getMessage());
     }
 
     @Test
@@ -149,7 +149,7 @@ class PermissionTest {
         System.out.println(violations);
         assertEquals(1, violations.size());
         var first = violations.iterator().next();
-        assertEquals("bootstrapServers mustn't be null or blank.", first.getMessage());
+        assertEquals("bootstrapServers must not be null or blank.", first.getMessage());
     }
 
     @Test

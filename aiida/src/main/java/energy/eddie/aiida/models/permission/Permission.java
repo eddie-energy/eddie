@@ -33,26 +33,26 @@ public class Permission {
     private PermissionStatus status;
     @Column(nullable = false)
     @JsonProperty(required = true)
-    @NotBlank(message = "serviceName mustn't be null or blank.")
+    @NotBlank(message = "serviceName must not be null or blank.")
     private String serviceName;
     @Column(nullable = false)
     @JsonProperty(required = true)
-    @NotNull(message = "startTime mustn't be null.")
+    @NotNull(message = "startTime must not be null.")
     private Instant startTime;
     @Column(nullable = false)
     @JsonProperty(required = true)
-    @NotNull(message = "expirationTime mustn't be null.")
+    @NotNull(message = "expirationTime must not be null.")
     private Instant expirationTime;
     @Column(nullable = false)
     @JsonProperty(required = true)
-    @NotNull(message = "grantTime mustn't be null.")
+    @NotNull(message = "grantTime must not be null.")
     private Instant grantTime;
     @JsonProperty
     @Nullable
     private Instant revokeTime = null;
     @Column(nullable = false)
     @JsonProperty(required = true)
-    @NotBlank(message = "connectionId mustn't be null or blank.")
+    @NotBlank(message = "connectionId must not be null or blank.")
     private String connectionId;
     @Column(nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
@@ -63,7 +63,7 @@ public class Permission {
     @JoinColumn(name = "kafka_streaming_config_id", referencedColumnName = "id")
     @JsonProperty(required = true)
     @Valid
-    @NotNull(message = "kafkaStreamingConfig mustn't be null.")
+    @NotNull(message = "kafkaStreamingConfig must not be null.")
     private KafkaStreamingConfig kafkaStreamingConfig;
 
 
@@ -159,7 +159,7 @@ public class Permission {
         requireNonNull(revokeTime);
 
         if (revokeTime.isBefore(grantTime))
-            throw new IllegalArgumentException("revokeTime mustn't be before grantTime.");
+            throw new IllegalArgumentException("revokeTime must not be before grantTime.");
 
         this.revokeTime = revokeTime;
     }

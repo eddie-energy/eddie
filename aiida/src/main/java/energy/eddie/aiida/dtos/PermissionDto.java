@@ -25,19 +25,19 @@ import java.util.Set;
  */
 @ExpirationTimeAfterStartTime
 public record PermissionDto(
-        @NotBlank(message = "serviceName mustn't be null or blank.")
+        @NotBlank(message = "serviceName must not be null or blank.")
         @JsonProperty(required = true)
         String serviceName,
-        @NotNull(message = "startTime mustn't be null.")
+        @NotNull(message = "startTime must not be null.")
         @JsonProperty(required = true)
         Instant startTime,
-        @NotNull(message = "expirationTime mustn't be null.")
+        @NotNull(message = "expirationTime must not be null.")
         @JsonProperty(required = true)
         Instant expirationTime,
-        @NotNull(message = "grantTime mustn't be null.")
+        @NotNull(message = "grantTime must not be null.")
         @JsonProperty(required = true)
         Instant grantTime,
-        @NotBlank(message = "connectionId mustn't be null or blank.")
+        @NotBlank(message = "connectionId must not be null or blank.")
         @JsonProperty(required = true)
         String connectionId,
         @NotEmpty(message = "At least one OBIS code needs to be requested.")
@@ -45,6 +45,6 @@ public record PermissionDto(
         Set<String> requestedCodes,
         @Valid  // if PermissionDto is validated, also validate kafkaStreamingConfig
         @JsonProperty(required = true)
-        @NotNull(message = "kafkaStreamingConfig mustn't be null.")
+        @NotNull(message = "kafkaStreamingConfig must not be null.")
         KafkaStreamingConfig kafkaStreamingConfig) {
 }

@@ -18,19 +18,19 @@ public class KafkaStreamingConfig {
     @SuppressWarnings("unused")
     private Long id;
     @Column(nullable = false)
-    @NotBlank(message = "bootstrapServers mustn't be null or blank.")
+    @NotBlank(message = "bootstrapServers must not be null or blank.")
     @JsonProperty(required = true)
     private String bootstrapServers;
     @Column(nullable = false)
-    @NotBlank(message = "dataTopic mustn't be null or blank.")
+    @NotBlank(message = "dataTopic must not be null or blank.")
     @JsonProperty(required = true)
     private String dataTopic;
     @Column(nullable = false)
-    @NotBlank(message = "statusTopic mustn't be null or blank.")
+    @NotBlank(message = "statusTopic must not be null or blank.")
     @JsonProperty(required = true)
     private String statusTopic;
     @Column(nullable = false)
-    @NotBlank(message = "subscribeTopic mustn't be null or blank.")
+    @NotBlank(message = "subscribeTopic must not be null or blank.")
     @JsonProperty(required = true)
     private String subscribeTopic;
 

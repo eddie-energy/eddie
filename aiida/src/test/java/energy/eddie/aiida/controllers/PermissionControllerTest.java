@@ -155,9 +155,9 @@ class PermissionControllerTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errors", allOf(
                             iterableWithSize(3),
-                            hasItem("startTime mustn't be null."),
-                            hasItem("expirationTime mustn't be null."),
-                            hasItem("startTime and expirationTime mustn't be null.")
+                            hasItem("startTime must not be null."),
+                            hasItem("expirationTime must not be null."),
+                            hasItem("startTime and expirationTime must not be null.")
                     )));
         }
 
@@ -175,9 +175,9 @@ class PermissionControllerTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errors", allOf(
                             iterableWithSize(3),
-                            hasItem("dataTopic mustn't be null or blank."),
-                            hasItem("statusTopic mustn't be null or blank."),
-                            hasItem("subscribeTopic mustn't be null or blank.")
+                            hasItem("dataTopic must not be null or blank."),
+                            hasItem("statusTopic must not be null or blank."),
+                            hasItem("subscribeTopic must not be null or blank.")
                     )));
         }
 
@@ -425,7 +425,7 @@ class PermissionControllerTest {
 
             verify(permissionService, atLeast(1)).revokePermission(any());
 
-            // these fields mustn't have been modified
+            // these fields must not have been modified
             assertEquals(uuid, response.permissionId());
             assertEquals(revokeTime, response.revokeTime());
             assertEquals(PermissionStatus.REVOKED, response.status());

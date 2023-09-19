@@ -8,11 +8,11 @@ import java.time.Instant;
 
 public class ExpirationTimeAfterStartTimePermissionDtoValidator implements ConstraintValidator<ExpirationTimeAfterStartTime, PermissionDto> {
     public static boolean validate(Instant start, Instant expiration, ConstraintValidatorContext context) {
-        // null check is required, because it's not guaranteed, that @NotNull annotation is validated before this one
+        // null check is required, because it is not guaranteed, that @NotNull annotation is validated before this one
         if (expiration == null || start == null) {
             // disable default error message and set a custom one
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate("startTime and expirationTime mustn't be null.")
+            context.buildConstraintViolationWithTemplate("startTime and expirationTime must not be null.")
                     .addConstraintViolation();
             return false;
         }
