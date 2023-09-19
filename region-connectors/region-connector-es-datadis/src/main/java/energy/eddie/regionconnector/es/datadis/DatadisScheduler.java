@@ -11,7 +11,6 @@ import energy.eddie.regionconnector.es.datadis.dtos.exceptions.InvalidPointAndMe
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSuppliesException;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSupplyForMeteringPointException;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import energy.eddie.regionconnector.es.datadis.permission.request.state.InvalidState;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.util.retry.Retry;
@@ -42,8 +41,8 @@ public class DatadisScheduler {
         return m -> m.date() == null || m.date().isBefore(from) || m.date().isAfter(to);
     }
 
+    // Suppress the warning of multiple identical paths, should be removed when implementing issue #296
     @SuppressWarnings("java:S1871")
-        // This can be removed if we have properly defined states
     void pullAvailableHistoricalData(EsPermissionRequest permissionRequest) {
         var now = ZonedDateTime.now(ZONE_ID_SPAIN).toLocalDate();
         if (permissionRequest.permissionStart().toLocalDate().isAfter(now)) {
@@ -68,13 +67,13 @@ public class DatadisScheduler {
                         // or that the supplier responsible for the account is currently not reachable
                         // we should think of a new state for this
                         // calling changeState is also bad here, because it will not be persisted or propagated
-                        permissionRequest.changeState(new InvalidState(permissionRequest, e));
+                        // fix with #296
                     } else if (cause instanceof InvalidPointAndMeasurementTypeCombinationException) {
                         // we should think of a new state for this
-                        permissionRequest.changeState(new InvalidState(permissionRequest, e));
+                        // fix with #296
                     } else if (cause instanceof UnauthorizedException) {
                         // The authorization has not actually been granted or was revoked change to revoked state
-                        permissionRequest.changeState(new InvalidState(permissionRequest, e));
+                        // fix with #296
                     }
                     // In the case of a NoSupplyForMeteringPointException, we can assume that the distributor is
                     // currently not reachable and we should retry later
@@ -102,7 +101,7 @@ public class DatadisScheduler {
         if (!pointTypeSupportsMeasurementType(supply.pointType(), permissionRequest.measurementType()))
             return Mono.error(new InvalidPointAndMeasurementTypeCombinationException(supply.pointType(), permissionRequest.measurementType()));
 
-        var now = ZonedDateTime.now(ZoneOffset.UTC).toLocalDate();
+        LocalDate now = ZonedDateTime.now(ZoneOffset.UTC).toLocalDate();
         LocalDate from = permissionRequest.requestDataFrom().toLocalDate();
         // check if request data from is in the future or today
         if (from.isAfter(now) || from.isEqual(now)) {
