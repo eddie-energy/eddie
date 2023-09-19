@@ -17,11 +17,11 @@ if ($env:OS -eq "Windows_NT")
 }
 elseif (Get-Command "xdg-open" -ErrorAction SilentlyContinue)
 {
-    Start-Process "xdg-open " + $url
+    Start-Process "xdg-open " -ArgumentList $url
 }
 elseif (Get-Command "start" -ErrorAction SilentlyContinue)
 {
-    Start-Process "start " + $url
+    Start-Process "start " -ArgumentList $url
 }
 
 Write-Output "" ($separator + "DONE.") ""
