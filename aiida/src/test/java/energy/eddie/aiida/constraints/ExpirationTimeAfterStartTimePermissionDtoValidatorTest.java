@@ -1,7 +1,7 @@
 package energy.eddie.aiida.constraints;
 
-import energy.eddie.aiida.dto.PermissionDto;
-import energy.eddie.aiida.model.permission.KafkaStreamingConfig;
+import energy.eddie.aiida.dtos.PermissionDto;
+import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;

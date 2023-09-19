@@ -1,6 +1,6 @@
 package energy.eddie.aiida.constraints;
 
-import energy.eddie.aiida.model.permission.Permission;
+import energy.eddie.aiida.models.permission.Permission;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
