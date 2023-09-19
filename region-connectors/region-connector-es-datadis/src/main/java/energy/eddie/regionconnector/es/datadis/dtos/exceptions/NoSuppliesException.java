@@ -6,3 +6,4 @@ public class NoSuppliesException extends Exception {
         super(message);
     }
 }
+

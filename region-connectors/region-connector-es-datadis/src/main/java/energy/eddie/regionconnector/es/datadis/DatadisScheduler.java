@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.es.datadis;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
+import energy.eddie.regionconnector.es.datadis.api.UnauthorizedException;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
@@ -58,13 +59,21 @@ public class DatadisScheduler {
                 .flatMap(meteringData -> processMeteringData(
                         meteringData, permissionRequest, consumptionRecords, consumptionRecordMapper))
                 .doOnError(e -> {
-                    if (e instanceof NoSuppliesException) {
+                    Throwable cause = e;
+                    while (cause.getCause() != null) { // do match the exception we need to get the cause
+                        cause = cause.getCause();
+                    }
+                    if (cause instanceof NoSuppliesException) {
                         // this could mean that the user has no metering point associated with his account,
                         // or that the supplier responsible for the account is currently not reachable
                         // we should think of a new state for this
+                        // calling changeState is also bad here, because it will not be persisted or propagated
                         permissionRequest.changeState(new InvalidState(permissionRequest, e));
-                    } else if (e instanceof InvalidPointAndMeasurementTypeCombinationException) {
+                    } else if (cause instanceof InvalidPointAndMeasurementTypeCombinationException) {
                         // we should think of a new state for this
+                        permissionRequest.changeState(new InvalidState(permissionRequest, e));
+                    } else if (cause instanceof UnauthorizedException) {
+                        // The authorization has not actually been granted or was revoked change to revoked state
                         permissionRequest.changeState(new InvalidState(permissionRequest, e));
                     }
                     // In the case of a NoSupplyForMeteringPointException, we can assume that the distributor is
