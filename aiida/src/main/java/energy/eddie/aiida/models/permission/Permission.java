@@ -82,7 +82,15 @@ public class Permission {
      * @param requestedCodes       Codes object containing which codes shall be shared with the EP.
      * @param kafkaStreamingConfig StreamingInfo object containing configuration how data shall be shared.
      */
-    public Permission(String serviceName, Instant startTime, Instant expirationTime, Instant grantTime, String connectionId, Set<String> requestedCodes, KafkaStreamingConfig kafkaStreamingConfig) {
+    public Permission(
+            String serviceName,
+            Instant startTime,
+            Instant expirationTime,
+            Instant grantTime,
+            String connectionId,
+            Set<String> requestedCodes,
+            KafkaStreamingConfig kafkaStreamingConfig
+    ) {
         this.serviceName = serviceName;
         this.startTime = startTime;
         this.expirationTime = expirationTime;
