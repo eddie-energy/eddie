@@ -56,5 +56,7 @@ There are several parameters to configure the framework via the environment:
 ## How to build docker images locally
 
 Building and running can be done using `docker compose` with the files provided in the `/env` folder. For performing a
-local test run with compiling the software, building and starting a local docker environment a powershell script
-is provided: `build_and_run_containers.ps1`
+local test run with compiling the software, building and starting a local docker environment shell scripts exist:
+
+- `build_and_run_containers.ps1`
+- `build_and_run_containers.bash`

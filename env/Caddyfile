@@ -1,16 +1,10 @@
 :8080 {
     log
 
-    # Add trailing slash if missing
-    @missingSlash {
-        not path */
-        not path *.*
-        not path */api/data-needs/*
-    }
-    rewrite @missingSlash {http.request.uri.path}/
-
     reverse_proxy {$PUBLIC_CONTEXT_PATH:}/lib/* eddie-framework:8080
     reverse_proxy {$PUBLIC_CONTEXT_PATH:}/region-connectors/* eddie-framework:8080
     reverse_proxy {$PUBLIC_CONTEXT_PATH:}/api/* eddie-framework:8080
-    reverse_proxy {$PUBLIC_CONTEXT_PATH:}/* eddie-example-app:8081
+    # There is intentionally no slash (/) between the context path and the asterix (*) on
+    # the next rule's matcher, because that was also the base path is proxied.
+    reverse_proxy {$PUBLIC_CONTEXT_PATH:}* eddie-example-app:8081
 }
