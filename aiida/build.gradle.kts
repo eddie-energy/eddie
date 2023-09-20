@@ -26,6 +26,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    implementation("org.springframework.boot:spring-boot-starter-web")
 
     // errorprone & nullAway
     annotationProcessor("com.uber.nullaway:nullaway:0.10.11")
@@ -34,7 +35,16 @@ dependencies {
     errorprone("com.google.errorprone:error_prone_core:2.18.0")
     errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
 
+    // testcontainers
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.0")
     testImplementation("org.testcontainers:postgresql:1.19.0")
+
+    // catches invalid hibernate validation annotations, e.g. a String annotated with @Past
+    annotationProcessor("org.hibernate.validator:hibernate-validator-annotation-processor:8.0.1.Final")
+
+    // required for making PATCH requests in integration test
+    testImplementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
 }
 
 tasks.withType<Test> {

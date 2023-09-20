@@ -1,4 +1,4 @@
-package energy.eddie.aiida.model.permission;
+package energy.eddie.aiida.models.permission;
 
 public enum PermissionStatus {
     /**

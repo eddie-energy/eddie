@@ -1,5 +1,6 @@
-package energy.eddie.aiida.model.permission;
+package energy.eddie.aiida.models.permission;
 
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
@@ -10,7 +11,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class KafkaStreamingConfigTest {
     private Validator validator;
@@ -32,16 +32,35 @@ class KafkaStreamingConfigTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         validatorFactory.close();
     }
 
     @Test
-    void givenNull_throws() {
-        assertThrows(NullPointerException.class, () -> new KafkaStreamingConfig(null, dataTopic, statusTopic, subscribeTopic));
-        assertThrows(NullPointerException.class, () -> new KafkaStreamingConfig(bootstrapServers, null, statusTopic, subscribeTopic));
-        assertThrows(NullPointerException.class, () -> new KafkaStreamingConfig(bootstrapServers, dataTopic, null, subscribeTopic));
-        assertThrows(NullPointerException.class, () -> new KafkaStreamingConfig(bootstrapServers, dataTopic, statusTopic, null));
+    void givenNull_validation_fails() {
+        var kafkaConfig = new KafkaStreamingConfig(null, dataTopic, statusTopic, subscribeTopic);
+
+        var violations = validator.validate(kafkaConfig);
+        assertEquals(1, violations.size());
+        assertEquals("bootstrapServers must not be null or blank.", violations.iterator().next().getMessage());
+
+        kafkaConfig = new KafkaStreamingConfig(bootstrapServers, null, statusTopic, subscribeTopic);
+        violations = validator.validate(kafkaConfig);
+        for (ConstraintViolation<KafkaStreamingConfig> violation : violations) {
+            System.out.println(violation.getMessage());
+        }
+        assertEquals(1, violations.size());
+        assertEquals("dataTopic must not be null or blank.", violations.iterator().next().getMessage());
+
+        kafkaConfig = new KafkaStreamingConfig(bootstrapServers, dataTopic, null, subscribeTopic);
+        violations = validator.validate(kafkaConfig);
+        assertEquals(1, violations.size());
+        assertEquals("statusTopic must not be null or blank.", violations.iterator().next().getMessage());
+
+        kafkaConfig = new KafkaStreamingConfig(bootstrapServers, dataTopic, statusTopic, null);
+        violations = validator.validate(kafkaConfig);
+        assertEquals(1, violations.size());
+        assertEquals("subscribeTopic must not be null or blank.", violations.iterator().next().getMessage());
     }
 
     @ParameterizedTest

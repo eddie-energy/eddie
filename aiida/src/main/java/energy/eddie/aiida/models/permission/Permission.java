@@ -1,5 +1,7 @@
-package energy.eddie.aiida.model.permission;
+package energy.eddie.aiida.models.permission;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.constraints.ExpirationTimeAfterStartTime;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
@@ -15,40 +17,53 @@ import static java.util.Objects.requireNonNull;
 
 @Entity
 @Table(name = "permission")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @ExpirationTimeAfterStartTime
 public class Permission {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Nullable
     @Column(nullable = false, name = "permission_id")
+    // Just nullable because id is set by DB and not in constructor
+    @Nullable
+    @JsonProperty
     private String permissionId;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @JsonProperty
     private PermissionStatus status;
     @Column(nullable = false)
-    @NotBlank(message = "serviceName mustn't be null or blank.")
+    @JsonProperty(required = true)
+    @NotBlank(message = "serviceName must not be null or blank.")
     private String serviceName;
     @Column(nullable = false)
-    @NotNull(message = "startTime mustn't be null.")
+    @JsonProperty(required = true)
+    @NotNull(message = "startTime must not be null.")
     private Instant startTime;
     @Column(nullable = false)
-    @NotNull(message = "expirationTime mustn't be null.")
+    @JsonProperty(required = true)
+    @NotNull(message = "expirationTime must not be null.")
     private Instant expirationTime;
     @Column(nullable = false)
-    @NotNull(message = "grantTime mustn't be null.")
+    @JsonProperty(required = true)
+    @NotNull(message = "grantTime must not be null.")
     private Instant grantTime;
+    @JsonProperty
     @Nullable
-    private Instant terminateTime = null;
+    private Instant revokeTime = null;
     @Column(nullable = false)
-    @NotBlank(message = "connectionId mustn't be null or blank.")
+    @JsonProperty(required = true)
+    @NotBlank(message = "connectionId must not be null or blank.")
     private String connectionId;
     @Column(nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
+    @JsonProperty(required = true)
     @NotEmpty(message = "At least one OBIS code needs to be requested.")
     private Set<String> requestedCodes;
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "kafka_streaming_config_id", referencedColumnName = "id")
-    @Valid  // if Permission is validated, also validate kafkaStreamingConfig
+    @JsonProperty(required = true)
+    @Valid
+    @NotNull(message = "kafkaStreamingConfig must not be null.")
     private KafkaStreamingConfig kafkaStreamingConfig;
 
 
@@ -67,14 +82,22 @@ public class Permission {
      * @param requestedCodes       Codes object containing which codes shall be shared with the EP.
      * @param kafkaStreamingConfig StreamingInfo object containing configuration how data shall be shared.
      */
-    public Permission(String serviceName, Instant startTime, Instant expirationTime, Instant grantTime, String connectionId, Set<String> requestedCodes, KafkaStreamingConfig kafkaStreamingConfig) {
-        this.serviceName = requireNonNull(serviceName);
-        this.startTime = requireNonNull(startTime);
-        this.expirationTime = requireNonNull(expirationTime);
-        this.grantTime = requireNonNull(grantTime);
-        this.connectionId = requireNonNull(connectionId);
-        this.requestedCodes = requireNonNull(requestedCodes);
-        this.kafkaStreamingConfig = requireNonNull(kafkaStreamingConfig);
+    public Permission(
+            String serviceName,
+            Instant startTime,
+            Instant expirationTime,
+            Instant grantTime,
+            String connectionId,
+            Set<String> requestedCodes,
+            KafkaStreamingConfig kafkaStreamingConfig
+    ) {
+        this.serviceName = serviceName;
+        this.startTime = startTime;
+        this.expirationTime = expirationTime;
+        this.grantTime = grantTime;
+        this.connectionId = connectionId;
+        this.requestedCodes = requestedCodes;
+        this.kafkaStreamingConfig = kafkaStreamingConfig;
 
         this.status = PermissionStatus.ACCEPTED;
     }
@@ -122,23 +145,23 @@ public class Permission {
      * The return value of {@link #status()} indicates which of the two cases occurred.
      */
     @Nullable
-    public Instant terminateTime() {
-        return terminateTime;
+    public Instant revokeTime() {
+        return revokeTime;
     }
 
     /**
      * Set the UTC timestamp when either the EP terminated the permission or the customer revoked the permission.
      * Use {@link #updateStatus(PermissionStatus)} to indicate which of the two cases occurred.
      *
-     * @param terminateTime The rejection or termination timestamp.
+     * @param revokeTime The revocation or termination timestamp.
      */
-    public void terminateTime(Instant terminateTime) {
-        requireNonNull(terminateTime);
+    public void revokeTime(Instant revokeTime) {
+        requireNonNull(revokeTime);
 
-        if (terminateTime.isBefore(grantTime))
-            throw new IllegalArgumentException("terminateTime mustn't be before grantTime.");
+        if (revokeTime.isBefore(grantTime))
+            throw new IllegalArgumentException("revokeTime must not be before grantTime.");
 
-        this.terminateTime = terminateTime;
+        this.revokeTime = revokeTime;
     }
 
     /**

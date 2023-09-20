@@ -1,5 +1,6 @@
 package energy.eddie.aiida.constraints;
 
+
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -9,12 +10,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The annotated <code>Permission</code> object's expirationTime has to be after
- * the startTime to be a valid permission.
+ * The annotated object's expirationTime has to be after the startTime.
  */
-@Target({ElementType.TYPE})
+@Target({ElementType.TYPE, ElementType.RECORD_COMPONENT})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {ExpirationTimeAfterStartTimeValidator.class})
+@Constraint(validatedBy = {ExpirationTimeAfterStartTimePermissionDtoValidator.class, ExpirationTimeAfterStartTimePermissionValidator.class})
 public @interface ExpirationTimeAfterStartTime {
     String message() default "expirationTime has to be after startTime.";
 
