@@ -1,12 +1,41 @@
 import { css, html, LitElement } from "lit";
 import { createRef, ref } from "lit/directives/ref.js";
+import { until } from "lit/directives/until.js";
+import { unsafeSVG } from "lit/directives/unsafe-svg.js";
+
+import eddieLogo from "../resources/eddie-logo.svg?raw";
+
+import PERMISSION_ADMINISTRATORS from "../resources/permission-administrators.json";
+
+const COUNTRIES = [
+  ...new Set(PERMISSION_ADMINISTRATORS.map((item) => item.country)),
+];
+const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
+
+const BASE_URL = new URL(import.meta.url).origin;
+const METADATA_URL = new URL("/api/region-connectors-metadata", BASE_URL);
+
+function getRegionConnectors() {
+  return fetch(METADATA_URL)
+    .then((response) => response.json())
+    .then((json) => Object.fromEntries(json.map((it) => [it.mdaCode, it])));
+}
+
+function getDataNeedAttributes(dataNeedId) {
+  return fetch(new URL(`/api/data-needs/${dataNeedId}`, BASE_URL))
+    .then((response) => response.json())
+    .catch((err) => console.error(err));
+}
 
 class EddieConnectButton extends LitElement {
   static properties = {
-    connectionid: {},
+    connectionId: { attribute: "connectionid" },
     dataNeedId: { attribute: "data-need-id" },
-    _availableConnectors: {},
-    _dataNeedAttributes: {},
+    _selectedCountry: { type: String },
+    _selectedPermissionAdministrator: { type: Object },
+    _availableConnectors: { type: Object },
+    _dataNeedAttributes: { type: Object },
+    _allowDataNeedModifications: { type: Boolean },
   };
 
   static CONTEXT_PATH = new URL(import.meta.url).pathname.replace(
@@ -15,7 +44,7 @@ class EddieConnectButton extends LitElement {
   );
 
   dialogRef = createRef();
-  connectorPlaceholderRef = createRef();
+  permissionAdministratorSelectRef = createRef();
 
   static styles = css`
     .eddie-connect-button {
@@ -95,82 +124,70 @@ class EddieConnectButton extends LitElement {
 
   constructor() {
     super();
-    this._availableConnectors = [];
+    this._availableConnectors = {};
+    this._dataNeedAttributes = {};
+    this._allowDataNeedModifications = true;
   }
 
-  connect() {
+  async connect() {
+    this._availableConnectors = await getRegionConnectors();
+    this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
+
     this.dialogRef.value.showModal();
-    this.loadAvailablePas();
-    this.loadDataNeedAttributes();
   }
 
   closePopup() {
     this.dialogRef.value.close();
   }
 
-  loadAvailablePas() {
-    this.loadJsonFrom("/api/region-connectors-metadata")
-      .then(
-        (json) =>
-          (this._availableConnectors = Object.fromEntries(
-            json.map((it) => [it.mdaCode, it])
-          ))
-      )
-      .catch((err) => console.error(err));
-  }
+  async getRegionConnectorElement() {
+    const regionConnectorId =
+      this._selectedPermissionAdministrator.regionConnector;
+    const customElementName = regionConnectorId + "-pa-ce";
 
-  loadDataNeedAttributes() {
-    this.loadJsonFrom(`/api/data-needs/${this.dataNeedId}`)
-      .then((json) => (this._dataNeedAttributes = json))
-      .catch((err) => console.error(err));
-  }
-
-  loadJsonFrom(path) {
-    console.log(`loading json from ${path}`);
-    const queryUrl = new URL(import.meta.url);
-    queryUrl.pathname = EddieConnectButton.CONTEXT_PATH + path;
-    return fetch(queryUrl)
-      .then((res) => {
-        if (res.ok) {
-          return res.json();
-        } else {
-          console.error(`cannot receive data from ${queryUrl.href}`);
-          console.error(res);
-          return Promise.resolve(null);
-        }
-      })
-      .catch((err) => console.error(err));
-  }
-
-  selectPa(event) {
-    const paName = event.target.value;
-    if (paName) {
-      console.log(`selected pa ${paName}, loading it's custom element`);
-      this.loadPaSpecificCustomElement(event.target.value).catch(console.error);
-    } else {
-      console.log("unselected the pa");
-      this.connectorPlaceholderRef.value.innerHTML = "... no PA selected ...";
-    }
-  }
-
-  async loadPaSpecificCustomElement(paName) {
-    const customElementName = paName.toLocaleLowerCase() + "-pa-ce";
-    if (typeof customElements.get(customElementName) === "undefined") {
+    if (!customElements.get(customElementName)) {
+      const regionConnector = this._availableConnectors[regionConnectorId];
       // loaded module needs to have the custom element class as it's default export
-      const regionConnectorUrlPath = this._availableConnectors[paName].urlPath;
-      const module = await import(
-        `${EddieConnectButton.CONTEXT_PATH}${regionConnectorUrlPath}ce.js`
-      );
+      const module = await import(`${BASE_URL}${regionConnector.urlPath}ce.js`);
       customElements.define(customElementName, module.default);
     }
-    const el = document.createElement(customElementName);
-    el.setAttribute("connectionid", this.connectionid);
-    el.setAttribute("allow-data-need-modifications", true);
-    el.setAttribute(
+
+    const element = document.createElement(customElementName);
+    element.setAttribute("connection-id", this.connectionId);
+    element.setAttribute(
+      "allow-data-need-modifications",
+      this._allowDataNeedModifications
+    );
+    element.setAttribute(
       "data-need-attributes",
       JSON.stringify(this._dataNeedAttributes)
     );
-    this.connectorPlaceholderRef.value.replaceChildren(el);
+    element.setAttribute(
+      "jump-off-url",
+      this._selectedPermissionAdministrator.jumpOffUrl
+    );
+
+    return element;
+  }
+
+  handleCountrySelect(event) {
+    // reset to default option to prevent selecting an unloaded region connector
+    this._selectedPermissionAdministrator = null;
+    if (this.permissionAdministratorSelectRef.value) {
+      this.permissionAdministratorSelectRef.value.selectedIndex = 0;
+    }
+
+    if (event.target.value === "sim") {
+      this._selectedCountry = null;
+      this._selectedPermissionAdministrator = { regionConnector: "sim" };
+    } else {
+      this._selectedCountry = event.target.value;
+    }
+  }
+
+  handlePermissionAdministratorSelect(event) {
+    this._selectedPermissionAdministrator =
+      PERMISSION_ADMINISTRATORS[event.target.value];
   }
 
   render() {
@@ -181,30 +198,67 @@ class EddieConnectButton extends LitElement {
 
       <dialog class="eddie-connect-dialog" ${ref(this.dialogRef)}>
         <header>
-          <img
-            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' id='Layer_1' x='0' y='0' style='enable-background:new 0 0 2500 451.4' version='1.1' viewBox='0 0 2500 451.4'%3E%3Cstyle%3E .st0%7Bfill:%23017aa0%7D.st2%7Bfill:%23ffd208%7D.st3%7Bfill:%23ea5297%7D.st4%7Bfill:%23007aa2%7D.st5%7Bfill:%2394c242%7D %3C/style%3E%3Cpath d='M348.9 218.4c10.9-5.1 18.8-4.1 25.5-.4-4.2-33.3-18.3-44.9-22.5-47.8-10.8 6.9-19.5 16.8-24.8 28.6-8.4 10.8-56.4 14.2-98.1 15.1-1.2 0-2.5 0-3.9.1-14.1.2-27.2.2-37.6.1-6.4-.2-12.9-.5-19.1-1 10.1 3.7 27.1 11.7 30.8 24.2 7.9 0 16.7 0 25.9.2 1.3 0 2.6.1 3.9.1 41.7.9 89.9 4.3 98.1 15.2-1.3-10.3 1.4-24.8 21.8-34.4z' style='fill:%231da7e0'/%3E%3Cpath d='M208.3 350.1c28.4 33.4 61 33.3 83.1 29.6v-.1c-.2-2-.5-3.9-.8-5.9 0-.1 0-.3-.1-.4-.4-1.9-.8-3.8-1.4-5.7 0-.2-.1-.3-.1-.5-.6-1.8-1.2-3.7-1.9-5.4-.1-.2-.2-.4-.2-.6-.7-1.7-1.5-3.4-2.4-5.1-.1-.2-.2-.5-.4-.7-.9-1.7-1.8-3.3-2.9-4.8-.1-.2-.3-.5-.4-.7-1.1-1.6-2.3-3.2-3.5-4.8-.1-.1-.2-.3-.3-.4-2.2-2.7-4.6-5.1-7.1-7.4l-2.1-1.8c-.1-.1-.3-.2-.4-.3-1.5-1.2-3.1-2.4-4.8-3.5-.2-.1-.4-.3-.7-.4-1.6-1-3.2-2-4.9-2.9-.2-.1-.5-.2-.7-.4-1.7-.9-3.4-1.7-5.1-2.4-.2-.1-.4-.2-.6-.2-1.8-.7-3.6-1.4-5.5-1.9-.1 0-.3-.1-.4-.1-1.9-.5-3.8-1-5.7-1.4-.1 0-.2 0-.3-.1-1.9-.4-3.9-.7-5.9-.9h-.3c-2-.2-4-.3-6.1-.3-2.1 0-4.1.1-6.1.3h-.3c-2 .2-4 .5-5.9.9H213.8c-.3.1-.7.1-1 .2-2.1.4-7 .9-13.9-.3.6.7 1.2 1.5 1.8 2.3 5.1 6.8 5.9 13.4 7.6 26.1z' class='st2'/%3E%3Cpath d='M208.3 350.1c.6 4.4 1.3 9.5 2.3 15.5 8.5 50.8 43.6 64.1 60.9 67.6.4-.3.7-.7 1.1-1 1.3-1.3 2.6-2.7 3.8-4.2.1-.2.3-.3.4-.5l.2-.2c.1-.1.2-.3.3-.4 1.2-1.5 2.4-3.1 3.5-4.8.2-.2.3-.5.4-.7 1-1.6 2-3.2 2.9-4.8.1-.2.2-.5.4-.7.9-1.7 1.7-3.4 2.4-5.1.1-.2.2-.4.2-.6.7-1.8 1.3-3.6 1.9-5.4 0-.2.1-.3.1-.5.5-1.9 1-3.8 1.4-5.7 0-.1 0-.3.1-.4.4-1.9.7-3.9.8-5.9v-.3a60.263 60.263 0 0 0 0-12v-.3c-22.1 3.7-54.7 3.8-83.1-29.6z' class='st3'/%3E%3Cpath d='M144.1 322.7c2.1 2.3 3.3 3.7 3.3 3.7 17.2 23 15.8 40.9 15 45.7l-.3 1.2c0 .1 0 .2-.1.3-.4 2-.7 3.9-.9 5.9v.3c-.2 2-.3 4-.3 6.1s.1 4.1.3 6.1v.3c.2 2 .5 4 .9 5.9 0 .1 0 .2.1.3.4 2 .9 3.9 1.4 5.8 0 .1.1.3.1.4.6 1.9 1.2 3.7 1.9 5.5.1.2.1.4.2.6.7 1.8 1.5 3.5 2.4 5.2.1.2.2.5.3.7.9 1.7 1.9 3.3 2.9 4.9.1.2.3.4.4.6 1.1 1.7 2.3 3.3 3.5 4.8.1.1.2.2.3.4 2.8 3.4 5.9 6.5 9.2 9.2.1.1.2.2.4.3 1.5 1.2 3.2 2.4 4.8 3.5.2.1.4.3.6.4 1.6 1 3.2 2 4.9 2.9.2.1.4.2.7.3 1.7.9 3.4 1.7 5.2 2.4.2.1.4.1.6.2 1.8.7 3.6 1.4 5.5 1.9.1 0 .3.1.4.1 1.9.6 3.8 1 5.8 1.4.1 0 .2 0 .3.1 2 .4 3.9.7 5.9.9h.3a62.28 62.28 0 0 0 12.2 0h.3c2-.2 4-.5 5.9-.9.1 0 .2 0 .3-.1 2-.4 3.9-.9 5.8-1.4.1 0 .3-.1.4-.1 1.9-.6 3.7-1.2 5.5-1.9.2-.1.4-.2.6-.2 1.8-.7 3.5-1.5 5.1-2.4.2-.1.5-.2.7-.4 1.7-.9 3.3-1.8 4.9-2.9.2-.1.4-.3.7-.4 1.6-1.1 3.2-2.3 4.8-3.5.1-.1.3-.2.4-.3 1.3-1.1 2.5-2.2 3.8-3.3-17.3-3.5-52.4-16.8-60.9-67.6-1-6.1-1.7-11.2-2.3-15.5-1.7-12.7-2.4-19.3-7.6-26-.6-.8-1.2-1.6-1.8-2.3-8.2-1.4-19.4-5.2-32-14.7 0 0-22.7-19.4-34.5-36.5-11.5 11.3 19.9 31.9 11.7 52.1z' class='st4'/%3E%3Cpath d='M81.2 263.3c-39.6-1-67.4-23.6-81-42.9-1.4 18.4 4.9 37.2 18.9 51.3 8.5 8.5 18.9 14.2 29.8 17 1 .3 1.9.5 2.9.7l1.5.3c4.1.8 8.3 1.2 12.7 1.2 9.3 0 18.2-2 26.2-5.5 13.4-3.9 42.2 26.4 51.9 37.2 8.2-20.3-23.2-40.8-11.8-52.1-3.9-5.6-6.5-11-6.8-15.4l-.2.3c0 .1-14.6 8.7-44.1 7.9z' class='st3'/%3E%3Cpath d='M168.4 213.2c-21.4-1.8-39.8-6.2-42.9-16.2v-.4c-4.5 3.5-27.5 19.8-70.2 22.6 0 0-32.2 3-52.4-12.8-1.4 4.6-2.3 9.4-2.7 14.1 13.6 19.2 41.4 41.9 81 42.9 29.5.8 44.1-7.9 44.1-7.9l.2-.3v-.5c4-12.9 33.3-16.4 62-17.2 3.6 0 7.5-.1 11.7-.1-3.7-12.5-20.7-20.5-30.8-24.2z' class='st2'/%3E%3Cpath d='M55.3 219.2c42.7-2.7 65.8-19.1 70.2-22.6.4-17.6 41.3-52.4 41.3-52.4 23-17.2 40.9-15.8 45.7-15 .4.1.8.2 1.3.3h.2c2 .4 4 .7 6 .9h.2a64.33 64.33 0 0 0 12.4 0h.2c2-.2 4.1-.5 6-.9h.2c2-.4 3.9-.9 5.9-1.4.1 0 .2-.1.3-.1 1.9-.6 3.8-1.2 5.6-1.9.2-.1.3-.1.5-.2 1.8-.7 3.5-1.5 5.2-2.4l.6-.3c1.7-.9 3.4-1.9 5-2.9.2-.1.4-.2.6-.4 1.7-1.1 3.3-2.3 4.9-3.6.1-.1.2-.2.3-.2 3.4-2.8 6.5-5.9 9.3-9.3.1-.1.2-.2.2-.3 1.3-1.6 2.5-3.2 3.6-4.9.1-.2.3-.4.4-.6 1-1.6 2-3.2 2.9-4.9l.3-.6c.9-1.7 1.7-3.4 2.4-5.2.1-.2.1-.4.2-.5.7-1.8 1.4-3.6 1.9-5.5 0-.1.1-.3.1-.4.6-1.9 1-3.8 1.4-5.8 0-.1 0-.2.1-.3.4-2 .7-3.9.9-6v-.3a62.28 62.28 0 0 0 0-12.2V59c-.2-2-.5-4-.9-5.9 0-.1 0-.2-.1-.3v-.1c-2.5-4-9.9-8.1-31-1.2-26.4 8.5-33.2 48.5-99.2 49.2-2.2 7-6.1 15.2-12.8 24.2 0 0-38.9 45.7-55.2 41-4.5-2-9.4-3.5-14.4-4.4-1.7-.3-3.5-.6-5.2-.8-19-2.1-38.8 4.1-53.4 18.7-7.8 7.8-13.2 17.1-16.2 27 19.9 15.8 52.1 12.8 52.1 12.8z' class='st5'/%3E%3Cpath d='M290.4 52.7c-.4-1.9-.8-3.8-1.4-5.7 0-.1-.1-.3-.1-.4-.6-1.9-1.2-3.7-1.9-5.5-.1-.2-.2-.4-.2-.6-.7-1.8-1.5-3.5-2.4-5.1-.1-.2-.2-.5-.4-.7-.9-1.7-1.8-3.3-2.9-4.9-.1-.2-.3-.4-.4-.7-1.1-1.6-2.3-3.2-3.5-4.8-.1-.1-.2-.3-.3-.4-1.4-1.7-2.8-3.3-4.4-4.8-1.3-1.3-2.7-2.6-4.2-3.8-.2-.1-.3-.3-.5-.4l-.2-.2c-.1-.1-.3-.2-.4-.3-1.5-1.2-3.1-2.4-4.8-3.5-.2-.2-.5-.3-.7-.4-.9-.6-1.8-1.1-2.7-1.7-42.6 6.4-47.9 41.8-47.9 41.8-10.8 33.8-38.8 36.5-48.3 36.4-.2 3.7-.9 8.3-2.6 13.6 66-.8 72.8-40.7 99.2-49.2 21.1-6.8 28.5-2.7 31 1.3z' class='st4'/%3E%3Cpath d='M211.1 50.6s5.3-35.5 47.9-41.8l-2.1-1.2c-.2-.1-.5-.2-.7-.4-1.7-.9-3.4-1.7-5.1-2.4-.2-.1-.4-.2-.6-.2-1.8-.7-3.6-1.3-5.4-1.9-.2 0-.3-.1-.5-.1-1.9-.5-3.8-1-5.7-1.4-.1 0-.3 0-.4-.1-1.9-.4-3.9-.7-5.9-.8h-.3a60.263 60.263 0 0 0-12 0h-.3c-2 .2-3.9.5-5.9.8-.1 0-.3 0-.4.1-1.9.4-3.8.8-5.7 1.4-.2 0-.3.1-.5.1-1.8.6-3.7 1.2-5.4 1.9-.2.1-.4.2-.6.2-1.7.7-3.4 1.5-5.1 2.4-.2.1-.5.2-.7.4-1.7.9-3.3 1.8-4.8 2.9-.2.1-.5.3-.7.4-1.6 1.1-3.2 2.3-4.8 3.5-.1.1-.3.2-.4.3-2.7 2.2-5.1 4.6-7.4 7.1l-1.8 2.1c-.1.1-.2.3-.3.4-1.2 1.5-2.4 3.1-3.5 4.8-.1.2-.3.4-.4.7-1 1.6-2 3.2-2.9 4.9-.1.2-.2.5-.4.7-.9 1.7-1.7 3.4-2.4 5.1-.1.2-.2.4-.2.6-.7 1.8-1.4 3.6-1.9 5.5 0 .1-.1.3-.1.4-.5 1.9-1 3.8-1.4 5.7 0 .1 0 .2-.1.3-.4 1.9-.7 3.9-.9 5.9v.3c-.2 2-.3 4-.3 6.1 0 2.1.1 4.1.3 6.1v.3c.2 2 .5 4 .9 5.9V77.9c.1.3.1.7.2 1 .3 1.4.6 4.2.4 8.1 9.6.1 37.5-2.6 48.3-36.4z' class='st3'/%3E%3Cpath d='M374.3 218.1c14.7 8.2 23.6 29.5 46.9 28.5 23.1-1 29.2-14.9 30.7-23.7-1.4-34.9-30.1-62.7-65.3-62.7-12.8 0-24.8 3.7-34.8 10.1 4.3 2.8 18.4 14.5 22.5 47.8z' class='st2'/%3E%3Cpath d='M447.6 249c.5-1.3 1-2.7 1.4-4.1.2-.5.3-1.1.5-1.6.4-1.6.8-3.1 1.2-4.7.1-.4.1-.8.2-1.1.3-1.7.6-3.5.8-5.3v-.6c.2-1.9.3-3.8.3-5.8v-.1c0-.9 0-1.8-.1-2.7-1.5 8.7-7.6 22.7-30.7 23.7-23.3 1-32.2-20.3-46.9-28.5-6.7-3.7-14.5-4.7-25.5.4-20.4 9.5-23.1 24-21.8 34.4.3.4.5.7.7 1.1.1.2.2.3.2.5.7 1.4 1.4 2.7 2.2 4.1.2.4.5.8.7 1.3.9 1.5 1.9 3 3 4.4.2.2.4.5.5.7 1.1 1.5 2.3 2.9 3.5 4.3.2.2.3.4.5.6.6.7 1.2 1.4 1.9 2.1.7.7 1.5 1.3 2.2 2l.1.1c24.8 22.6 62.8 22.6 87.7.1.1-.1.2-.2.3-.2.7-.7 1.5-1.3 2.2-2 .7-.7 1.2-1.4 1.9-2.1.2-.2.5-.5.7-.8 1.2-1.3 2.3-2.7 3.4-4.1.2-.3.5-.6.7-1 1-1.4 1.9-2.7 2.8-4.2.3-.5.6-1.1.9-1.6.7-1.2 1.4-2.5 2-3.8.5-1 .9-2 1.4-3 .5-.8.8-1.7 1.1-2.5z' class='st5'/%3E%3Cpath d='M683.8 279.4v62.3H523.4V109.6h158.8V172h-82.6v25.2h73.9v57h-73.9v25.2h84.2zM943.1 225.7c0 68.3-49.7 116-122.7 116H721V109.6h99.5c72.9 0 122.6 47.1 122.6 116.1zm-78.9 0c0-28.5-18.9-46.4-49.1-46.4h-16.6v92.8h16.6c30.2 0 49.1-17.9 49.1-46.4zM1191.1 225.7c0 68.3-49.7 116-122.7 116H969V109.6h99.5c72.9 0 122.6 47.1 122.6 116.1zm-78.9 0c0-28.5-18.9-46.4-49.1-46.4h-16.6v92.8h16.6c30.2 0 49.1-17.9 49.1-46.4zM1217.7 109.6h78.9v232.1h-78.9V109.6zM1495.5 279.4v62.3H1335V109.6h158.8V172h-82.6v25.2h73.9v57h-73.9v25.2h84.3zM1601.3 158.3v5h-29.9v-52.2h29.1v5h-23.9v17.8h21.9v4.9h-21.9v19.5h24.7zM1614.7 143.9v-32.8h5.3v32.5c0 9.1 6.2 15.4 14.9 15.4s14.9-6.3 14.9-15.4v-32.5h5.3v32.8c0 11.8-8.6 20.2-20.2 20.2s-20.2-8.4-20.2-20.2zM1690.7 142.2h-13.2v21.1h-5.2v-52.2h19.5c9.6 0 16.6 6.5 16.6 15.6 0 7.5-4.9 13.3-12.2 15l12.8 21.6h-5.9l-12.4-21.1zm-13.2-5h14c6.9 0 11.6-4.4 11.6-10.6 0-6.1-4.7-10.6-11.6-10.6h-14v21.2zM1719.4 137.2c0-15.4 11.4-27 27.2-27 15.8 0 27.2 11.6 27.2 27s-11.4 26.9-27.2 26.9c-15.8.1-27.2-11.5-27.2-26.9zm49 0c0-12.5-9.2-21.9-21.9-21.9-12.6 0-21.9 9.4-21.9 21.9 0 12.4 9.2 21.8 21.9 21.8s21.9-9.3 21.9-21.8zM1823.3 127.5c0 9.4-7.3 16.4-17 16.4h-13.1v19.4h-5.2v-52.2h18.4c9.6 0 16.9 7 16.9 16.4zm-5.3 0c0-6.5-5-11.3-12-11.3h-12.9v22.6h12.9c7 0 12-4.8 12-11.3zM1866 158.3v5h-29.9v-52.2h29.1v5h-23.9v17.8h21.9v4.9h-21.9v19.5h24.7zM1911.5 150h-26.3l-5.5 13.3h-5.6l21.6-52.2h4.8l22.2 52.2h-5.7l-5.5-13.3zm-24.3-4.8h22.3l-11.3-26.8-11 26.8zM1975.6 111.1v52.2h-4.4l-31.4-43v43h-5.1v-52.2h4.7l31.1 42.7v-42.7h5.1zM2059.6 137.2c0 15.1-11.1 26.1-26.5 26.1h-16.8v-52.2h16.8c15.4 0 26.5 11 26.5 26.1zm-5.3 0c0-12.2-8.9-21.2-21.3-21.2h-11.4v42.4h11.4c12.4 0 21.3-9 21.3-21.2zM2073.8 111.1h5.2v52.2h-5.2v-52.2zM2093 147.5h5.3c0 7 5.6 11.4 13.6 11.4 7.2 0 12.7-4 12.7-10.1 0-6.8-6.6-8.3-13.7-9.9-8.1-1.9-16.9-3.9-16.9-14.1 0-8.8 6.9-14.3 17.5-14.3 10.5 0 17.1 5.9 17.1 15.2h-5.2c0-6.3-5-10.1-12-10.1-7.1 0-12.1 3.5-12.1 9.1 0 6.4 6.4 7.9 13.5 9.5 8.2 1.9 17.3 4.1 17.3 14.7 0 9.5-7.7 15.2-18 15.2-11.5-.1-19.1-6.6-19.1-16.6zM2175.1 116h-16.3v47.3h-5.2V116h-16.3v-4.9h37.7v4.9zM2205.5 142.2h-13.2v21.1h-5.2v-52.2h19.5c9.6 0 16.6 6.5 16.6 15.6 0 7.5-4.9 13.3-12.2 15l12.8 21.6h-5.9l-12.4-21.1zm-13.2-5h14c6.9 0 11.6-4.4 11.6-10.6 0-6.1-4.7-10.6-11.6-10.6h-14v21.2zM2237.9 111.1h5.2v52.2h-5.2v-52.2zM2297.1 149c0 8-6.6 14.3-15.6 14.3h-20.6v-52.2h20.4c8.4 0 14.4 5.7 14.4 13.1 0 4.9-2.8 9.7-7 11.9 5.1 1.9 8.4 7 8.4 12.9zm-31-32.8v17.4h15.4c5 0 8.9-4 8.9-8.7 0-4.9-4-8.7-9-8.7h-15.3zm25.6 32.2c0-5.5-4.4-9.7-10-9.7h-15.6v19.4h15.5c5.8 0 10.1-4.1 10.1-9.7zM2311.4 143.9v-32.8h5.3v32.5c0 9.1 6.2 15.4 14.9 15.4s14.9-6.3 14.9-15.4v-32.5h5.3v32.8c0 11.8-8.6 20.2-20.2 20.2-11.7 0-20.2-8.4-20.2-20.2zM2400.8 116h-16.3v47.3h-5.2V116H2363v-4.9h37.7v4.9zM2442.7 158.3v5h-29.9v-52.2h29.1v5H2418v17.8h21.9v4.9H2418v19.5h24.7zM2500 137.2c0 15.1-11.1 26.1-26.5 26.1h-16.8v-52.2h16.8c15.4 0 26.5 11 26.5 26.1zm-5.3 0c0-12.2-8.9-21.2-21.3-21.2H2462v42.4h11.4c12.4 0 21.3-9 21.3-21.2zM1614.7 225.7c0 15.1-11.1 26.1-26.5 26.1h-16.8v-52.2h16.8c15.4 0 26.5 10.9 26.5 26.1zm-5.4 0c0-12.2-8.9-21.2-21.3-21.2h-11.4v42.4h11.4c12.5 0 21.3-9 21.3-21.2zM1658.4 238.4h-26.3l-5.5 13.3h-5.6l21.6-52.2h4.8l22.2 52.2h-5.7l-5.5-13.3zm-24.3-4.8h22.3l-11.3-26.8-11 26.8zM1708.7 204.5h-16.3v47.3h-5.2v-47.3h-16.3v-4.9h37.7v4.9zM1747.2 238.4H1721l-5.5 13.3h-5.6l21.6-52.2h4.8l22.2 52.2h-5.7l-5.6-13.3zm-24.3-4.8h22.3l-11.3-26.8-11 26.8zM1791.1 199.6h5.2v52.2h-5.2v-52.2zM1855.1 199.6v52.2h-4.4l-31.4-43v43h-5.1v-52.2h4.7l31.1 42.7v-42.7h5.1zM1878.1 204.5v18.9h21.7v4.9h-21.7v23.5h-5.2v-52.2h28.8v5h-23.6zM1933 230.6h-13.2v21.1h-5.2v-52.2h19.5c9.6 0 16.6 6.5 16.6 15.6 0 7.5-4.9 13.3-12.2 15l12.8 21.6h-5.9l-12.4-21.1zm-13.2-4.9h14c6.9 0 11.6-4.4 11.6-10.6 0-6.1-4.7-10.6-11.6-10.6h-14v21.2zM1996.3 238.4H1970l-5.5 13.3h-5.6l21.6-52.2h4.8l22.2 52.2h-5.7l-5.5-13.3zm-24.3-4.8h22.3l-11.3-26.8-11 26.8zM2013.9 235.9h5.3c0 7 5.6 11.4 13.6 11.4 7.2 0 12.7-4 12.7-10.1 0-6.8-6.6-8.3-13.7-9.9-8.1-1.9-16.9-3.9-16.9-14.1 0-8.8 6.9-14.3 17.5-14.3 10.5 0 17.1 5.9 17.1 15.2h-5.2c0-6.3-5-10.1-12-10.1-7.1 0-12.1 3.5-12.1 9.1 0 6.4 6.4 7.9 13.5 9.5 8.2 1.9 17.3 4.1 17.3 14.7 0 9.5-7.7 15.2-18 15.2-11.5-.1-19.1-6.5-19.1-16.6zM2095.9 204.5h-16.3v47.3h-5.2v-47.3h-16.3v-4.9h37.7v4.9zM2126.4 230.6h-13.2v21.1h-5.2v-52.2h19.5c9.6 0 16.6 6.5 16.6 15.6 0 7.5-4.9 13.3-12.2 15l12.8 21.6h-5.9l-12.4-21.1zm-13.2-4.9h14c6.9 0 11.6-4.4 11.6-10.6 0-6.1-4.7-10.6-11.6-10.6h-14v21.2zM2158.1 232.4v-32.8h5.3V232c0 9.1 6.2 15.4 14.9 15.4s14.9-6.3 14.9-15.4v-32.5h5.3v32.8c0 11.8-8.6 20.2-20.2 20.2-11.6.1-20.2-8.3-20.2-20.1zM2212 225.7c0-15.6 11.2-26.9 26.7-26.9 11.9 0 21.3 6.9 24.5 17.8h-5.4c-3-7.9-10.1-12.7-19.2-12.7-12.4 0-21.4 9.1-21.4 21.8 0 12.7 8.9 21.8 21.4 21.8 9.3 0 16.5-5.1 19.5-13.5h5.3c-3.2 11.5-12.7 18.6-24.8 18.6-15.4 0-26.6-11.3-26.6-26.9zM2307.5 204.5h-16.3v47.3h-5.2v-47.3h-16.3v-4.9h37.7v4.9zM2318.8 232.4v-32.8h5.3V232c0 9.1 6.2 15.4 14.9 15.4s14.9-6.3 14.9-15.4v-32.5h5.3v32.8c0 11.8-8.6 20.2-20.2 20.2-11.6.1-20.2-8.3-20.2-20.1zM2394.8 230.6h-13.2v21.1h-5.2v-52.2h19.5c9.6 0 16.6 6.5 16.6 15.6 0 7.5-4.9 13.3-12.2 15l12.8 21.6h-5.9l-12.4-21.1zm-13.2-4.9h14c6.9 0 11.6-4.4 11.6-10.6 0-6.1-4.7-10.6-11.6-10.6h-14v21.2zM2457.1 246.8v5h-29.9v-52.2h29.1v5h-23.9v17.8h21.9v4.9h-21.9v19.5h24.7zM1576.7 293v18.9h21.7v4.9h-21.7v23.5h-5.2V288h28.8v5h-23.6zM1608.9 314.2c0-15.4 11.4-27 27.2-27 15.8 0 27.2 11.6 27.2 27s-11.4 26.9-27.2 26.9c-15.7 0-27.2-11.6-27.2-26.9zm49.1 0c0-12.5-9.2-21.9-21.9-21.9-12.6 0-21.9 9.4-21.9 21.9 0 12.4 9.2 21.8 21.9 21.8s21.9-9.4 21.9-21.8zM1695.9 319.1h-13.2v21.1h-5.2V288h19.5c9.6 0 16.6 6.5 16.6 15.6 0 7.5-4.9 13.3-12.2 15l12.8 21.6h-5.9l-12.4-21.1zm-13.2-5h14c6.9 0 11.6-4.4 11.6-10.6 0-6.1-4.7-10.6-11.6-10.6h-14v21.2zM1781.2 335.2v5h-29.9V288h29.1v5h-23.9v17.8h21.9v4.9h-21.9v19.5h24.7zM1836.1 288v52.2h-4.4l-31.4-43v43h-5.1V288h4.7l31.1 42.7V288h5.1zM1883.9 335.2v5H1854V288h29.1v5h-23.9v17.8h21.9v4.9h-21.9v19.5h24.7zM1916.3 319.1h-13.2v21.1h-5.2V288h19.5c9.6 0 16.6 6.5 16.6 15.6 0 7.5-4.9 13.3-12.2 15l12.8 21.6h-5.9l-12.4-21.1zm-13.2-5h14c6.9 0 11.6-4.4 11.6-10.6 0-6.1-4.7-10.6-11.6-10.6h-14v21.2zM1997.3 314.8c-.4 15.4-11 26.3-26 26.3-15.3 0-26.3-11.4-26.3-26.9 0-15.5 11.1-26.9 26.2-26.9 12.4 0 22.9 7.8 25.2 18.8h-5.4c-2.2-8.1-10.3-13.7-19.7-13.7-12.2 0-21 9.1-21 21.8 0 12.8 8.6 21.8 21 21.8 10.6 0 18.6-6.5 20.3-16.2h-22.4v-5h28.1zM2027.8 319.5v20.7h-5.4v-20.7L2003 288h5.7l16.4 26.5 16.5-26.5h5.7l-19.5 31.5z' class='st0'/%3E%3C/svg%3E"
-            alt="EDDIE Logo"
-            height="64"
-          />
+          ${unsafeSVG(eddieLogo)}
         </header>
 
         <div class="dialog-content">
-          <label for="connector-select"
-            >Please select your Permission Administrator:</label
-          >
-          <select id="connector-select" @change="${this.selectPa}">
-            <option value="">.. please select</option>
-            ${Object.keys(this._availableConnectors)
-              .sort((a, b) => a.localeCompare(b))
-              .map(
-                (connector) => html` <option value="${connector}">
-                  ${connector}
-                </option>`
-              )}
+          ${this._dataNeedAttributes ? html`
+            <p>This service is requesting: ${this._dataNeedAttributes.description}</p>
+          ` : ""}
+          
+          <label for="country-select">
+            <span>Country</span>
+          </label>
+          <select id="country-select" @change="${this.handleCountrySelect}">
+            <option value="" disabled selected>Select your country</option>
+            ${COUNTRIES.map(
+              (country) => html`
+                <option value="${country}">${COUNTRY_NAMES.of(country)}</option>
+              `
+            )}
+            <optgroup label="Development">
+              <option value="sim">Simulation</option>
+            </optgroup>
           </select>
 
-          <div ${ref(this.connectorPlaceholderRef)}>
-            No Permission Administrator selected.
+          ${this._selectedCountry
+            ? html`
+                <label for="permission-administrator-select">
+                  <span>Permission Administrator</span>
+                </label>
+                <select
+                  ${ref(this.permissionAdministratorSelectRef)}
+                  id="permission-administrator-select"
+                  @change="${this.handlePermissionAdministratorSelect}"
+                >
+                  <option value="" disabled selected>
+                    Select your Permission Administrator
+                  </option>
+
+                  ${PERMISSION_ADMINISTRATORS.filter(
+                    (pa) => pa.country === this._selectedCountry
+                  ).map(
+                    (pa) => html`
+                      <option
+                        value="${PERMISSION_ADMINISTRATORS.findIndex(
+                          (item) => item === pa
+                        )}"
+                        .disabled="${!this._availableConnectors[
+                          pa.regionConnector
+                        ]}"
+                      >
+                        ${pa.company}
+                      </option>
+                    `
+                  )}
+                </select>
+              `
+            : ""}
+
+          <div>
+            ${this._selectedPermissionAdministrator
+              ? html` ${until(this.getRegionConnectorElement(), "Loading...")} `
+              : "No permission administrator selected."}
           </div>
         </div>
 
