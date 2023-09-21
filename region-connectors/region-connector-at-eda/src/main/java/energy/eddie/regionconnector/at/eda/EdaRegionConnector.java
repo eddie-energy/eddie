@@ -172,7 +172,7 @@ public class EdaRegionConnector implements RegionConnector {
                     //.allowNullable() // disable for now as we don't support Future data yet
                     .check(Objects::nonNull, "end must not be null")
                     .check(end -> !startValidator.errors().isEmpty() || end.isAfter(startValidator.get()), "end must be after start")
-                    .check(end -> end.isBefore(now.minusDays(1)), "end must be in the past"); // for now, we only support historical data
+                    .check(end -> end.isBefore(now), "end must be in the past"); // for now, we only support historical data
 
             var errors = JavalinValidation.collectErrors(
                     connectionIdValidator,
