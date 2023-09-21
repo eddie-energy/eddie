@@ -39,12 +39,30 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:junit-jupiter:1.19.0")
     testImplementation("org.testcontainers:postgresql:1.19.0")
+    testImplementation("org.testcontainers:kafka:1.19.0")
+
+    // Kafka
+    implementation("org.apache.kafka:kafka-clients:3.2.3")
+
+    // reactor
+    implementation("io.projectreactor:reactor-core:3.5.10")
+    testImplementation("io.projectreactor:reactor-test:3.5.10")
 
     // catches invalid hibernate validation annotations, e.g. a String annotated with @Past
     annotationProcessor("org.hibernate.validator:hibernate-validator-annotation-processor:8.0.1.Final")
 
     // required for making PATCH requests in integration test
     testImplementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
+
+    // test interaction with logger
+    testImplementation("org.simplify4u:slf4j2-mock:2.3.0")
+}
+
+configurations {
+    testImplementation {
+        // disable logging modules of spring for tests, so that we can use slf4j2-mock to test loggers
+        exclude("org.springframework.boot", "spring-boot-starter-logging")
+    }
 }
 
 tasks.withType<Test> {
