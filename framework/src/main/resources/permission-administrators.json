@@ -16,5 +16,11 @@
     "company": "Enedis",
     "jumpOffUrl": "https://enedis.fr",
     "regionConnector": "fr-enedis"
+  },
+  {
+    "country": "es",
+    "company": "Datadis",
+    "jumpOffUrl": "https://datadis.es",
+    "regionConnector": "es-datadis"
   }
 ]
