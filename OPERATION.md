@@ -91,15 +91,21 @@ so that the EP application receives data that it actually needs to perfrom it's 
 ```yaml
 eddie:
   data-needs-config:
-    data-need-for-id:
-      "/LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY":
-        id: LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY
+    data-needs:
+      - id: LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY
         description: Historical validated consumption data for the last three months, one measurement per day
         type: HISTORICAL_VALIDATED_CONSUMPTION_DATA
         granularity: P_1_D
         duration-start: -90
         duration-open-end: false
         duration-end: 0
+      - id: FUTURE_NEAR_REALTIME_DATA
+        description: Near realtime consumption data from the smart meter
+        type: SMART_METER_P1_DATA
+        granularity: PT_5_M
+        duration-start: 0
+        duration-open-end: true
+        duration-end: null
 ```
 
 | Attribute         | Type                        | Description                                                                                  |
@@ -118,8 +124,6 @@ eddie:
 
 **Constraints:**
 
-- **CAVEAT** The `id` attribute of the data need **must** be equal to it's key in the `data-needs-for-id` map of the
-  yaml file
 - If `type` is `HISTORICAL_VALIDATED_CONSUMPTION_DATA`, `durationEnd` has to be zero or negative.
 - If `type` is `FUTURE_VALIDATED_CONSUMPTION_DATA`, `durationStart` has to be zero or positive.
 - `durationEnd` is mandatory, except if `type` is `ACCOUNTING_POINT_MASTER_DATA`

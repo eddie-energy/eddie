@@ -5,6 +5,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -25,10 +27,17 @@ public class DataNeedsService {
 
     @ConfigurationProperties(prefix = "eddie.data-needs-config")
     public static class DataNeedsConfig {
+        private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DataNeedsConfig.class);
         private Map<String, DataNeed> dataNeedForId;
 
-        public DataNeedsConfig(Map<String, DataNeed> dataNeedForId) {
-            this.dataNeedForId = dataNeedForId;
+        public DataNeedsConfig(List<DataNeed> dataNeeds) {
+            this.dataNeedForId = new HashMap<>(dataNeeds.size());
+            for (DataNeed dataNeed : dataNeeds) {
+                if (dataNeedForId.containsKey(dataNeed.id())) {
+                    LOGGER.error("Duplicate data need id read from spring config, id: {}", dataNeed.id());
+                }
+                dataNeedForId.put(dataNeed.id(), dataNeed);
+            }
         }
 
         public Map<String, DataNeed> getDataNeedForId() {
