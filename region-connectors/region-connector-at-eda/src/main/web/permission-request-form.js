@@ -1,60 +1,75 @@
-import { html, LitElement, unsafeCSS } from "lit";
-import shared from "../../../../../web/shared.css?inline";
-import { createRef, ref } from "lit/directives/ref.js";
+import { html, LitElement } from "lit";
+
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/input/input.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/button/button.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/alert/alert.js";
+
+const BASE_URL = new URL(import.meta.url).href.replace("ce.js", "");
+const REQUEST_URL = BASE_URL + "permission-request";
 
 class PermissionRequestForm extends LitElement {
-  static styles = unsafeCSS(shared);
+  static properties = {
+    connectionId: { attribute: "connection-id" },
+    dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
+    _requestId: { type: String },
+    _requestStatus: { type: String },
+  };
 
-  static properties = { connectionid: {} };
-
-  cmRequestIdElement = createRef();
-  requestStatusElement = createRef();
   intervalId = null;
 
   constructor() {
     super();
+
+    this._requestId = "";
+    this._requestStatus = "";
   }
 
   handleSubmit(event) {
     event.preventDefault();
 
-    const url = new URL(import.meta.url).href.replace("ce.js", "");
-    const requestUrl = url + "permission-request";
-
-    console.log(this);
-    console.log(this.connectionid);
-
     const formData = new FormData(event.target);
-    formData.append("connectionId", this.connectionid);
 
-    fetch(requestUrl, {
+    formData.append("connectionId", this.connectionId);
+
+    const startDate = new Date();
+    startDate.setDate(
+      startDate.getDate() + this.dataNeedAttributes.durationStart
+    );
+
+    let endDate;
+    if (this.dataNeedAttributes.durationEnd === 0) {
+      endDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    } else {
+      endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + this.dataNeedAttributes.durationEnd);
+    }
+
+    formData.append("start", startDate.toISOString().substring(0, 10));
+    formData.append("end", endDate.toISOString().substring(0, 10));
+
+    fetch(REQUEST_URL, {
       body: formData,
       method: "POST",
     })
       .then((response) => response.json())
       .then((result) => {
         console.log(result);
-        let cmRequestId = result["cmRequestId"];
-        let permissionId = result["permissionId"];
+        this._requestId = result["cmRequestId"];
+        const permissionId = result["permissionId"];
 
-        // get the cmRequestId element
-        this.cmRequestIdElement.value.textContent =
-          "CM Request ID: " + cmRequestId;
-        this.cmRequestIdElement.value.hidden = false;
-
-        this.requestPermissionStatus(url, permissionId);
+        this.requestPermissionStatus(permissionId);
         // poll /permission-request?permissionId=... until the status is either "GRANTED" or "REJECTED"
         this.intervalId = setInterval(
-          this.requestPermissionStatus(url, permissionId),
+          this.requestPermissionStatus(permissionId),
           5000
         );
       })
       .catch((error) => console.error(error));
   }
 
-  requestPermissionStatus(url, permissionId) {
+  requestPermissionStatus(permissionId) {
     return () => {
-      fetch(url + "permission-status?permissionId=" + permissionId)
+      fetch(`${BASE_URL}permission-status?permissionId=${permissionId}`)
         .then((response) => {
           if (!response.ok) {
             throw new Error("HTTP status " + response.status);
@@ -71,10 +86,8 @@ class PermissionRequestForm extends LitElement {
           ) {
             clearInterval(this.intervalId);
           }
-          console.log("Status:" + result);
-          this.requestStatusElement.value.textContent =
-            "Request status: " + result["status"];
-          this.requestStatusElement.value.hidden = false;
+
+          this._requestStatus = result["status"];
         })
         .catch((error) => console.error(error));
     };
@@ -83,32 +96,30 @@ class PermissionRequestForm extends LitElement {
   render() {
     return html`
       <div>
-        <header>
-          <span class="title">EDA</span>
-        </header>
-
         <form @submit="${this.handleSubmit}">
-          <label for="meteringPointId">Metering Point ID:</label>
-          <input
+          <sl-input
+            label="Metering Point Number"
             type="text"
-            id="meteringPointId"
             name="meteringPointId"
-            min="33"
-            max="33"
+            minlength="33"
+            maxlength="33"
             required
-          />
+          ></sl-input>
 
-          <label for="start">Start:</label>
-          <input type="date" id="start" name="start" required />
+          <br />
 
-          <label for="end">End:</label>
-          <input type="date" id="end" name="end" />
-
-          <button type="submit">Connect</button>
+          <div>
+            <sl-button type="submit" variant="primary">Connect</sl-button>
+          </div>
         </form>
 
-        <div ${ref(this.cmRequestIdElement)} hidden></div>
-        <div ${ref(this.requestStatusElement)} hidden></div>
+        ${this._requestStatus &&
+        html` <sl-alert open>
+          <sl-icon slot="icon" name="info-circle"></sl-icon>
+
+          <p>The CM request ID for this connection is: ${this._requestId}</p>
+          <p>The request status is: ${this._requestStatus}</p>
+        </sl-alert>`}
       </div>
     `;
   }

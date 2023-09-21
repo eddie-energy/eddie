@@ -2,7 +2,7 @@ import { css, html, LitElement } from "https://esm.sh/lit";
 
 class SimulationConnectorButtonCe extends LitElement {
   static properties = {
-    connectionid: {},
+    connectionid: { attribute: "connection-id" },
     allowDataNeedModifications: {
       type: Boolean,
       attribute: "allow-data-need-modifications",
