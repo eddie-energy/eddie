@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 
+import java.io.FileInputStream;
 import java.net.InetSocketAddress;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -142,7 +143,11 @@ public class EdaRegionConnector implements RegionConnector {
 
         javalin.get(BASE_PATH + "/ce.js", context -> {
             context.contentType(ContentType.TEXT_JS);
-            context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js")));
+            if (devMode) {
+                context.result(new FileInputStream("./region-connectors/region-connector-at-eda/src/main/resources/public/ce.js"));
+            } else {
+                context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js")));
+            }
         });
 
         javalin.get(BASE_PATH + "/permission-status", ctx -> {
