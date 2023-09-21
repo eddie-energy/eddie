@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
+import energy.eddie.regionconnector.es.datadis.api.UnauthorizedException;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
@@ -62,6 +63,9 @@ public class NettyDataApiClient implements DataApi {
                 .get()
                 .uri(uri.toString())
                 .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono.asString().flatMap(bodyString -> {
+                    if (httpClientResponse.status().code() == HttpResponseStatus.UNAUTHORIZED.code()) {
+                        return Mono.error(new UnauthorizedException("Failed to fetch supplies - " + bodyString));
+                    }
                     if (httpClientResponse.status().code() != HttpResponseStatus.OK.code()) {
                         return Mono.error(new DatadisApiException("Failed to fetch supplies - " + bodyString));
                     }

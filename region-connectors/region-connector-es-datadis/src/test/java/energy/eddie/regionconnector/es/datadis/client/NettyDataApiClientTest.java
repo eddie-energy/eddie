@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.es.datadis.client;
 
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
+import energy.eddie.regionconnector.es.datadis.api.UnauthorizedException;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,14 @@ class NettyDataApiClientTest {
                 })
                 .verifyComplete();
 
+    }
+
+    @Test
+    @Disabled("Integration test, that needs real credentials")
+    void getSupplies_withUnauthorizedNif_returnsUnauthorizedException() {
+        StepVerifier.create(dataApi.getSupplies("replace_me", null))
+                .expectErrorMatches(throwable -> throwable instanceof UnauthorizedException)
+                .verify();
     }
 
     @Test

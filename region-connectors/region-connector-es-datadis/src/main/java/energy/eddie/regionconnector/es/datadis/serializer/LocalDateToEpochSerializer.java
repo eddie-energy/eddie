@@ -6,12 +6,13 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
+
+import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 
 public class LocalDateToEpochSerializer extends JsonSerializer<LocalDate> {
     @Override
     public void serialize(LocalDate value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        long timestamp = value.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
+        long timestamp = value.atStartOfDay(ZONE_ID_SPAIN).toInstant().toEpochMilli();
         gen.writeNumber(timestamp);
     }
 }

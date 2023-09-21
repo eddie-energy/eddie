@@ -64,9 +64,10 @@ class PermissionRequestForm extends LitElement {
         })
         .then((result) => {
           if (
-            result["status"] === "GRANTED" ||
+            result["status"] === "ACCEPTED" ||
             result["status"] === "REJECTED" ||
-            result["status"] === "ERROR"
+            result["status"] === "INVALID" ||
+            result["status"] === "TERMINATED"
           ) {
             clearInterval(this.intervalId);
           }

@@ -20,9 +20,10 @@ repositories {
 dependencies {
     implementation(project(":api"))
     implementation(project(mapOf("path" to ":outbound-kafka")))
-    implementation(project(":region-connectors:region-connector-at-eda"))
-    implementation(project(":region-connectors:region-connector-fr-enedis"))
-    implementation(project(":region-connectors:region-connector-simulation"))
+    runtimeOnly(project(":region-connectors:region-connector-at-eda"))
+    runtimeOnly(project(":region-connectors:region-connector-fr-enedis"))
+    runtimeOnly(project(":region-connectors:region-connector-es-datadis"))
+    runtimeOnly(project(":region-connectors:region-connector-simulation"))
 
     implementation(libs.microprofile.config)
     implementation("io.smallrye.config:smallrye-config:3.3.0")
