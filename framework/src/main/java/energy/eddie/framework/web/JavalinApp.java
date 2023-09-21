@@ -7,6 +7,7 @@ import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.framework.Env;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
+import io.javalin.http.staticfiles.Location;
 import io.javalin.json.JavalinJackson;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -64,6 +65,20 @@ public class JavalinApp {
                     .build();
             config.jsonMapper(new JavalinJackson(mapper));
 
+
+            config.staticFiles.add(staticFileConfig -> {
+                staticFileConfig.hostedPath = "/lib";
+                staticFileConfig.mimeTypes.add(ContentType.TEXT_JS, "js");
+                if (inDevelopmentMode()) {
+                    // loading from classpath would require a restart when the custom element is rebuilt
+                    staticFileConfig.directory = "./framework/src/main/resources/public/lib";
+                    staticFileConfig.location = Location.EXTERNAL;
+                } else {
+                    staticFileConfig.directory = "public/lib";
+                    staticFileConfig.location = Location.CLASSPATH;
+                }
+            });
+
             config.routing.contextPath = baseUrl;
             config.jetty.contextHandlerConfig(servletContextHandler -> {
                 regionConnectors.forEach(rc -> {
@@ -80,12 +95,6 @@ public class JavalinApp {
 
             config.jetty.wsFactoryConfig(wsConfig -> wsConfig.setIdleTimeout(Duration.ofHours(1)));
         })) {
-
-            app.get("/lib/eddie-components.js", context -> {
-                context.contentType(ContentType.TEXT_JS);
-                context.result(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("public/lib/eddie-components.js")));
-            });
-
             app.after(ctx -> ctx.header("Access-Control-Allow-Origin", "*"));
 
             javalinPathHandlers.forEach(ph -> ph.registerPathHandlers(app));

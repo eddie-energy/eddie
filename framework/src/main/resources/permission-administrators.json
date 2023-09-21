@@ -1,0 +1,20 @@
+[
+  {
+    "country": "at",
+    "company": "Netz Niederösterreich GmbH",
+    "jumpOffUrl": "https://smartmeter.netz-noe.at/#/",
+    "regionConnector": "at-eda"
+  },
+  {
+    "country": "at",
+    "company": "Netz Oberösterreich GmbH",
+    "jumpOffUrl": "https://eservice.netzooe.at/app/login",
+    "regionConnector": "at-eda"
+  },
+  {
+    "country": "fr",
+    "company": "Enedis",
+    "jumpOffUrl": "https://enedis.fr",
+    "regionConnector": "fr-enedis"
+  }
+]
