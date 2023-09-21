@@ -27,10 +27,18 @@ services:
       JDBC_USER: "test"
       JDBC_PASSWORD: "test"
       PUBLIC_CONTEXT_PATH: ""
+      IMPORT_CONFIG_FILE: "file:./framework/src/test/resources/data-needs.yml"
     volumes:
       - ./ponton:/ponton
       - ./data-needs.yml:/opt/framework/config/data-needs.yml
 ````
+
+| Variable             | Description                                             |
+|----------------------|---------------------------------------------------------|
+| `IMPORT_CONFIG_FILE` | Comma separated list of Spring configuration locations. |
+
+- `IMPORT_CONFIG_FILE` follows the same syntax and semantics as `spring.config.import`, see
+  [Spring Boot Reference](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config.files.optional-prefix)
 
 ## Update
 
