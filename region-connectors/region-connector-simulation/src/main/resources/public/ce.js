@@ -55,12 +55,16 @@ class SimulationConnectorButtonCe extends LitElement {
           </thead>
           <tbody>
             <tr>
-              <td>connectionId</td>
+              <td>connectionId (ce parameter)</td>
               <td>${this.connectionid}</td>
             </tr>
             <tr>
-              <td>allowDataNeedModifications</td>
+              <td>allowDataNeedModifications (ce parameter)</td>
               <td>${this.allowDataNeedModifications}</td>
+            </tr>
+            <tr>
+              <td>id</td>
+              <td>${this.dataNeedAttributes.id}</td>
             </tr>
             <tr>
               <td>description</td>

@@ -27,10 +27,18 @@ services:
       JDBC_USER: "test"
       JDBC_PASSWORD: "test"
       PUBLIC_CONTEXT_PATH: ""
+      IMPORT_CONFIG_FILE: "file:./framework/src/test/resources/data-needs.yml"
     volumes:
       - ./ponton:/ponton
       - ./data-needs.yml:/opt/framework/config/data-needs.yml
 ````
+
+| Variable             | Description                                             |
+|----------------------|---------------------------------------------------------|
+| `IMPORT_CONFIG_FILE` | Comma separated list of Spring configuration locations. |
+
+- `IMPORT_CONFIG_FILE` follows the same syntax and semantics as `spring.config.import`, see
+  [Spring Boot Reference](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config.files.optional-prefix)
 
 ## Update
 
@@ -91,18 +99,26 @@ so that the EP application receives data that it actually needs to perfrom it's 
 ```yaml
 eddie:
   data-needs-config:
-    data-need-for-id:
-      "/LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY":
+    data-needs:
+      - id: LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY
         description: Historical validated consumption data for the last three months, one measurement per day
         type: HISTORICAL_VALIDATED_CONSUMPTION_DATA
         granularity: P_1_D
         duration-start: -90
         duration-open-end: false
         duration-end: 0
+      - id: FUTURE_NEAR_REALTIME_DATA
+        description: Near realtime consumption data from the smart meter
+        type: SMART_METER_P1_DATA
+        granularity: PT_5_M
+        duration-start: 0
+        duration-open-end: true
+        duration-end: null
 ```
 
 | Attribute         | Type                        | Description                                                                                  |
 |-------------------|-----------------------------|----------------------------------------------------------------------------------------------|
+| id                | String                      | Unique id that can be used to reference this DataNeed                                        |
 | description       | String                      | Multiline string that describes this DataNeed in a human readable form to be shown in the UI |
 | type              | DataType                    |                                                                                              |
 | granularity       | MeteringInterval (optional) | Describing the measurements per 24h only relevant for validated consumption data             |
