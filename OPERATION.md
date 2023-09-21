@@ -93,6 +93,7 @@ eddie:
   data-needs-config:
     data-need-for-id:
       "/LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY":
+        id: LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY
         description: Historical validated consumption data for the last three months, one measurement per day
         type: HISTORICAL_VALIDATED_CONSUMPTION_DATA
         granularity: P_1_D
@@ -103,6 +104,7 @@ eddie:
 
 | Attribute         | Type                        | Description                                                                                  |
 |-------------------|-----------------------------|----------------------------------------------------------------------------------------------|
+| id                | String                      | Unique id that can be used to reference this DataNeed                                        |
 | description       | String                      | Multiline string that describes this DataNeed in a human readable form to be shown in the UI |
 | type              | DataType                    |                                                                                              |
 | granularity       | MeteringInterval (optional) | Describing the measurements per 24h only relevant for validated consumption data             |
@@ -116,6 +118,8 @@ eddie:
 
 **Constraints:**
 
+- **CAVEAT** The `id` attribute of the data need **must** be equal to it's key in the `data-needs-for-id` map of the
+  yaml file
 - If `type` is `HISTORICAL_VALIDATED_CONSUMPTION_DATA`, `durationEnd` has to be zero or negative.
 - If `type` is `FUTURE_VALIDATED_CONSUMPTION_DATA`, `durationStart` has to be zero or positive.
 - `durationEnd` is mandatory, except if `type` is `ACCOUNTING_POINT_MASTER_DATA`
