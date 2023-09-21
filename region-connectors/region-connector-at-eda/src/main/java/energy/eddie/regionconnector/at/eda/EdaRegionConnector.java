@@ -96,14 +96,6 @@ public class EdaRegionConnector implements RegionConnector {
         edaAdapter.start();
     }
 
-    @Override
-    public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(
-                edaAdapter.getConsumptionRecordStream()
-                        .mapNotNull(this::mapConsumptionRecordToCIMConsumptionRecord)
-        );
-    }
-
     private static PermissionProcessStatus getPermissionProcessStatus(CMRequestStatus cmRequestStatus, PermissionRequest request) throws FutureStateException, PastStateException {
         return switch (cmRequestStatus.getStatus()) {
             case ACCEPTED -> {
@@ -124,6 +116,14 @@ public class EdaRegionConnector implements RegionConnector {
             }
             case DELIVERED, SENT -> PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR;
         };
+    }
+
+    @Override
+    public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
+        return JdkFlowAdapter.publisherToFlowPublisher(
+                edaAdapter.getConsumptionRecordStream()
+                        .mapNotNull(this::mapConsumptionRecordToCIMConsumptionRecord)
+        );
     }
 
     @Override
@@ -166,7 +166,7 @@ public class EdaRegionConnector implements RegionConnector {
             var endValidator = ctx.formParamAsClass("end", LocalDate.class)
                     //.allowNullable() // disable for now as we don't support Future data yet
                     .check(Objects::nonNull, "end must not be null")
-                    .check(end -> end.isAfter(startValidator.get()), "end must be after start")
+                    .check(end -> !startValidator.errors().isEmpty() || end.isAfter(startValidator.get()), "end must be after start")
                     .check(end -> end.isBefore(now.minusDays(1)), "end must be in the past"); // for now, we only support historical data
 
             var errors = JavalinValidation.collectErrors(
