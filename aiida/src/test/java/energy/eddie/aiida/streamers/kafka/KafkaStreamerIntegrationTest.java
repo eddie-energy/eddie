@@ -46,16 +46,16 @@ class KafkaStreamerIntegrationTest {
     void setUp() {
         var begin = Instant.parse("2023-10-01T10:00:00.00Z");
         var record1 = AiidaRecordFactory.createRecord("1.8.0", begin.plusSeconds(1), 10);
-        record1Json = "{\"type\":\".IntegerAiidaRecord\",\"timestamp\":1696154401.000000000,\"code\":\"1.8.0\",\"value\":10}";
+        record1Json = "{\"type\":\"IntegerAiidaRecord\",\"timestamp\":1696154401.000000000,\"code\":\"1.8.0\",\"value\":10}";
 
         var record2 = AiidaRecordFactory.createRecord("1.8.0", begin.plusSeconds(2), 20);
-        record2Json = "{\"type\":\".IntegerAiidaRecord\",\"timestamp\":1696154402.000000000,\"code\":\"1.8.0\",\"value\":20}";
+        record2Json = "{\"type\":\"IntegerAiidaRecord\",\"timestamp\":1696154402.000000000,\"code\":\"1.8.0\",\"value\":20}";
 
         var record3 = AiidaRecordFactory.createRecord("1.8.0", begin.plusSeconds(3), 30);
-        record3Json = "{\"type\":\".IntegerAiidaRecord\",\"timestamp\":1696154403.000000000,\"code\":\"1.8.0\",\"value\":30}";
+        record3Json = "{\"type\":\"IntegerAiidaRecord\",\"timestamp\":1696154403.000000000,\"code\":\"1.8.0\",\"value\":30}";
 
         var record4 = AiidaRecordFactory.createRecord("C.1.0", begin.plusSeconds(4), "Hello World");
-        record4Json = "{\"type\":\".StringAiidaRecord\",\"timestamp\":1696154404.000000000,\"code\":\"C.1.0\",\"value\":\"Hello World\"}";
+        record4Json = "{\"type\":\"StringAiidaRecord\",\"timestamp\":1696154404.000000000,\"code\":\"C.1.0\",\"value\":\"Hello World\"}";
 
         records = List.of(record1, record2, record3, record4);
     }

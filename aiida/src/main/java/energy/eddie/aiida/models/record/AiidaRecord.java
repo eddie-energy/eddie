@@ -1,12 +1,17 @@
 package energy.eddie.aiida.models.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.time.Instant;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS,
-        property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = IntegerAiidaRecord.class, name = "IntegerAiidaRecord"),
+        @JsonSubTypes.Type(value = StringAiidaRecord.class, name = "StringAiidaRecord"),
+        @JsonSubTypes.Type(value = DoubleAiidaRecord.class, name = "DoubleAiidaRecord")
+})
 public abstract class AiidaRecord {
     @JsonProperty
     protected Instant timestamp;

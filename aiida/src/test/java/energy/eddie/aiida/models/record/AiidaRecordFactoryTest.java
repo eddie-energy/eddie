@@ -1,5 +1,8 @@
 package energy.eddie.aiida.models.record;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -53,5 +56,22 @@ class AiidaRecordFactoryTest {
 
         assertThrows(IllegalArgumentException.class, () -> AiidaRecordFactory.createRecord("1.7.0", now, "INVALID"));
         assertThrows(IllegalArgumentException.class, () -> AiidaRecordFactory.createRecord("C.1.0", now, 53L));
+    }
+
+    @Test
+    void givenValidCode_jsonMapping_asExpected() throws JsonProcessingException {
+        var mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        var begin = Instant.parse("2023-10-01T10:00:00.00Z");
+
+        var integerRecord = AiidaRecordFactory.createRecord("1.7.0", begin, 372);
+        var integerRecordExpected = "{\"type\":\"IntegerAiidaRecord\",\"timestamp\":1696154400.000000000,\"code\":\"1.7.0\",\"value\":372}";
+        var stringRecord = AiidaRecordFactory.createRecord("C.1.0", begin.plusSeconds(10), "Hello test world");
+        var stringRecordExpected = "{\"type\":\"StringAiidaRecord\",\"timestamp\":1696154410.000000000,\"code\":\"C.1.0\",\"value\":\"Hello test world\"}";
+
+        var integerJson = mapper.writeValueAsString(integerRecord);
+        var stringJson = mapper.writeValueAsString(stringRecord);
+
+        assertEquals(integerRecordExpected, integerJson);
+        assertEquals(stringRecordExpected, stringJson);
     }
 }
