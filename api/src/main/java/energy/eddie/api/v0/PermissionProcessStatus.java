@@ -14,10 +14,24 @@ public enum PermissionProcessStatus {
      */
     VALIDATED,
     /**
+     * The permission request is malformed.
+     * If the user tries to re-send we can reattempt to validate it.
+     */
+    MALFORMED,
+    /**
+     * We are unable to send the permission request to the permission administrator.
+     * Could be due to a service outage or a network issue.
+     */
+    UNABLE_TO_SEND,
+    /**
      * The permission request has been sent to the permission administrator.
      * The process waits for an answer by the PA.
      */
     RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE,
+    /**
+     * The permission request is being sent to the permission administrator and waits for an acknowledgement.
+     */
+    PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT,
     /**
      * The permission request is now being processed by the PA.
      */
@@ -56,5 +70,6 @@ public enum PermissionProcessStatus {
      * The permission request ran out of time.
      * The expiration of the permission was reached.
      */
-    TIME_LIMIT
+    TIME_LIMIT,
+
 }
