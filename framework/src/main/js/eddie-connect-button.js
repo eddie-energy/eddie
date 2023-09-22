@@ -57,6 +57,7 @@ class EddieConnectButton extends LitElement {
   );
 
   dialogRef = createRef();
+  permissionAdministratorSelectRef = createRef();
 
   static styles = css`
     .eddie-connect-button {
@@ -124,6 +125,11 @@ class EddieConnectButton extends LitElement {
   handleCountrySelect(event) {
     this._selectedPermissionAdministrator = null;
 
+    // clear permission administrator value on country change
+    if (this.permissionAdministratorSelectRef.value) {
+      this.permissionAdministratorSelectRef.value.value = "";
+    }
+
     if (event.target.value === "sim") {
       this._selectedCountry = null;
       this._selectedPermissionAdministrator = { regionConnector: "sim" };
@@ -187,6 +193,7 @@ class EddieConnectButton extends LitElement {
                 label="Permission Administrator"
                 placeholder="Select your Permission Administrator"
                 @sl-change="${this.handlePermissionAdministratorSelect}"
+                ${ref(this.permissionAdministratorSelectRef)}
               >
                 ${PERMISSION_ADMINISTRATORS.filter(
                   (pa) => pa.country === this._selectedCountry
