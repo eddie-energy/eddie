@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 
+import java.io.FileInputStream;
 import java.net.InetSocketAddress;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -142,7 +143,11 @@ public class EdaRegionConnector implements RegionConnector {
 
         javalin.get(BASE_PATH + "/ce.js", context -> {
             context.contentType(ContentType.TEXT_JS);
-            context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js")));
+            if (devMode) {
+                context.result(new FileInputStream("./region-connectors/region-connector-at-eda/src/main/resources/public/ce.js"));
+            } else {
+                context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js")));
+            }
         });
 
         javalin.get(BASE_PATH + "/permission-status", ctx -> {
@@ -167,7 +172,7 @@ public class EdaRegionConnector implements RegionConnector {
                     //.allowNullable() // disable for now as we don't support Future data yet
                     .check(Objects::nonNull, "end must not be null")
                     .check(end -> !startValidator.errors().isEmpty() || end.isAfter(startValidator.get()), "end must be after start")
-                    .check(end -> end.isBefore(now.minusDays(1)), "end must be in the past"); // for now, we only support historical data
+                    .check(end -> end.isBefore(now), "end must be in the past"); // for now, we only support historical data
 
             var errors = JavalinValidation.collectErrors(
                     connectionIdValidator,
