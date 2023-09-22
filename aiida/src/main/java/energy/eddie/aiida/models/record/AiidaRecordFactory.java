@@ -19,17 +19,17 @@ public class AiidaRecordFactory {
     }
 
     /**
-     * Creates an instance of an inheritor of {@link AiidaRecord}, whereas the <code>obisCode</code> parameter determines which
+     * Creates an instance of an inheritor of {@link AiidaRecord}, whereas the {@code obisCode} parameter determines which
      * concrete class will be used.
-     * Note that the <code>value</code> parameter needs to be of appropriate type for the concrete class,
-     * e.g. for an <code>IntegerAiidaRecord</code>, the value has to be an Integer.
+     * Note that the {@code value} parameter needs to be of appropriate type for the concrete class,
+     * e.g. for an {@code IntegerAiidaRecord}, the value has to be an Integer.
      * The {@link AiidaRecordFactory} contains a map of OBIS codes and the concrete class that is used for it.
      *
      * @param obisCode  OBIS code of the record. Decides the returned datatype.
      * @param timestamp Timestamp, when the measurement was taken.
      * @param value     Value of the measurement.
      * @return Instance of an inheritor of AiidaRecord with the parameters set.
-     * @throws IllegalArgumentException Thrown if the type of <code>value</code> is not appropriate for the
+     * @throws IllegalArgumentException Thrown if the type of {@code value} is not appropriate for the
      *                                  concrete AiidaRecord class or if a not mapped OBIS code is passed in.
      */
     public static AiidaRecord createRecord(String obisCode, Instant timestamp, Object value) throws IllegalArgumentException {

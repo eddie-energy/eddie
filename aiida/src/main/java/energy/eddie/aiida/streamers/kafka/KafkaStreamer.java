@@ -28,14 +28,14 @@ public class KafkaStreamer extends AiidaStreamer {
     /**
      * Creates a new streamer that uses the passed {@link KafkaProducer} to send any new record received via the Flux
      * to the topic broker defined by {@link KafkaStreamingConfig#dataTopic()}.
-     * Make sure that the properties for the <code>producer</code> are set correctly, especially the
+     * Make sure that the properties for the {@code producer} are set correctly, especially the
      * bootstrap servers need to be set to the value of {@link KafkaStreamingConfig#bootstrapServers()}.
      * Calling {@link #connect()} will start the subscription to the Flux and subsequently the sending of records.
      * Note that {@link KafkaProducer} doesn't provide a method to initiate the connection, but after instantiation,
      * the producer will try to connect endlessly.
      * Furthermore, as KafkaProducer does not provide a mechanism to check whether a connection has been successfully
      * initiated (except for WARN level log outputs in the opposite case), after a call to {@link #connect()},
-     * any new records from the <code>recordFlux</code> are passed to the producer for sending.
+     * any new records from the {@code recordFlux} are passed to the producer for sending.
      * If the records cannot be sent, eventually the producer's internal buffer will be filled up and the producer
      * will throw an Exception that is logged by this class.
      *
@@ -60,7 +60,7 @@ public class KafkaStreamer extends AiidaStreamer {
     }
 
     /**
-     * Subscribes to the <code>recordFlux</code> and starts sending records to the Kafka cluster.
+     * Subscribes to the {@code recordFlux} and starts sending records to the Kafka cluster.
      */
     @Override
     public void connect() {
@@ -71,8 +71,8 @@ public class KafkaStreamer extends AiidaStreamer {
     }
 
     /**
-     * Converts the passed <code>aiidaRecord</code> to JSON and produces it to the <code>dataTopic</code> specified by
-     * the <code>kafkaConfig</code>.
+     * Converts the passed {@code aiidaRecord} to JSON and produces it to the {@code dataTopic} specified by
+     * the {@code kafkaConfig}.
      * Any errors that occur while sending are logged, but the aiidaRecord is not marked as <i>failed to send</i> but just dropped.
      *
      * @param aiidaRecord {@link AiidaRecord} to send to the Kafka cluster.
@@ -91,7 +91,7 @@ public class KafkaStreamer extends AiidaStreamer {
         try {
             ProducerRecord<String, String> kafkaRecord = new ProducerRecord<>(kafkaConfig.dataTopic(), connectionId, json);
 
-            // future unused because callback is used
+            // FutureReturnValueIgnored because callback is used
             producer.send(kafkaRecord, (metadata, exception) -> {
                 // callback is executed in IO thread of producer, so delegate expensive work to other threads
                 if (exception == null)
@@ -109,7 +109,7 @@ public class KafkaStreamer extends AiidaStreamer {
     /**
      * Will flush any buffered messages and then stop streaming data via Kafka, but blocks indefinitely until
      * all queued send request complete.
-     * Also unsubscribes from the <code>recordFlux</code>.
+     * Also unsubscribes from the {@code recordFlux}.
      */
     @Override
     public void shutdown() {

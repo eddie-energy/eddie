@@ -19,7 +19,7 @@ public abstract class AiidaStreamer {
 
     /**
      * Open required connections to the streaming target (EP) in this method, not beforehand.
-     * Also subscribe to the <code>recordFlux</code> in this method, to receive records that shall be sent.
+     * Also subscribe to the {@code recordFlux} in this method, to receive records that shall be sent.
      */
     public abstract void connect();
 
