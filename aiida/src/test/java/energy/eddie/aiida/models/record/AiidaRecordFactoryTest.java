@@ -5,10 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
 import java.time.Instant;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -44,7 +47,10 @@ class AiidaRecordFactoryTest {
     void givenInvalidObisCode_throws() {
         Instant now = Instant.now();
 
-        assertThrows(IllegalArgumentException.class, () -> AiidaRecordFactory.createRecord("X.Y.Z", now, "INVALID_BBB"));
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () ->
+                AiidaRecordFactory.createRecord("X.Y.Z", now, "INVALID_BBB"));
+
+        assertEquals("No definition which AiidaRecord subclass should be used for OBIS code X.Y.Z", thrown.getMessage());
     }
 
     @Test
@@ -70,5 +76,27 @@ class AiidaRecordFactoryTest {
 
         assertEquals(integerRecordExpected, integerJson);
         assertEquals(stringRecordExpected, stringJson);
+    }
+
+    @Test
+    void givenObisCodeThatHasNoImplementation_throws() throws NoSuchFieldException, IllegalAccessException {
+        var now = Instant.now();
+        Field field = AiidaRecordFactory.class.getDeclaredField("RECORD_MAP");
+        field.setAccessible(true);
+        Map<String, Class<? extends AiidaRecord>> recordMap = (Map<String, Class<? extends AiidaRecord>>) field.get(null);
+
+        recordMap.put("T.E.S", FailingTestAiidaRecord.class);
+
+
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () ->
+                AiidaRecordFactory.createRecord("T.E.S", now, "Some_Value"));
+
+        assertThat(thrown.getMessage(), startsWith("No implementation that creates a "));
+    }
+
+    static class FailingTestAiidaRecord extends AiidaRecord {
+        protected FailingTestAiidaRecord(Instant timestamp, String code) {
+            super(timestamp, code);
+        }
     }
 }
