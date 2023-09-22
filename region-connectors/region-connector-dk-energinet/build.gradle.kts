@@ -18,6 +18,7 @@ repositories {
 
 dependencies {
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.mockito)
 
     // Required for openapi generator
     implementation(libs.jackson.databind)
@@ -36,6 +37,11 @@ dependencies {
     implementation(libs.slf4j.api)
     implementation(libs.log4j.sl4j2.impl)
     runtimeOnly(libs.log4j.jul)
+
+
+    implementation(libs.reactor.core)
+    testImplementation(libs.reactor.test)
+    implementation(libs.javalin)
 
     implementation(project(mapOf("path" to ":api")))
     implementation(libs.microprofile.config)

@@ -1,3 +1,6 @@
+import energy.eddie.api.v0.RegionConnectorFactory;
+import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorFactory;
+
 module energy.eddie.regionconnector.dk.energinet {
     requires energy.eddie.api;
     requires jakarta.annotation;
@@ -17,7 +20,10 @@ module energy.eddie.regionconnector.dk.energinet {
     requires feign.jackson;
     requires feign.slf4j;
     requires feign.form;
+    requires io.javalin;
+    requires reactor.core;
 
     exports energy.eddie.regionconnector.dk.energinet.customer.model;
     opens energy.eddie.regionconnector.dk.energinet.customer.model;
+    provides RegionConnectorFactory with EnerginetRegionConnectorFactory;
 }
