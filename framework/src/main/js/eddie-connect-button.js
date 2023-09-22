@@ -249,7 +249,7 @@ class EddieConnectButton extends LitElement {
           ${COUNTRIES.map(
             (country) => html`
               <sl-option value="${country}">
-                ${COUNTRY_NAMES.of(country)}
+                ${COUNTRY_NAMES.of(country.toUpperCase())}
               </sl-option>
             `
           )}
