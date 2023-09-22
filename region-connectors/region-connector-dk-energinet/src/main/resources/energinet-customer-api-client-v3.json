@@ -95,6 +95,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "X-User-Correlation-ID",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "requestBody": {

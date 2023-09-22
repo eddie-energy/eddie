@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.dk.energinet.util;
+package energy.eddie.regionconnector.dk.energinet.utils;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;

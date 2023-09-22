@@ -1,31 +1,36 @@
 package energy.eddie.regionconnector.dk.energinet.customer.client;
 
 import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
-import energy.eddie.regionconnector.dk.energinet.config.PropertiesEnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.api.IsAliveApi;
 import energy.eddie.regionconnector.dk.energinet.customer.api.MeterDataApi;
 import energy.eddie.regionconnector.dk.energinet.customer.api.TokenApi;
 import energy.eddie.regionconnector.dk.energinet.customer.invoker.ApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
-import energy.eddie.regionconnector.dk.energinet.util.ConsumptionRecordMapper;
+import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
+import energy.eddie.regionconnector.dk.energinet.utils.ConsumptionRecordMapper;
 
 import java.time.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 public class EnerginetCustomerApiClient extends ApiClient implements EnerginetCustomerApi {
     private final TokenApi tokenApi;
     private final MeterDataApi meterDataApi;
     private final IsAliveApi isAliveApi;
+    private UUID userCorrelationId = UUID.randomUUID();
     private String refreshToken = "";
     private String accessToken = "";
 
-    public EnerginetCustomerApiClient(String refreshToken, PropertiesEnerginetConfiguration propertiesEnerginetConfiguration) {
-        super("Bearer");
+    private final Map<String, HealthState> healthChecks = new HashMap<>();
 
-        this.refreshToken = refreshToken;
-        setBasePath(((EnerginetConfiguration) propertiesEnerginetConfiguration).customerBasePath());
+    public EnerginetCustomerApiClient(EnerginetConfiguration propertiesEnerginetConfiguration) {
+        super("Bearer");
+        setBasePath(propertiesEnerginetConfiguration.customerBasePath());
 
         tokenApi = this.buildClient(TokenApi.class);
         meterDataApi = this.buildClient(MeterDataApi.class);
@@ -49,18 +54,26 @@ public class EnerginetCustomerApiClient extends ApiClient implements EnerginetCu
     }
 
     @Override
-    public String apiToken() {
+    public void apiToken() {
+        if (refreshToken.isBlank()) {
+            throw new IllegalStateException("Refresh Token was not set");
+        }
+
         setApiKey(refreshToken);
         accessToken = tokenApi.apiTokenGet().getResult();
-
-        return accessToken;
     }
 
     @Override
     public ConsumptionRecord getTimeSeries(ZonedDateTime dateFrom,
                                            ZonedDateTime dateTo,
+                                           TimeSeriesAggregationEnum aggregation,
                                            MeteringPointsRequest meteringPointsRequest) {
         throwIfInvalidTimeframe(dateFrom, dateTo);
+
+        if (accessToken.isBlank()) {
+            apiToken();
+        }
+
         setApiKey(accessToken);
 
         return ConsumptionRecordMapper.timeSeriesToCIM(
@@ -68,7 +81,8 @@ public class EnerginetCustomerApiClient extends ApiClient implements EnerginetCu
                         meterDataApi.apiMeterdataGettimeseriesDateFromDateToAggregationPost(
                                 dateFrom.toLocalDate().toString(),
                                 dateTo.toLocalDate().toString(),
-                                "Actual",
+                                aggregation.toString(),
+                                userCorrelationId,
                                 meteringPointsRequest
                         ).getResult()
                 )
@@ -76,7 +90,21 @@ public class EnerginetCustomerApiClient extends ApiClient implements EnerginetCu
     }
 
     @Override
+    public void setUserCorrelationId(UUID userCorrelationId) {
+        this.userCorrelationId = userCorrelationId;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = Objects.requireNonNull(refreshToken);
+    }
+
+    @Override
     public void setApiKey(String token) {
         super.setApiKey("Bearer " + token);
+    }
+
+    @Override
+    public Map<String, HealthState> health() {
+        return healthChecks;
     }
 }

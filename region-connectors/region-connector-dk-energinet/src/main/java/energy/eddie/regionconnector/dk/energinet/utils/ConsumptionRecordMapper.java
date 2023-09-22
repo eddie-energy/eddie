@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.dk.energinet.util;
+package energy.eddie.regionconnector.dk.energinet.utils;
 
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.api.v0.ConsumptionRecord;
@@ -42,6 +42,8 @@ public class ConsumptionRecordMapper {
                         case PT_30_M -> ConsumptionRecord.MeteringInterval.PT_30_M;
                         case PT_1_H -> ConsumptionRecord.MeteringInterval.PT_1_H;
                         case P_1_D -> ConsumptionRecord.MeteringInterval.P_1_D;
+                        case P_1_M -> ConsumptionRecord.MeteringInterval.P_1_M;
+                        case P_1_Y -> ConsumptionRecord.MeteringInterval.P_1_Y;
                     });
                     for (Point point : Objects.requireNonNull(period.getPoint())) {
                         var consumptionPoint = new ConsumptionPoint().withMeteringType(switch (PointQualityEnum.fromString(Objects.requireNonNull(point.getOutQuantityQuality()))) {

@@ -31,7 +31,9 @@
         "PT15M",
         "PT30M",
         "PT1H",
-        "P1D"
+        "P1D",
+        "P1M",
+        "P1Y"
       ],
       "description": "Interval of the readings. Use ISO-8601 duration notation."
     },
