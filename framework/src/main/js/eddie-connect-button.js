@@ -12,6 +12,12 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/componen
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/divider/divider.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/spinner/spinner.js";
 
+// Only used for DataNeed modification
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/input/input.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/details/details.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/checkbox/checkbox.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/button/button.js";
+
 import { setBasePath } from "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/utilities/base-path.js";
 import buttonIcon from "../resources/logo.svg?raw";
 import headerImage from "../resources/header.svg?raw";
@@ -57,6 +63,7 @@ class EddieConnectButton extends LitElement {
   );
 
   dialogRef = createRef();
+  permissionAdministratorSelectRef = createRef();
 
   static styles = css`
     .eddie-connect-button {
@@ -124,6 +131,11 @@ class EddieConnectButton extends LitElement {
   handleCountrySelect(event) {
     this._selectedPermissionAdministrator = null;
 
+    // clear permission administrator value on country change
+    if (this.permissionAdministratorSelectRef.value) {
+      this.permissionAdministratorSelectRef.value.value = "";
+    }
+
     if (event.target.value === "sim") {
       this._selectedCountry = null;
       this._selectedPermissionAdministrator = { regionConnector: "sim" };
@@ -135,6 +147,16 @@ class EddieConnectButton extends LitElement {
   handlePermissionAdministratorSelect(event) {
     this._selectedPermissionAdministrator =
       PERMISSION_ADMINISTRATORS[event.target.value];
+  }
+
+  handleDataNeedModifications(event) {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+
+    this._dataNeedAttributes.durationStart = formData.get("durationStart");
+    this._dataNeedAttributes.durationOpenEnd = formData.get("durationOpenEnd");
+    this._dataNeedAttributes.durationEnd = formData.get("durationEnd");
   }
 
   render() {
@@ -162,6 +184,63 @@ class EddieConnectButton extends LitElement {
 
         <br />
 
+        ${this._allowDataNeedModifications
+          ? html`
+              <sl-details
+                summary="The service allows the modification of data needs."
+              >
+                <form @submit="${this.handleDataNeedModifications}">
+                  <sl-input
+                    label="Connection ID"
+                    name="connectionId"
+                    .value="${this.connectionId}"
+                    disabled
+                    readonly
+                  ></sl-input
+                  ><br />
+                  <sl-input
+                    label="DataNeed ID"
+                    name="id"
+                    .value="${this._dataNeedAttributes.id}"
+                    disabled
+                    readonly
+                  ></sl-input
+                  ><br />
+                  <sl-input
+                    label="Granularity"
+                    name="granularity"
+                    .value="${this._dataNeedAttributes.granularity}"
+                    disabled
+                    readonly
+                  ></sl-input
+                  ><br />
+                  <sl-input
+                    label="Duration Start"
+                    name="durationStart"
+                    .value="${this._dataNeedAttributes.durationStart}"
+                  ></sl-input
+                  ><br />
+                  <div>
+                    <sl-checkbox
+                      name="durationOpenEnd"
+                      .checked="${this._dataNeedAttributes.durationOpenEnd}"
+                      >Duration Open End</sl-checkbox
+                    >
+                  </div>
+                  <br />
+                  <sl-input
+                    label="Duration End"
+                    .value="${this._dataNeedAttributes.durationEnd}"
+                  ></sl-input>
+                  <br />
+                  <sl-button type="submit">Save</sl-button>
+                </form>
+              </sl-details>
+
+              <br />
+            `
+          : ""}
+
         <sl-select
           label="Country"
           placeholder="Select your country"
@@ -170,7 +249,7 @@ class EddieConnectButton extends LitElement {
           ${COUNTRIES.map(
             (country) => html`
               <sl-option value="${country}">
-                ${COUNTRY_NAMES.of(country)}
+                ${COUNTRY_NAMES.of(country.toUpperCase())}
               </sl-option>
             `
           )}
@@ -187,6 +266,7 @@ class EddieConnectButton extends LitElement {
                 label="Permission Administrator"
                 placeholder="Select your Permission Administrator"
                 @sl-change="${this.handlePermissionAdministratorSelect}"
+                ${ref(this.permissionAdministratorSelectRef)}
               >
                 ${PERMISSION_ADMINISTRATORS.filter(
                   (pa) => pa.country === this._selectedCountry

@@ -11,6 +11,7 @@ class PermissionRequestForm extends LitElement {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
+    jumpOffUrl: { attribute: "jump-off-url" },
     _requestId: { type: String },
     _requestStatus: { type: String },
   };
@@ -53,9 +54,10 @@ class PermissionRequestForm extends LitElement {
     })
       .then((response) => response.json())
       .then((result) => {
-        console.log(result);
         this._requestId = result["cmRequestId"];
         const permissionId = result["permissionId"];
+
+        this._requestStatus = "Request sent.";
 
         this.requestPermissionStatus(permissionId);
         // poll /permission-request?permissionId=... until the status is either "GRANTED" or "REJECTED"
@@ -114,12 +116,24 @@ class PermissionRequestForm extends LitElement {
         </form>
 
         ${this._requestStatus &&
-        html` <sl-alert open>
-          <sl-icon slot="icon" name="info-circle"></sl-icon>
+        html` <br />
+          <sl-alert open>
+            <sl-icon slot="icon" name="info-circle"></sl-icon>
 
-          <p>The CM request ID for this connection is: ${this._requestId}</p>
-          <p>The request status is: ${this._requestStatus}</p>
-        </sl-alert>`}
+            <p>The CM request ID for this connection is: ${this._requestId}</p>
+            <p>The request status is: ${this._requestStatus}</p>
+
+            <p>
+              Further steps may be required at the website of the permission
+              administrator.
+            </p>
+
+            ${this.jumpOffUrl
+              ? html`<sl-button href="${this.jumpOffUrl}" target="_blank"
+                  >Visit permission administrator website</sl-button
+                >`
+              : ""}
+          </sl-alert>`}
       </div>
     `;
   }
