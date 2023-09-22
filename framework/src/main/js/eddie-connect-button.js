@@ -12,6 +12,12 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/componen
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/divider/divider.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/spinner/spinner.js";
 
+// Only used for DataNeed modification
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/input/input.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/details/details.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/checkbox/checkbox.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/button/button.js";
+
 import { setBasePath } from "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/utilities/base-path.js";
 import buttonIcon from "../resources/logo.svg?raw";
 import headerImage from "../resources/header.svg?raw";
@@ -143,6 +149,16 @@ class EddieConnectButton extends LitElement {
       PERMISSION_ADMINISTRATORS[event.target.value];
   }
 
+  handleDataNeedModifications(event) {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+
+    this._dataNeedAttributes.durationStart = formData.get("durationStart");
+    this._dataNeedAttributes.durationOpenEnd = formData.get("durationOpenEnd");
+    this._dataNeedAttributes.durationEnd = formData.get("durationEnd");
+  }
+
   render() {
     return html`
       <link
@@ -167,6 +183,63 @@ class EddieConnectButton extends LitElement {
         </sl-alert>
 
         <br />
+
+        ${this._allowDataNeedModifications
+          ? html`
+              <sl-details
+                summary="The service allows the modification of data needs."
+              >
+                <form @submit="${this.handleDataNeedModifications}">
+                  <sl-input
+                    label="Connection ID"
+                    name="connectionId"
+                    .value="${this.connectionId}"
+                    disabled
+                    readonly
+                  ></sl-input
+                  ><br />
+                  <sl-input
+                    label="DataNeed ID"
+                    name="id"
+                    .value="${this._dataNeedAttributes.id}"
+                    disabled
+                    readonly
+                  ></sl-input
+                  ><br />
+                  <sl-input
+                    label="Granularity"
+                    name="granularity"
+                    .value="${this._dataNeedAttributes.granularity}"
+                    disabled
+                    readonly
+                  ></sl-input
+                  ><br />
+                  <sl-input
+                    label="Duration Start"
+                    name="durationStart"
+                    .value="${this._dataNeedAttributes.durationStart}"
+                  ></sl-input
+                  ><br />
+                  <div>
+                    <sl-checkbox
+                      name="durationOpenEnd"
+                      .checked="${this._dataNeedAttributes.durationOpenEnd}"
+                      >Duration Open End</sl-checkbox
+                    >
+                  </div>
+                  <br />
+                  <sl-input
+                    label="Duration End"
+                    .value="${this._dataNeedAttributes.durationEnd}"
+                  ></sl-input>
+                  <br />
+                  <sl-button type="submit">Save</sl-button>
+                </form>
+              </sl-details>
+
+              <br />
+            `
+          : ""}
 
         <sl-select
           label="Country"
