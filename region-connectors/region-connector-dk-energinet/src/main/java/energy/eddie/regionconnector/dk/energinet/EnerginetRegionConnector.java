@@ -111,10 +111,11 @@ public class EnerginetRegionConnector implements RegionConnector {
 
             var refreshTokenValidator = ctx.formParamAsClass("refreshToken", String.class).check(Objects::nonNull, "refreshToken must not be null");
             var meteringPointValidator = ctx.formParamAsClass("meteringPoint", String.class).check(Objects::nonNull, "meteringPoint must not be null");
+            var aggregationValidator = ctx.formParamAsClass("aggregation", String.class).check(Objects::nonNull, "aggregation must not be null");
             var startValidator = ctx.formParamAsClass("start", ZonedDateTime.class).check(Objects::nonNull, "start must not be null");
             var endValidator = ctx.formParamAsClass("end", ZonedDateTime.class).check(end -> end == null || end.isAfter(startValidator.get()), "end must not be null and after start");
 
-            var errors = JavalinValidation.collectErrors(connectionIdValidator, startValidator, endValidator);
+            var errors = JavalinValidation.collectErrors(connectionIdValidator, refreshTokenValidator, meteringPointValidator, aggregationValidator, startValidator, endValidator);
             if (!errors.isEmpty()) {
                 ctx.status(HttpStatus.BAD_REQUEST);
                 ctx.json(errors);
@@ -124,13 +125,12 @@ public class EnerginetRegionConnector implements RegionConnector {
             var permissionId = UUID.randomUUID().toString();
             connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(connectionIdValidator.get(), permissionId, PermissionProcessStatus.VALIDATED));
 
-            var requestInfo = new RequestInfo(connectionIdValidator.get(), refreshTokenValidator.get(), meteringPointValidator.get(), startValidator.get(), endValidator.get());
+            var requestInfo = new RequestInfo(connectionIdValidator.get(), refreshTokenValidator.get(), meteringPointValidator.get(), aggregationValidator.get(), startValidator.get(), endValidator.get());
             permissionIdToRequestInfo.put(permissionId, requestInfo);
             energinetCustomerApi.setRefreshToken(requestInfo.refreshToken());
             energinetCustomerApi.setUserCorrelationId(UUID.fromString(permissionId));
 
             MeteringPoints meteringPoints = new MeteringPoints();
-            //meteringPoints.addMeteringPointItem("571313179100066516");
             meteringPoints.addMeteringPointItem(requestInfo.meteringPoint());
             MeteringPointsRequest meteringPointsRequest = new MeteringPointsRequest().meteringPoints(meteringPoints);
 
@@ -145,7 +145,7 @@ public class EnerginetRegionConnector implements RegionConnector {
                 }
 
                 try {
-                    var consumptionRecord = energinetCustomerApi.getTimeSeries(startValidator.get(), endValidator.get(), TimeSeriesAggregationEnum.ACTUAL, meteringPointsRequest);
+                    var consumptionRecord = energinetCustomerApi.getTimeSeries(requestInfo.start(), requestInfo.end(), TimeSeriesAggregationEnum.fromString(requestInfo.aggregation()), meteringPointsRequest);
 
                     consumptionRecord.setConnectionId(requestInfo.connectionId());
                     consumptionRecord.setPermissionId(permissionId);

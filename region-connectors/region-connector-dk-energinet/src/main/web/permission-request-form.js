@@ -81,6 +81,16 @@ class PermissionRequestForm extends LitElement {
 
                 <label for="meteringPoint">Metering Point ID:</label>
                 <input type="text" id="meteringPoint" name="meteringPoint" required/>
+                
+                <label for="aggregation">Aggregation:</label>
+                <select name="aggregation" id="aggregation" required>
+                    <option selected="selected">Actual</option>
+                    <option>Quarter</option>
+                    <option>Hour</option>
+                    <option>Day</option>
+                    <option>Month</option>
+                    <option>Year</option>
+                </select>
 
                 <label for="start">Start:</label>
                 <input type="date" id="start" name="start" required/>

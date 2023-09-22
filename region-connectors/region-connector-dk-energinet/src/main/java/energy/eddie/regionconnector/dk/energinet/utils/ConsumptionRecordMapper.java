@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.utils;
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.dk.energinet.customer.model.*;
+import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import energy.eddie.regionconnector.dk.energinet.enums.PointQualityEnum;
 
 import java.util.ArrayList;
@@ -35,15 +36,12 @@ public class ConsumptionRecordMapper {
             List<ConsumptionPoint> consumptionPoints = new ArrayList<>();
             for (TimeSeries timeSeries : Objects.requireNonNull(energyDataMarketDocument.getTimeSeries())) {
                 for (Period period : Objects.requireNonNull(timeSeries.getPeriod())) {
-                    consumptionRecord.setMeteringInterval(switch (ConsumptionRecord.MeteringInterval.fromValue(Objects.requireNonNull(period.getResolution()))) {
-                        case PT_5_M -> ConsumptionRecord.MeteringInterval.PT_5_M;
-                        case PT_10_M -> ConsumptionRecord.MeteringInterval.PT_10_M;
-                        case PT_15_M -> ConsumptionRecord.MeteringInterval.PT_15_M;
-                        case PT_30_M -> ConsumptionRecord.MeteringInterval.PT_30_M;
-                        case PT_1_H -> ConsumptionRecord.MeteringInterval.PT_1_H;
-                        case P_1_D -> ConsumptionRecord.MeteringInterval.P_1_D;
-                        case P_1_M -> ConsumptionRecord.MeteringInterval.P_1_M;
-                        case P_1_Y -> ConsumptionRecord.MeteringInterval.P_1_Y;
+                    consumptionRecord.setMeteringInterval(switch (PeriodResolutionEnum.valueOf(period.getResolution())) {
+                        case PT15M -> ConsumptionRecord.MeteringInterval.PT_15_M;
+                        case PT1H -> ConsumptionRecord.MeteringInterval.PT_1_H;
+                        case PT1D -> ConsumptionRecord.MeteringInterval.P_1_D;
+                        case P1M -> ConsumptionRecord.MeteringInterval.P_1_M;
+                        case P1Y -> ConsumptionRecord.MeteringInterval.P_1_Y;
                     });
                     for (Point point : Objects.requireNonNull(period.getPoint())) {
                         var consumptionPoint = new ConsumptionPoint().withMeteringType(switch (PointQualityEnum.fromString(Objects.requireNonNull(point.getOutQuantityQuality()))) {

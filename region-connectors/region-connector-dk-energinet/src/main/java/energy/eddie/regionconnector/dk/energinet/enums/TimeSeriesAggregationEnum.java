@@ -4,12 +4,13 @@ import energy.eddie.regionconnector.dk.energinet.customer.api.MeterDataApi;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
 
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Enum for the Aggregation of MeterDataApi's TimeSeries Method
  *
  * @see MeterDataApi
- * @see MeterDataApi#apiMeterdataGettimeseriesDateFromDateToAggregationPost(String, String, String, MeteringPointsRequest)
+ * @see MeterDataApi#apiMeterdataGettimeseriesDateFromDateToAggregationPost(String, String, String, UUID, MeteringPointsRequest)
  *
  */
 public enum TimeSeriesAggregationEnum {
