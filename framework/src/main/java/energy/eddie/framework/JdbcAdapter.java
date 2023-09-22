@@ -10,21 +10,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Flow;
 
 public class JdbcAdapter implements energy.eddie.api.v0.ApplicationConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcAdapter.class);
-    private static final Map<String, Integer> meteringIntervalForCode;
-
-    static {
-        meteringIntervalForCode = new HashMap<>();
-        meteringIntervalForCode.put("PT15M", 900);
-        meteringIntervalForCode.put("PT30M", 1800);
-        meteringIntervalForCode.put("PT1H", 3600);
-        meteringIntervalForCode.put("PT1D", 86400);
-    }
+    private static final Map<String, Integer> meteringIntervalForCode = Map.of(
+            "PT15M", 900,
+            "PT30M", 1800,
+            "PT1H", 3600,
+            "PT1D", 86400
+    );
 
     private final Jdbi jdbi;
 
@@ -100,7 +96,7 @@ public class JdbcAdapter implements energy.eddie.api.v0.ApplicationConnector {
                 CREATE TABLE IF NOT EXISTS CONNECTION_STATUS (
                     connection_id  VARCHAR(255) NOT NULL,
                     timestamp_     TIMESTAMP WITH TIME ZONE  NOT NULL,
-                    consent_status VARCHAR(42) NOT NULL
+                    consent_status VARCHAR(48) NOT NULL
                 );
 
                 CREATE TABLE IF NOT EXISTS METERING_INTERVALS (

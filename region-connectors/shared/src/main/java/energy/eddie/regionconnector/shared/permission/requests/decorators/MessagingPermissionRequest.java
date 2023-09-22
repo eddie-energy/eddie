@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.shared.permission.requests.decorators;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequest;
@@ -16,7 +15,7 @@ public class MessagingPermissionRequest<T extends PermissionRequest> implements 
     public MessagingPermissionRequest(T permissionRequest, Sinks.Many<ConnectionStatusMessage> permissionStateMessages) {
         this.permissionRequest = permissionRequest;
         this.permissionStateMessages = permissionStateMessages;
-        emitState(PermissionProcessStatus.CREATED);
+        emitState();
     }
 
     @Override
@@ -42,43 +41,43 @@ public class MessagingPermissionRequest<T extends PermissionRequest> implements 
     @Override
     public void validate() throws FutureStateException, PastStateException {
         permissionRequest.validate();
-        emitState(PermissionProcessStatus.VALIDATED);
+        emitState();
     }
 
     @Override
     public void sendToPermissionAdministrator() throws FutureStateException, PastStateException {
         permissionRequest.sendToPermissionAdministrator();
-        emitState(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+        emitState();
     }
 
     @Override
     public void receivedPermissionAdministratorResponse() throws FutureStateException, PastStateException {
         permissionRequest.receivedPermissionAdministratorResponse();
-        emitState(PermissionProcessStatus.RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE);
+        emitState();
     }
 
     @Override
     public void terminate() throws FutureStateException, PastStateException {
         permissionRequest.terminate();
-        emitState(PermissionProcessStatus.TERMINATED);
+        emitState();
     }
 
     @Override
     public void accept() throws FutureStateException, PastStateException {
         permissionRequest.accept();
-        emitState(PermissionProcessStatus.ACCEPTED);
+        emitState();
     }
 
     @Override
     public void invalid() throws FutureStateException, PastStateException {
         permissionRequest.invalid();
-        emitState(PermissionProcessStatus.INVALID);
+        emitState();
     }
 
     @Override
     public void rejected() throws FutureStateException, PastStateException {
         permissionRequest.rejected();
-        emitState(PermissionProcessStatus.REJECTED);
+        emitState();
     }
 
     @Override
@@ -94,12 +93,12 @@ public class MessagingPermissionRequest<T extends PermissionRequest> implements 
         return permissionRequest.hashCode();
     }
 
-    private void emitState(PermissionProcessStatus processStatus) {
+    private void emitState() {
         permissionStateMessages.tryEmitNext(
                 new ConnectionStatusMessage(
                         connectionId(),
                         permissionId(),
-                        processStatus
+                        permissionRequest.state().status()
                 )
         );
     }

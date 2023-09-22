@@ -1,16 +1,51 @@
 package energy.eddie.regionconnector.shared.permission.requests.decorators;
 
-import energy.eddie.api.v0.process.model.FutureStateException;
-import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class SavingPermissionRequestTest {
+
+    static Stream<String> savingPermissionRequestArguments() {
+        return Stream.of(
+                "validate",
+                "sendToPermissionAdministrator",
+                "receivedPermissionAdministratorResponse",
+                "invalid",
+                "accept",
+                "rejected",
+                "terminate"
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("savingPermissionRequestArguments")
+    void savingPermissionRequest_invokingMethodUpdatesSave(String actionMethodName)
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+
+        // Given
+        PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
+        SimpleState createdState = new SimpleState();
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
+        SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
+
+        // When
+        Method actionMethod = SavingPermissionRequest.class.getMethod(actionMethodName);
+        actionMethod.invoke(savingPermissionRequest);
+
+        // Then
+        assertTrue(repo.findByPermissionId("permissionId").isPresent());
+    }
+
     @Test
     void savingPermissionRequest_returnsStateOfWrappedPermissionRequest() {
         // Given
@@ -69,104 +104,6 @@ class SavingPermissionRequestTest {
 
         // Then
         assertEquals("connectionId", connectionId);
-    }
-
-    @Test
-    void savingPermissionRequest_validateUpdatesSave() throws FutureStateException, PastStateException {
-        // Given
-        PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
-        SimpleState createdState = new SimpleState();
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
-        SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
-
-        // When
-        savingPermissionRequest.validate();
-
-        assertTrue(repo.findByPermissionId("permissionId").isPresent());
-    }
-
-    @Test
-    void savingPermissionRequest_sendToPermissionAdministratorUpdatesSave() throws FutureStateException, PastStateException {
-        // Given
-        PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
-        SimpleState createdState = new SimpleState();
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
-        SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
-
-        // When
-        savingPermissionRequest.sendToPermissionAdministrator();
-
-        assertTrue(repo.findByPermissionId("permissionId").isPresent());
-    }
-
-    @Test
-    void savingPermissionRequest_receivedPermissionAdministratorResponseUpdatesSave() throws FutureStateException, PastStateException {
-        // Given
-        PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
-        SimpleState createdState = new SimpleState();
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
-        SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
-
-        // When
-        savingPermissionRequest.receivedPermissionAdministratorResponse();
-
-        assertTrue(repo.findByPermissionId("permissionId").isPresent());
-    }
-
-    @Test
-    void savingPermissionRequest_invalidUpdatesSave() throws FutureStateException, PastStateException {
-        // Given
-        PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
-        SimpleState createdState = new SimpleState();
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
-        SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
-
-        // When
-        savingPermissionRequest.invalid();
-
-        assertTrue(repo.findByPermissionId("permissionId").isPresent());
-    }
-
-    @Test
-    void savingPermissionRequest_acceptUpdatesSave() throws FutureStateException, PastStateException {
-        // Given
-        PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
-        SimpleState createdState = new SimpleState();
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
-        SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
-
-        // When
-        savingPermissionRequest.accept();
-
-        assertTrue(repo.findByPermissionId("permissionId").isPresent());
-    }
-
-    @Test
-    void savingPermissionRequest_rejectedUpdatesSave() throws FutureStateException, PastStateException {
-        // Given
-        PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
-        SimpleState createdState = new SimpleState();
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
-        SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
-
-        // When
-        savingPermissionRequest.rejected();
-
-        assertTrue(repo.findByPermissionId("permissionId").isPresent());
-    }
-
-    @Test
-    void savingPermissionRequest_terminateUpdatesSave() throws FutureStateException, PastStateException {
-        // Given
-        PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
-        SimpleState createdState = new SimpleState();
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
-        SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
-
-        // When
-        savingPermissionRequest.terminate();
-
-        assertTrue(repo.findByPermissionId("permissionId").isPresent());
     }
 
 

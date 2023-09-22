@@ -1,9 +1,16 @@
 package energy.eddie.api.v0.process.model.states;
 
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 
 public interface AcceptedPermissionRequestState extends PermissionRequestState {
+
+    @Override
+    default PermissionProcessStatus status() {
+        return PermissionProcessStatus.ACCEPTED;
+    }
+
     @Override
     default void validate() throws PastStateException {
         throw new PastStateException(this);
