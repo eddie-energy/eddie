@@ -26,8 +26,7 @@ import reactor.test.publisher.TestPublisher;
 import java.time.Duration;
 import java.time.Instant;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -146,6 +145,12 @@ class KafkaStreamerTest {
         mockProducer.errorNext(e);
 
         Mockito.verify(logger).error(startsWith("Failed to send aiidaRecord "), any(AiidaRecord.class), any(SerializationException.class));
+    }
+
+    @Test
+    void verify_shutdownWithoutPreviousConnect_doesntThrowNPE() {
+        assertDoesNotThrow(() -> streamer.shutdown());
+        assertTrue(mockProducer.closed());
     }
 
     @Test

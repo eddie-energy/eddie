@@ -119,10 +119,8 @@ public class KafkaStreamer extends AiidaStreamer {
             if (subscriptionDisposable != null)
                 subscriptionDisposable.dispose();
 
-            if (producer != null) {
-                // don't flush beforehand, as flush may block for a long time but still accept new send requests which we want to avoid
-                producer.close();
-            }
+            // don't flush beforehand, as flush may block for a long time but still accept new send requests which we want to avoid
+            producer.close();
             LOGGER.info("KafkaStreamer for connectionId {} successfully shutdown", connectionId);
         } catch (KafkaException e) {
             LOGGER.error("Error while shutting down KafkaStreamer for connectionId {}", connectionId, e);

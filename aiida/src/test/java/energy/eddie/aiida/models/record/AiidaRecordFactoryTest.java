@@ -23,9 +23,6 @@ class AiidaRecordFactoryTest {
         AiidaRecord stringRecord = AiidaRecordFactory.createRecord("C.1.0", now, "FooBar");
 
 
-        // no code with a double value available at this time
-        // AiidaRecord doubleRecord = AiidaRecordFactoryTest.createRecord("1.7.0", Instant.now(), 10);
-
         assertThat(intRecord_1_7_0, instanceOf(IntegerAiidaRecord.class));
         assertThat(intRecord_1_8_0, instanceOf(IntegerAiidaRecord.class));
         assertThat(intRecord_2_7_0, instanceOf(IntegerAiidaRecord.class));

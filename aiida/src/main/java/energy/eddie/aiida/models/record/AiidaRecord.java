@@ -9,8 +9,7 @@ import java.time.Instant;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = IntegerAiidaRecord.class, name = "IntegerAiidaRecord"),
-        @JsonSubTypes.Type(value = StringAiidaRecord.class, name = "StringAiidaRecord"),
-        @JsonSubTypes.Type(value = DoubleAiidaRecord.class, name = "DoubleAiidaRecord")
+        @JsonSubTypes.Type(value = StringAiidaRecord.class, name = "StringAiidaRecord")
 })
 public abstract class AiidaRecord {
     @JsonProperty

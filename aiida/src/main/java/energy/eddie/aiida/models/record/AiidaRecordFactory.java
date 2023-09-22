@@ -53,13 +53,6 @@ public class AiidaRecordFactory {
             throw new IllegalArgumentException("value must be of type String for StringAiidaRecord");
         }
 
-        if (recordClass == DoubleAiidaRecord.class) {
-            if (value instanceof Double d)
-                return new DoubleAiidaRecord(timestamp, obisCode, d);
-
-            throw new IllegalArgumentException("value must be of type Double for DoubleAiidaRecord");
-        }
-
         throw new IllegalArgumentException("No implementation that creates a %s in method createRecord(String obisCode, Instant timestamp, Object value)".formatted(recordClass.getName()));
     }
 }
