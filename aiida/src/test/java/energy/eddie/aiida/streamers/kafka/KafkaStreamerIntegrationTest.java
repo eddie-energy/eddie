@@ -7,10 +7,7 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordFactory;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -66,12 +63,12 @@ class KafkaStreamerIntegrationTest {
         var mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         var config = getKafkaConfig(testInfo);
         KafkaConsumer<String, String> consumer = getKafkaConsumer(testInfo);
-        KafkaProducer<String, String> producer = getKafkaProducer();
+        String connectionId = "IntegrationTestConnectionId";
+        var producer = KafkaProducerFactory.getKafkaProducer(config, connectionId);
 
         TestPublisher<AiidaRecord> fluxPublisher = TestPublisher.create();
 
-        var streamer = new KafkaStreamer(producer, fluxPublisher.flux(),
-                "IntegrationTestConnectionId", config, mapper);
+        var streamer = new KafkaStreamer(producer, fluxPublisher.flux(), connectionId, config, mapper);
 
 
         streamer.connect();
@@ -111,7 +108,7 @@ class KafkaStreamerIntegrationTest {
 
     /**
      * Creates a KafkaConsumer that connects to the testcontainer of this testclass and uses the displayName of
-     * the supplied testInfo as <code>group.id</code>.
+     * the supplied testInfo as <i>group.id</i>.
      */
     private KafkaConsumer<String, String> getKafkaConsumer(TestInfo testInfo) {
         Properties properties = new Properties();
@@ -120,22 +117,6 @@ class KafkaStreamerIntegrationTest {
         // make sure to consume all records even if consumer subscribed after records have already been published
         properties.put("auto.offset.reset", "earliest");
         return new KafkaConsumer<>(properties, new StringDeserializer(), new StringDeserializer());
-    }
-
-    /**
-     * Creates a KafkaProducer that connects to the testcontainer of this testclass.
-     */
-    private KafkaProducer<String, String> getKafkaProducer() {
-        Properties properties = new Properties();
-        properties.put("bootstrap.servers", kafka.getBootstrapServers());
-        properties.put(ProducerConfig.ACKS_CONFIG, "all");
-        properties.put(ProducerConfig.LINGER_MS_CONFIG, "1");
-        properties.put(ProducerConfig.BATCH_SIZE_CONFIG, "0");
-        properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "none");
-        properties.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, "5000");
-        properties.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, "3000");
-        properties.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, "2000");
-        return new KafkaProducer<>(properties, new StringSerializer(), new StringSerializer());
     }
 
     /**
