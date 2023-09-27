@@ -92,8 +92,8 @@ extraJavaModuleInfo {
     automaticModule("com.vaadin.external.google:android-json", "")
 }
 
-configurations.all() {
-    // the aop package is aleady contained in spring-aop
+configurations.all {
+    // the aop package is already contained in spring-aop
     exclude(group = "aopalliance", module = "aopalliance")
     exclude(group = "commons-logging", module = "commons-logging") // TODO check
     exclude(group = "org.slf4j", module = "slf4j-simple") // TODO this shoudn't be necessary
