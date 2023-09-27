@@ -3,7 +3,7 @@ package energy.eddie.aiida.streamers;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import reactor.core.publisher.Flux;
 
-public abstract class AiidaStreamer {
+public abstract class AiidaStreamer implements AutoCloseable {
     protected final Flux<AiidaRecord> recordFlux;
 
     /**
@@ -22,10 +22,4 @@ public abstract class AiidaStreamer {
      * Also subscribe to the {@code recordFlux} in this method, to receive records that shall be sent.
      */
     public abstract void connect();
-
-    /**
-     * Close any open connections and free up any used resources so that the AiidaStreamer can be properly disposed.
-     * Try to send any unsent records before closing.
-     */
-    public abstract void shutdown();
 }

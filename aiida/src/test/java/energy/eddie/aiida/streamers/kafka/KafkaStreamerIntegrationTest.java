@@ -102,7 +102,7 @@ class KafkaStreamerIntegrationTest {
             assertEquals("IntegrationTestConnectionId", polledRecord.key());
         }
 
-        streamer.shutdown();
+        streamer.close();
         consumer.close();
     }
 

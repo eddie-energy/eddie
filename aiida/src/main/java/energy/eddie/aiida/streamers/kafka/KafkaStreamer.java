@@ -109,11 +109,11 @@ public class KafkaStreamer extends AiidaStreamer {
     /**
      * Will flush any buffered messages and then stop streaming data via Kafka, but blocks indefinitely until
      * all queued send request complete.
-     * Also unsubscribes from the {@code recordFlux}.
+     * Also unsubscribes from any Flux.
      */
     @Override
-    public void shutdown() {
-        LOGGER.info("Will shutdown KafkaStreamer");
+    public void close() {
+        LOGGER.info("Will close KafkaStreamer for connectionId {}", connectionId);
 
         try {
             if (subscriptionDisposable != null)

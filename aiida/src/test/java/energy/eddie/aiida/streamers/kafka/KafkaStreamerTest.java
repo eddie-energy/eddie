@@ -68,7 +68,7 @@ class KafkaStreamerTest {
 
     @AfterEach
     void tearDown() {
-        streamer.shutdown();
+        streamer.close();
         mockProducer.close(Duration.ofMillis(100));
     }
 
@@ -125,7 +125,7 @@ class KafkaStreamerTest {
         assertEquals(3, mockProducer.history().size());
 
 
-        streamer.shutdown();
+        streamer.close();
 
         publisher.assertNoSubscribers();
         assertTrue(mockProducer.closed());
@@ -149,7 +149,7 @@ class KafkaStreamerTest {
 
     @Test
     void verify_shutdownWithoutPreviousConnect_doesntThrowNPE() {
-        assertDoesNotThrow(() -> streamer.shutdown());
+        assertDoesNotThrow(() -> streamer.close());
         assertTrue(mockProducer.closed());
     }
 
@@ -177,7 +177,7 @@ class KafkaStreamerTest {
         streamer.connect();
         publisher.next(record1);
 
-        streamer.shutdown();
+        streamer.close();
         Mockito.verify(logger).error(startsWith("Error while shutting down KafkaStreamer for connectionId "),
                 anyString(), any(KafkaException.class));
     }
