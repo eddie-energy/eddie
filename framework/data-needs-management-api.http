@@ -1,0 +1,40 @@
+### get all data needs
+GET http://localhost:9090/management/data-needs
+Accept: application/json
+
+### save LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY
+
+PUT http://localhost:9090/management/data-needs
+Content-Type: application/json
+
+{
+  "id": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
+  "description": "Historical validated consumption data for the last three months, one measurement per day",
+  "type": "HISTORICAL_VALIDATED_CONSUMPTION_DATA",
+  "granularity": "P1D",
+  "durationStart": -90,
+  "durationOpenEnd": false,
+  "durationEnd": 0
+}
+
+### save FUTURE_NEAR_REALTIME_DATA
+
+POST http://localhost:9090/management/data-needs
+Content-Type: application/json
+
+{
+  "id": "FUTURE_NEAR_REALTIME_DATA",
+  "description": "Near realtime consumption data from the smart meter",
+  "type": "SMART_METER_P1_DATA",
+  "granularity": "PT5M",
+  "durationStart": 0,
+  "durationOpenEnd": true,
+  "durationEnd": null
+}
+
+### get data need LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY
+GET http://localhost:9090/management/data-needs/LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY
+Accept: application/json
+
+### delete FUTURE_NEAR_REALTIME_DATA
+#DELETE http://localhost:9090/management/data-needs/FUTURE_NEAR_REALTIME_DATA

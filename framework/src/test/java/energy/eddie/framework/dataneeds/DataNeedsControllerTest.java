@@ -9,6 +9,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Optional;
+
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -26,14 +28,14 @@ class DataNeedsControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
     @MockBean
-    private DataNeedsService dataNeedsService;
+    private DataNeedsConfigService dataNeedsConfigService;
 
     @Test
     void testGetDataNeed() throws Exception {
         final var dataNeed = new DataNeed("dn-id", "description", DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA,
                 ConsumptionRecord.MeteringInterval.P_1_D, -90, false, 0);
-        given(this.dataNeedsService.getDataNeed("dn-id"))
-                .willReturn(dataNeed);
+        given(this.dataNeedsConfigService.getDataNeed("dn-id"))
+                .willReturn(Optional.of(dataNeed));
         mvc.perform(get("/api/data-needs/dn-id").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(dataNeed), true));

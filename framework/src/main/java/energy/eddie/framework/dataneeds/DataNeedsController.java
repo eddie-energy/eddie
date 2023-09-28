@@ -18,13 +18,12 @@ public class DataNeedsController {
 
     private DataNeedsService dataNeedsService;
 
-    public DataNeedsController(DataNeedsService dataNeedsService) {
-        this.dataNeedsService = dataNeedsService;
+    public DataNeedsController(DataNeedsService dataNeedsConfigService) {
+        this.dataNeedsService = dataNeedsConfigService;
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<DataNeed> getDataNeeds(@PathVariable String id) {
-        final var result = dataNeedsService.getDataNeed(id);
-        return null != result ? ResponseEntity.ok(result) : ResponseEntity.notFound().build();
+        return ResponseEntity.of(dataNeedsService.getDataNeed(id));
     }
 }
