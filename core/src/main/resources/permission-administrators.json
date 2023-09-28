@@ -708,6 +708,12 @@
     "regionConnector": "at-eda"
   },
   {
+    "country": "dk",
+    "company": "Energinet",
+    "jumpOffUrl": "",
+    "regionConnector": "dk-energinet"
+  },
+  {
     "country": "es",
     "company": "Datadis",
     "jumpOffUrl": "https://datadis.es",
