@@ -86,6 +86,13 @@ class EddieConnectButton extends LitElement {
   permissionAdministratorSelectRef = createRef();
 
   static styles = css`
+    :host {
+      color: black;
+      font-family: -apple-system, BlinkMacSystemFont, ‘Segoe UI’, Roboto, Helvetica, Arial, sans-serif, ‘Apple Color Emoji’, ‘Segoe UI Emoji’, ‘Segoe UI Symbol’;
+      font-size: 16px;
+      font-weight: normal;
+    }
+
     .eddie-connect-button {
       display: flex;
       align-items: center;
