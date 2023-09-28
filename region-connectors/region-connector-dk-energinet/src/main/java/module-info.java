@@ -22,6 +22,7 @@ module energy.eddie.regionconnector.dk.energinet {
     requires feign.form;
     requires io.javalin;
     requires reactor.core;
+    requires energy.eddie.region.connector.shared;
 
     exports energy.eddie.regionconnector.dk.energinet.customer.model;
     opens energy.eddie.regionconnector.dk.energinet.customer.model;

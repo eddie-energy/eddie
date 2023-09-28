@@ -1,11 +1,16 @@
 package energy.eddie.regionconnector.dk.energinet;
 
 import energy.eddie.api.v0.*;
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
+import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.api.v0.process.model.PermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
-import energy.eddie.regionconnector.dk.energinet.customer.RequestInfo;
+import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPoints;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
 import feign.FeignException;
 import io.javalin.Javalin;
@@ -19,7 +24,7 @@ import reactor.core.publisher.Sinks;
 
 import java.net.InetSocketAddress;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -39,19 +44,19 @@ public class EnerginetRegionConnector implements RegionConnector {
     public static final String MDA_DISPLAY_NAME = "Denmark ENERGINET";
     public static final int COVERED_METERING_POINTS = 36951446; // TODO: Evaluate covered metering points
     private static final Logger LOGGER = LoggerFactory.getLogger(EnerginetRegionConnector.class);
-    private static final String CONNECTION_ID = "connectionId";
 
     final Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
     private final EnerginetCustomerApiClient energinetCustomerApi;
     private final Javalin javalin = Javalin.create();
-    private final EnerginetConfiguration configuration;
-    private final ConcurrentMap<String, RequestInfo> permissionIdToRequestInfo = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, ConnectionStatusMessage> permissionIdToConnectionStatusMessages = new ConcurrentHashMap<>();
+    private final PermissionRequestRepository<DkEnerginetCustomerPermissionRequest> permissionRequestRepository;
+    private final PermissionRequestFactory permissionRequestFactory;
 
-    public EnerginetRegionConnector(EnerginetConfiguration configuration, EnerginetCustomerApiClient energinetCustomerApi) {
+    public EnerginetRegionConnector(EnerginetConfiguration configuration, EnerginetCustomerApiClient energinetCustomerApi, PermissionRequestRepository<DkEnerginetCustomerPermissionRequest> permissionRequestRepository) {
         this.energinetCustomerApi = requireNonNull(energinetCustomerApi);
-        this.configuration = requireNonNull(configuration);
+        this.permissionRequestRepository = requireNonNull(permissionRequestRepository);
+        this.permissionRequestFactory = new PermissionRequestFactory(permissionRequestRepository, connectionStatusSink, requireNonNull(configuration));
 
         connectionStatusSink.asFlux().subscribe(connectionStatusMessage -> {
             var permissionId = connectionStatusMessage.permissionId();
@@ -79,15 +84,21 @@ public class EnerginetRegionConnector implements RegionConnector {
 
     @Override
     public void terminatePermission(String permissionId) {
-        String connectionId = Optional.ofNullable(permissionIdToRequestInfo.get(permissionId)).map(RequestInfo::connectionId).orElse(null);
-        connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(connectionId, permissionId, PermissionProcessStatus.TERMINATED));
-        // Nothing to implement yet, needs to be done after we support pulling data from the future
-        throw new UnsupportedOperationException("revokePermission is not yet implemented");
+        var permissionRequest = permissionRequestRepository.findByPermissionId(permissionId);
+        if (permissionRequest.isEmpty()) {
+            return;
+        }
+        try {
+            permissionRequest.get().terminate();
+        } catch (FutureStateException | PastStateException e) {
+            LOGGER.error("PermissionRequest with permissionID {} cannot be revoked", permissionId, e);
+        }
     }
 
     @Override
     public int startWebapp(InetSocketAddress address, boolean devMode) {
-        JavalinValidation.register(ZonedDateTime.class, value -> value != null && !value.isBlank() ? LocalDate.parse(value, DateTimeFormatter.ISO_DATE).atStartOfDay(ZoneOffset.UTC) : null);
+        JavalinValidation.register(ZonedDateTime.class, value -> value != null && !value.isBlank() ? LocalDate.parse(value, DateTimeFormatter.ISO_DATE).atStartOfDay(ZoneId.of("Europe/Copenhagen")) : null);
+        JavalinValidation.register(TimeSeriesAggregationEnum.class, value -> value != null && !value.isBlank() ? TimeSeriesAggregationEnum.fromString(value) : null);
 
         javalin.get(BASE_PATH + "/ce.js", context -> {
             context.contentType(ContentType.TEXT_JS);
@@ -105,50 +116,53 @@ public class EnerginetRegionConnector implements RegionConnector {
         });
 
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
-            var connectionIdValidator = ctx.formParamAsClass(CONNECTION_ID, String.class).check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
+            PermissionRequest permissionRequest = permissionRequestFactory.create(ctx);
+            permissionRequest.validate();
+            try {
+                permissionRequest.sendToPermissionAdministrator();
+            } catch (PastStateException ignored) {
+                // The given refresh token for the API is not valid -> therefore no consent was given
+                permissionRequest.rejected();
+            }
 
-            connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(ctx.formParam(CONNECTION_ID), null, PermissionProcessStatus.CREATED));
+            String permissionId = permissionRequest.permissionId();
+            Optional<DkEnerginetCustomerPermissionRequest> optionalPermissionRequest = permissionRequestRepository.findByPermissionId(permissionRequest.permissionId());
 
-            var refreshTokenValidator = ctx.formParamAsClass("refreshToken", String.class).check(Objects::nonNull, "refreshToken must not be null");
-            var meteringPointValidator = ctx.formParamAsClass("meteringPoint", String.class).check(Objects::nonNull, "meteringPoint must not be null");
-            var aggregationValidator = ctx.formParamAsClass("aggregation", String.class).check(Objects::nonNull, "aggregation must not be null");
-            var startValidator = ctx.formParamAsClass("start", ZonedDateTime.class).check(Objects::nonNull, "start must not be null");
-            var endValidator = ctx.formParamAsClass("end", ZonedDateTime.class).check(end -> end == null || end.isAfter(startValidator.get()), "end must not be null and after start");
-
-            var errors = JavalinValidation.collectErrors(connectionIdValidator, refreshTokenValidator, meteringPointValidator, aggregationValidator, startValidator, endValidator);
-            if (!errors.isEmpty()) {
+            if (optionalPermissionRequest.isEmpty()) {
+                // unknown state / permissionId => not coming / initiated by our frontend
+                LOGGER.warn("permission-request called with unknown state '{}'", permissionId);
                 ctx.status(HttpStatus.BAD_REQUEST);
-                ctx.json(errors);
                 return;
             }
 
-            var permissionId = UUID.randomUUID().toString();
-            connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(connectionIdValidator.get(), permissionId, PermissionProcessStatus.VALIDATED));
+            DkEnerginetCustomerPermissionRequest energinetCustomerPermissionRequest = optionalPermissionRequest.get();
+            energinetCustomerPermissionRequest.receivedPermissionAdministratorResponse();
 
-            var requestInfo = new RequestInfo(connectionIdValidator.get(), refreshTokenValidator.get(), meteringPointValidator.get(), aggregationValidator.get(), startValidator.get(), endValidator.get());
-            permissionIdToRequestInfo.put(permissionId, requestInfo);
-            energinetCustomerApi.setRefreshToken(requestInfo.refreshToken());
-            energinetCustomerApi.setUserCorrelationId(UUID.fromString(permissionId));
-
+            energinetCustomerApi.setRefreshToken(energinetCustomerPermissionRequest.refreshToken());
+            energinetCustomerApi.setUserCorrelationId(UUID.fromString(energinetCustomerPermissionRequest.permissionId()));
             MeteringPoints meteringPoints = new MeteringPoints();
-            meteringPoints.addMeteringPointItem(requestInfo.meteringPoint());
+            meteringPoints.addMeteringPointItem(energinetCustomerPermissionRequest.meteringPoint());
             MeteringPointsRequest meteringPointsRequest = new MeteringPointsRequest().meteringPoints(meteringPoints);
 
-            connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, "Access to data requested"));
+            energinetCustomerPermissionRequest.accept();
 
             new Thread(() -> {
                 try {
                     energinetCustomerApi.apiToken();
-                    connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), PermissionProcessStatus.ACCEPTED, "Access to data granted"));
                 } catch (FeignException e) {
                     LOGGER.error("Something went wrong while fetching token from Energinet:", e);
                 }
 
                 try {
-                    var consumptionRecord = energinetCustomerApi.getTimeSeries(requestInfo.start(), requestInfo.end(), TimeSeriesAggregationEnum.fromString(requestInfo.aggregation()), meteringPointsRequest);
+                    var consumptionRecord = energinetCustomerApi.getTimeSeries(
+                            energinetCustomerPermissionRequest.start(),
+                            energinetCustomerPermissionRequest.end(),
+                            energinetCustomerPermissionRequest.aggregation(),
+                            meteringPointsRequest
+                    );
 
-                    consumptionRecord.setConnectionId(requestInfo.connectionId());
-                    consumptionRecord.setPermissionId(permissionId);
+                    consumptionRecord.setConnectionId(energinetCustomerPermissionRequest.connectionId());
+                    consumptionRecord.setPermissionId(energinetCustomerPermissionRequest.permissionId());
                     consumptionRecordSink.tryEmitNext(consumptionRecord);
                 } catch (FeignException e) {
                     LOGGER.error("Something went wrong while fetching data from Energinet:", e);
@@ -156,7 +170,6 @@ public class EnerginetRegionConnector implements RegionConnector {
 
             }).start();
         });
-
 
         javalin.exception(Exception.class, (e, ctx) -> {
             LOGGER.error("Exception occurred while processing request", e);

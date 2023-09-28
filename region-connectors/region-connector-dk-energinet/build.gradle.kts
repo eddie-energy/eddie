@@ -17,6 +17,7 @@ repositories {
 }
 
 dependencies {
+    implementation(project(mapOf("path" to ":region-connectors:shared")))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
 
@@ -105,7 +106,7 @@ openApiGenerate {
     inputSpec.set("${projectDir}/src/main/resources/energinet-customer-api-client-v3.json")
     outputDir.set(generatedSwaggerJavaDir)
     ignoreFileOverride.set("${projectDir}/src/main/resources/.openapi-generator-ignore")
-    
+
     apiPackage.set("${customerApiPackagePrefix}.api")
     invokerPackage.set("${customerApiPackagePrefix}.invoker")
     modelPackage.set("${customerApiPackagePrefix}.model")

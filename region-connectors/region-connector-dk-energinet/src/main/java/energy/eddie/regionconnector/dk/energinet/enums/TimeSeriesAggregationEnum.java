@@ -11,7 +11,6 @@ import java.util.UUID;
  *
  * @see MeterDataApi
  * @see MeterDataApi#apiMeterdataGettimeseriesDateFromDateToAggregationPost(String, String, String, UUID, MeteringPointsRequest)
- *
  */
 public enum TimeSeriesAggregationEnum {
     ACTUAL("Actual"),
@@ -21,6 +20,8 @@ public enum TimeSeriesAggregationEnum {
     MONTH("Month"),
     YEAR("Year");
 
+    private static final int MIN_LEN = 2;
+    private static final String EXCEPTION_MESSAGE = "Invalid TimeSeriesAggregationEnum value: ";
     private final String aggregation;
 
     TimeSeriesAggregationEnum(String aggregation) {
@@ -28,23 +29,26 @@ public enum TimeSeriesAggregationEnum {
     }
 
     public static TimeSeriesAggregationEnum fromString(String aggregation) {
-        var sanitisedAggregation = sanitiseAggregationInput(aggregation);
+        if (!Objects.requireNonNull(aggregation).isBlank()) {
+            var sanitisedAggregation = sanitiseAggregationInput(aggregation);
 
-        for (var aggregationEnum : values()) {
-            if (aggregationEnum.toString().equals(sanitisedAggregation)) {
-                return aggregationEnum;
+            for (var aggregationEnum : values()) {
+                if (aggregationEnum.toString().equals(sanitisedAggregation)) {
+                    return aggregationEnum;
+                }
             }
         }
 
-        throw new IllegalArgumentException("Invalid TimeSeriesAggregationEnum value: " + aggregation);
+        throw new IllegalArgumentException(EXCEPTION_MESSAGE + aggregation);
     }
 
     private static String sanitiseAggregationInput(String aggregation) {
-        if (Objects.requireNonNull(aggregation).isBlank()) {
-            throw new IllegalArgumentException("Provided aggregation does not exist.");
+        var trimmedAggregation = aggregation.trim();
+
+        if (trimmedAggregation.length() < MIN_LEN) {
+            throw new IllegalArgumentException(EXCEPTION_MESSAGE + aggregation);
         }
 
-        var trimmedAggregation = aggregation.trim();
         String firstLetter = trimmedAggregation.substring(0, 1).toUpperCase();
         String restOfString = trimmedAggregation.substring(1).toLowerCase();
 
