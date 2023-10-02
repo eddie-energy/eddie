@@ -16,6 +16,23 @@ pnpm install
 pnpm run build
 ```
 
+### Configuring different regions / countries
+
+To retrieve data from various regions and countries, it is crucial to correctly set up the relevant region connectors.
+These connectors can be configured through two methods: by modifying the `application.properties` file of
+the `framework` module or by utilizing environment variables.
+
+For each region connector, specific configurations and prerequisites are necessary for operation. Details for these
+setups are provided in the README file of the individual region connector. You can locate these files
+under `region-connectors/region-connector-<country-code>-<permission-administrator>/README.md`.
+
+Or you can use the following links:
+
+* [Austria (EDA)](./region-connectors/region-connector-at-eda/README.md)
+* [Spain (Datadis)](./region-connectors/region-connector-es-datadis/README.md)
+
+### Gradle tasks
+
 There are three tasks in the **development** group that have to run at the same time, e.g. in different windows:
 
 - `./gradlew run-db-server`
