@@ -70,13 +70,14 @@ public class StreamerManager {
      * @throws IllegalArgumentException                   If there is no streamer for the specified permissionId.
      * @throws ConnectionStatusMessageSendFailedException If the AiidaStreamer cannot be notified of the new message to send.
      */
-    public void sendConnectionStatusMessageForPermission(ConnectionStatusMessage message, String permissionId) throws IllegalArgumentException, ConnectionStatusMessageSendFailedException {
+    public void sendConnectionStatusMessageForPermission(ConnectionStatusMessage message, String permissionId)
+            throws IllegalArgumentException, ConnectionStatusMessageSendFailedException {
         var container = getContainer(permissionId);
 
         var result = container.statusMessageSink.tryEmitNext(message);
 
-        if (result == Sinks.EmitResult.FAIL_CANCELLED)
-            throw new IllegalStateException("Cannot emit ConnectionStatusMessage after streamer has been stopped.");
+        if (result == Sinks.EmitResult.FAIL_TERMINATED)
+            throw new ConnectionStatusMessageSendFailedException("Cannot emit ConnectionStatusMessage after streamer has been stopped.");
 
         if (result.isFailure())
             throw new ConnectionStatusMessageSendFailedException("Failed to emit complete signal for ConnectionStatusMessage sink of permission %s. Error was: %s"
@@ -93,11 +94,11 @@ public class StreamerManager {
     public void stopStreamer(String permissionId) throws IllegalArgumentException {
         var container = getContainer(permissionId);
 
-        container.streamer.close();
-
         var result = container.statusMessageSink.tryEmitComplete();
         if (result.isFailure())
             LOGGER.warn("Failed to emit complete signal for ConnectionStatusMessage sink of permission {}. Error was: {}", permissionId, result);
+
+        container.streamer.close();
     }
 
     /**

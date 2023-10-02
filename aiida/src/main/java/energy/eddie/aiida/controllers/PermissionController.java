@@ -3,6 +3,7 @@ package energy.eddie.aiida.controllers;
 import energy.eddie.aiida.dtos.PatchOperation;
 import energy.eddie.aiida.dtos.PatchPermissionDto;
 import energy.eddie.aiida.dtos.PermissionDto;
+import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.errors.InvalidPatchOperationException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.PermissionService;
@@ -35,7 +36,8 @@ public class PermissionController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<Permission> setupNewPermission(@Valid @RequestBody PermissionDto newPermission) {
+    ResponseEntity<Permission> setupNewPermission(@Valid @RequestBody PermissionDto newPermission)
+            throws ConnectionStatusMessageSendFailedException {
         LOGGER.debug("Got new permission request {}", newPermission);
 
         var permission = permissionService.setupNewPermission(newPermission);

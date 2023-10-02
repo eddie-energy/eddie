@@ -1,17 +1,22 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.PermissionDto;
+import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.errors.InvalidPermissionRevocationException;
 import energy.eddie.aiida.errors.PermissionNotFoundException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.streamers.ConnectionStatusMessage;
+import energy.eddie.aiida.streamers.StreamerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -20,23 +25,34 @@ public class PermissionService {
 
     private final PermissionRepository repository;
     private final Clock clock;
+    private final StreamerManager streamerManager;
 
     @Autowired
-    public PermissionService(PermissionRepository repository, Clock clock) {
+    public PermissionService(PermissionRepository repository, Clock clock, StreamerManager streamerManager) {
         this.repository = repository;
         this.clock = clock;
+        this.streamerManager = streamerManager;
     }
 
     /**
-     * Saves a new permission in the database.
+     * Saves a new permission in the database and sends the {@link PermissionStatus#ACCEPTED} status to the EDDIE
+     * framework. If any error occurs, the permission is not saved in the database.
      *
      * @param dto Data transfer object containing the information for the new permission.
      * @return Permission object as returned by the database (i.e. with a permissionId).
      */
-    public Permission setupNewPermission(PermissionDto dto) {
+    @Transactional(rollbackFor = ConnectionStatusMessageSendFailedException.class)
+    public Permission setupNewPermission(PermissionDto dto) throws ConnectionStatusMessageSendFailedException {
         Permission newPermission = new Permission(dto.serviceName(), dto.startTime(), dto.expirationTime(),
                 dto.grantTime(), dto.connectionId(), dto.requestedCodes(), dto.kafkaStreamingConfig());
-        return repository.save(newPermission);
+        newPermission = repository.save(newPermission);
+
+        var acceptedMessage = new ConnectionStatusMessage(newPermission.connectionId(),
+                clock.instant(), PermissionStatus.ACCEPTED);
+        streamerManager.createNewStreamerForPermission(newPermission);
+        streamerManager.sendConnectionStatusMessageForPermission(acceptedMessage, newPermission.permissionId());
+
+        return newPermission;
     }
 
     /**
@@ -60,7 +76,9 @@ public class PermissionService {
     }
 
     /**
-     * Revokes the specified permission by updating its status and records the timestamp. Persists the changes.
+     * Revokes the specified permission by updating its status and records the timestamp and persisting the changes.
+     * If an error during shutdown of the AiidaStreamer or sending of the {@link ConnectionStatusMessage} occurs,
+     * they are logged but not propagated to the caller.
      *
      * @param permissionId ID of the permission that should be revoked.
      * @return Updated permission object that has been persisted.
@@ -75,8 +93,21 @@ public class PermissionService {
         if (!isEligibleForRevocation(permission))
             throw new InvalidPermissionRevocationException(permissionId);
 
+        Instant revocationTime = clock.instant();
+        var revocationReceivedMessage = new ConnectionStatusMessage(permission.connectionId(), revocationTime, PermissionStatus.REVOCATION_RECEIVED);
+        var revokeMessage = new ConnectionStatusMessage(permission.connectionId(), revocationTime, PermissionStatus.REVOKED);
+
+        try {
+            streamerManager.sendConnectionStatusMessageForPermission(revocationReceivedMessage, permissionId);
+            streamerManager.sendConnectionStatusMessageForPermission(revokeMessage, permissionId);
+            streamerManager.stopStreamer(permissionId);
+        } catch (ConnectionStatusMessageSendFailedException | IllegalArgumentException ex) {
+            LOGGER.error("Error while sending connection status messages while revoking permission {}", permissionId, ex);
+        }
+
         permission.updateStatus(PermissionStatus.REVOKED);
-        permission.revokeTime(clock.instant());
+        permission.revokeTime(revocationTime);
+
         return repository.save(permission);
     }
 

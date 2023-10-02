@@ -51,8 +51,8 @@ class StreamerManagerIntegrationTest {
     private StreamerManager streamerManager;
 
     /**
-     * Tests that a KafkaStreamer is correctly created and any ConnectionStatusMessage is sent to the correct topic
-     * and received by the broker.
+     * Tests that a KafkaStreamer is correctly created and terminated and any ConnectionStatusMessage
+     * is sent to the correct topic and received by the broker.
      */
     @Test
     @Timeout(5)
