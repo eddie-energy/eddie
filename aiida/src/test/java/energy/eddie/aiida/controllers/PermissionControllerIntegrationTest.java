@@ -184,7 +184,7 @@ class PermissionControllerIntegrationTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .body(dto);
 
-        // use custom factory because default one doesn't support Patch operation
+        // use custom factory because default one does not support Patch operation
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
         RestTemplate restTemplate = new RestTemplate(requestFactory);
 
@@ -209,7 +209,7 @@ class PermissionControllerIntegrationTest {
                 .body(dto);
 
 
-        // use custom factory because default one doesn't support Patch operation
+        // use custom factory because default one does not support Patch operation
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
         RestTemplate restTemplate = new RestTemplate(requestFactory);
         ResponseEntity<Permission> responseEntity = restTemplate.exchange(request, Permission.class);

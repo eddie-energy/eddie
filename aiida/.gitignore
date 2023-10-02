@@ -106,3 +106,5 @@ build
 
 ### jte template generated files ###
 **/jte-classes
+
+application-local.properties
