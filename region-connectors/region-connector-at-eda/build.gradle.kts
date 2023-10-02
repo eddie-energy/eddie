@@ -6,6 +6,8 @@ plugins {
     id("energy.eddie.java-conventions")
     application
     id("org.gradlex.extra-java-module-info") version "1.3"
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
 
 }
 
@@ -23,8 +25,8 @@ val jaxb: Configuration by configurations.creating
 dependencies {
     implementation(project(":api"))
     implementation(project(":region-connectors:shared"))
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.junit.mockito)
+    implementation(libs.spring.boot.starter.web)
+
 
     // dependency for PontonXP Messenger
     implementation(files("libs/adapterapi2.jar"))
@@ -46,11 +48,15 @@ dependencies {
     runtimeOnly(libs.log4j.jul)
 
     implementation(libs.reactor.core)
-    testImplementation(libs.reactor.test)
 
     implementation(libs.javalin)
 
     implementation(libs.microprofile.config)
+
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.mockito)
+    testImplementation(libs.reactor.test)
+    testImplementation(libs.spring.boot.starter.test)
 }
 
 extraJavaModuleInfo {
@@ -77,6 +83,21 @@ extraJavaModuleInfo {
     automaticModule("org.eclipse.jgit:org.eclipse.jgit", "org.eclipse.jgit:org.eclipse.jgit")
 
     automaticModule("org.eclipse.microprofile.config:microprofile-config-api", "eclipse.microprofile.config.api")
+
+    // for spring test
+    automaticModule("com.jayway.jsonpath:json-path", "")
+    automaticModule("net.minidev:json-smart", "")
+    automaticModule("org.skyscreamer:jsonassert", "")
+    automaticModule("net.minidev:accessors-smart", "")
+    automaticModule("com.vaadin.external.google:android-json", "")
+}
+
+configurations.all {
+    // the aop package is already contained in spring-aop
+    exclude(group = "aopalliance", module = "aopalliance")
+    exclude(group = "commons-logging", module = "commons-logging") // TODO check
+    exclude(group = "org.slf4j", module = "slf4j-simple") // TODO this shoudn't be necessary
+    exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j2-impl") // TODO this neither
 }
 
 tasks.getByName<Test>("test") {

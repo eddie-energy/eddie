@@ -75,8 +75,9 @@ public class Framework {
         protected void configure() {
             Config config = loadExternalConfig();
             bind(Config.class).toInstance(config);
-
-            bind(KafkaConnector.class).toInstance(new KafkaConnector(KafkaProperties.fromConfig(config)));
+            if (config.getOptionalValue("kafka.enabled", Boolean.class).orElse(true)) {
+                bind(KafkaConnector.class).toInstance(new KafkaConnector(KafkaProperties.fromConfig(config)));
+            }
 
             var pathHandlerBinder = Multibinder.newSetBinder(binder(), JavalinPathHandler.class);
             pathHandlerBinder.addBinding().to(PermissionFacade.class);
