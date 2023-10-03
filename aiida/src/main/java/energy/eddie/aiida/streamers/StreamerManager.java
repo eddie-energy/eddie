@@ -62,6 +62,39 @@ public class StreamerManager {
 
     /**
      * Wrapper class for the {@link AiidaStreamer} instance and its associated {@link Sinks.Many} for {@link ConnectionStatusMessage}.
+     * Stops streaming for the specified permission.
+     * Will also complete the sink for the {@link ConnectionStatusMessage}.
+     *
+     * @param permissionId ID of permission for which to stop sharing
+     * @throws IllegalArgumentException If there is no streamer for the permissionId
+     */
+    public void stopStreamer(String permissionId) throws IllegalArgumentException {
+        var container = getContainer(permissionId);
+
+        container.streamer.close();
+
+        var result = container.statusMessageSink.tryEmitComplete();
+        if (result.isFailure())
+            LOGGER.warn("Failed to emit complete signal for ConnectionStatusMessage sink of permission {}. Error was: {}", permissionId, result);
+    }
+
+    /**
+     * Helper method that returns the container of the corresponding permissionId from the map or otherwise throws an exception.
+     *
+     * @param permissionId permissionId for which to return the container for
+     * @return Container for the specified permissionId
+     * @throws IllegalArgumentException If there is no container for the permissionId or if the container is null.
+     */
+    private StreamerSinkContainer getContainer(String permissionId) throws IllegalArgumentException {
+        StreamerSinkContainer container = streamers.get(permissionId);
+
+        if (container == null)
+            throw new IllegalArgumentException("No streamer for permissionId %s exists.".formatted(permissionId));
+        return container;
+    }
+
+    /**
+     * Wrapper class for the {@link AiidaStreamer} instance and its associated {@link Sinks.Many} for {@link ConnectionStatusMessage}.
      * Should be used with a Map that uses the permissionId as key.
      *
      * @param streamer          AiidaStreamer reference.

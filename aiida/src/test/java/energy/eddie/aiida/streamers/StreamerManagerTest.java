@@ -27,6 +27,7 @@ import static org.mockito.Mockito.*;
 class StreamerManagerTest {
     private Permission permission;
     private StreamerManager manager;
+    private String connectionId;
 
     @BeforeEach
     void setUp() {
@@ -37,7 +38,7 @@ class StreamerManagerTest {
         var start = grant.plusSeconds(100_000);
         var expiration = start.plusSeconds(800_000);
         var serviceName = "My NewAIIDA Test Service";
-        var connectionId = "NewAiidaRandomConnectionId";
+        connectionId = "NewAiidaRandomConnectionId";
 
         var codes = Set.of("1.8.0", "2.8.0");
         var bootstrapServers = "localhost:9092";
@@ -72,5 +73,39 @@ class StreamerManagerTest {
         var thrown = assertThrows(IllegalStateException.class, () -> manager.createNewStreamerForPermission(permission));
 
         assertThat(thrown.getMessage(), startsWith("An AiidaStreamer for permission "));
+    }
+
+    @Test
+    void givenInvalidPermissionId_stopStreamer_throws() {
+        assertThrows(IllegalArgumentException.class, () ->
+                manager.stopStreamer("InvalidPermissionId"));
+    }
+
+    @Test
+    void givenValidPermissionId_stopStreamer_callsClose() {
+        try (MockedStatic<StreamerFactory> mockStatic = mockStatic(StreamerFactory.class)) {
+            var mockStreamer = mock(KafkaStreamer.class);
+            mockStatic.when(() -> StreamerFactory.getAiidaStreamer(any(), eq(connectionId), any(), any(), any())).thenReturn(mockStreamer);
+
+            // need to create streamer before stopping
+            manager.createNewStreamerForPermission(permission);
+
+            manager.stopStreamer(permission.permissionId());
+            verify(mockStreamer).close();
+        }
+    }
+
+    @Test
+    void givenException_stopStreamer_logsException() {
+        try (MockedStatic<StreamerFactory> mockStatic = mockStatic(StreamerFactory.class)) {
+            var mockStreamer = mock(KafkaStreamer.class);
+            mockStatic.when(() -> StreamerFactory.getAiidaStreamer(any(), eq(connectionId), any(), any(), any())).thenReturn(mockStreamer);
+
+            // need to create streamer before stopping
+            manager.createNewStreamerForPermission(permission);
+
+            manager.stopStreamer(permission.permissionId());
+            verify(mockStreamer).close();
+        }
     }
 }
