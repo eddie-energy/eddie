@@ -12,7 +12,7 @@ public abstract class AiidaStreamer implements AutoCloseable {
      * The constructor should initialize and prepare any necessary resources but only after {@link #connect()}
      * was called, connections should be opened and data streamed.
      *
-     * @param recordFlux Flux which the AiidaStreamer implementation will subscribe to and thus will receive any records that should be sent.
+     * @param recordFlux        Flux which the AiidaStreamer implementation will subscribe to and thus will receive any records that should be sent.
      * @param statusMessageFlux Flux on which ConnectionStatusMessage that should be sent are available.
      */
     protected AiidaStreamer(Flux<AiidaRecord> recordFlux, Flux<ConnectionStatusMessage> statusMessageFlux) {
@@ -25,4 +25,11 @@ public abstract class AiidaStreamer implements AutoCloseable {
      * Also subscribe to the {@code recordFlux} in this method, to receive records that shall be sent.
      */
     public abstract void connect();
+
+    /**
+     * Unsubscribe from any Flux and free any used resources in this method.
+     * May flush all queued messages beforehand.
+     */
+    @Override
+    public abstract void close();
 }
