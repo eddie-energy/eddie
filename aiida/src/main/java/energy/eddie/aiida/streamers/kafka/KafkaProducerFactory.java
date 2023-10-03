@@ -24,7 +24,7 @@ public class KafkaProducerFactory {
      */
     public static Producer<String, String> getKafkaProducer(KafkaStreamingConfig streamingConfig, String connectionId) {
         Properties properties = new Properties();
-        properties.put("client.id", connectionId);
+        properties.put(ProducerConfig.CLIENT_ID_CONFIG, connectionId);
         properties.put(ProducerConfig.ACKS_CONFIG, "all");
         properties.put(ProducerConfig.LINGER_MS_CONFIG, "1");
         properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "none");
