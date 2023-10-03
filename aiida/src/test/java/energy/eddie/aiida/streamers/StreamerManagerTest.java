@@ -2,9 +2,14 @@ package energy.eddie.aiida.streamers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.streamers.kafka.KafkaProducerFactory;
 import energy.eddie.aiida.streamers.kafka.KafkaStreamer;
+import org.apache.kafka.clients.producer.MockProducer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,8 +22,7 @@ import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -53,7 +57,7 @@ class StreamerManagerTest {
     }
 
     @Test
-    void createNewStreamerForPermission_createsKafkaStreamerAndCallsConnect() {
+    void verify_createNewStreamerForPermission_createsKafkaStreamerAndCallsConnect() {
         try (MockedStatic<StreamerFactory> mockStatic = mockStatic(StreamerFactory.class)) {
             var streamerMock = mock(KafkaStreamer.class);
             mockStatic.when(() -> StreamerFactory.getAiidaStreamer(any(), anyString(), any(), any(), any())).thenReturn(streamerMock);
@@ -96,16 +100,55 @@ class StreamerManagerTest {
     }
 
     @Test
-    void givenException_stopStreamer_logsException() {
-        try (MockedStatic<StreamerFactory> mockStatic = mockStatic(StreamerFactory.class)) {
-            var mockStreamer = mock(KafkaStreamer.class);
-            mockStatic.when(() -> StreamerFactory.getAiidaStreamer(any(), eq(connectionId), any(), any(), any())).thenReturn(mockStreamer);
+    void givenInvalidPermissionId_sendNewConnectionStatusMessageForPermission_throws() {
+        var mockMessage = mock(ConnectionStatusMessage.class);
 
-            // need to create streamer before stopping
+        assertThrows(IllegalArgumentException.class, () ->
+                manager.sendConnectionStatusMessageForPermission(mockMessage, "InvalidId"));
+    }
+
+    /**
+     * Tests that a ConnectionStatusMessage is sent via Kafka by using a Kafka MockProducer and checking if the
+     * Mock Producer received the correct JSON which should be sent to the cluster.
+     */
+    @Test
+    void givenValidPermissionId_sendNewConnectionStatusMessageForPermission_callsSendMessage() throws ConnectionStatusMessageSendFailedException {
+        var acceptedMessageTimestamp = Instant.parse("2023-09-11T22:00:00.00Z");
+        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED);
+        String acceptedMessageJson = "{\"connectionId\":\"NewAiidaRandomConnectionId\",\"timestamp\":1694469600.000000000,\"status\":\"ACCEPTED\"}";
+
+        try (MockedStatic<KafkaProducerFactory> mockKafkaFactory = mockStatic(KafkaProducerFactory.class)) {
+            var mockProducer = new MockProducer<>(false, new StringSerializer(), new StringSerializer());
+            mockKafkaFactory.when(() -> KafkaProducerFactory.getKafkaProducer(any(), anyString())).thenReturn(mockProducer);
+
             manager.createNewStreamerForPermission(permission);
 
+            manager.sendConnectionStatusMessageForPermission(acceptedMessage, permission.permissionId());
+
+            assertEquals(1, mockProducer.history().size());
+
+            assertEquals(acceptedMessageJson, mockProducer.history().get(0).value());
+
+            // clean up
             manager.stopStreamer(permission.permissionId());
-            verify(mockStreamer).close();
         }
+    }
+
+    @Test
+    void givenConnectionStatusMessage_afterStreamerHasBeenClosed_sendNewConnectionStatusMessageForPermission_throws() {
+        var acceptedMessageTimestamp = Instant.parse("2023-09-11T22:00:00.00Z");
+        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED);
+
+        manager.createNewStreamerForPermission(permission);
+
+        String permissionId = permission.permissionId();
+        assertDoesNotThrow(() -> manager.sendConnectionStatusMessageForPermission(acceptedMessage, permissionId));
+
+        manager.stopStreamer(permissionId);
+
+        var thrown = assertThrows(IllegalStateException.class, () ->
+                manager.sendConnectionStatusMessageForPermission(acceptedMessage, permissionId));
+
+        assertEquals("Cannot emit ConnectionStatusMessage after streamer has been stopped.", thrown.getMessage());
     }
 }

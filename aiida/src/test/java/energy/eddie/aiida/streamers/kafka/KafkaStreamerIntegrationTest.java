@@ -2,14 +2,12 @@ package energy.eddie.aiida.streamers.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordFactory;
 import energy.eddie.aiida.streamers.ConnectionStatusMessage;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -25,8 +23,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
+import static energy.eddie.aiida.streamers.IntegrationTestUtils.getKafkaConfig;
+import static energy.eddie.aiida.streamers.IntegrationTestUtils.getKafkaConsumer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -65,8 +64,8 @@ class KafkaStreamerIntegrationTest {
     @Test
     @Timeout(5)
     void givenRandomData_kafkaStreamer_sendsDataToBroker(TestInfo testInfo) {
-        var config = getKafkaConfig(testInfo);
-        KafkaConsumer<String, String> consumer = getKafkaConsumer(testInfo);
+        var config = getKafkaConfig(testInfo, kafka);
+        KafkaConsumer<String, String> consumer = getKafkaConsumer(testInfo, kafka);
         String connectionId = "IntegrationTestConnectionId";
         var producer = KafkaProducerFactory.getKafkaProducer(config, connectionId);
 
@@ -115,38 +114,11 @@ class KafkaStreamerIntegrationTest {
         consumer.close();
     }
 
-    /**
-     * Creates a KafkaConsumer that connects to the testcontainer of this testclass and uses the displayName of
-     * the supplied testInfo as <i>group.id</i>.
-     */
-    private KafkaConsumer<String, String> getKafkaConsumer(TestInfo testInfo) {
-        Properties properties = new Properties();
-        properties.put("bootstrap.servers", kafka.getBootstrapServers());
-        properties.put("group.id", testInfo.getDisplayName());
-        // make sure to consume all records even if consumer subscribed after records have already been published
-        properties.put("auto.offset.reset", "earliest");
-        return new KafkaConsumer<>(properties, new StringDeserializer(), new StringDeserializer());
-    }
-
-    /**
-     * Creates a KafkaStreamingConfig with unique topic names allowing that the KafkaContainer can be shared between
-     * tests and to ensure no test method reuses the topic of another method.
-     *
-     * @param testInfo testInfo object of the test method
-     */
-    private KafkaStreamingConfig getKafkaConfig(TestInfo testInfo) {
-        String prefix = testInfo.getDisplayName().substring(0, testInfo.getDisplayName().indexOf("("));
-        var dataTopic = prefix + "_data";
-        var statusTopic = prefix + "_status";
-        var subscribeTopic = prefix + "_subscribe";
-        return new KafkaStreamingConfig(kafka.getBootstrapServers(), dataTopic, statusTopic, subscribeTopic);
-    }
-
     @Test
     @Timeout(5)
     void givenStatusMessage_kafkaStreamer_sendsDataToBroker(TestInfo testInfo) {
-        var config = getKafkaConfig(testInfo);
-        KafkaConsumer<String, String> consumer = getKafkaConsumer(testInfo);
+        var config = getKafkaConfig(testInfo, kafka);
+        KafkaConsumer<String, String> consumer = getKafkaConsumer(testInfo, kafka);
         String connectionId = "StatusMessageIntegrationTestConnectionId";
         var producer = KafkaProducerFactory.getKafkaProducer(config, connectionId);
 
