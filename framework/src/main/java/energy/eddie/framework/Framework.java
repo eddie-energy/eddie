@@ -4,6 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.multibindings.Multibinder;
+import energy.eddie.api.v0.ApplicationConnector;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorFactory;
 import energy.eddie.api.v0.RegionConnectorMetadata;
@@ -25,27 +26,25 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 public class Framework {
     private static final Logger LOGGER = LoggerFactory.getLogger(Framework.class);
 
-    private final JdbcAdapter jdbcAdapter;
     private final JavalinApp javalinApp;
     private final PermissionService permissionService;
     private final ConsumptionRecordService consumptionRecordService;
-    private final KafkaConnector kafkaConnector;
+    private final Set<ApplicationConnector> applicationConnectors;
 
     @Inject
-    public Framework(JdbcAdapter jdbcAdapter,
-                     JavalinApp javalinApp,
+    public Framework(JavalinApp javalinApp,
                      PermissionService permissionService,
                      ConsumptionRecordService consumptionRecordService,
-                     KafkaConnector kafkaConnector) {
-        this.jdbcAdapter = jdbcAdapter;
+                     Set<ApplicationConnector> applicationConnectors) {
         this.javalinApp = javalinApp;
         this.permissionService = permissionService;
         this.consumptionRecordService = consumptionRecordService;
-        this.kafkaConnector = kafkaConnector;
+        this.applicationConnectors = applicationConnectors;
     }
 
     public static void main(String[] args) {
@@ -55,14 +54,14 @@ public class Framework {
 
     public void run(String[] args) {
         LOGGER.info("Starting up EDDIE framework");
-        jdbcAdapter.init();
         var connectionStatusMessageStream = JdkFlowAdapter.publisherToFlowPublisher(permissionService.getConnectionStatusMessageStream());
-        jdbcAdapter.setConnectionStatusMessageStream(connectionStatusMessageStream);
-        kafkaConnector.setConnectionStatusMessageStream(connectionStatusMessageStream);
-
         var consumptionRecordMessageStream = JdkFlowAdapter.publisherToFlowPublisher(consumptionRecordService.getConsumptionRecordStream());
-        jdbcAdapter.setConsumptionRecordStream(consumptionRecordMessageStream);
-        kafkaConnector.setConsumptionRecordStream(consumptionRecordMessageStream);
+
+        applicationConnectors.forEach(applicationConnector -> {
+            applicationConnector.init();
+            applicationConnector.setConnectionStatusMessageStream(connectionStatusMessageStream);
+            applicationConnector.setConsumptionRecordStream(consumptionRecordMessageStream);
+        });
         FrameworkSpringConfig.main(args);
         javalinApp.init();
     }
@@ -75,8 +74,11 @@ public class Framework {
         protected void configure() {
             Config config = loadExternalConfig();
             bind(Config.class).toInstance(config);
+
+            var applicationConnectorBinder = Multibinder.newSetBinder(binder(), ApplicationConnector.class);
+            applicationConnectorBinder.addBinding().to(JdbcAdapter.class);
             if (config.getOptionalValue("kafka.enabled", Boolean.class).orElse(true)) {
-                bind(KafkaConnector.class).toInstance(new KafkaConnector(KafkaProperties.fromConfig(config)));
+                applicationConnectorBinder.addBinding().toInstance(new KafkaConnector(KafkaProperties.fromConfig(config)));
             }
 
             var pathHandlerBinder = Multibinder.newSetBinder(binder(), JavalinPathHandler.class);
