@@ -3,8 +3,10 @@ package energy.eddie.aiida.streamers.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
+import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordFactory;
+import energy.eddie.aiida.streamers.ConnectionStatusMessage;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -38,6 +40,7 @@ class KafkaStreamerIntegrationTest {
     private String record3Json;
     private String record4Json;
     private List<AiidaRecord> records;
+    private ObjectMapper mapper;
 
     @BeforeEach
     void setUp() {
@@ -55,28 +58,34 @@ class KafkaStreamerIntegrationTest {
         record4Json = "{\"type\":\"StringAiidaRecord\",\"timestamp\":1696154404.000000000,\"code\":\"C.1.0\",\"value\":\"Hello World\"}";
 
         records = List.of(record1, record2, record3, record4);
+
+        mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     }
 
     @Test
     @Timeout(5)
     void givenRandomData_kafkaStreamer_sendsDataToBroker(TestInfo testInfo) {
-        var mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         var config = getKafkaConfig(testInfo);
         KafkaConsumer<String, String> consumer = getKafkaConsumer(testInfo);
         String connectionId = "IntegrationTestConnectionId";
         var producer = KafkaProducerFactory.getKafkaProducer(config, connectionId);
 
-        TestPublisher<AiidaRecord> fluxPublisher = TestPublisher.create();
+        TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
+        TestPublisher<ConnectionStatusMessage> statusMessagePublisher = TestPublisher.create();
 
-        var streamer = new KafkaStreamer(producer, fluxPublisher.flux(), connectionId, config, mapper);
+        var streamer = new KafkaStreamer(producer, recordPublisher.flux(), statusMessagePublisher.flux(),
+                connectionId, config, mapper);
 
 
+        recordPublisher.assertNoSubscribers();
+        statusMessagePublisher.assertNoSubscribers();
         streamer.connect();
-        fluxPublisher.assertSubscribers(1);
+        recordPublisher.assertSubscribers(1);
+        statusMessagePublisher.assertSubscribers(1);
 
         // send four records to broker
         for (AiidaRecord record : records) {
-            fluxPublisher.next(record);
+            recordPublisher.next(record);
         }
 
         // use separate consumer to verify data has been written to Kafka
@@ -131,5 +140,60 @@ class KafkaStreamerIntegrationTest {
         var statusTopic = prefix + "_status";
         var subscribeTopic = prefix + "_subscribe";
         return new KafkaStreamingConfig(kafka.getBootstrapServers(), dataTopic, statusTopic, subscribeTopic);
+    }
+
+    @Test
+    @Timeout(5)
+    void givenStatusMessage_kafkaStreamer_sendsDataToBroker(TestInfo testInfo) {
+        var config = getKafkaConfig(testInfo);
+        KafkaConsumer<String, String> consumer = getKafkaConsumer(testInfo);
+        String connectionId = "StatusMessageIntegrationTestConnectionId";
+        var producer = KafkaProducerFactory.getKafkaProducer(config, connectionId);
+
+        TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
+        TestPublisher<ConnectionStatusMessage> statusMessagePublisher = TestPublisher.create();
+
+        var streamer = new KafkaStreamer(producer, recordPublisher.flux(), statusMessagePublisher.flux(),
+                connectionId, config, mapper);
+
+        var timestamp = Instant.parse("2023-11-01T10:00:00.00Z");
+
+        var statusMessage = new ConnectionStatusMessage(connectionId, timestamp, PermissionStatus.ACCEPTED);
+        var statusMessageJson = "{\"connectionId\":\"StatusMessageIntegrationTestConnectionId\",\"timestamp\":1698832800.000000000,\"status\":\"ACCEPTED\"}";
+
+        var statusMessage2 = new ConnectionStatusMessage(connectionId, timestamp.plusSeconds(10), PermissionStatus.REVOKED);
+        var statusMessageJson2 = "{\"connectionId\":\"StatusMessageIntegrationTestConnectionId\",\"timestamp\":1698832810.000000000,\"status\":\"REVOKED\"}";
+
+
+        recordPublisher.assertNoSubscribers();
+        statusMessagePublisher.assertNoSubscribers();
+        streamer.connect();
+        recordPublisher.assertSubscribers(1);
+        statusMessagePublisher.assertSubscribers(1);
+
+
+        statusMessagePublisher.next(statusMessage);
+        statusMessagePublisher.next(statusMessage2);
+
+
+        // need to poll broker to get all published messages, then compare data
+        consumer.subscribe(List.of(config.statusTopic()));
+        var polledRecords = new ArrayList<ConsumerRecord<String, String>>();
+        while (polledRecords.size() < 2) {
+            for (ConsumerRecord<String, String> received : consumer.poll(Duration.ofSeconds(1))) {
+                polledRecords.add(received);
+            }
+        }
+
+        assertEquals(2, polledRecords.size());
+
+        assertEquals(statusMessageJson, polledRecords.get(0).value());
+        assertEquals(connectionId, polledRecords.get(0).key());
+
+        assertEquals(statusMessageJson2, polledRecords.get(1).value());
+        assertEquals(connectionId, polledRecords.get(1).key());
+
+        streamer.close();
+        consumer.close();
     }
 }
