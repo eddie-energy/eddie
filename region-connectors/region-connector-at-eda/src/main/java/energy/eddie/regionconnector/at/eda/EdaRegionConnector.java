@@ -68,10 +68,7 @@ public class EdaRegionConnector implements RegionConnector {
     /**
      * Used to send permission state messages.
      */
-    private final Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks
-            .many()
-            .multicast()
-            .onBackpressureBuffer();
+    private final Sinks.Many<ConnectionStatusMessage> permissionStateMessages;
 
     private final PermissionRequestFactory permissionRequestFactory;
 
@@ -81,42 +78,31 @@ public class EdaRegionConnector implements RegionConnector {
     private final ConcurrentMap<String, ConnectionStatusMessage> permissionIdToConnectionStatusMessages = new ConcurrentHashMap<>();
 
     public EdaRegionConnector(AtConfiguration atConfiguration, EdaAdapter edaAdapter, AtPermissionRequestRepository permissionRequestRepository) throws TransmissionException {
+        this(atConfiguration, edaAdapter, permissionRequestRepository, Sinks.many().multicast().onBackpressureBuffer());
+    }
+
+    EdaRegionConnector(AtConfiguration atConfiguration, EdaAdapter edaAdapter, AtPermissionRequestRepository permissionRequestRepository, Sinks.Many<ConnectionStatusMessage> permissionStateMessages) throws TransmissionException {
+        this(atConfiguration, edaAdapter, permissionRequestRepository, new PermissionRequestFactory(edaAdapter, permissionStateMessages, permissionRequestRepository), permissionStateMessages);
+    }
+
+    EdaRegionConnector(AtConfiguration atConfiguration, EdaAdapter edaAdapter, AtPermissionRequestRepository permissionRequestRepository, PermissionRequestFactory permissionRequestFactory, Sinks.Many<ConnectionStatusMessage> permissionStateMessages) throws TransmissionException {
         requireNonNull(atConfiguration);
         requireNonNull(edaAdapter);
         requireNonNull(permissionRequestRepository);
+        requireNonNull(permissionRequestFactory);
+        requireNonNull(permissionStateMessages);
 
         this.atConfiguration = atConfiguration;
         this.edaAdapter = edaAdapter;
         this.consumptionRecordMapper = new ConsumptionRecordMapper();
-        this.permissionRequestFactory = new PermissionRequestFactory(edaAdapter, permissionStateMessages, permissionRequestRepository);
+        this.permissionRequestFactory = permissionRequestFactory;
+        this.permissionStateMessages = permissionStateMessages;
         this.permissionRequestRepository = permissionRequestRepository;
 
         edaAdapter.getCMRequestStatusStream()
                 .subscribe(this::processIncomingCmStatusMessages);
 
         edaAdapter.start();
-    }
-
-    private static PermissionProcessStatus getPermissionProcessStatus(CMRequestStatus cmRequestStatus, PermissionRequest request) throws FutureStateException, PastStateException {
-        return switch (cmRequestStatus.getStatus()) {
-            case ACCEPTED -> {
-                request.accept();
-                yield PermissionProcessStatus.ACCEPTED;
-            }
-            case ERROR -> {
-                request.invalid();
-                yield PermissionProcessStatus.INVALID;
-            }
-            case REJECTED -> {
-                request.rejected();
-                yield PermissionProcessStatus.REJECTED;
-            }
-            case RECEIVED -> {
-                request.receivedPermissionAdministratorResponse();
-                yield PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR;
-            }
-            case DELIVERED, SENT -> PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR;
-        };
     }
 
     @Override
@@ -159,6 +145,7 @@ public class EdaRegionConnector implements RegionConnector {
             }
             ctx.json(connectionStatusMessage);
         });
+
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
             // TODO rework validation after mvp1
             var connectionIdValidator = ctx.formParamAsClass(CONNECTION_ID, String.class).check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
@@ -242,8 +229,7 @@ public class EdaRegionConnector implements RegionConnector {
     }
 
     /**
-     * Process a CMRequestStatus and emit a ConnectionStatusMessage if possible,
-     * also adds connectionId and permissionId for identification
+     * Process a CMRequestStatus and change the state of the corresponding permission request accordingly
      *
      * @param cmRequestStatus the CMRequestStatus to process
      */
@@ -252,6 +238,7 @@ public class EdaRegionConnector implements RegionConnector {
                 cmRequestStatus.getConversationId(),
                 cmRequestStatus.getCMRequestId().orElse(null)
         );
+
         if (optionalPermissionRequest.isEmpty()) {
             // should not happen if a persistent mapping is used
             // TODO inform the administrative console if it happens
@@ -259,21 +246,39 @@ public class EdaRegionConnector implements RegionConnector {
             return;
         }
 
-        var permissionId = optionalPermissionRequest.get().permissionId();
-        var connectionId = optionalPermissionRequest.get().connectionId();
+        var permissionRequest = optionalPermissionRequest.get();
 
-        var message = cmRequestStatus.getMessage();
-        var now = ZonedDateTime.now(ZoneId.systemDefault());
         try {
-            var status = getPermissionProcessStatus(cmRequestStatus, optionalPermissionRequest.get());
-            var connectionStatusMessage = new ConnectionStatusMessage(connectionId, permissionId, now, status, message);
-            // workaround because ws are currently not working
-            permissionIdToConnectionStatusMessages.put(permissionId, connectionStatusMessage);
-
-            permissionStateMessages.tryEmitNext(connectionStatusMessage);
+            switch (cmRequestStatus.getStatus()) {
+                case ACCEPTED -> permissionRequest.accept();
+                case ERROR -> permissionRequest.invalid();
+                case REJECTED -> permissionRequest.rejected();
+                case RECEIVED -> permissionRequest.receivedPermissionAdministratorResponse();
+                default -> {
+                    // Other CMRequestStatus do not change the state of the permission request,
+                    // because they have no matching state in the consent process model
+                }
+            }
         } catch (PastStateException | FutureStateException e) {
             permissionStateMessages.tryEmitError(e);
         }
+
+        updatePermissionIdToConnectionStatusMap(cmRequestStatus, permissionRequest);
+    }
+
+    /**
+     * This method updates the permissionIdToConnectionStatusMessages map.
+     * This is a workaround because our current proxy setup does not support websockets.
+     * TODO remove this workaround when websockets are supported, replace it by a subscription to the permissionStateMessages that pushes the messages to the clients
+     */
+    private void updatePermissionIdToConnectionStatusMap(CMRequestStatus cmRequestStatus, AtPermissionRequest permissionRequest) {
+        var permissionId = permissionRequest.permissionId();
+        var connectionId = permissionRequest.connectionId();
+        var message = cmRequestStatus.getMessage(); // we should consider adding this as a property to the AtPermissionRequest
+        var now = ZonedDateTime.now(ZoneId.systemDefault());
+
+        var connectionStatusMessage = new ConnectionStatusMessage(connectionId, permissionId, now, permissionRequest.state().status(), message);
+        permissionIdToConnectionStatusMessages.put(permissionId, connectionStatusMessage);
     }
 
     /**
