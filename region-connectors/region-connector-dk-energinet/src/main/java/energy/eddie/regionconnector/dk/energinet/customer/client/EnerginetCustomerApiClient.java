@@ -18,23 +18,23 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public class EnerginetCustomerApiClient extends ApiClient implements EnerginetCustomerApi {
+public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
+    private final ApiClient apiClient;
     private final TokenApi tokenApi;
     private final MeterDataApi meterDataApi;
     private final IsAliveApi isAliveApi;
+    private final Map<String, HealthState> healthChecks = new HashMap<>();
     private UUID userCorrelationId = UUID.randomUUID();
     private String refreshToken = "";
     private String accessToken = "";
 
-    private final Map<String, HealthState> healthChecks = new HashMap<>();
-
     public EnerginetCustomerApiClient(EnerginetConfiguration propertiesEnerginetConfiguration) {
-        super("Bearer");
-        setBasePath(propertiesEnerginetConfiguration.customerBasePath());
+        apiClient = new ApiClient("Bearer");
+        apiClient.setBasePath(propertiesEnerginetConfiguration.customerBasePath());
 
-        tokenApi = this.buildClient(TokenApi.class);
-        meterDataApi = this.buildClient(MeterDataApi.class);
-        isAliveApi = this.buildClient(IsAliveApi.class);
+        tokenApi = apiClient.buildClient(TokenApi.class);
+        meterDataApi = apiClient.buildClient(MeterDataApi.class);
+        isAliveApi = apiClient.buildClient(IsAliveApi.class);
     }
 
     private void throwIfInvalidTimeframe(ZonedDateTime start, ZonedDateTime end) throws DateTimeException {
@@ -98,9 +98,8 @@ public class EnerginetCustomerApiClient extends ApiClient implements EnerginetCu
         this.refreshToken = Objects.requireNonNull(refreshToken);
     }
 
-    @Override
-    public void setApiKey(String token) {
-        super.setApiKey("Bearer " + token);
+    private void setApiKey(String token) {
+        apiClient.setApiKey("Bearer " + token);
     }
 
     @Override
