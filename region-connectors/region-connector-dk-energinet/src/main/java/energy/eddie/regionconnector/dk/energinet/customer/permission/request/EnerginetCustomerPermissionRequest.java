@@ -23,8 +23,8 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
     private final ZonedDateTime start;
     private final ZonedDateTime end;
     private final String refreshToken;
-    private final TimeSeriesAggregationEnum aggregation;
     private final String meteringPoint;
+    private final TimeSeriesAggregationEnum aggregation;
     private PermissionRequestState state;
 
     public EnerginetCustomerPermissionRequest(String permissionId, String connectionId, Context ctx, EnerginetConfiguration configuration) {
@@ -33,9 +33,9 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
         this.state = new EnerginetCustomerCreatedState(this, ctx, configuration);
         this.start = ctx.formParamAsClass(START_KEY, ZonedDateTime.class).getOrDefault(null);
         this.end = ctx.formParamAsClass(END_KEY, ZonedDateTime.class).getOrDefault(null);
-        this.refreshToken = ctx.formParamAsClass(REFRESH_TOKEN_KEY, String.class).getOrDefault(null);
+        this.refreshToken = ctx.formParam(REFRESH_TOKEN_KEY);
+        this.meteringPoint = ctx.formParam(METERING_POINT_KEY);
         this.aggregation = ctx.formParamAsClass(AGGREGATION_KEY, TimeSeriesAggregationEnum.class).getOrDefault(null);
-        this.meteringPoint = ctx.formParamAsClass(METERING_POINT_KEY, String.class).getOrDefault(null);
     }
 
     public EnerginetCustomerPermissionRequest(String connectionId, Context ctx, EnerginetConfiguration configuration) {
