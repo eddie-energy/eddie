@@ -11,22 +11,18 @@ import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustom
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPoints;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.PermissionRequestFactory;
-import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
+import energy.eddie.regionconnector.dk.energinet.utils.TimeSeriesAggregationEnumConverter;
+import energy.eddie.regionconnector.dk.energinet.utils.ZonedDateTimeConverter;
 import feign.FeignException;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 import io.javalin.http.HttpStatus;
-import io.javalin.validation.JavalinValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 
 import java.net.InetSocketAddress;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -97,8 +93,8 @@ public class EnerginetRegionConnector implements RegionConnector {
 
     @Override
     public int startWebapp(InetSocketAddress address, boolean devMode) {
-        JavalinValidation.register(ZonedDateTime.class, value -> value != null && !value.isBlank() ? LocalDate.parse(value, DateTimeFormatter.ISO_DATE).atStartOfDay(ZoneId.of("Europe/Copenhagen")) : null);
-        JavalinValidation.register(TimeSeriesAggregationEnum.class, value -> value != null && !value.isBlank() ? TimeSeriesAggregationEnum.fromString(value) : null);
+        ZonedDateTimeConverter.register();
+        TimeSeriesAggregationEnumConverter.register();
 
         javalin.get(BASE_PATH + "/ce.js", context -> {
             context.contentType(ContentType.TEXT_JS);
