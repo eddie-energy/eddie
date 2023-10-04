@@ -37,7 +37,7 @@ class PermissionRequestForm extends LitElement {
     
     const formData = new FormData(event.target);
     formData.append("connectionId", this.connectionId);
-    formData.append("measurementType", "HOURLY");
+    formData.append("aggregation", this.dataNeedAttributes.granularity);
     
     const startDate = new Date();
     startDate.setDate(
