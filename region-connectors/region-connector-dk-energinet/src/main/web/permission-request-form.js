@@ -1,4 +1,4 @@
-import { html, LitElement, unsafeCSS } from "lit";
+import { html, LitElement } from "lit";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/input/input.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/button/button.js";
@@ -15,7 +15,6 @@ class PermissionRequestForm extends LitElement {
     _requestStatus: { type: String },
     _isCooldown: { type: Boolean },
     _isSubmitHidden: { type: Boolean },
-    _areResponseButtonsDisabled: { type: Boolean },
   };
   
   intervalId = null;
@@ -26,7 +25,6 @@ class PermissionRequestForm extends LitElement {
     this._requestStatus = "";
     this._isSubmitDisabled = false;
     this._isSubmitHidden = false;
-    this._areResponseButtonsDisabled = false;
   }
   
   permissionId = null;
@@ -107,26 +105,6 @@ class PermissionRequestForm extends LitElement {
         .catch((error) => console.error(error));
     };
   }
-  
-  accepted() {
-    fetch(REQUEST_URL + "/accepted?permissionId=" + this.permissionId, {
-      method: "POST",
-    })
-      .then((response) => {
-        this._areResponseButtonsDisabled = true;
-      })
-      .catch((error) => console.error(error));
-  }
-  
-  rejected() {
-    fetch(REQUEST_URL + "/rejected?permissionId=" + this.permissionId, {
-      method: "POST",
-    })
-      .then((response) => {
-        this._areResponseButtonsDisabled = true;
-      })
-      .catch((error) => console.error(error));
-  }
 
   render() {
     return html`
@@ -161,25 +139,6 @@ class PermissionRequestForm extends LitElement {
             Connect
           </sl-button>
         </form>
-
-        <div ?hidden="${!this._isSubmitHidden}">
-          <div>
-            <sl-button
-              variant="success"
-              @click="${this.accepted}"
-              ?disabled="${this._areResponseButtonsDisabled}"
-            >
-              Accepted
-            </sl-button>
-            <sl-button
-              variant="danger"
-              @click="${this.rejected}"
-              ?disabled="${this._areResponseButtonsDisabled}"
-            >
-              Rejected
-            </sl-button>
-          </div>
-        </div>
 
         <br />
 
