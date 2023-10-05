@@ -4,7 +4,6 @@ import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
 import energy.eddie.api.v0.process.model.states.ValidatedPermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.customer.api.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import feign.FeignException;
 import io.javalin.http.Context;

@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request.st
 import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
 import energy.eddie.api.v0.process.model.states.SentToPermissionAdministratorPermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.customer.api.TimeframedPermissionRequest;
 
 public class EnerginetCustomerSentToPermissionAdministratorState extends ContextualizedPermissionRequestState<DkEnerginetCustomerPermissionRequest>
         implements SentToPermissionAdministratorPermissionRequestState {

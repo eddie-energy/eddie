@@ -1,6 +1,4 @@
-package energy.eddie.regionconnector.dk.energinet.customer.api;
-
-import energy.eddie.api.v0.process.model.PermissionRequest;
+package energy.eddie.api.v0.process.model;
 
 import java.time.ZonedDateTime;
 

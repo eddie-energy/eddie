@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.customer.api;
 
+import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
 
 public interface DkEnerginetCustomerPermissionRequest extends TimeframedPermissionRequest {
