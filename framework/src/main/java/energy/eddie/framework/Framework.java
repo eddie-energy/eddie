@@ -53,6 +53,7 @@ public class Framework {
     }
 
     public void run(String[] args) {
+        FrameworkSpringConfig.main(args);
         LOGGER.info("Starting up EDDIE framework");
         var connectionStatusMessageStream = JdkFlowAdapter.publisherToFlowPublisher(permissionService.getConnectionStatusMessageStream());
         var consumptionRecordMessageStream = JdkFlowAdapter.publisherToFlowPublisher(consumptionRecordService.getConsumptionRecordStream());
@@ -62,7 +63,6 @@ public class Framework {
             applicationConnector.setConnectionStatusMessageStream(connectionStatusMessageStream);
             applicationConnector.setConsumptionRecordStream(consumptionRecordMessageStream);
         });
-        FrameworkSpringConfig.main(args);
         javalinApp.init();
     }
 
