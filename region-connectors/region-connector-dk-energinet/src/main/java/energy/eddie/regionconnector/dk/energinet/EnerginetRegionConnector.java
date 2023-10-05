@@ -5,6 +5,7 @@ import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestRepository;
+import energy.eddie.api.v0.utils.ZonedDateTimeConverter;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
@@ -12,7 +13,6 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPoints;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.dk.energinet.utils.TimeSeriesAggregationEnumConverter;
-import energy.eddie.regionconnector.dk.energinet.utils.ZonedDateTimeConverter;
 import feign.FeignException;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
@@ -34,11 +34,11 @@ import java.util.concurrent.Flow;
 import static java.util.Objects.requireNonNull;
 
 public class EnerginetRegionConnector implements RegionConnector {
-    public static final String COUNTRY_CODE = "dk";
-    public static final String MDA_CODE = COUNTRY_CODE + "-energinet";
-    public static final String BASE_PATH = "/region-connectors/" + MDA_CODE;
-    public static final String MDA_DISPLAY_NAME = "Denmark ENERGINET";
-    public static final int COVERED_METERING_POINTS = 36951446; // TODO: Evaluate covered metering points
+    private static final String COUNTRY_CODE = "dk";
+    private static final String MDA_CODE = COUNTRY_CODE + "-energinet";
+    private static final String BASE_PATH = "/region-connectors/" + MDA_CODE;
+    private static final String MDA_DISPLAY_NAME = "Denmark ENERGINET";
+    private static final int COVERED_METERING_POINTS = 36951446; // TODO: Evaluate covered metering points
     private static final Logger LOGGER = LoggerFactory.getLogger(EnerginetRegionConnector.class);
 
     final Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();

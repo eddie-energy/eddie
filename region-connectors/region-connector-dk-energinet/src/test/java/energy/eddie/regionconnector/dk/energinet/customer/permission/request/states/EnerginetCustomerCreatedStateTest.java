@@ -1,11 +1,11 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.states;
 
+import energy.eddie.api.v0.utils.ZonedDateTimeConverter;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
 import energy.eddie.regionconnector.dk.energinet.utils.TimeSeriesAggregationEnumConverter;
-import energy.eddie.regionconnector.dk.energinet.utils.ZonedDateTimeConverter;
 import io.javalin.http.Context;
 import io.javalin.validation.Validator;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class EnerginetCustomerCreatedStateTest {
+class EnerginetCustomerCreatedStateTest {
     @BeforeAll
     static void setUp() {
         ZonedDateTimeConverter.register();

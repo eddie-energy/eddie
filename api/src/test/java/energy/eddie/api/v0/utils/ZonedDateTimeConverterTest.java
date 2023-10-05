@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.dk.energinet.utils;
+package energy.eddie.api.v0.utils;
 
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class ZonedDateTimeConverterTest {
+class ZonedDateTimeConverterTest {
 
     @Test
     void invoke_parsesDateTime() {

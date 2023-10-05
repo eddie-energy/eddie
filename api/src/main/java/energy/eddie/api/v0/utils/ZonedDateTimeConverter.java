@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.dk.energinet.utils;
+package energy.eddie.api.v0.utils;
 
 import io.javalin.validation.JavalinValidation;
 import jakarta.annotation.Nullable;
