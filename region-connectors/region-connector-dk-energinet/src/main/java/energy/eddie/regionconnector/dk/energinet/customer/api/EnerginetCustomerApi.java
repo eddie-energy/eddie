@@ -36,7 +36,5 @@ public interface EnerginetCustomerApi {
 
     void setUserCorrelationId(UUID userCorrelationId);
 
-    default Map<String, HealthState> health() {
-        throw new IllegalStateException("Not implemented yet");
-    }
+    Map<String, HealthState> health();
 }

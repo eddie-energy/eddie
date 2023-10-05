@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
+    private static final String IS_ALIVE_API = "isAliveApi";
     private final ApiClient apiClient;
     private final TokenApi tokenApi;
     private final MeterDataApi meterDataApi;
@@ -104,6 +105,11 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
 
     @Override
     public Map<String, HealthState> health() {
+        if (Boolean.TRUE.equals(isAlive())) {
+            healthChecks.put(IS_ALIVE_API, HealthState.UP);
+        } else {
+            healthChecks.put(IS_ALIVE_API, HealthState.DOWN);
+        }
         return healthChecks;
     }
 }
