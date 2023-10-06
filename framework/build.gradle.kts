@@ -110,6 +110,7 @@ tasks.getByName<Test>("test") {
 }
 
 tasks.register("run-framework", JavaExec::class) {
+    dependsOn(":pnpmBuild")
     mainModule.set("energy.eddie.framework")
     mainClass.set("energy.eddie.framework.Framework")
     classpath = sourceSets["main"].runtimeClasspath
