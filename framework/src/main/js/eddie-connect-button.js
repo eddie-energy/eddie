@@ -154,9 +154,9 @@ class EddieConnectButton extends LitElement {
 
     const formData = new FormData(event.target);
 
-    this._dataNeedAttributes.durationStart = formData.get("durationStart");
+    this._dataNeedAttributes.durationStart = Number.parseInt(formData.get("durationStart"));
     this._dataNeedAttributes.durationOpenEnd = formData.get("durationOpenEnd");
-    this._dataNeedAttributes.durationEnd = formData.get("durationEnd");
+    this._dataNeedAttributes.durationEnd = Number.parseInt(formData.get("durationEnd"));
   }
 
   render() {
@@ -217,9 +217,10 @@ class EddieConnectButton extends LitElement {
                   <sl-input
                     label="Duration Start"
                     name="durationStart"
+                    type="number"
                     .value="${this._dataNeedAttributes.durationStart}"
-                  ></sl-input
-                  ><br />
+                  ></sl-input>
+                  <br />
                   <div>
                     <sl-checkbox
                       name="durationOpenEnd"
@@ -230,6 +231,7 @@ class EddieConnectButton extends LitElement {
                   <br />
                   <sl-input
                     label="Duration End"
+                    type="number"
                     .value="${this._dataNeedAttributes.durationEnd}"
                   ></sl-input>
                   <br />
