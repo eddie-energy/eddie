@@ -1,12 +1,15 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.PermissionDto;
+import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.errors.InvalidPermissionRevocationException;
 import energy.eddie.aiida.errors.PermissionNotFoundException;
 import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.streamers.ConnectionStatusMessage;
+import energy.eddie.aiida.streamers.StreamerManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -36,6 +39,8 @@ class PermissionServiceTest {
     private PermissionRepository repository;
     @Mock
     private Clock clock;
+    @Mock
+    private StreamerManager streamerManager;
     @InjectMocks
     private PermissionService service;
     private Permission permission;
@@ -80,37 +85,35 @@ class PermissionServiceTest {
         assertThrows(PermissionNotFoundException.class, () -> service.findById(notExistingId));
     }
 
-    @Nested
-    @DisplayName("Test service layer set up of a new permission")
-    class PermissionServiceSetupNewPermissionTest {
-        @Test
-        void givenValidInput_setupPermission_asExpected() {
-            var permissionDto = new PermissionDto(serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
+    @Test
+    void givenValidInput_setupPermission_asExpected() throws ConnectionStatusMessageSendFailedException {
+        var permissionDto = new PermissionDto(serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
 
-            when(repository.save(any(Permission.class))).then(i -> {
-                var arg = ((Permission) i.getArgument(0));
-                ReflectionTestUtils.setField(arg, "permissionId", uuid);
-                return arg;
-            });
+        when(repository.save(any(Permission.class))).then(i -> {
+            var arg = ((Permission) i.getArgument(0));
+            ReflectionTestUtils.setField(arg, "permissionId", uuid);
+            return arg;
+        });
 
-            Permission newPermission = service.setupNewPermission(permissionDto);
+        Permission newPermission = service.setupNewPermission(permissionDto);
 
-            assertEquals(uuid, newPermission.permissionId());
-            assertEquals(serviceName, newPermission.serviceName());
-            assertEquals(start, newPermission.startTime());
-            assertEquals(expiration, newPermission.expirationTime());
-            assertEquals(grant, newPermission.grantTime());
-            assertEquals(connectionId, newPermission.connectionId());
-            assertThat(codes).hasSameElementsAs(newPermission.requestedCodes());
-            assertEquals(bootstrapServers, newPermission.kafkaStreamingConfig().bootstrapServers());
-            assertEquals(validDataTopic, newPermission.kafkaStreamingConfig().dataTopic());
-            assertEquals(validStatusTopic, newPermission.kafkaStreamingConfig().statusTopic());
-            assertEquals(validSubscribeTopic, newPermission.kafkaStreamingConfig().subscribeTopic());
-            assertEquals(PermissionStatus.ACCEPTED, newPermission.status());
-            assertNull(newPermission.revokeTime());
+        assertEquals(uuid, newPermission.permissionId());
+        assertEquals(serviceName, newPermission.serviceName());
+        assertEquals(start, newPermission.startTime());
+        assertEquals(expiration, newPermission.expirationTime());
+        assertEquals(grant, newPermission.grantTime());
+        assertEquals(connectionId, newPermission.connectionId());
+        assertThat(codes).hasSameElementsAs(newPermission.requestedCodes());
+        assertEquals(bootstrapServers, newPermission.kafkaStreamingConfig().bootstrapServers());
+        assertEquals(validDataTopic, newPermission.kafkaStreamingConfig().dataTopic());
+        assertEquals(validStatusTopic, newPermission.kafkaStreamingConfig().statusTopic());
+        assertEquals(validSubscribeTopic, newPermission.kafkaStreamingConfig().subscribeTopic());
+        assertEquals(PermissionStatus.ACCEPTED, newPermission.status());
+        assertNull(newPermission.revokeTime());
 
-            verify(repository, atLeastOnce()).save(any(Permission.class));
-        }
+        verify(repository, atLeastOnce()).save(any(Permission.class));
+        verify(streamerManager, times(1)).createNewStreamerForPermission(any(Permission.class));
+        verify(streamerManager, times(1)).sendConnectionStatusMessageForPermission(any(ConnectionStatusMessage.class), eq(uuid));
     }
 
     @Nested
@@ -144,7 +147,7 @@ class PermissionServiceTest {
                 value = PermissionStatus.class,
                 names = {"ACCEPTED", "WAITING_FOR_START", "STREAMING_DATA"},
                 mode = EnumSource.Mode.INCLUDE)
-        void givenValidPermission_revokePermission_asExpected(PermissionStatus status) {
+        void givenValidPermission_revokePermission_asExpected(PermissionStatus status) throws ConnectionStatusMessageSendFailedException {
             Instant revokeTime = Instant.parse("2023-09-13T10:15:30.00Z");
             when(clock.instant()).thenReturn(revokeTime);
 
@@ -178,6 +181,8 @@ class PermissionServiceTest {
 
             verify(repository, atLeastOnce()).findById(uuid);
             verify(repository, atLeastOnce()).save(any(Permission.class));
+            verify(streamerManager, times(1)).stopStreamer(uuid);
+            verify(streamerManager, times(2)).sendConnectionStatusMessageForPermission(any(ConnectionStatusMessage.class), eq(uuid));
         }
 
         @Test

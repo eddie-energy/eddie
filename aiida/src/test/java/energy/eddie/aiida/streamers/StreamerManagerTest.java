@@ -146,7 +146,7 @@ class StreamerManagerTest {
 
         manager.stopStreamer(permissionId);
 
-        var thrown = assertThrows(IllegalStateException.class, () ->
+        var thrown = assertThrows(ConnectionStatusMessageSendFailedException.class, () ->
                 manager.sendConnectionStatusMessageForPermission(acceptedMessage, permissionId));
 
         assertEquals("Cannot emit ConnectionStatusMessage after streamer has been stopped.", thrown.getMessage());
