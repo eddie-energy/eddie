@@ -1,6 +1,7 @@
 package energy.eddie.aiida.streamers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import org.slf4j.Logger;
@@ -36,7 +37,7 @@ public class StreamerManager {
 
     /**
      * Creates a new {@link AiidaStreamer} for the specified permission and stores it internally to enable calls to
-     * other methods like {@link #sendNewConnectionStatusMessageForPermission}.
+     * other methods like {@link #sendConnectionStatusMessageForPermission}.
      *
      * @param permission Permission for which an AiidaStreamer should be created.
      * @throws IllegalArgumentException If an AiidaStreamer for the passed permission has already been created.
@@ -58,6 +59,60 @@ public class StreamerManager {
         StreamerSinkContainer container = new StreamerSinkContainer(streamer, statusMessageSink);
 
         streamers.put(permission.permissionId(), container);
+    }
+
+    /**
+     * Send the specified {@link ConnectionStatusMessage} to the EDDIE framework using the streaming protocol of
+     * the permission identified by {@code permissionId}.
+     *
+     * @param message      ConnectionStatusMessage that should be sent
+     * @param permissionId ID of the permission to which the message belongs
+     * @throws IllegalArgumentException                   If there is no streamer for the specified permissionId.
+     * @throws ConnectionStatusMessageSendFailedException If the AiidaStreamer cannot be notified of the new message to send.
+     */
+    public void sendConnectionStatusMessageForPermission(ConnectionStatusMessage message, String permissionId) throws IllegalArgumentException, ConnectionStatusMessageSendFailedException {
+        var container = getContainer(permissionId);
+
+        var result = container.statusMessageSink.tryEmitNext(message);
+
+        if (result == Sinks.EmitResult.FAIL_CANCELLED)
+            throw new IllegalStateException("Cannot emit ConnectionStatusMessage after streamer has been stopped.");
+
+        if (result.isFailure())
+            throw new ConnectionStatusMessageSendFailedException("Failed to emit complete signal for ConnectionStatusMessage sink of permission %s. Error was: %s"
+                    .formatted(permissionId, result.toString()));
+    }
+
+    /**
+     * Stops streaming for the specified permission.
+     * Will also complete the sink for the {@link ConnectionStatusMessage}.
+     *
+     * @param permissionId ID of permission for which to stop sharing
+     * @throws IllegalArgumentException If there is no streamer for the specified permissionId
+     */
+    public void stopStreamer(String permissionId) throws IllegalArgumentException {
+        var container = getContainer(permissionId);
+
+        container.streamer.close();
+
+        var result = container.statusMessageSink.tryEmitComplete();
+        if (result.isFailure())
+            LOGGER.warn("Failed to emit complete signal for ConnectionStatusMessage sink of permission {}. Error was: {}", permissionId, result);
+    }
+
+    /**
+     * Helper method that returns the container of the corresponding permissionId from the map or otherwise throws an exception.
+     *
+     * @param permissionId permissionId for which to return the container for
+     * @return Container for the specified permissionId
+     * @throws IllegalArgumentException If there is no container for the permissionId or if the container is null.
+     */
+    private StreamerSinkContainer getContainer(String permissionId) throws IllegalArgumentException {
+        StreamerSinkContainer container = streamers.get(permissionId);
+
+        if (container == null)
+            throw new IllegalArgumentException("No streamer for permissionId %s exists.".formatted(permissionId));
+        return container;
     }
 
     /**
