@@ -27,10 +27,11 @@ import org.springframework.boot.task.TaskSchedulerBuilder;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
@@ -417,6 +418,104 @@ class PermissionServiceTest {
 
             verify(logger).error(eq("Error while sending connection status messages while revoking permission {}"),
                     eq(permissionId), any(IllegalArgumentException.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("Tests whether the @PostConstruct annotated method of PermissionService updates the permissions correctly")
+    class PermissionServiceTestUpdatePermissionsOnStartup {
+        @Mock
+        PermissionRepository repository;
+        @Mock
+        StreamerManager streamerManager;
+        @Mock
+        Clock clock;
+        @InjectMocks
+        PermissionService service;
+
+        /**
+         * Tests that permissions are queried from the DB on startup and if their expiration time has passed,
+         * their status is set accordingly or streaming is started again otherwise.
+         * Mainly exists to cover the @PostConstruct method by using reflection, as test coverage is only
+         * taken from unit tests not integration tests.
+         * <p>
+         * {@link PermissionServiceIntegrationTest} tests the same functionality but with a database and
+         * ensures that the method is correctly configured to be called by Spring on startup.
+         * </p>
+         */
+        @Test
+        void givenVariousPermissions_statusAsExpected() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+            var codes = Set.of("1.8.0", "2.8.0");
+            var streamingConfig = new KafkaStreamingConfig("localhost:9093", "foo", "bar", "tock");
+
+            var start = Instant.parse("2023-09-01T00:00:00.000Z");
+            var expiration = Instant.parse("2023-12-24T00:00:00.000Z");
+            var acceptedShouldBeStreamingData = new Permission("Should be STREAMING_DATA after test completes", start,
+                    expiration, start, "SomeConnectionId", codes, streamingConfig);
+            String shouldStreamPermissionId = "25ee5365-5d71-4b01-b21f-9c61f76a5cc9";
+            ReflectionTestUtils.setField(acceptedShouldBeStreamingData, "permissionId", shouldStreamPermissionId);
+
+            start = Instant.parse("2023-09-01T00:00:00.000Z");
+            expiration = Instant.parse("2023-09-19T00:00:00.000Z");
+            var waitingForStartShouldBeTimeLimit = new Permission(
+                    "Was WAITING_FOR_START and should be TIME_LIMIT after test completes", start,
+                    expiration, start, "SomeConnectionId", codes, streamingConfig);
+            String timeLimit1 = "9609a9b3-0718-4082-935d-6a98c0f8c5a2";
+            ReflectionTestUtils.setField(waitingForStartShouldBeTimeLimit, "permissionId", timeLimit1);
+            ReflectionTestUtils.setField(waitingForStartShouldBeTimeLimit, "status", PermissionStatus.WAITING_FOR_START);
+
+            start = Instant.parse("2023-09-11T00:00:00.000Z");
+            expiration = Instant.parse("2023-09-30T00:00:00.000Z");
+            var streamingDataShouldBeTimeLimit = new Permission(
+                    "Was STREAMING_DATA and should be TIME_LIMIT after test completes", start,
+                    expiration, start, "SomeConnectionId", codes, streamingConfig);
+            String timeLimit2 = "0b3b6f6d-d878-49dd-9dfd-62156b5cdc37";
+            ReflectionTestUtils.setField(streamingDataShouldBeTimeLimit, "permissionId", timeLimit2);
+            ReflectionTestUtils.setField(streamingDataShouldBeTimeLimit, "status", PermissionStatus.STREAMING_DATA);
+
+            start = Instant.parse("2023-09-11T00:00:00.000Z");
+            expiration = Instant.parse("2023-10-31T00:00:00.000Z");
+            var streamingDataShouldBeStreamingData = new Permission(
+                    "Was STREAMING_DATA and should be STREAMING_DATA after test completes", start,
+                    expiration, start, "SomeConnectionId", codes, streamingConfig);
+            String streamingDataId = "f53aa9e2-1969-4d86-a5e0-d76b2fd72863";
+            ReflectionTestUtils.setField(streamingDataShouldBeStreamingData, "permissionId", streamingDataId);
+            ReflectionTestUtils.setField(streamingDataShouldBeStreamingData, "status", PermissionStatus.STREAMING_DATA);
+
+            when(clock.instant()).thenReturn(Instant.parse("2023-10-01T12:00:00.00Z"));
+            when(repository.findAllActivePermissions()).thenReturn(List.of(acceptedShouldBeStreamingData,
+                    waitingForStartShouldBeTimeLimit, streamingDataShouldBeTimeLimit, streamingDataShouldBeStreamingData));
+            Map<String, Permission> savedByMethod = new HashMap<>();
+            when(repository.save(any(Permission.class))).thenAnswer(i -> {
+                var per = (Permission) i.getArgument(0);
+                savedByMethod.put(per.permissionId(), per);
+                return per;
+            });
+
+
+            getUpdatePermissionsOnStartup().invoke(service);
+
+            var permission = savedByMethod.get(shouldStreamPermissionId);
+            assertEquals(PermissionStatus.STREAMING_DATA, permission.status());
+            verify(streamerManager).createNewStreamerForPermission(argThat(arg ->
+                    arg.permissionId().equals(shouldStreamPermissionId)));
+
+            permission = savedByMethod.get(timeLimit1);
+            assertEquals(PermissionStatus.TIME_LIMIT, permission.status());
+
+            permission = savedByMethod.get(timeLimit2);
+            assertEquals(PermissionStatus.TIME_LIMIT, permission.status());
+
+            permission = savedByMethod.get(streamingDataId);
+            assertEquals(PermissionStatus.STREAMING_DATA, permission.status());
+            verify(streamerManager).createNewStreamerForPermission(argThat(arg ->
+                    arg.permissionId().equals(streamingDataId)));
+        }
+
+        private Method getUpdatePermissionsOnStartup() throws NoSuchMethodException {
+            Method method = PermissionService.class.getDeclaredMethod("updatePermissionsOnStartup");
+            method.setAccessible(true);
+            return method;
         }
     }
 }
