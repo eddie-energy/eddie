@@ -29,6 +29,7 @@ under `region-connectors/region-connector-<country-code>-<permission-administrat
 Or you can use the following links:
 
 * [Austria (EDA)](./region-connectors/region-connector-at-eda/README.md)
+* [France (Enedis)](./region-connectors/region-connector-fr-enedis/README.md)
 * [Spain (Datadis)](./region-connectors/region-connector-es-datadis/README.md)
 
 ### Gradle tasks
