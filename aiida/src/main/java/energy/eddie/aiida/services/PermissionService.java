@@ -47,8 +47,9 @@ public class PermissionService {
     }
 
     /**
-     * Saves a new permission in the database and sends the {@link PermissionStatus#ACCEPTED} status to the EDDIE
-     * framework. If any error occurs, the permission is not saved in the database.
+     * Saves a new permission in the database and sends the {@link PermissionStatus#ACCEPTED} status message to
+     * the EDDIE framework. If any error occurs, the permission is not saved in the database.
+     * As of current implementation, streaming is started right away, even if the permission's start time lies in the future.
      *
      * @param dto Data transfer object containing the information for the new permission.
      * @return Permission object as returned by the database (i.e. with a permissionId).
@@ -72,6 +73,10 @@ public class PermissionService {
         ScheduledFuture<?> future = scheduler.schedule(expirationRunnable, newPermission.expirationTime());
 
         expirationFutures.put(newPermission.permissionId(), future);
+
+        // scheduled start will be implemented later, for now, streaming is started right away and should be reflected in db
+        newPermission.updateStatus(PermissionStatus.STREAMING_DATA);
+        newPermission = repository.save(newPermission);
 
         return newPermission;
     }

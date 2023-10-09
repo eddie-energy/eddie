@@ -125,7 +125,7 @@ class PermissionServiceTest {
         assertEquals(validDataTopic, newPermission.kafkaStreamingConfig().dataTopic());
         assertEquals(validStatusTopic, newPermission.kafkaStreamingConfig().statusTopic());
         assertEquals(validSubscribeTopic, newPermission.kafkaStreamingConfig().subscribeTopic());
-        assertEquals(PermissionStatus.ACCEPTED, newPermission.status());
+        assertEquals(PermissionStatus.STREAMING_DATA, newPermission.status());
         assertNull(newPermission.revokeTime());
 
         verify(repository, atLeastOnce()).save(any(Permission.class));
