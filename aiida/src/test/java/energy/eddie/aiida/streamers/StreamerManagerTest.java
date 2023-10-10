@@ -139,16 +139,21 @@ class StreamerManagerTest {
         var acceptedMessageTimestamp = Instant.parse("2023-09-11T22:00:00.00Z");
         var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED);
 
-        manager.createNewStreamerForPermission(permission);
+        try (MockedStatic<StreamerFactory> mockStatic = mockStatic(StreamerFactory.class)) {
+            var streamerMock = mock(KafkaStreamer.class);
+            mockStatic.when(() -> StreamerFactory.getAiidaStreamer(any(), anyString(), any(), any(), any())).thenReturn(streamerMock);
 
-        String permissionId = permission.permissionId();
-        assertDoesNotThrow(() -> manager.sendConnectionStatusMessageForPermission(acceptedMessage, permissionId));
+            manager.createNewStreamerForPermission(permission);
 
-        manager.stopStreamer(permissionId);
+            String permissionId = permission.permissionId();
+            assertDoesNotThrow(() -> manager.sendConnectionStatusMessageForPermission(acceptedMessage, permissionId));
 
-        var thrown = assertThrows(ConnectionStatusMessageSendFailedException.class, () ->
-                manager.sendConnectionStatusMessageForPermission(acceptedMessage, permissionId));
+            manager.stopStreamer(permissionId);
 
-        assertEquals("Cannot emit ConnectionStatusMessage after streamer has been stopped.", thrown.getMessage());
+            var thrown = assertThrows(ConnectionStatusMessageSendFailedException.class, () ->
+                    manager.sendConnectionStatusMessageForPermission(acceptedMessage, permissionId));
+
+            assertEquals("Cannot emit ConnectionStatusMessage after streamer has been stopped.", thrown.getMessage());
+        }
     }
 }
