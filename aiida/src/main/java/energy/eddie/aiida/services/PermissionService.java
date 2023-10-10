@@ -9,11 +9,14 @@ import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.ConnectionStatusMessage;
 import energy.eddie.aiida.streamers.StreamerManager;
+import energy.eddie.aiida.utils.PermissionExpiredRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Sinks;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -22,16 +25,18 @@ import java.util.List;
 @Service
 public class PermissionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
-
     private final PermissionRepository repository;
     private final Clock clock;
     private final StreamerManager streamerManager;
+    private final TaskScheduler scheduler;
 
     @Autowired
-    public PermissionService(PermissionRepository repository, Clock clock, StreamerManager streamerManager) {
+    public PermissionService(PermissionRepository repository, Clock clock, StreamerManager streamerManager,
+                             TaskScheduler scheduler) {
         this.repository = repository;
         this.clock = clock;
         this.streamerManager = streamerManager;
+        this.scheduler = scheduler;
     }
 
     /**
@@ -51,6 +56,13 @@ public class PermissionService {
                 clock.instant(), PermissionStatus.ACCEPTED);
         streamerManager.createNewStreamerForPermission(newPermission);
         streamerManager.sendConnectionStatusMessageForPermission(acceptedMessage, newPermission.permissionId());
+
+        Sinks.One<String> sink = Sinks.one();
+        sink.asMono().subscribe(this::permissionExpired);
+
+        var expirationRunnable = new PermissionExpiredRunnable(newPermission.permissionId(),
+                newPermission.expirationTime(), sink);
+        scheduler.schedule(expirationRunnable, newPermission.expirationTime());
 
         return newPermission;
     }
@@ -123,5 +135,28 @@ public class PermissionService {
             case ACCEPTED, WAITING_FOR_START, STREAMING_DATA -> true;
             default -> false;
         };
+    }
+
+    private void permissionExpired(String permissionId) {
+        LOGGER.info("Will expire permission with id {}", permissionId);
+        Permission permission;
+        try {
+            permission = findById(permissionId);
+        } catch (PermissionNotFoundException ex) {
+            LOGGER.error("No permission with id {} found in database, but was requested to expire it.", permissionId);
+            return;
+        }
+
+        var statusMessage = new ConnectionStatusMessage(permission.connectionId(), clock.instant(), PermissionStatus.TIME_LIMIT);
+
+        try {
+            streamerManager.sendConnectionStatusMessageForPermission(statusMessage, permissionId);
+        } catch (ConnectionStatusMessageSendFailedException ex) {
+            LOGGER.error("Error while sending TIME_LIMIT ConnectionStatusMessage", ex);
+        }
+        streamerManager.stopStreamer(permissionId);
+
+        permission.updateStatus(PermissionStatus.TIME_LIMIT);
+        repository.save(permission);
     }
 }
