@@ -55,11 +55,11 @@ class PermissionServiceTest {
     private String validStatusTopic;
     private String validSubscribeTopic;
     private KafkaStreamingConfig streamingConfig;
-    private String uuid;
+    private String permissionId;
 
     @BeforeEach
     void setUp() {
-        uuid = "72831e2c-a01c-41b8-9db6-3f51670df7a5";
+        permissionId = "72831e2c-a01c-41b8-9db6-3f51670df7a5";
         grant = Instant.parse("2023-08-01T10:00:00.00Z");
         start = grant.plusSeconds(100_000);
         expiration = start.plusSeconds(800_000);
@@ -91,13 +91,13 @@ class PermissionServiceTest {
 
         when(repository.save(any(Permission.class))).then(i -> {
             var arg = ((Permission) i.getArgument(0));
-            ReflectionTestUtils.setField(arg, "permissionId", uuid);
+            ReflectionTestUtils.setField(arg, "permissionId", permissionId);
             return arg;
         });
 
         Permission newPermission = service.setupNewPermission(permissionDto);
 
-        assertEquals(uuid, newPermission.permissionId());
+        assertEquals(permissionId, newPermission.permissionId());
         assertEquals(serviceName, newPermission.serviceName());
         assertEquals(start, newPermission.startTime());
         assertEquals(expiration, newPermission.expirationTime());
@@ -113,7 +113,7 @@ class PermissionServiceTest {
 
         verify(repository, atLeastOnce()).save(any(Permission.class));
         verify(streamerManager, times(1)).createNewStreamerForPermission(any(Permission.class));
-        verify(streamerManager, times(1)).sendConnectionStatusMessageForPermission(any(ConnectionStatusMessage.class), eq(uuid));
+        verify(streamerManager, times(1)).sendConnectionStatusMessageForPermission(any(ConnectionStatusMessage.class), eq(permissionId));
     }
 
     @Nested
@@ -134,12 +134,12 @@ class PermissionServiceTest {
                 names = {"ACCEPTED", "WAITING_FOR_START", "STREAMING_DATA"},
                 mode = EnumSource.Mode.EXCLUDE)
         void givenPermissionWithInvalidStatus_revokePermission_throws(PermissionStatus status) {
-            when(repository.findById(uuid)).then(i -> {
+            when(repository.findById(permissionId)).then(i -> {
                 ReflectionTestUtils.setField(permission, "status", status);
                 return Optional.of(permission);
             });
 
-            assertThrows(InvalidPermissionRevocationException.class, () -> service.revokePermission(uuid));
+            assertThrows(InvalidPermissionRevocationException.class, () -> service.revokePermission(permissionId));
         }
 
         @ParameterizedTest
@@ -151,16 +151,16 @@ class PermissionServiceTest {
             Instant revokeTime = Instant.parse("2023-09-13T10:15:30.00Z");
             when(clock.instant()).thenReturn(revokeTime);
 
-            ReflectionTestUtils.setField(permission, "permissionId", uuid);
+            ReflectionTestUtils.setField(permission, "permissionId", permissionId);
             ReflectionTestUtils.setField(permission, "status", status);
 
-            when(repository.findById(uuid)).thenReturn(Optional.of(permission));
+            when(repository.findById(permissionId)).thenReturn(Optional.of(permission));
             when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
 
-            Permission revokedPermission = service.revokePermission(uuid);
+            Permission revokedPermission = service.revokePermission(permissionId);
 
             // these fields must not have been modified
-            assertEquals(uuid, revokedPermission.permissionId());
+            assertEquals(permissionId, revokedPermission.permissionId());
             assertEquals(serviceName, revokedPermission.serviceName());
             assertEquals(start, revokedPermission.startTime());
             assertEquals(expiration, revokedPermission.expirationTime());
@@ -179,10 +179,10 @@ class PermissionServiceTest {
             assertEquals(revokeTime, revokedPermission.revokeTime());
 
 
-            verify(repository, atLeastOnce()).findById(uuid);
+            verify(repository, atLeastOnce()).findById(permissionId);
             verify(repository, atLeastOnce()).save(any(Permission.class));
-            verify(streamerManager, times(1)).stopStreamer(uuid);
-            verify(streamerManager, times(2)).sendConnectionStatusMessageForPermission(any(ConnectionStatusMessage.class), eq(uuid));
+            verify(streamerManager, times(1)).stopStreamer(permissionId);
+            verify(streamerManager, times(2)).sendConnectionStatusMessageForPermission(any(ConnectionStatusMessage.class), eq(permissionId));
         }
 
         @Test
@@ -191,12 +191,12 @@ class PermissionServiceTest {
             Instant revokeTime = Instant.parse("2023-09-01T10:00:00.00Z");
             when(clock.instant()).thenReturn(revokeTime);
 
-            ReflectionTestUtils.setField(permission, "permissionId", uuid);
+            ReflectionTestUtils.setField(permission, "permissionId", permissionId);
             ReflectionTestUtils.setField(permission, "grantTime", grantTime);
 
-            when(repository.findById(uuid)).thenReturn(Optional.of(permission));
+            when(repository.findById(permissionId)).thenReturn(Optional.of(permission));
 
-            assertThrows(IllegalArgumentException.class, () -> service.revokePermission(uuid));
+            assertThrows(IllegalArgumentException.class, () -> service.revokePermission(permissionId));
         }
     }
 }

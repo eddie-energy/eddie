@@ -203,13 +203,13 @@ class PermissionControllerTest {
         @Test
         void givenValidInput_asExpected() throws Exception {
             // mock database setting the permissionId
-            String uuid = "72831e2c-a01c-41b8-9db6-3f51670df7a5";
+            String permissionId = "72831e2c-a01c-41b8-9db6-3f51670df7a5";
             when(permissionService.setupNewPermission(ArgumentMatchers.any(PermissionDto.class))).thenAnswer(i -> {
                 PermissionDto dto = (PermissionDto) i.getArguments()[0];
                 Permission toSave = new Permission(dto.serviceName(), dto.startTime(), dto.expirationTime(),
                         dto.grantTime(), dto.connectionId(), dto.requestedCodes(), dto.kafkaStreamingConfig());
 
-                ReflectionTestUtils.setField(toSave, "permissionId", uuid);
+                ReflectionTestUtils.setField(toSave, "permissionId", permissionId);
                 return toSave;
             });
 
@@ -220,14 +220,14 @@ class PermissionControllerTest {
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(json))
                     .andExpect(status().isCreated())
-                    .andExpect(header().string("location", "/permissions/" + uuid))
+                    .andExpect(header().string("location", "/permissions/" + permissionId))
                     .andReturn().getResponse().getContentAsString();
 
             var response = mapper.readValue(responseString, Permission.class);
 
             verify(permissionService, atLeast(1)).setupNewPermission(ArgumentMatchers.any(PermissionDto.class));
 
-            assertEquals(uuid, response.permissionId());
+            assertEquals(permissionId, response.permissionId());
             assertEquals(PermissionStatus.ACCEPTED, response.status());
             assertEquals(serviceName, response.serviceName());
             assertEquals(start, response.startTime());
@@ -317,25 +317,25 @@ class PermissionControllerTest {
     @Nested
     @DisplayName("Test revoke a permission")
     class RevokePermissionTest {
-        private String uuid;
+        private String permissionId;
         private String validPatchOperationBody;
 
         @BeforeEach
         void setUp() {
-            uuid = "72831e2c-a01c-41b8-9db6-3f51670df7a5";
+            permissionId = "72831e2c-a01c-41b8-9db6-3f51670df7a5";
             validPatchOperationBody = "{\"operation\": \"REVOKE_PERMISSION\"}";
         }
 
         @Test
         void givenInvalidMediaType_revokePermission_returnsUnsupportedMediaType() throws Exception {
-            mockMvc.perform(patch("/permissions/{permissionId}", uuid)
+            mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
                             .contentType(MediaType.APPLICATION_NDJSON))
                     .andExpect(status().isUnsupportedMediaType());
         }
 
         @Test
         void givenInvalidAcceptMediaType_revokePermission_returnsNotAcceptable() throws Exception {
-            mockMvc.perform(patch("/permissions/{permissionId}", uuid)
+            mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
                             .accept(MediaType.APPLICATION_XML)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNotAcceptable());
@@ -343,7 +343,7 @@ class PermissionControllerTest {
 
         @Test
         void givenEmptyPatchBody_revokePermission_returnsBadRequest() throws Exception {
-            mockMvc.perform(patch("/permissions/{permissionId}", uuid)
+            mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(""))
                     .andExpect(jsonPath("$.errors", allOf(
@@ -355,7 +355,7 @@ class PermissionControllerTest {
         @Test
         @Disabled("Cannot be tested right now, as PatchOperation enum only contains one value.")
         void givenInvalidOperation_revokePermission_returnsBadRequest() throws Exception {
-            mockMvc.perform(patch("/permissions/{permissionId}", uuid)
+            mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"operation\": \"MY_BLA\"}"))
                     .andExpect(status().isBadRequest())
@@ -388,17 +388,17 @@ class PermissionControllerTest {
         void givenPermissionInInvalidState_revokePermission_returnsBadRequest() throws
                 Exception {
 
-            when(permissionService.revokePermission(uuid)).then(i -> {
+            when(permissionService.revokePermission(permissionId)).then(i -> {
                 throw new InvalidPermissionRevocationException(i.getArgument(0));
             });
 
-            mockMvc.perform(patch("/permissions/{permissionId}", uuid)
+            mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(validPatchOperationBody))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errors", allOf(
                             iterableWithSize(1),
-                            hasItem(("Permission with id " + uuid + " cannot be revoked. Only a permission with status " +
+                            hasItem(("Permission with id " + permissionId + " cannot be revoked. Only a permission with status " +
                                     "ACCEPTED, WAITING_FOR_START or STREAMING_DATA may be revoked."))
                     )));
         }
@@ -408,14 +408,14 @@ class PermissionControllerTest {
             var permission = new Permission(serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
             var revokeTime = Instant.now();
 
-            when(permissionService.revokePermission(uuid)).then(i -> {
-                ReflectionTestUtils.setField(permission, "permissionId", uuid);
+            when(permissionService.revokePermission(permissionId)).then(i -> {
+                ReflectionTestUtils.setField(permission, "permissionId", permissionId);
                 permission.revokeTime(revokeTime);
                 permission.updateStatus(PermissionStatus.REVOKED);
                 return permission;
             });
 
-            var responseString = mockMvc.perform(patch("/permissions/" + uuid)
+            var responseString = mockMvc.perform(patch("/permissions/" + permissionId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(validPatchOperationBody))
                     .andExpect(status().isOk())
@@ -426,7 +426,7 @@ class PermissionControllerTest {
             verify(permissionService, atLeast(1)).revokePermission(any());
 
             // these fields must not have been modified
-            assertEquals(uuid, response.permissionId());
+            assertEquals(permissionId, response.permissionId());
             assertEquals(revokeTime, response.revokeTime());
             assertEquals(PermissionStatus.REVOKED, response.status());
         }
