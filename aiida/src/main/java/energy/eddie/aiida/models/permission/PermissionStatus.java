@@ -34,8 +34,7 @@ public enum PermissionStatus {
      */
     TERMINATED,
     /**
-     * The permission request ran out of time.
-     * The expiration of the permission was reached.
+     * The expiration time of the permission was reached.
      */
     TIME_LIMIT
 }

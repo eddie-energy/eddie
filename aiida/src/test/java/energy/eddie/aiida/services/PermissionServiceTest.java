@@ -19,7 +19,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.task.TaskSchedulerBuilder;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -27,6 +30,9 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -44,6 +50,10 @@ class PermissionServiceTest {
     private StreamerManager streamerManager;
     @Mock
     private TaskScheduler scheduler;
+    @Mock
+    ScheduledFuture<?> mockScheduledFuture;
+    @Spy
+    private ConcurrentMap<String, ScheduledFuture<?>> expirationFutures = new ConcurrentHashMap<>();
     @InjectMocks
     private PermissionService service;
     private Permission permission;
@@ -97,6 +107,7 @@ class PermissionServiceTest {
             ReflectionTestUtils.setField(arg, "permissionId", permissionId);
             return arg;
         });
+        Mockito.doReturn(mockScheduledFuture).when(scheduler).schedule(Mockito.any(), Mockito.any(Instant.class));
 
         Permission newPermission = service.setupNewPermission(permissionDto);
 
@@ -120,8 +131,12 @@ class PermissionServiceTest {
         verify(scheduler).schedule(any(), eq(expiration));
     }
 
+    /**
+     * Tests that setting up a new permission schedules the expiration runnable correctly and that this
+     * runnable runs and works as expected.
+     */
     @Test
-    void verify_permissionExpiredListener_sendsStatusMessage_andStopsStreamer_andUpdatesDb()
+    void verify_permissionExpired_sendsStatusMessage_andStopsStreamer_andUpdatesDb()
             throws ConnectionStatusMessageSendFailedException {
         start = Instant.now();
         expiration = start.plusMillis(500);
@@ -139,7 +154,7 @@ class PermissionServiceTest {
 
         when(scheduler.schedule(any(), any(Instant.class))).thenAnswer(i -> {
             ((Runnable) i.getArgument(0)).run();
-            return null;
+            return mockScheduledFuture;
         });
 
         service.setupNewPermission(permissionDto);
@@ -158,7 +173,6 @@ class PermissionServiceTest {
     @Nested
     @DisplayName("Test service layer revocation of a permission")
     class PermissionServiceRevocationTest {
-        // TODO: revocations should cancel expiration runnable
         @Test
         void givenNotExistingPermissionId_revokePermission_throws() {
             var notExistingId = "NotExistingId";
@@ -237,6 +251,54 @@ class PermissionServiceTest {
             when(repository.findById(permissionId)).thenReturn(Optional.of(permission));
 
             assertThrows(IllegalArgumentException.class, () -> service.revokePermission(permissionId));
+        }
+
+        /**
+         * Tests that a permission can be setup correctly and revoking it will cause the
+         * {@link energy.eddie.aiida.utils.PermissionExpiredRunnable} to be cancelled and no TIME_LIMIT status message
+         * will be sent.
+         */
+        @Test
+        void verify_revokePermission_cancelsPermissionExpiredRunnable() throws ConnectionStatusMessageSendFailedException {
+            // create a new PermissionService with a real scheduler
+            var scheduler = new TaskSchedulerBuilder().awaitTermination(true).build();
+            scheduler.initialize();
+            var service = new PermissionService(repository, clock, streamerManager, scheduler, expirationFutures);
+
+            start = Instant.now();
+            expiration = start.plusMillis(500);
+            var permissionDto = new PermissionDto(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+            permission = new Permission(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+            ReflectionTestUtils.setField(permission, "permissionId", permissionId);
+
+            when(repository.save(any(Permission.class))).then(i -> {
+                var arg = ((Permission) i.getArgument(0));
+                ReflectionTestUtils.setField(arg, "permissionId", permissionId);
+                return arg;
+            });
+            when(clock.instant()).thenReturn(Instant.now());
+            when(repository.findById(permissionId)).thenReturn(Optional.of(permission));
+
+
+            service.setupNewPermission(permissionDto);
+            service.revokePermission(permissionId);
+
+            // setup should have been executed correctly
+            verify(streamerManager).createNewStreamerForPermission(any());
+            verify(streamerManager).sendConnectionStatusMessageForPermission(
+                    argThat(arg -> arg.status() == PermissionStatus.ACCEPTED), eq(permissionId));
+            verify(expirationFutures).get(permissionId);
+
+            // revoke should have been executed correctly
+            verify(streamerManager, times(2)).sendConnectionStatusMessageForPermission(
+                    argThat(arg -> arg.status() == PermissionStatus.REVOCATION_RECEIVED || arg.status() == PermissionStatus.REVOKED), eq(permissionId));
+
+
+            // ensure the expiration runnable has not caused updates to the permission
+            verify(streamerManager, never()).sendConnectionStatusMessageForPermission(
+                    argThat(arg -> arg.status() == PermissionStatus.TIME_LIMIT), eq(permissionId));
+
+            scheduler.shutdown();
         }
     }
 }
