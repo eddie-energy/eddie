@@ -5,7 +5,7 @@
 @template.layout(
 title = "Your data connections",
 content = @`
-    !{String eddieUrl = energy.eddie.examples.exampleapp.Env.EDDIE_FRAMEWORK_PUBLIC_URL.get();}
+    !{String eddieUrl = energy.eddie.examples.exampleapp.Env.EDDIE_PUBLIC_URL.get();}
     !{var contextPath = energy.eddie.examples.exampleapp.Env.PUBLIC_CONTEXT_PATH.get();}
     <script type="module" src="${eddieUrl}/lib/eddie-components.js"></script>
     Hi ${user} here is your latest consumption data.

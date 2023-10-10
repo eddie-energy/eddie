@@ -39,7 +39,7 @@ REGION_CONNECTOR_ES_DATADIS_USERNAME=12345756X
 REGION_CONNECTOR_ES_DATADIS_PASSWORD=secret
 ```
 
-## Running the Region Connector via the framework
+## Running the Region Connector via EDDIE
 
-If you are using the framework, the region connector should appear in the list of available
+If you are using EDDIE, the region connector should appear in the list of available
 region connectors if it has been configured correctly.

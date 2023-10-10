@@ -1,4 +1,4 @@
 packages:
-  - 'framework'
+  - 'core'
   - 'region-connectors/*'
   - 'administrative-console'

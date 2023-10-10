@@ -30,8 +30,8 @@ jobs:
           distribution: 'temurin'
       - name: Gradle build
         run: ./gradlew installDist
-      - name: "Docker build image: EDDIE framework"
-        run: docker build -f ./framework/src/main/docker/Dockerfile -t eddie-framework ./framework
+      - name: "Docker build image: EDDIE"
+        run: docker build -f ./core/src/main/docker/Dockerfile -t eddie ./core
       - name: "Docker build image: EDDIE example-app"
         run: docker build -f ./examples/example-app/src/main/docker/Dockerfile -t eddie-example-app ./examples/example-app
       - name: Print some debugging information
@@ -58,9 +58,9 @@ jobs:
           echo VERSION: $VERSION
           docker tag ${IMAGE_NAME} $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
-      - name: "Docker push image: EDDIE framework"
+      - name: "Docker push image: EDDIE"
         run: |
-          IMAGE_NAME=eddie-framework
+          IMAGE_NAME=eddie
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
           VERSION=latest
           echo IMAGE_NAME: $IMAGE_NAME

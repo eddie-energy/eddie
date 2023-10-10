@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.concurrent.Flow.Publisher;
 
 /**
- * A region connector connects MDAs to the EDDIE framework. It implements conversion of the MDA specific data records
+ * A region connector connects MDAs to EDDIE. It implements conversion of the MDA specific data records
  * to the EDDIE CIM format {@link ConsumptionRecord} as well as the MDA and CA specifics related to these MDAs.
  * If offers:
  * <ul>

@@ -8,11 +8,11 @@ services:
       H2_USER: "test"
       H2_PASSWORD: "test"
 
-  eddie-framework:
-    image: ghcr.io/eddie-energy/eddie-framework:latest
+  eddie:
+    image: ghcr.io/eddie-energy/eddie:latest
     build:
       dockerfile: src/main/docker/Dockerfile
-      context: ../framework
+      context: ../core
     env_file:
       - .env
     environment:
@@ -22,7 +22,7 @@ services:
       PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
     volumes:
       - ./ponton:/ponton # mount a folder to store ponton files
-      - ./data-needs.yml:/opt/framework/config/data-needs.yml
+      - ./data-needs.yml:/opt/eddie/config/data-needs.yml
 
   eddie-example-app:
     image: ghcr.io/eddie-energy/eddie-example-app:latest
@@ -33,7 +33,7 @@ services:
       JDBC_URL: "jdbc:h2:tcp://h2/demo-db"
       JDBC_USER: "test"
       JDBC_PASSWORD: "test"
-      EDDIE_FRAMEWORK_PUBLIC_URL: ${PUBLIC_CONTEXT_PATH}
+      EDDIE_PUBLIC_URL: ${PUBLIC_CONTEXT_PATH}
       PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
 
   caddy:
