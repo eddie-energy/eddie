@@ -22,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
 import org.springframework.boot.task.TaskSchedulerBuilder;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -43,6 +44,10 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PermissionServiceTest {
     @Mock
+    ScheduledFuture<?> mockScheduledFuture;
+    @Spy
+    Logger logger;
+    @Mock
     private PermissionRepository repository;
     @Mock
     private Clock clock;
@@ -50,8 +55,6 @@ class PermissionServiceTest {
     private StreamerManager streamerManager;
     @Mock
     private TaskScheduler scheduler;
-    @Mock
-    ScheduledFuture<?> mockScheduledFuture;
     @Spy
     private ConcurrentMap<String, ScheduledFuture<?>> expirationFutures = new ConcurrentHashMap<>();
     @InjectMocks
@@ -168,6 +171,83 @@ class PermissionServiceTest {
                 argThat(arg -> arg.status() == PermissionStatus.TIME_LIMIT), eq(permissionId));
         verify(streamerManager).stopStreamer(permissionId);
         verify(repository).save(argThat(arg -> arg.status() == PermissionStatus.TIME_LIMIT));
+    }
+
+    @Test
+    void givenNonExistingPermission_expirePermission_willLogError() throws ConnectionStatusMessageSendFailedException {
+        var permissionId = "ba1c641e-df74-4bdf-8cd4-2ae2785c05a9";
+        start = Instant.now();
+        expiration = start.plusMillis(500);
+        var permissionDto = new PermissionDto(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+
+        when(repository.save(any(Permission.class))).then(i -> {
+            var arg = ((Permission) i.getArgument(0));
+            ReflectionTestUtils.setField(arg, "permissionId", permissionId);
+            return arg;
+        });
+        when(repository.findById(permissionId)).thenReturn(Optional.empty());
+        when(scheduler.schedule(any(), any(Instant.class))).thenAnswer(i -> {
+            ((Runnable) i.getArgument(0)).run();
+            return mockScheduledFuture;
+        });
+
+        service.setupNewPermission(permissionDto);
+
+        verify(logger).info("Will expire permission with id {}", permissionId);
+        verify(logger).error("No permission with id {} found in database, but was requested to expire it.", permissionId);
+    }
+
+    /**
+     * Tests safety check, that expirePermission won't update a permission if it has been modified by another
+     * part of AIIDA (e.g. revoked, but the cancellation of the runnable was not successful).
+     */
+    @Test
+    void givenModifiedPermission_expirePermission_willLogError() throws ConnectionStatusMessageSendFailedException {
+        var permissionId = "ba1c641e-df74-4bdf-8cd4-2ae2785c05a9";
+        start = Instant.now();
+        expiration = start.plusMillis(500);
+        var permissionDto = new PermissionDto(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+        permission = new Permission(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+        ReflectionTestUtils.setField(permission, "permissionId", permissionId);
+        ReflectionTestUtils.setField(permission, "status", PermissionStatus.REVOKED);
+
+        when(repository.save(any(Permission.class))).thenReturn(permission);
+        when(repository.findById(permissionId)).thenReturn(Optional.of(permission));
+        when(scheduler.schedule(any(), any(Instant.class))).thenAnswer(i -> {
+            ((Runnable) i.getArgument(0)).run();
+            return mockScheduledFuture;
+        });
+
+        service.setupNewPermission(permissionDto);
+
+        verify(logger).info("Will expire permission with id {}", permissionId);
+        verify(logger).warn("Permission {} was modified, its status is {}. Will NOT expire the permission", permissionId, PermissionStatus.REVOKED);
+    }
+
+    @Test
+    void givenExceptionWhenSendingConnectionStatusMessage_expirePermission_willLogError() throws ConnectionStatusMessageSendFailedException {
+        var permissionId = "ba1c641e-df74-4bdf-8cd4-2ae2785c05a9";
+        start = Instant.now();
+        expiration = start.plusMillis(500);
+        var permissionDto = new PermissionDto(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+        permission = new Permission(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+        ReflectionTestUtils.setField(permission, "permissionId", permissionId);
+        ReflectionTestUtils.setField(permission, "status", PermissionStatus.STREAMING_DATA);
+
+        when(repository.save(any(Permission.class))).thenReturn(permission);
+        when(repository.findById(permissionId)).thenReturn(Optional.of(permission));
+        when(scheduler.schedule(any(), any(Instant.class))).thenAnswer(i -> {
+            ((Runnable) i.getArgument(0)).run();
+            return mockScheduledFuture;
+        });
+        // during setupNewPermission, no error should be thrown
+        doNothing().doThrow(ConnectionStatusMessageSendFailedException.class)
+                .when(streamerManager).sendConnectionStatusMessageForPermission(any(), anyString());
+
+        service.setupNewPermission(permissionDto);
+
+        verify(logger).info("Will expire permission with id {}", permissionId);
+        verify(logger).error(eq("Error while sending TIME_LIMIT ConnectionStatusMessage"), any(ConnectionStatusMessageSendFailedException.class));
     }
 
     @Nested
@@ -299,6 +379,44 @@ class PermissionServiceTest {
                     argThat(arg -> arg.status() == PermissionStatus.TIME_LIMIT), eq(permissionId));
 
             scheduler.shutdown();
+        }
+
+        @Test
+        void givenExceptionWhenSendingConnectionStatusMessage_revokePermission_willLogError() throws ConnectionStatusMessageSendFailedException {
+            Instant revokeTime = Instant.parse("2023-09-13T10:15:30.00Z");
+            when(clock.instant()).thenReturn(revokeTime);
+
+            ReflectionTestUtils.setField(permission, "permissionId", permissionId);
+            ReflectionTestUtils.setField(permission, "status", PermissionStatus.STREAMING_DATA);
+
+            when(repository.findById(permissionId)).thenReturn(Optional.of(permission));
+            when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
+            doThrow(ConnectionStatusMessageSendFailedException.class)
+                    .when(streamerManager).sendConnectionStatusMessageForPermission(any(), eq(permissionId));
+
+            service.revokePermission(permissionId);
+
+            verify(logger).error(eq("Error while sending connection status messages while revoking permission {}"),
+                    eq(permissionId), any(ConnectionStatusMessageSendFailedException.class));
+        }
+
+        @Test
+        void givenNoStreamerForPermissionId_revokePermission_willLogError() throws ConnectionStatusMessageSendFailedException {
+            Instant revokeTime = Instant.parse("2023-09-13T10:15:30.00Z");
+            when(clock.instant()).thenReturn(revokeTime);
+
+            ReflectionTestUtils.setField(permission, "permissionId", permissionId);
+            ReflectionTestUtils.setField(permission, "status", PermissionStatus.STREAMING_DATA);
+
+            when(repository.findById(permissionId)).thenReturn(Optional.of(permission));
+            when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
+            doThrow(IllegalArgumentException.class)
+                    .when(streamerManager).sendConnectionStatusMessageForPermission(any(), eq(permissionId));
+
+            service.revokePermission(permissionId);
+
+            verify(logger).error(eq("Error while sending connection status messages while revoking permission {}"),
+                    eq(permissionId), any(IllegalArgumentException.class));
         }
     }
 }
