@@ -137,7 +137,7 @@ tasks.withType<JavaCompile>().configureEach {
             option("NullAway:UnannotatedClasses", "${customerApiPackagePrefix}.model")
             option("NullAway:TreatGeneratedAsUnannotated", true)
             // Regex fits to Windows and Unix-style path separators. CAVEAT: excludedPaths needs a regex string!
-            val regexString = ".*/energy/eddie/regionconnector/dk/energinet/customer/invoker/.*".replace("/", "[/\\\\]")
+            val regexString = ".*/energy/eddie/regionconnector/dk/energinet/customer/(model|invoker)/.*".replace("/", "[/\\\\]")
             this.excludedPaths.set(regexString)
             option("NullawayExcludedClasses=EnerginetCliClient.java")
         }
