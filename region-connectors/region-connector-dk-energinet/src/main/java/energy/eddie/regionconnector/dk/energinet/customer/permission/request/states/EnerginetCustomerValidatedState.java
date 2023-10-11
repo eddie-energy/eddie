@@ -35,14 +35,14 @@ public class EnerginetCustomerValidatedState extends ContextualizedPermissionReq
             var errorStatus = HttpStatus.forStatus(e.status());
 
             if (errorStatus.equals(HttpStatus.UNAUTHORIZED)) {
-                permissionRequest.changeState(new EnerginetCustomerUnableToSendState(permissionRequest, e));
                 ctx.status(HttpStatus.BAD_REQUEST);
                 ctx.json(Map.of("error", "The given refresh token is not valid."));
             } else {
-                permissionRequest.changeState(new EnerginetCustomerUnableToSendState(permissionRequest, e));
                 ctx.status(errorStatus);
                 ctx.json(Map.of("error", "An error occured."));
             }
+
+            permissionRequest.changeState(new EnerginetCustomerUnableToSendState(permissionRequest, e));
             return;
         }
         ctx.json(Map.of("permissionId", permissionRequest.permissionId()));

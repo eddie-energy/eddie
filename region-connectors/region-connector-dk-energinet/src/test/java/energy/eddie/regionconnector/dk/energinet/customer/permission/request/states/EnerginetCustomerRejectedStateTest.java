@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-public class EnerginetCustomerRejectedStateTest {
+class EnerginetCustomerRejectedStateTest {
     @Test
     void constructor_doesNotThrow() {
         // Given

@@ -11,10 +11,8 @@ public class PropertiesEnerginetConfiguration implements EnerginetConfiguration 
     public PropertiesEnerginetConfiguration(Properties properties) {
         this.properties = requireNonNull(properties);
 
-        var customerBasePath = properties.getProperty(ENERGINET_CUSTOMER_BASE_PATH_KEY);
-        requireNonNull(customerBasePath, "Property %s is required".formatted(ENERGINET_CUSTOMER_BASE_PATH_KEY));
-        var thirdpartyBasePath = properties.getProperty(ENERGINET_THIRDPARTY_BASE_PATH_KEY);
-        requireNonNull(thirdpartyBasePath, "Property %s is required".formatted(ENERGINET_THIRDPARTY_BASE_PATH_KEY));
+        customerBasePath();
+        thirdpartyBasePath();
     }
 
     private String get(String key) {

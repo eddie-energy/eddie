@@ -3,6 +3,7 @@ import { html, LitElement } from "lit";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/input/input.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/button/button.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/alert/alert.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/icon/icon.js";
 
 const BASE_URL = new URL(import.meta.url).href.replace("ce.js", "");
 const REQUEST_URL = BASE_URL + "permission-request";
@@ -13,7 +14,6 @@ class PermissionRequestForm extends LitElement {
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
     _requestId: { type: String },
     _requestStatus: { type: String },
-    _isCooldown: { type: Boolean },
     _isSubmitHidden: { type: Boolean },
   };
   
@@ -35,7 +35,7 @@ class PermissionRequestForm extends LitElement {
     
     const formData = new FormData(event.target);
     formData.append("connectionId", this.connectionId);
-    formData.append("aggregation", this.dataNeedAttributes.granularity);
+    formData.append("periodResolution", this.dataNeedAttributes.granularity);
     
     const startDate = new Date();
     startDate.setDate(
@@ -109,27 +109,24 @@ class PermissionRequestForm extends LitElement {
   render() {
     return html`
       <div>
-        <section>
-          <h2>Energinet - Eloverblik Customer</h2>
-          <p>
-            Eloverblik needs a refresh token in order to access your data. A
-            refresh token can be generated in the DataHub.
-          </p>
-        </section>
         <form @submit="${this.handleSubmit}">
-            <sl-input label="Refresh Token" type="text" id="refreshToken" name="refreshToken" required></sl-input>
-          <br>
-            <sl-input label="Metering Point" type="text" id="meteringPoint" name="meteringPoint" required></sl-input>
-          <br>
-          <sl-select label="Aggregation" value="Actual" name="aggregation" id="aggregation" required>
-            <sl-option value="Actual">Actual</sl-option>
-            <sl-option value="Quarter">Quarter</sl-option>
-            <sl-option value="Hour">Hour</sl-option>
-            <sl-option value="Day">Day</sl-option>
-            <sl-option value="Month">Month</sl-option>
-            <sl-option value="Year">Year</sl-option>
-          </sl-select>
-          <br>
+          <sl-input
+            label="Refresh Token"
+            type="text"
+            id="refreshToken"
+            name="refreshToken"
+            help-text="Eloverblik needs a refresh token in order to access your data. A refresh token can be generated in the DataHub."
+            required
+          ></sl-input>
+          <br />
+          <sl-input
+            label="Metering Point"
+            type="text"
+            id="meteringPoint"
+            name="meteringPoint"
+            required
+          ></sl-input>
+          <br />
           <sl-button
             .disabled="${this._isSubmitDisabled}"
             ?hidden="${this._isSubmitHidden}"

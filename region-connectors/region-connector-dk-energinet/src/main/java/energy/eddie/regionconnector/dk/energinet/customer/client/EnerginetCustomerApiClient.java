@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.api.MeterDataApi;
 import energy.eddie.regionconnector.dk.energinet.customer.api.TokenApi;
 import energy.eddie.regionconnector.dk.energinet.customer.invoker.ApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
+import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
 import energy.eddie.regionconnector.dk.energinet.utils.ConsumptionRecordMapper;
 
@@ -67,9 +68,10 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     @Override
     public ConsumptionRecord getTimeSeries(ZonedDateTime dateFrom,
                                            ZonedDateTime dateTo,
-                                           TimeSeriesAggregationEnum aggregation,
+                                           PeriodResolutionEnum periodResolutionEnum,
                                            MeteringPointsRequest meteringPointsRequest) {
         throwIfInvalidTimeframe(dateFrom, dateTo);
+        TimeSeriesAggregationEnum aggregation = TimeSeriesAggregationEnum.fromPointQualityEnum(periodResolutionEnum);
 
         if (accessToken.isBlank()) {
             apiToken();

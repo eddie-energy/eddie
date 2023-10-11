@@ -12,7 +12,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustom
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPoints;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.PermissionRequestFactory;
-import energy.eddie.regionconnector.dk.energinet.utils.TimeSeriesAggregationEnumConverter;
+import energy.eddie.regionconnector.dk.energinet.utils.PeriodResolutionEnumConverter;
 import feign.FeignException;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
@@ -94,7 +94,7 @@ public class EnerginetRegionConnector implements RegionConnector {
     @Override
     public int startWebapp(InetSocketAddress address, boolean devMode) {
         ZonedDateTimeConverter.register();
-        TimeSeriesAggregationEnumConverter.register();
+        PeriodResolutionEnumConverter.register();
 
         javalin.get(BASE_PATH + "/ce.js", context -> {
             context.contentType(ContentType.TEXT_JS);
@@ -118,6 +118,7 @@ public class EnerginetRegionConnector implements RegionConnector {
                 permissionRequest.sendToPermissionAdministrator();
             } catch (PastStateException ignored) {
                 // The given refresh token for the API is not valid -> therefore no consent was given
+                permissionRequest.receivedPermissionAdministratorResponse();
                 permissionRequest.rejected();
             }
 
@@ -153,7 +154,7 @@ public class EnerginetRegionConnector implements RegionConnector {
                     var consumptionRecord = energinetCustomerApi.getTimeSeries(
                             energinetCustomerPermissionRequest.start(),
                             energinetCustomerPermissionRequest.end(),
-                            energinetCustomerPermissionRequest.aggregation(),
+                            energinetCustomerPermissionRequest.periodResolution(),
                             meteringPointsRequest
                     );
 

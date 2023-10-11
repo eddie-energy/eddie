@@ -6,7 +6,7 @@ import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerMalformedState;
-import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
+import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import io.javalin.http.Context;
 import io.javalin.validation.Validator;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class DkEnerginetCustomerPermissionRequestAdapterTest {
+class DkEnerginetCustomerPermissionRequestAdapterTest {
     @Test
     void adapter_returnsPermissionId() {
         // Given
@@ -108,8 +108,8 @@ public class DkEnerginetCustomerPermissionRequestAdapterTest {
                 .thenReturn(new Validator<>("", String.class, REFRESH_TOKEN_KEY));
         when(ctx.formParamAsClass(any(), eq(String.class)))
                 .thenReturn(new Validator<>("", String.class, METERING_POINT_KEY));
-        when(ctx.formParamAsClass(any(), eq(TimeSeriesAggregationEnum.class)))
-                .thenReturn(new Validator<>(null, TimeSeriesAggregationEnum.class, AGGREGATION_KEY));
+        when(ctx.formParamAsClass(any(), eq(PeriodResolutionEnum.class)))
+                .thenReturn(new Validator<>(null, PeriodResolutionEnum.class, PERIOD_RESOLUTION_KEY));
         EnerginetCustomerMalformedState state = new EnerginetCustomerMalformedState(null, null);
         DkEnerginetCustomerPermissionRequest request = new EnerginetCustomerPermissionRequest("pid", "cid", ctx, null);
         PermissionRequest decorator = new ChangingPermissionRequest(request);

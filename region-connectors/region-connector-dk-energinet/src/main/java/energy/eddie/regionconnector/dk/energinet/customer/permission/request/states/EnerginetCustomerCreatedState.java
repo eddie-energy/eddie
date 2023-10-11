@@ -4,7 +4,7 @@ import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
 import energy.eddie.api.v0.process.model.states.CreatedPermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
+import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.validation.JavalinValidation;
@@ -31,7 +31,7 @@ public class EnerginetCustomerCreatedState extends ContextualizedPermissionReque
                 .check(s -> !s.isBlank(), "connectionId must not be blank");
         var refreshTokenValidator = ctx.formParamAsClass(REFRESH_TOKEN_KEY, String.class)
                 .check(s -> !s.isBlank(), "refreshToken must not be blank");
-        var aggregationValidator = ctx.formParamAsClass(AGGREGATION_KEY, TimeSeriesAggregationEnum.class);
+        var periodResolutionValidator = ctx.formParamAsClass(PERIOD_RESOLUTION_KEY, PeriodResolutionEnum.class);
         var meteringPointValidator = ctx.formParamAsClass(METERING_POINT_KEY, String.class)
                 .check(s -> !s.isBlank(), "meteringPoint must not be blank");
 
@@ -45,7 +45,7 @@ public class EnerginetCustomerCreatedState extends ContextualizedPermissionReque
         var errors = JavalinValidation.collectErrors(
                 connectionIdValidator,
                 refreshTokenValidator,
-                aggregationValidator,
+                periodResolutionValidator,
                 meteringPointValidator,
                 startValidator,
                 endValidator

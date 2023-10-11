@@ -12,7 +12,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class EnerginetCustomerMalformedStateTest {
+class EnerginetCustomerMalformedStateTest {
     @Test
     void toString_returnsErrorString() {
         // Given

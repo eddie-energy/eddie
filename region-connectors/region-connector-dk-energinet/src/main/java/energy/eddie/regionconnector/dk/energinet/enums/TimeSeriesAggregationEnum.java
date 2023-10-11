@@ -42,6 +42,16 @@ public enum TimeSeriesAggregationEnum {
         throw new IllegalArgumentException(EXCEPTION_MESSAGE + aggregation);
     }
 
+    public static TimeSeriesAggregationEnum fromPointQualityEnum(PeriodResolutionEnum periodResolutionEnum) {
+        return switch (periodResolutionEnum) {
+            case PT15M -> QUARTER;
+            case PT1H -> HOUR;
+            case PT1D -> DAY;
+            case P1M -> MONTH;
+            case P1Y -> YEAR;
+        };
+    }
+
     private static String sanitiseAggregationInput(String aggregation) {
         var trimmedAggregation = aggregation.trim();
 

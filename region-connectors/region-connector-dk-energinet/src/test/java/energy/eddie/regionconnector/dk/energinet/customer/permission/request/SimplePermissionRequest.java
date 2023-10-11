@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
+import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 
 import java.time.ZonedDateTime;
 
@@ -32,8 +32,8 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     }
 
     @Override
-    public TimeSeriesAggregationEnum aggregation() {
-        return TimeSeriesAggregationEnum.ACTUAL;
+    public PeriodResolutionEnum periodResolution() {
+        return PeriodResolutionEnum.PT1H;
     }
 
     @Override

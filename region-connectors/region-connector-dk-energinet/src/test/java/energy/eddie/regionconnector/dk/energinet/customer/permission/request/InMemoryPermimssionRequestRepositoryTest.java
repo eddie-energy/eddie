@@ -7,7 +7,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class InMemoryPermimssionRequestRepositoryTest {
+class InMemoryPermimssionRequestRepositoryTest {
     @Test
     void givenNewRepository_whenSaveAndFindByPermissionId_thenPermissionRequestFound() {
         // Given

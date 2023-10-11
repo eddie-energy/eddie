@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class EnerginetRegionConnectorTest {
+class EnerginetRegionConnectorTest {
     @Test
     void health_returnsHealthChecks() {
         // Given

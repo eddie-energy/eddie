@@ -4,7 +4,7 @@ import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerCreatedState;
-import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
+import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import io.javalin.http.Context;
 
 import java.time.ZonedDateTime;
@@ -15,7 +15,7 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
     public static final String START_KEY = "start";
     public static final String END_KEY = "end";
     public static final String REFRESH_TOKEN_KEY = "refreshToken";
-    public static final String AGGREGATION_KEY = "aggregation";
+    public static final String PERIOD_RESOLUTION_KEY = "periodResolution";
     public static final String METERING_POINT_KEY = "meteringPoint";
 
     private final String permissionId;
@@ -24,7 +24,7 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
     private final ZonedDateTime end;
     private final String refreshToken;
     private final String meteringPoint;
-    private final TimeSeriesAggregationEnum aggregation;
+    private final PeriodResolutionEnum periodResolution;
     private PermissionRequestState state;
 
     public EnerginetCustomerPermissionRequest(String permissionId, String connectionId, Context ctx, EnerginetConfiguration configuration) {
@@ -35,7 +35,7 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
         this.end = ctx.formParamAsClass(END_KEY, ZonedDateTime.class).getOrDefault(null);
         this.refreshToken = ctx.formParam(REFRESH_TOKEN_KEY);
         this.meteringPoint = ctx.formParam(METERING_POINT_KEY);
-        this.aggregation = ctx.formParamAsClass(AGGREGATION_KEY, TimeSeriesAggregationEnum.class).getOrDefault(null);
+        this.periodResolution = ctx.formParamAsClass(PERIOD_RESOLUTION_KEY, PeriodResolutionEnum.class).getOrDefault(null);
     }
 
     public EnerginetCustomerPermissionRequest(String connectionId, Context ctx, EnerginetConfiguration configuration) {
@@ -82,8 +82,8 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
     }
 
     @Override
-    public TimeSeriesAggregationEnum aggregation() {
-        return aggregation;
+    public PeriodResolutionEnum periodResolution() {
+        return periodResolution;
     }
 
     @Override

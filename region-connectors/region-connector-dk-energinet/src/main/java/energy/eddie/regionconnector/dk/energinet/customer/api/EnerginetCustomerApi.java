@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.customer.api;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
-import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
+import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -13,6 +13,7 @@ public interface EnerginetCustomerApi {
     /**
      * Call this endpoint to verify whether Energinet is currently operating normally.
      * If Energinet is experiencing more traffic than we can handle, this endpoint may return HTTP 503.  The status currently refreshes every 60 seconds.
+     *
      * @return Boolean
      */
     Boolean isAlive();
@@ -26,13 +27,13 @@ public interface EnerginetCustomerApi {
     /**
      * Returns ConsumptionRecord out of a time series for each metering point in list.
      *
-     * @param dateFrom Date from filter in format: &#39;YYYY-MM-DD&#39; (required)
-     * @param dateTo Date to filter in format: &#39;YYYY-MM-DD&#39; (required)
-     * @param aggregation Time aggregation. Possible values are: &#39;Actual&#39;, &#39;Quarter&#39;, &#39;Hour&#39;, &#39;Day&#39;, &#39;Month&#39;, &#39;Year&#39; (required)
+     * @param dateFrom              Date from filter in format: &#39;YYYY-MM-DD&#39; (required)
+     * @param dateTo                Date to filter in format: &#39;YYYY-MM-DD&#39; (required)
+     * @param periodResolution      Period Resolution. Possible values are: &#39;PT15M&#39;, &#39;PT1H&#39;, &#39;PT1D&#39;, &#39;P1M&#39;, &#39;P1Y&#39; (required)
      * @param meteringPointsRequest List of metering point ids. (optional)
      * @return MyEnergyDataMarketDocumentResponseListApiResponse
      */
-    ConsumptionRecord getTimeSeries(ZonedDateTime dateFrom, ZonedDateTime dateTo, TimeSeriesAggregationEnum aggregation, MeteringPointsRequest meteringPointsRequest);
+    ConsumptionRecord getTimeSeries(ZonedDateTime dateFrom, ZonedDateTime dateTo, PeriodResolutionEnum periodResolution, MeteringPointsRequest meteringPointsRequest);
 
     void setUserCorrelationId(UUID userCorrelationId);
 

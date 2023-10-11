@@ -6,8 +6,8 @@ import energy.eddie.api.v0.process.model.PermissionRequestRepository;
 import energy.eddie.api.v0.utils.ZonedDateTimeConverter;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
-import energy.eddie.regionconnector.dk.energinet.utils.TimeSeriesAggregationEnumConverter;
+import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
+import energy.eddie.regionconnector.dk.energinet.utils.PeriodResolutionEnumConverter;
 import io.javalin.http.Context;
 import io.javalin.validation.Validator;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,7 +16,7 @@ import reactor.core.publisher.Sinks;
 
 import java.time.ZonedDateTime;
 
-import static energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest.AGGREGATION_KEY;
+import static energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest.PERIOD_RESOLUTION_KEY;
 import static energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest.START_KEY;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,7 +28,7 @@ class PermissionRequestFactoryTest {
     @BeforeAll
     static void setUp() {
         ZonedDateTimeConverter.register();
-        TimeSeriesAggregationEnumConverter.register();
+        PeriodResolutionEnumConverter.register();
     }
 
     @Test
@@ -41,8 +41,8 @@ class PermissionRequestFactoryTest {
         Context ctx = mock(Context.class);
         when(ctx.formParamAsClass(any(), eq(ZonedDateTime.class)))
                 .thenReturn(new Validator<>(null, ZonedDateTime.class, START_KEY));
-        when(ctx.formParamAsClass(AGGREGATION_KEY, TimeSeriesAggregationEnum.class))
-                .thenReturn(Validator.create(TimeSeriesAggregationEnum.class, null, AGGREGATION_KEY));
+        when(ctx.formParamAsClass(PERIOD_RESOLUTION_KEY, PeriodResolutionEnum.class))
+                .thenReturn(Validator.create(PeriodResolutionEnum.class, null, PERIOD_RESOLUTION_KEY));
 
         // When
         PermissionRequest permissionRequest = permissionRequestFactory.create(ctx);

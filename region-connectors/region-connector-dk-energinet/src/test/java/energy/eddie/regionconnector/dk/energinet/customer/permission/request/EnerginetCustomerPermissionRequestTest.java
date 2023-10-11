@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerMalformedState;
-import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
+import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import io.javalin.http.Context;
 import io.javalin.validation.Validator;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class EnerginetCustomerPermissionRequestTest {
+class EnerginetCustomerPermissionRequestTest {
     @Test
     void constructorWithPermissionId_setsPermissionId() {
         // Given
@@ -29,7 +29,7 @@ public class EnerginetCustomerPermissionRequestTest {
                 .thenReturn(mock(Validator.class));
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.END_KEY, ZonedDateTime.class))
                 .thenReturn(mock(Validator.class));
-        when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.AGGREGATION_KEY, TimeSeriesAggregationEnum.class))
+        when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.PERIOD_RESOLUTION_KEY, PeriodResolutionEnum.class))
                 .thenReturn(mock(Validator.class));
 
         // When
@@ -50,7 +50,7 @@ public class EnerginetCustomerPermissionRequestTest {
                 .thenReturn(mock(Validator.class));
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.END_KEY, ZonedDateTime.class))
                 .thenReturn(mock(Validator.class));
-        when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.AGGREGATION_KEY, TimeSeriesAggregationEnum.class))
+        when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.PERIOD_RESOLUTION_KEY, PeriodResolutionEnum.class))
                 .thenReturn(mock(Validator.class));
 
         // When
@@ -70,7 +70,7 @@ public class EnerginetCustomerPermissionRequestTest {
                 .thenReturn(mock(Validator.class));
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.END_KEY, ZonedDateTime.class))
                 .thenReturn(mock(Validator.class));
-        when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.AGGREGATION_KEY, TimeSeriesAggregationEnum.class))
+        when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.PERIOD_RESOLUTION_KEY, PeriodResolutionEnum.class))
                 .thenReturn(mock(Validator.class));
 
         // When
@@ -93,7 +93,7 @@ public class EnerginetCustomerPermissionRequestTest {
                 .thenReturn(validator);
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.END_KEY, ZonedDateTime.class))
                 .thenReturn(validator);
-        when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.AGGREGATION_KEY, TimeSeriesAggregationEnum.class))
+        when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.PERIOD_RESOLUTION_KEY, PeriodResolutionEnum.class))
                 .thenReturn(mock(Validator.class));
 
         // When
@@ -116,7 +116,7 @@ public class EnerginetCustomerPermissionRequestTest {
                 .thenReturn(validator);
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.END_KEY, ZonedDateTime.class))
                 .thenReturn(validator);
-        when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.AGGREGATION_KEY, TimeSeriesAggregationEnum.class))
+        when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.PERIOD_RESOLUTION_KEY, PeriodResolutionEnum.class))
                 .thenReturn(mock(Validator.class));
 
         // When
@@ -138,7 +138,7 @@ public class EnerginetCustomerPermissionRequestTest {
                 .thenReturn(validator);
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.END_KEY, ZonedDateTime.class))
                 .thenReturn(validator);
-        when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.AGGREGATION_KEY, TimeSeriesAggregationEnum.class))
+        when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.PERIOD_RESOLUTION_KEY, PeriodResolutionEnum.class))
                 .thenReturn(mock(Validator.class));
 
         // When
@@ -157,7 +157,7 @@ public class EnerginetCustomerPermissionRequestTest {
                 .thenReturn(mock(Validator.class));
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.END_KEY, ZonedDateTime.class))
                 .thenReturn(mock(Validator.class));
-        when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.AGGREGATION_KEY, TimeSeriesAggregationEnum.class))
+        when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.PERIOD_RESOLUTION_KEY, PeriodResolutionEnum.class))
                 .thenReturn(mock(Validator.class));
         EnerginetCustomerPermissionRequest request = new EnerginetCustomerPermissionRequest("testConnectionId", ctx, configuration);
         PermissionRequestState newState = new EnerginetCustomerMalformedState(request, Map.of());

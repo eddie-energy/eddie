@@ -4,8 +4,8 @@ import energy.eddie.api.v0.utils.ZonedDateTimeConverter;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
-import energy.eddie.regionconnector.dk.energinet.utils.TimeSeriesAggregationEnumConverter;
+import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
+import energy.eddie.regionconnector.dk.energinet.utils.PeriodResolutionEnumConverter;
 import io.javalin.http.Context;
 import io.javalin.validation.Validator;
 import org.junit.jupiter.api.BeforeAll;
@@ -24,7 +24,7 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
     @BeforeAll
     static void setUp() {
         ZonedDateTimeConverter.register();
-        TimeSeriesAggregationEnumConverter.register();
+        PeriodResolutionEnumConverter.register();
     }
 
     @Test
@@ -40,8 +40,8 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
                 .thenReturn(Validator.create(ZonedDateTime.class, now.plusDays(1).format(DateTimeFormatter.ISO_DATE), END_KEY));
         when(ctx.formParamAsClass(REFRESH_TOKEN_KEY, String.class))
                 .thenReturn(Validator.create(String.class, "refreshToken", REFRESH_TOKEN_KEY));
-        when(ctx.formParamAsClass(AGGREGATION_KEY, TimeSeriesAggregationEnum.class))
-                .thenReturn(Validator.create(TimeSeriesAggregationEnum.class, "Actual", AGGREGATION_KEY));
+        when(ctx.formParamAsClass(PERIOD_RESOLUTION_KEY, PeriodResolutionEnum.class))
+                .thenReturn(Validator.create(PeriodResolutionEnum.class, "PT1H", PERIOD_RESOLUTION_KEY));
         when(ctx.formParamAsClass(METERING_POINT_KEY, String.class))
                 .thenReturn(Validator.create(String.class, "meteringPoint", METERING_POINT_KEY));
         EnerginetConfiguration config = mock(EnerginetConfiguration.class);

@@ -5,7 +5,7 @@ import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
+import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 
 import java.time.ZonedDateTime;
 
@@ -54,8 +54,8 @@ public class DkEnerginetCustomerPermissionRequestAdapter implements DkEnerginetC
     }
 
     @Override
-    public TimeSeriesAggregationEnum aggregation() {
-        return permissionRequest.aggregation();
+    public PeriodResolutionEnum periodResolution() {
+        return permissionRequest.periodResolution();
     }
 
     @Override

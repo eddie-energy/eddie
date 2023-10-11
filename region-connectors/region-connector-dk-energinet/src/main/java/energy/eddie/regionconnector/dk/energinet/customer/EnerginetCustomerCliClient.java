@@ -4,6 +4,7 @@ import energy.eddie.regionconnector.dk.energinet.config.PropertiesEnerginetConfi
 import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPoints;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
+import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
 import energy.eddie.regionconnector.dk.energinet.utils.DateTimeConverter;
 import feign.FeignException;
@@ -28,8 +29,8 @@ public class EnerginetCustomerCliClient {
         final Scanner scanner = new Scanner(System.in, Charset.defaultCharset());
         MeteringPointsRequest meteringPointsRequest = new MeteringPointsRequest();
         MeteringPoints meteringPoints = new MeteringPoints();
-
-        TimeSeriesAggregationEnum aggregationEnum = TimeSeriesAggregationEnum.ACTUAL;
+        TimeSeriesAggregationEnum aggregationEnum;
+        PeriodResolutionEnum periodResolutionEnum = PeriodResolutionEnum.PT1H;
 
         Properties regionConnectorProperties = new Properties();
         var rcIn = EnerginetCustomerCliClient.class.getClassLoader().getResourceAsStream("regionconnector-dk-energinet.properties");
@@ -39,7 +40,7 @@ public class EnerginetCustomerCliClient {
         EnerginetCustomerApiClient apiClient = new EnerginetCustomerApiClient(propertiesEnerginetConfiguration);
 
         Properties cliProperties = new Properties();
-        var cliIn = EnerginetCustomerCliClient.class.getClassLoader().getResourceAsStream("regionconnector-dk-energinet.properties");
+        var cliIn = EnerginetCustomerCliClient.class.getClassLoader().getResourceAsStream("cli-client-dk-energinet.properties");
         cliProperties.load(cliIn);
 
         String refreshToken = cliProperties.getProperty(REFRESH_TOKEN_KEY, "");
@@ -86,14 +87,16 @@ public class EnerginetCustomerCliClient {
             }
 
             aggregationEnum = TimeSeriesAggregationEnum.fromString(aggregation);
-            var timeSeries = apiClient.getTimeSeries(start, end, aggregationEnum, meteringPointsRequest);
+            periodResolutionEnum = PeriodResolutionEnum.fromTimeSeriesAggregation(aggregationEnum);
+
+            var timeSeries = apiClient.getTimeSeries(start, end, periodResolutionEnum, meteringPointsRequest);
             LOGGER.info("Consumption Record received.");
             LOGGER.info(timeSeries.toString(), timeSeries);
 
         } catch (FeignException feignException) {
             if (feignException.status() == 401) {
                 apiClient.apiToken();
-                var timeSeries = apiClient.getTimeSeries(start, end, aggregationEnum, meteringPointsRequest);
+                var timeSeries = apiClient.getTimeSeries(start, end, periodResolutionEnum, meteringPointsRequest);
                 LOGGER.info("Consumption Record received.");
                 LOGGER.info(timeSeries.toString(), timeSeries);
             }

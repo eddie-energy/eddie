@@ -1,6 +1,9 @@
 package energy.eddie.regionconnector.dk.energinet.utils;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class DateTimeConverter {
@@ -9,9 +12,7 @@ public class DateTimeConverter {
     }
 
     public static ZonedDateTime isoDateToZonedDateTime(String isoDate, String zonedId) {
-        LocalDate localDate = LocalDate.parse(isoDate, DateTimeFormatter.ISO_DATE);
-        LocalTime localTime = LocalTime.of(0, 0, 0, 0);
-        LocalDateTime localDateTime = LocalDateTime.of(localDate, localTime);
+        LocalDateTime localDateTime = LocalDate.parse(isoDate, DateTimeFormatter.ISO_DATE).atStartOfDay();
 
         return ZonedDateTime.of(localDateTime, ZoneId.of(zonedId));
     }
