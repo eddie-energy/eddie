@@ -29,12 +29,13 @@ import java.util.concurrent.ScheduledFuture;
 
 @Service
 public class PermissionService {
-    private final ConcurrentMap<String, ScheduledFuture<?>> expirationFutures;
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
+    private final ConcurrentMap<String, ScheduledFuture<?>> expirationFutures;
     private final PermissionRepository repository;
     private final Clock clock;
     private final StreamerManager streamerManager;
     private final TaskScheduler scheduler;
+
     @Autowired
     public PermissionService(PermissionRepository repository, Clock clock, StreamerManager streamerManager,
                              TaskScheduler scheduler, ConcurrentMap<String, ScheduledFuture<?>> expirationFutures) {
@@ -64,7 +65,7 @@ public class PermissionService {
         streamerManager.sendConnectionStatusMessageForPermission(acceptedMessage, newPermission.permissionId());
 
         Sinks.One<String> sink = Sinks.one();
-        sink.asMono().subscribe(this::permissionExpired);
+        sink.asMono().subscribe(this::expirePermission);
 
         var expirationRunnable = new PermissionExpiredRunnable(newPermission.permissionId(),
                 newPermission.expirationTime(), sink);
@@ -144,7 +145,7 @@ public class PermissionService {
      *
      * @param permissionId ID of the permission which has reached its expiration time.
      */
-    private void permissionExpired(String permissionId) {
+    private void expirePermission(String permissionId) {
         LOGGER.info("Will expire permission with id {}", permissionId);
         Permission permission;
         try {

@@ -136,7 +136,7 @@ class PermissionServiceTest {
      * runnable runs and works as expected.
      */
     @Test
-    void verify_permissionExpired_sendsStatusMessage_andStopsStreamer_andUpdatesDb()
+    void verify_expirePermission_sendsStatusMessage_andStopsStreamer_andUpdatesDb()
             throws ConnectionStatusMessageSendFailedException {
         start = Instant.now();
         expiration = start.plusMillis(500);
