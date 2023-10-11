@@ -18,51 +18,47 @@ public class ConsumptionRecordMapper {
     }
 
     public static ConsumptionRecord timeSeriesToCIM(List<MyEnergyDataMarketDocumentResponse> timeSeriesResponse) throws IllegalStateException {
-        if (timeSeriesResponse.stream().findFirst().isEmpty()) {
+        ConsumptionRecord consumptionRecord = new ConsumptionRecord();
+        MyEnergyDataMarketDocumentResponse energyDataMarketDocumentResponse = timeSeriesResponse.stream().findFirst().orElseThrow();
+        consumptionRecord.setMeteringPoint(energyDataMarketDocumentResponse.getId());
+
+        if (energyDataMarketDocumentResponse.getMyEnergyDataMarketDocument() == null) {
             throw new IllegalStateException("No data available");
-        } else {
-            ConsumptionRecord consumptionRecord = new ConsumptionRecord();
-            MyEnergyDataMarketDocumentResponse energyDataMarketDocumentResponse = timeSeriesResponse.stream().findFirst().get();
-            consumptionRecord.setMeteringPoint(energyDataMarketDocumentResponse.getId());
+        }
 
-            if (energyDataMarketDocumentResponse.getMyEnergyDataMarketDocument() == null) {
-                throw new IllegalStateException("No data available");
-            }
+        MyEnergyDataMarketDocument energyDataMarketDocument = energyDataMarketDocumentResponse.getMyEnergyDataMarketDocument();
+        PeriodtimeInterval periodtimeInterval = energyDataMarketDocument.getPeriodTimeInterval();
+        consumptionRecord.setStartDateTime(DateTimeConverter.isoDateTimeToZonedDateTime(Objects.requireNonNull(periodtimeInterval).getStart(), ZONE_ID));
 
-            MyEnergyDataMarketDocument energyDataMarketDocument = Objects.requireNonNull(energyDataMarketDocumentResponse).getMyEnergyDataMarketDocument();
-            PeriodtimeInterval periodtimeInterval = Objects.requireNonNull(energyDataMarketDocument).getPeriodTimeInterval();
-            consumptionRecord.setStartDateTime(DateTimeConverter.isoDateTimeToZonedDateTime(Objects.requireNonNull(periodtimeInterval).getStart(), ZONE_ID));
+        List<ConsumptionPoint> consumptionPoints = new ArrayList<>();
+        for (TimeSeries timeSeries : Objects.requireNonNull(energyDataMarketDocument.getTimeSeries())) {
+            for (Period period : Objects.requireNonNull(timeSeries.getPeriod())) {
+                consumptionRecord.setMeteringInterval(switch (PeriodResolutionEnum.valueOf(period.getResolution())) {
+                    case PT15M -> ConsumptionRecord.MeteringInterval.PT_15_M;
+                    case PT1H -> ConsumptionRecord.MeteringInterval.PT_1_H;
+                    case PT1D -> ConsumptionRecord.MeteringInterval.P_1_D;
+                    case P1M -> ConsumptionRecord.MeteringInterval.P_1_M;
+                    case P1Y -> ConsumptionRecord.MeteringInterval.P_1_Y;
+                });
+                for (Point point : Objects.requireNonNull(period.getPoint())) {
+                    var consumptionPoint = new ConsumptionPoint().withMeteringType(switch (PointQualityEnum.fromString(point.getOutQuantityQuality())) {
+                        case A01 ->
+                                throw new IllegalStateException(getPointQualityIllegalStateErrorMessage(PointQualityEnum.A01));
+                        case A02 ->
+                                throw new IllegalStateException(getPointQualityIllegalStateErrorMessage(PointQualityEnum.A02));
+                        case A03 -> ConsumptionPoint.MeteringType.EXTRAPOLATED_VALUE;
+                        case A04 -> ConsumptionPoint.MeteringType.MEASURED_VALUE;
+                        case A05 ->
+                                throw new IllegalStateException(getPointQualityIllegalStateErrorMessage(PointQualityEnum.A05));
+                    }).withConsumption(Double.valueOf(Objects.requireNonNull(point.getOutQuantityQuantity())));
 
-            List<ConsumptionPoint> consumptionPoints = new ArrayList<>();
-            for (TimeSeries timeSeries : Objects.requireNonNull(energyDataMarketDocument.getTimeSeries())) {
-                for (Period period : Objects.requireNonNull(timeSeries.getPeriod())) {
-                    consumptionRecord.setMeteringInterval(switch (PeriodResolutionEnum.valueOf(period.getResolution())) {
-                        case PT15M -> ConsumptionRecord.MeteringInterval.PT_15_M;
-                        case PT1H -> ConsumptionRecord.MeteringInterval.PT_1_H;
-                        case PT1D -> ConsumptionRecord.MeteringInterval.P_1_D;
-                        case P1M -> ConsumptionRecord.MeteringInterval.P_1_M;
-                        case P1Y -> ConsumptionRecord.MeteringInterval.P_1_Y;
-                    });
-                    for (Point point : Objects.requireNonNull(period.getPoint())) {
-                        var consumptionPoint = new ConsumptionPoint().withMeteringType(switch (PointQualityEnum.fromString(Objects.requireNonNull(point.getOutQuantityQuality()))) {
-                            case A01 ->
-                                    throw new IllegalStateException(getPointQualityIllegalStateErrorMessage(PointQualityEnum.A01));
-                            case A02 ->
-                                    throw new IllegalStateException(getPointQualityIllegalStateErrorMessage(PointQualityEnum.A02));
-                            case A03 -> ConsumptionPoint.MeteringType.EXTRAPOLATED_VALUE;
-                            case A04 -> ConsumptionPoint.MeteringType.MEASURED_VALUE;
-                            case A05 ->
-                                    throw new IllegalStateException(getPointQualityIllegalStateErrorMessage(PointQualityEnum.A05));
-                        }).withConsumption(Double.valueOf(Objects.requireNonNull(point.getOutQuantityQuantity())));
-
-                        consumptionPoints.add(consumptionPoint);
-                    }
+                    consumptionPoints.add(consumptionPoint);
                 }
             }
-
-            consumptionRecord.setConsumptionPoints(consumptionPoints);
-            return consumptionRecord;
         }
+
+        consumptionRecord.setConsumptionPoints(consumptionPoints);
+        return consumptionRecord;
     }
 
     private static String getPointQualityIllegalStateErrorMessage(PointQualityEnum pointQualityEnum) {
