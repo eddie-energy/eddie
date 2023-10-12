@@ -6,12 +6,14 @@ import energy.eddie.api.v0.process.model.PermissionRequestState;
 public final class SimplePermissionRequest implements PermissionRequest {
     private final String permissionId;
     private final String connectionId;
+    private final String dataNeedId;
     private PermissionRequestState state;
 
-    public SimplePermissionRequest(String permissionId, String connectionId, PermissionRequestState state) {
+    public SimplePermissionRequest(String permissionId, String connectionId, PermissionRequestState state, String dataNeedId) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
         this.state = state;
+        this.dataNeedId = dataNeedId;
     }
 
     @Override
@@ -27,6 +29,11 @@ public final class SimplePermissionRequest implements PermissionRequest {
     @Override
     public String connectionId() {
         return connectionId;
+    }
+
+    @Override
+    public String dataNeedId() {
+        return dataNeedId;
     }
 
     @Override

@@ -58,7 +58,7 @@ class InMemoryPermissionRequestRepositoryTest {
     void findByConversationIdAndCmRequestId_returnsEmptyOptional_ifIdsDoNotMatch() {
         // Given
         var repository = new InMemoryPermissionRequestRepository();
-        var request = new SimplePermissionRequest("permissionId1", "connectionId1", "rid1", "cid1", null);
+        var request = new SimplePermissionRequest("permissionId1", "connectionId1", "dataNeedId", "rid1", "cid1", null);
         repository.save(request);
 
         // When
@@ -72,7 +72,7 @@ class InMemoryPermissionRequestRepositoryTest {
     void findByConversationIdAndCmRequestId_returnsRequest_ifConversationIdMatches() {
         // Given
         var repository = new InMemoryPermissionRequestRepository();
-        var request = new SimplePermissionRequest("permissionId1", "connectionId1", "rid1", "cid1", null);
+        var request = new SimplePermissionRequest("permissionId1", "connectionId1", "dataNeedId", "rid1", "cid1", null);
         repository.save(request);
 
         // When
@@ -86,7 +86,7 @@ class InMemoryPermissionRequestRepositoryTest {
     void findByConversationIdAndCmRequestId_returnsRequest_ifCmRequestIdMatches() {
         // Given
         var repository = new InMemoryPermissionRequestRepository();
-        var request = new SimplePermissionRequest("permissionId1", "connectionId1", "rid1", "cid1", null);
+        var request = new SimplePermissionRequest("permissionId1", "connectionId1", "dataNeedId", "rid1", "cid1", null);
         repository.save(request);
 
         // When
@@ -100,7 +100,7 @@ class InMemoryPermissionRequestRepositoryTest {
     void removeByPermissionId_withNonExistentKey_returnsFalse() {
         // Given
         var repository = new InMemoryPermissionRequestRepository();
-        var request = new SimplePermissionRequest("permissionId1", "connectionId1", "rid1", "cid1", null);
+        var request = new SimplePermissionRequest("permissionId1", "connectionId1", "dataNeedId", "rid1", "cid1", null);
         repository.save(request);
 
         // When
@@ -114,7 +114,7 @@ class InMemoryPermissionRequestRepositoryTest {
     void removeByPermissionId_withExistingKey_returnsTrue() {
         // Given
         var repository = new InMemoryPermissionRequestRepository();
-        var request = new SimplePermissionRequest("permissionId", "connectionId1", "rid1", "cid1", null);
+        var request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId", "rid1", "cid1", null);
         repository.save(request);
 
         // When

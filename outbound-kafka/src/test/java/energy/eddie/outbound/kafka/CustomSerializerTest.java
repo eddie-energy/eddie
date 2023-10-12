@@ -34,8 +34,8 @@ class CustomSerializerTest {
     void testSerialize_StatusMessageData() {
         String topic = "test";
         ZonedDateTime now = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        ConnectionStatusMessage data = new ConnectionStatusMessage("connectionId", "permissionId", now, PermissionProcessStatus.ACCEPTED, "Granted");
-        byte[] expected = "{\"connectionId\":\"connectionId\",\"permissionId\":\"permissionId\",\"timestamp\":1672531200.000000000,\"status\":\"ACCEPTED\",\"message\":\"Granted\"}"
+        ConnectionStatusMessage data = new ConnectionStatusMessage("connectionId", "permissionId", "dataNeedId", now, PermissionProcessStatus.ACCEPTED, "Granted");
+        byte[] expected = "{\"connectionId\":\"connectionId\",\"permissionId\":\"permissionId\",\"dataNeedId\":\"dataNeedId\",\"timestamp\":1672531200.000000000,\"status\":\"ACCEPTED\",\"message\":\"Granted\"}"
                 .getBytes(StandardCharsets.UTF_8);
 
         byte[] result = customSerializer.serialize(topic, data);

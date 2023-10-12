@@ -35,7 +35,7 @@ class SavingPermissionRequestTest {
         // Given
         PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
         SimpleState createdState = new SimpleState();
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
         SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
 
         // When
@@ -51,7 +51,7 @@ class SavingPermissionRequestTest {
         // Given
         PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
         SimpleState createdState = new SimpleState();
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
         SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
 
         // When
@@ -66,7 +66,7 @@ class SavingPermissionRequestTest {
         // Given
         PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
         SimpleState createdState = new SimpleState();
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
         SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
 
         // When
@@ -81,7 +81,7 @@ class SavingPermissionRequestTest {
         // Given
         PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
         SimpleState createdState = new SimpleState();
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
         SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
 
         // When
@@ -96,7 +96,7 @@ class SavingPermissionRequestTest {
         // Given
         PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
         SimpleState createdState = new SimpleState();
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
         SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
 
         // When
@@ -106,13 +106,28 @@ class SavingPermissionRequestTest {
         assertEquals("connectionId", connectionId);
     }
 
+    @Test
+    void savingPermissionRequest_returnsDataNeedId() {
+        // Given
+        PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
+        SimpleState createdState = new SimpleState();
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
+        SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
+
+        // When
+        String dataNeedId = savingPermissionRequest.dataNeedId();
+
+        // Then
+        assertEquals("dataNeedId", dataNeedId);
+    }
+
 
     @Test
     void savingPermissionRequest_equalsReturnsTrueForDecoratee() {
         // Given
         PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
         SimpleState createdState = new SimpleState();
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
         SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
 
         // When
@@ -127,7 +142,7 @@ class SavingPermissionRequestTest {
         // Given
         PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
         SimpleState createdState = new SimpleState();
-        var permissionRequest1 = new SimplePermissionRequest("permissionId", "connectionId", createdState);
+        var permissionRequest1 = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
         SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest1, repo);
 
         // When
@@ -142,7 +157,7 @@ class SavingPermissionRequestTest {
         // Given
         PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
         SimpleState createdState = new SimpleState();
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState);
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
         SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
 
         // When

@@ -3,12 +3,14 @@ package energy.eddie.regionconnector.at.eda;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 
-public record SimplePermissionRequest(String permissionId, String connectionId, String cmRequestId,
+public record SimplePermissionRequest(String permissionId, String connectionId,
+                                      String dataNeedId,
+                                      String cmRequestId,
                                       String conversationId,
                                       PermissionRequestState state) implements AtPermissionRequest {
 
     public SimplePermissionRequest(String permissionId, String connectionId) {
-        this(permissionId, connectionId, null, null, null);
+        this(permissionId, connectionId, null, null, null, null);
     }
 
     @Override
@@ -54,8 +56,7 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof AtPermissionRequest)) return false;
-        AtPermissionRequest that = (AtPermissionRequest) o;
+        if (!(o instanceof AtPermissionRequest that)) return false;
         return permissionId.equals(that.permissionId()) && connectionId.equals(that.connectionId()) && cmRequestId.equals(that.cmRequestId()) && conversationId.equals(that.conversationId()) && state == that.state();
     }
 }

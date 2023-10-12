@@ -59,6 +59,7 @@ public class EdaRegionConnector implements RegionConnector {
     public static final int MAXIMUM_MONTHS_IN_THE_PAST = 36;
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
     private static final String CONNECTION_ID = "connectionId";
+    private static final String DATA_NEED_ID = "dataNeedId";
     private final AtConfiguration atConfiguration;
     private final EdaAdapter edaAdapter;
     private final ConsumptionRecordMapper consumptionRecordMapper;
@@ -149,7 +150,7 @@ public class EdaRegionConnector implements RegionConnector {
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
             // TODO rework validation after mvp1
             var connectionIdValidator = ctx.formParamAsClass(CONNECTION_ID, String.class).check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
-
+            var dataNeedIdValidator = ctx.formParamAsClass(DATA_NEED_ID, String.class).check(s -> s != null && !s.isBlank(), "dataNeedId must not be null or blank");
             var meteringPointIdValidator = ctx.formParamAsClass("meteringPointId", String.class).check(s -> s != null && s.length() == 33, "meteringPointId must be 33 characters long");
 
             LocalDate now = LocalDate.now(ZoneId.of("Europe/Vienna"));
@@ -163,6 +164,7 @@ public class EdaRegionConnector implements RegionConnector {
 
             var errors = JavalinValidation.collectErrors(
                     connectionIdValidator,
+                    dataNeedIdValidator,
                     meteringPointIdValidator,
                     startValidator,
                     endValidator
@@ -183,7 +185,7 @@ public class EdaRegionConnector implements RegionConnector {
 
             var connectionId = connectionIdValidator.get();
             // Created State as root state
-            AtPermissionRequest permissionRequest = permissionRequestFactory.create(connectionId, ccmoRequest);
+            AtPermissionRequest permissionRequest = permissionRequestFactory.create(connectionId, dataNeedIdValidator.get(), ccmoRequest);
             permissionRequestRepository.save(permissionRequest);
             permissionRequest.validate();
             permissionRequest.sendToPermissionAdministrator();
@@ -274,10 +276,11 @@ public class EdaRegionConnector implements RegionConnector {
     private void updatePermissionIdToConnectionStatusMap(CMRequestStatus cmRequestStatus, AtPermissionRequest permissionRequest) {
         var permissionId = permissionRequest.permissionId();
         var connectionId = permissionRequest.connectionId();
+        var dataNeedId = permissionRequest.dataNeedId();
         var message = cmRequestStatus.getMessage(); // we should consider adding this as a property to the AtPermissionRequest
         var now = ZonedDateTime.now(ZoneId.systemDefault());
 
-        var connectionStatusMessage = new ConnectionStatusMessage(connectionId, permissionId, now, permissionRequest.state().status(), message);
+        var connectionStatusMessage = new ConnectionStatusMessage(connectionId, permissionId, dataNeedId, now, permissionRequest.state().status(), message);
         permissionIdToConnectionStatusMessages.put(permissionId, connectionStatusMessage);
     }
 
@@ -295,9 +298,10 @@ public class EdaRegionConnector implements RegionConnector {
                 .findByConversationIdOrCMRequestId(conversationId, null);
         String permissionId = permissionRequest.map(PermissionRequest::permissionId).orElse(null);
         String connectionId = permissionRequest.map(PermissionRequest::connectionId).orElse(null);
+        String dataNeedId = permissionRequest.map(PermissionRequest::dataNeedId).orElse(null);
         LOGGER.info("Received consumption record (ConversationId '{}') for permissionId {} and connectionId {}", conversationId, permissionId, connectionId);
         try {
-            return consumptionRecordMapper.mapToCIM(consumptionRecord, permissionId, connectionId);
+            return consumptionRecordMapper.mapToCIM(consumptionRecord, permissionId, connectionId, dataNeedId);
         } catch (InvalidMappingException e) {
             // TODO In the future this should also inform the administrative console about the invalid mapping
             LOGGER.error("Could not map consumption record to CIM consumption record", e);

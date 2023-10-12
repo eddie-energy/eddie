@@ -45,6 +45,7 @@ class PermissionRequestForm extends LitElement {
 
     formData.append("start", startDate.toISOString().substring(0, 10));
     formData.append("end", endDate.toISOString().substring(0, 10));
+    formData.append("dataNeedId", this.dataNeedAttributes.id);
 
     fetch(REQUEST_URL, {
       body: formData,

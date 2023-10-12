@@ -108,8 +108,8 @@ class EdaRegionConnectorTest {
         when(adapter.getConsumptionRecordStream()).thenReturn(testPublisher.flux());
 
         var repo = new InMemoryPermissionRequestRepository();
-        repo.save(new SimplePermissionRequest("pmId1", "connId1", "test1", "any1", null));
-        repo.save(new SimplePermissionRequest("pmId2", "connId2", "test2", "any2", null));
+        repo.save(new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1", null));
+        repo.save(new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2", null));
 
         var uut = new EdaRegionConnector(config, adapter, repo);
 
@@ -123,10 +123,12 @@ class EdaRegionConnectorTest {
                 .assertNext(csm -> {
                     assertEquals("connId1", csm.getConnectionId());
                     assertEquals("pmId1", csm.getPermissionId());
+                    assertEquals("dataNeedId1", csm.getDataNeedId());
                 })
                 .assertNext(csm -> {
                     assertEquals("connId2", csm.getConnectionId());
                     assertEquals("pmId2", csm.getPermissionId());
+                    assertEquals("dataNeedId2", csm.getDataNeedId());
                 })
                 .expectComplete().verify();
     }
@@ -144,7 +146,7 @@ class EdaRegionConnectorTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var permissionRequest = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
         permissionRequest.changeState(new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest));
 
         var repo = new InMemoryPermissionRequestRepository();
@@ -191,7 +193,7 @@ class EdaRegionConnectorTest {
         when(adapter.getCMRequestStatusStream()).thenReturn(testPublisher.flux());
 
         var repo = new InMemoryPermissionRequestRepository();
-        repo.save(new SimplePermissionRequest("permissionId", "connectionId", "test", "test", null));
+        repo.save(new SimplePermissionRequest("permissionId", "connectionId", "dataNeedId", "test", "test", null));
 
         var uut = new EdaRegionConnector(config, adapter, repo);
 
@@ -223,7 +225,7 @@ class EdaRegionConnectorTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
+        var request = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
         request.changeState(new AtSentToPermissionAdministratorPermissionRequestState(request));
 
         var repo = new InMemoryPermissionRequestRepository();
@@ -272,7 +274,7 @@ class EdaRegionConnectorTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
+        var request = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
         request.changeState(new AtSentToPermissionAdministratorPermissionRequestState(request));
 
         var repo = new InMemoryPermissionRequestRepository();
@@ -367,7 +369,7 @@ class EdaRegionConnectorTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
+        var request = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
         request.changeState(new AtPendingAcknowledgmentPermissionRequestState(request));
 
         var repo = new InMemoryPermissionRequestRepository();

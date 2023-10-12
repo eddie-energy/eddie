@@ -16,6 +16,7 @@ public class SimplePermissionRequest implements EsPermissionRequest {
     private ZonedDateTime permissionEnd;
     private PermissionRequestState state;
     private String nif;
+    private String dataNeedId;
     private String meteringPointId;
     private ZonedDateTime lastPulledMeterReading;
     private MeasurementType measurementType;
@@ -63,6 +64,12 @@ public class SimplePermissionRequest implements EsPermissionRequest {
         return request;
     }
 
+    static public SimplePermissionRequest fromDataNeedId(String dataNeedId) {
+        var request = new SimplePermissionRequest();
+        request.dataNeedId = dataNeedId;
+        return request;
+    }
+
     public static EsPermissionRequest fromLastPulledMeterReading(ZonedDateTime start) {
         var request = new SimplePermissionRequest();
         request.lastPulledMeterReading = start;
@@ -77,6 +84,11 @@ public class SimplePermissionRequest implements EsPermissionRequest {
     @Override
     public String connectionId() {
         return connectionId;
+    }
+
+    @Override
+    public String dataNeedId() {
+        return dataNeedId;
     }
 
     @Override

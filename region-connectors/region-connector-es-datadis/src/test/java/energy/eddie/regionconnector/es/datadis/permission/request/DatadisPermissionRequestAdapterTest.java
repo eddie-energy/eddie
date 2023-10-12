@@ -124,6 +124,18 @@ class DatadisPermissionRequestAdapterTest {
         assertEquals(nif, res);
     }
 
+    @Test
+    void adapter_returnsDataNeedId() {
+        String dataNeedId = "dataNeedId";
+        EsPermissionRequest request = SimplePermissionRequest.fromDataNeedId(dataNeedId);
+        PermissionRequest decorator = new ThrowingPermissionRequest(request);
+        DatadisPermissionRequestAdapter adapter = new DatadisPermissionRequestAdapter(request, decorator);
+
+        var res = adapter.dataNeedId();
+
+        assertEquals(dataNeedId, res);
+    }
+
 
     @Test
     void adapter_returnsMeteringPointId() {
@@ -248,6 +260,11 @@ class DatadisPermissionRequestAdapterTest {
         @Override
         public String connectionId() {
             return request.connectionId();
+        }
+
+        @Override
+        public String dataNeedId() {
+            return request.dataNeedId();
         }
 
         @Override

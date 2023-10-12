@@ -17,10 +17,11 @@ public class ConsumptionRecordMapper {
 
     public static final int CONVERSION_FACTOR = 1000;
 
-    public ConsumptionRecord mapToCIM(List<MeteringData> meteringData, @Nullable String permissionId, @Nullable String connectionId, MeasurementType measurementType) throws InvalidMappingException {
+    public ConsumptionRecord mapToCIM(List<MeteringData> meteringData, @Nullable String permissionId, @Nullable String connectionId, MeasurementType measurementType, @Nullable String dataNeedId) throws InvalidMappingException {
         ConsumptionRecord consumptionRecord = new ConsumptionRecord();
         consumptionRecord.setPermissionId(permissionId);
         consumptionRecord.setConnectionId(connectionId);
+        consumptionRecord.setDataNeedId(dataNeedId);
 
         if (meteringData.isEmpty()) {
             throw new InvalidMappingException("No metering data found");

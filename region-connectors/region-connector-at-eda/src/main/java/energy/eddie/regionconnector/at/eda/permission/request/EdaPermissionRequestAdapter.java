@@ -30,6 +30,11 @@ public final class EdaPermissionRequestAdapter implements AtPermissionRequest {
     }
 
     @Override
+    public String dataNeedId() {
+        return edaPermissionRequest.dataNeedId();
+    }
+
+    @Override
     public PermissionRequestState state() {
         return edaPermissionRequest.state();
     }

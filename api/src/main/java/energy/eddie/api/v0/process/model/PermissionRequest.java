@@ -25,6 +25,14 @@ public interface PermissionRequest {
      */
     String connectionId();
 
+
+    /**
+     * The dataNeedId identifies the data need that should be met by the permission request.
+     *
+     * @return dataNeedId
+     */
+    String dataNeedId();
+
     /**
      * The state of the permission request.
      *

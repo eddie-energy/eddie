@@ -19,7 +19,7 @@ class EdaPermissionRequestTest {
     void edaPermissionRequest_hasCreatedStateAsInitialState() {
         // Given
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        PermissionRequest permissionRequest = new EdaPermissionRequest("cid", ccmoRequest, null);
+        PermissionRequest permissionRequest = new EdaPermissionRequest("cid", "dataNeedId", ccmoRequest, null);
 
         // When
         var state = permissionRequest.state();
@@ -33,7 +33,7 @@ class EdaPermissionRequestTest {
         // Given
         AtCreatedPermissionRequestState createdState = new AtCreatedPermissionRequestState(null, null, null);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        PermissionRequest permissionRequest = new EdaPermissionRequest("cid", ccmoRequest, null);
+        PermissionRequest permissionRequest = new EdaPermissionRequest("cid", "dataNeedId", ccmoRequest, null);
 
         // When
         permissionRequest.changeState(createdState);
@@ -48,7 +48,7 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
 
         // When
         String cmRequestId = permissionRequest.cmRequestId();
@@ -63,7 +63,7 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
 
         // When
         String conversationId = permissionRequest.conversationId();
@@ -78,8 +78,8 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest, null);
-        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest, null);
+        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", "dataNeedId", ccmoRequest, null);
+        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid", "dataNeedId", ccmoRequest, null);
 
         // When
         boolean res = permissionRequest1.equals(permissionRequest2);
@@ -196,8 +196,8 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest, null);
-        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest, null);
+        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", "dataNeedId", ccmoRequest, null);
+        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid", "dataNeedId", ccmoRequest, null);
 
         // When
         int res1 = permissionRequest1.hashCode();
@@ -230,7 +230,7 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
 
         // When
         permissionRequest.validate();
@@ -246,7 +246,7 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, edaAdapter);
+        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.validate();
 
         // When
@@ -264,7 +264,7 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, edaAdapter);
+        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
 
@@ -282,7 +282,7 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, edaAdapter);
+        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
         permissionRequest.receivedPermissionAdministratorResponse();
@@ -301,7 +301,7 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, edaAdapter);
+        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
         permissionRequest.receivedPermissionAdministratorResponse();
@@ -320,7 +320,7 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, edaAdapter);
+        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
         permissionRequest.receivedPermissionAdministratorResponse();
@@ -339,7 +339,7 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, edaAdapter);
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.changeState(new AtAcceptedPermissionRequestState(permissionRequest));
 
         // When

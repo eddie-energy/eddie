@@ -23,7 +23,7 @@ class ValidatedPermissionRequestStateTest {
         // Given
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
         AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(permissionRequest, new CMRequest(), edaAdapter);
         permissionRequest.changeState(state);
 
@@ -40,7 +40,7 @@ class ValidatedPermissionRequestStateTest {
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
         doThrow(new JAXBException("msg")).when(edaAdapter).sendCMRequest(any());
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
         AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(permissionRequest, new CMRequest(), edaAdapter);
         permissionRequest.changeState(state);
 
@@ -57,7 +57,7 @@ class ValidatedPermissionRequestStateTest {
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
         doThrow(new TransmissionException(new Exception())).when(edaAdapter).sendCMRequest(any());
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
         AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(permissionRequest, new CMRequest(), edaAdapter);
         permissionRequest.changeState(state);
 
