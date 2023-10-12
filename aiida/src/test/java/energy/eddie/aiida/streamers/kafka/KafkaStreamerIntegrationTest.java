@@ -2,31 +2,38 @@ package energy.eddie.aiida.streamers.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordFactory;
 import energy.eddie.aiida.streamers.ConnectionStatusMessage;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.MockConsumer;
+import org.apache.kafka.clients.consumer.OffsetResetStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.Timeout;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.scheduling.TaskScheduler;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import reactor.core.publisher.Sinks;
 import reactor.test.publisher.TestPublisher;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static energy.eddie.aiida.streamers.IntegrationTestUtils.getKafkaConfig;
 import static energy.eddie.aiida.streamers.IntegrationTestUtils.getKafkaConsumer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 
 @Testcontainers
@@ -40,6 +47,7 @@ class KafkaStreamerIntegrationTest {
     private String record4Json;
     private List<AiidaRecord> records;
     private ObjectMapper mapper;
+    private KafkaStreamer streamer;
 
     @BeforeEach
     void setUp() {
@@ -64,17 +72,23 @@ class KafkaStreamerIntegrationTest {
     @Test
     @Timeout(5)
     void givenRandomData_kafkaStreamer_sendsDataToBroker(TestInfo testInfo) {
+        var start = Instant.now();
+        var expiration = start.plusSeconds(10000);
         var config = getKafkaConfig(testInfo, kafka);
-        KafkaConsumer<String, String> consumer = getKafkaConsumer(testInfo, kafka);
         String connectionId = "IntegrationTestConnectionId";
+        var permission = new Permission("IntegrationTest Service Name", start, expiration, start,
+                connectionId, Set.of("1.8.0"), config);
         var producer = KafkaFactory.getKafkaProducer(config, connectionId);
+        var mockConsumer = new MockConsumer<String, String>(OffsetResetStrategy.LATEST);
+
+        KafkaConsumer<String, String> verifyConsumer = getKafkaConsumer(testInfo, kafka);
 
         TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
         TestPublisher<ConnectionStatusMessage> statusMessagePublisher = TestPublisher.create();
+        Sinks.One<String> terminationRequestSink = Sinks.one();
 
-        var streamer = new KafkaStreamer(producer, recordPublisher.flux(), statusMessagePublisher.flux(),
-                connectionId, config, mapper);
-
+        streamer = new KafkaStreamer(producer, mockConsumer, recordPublisher.flux(), statusMessagePublisher.flux(),
+                terminationRequestSink, permission, mapper, mock(TaskScheduler.class), Duration.ofSeconds(10));
 
         recordPublisher.assertNoSubscribers();
         statusMessagePublisher.assertNoSubscribers();
@@ -88,13 +102,13 @@ class KafkaStreamerIntegrationTest {
         }
 
         // use separate consumer to verify data has been written to Kafka
-        consumer.subscribe(List.of(config.dataTopic()));
+        verifyConsumer.subscribe(List.of(config.dataTopic()));
 
 
         // need to poll broker to get all published messages, then compare data
         var polledRecords = new ArrayList<ConsumerRecord<String, String>>();
         while (polledRecords.size() < records.size()) {
-            for (ConsumerRecord<String, String> received : consumer.poll(Duration.ofSeconds(1))) {
+            for (ConsumerRecord<String, String> received : verifyConsumer.poll(Duration.ofSeconds(1))) {
                 polledRecords.add(received);
             }
         }
@@ -111,22 +125,29 @@ class KafkaStreamerIntegrationTest {
         }
 
         streamer.close();
-        consumer.close();
+        verifyConsumer.close();
     }
 
     @Test
     @Timeout(5)
     void givenStatusMessage_kafkaStreamer_sendsDataToBroker(TestInfo testInfo) {
+        var start = Instant.now();
+        var expiration = start.plusSeconds(10000);
         var config = getKafkaConfig(testInfo, kafka);
-        KafkaConsumer<String, String> consumer = getKafkaConsumer(testInfo, kafka);
         String connectionId = "StatusMessageIntegrationTestConnectionId";
+        var permission = new Permission("IntegrationTest Service Name", start, expiration, start,
+                connectionId, Set.of("1.8.0"), config);
         var producer = KafkaFactory.getKafkaProducer(config, connectionId);
+        var mockConsumer = new MockConsumer<String, String>(OffsetResetStrategy.LATEST);
+
+        KafkaConsumer<String, String> verifyConsumer = getKafkaConsumer(testInfo, kafka);
 
         TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
         TestPublisher<ConnectionStatusMessage> statusMessagePublisher = TestPublisher.create();
+        Sinks.One<String> terminationRequestSink = Sinks.one();
 
-        var streamer = new KafkaStreamer(producer, recordPublisher.flux(), statusMessagePublisher.flux(),
-                connectionId, config, mapper);
+        streamer = new KafkaStreamer(producer, mockConsumer, recordPublisher.flux(), statusMessagePublisher.flux(),
+                terminationRequestSink, permission, mapper, mock(TaskScheduler.class), Duration.ofSeconds(10));
 
         var timestamp = Instant.parse("2023-11-01T10:00:00.00Z");
 
@@ -149,10 +170,10 @@ class KafkaStreamerIntegrationTest {
 
 
         // need to poll broker to get all published messages, then compare data
-        consumer.subscribe(List.of(config.statusTopic()));
+        verifyConsumer.subscribe(List.of(config.statusTopic()));
         var polledRecords = new ArrayList<ConsumerRecord<String, String>>();
         while (polledRecords.size() < 2) {
-            for (ConsumerRecord<String, String> received : consumer.poll(Duration.ofSeconds(1))) {
+            for (ConsumerRecord<String, String> received : verifyConsumer.poll(Duration.ofSeconds(1))) {
                 polledRecords.add(received);
             }
         }
@@ -166,6 +187,6 @@ class KafkaStreamerIntegrationTest {
         assertEquals(connectionId, polledRecords.get(1).key());
 
         streamer.close();
-        consumer.close();
+        verifyConsumer.close();
     }
 }
