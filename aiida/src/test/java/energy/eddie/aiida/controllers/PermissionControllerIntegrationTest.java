@@ -57,15 +57,12 @@ class PermissionControllerIntegrationTest {
     @Container
     @ServiceConnection
     private static final KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.1"));
-
-    @LocalServerPort
-    private int port;
-
-    @Autowired
-    private TestRestTemplate restTemplate;
-
     @Autowired
     DataSource dataSource;
+    @LocalServerPort
+    private int port;
+    @Autowired
+    private TestRestTemplate restTemplate;
 
     private PermissionDto getPermissionDto(Instant start, Instant expiration, TestInfo testInfo) {
         var name = "My NewAIIDA Test Service";

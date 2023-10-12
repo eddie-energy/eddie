@@ -47,6 +47,7 @@ class StreamerManagerIntegrationTest {
     @Container
     @ServiceConnection
     static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.1"));
+
     @Autowired
     private StreamerManager streamerManager;
 
