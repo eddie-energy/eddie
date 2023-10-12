@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
@@ -26,11 +25,13 @@ import org.slf4j.Logger;
 import org.springframework.boot.task.TaskSchedulerBuilder;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.test.util.ReflectionTestUtils;
+import reactor.test.publisher.TestPublisher;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -40,39 +41,37 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionServiceTest {
     @Mock
     ScheduledFuture<?> mockScheduledFuture;
-    @Spy
+    @Mock(name = "energy.eddie.aiida.services.PermissionService")
     Logger logger;
     @Mock
     private PermissionRepository repository;
-    @Mock
-    private Clock clock;
     @Mock
     private StreamerManager streamerManager;
     @Mock
     private TaskScheduler scheduler;
     @Spy
     private ConcurrentMap<String, ScheduledFuture<?>> expirationFutures = new ConcurrentHashMap<>();
-    @InjectMocks
-    private PermissionService service;
     private Permission permission;
+    private TestPublisher<String> testPublisher;
+    private PermissionService service;
+    private String permissionId;
     private Instant start;
     private Instant expiration;
     private Instant grant;
     private String serviceName;
     private String connectionId;
     private Set<String> codes;
-    private String bootstrapServers;
-    private String validDataTopic;
-    private String validStatusTopic;
-    private String validSubscribeTopic;
     private KafkaStreamingConfig streamingConfig;
-    private String permissionId;
+    private Instant terminationTime;
+    private Clock clock;
 
     @BeforeEach
     void setUp() {
@@ -84,13 +83,21 @@ class PermissionServiceTest {
         connectionId = "NewAiidaRandomConnectionId";
         codes = Set.of("1.8.0", "2.8.0");
 
-        bootstrapServers = "localhost:9092";
-        validDataTopic = "ValidPublishTopic";
-        validStatusTopic = "ValidStatusTopic";
-        validSubscribeTopic = "ValidSubscribeTopic";
-
+        var bootstrapServers = "localhost:9092";
+        var validDataTopic = "ValidPublishTopic";
+        var validStatusTopic = "ValidStatusTopic";
+        var validSubscribeTopic = "ValidSubscribeTopic";
         streamingConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
+
         permission = new Permission(serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
+        ReflectionTestUtils.setField(permission, "permissionId", permissionId);
+
+        testPublisher = TestPublisher.create();
+        terminationTime = start.plusSeconds(200_000);
+        clock = Clock.fixed(terminationTime, ZoneId.systemDefault());
+
+        doReturn(testPublisher.flux()).when(streamerManager).terminationRequestsFlux();
+        service = new PermissionService(repository, clock, streamerManager, scheduler, expirationFutures);
     }
 
     @Test
@@ -122,10 +129,10 @@ class PermissionServiceTest {
         assertEquals(grant, newPermission.grantTime());
         assertEquals(connectionId, newPermission.connectionId());
         assertThat(codes).hasSameElementsAs(newPermission.requestedCodes());
-        assertEquals(bootstrapServers, newPermission.kafkaStreamingConfig().bootstrapServers());
-        assertEquals(validDataTopic, newPermission.kafkaStreamingConfig().dataTopic());
-        assertEquals(validStatusTopic, newPermission.kafkaStreamingConfig().statusTopic());
-        assertEquals(validSubscribeTopic, newPermission.kafkaStreamingConfig().subscribeTopic());
+        assertEquals(streamingConfig.bootstrapServers(), newPermission.kafkaStreamingConfig().bootstrapServers());
+        assertEquals(streamingConfig.dataTopic(), newPermission.kafkaStreamingConfig().dataTopic());
+        assertEquals(streamingConfig.statusTopic(), newPermission.kafkaStreamingConfig().statusTopic());
+        assertEquals(streamingConfig.subscribeTopic(), newPermission.kafkaStreamingConfig().subscribeTopic());
         assertEquals(PermissionStatus.STREAMING_DATA, newPermission.status());
         assertNull(newPermission.revokeTime());
 
@@ -251,9 +258,31 @@ class PermissionServiceTest {
         verify(logger).error(eq("Error while sending TIME_LIMIT ConnectionStatusMessage"), any(ConnectionStatusMessageSendFailedException.class));
     }
 
+    @Test
+    void givenTerminationRequest_sendsStatusMessages_andStopsStreaming_andUpdatesDB() throws ConnectionStatusMessageSendFailedException {
+        when(repository.findById(permission.permissionId())).thenReturn(Optional.of(permission));
+
+        testPublisher.next(permission.permissionId());
+
+        verify(streamerManager).terminationRequestsFlux();
+        verify(streamerManager).sendConnectionStatusMessageForPermission(
+                argThat(arg -> arg.status() == PermissionStatus.TERMINATION_RECEIVED), eq(permission.permissionId()));
+        verify(streamerManager).sendConnectionStatusMessageForPermission(
+                argThat(arg -> arg.status() == PermissionStatus.TERMINATED), eq(permission.permissionId()));
+        verify(streamerManager).stopStreamer(permission.permissionId());
+
+        verify(repository).save(argThat(arg -> arg.status() == PermissionStatus.TERMINATED && arg.revokeTime() == terminationTime));
+    }
+
     @Nested
     @DisplayName("Test service layer revocation of a permission")
     class PermissionServiceRevocationTest {
+        @BeforeEach
+        void setUp() {
+            clock = mock(Clock.class);
+            service = new PermissionService(repository, clock, streamerManager, scheduler, expirationFutures);
+        }
+
         @Test
         void givenNotExistingPermissionId_revokePermission_throws() {
             var notExistingId = "NotExistingId";
@@ -284,7 +313,7 @@ class PermissionServiceTest {
                 mode = EnumSource.Mode.INCLUDE)
         void givenValidPermission_revokePermission_asExpected(PermissionStatus status) throws ConnectionStatusMessageSendFailedException {
             Instant revokeTime = Instant.parse("2023-09-13T10:15:30.00Z");
-            when(clock.instant()).thenReturn(revokeTime);
+            doReturn(revokeTime).when(clock).instant();
 
             ReflectionTestUtils.setField(permission, "permissionId", permissionId);
             ReflectionTestUtils.setField(permission, "status", status);
@@ -304,10 +333,10 @@ class PermissionServiceTest {
 
             assertThat(codes).hasSameElementsAs(revokedPermission.requestedCodes());
 
-            assertEquals(bootstrapServers, revokedPermission.kafkaStreamingConfig().bootstrapServers());
-            assertEquals(validDataTopic, revokedPermission.kafkaStreamingConfig().dataTopic());
-            assertEquals(validStatusTopic, revokedPermission.kafkaStreamingConfig().statusTopic());
-            assertEquals(validSubscribeTopic, revokedPermission.kafkaStreamingConfig().subscribeTopic());
+            assertEquals(streamingConfig.bootstrapServers(), revokedPermission.kafkaStreamingConfig().bootstrapServers());
+            assertEquals(streamingConfig.dataTopic(), revokedPermission.kafkaStreamingConfig().dataTopic());
+            assertEquals(streamingConfig.statusTopic(), revokedPermission.kafkaStreamingConfig().statusTopic());
+            assertEquals(streamingConfig.subscribeTopic(), revokedPermission.kafkaStreamingConfig().subscribeTopic());
 
             // this changed
             assertEquals(PermissionStatus.REVOKED, revokedPermission.status());
@@ -324,7 +353,7 @@ class PermissionServiceTest {
         void givenRevokeTimeBeforeGrantTime_revokePermission_throws() {
             Instant grantTime = Instant.parse("2023-10-01T10:00:00.00Z");
             Instant revokeTime = Instant.parse("2023-09-01T10:00:00.00Z");
-            when(clock.instant()).thenReturn(revokeTime);
+            doReturn(revokeTime).when(clock).instant();
 
             ReflectionTestUtils.setField(permission, "permissionId", permissionId);
             ReflectionTestUtils.setField(permission, "grantTime", grantTime);
@@ -424,14 +453,11 @@ class PermissionServiceTest {
     @Nested
     @DisplayName("Tests whether the @PostConstruct annotated method of PermissionService updates the permissions correctly")
     class PermissionServiceTestUpdatePermissionsOnStartup {
-        @Mock
-        PermissionRepository repository;
-        @Mock
-        StreamerManager streamerManager;
-        @Mock
-        Clock clock;
-        @InjectMocks
-        PermissionService service;
+        @BeforeEach
+        void setUp() {
+            clock = mock(Clock.class);
+            service = new PermissionService(repository, clock, streamerManager, scheduler, expirationFutures);
+        }
 
         /**
          * Tests that permissions are queried from the DB on startup and if their expiration time has passed,
@@ -482,7 +508,7 @@ class PermissionServiceTest {
             ReflectionTestUtils.setField(streamingDataShouldBeStreamingData, "permissionId", streamingDataId);
             ReflectionTestUtils.setField(streamingDataShouldBeStreamingData, "status", PermissionStatus.STREAMING_DATA);
 
-            when(clock.instant()).thenReturn(Instant.parse("2023-10-01T12:00:00.00Z"));
+            doReturn(Instant.parse("2023-10-01T12:00:00.00Z")).when(clock).instant();
             when(repository.findAllActivePermissions()).thenReturn(List.of(acceptedShouldBeStreamingData,
                     waitingForStartShouldBeTimeLimit, streamingDataShouldBeTimeLimit, streamingDataShouldBeStreamingData));
             Map<String, Permission> savedByMethod = new HashMap<>();
