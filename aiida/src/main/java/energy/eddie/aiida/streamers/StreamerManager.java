@@ -7,10 +7,12 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,16 +25,22 @@ public class StreamerManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamerManager.class);
     private final ObjectMapper mapper;
     private final Map<String, StreamerSinkContainer> streamers;
+    private final TaskScheduler scheduler;
+    private final Duration terminationRequestPollDuration;
+    private final Sinks.Many<String> terminationRequests;
 
     /**
      * The mapper is passed to the {@link AiidaStreamer} instances that which use it to convert POJOs to JSON.
      * As the mapper is shared, make the used implementation is thread-safe and supports sharing.
      */
     @Autowired
-    public StreamerManager(ObjectMapper mapper) {
+    public StreamerManager(ObjectMapper mapper, TaskScheduler scheduler, Duration terminationRequestPollDuration) {
         this.mapper = mapper;
+        this.scheduler = scheduler;
+        this.terminationRequestPollDuration = terminationRequestPollDuration;
 
         streamers = new HashMap<>();
+        terminationRequests = Sinks.many().unicast().onBackpressureBuffer();
     }
 
     /**
@@ -51,14 +59,32 @@ public class StreamerManager {
         Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().unicast().onBackpressureBuffer();
         // TODO get correct flux from aggregator
         Flux<AiidaRecord> recordFlux = Flux.empty();
+        Sinks.One<String> streamerTerminationRequestSink = Sinks.one();
 
-        var streamer = StreamerFactory.getAiidaStreamer(permission.kafkaStreamingConfig(), permission.connectionId(),
-                recordFlux, statusMessageSink.asFlux(), mapper);
+        streamerTerminationRequestSink.asMono().subscribe(permissionId -> {
+            var result = terminationRequests.tryEmitNext(permissionId);
+            if (result.isFailure())
+                LOGGER.error("Error while emitting termination request for permission {}. Error was: {}", permissionId, result);
+        });
+
+        var streamer = StreamerFactory.getAiidaStreamer(permission, recordFlux, statusMessageSink.asFlux(),
+                streamerTerminationRequestSink, mapper, scheduler, terminationRequestPollDuration);
         streamer.connect();
 
         StreamerSinkContainer container = new StreamerSinkContainer(streamer, statusMessageSink);
 
         streamers.put(permission.permissionId(), container);
+    }
+
+    /**
+     * Returns a Flux on which the ID of a permission is published, when the EP requests a termination for this
+     * permission.
+     * The Flux allows only one subscriber and buffers, ensuring no values get lost.
+     *
+     * @return Flux of permissionIDs for which the EP requested termination.
+     */
+    public Flux<String> terminationRequestsFlux() {
+        return terminationRequests.asFlux();
     }
 
     /**

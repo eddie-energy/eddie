@@ -2,12 +2,14 @@ package energy.eddie.aiida.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.aiida.streamers.AiidaStreamer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.time.Clock;
+import java.time.Duration;
 
 @Configuration
 @EnableScheduling
@@ -34,5 +36,14 @@ public class AiidaConfiguration {
     @Bean
     public Clock clock() {
         return Clock.systemUTC();
+    }
+
+    /**
+     * Specifies how frequent a {@link AiidaStreamer} should poll the EP framework if they have issued
+     * a termination request.
+     */
+    @Bean
+    public Duration terminationRequestPollDuration() {
+        return Duration.ofSeconds(10);
     }
 }
