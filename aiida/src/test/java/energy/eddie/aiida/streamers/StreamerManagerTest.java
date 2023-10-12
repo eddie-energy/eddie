@@ -8,21 +8,26 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.streamers.kafka.KafkaFactory;
 import energy.eddie.aiida.streamers.kafka.KafkaStreamer;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.MockProducer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.test.util.ReflectionTestUtils;
+import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -142,6 +147,38 @@ class StreamerManagerTest {
             assertEquals(acceptedMessageJson, mockProducer.history().get(0).value());
 
             // clean up
+            manager.stopStreamer(permission.permissionId());
+            mockProducer.close(Duration.ofMillis(10));
+            mockConsumer.close(Duration.ofMillis(10));
+        }
+    }
+
+    @Test
+    @Timeout(5)
+    void givenStreamerReceivesTerminationRequest_terminationRequestsFlux_containsPermissionId() {
+        try (MockedStatic<KafkaFactory> mockKafkaFactory = mockStatic(KafkaFactory.class)) {
+            var mockProducer = mock(KafkaProducer.class);
+            var mockConsumer = mock(KafkaConsumer.class);
+            mockKafkaFactory.when(() -> KafkaFactory.getKafkaProducer(any(), anyString())).thenReturn(mockProducer);
+            mockKafkaFactory.when(() -> KafkaFactory.getKafkaConsumer(any(), anyString())).thenReturn(mockConsumer);
+
+
+            manager.createNewStreamerForPermission(permission);
+
+            // simulate a termination request by the EP with reflection
+            @SuppressWarnings("unchecked")
+            var streamers = (HashMap<String, StreamerManager.StreamerSinkContainer>) ReflectionTestUtils.getField(manager, "streamers");
+            assertNotNull(streamers);
+            var kafkaStreamer = ((KafkaStreamer) streamers.get(permission.permissionId()).streamer());
+            ReflectionTestUtils.invokeMethod(kafkaStreamer, "receivedTerminationRequest", permission.connectionId());
+
+
+            StepVerifier.create(manager.terminationRequestsFlux().log())
+                    .expectNext(permission.permissionId())
+                    .thenCancel()
+                    .verify();
+
+            // cleanup
             manager.stopStreamer(permission.permissionId());
             mockProducer.close(Duration.ofMillis(10));
             mockConsumer.close(Duration.ofMillis(10));
