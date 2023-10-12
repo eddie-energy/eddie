@@ -6,7 +6,7 @@ import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
-import energy.eddie.aiida.streamers.kafka.KafkaProducerFactory;
+import energy.eddie.aiida.streamers.kafka.KafkaFactory;
 import energy.eddie.aiida.streamers.kafka.KafkaStreamer;
 import org.apache.kafka.clients.producer.MockProducer;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -117,9 +117,9 @@ class StreamerManagerTest {
         var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED);
         String acceptedMessageJson = "{\"connectionId\":\"NewAiidaRandomConnectionId\",\"timestamp\":1694469600.000000000,\"status\":\"ACCEPTED\"}";
 
-        try (MockedStatic<KafkaProducerFactory> mockKafkaFactory = mockStatic(KafkaProducerFactory.class)) {
+        try (MockedStatic<KafkaFactory> mockKafkaFactory = mockStatic(KafkaFactory.class)) {
             var mockProducer = new MockProducer<>(false, new StringSerializer(), new StringSerializer());
-            mockKafkaFactory.when(() -> KafkaProducerFactory.getKafkaProducer(any(), anyString())).thenReturn(mockProducer);
+            mockKafkaFactory.when(() -> KafkaFactory.getKafkaProducer(any(), anyString())).thenReturn(mockProducer);
 
             manager.createNewStreamerForPermission(permission);
 

@@ -1,15 +1,19 @@
 package energy.eddie.aiida.streamers.kafka;
 
 import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.Properties;
 
-public class KafkaProducerFactory {
-    private KafkaProducerFactory() {
+public class KafkaFactory {
+    private KafkaFactory() {
     }
 
     /**
@@ -34,5 +38,15 @@ public class KafkaProducerFactory {
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, streamingConfig.bootstrapServers());
 
         return new KafkaProducer<>(properties, new StringSerializer(), new StringSerializer());
+    }
+
+    public static Consumer<String, String> getKafkaConsumer(KafkaStreamingConfig streamingConfig, String connectionId) {
+        Properties properties = new Properties();
+        properties.put(ConsumerConfig.CLIENT_ID_CONFIG, connectionId);
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG, connectionId);
+        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, streamingConfig.bootstrapServers());
+
+        return new KafkaConsumer<>(properties, new StringDeserializer(), new StringDeserializer());
     }
 }

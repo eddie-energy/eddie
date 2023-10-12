@@ -67,7 +67,7 @@ class KafkaStreamerIntegrationTest {
         var config = getKafkaConfig(testInfo, kafka);
         KafkaConsumer<String, String> consumer = getKafkaConsumer(testInfo, kafka);
         String connectionId = "IntegrationTestConnectionId";
-        var producer = KafkaProducerFactory.getKafkaProducer(config, connectionId);
+        var producer = KafkaFactory.getKafkaProducer(config, connectionId);
 
         TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
         TestPublisher<ConnectionStatusMessage> statusMessagePublisher = TestPublisher.create();
@@ -120,7 +120,7 @@ class KafkaStreamerIntegrationTest {
         var config = getKafkaConfig(testInfo, kafka);
         KafkaConsumer<String, String> consumer = getKafkaConsumer(testInfo, kafka);
         String connectionId = "StatusMessageIntegrationTestConnectionId";
-        var producer = KafkaProducerFactory.getKafkaProducer(config, connectionId);
+        var producer = KafkaFactory.getKafkaProducer(config, connectionId);
 
         TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
         TestPublisher<ConnectionStatusMessage> statusMessagePublisher = TestPublisher.create();
