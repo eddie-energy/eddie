@@ -246,7 +246,7 @@ class PermissionControllerIntegrationTest {
         assertEquals(dto.kafkaStreamingConfig().dataTopic(), permission.kafkaStreamingConfig().dataTopic());
         assertEquals(dto.kafkaStreamingConfig().statusTopic(), permission.kafkaStreamingConfig().statusTopic());
         assertEquals(dto.kafkaStreamingConfig().subscribeTopic(), permission.kafkaStreamingConfig().subscribeTopic());
-        assertEquals(PermissionStatus.ACCEPTED, permission.status());
+        assertEquals(PermissionStatus.STREAMING_DATA, permission.status());
         assertNull(permission.revokeTime());
     }
 

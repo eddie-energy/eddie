@@ -10,6 +10,7 @@ import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.ConnectionStatusMessage;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.aiida.utils.PermissionExpiredRunnable;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +48,9 @@ public class PermissionService {
     }
 
     /**
-     * Saves a new permission in the database and sends the {@link PermissionStatus#ACCEPTED} status to the EDDIE
-     * framework. If any error occurs, the permission is not saved in the database.
+     * Saves a new permission in the database and sends the {@link PermissionStatus#ACCEPTED} status message to
+     * the EDDIE framework. If any error occurs, the permission is not saved in the database.
+     * As of current implementation, streaming is started right away, even if the permission's start time lies in the future.
      *
      * @param dto Data transfer object containing the information for the new permission.
      * @return Permission object as returned by the database (i.e. with a permissionId).
@@ -72,6 +74,10 @@ public class PermissionService {
         ScheduledFuture<?> future = scheduler.schedule(expirationRunnable, newPermission.expirationTime());
 
         expirationFutures.put(newPermission.permissionId(), future);
+
+        // scheduled start will be implemented later, for now, streaming is started right away and should be reflected in db
+        newPermission.updateStatus(PermissionStatus.STREAMING_DATA);
+        newPermission = repository.save(newPermission);
 
         return newPermission;
     }
@@ -191,6 +197,27 @@ public class PermissionService {
             case ACCEPTED, WAITING_FOR_START, STREAMING_DATA -> true;
             default -> false;
         };
+    }
+
+    /**
+     * Gets all active permissions from the database and checks if they have expired.
+     * If not, streaming is resumed, otherwise their database entry will be updated accordingly.
+     */
+    @PostConstruct
+    private void updatePermissionsOnStartup() {
+        LOGGER.info("Getting all permissions from database and will resume streaming or update them if they are expired.");
+
+        for (Permission permission : repository.findAllActivePermissions()) {
+            if (permission.expirationTime().isAfter(clock.instant())) {
+                streamerManager.createNewStreamerForPermission(permission);
+
+                permission.updateStatus(PermissionStatus.STREAMING_DATA);
+                repository.save(permission);
+            } else {
+                permission.updateStatus(PermissionStatus.TIME_LIMIT);
+                repository.save(permission);
+            }
+        }
     }
 
     /**
