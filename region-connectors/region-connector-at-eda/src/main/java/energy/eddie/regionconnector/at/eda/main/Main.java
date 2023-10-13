@@ -13,7 +13,7 @@ import java.util.Properties;
 public class Main {
 
     /**
-     * Starts the region connector and webapp, so it can be tested without running the framework
+     * Starts the region connector and webapp, so it can be tested without running EDDIE
      */
     @SuppressWarnings("java:S106")
     public static void main(String[] args) throws Exception {

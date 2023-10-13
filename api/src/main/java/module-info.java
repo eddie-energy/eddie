@@ -1,7 +1,7 @@
 /**
  * <h2>EDDIE inter-module API definitions</h2>
  *
- * <p>This module defines the APIs that are used between the different component of the EDDIE framework. Each
+ * <p>This module defines the APIs that are used between the different components of EDDIE. Each
  * component is delivered as a JPMS modules. This covers currently region connectors and application connectors.
  *
  * <p>Because the interfaces will evolve over time, there is a versioning scheme in the package name. This enables the

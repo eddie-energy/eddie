@@ -35,7 +35,7 @@ public class SpringConfig {
                     .web(WebApplicationType.NONE)
                     .initializers(new ConfigInitializer(config))
                     .build();
-            // These arguments are needed, since this spring instance tries to load the data needs configs of the frameworks configuration.
+            // These arguments are needed, since this spring instance tries to load the data needs configs of the core configuration.
             ctx = app.run("--spring.config.import=", "--import.config.file=");
         }
         var factory = ctx.getBeanFactory();

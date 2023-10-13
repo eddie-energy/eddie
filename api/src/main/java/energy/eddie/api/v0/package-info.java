@@ -3,7 +3,7 @@
  * <p><em>preliminary version</em>
  *
  * <p>
- * This package defines the API needed for writing Plugins for the EDDIE frameworks. These kinds of
+ * This package defines the API needed for writing plugins for EDDIE. These kinds of
  * plugins are supported:
  *
  * <ul>

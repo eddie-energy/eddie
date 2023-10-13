@@ -72,7 +72,7 @@ commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons
 # dependencies required by kafka-outbound
 kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients" }
 
-# used by framework
+# used by core
 h2database = { module = "com.h2database:h2", version.ref = "h2database" }
 javalin = { module = "io.javalin:javalin", version.ref = "javalin" }
 jetty-proxy = { module = "org.eclipse.jetty:jetty-proxy", version.ref = "jetty" }

@@ -61,7 +61,7 @@ REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_PORT=2600
 REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_FOLDER=/opt/pontonxp
 ```
 
-## Running the Region Connector via the framework
+## Running the Region Connector via EDDIE
 
-If you are using the framework, the region connector should appear in the list of available
+If you are using EDDIE, the region connector should appear in the list of available
 region connectors if it has been configured correctly.

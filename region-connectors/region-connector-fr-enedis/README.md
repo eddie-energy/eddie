@@ -16,7 +16,7 @@ administrators in France.
 - Once the application has been created, edit it and switch it to the __production__ environment. For this you will need
   to provide
   a valid callback URL. This URL needs to point to the region connector authorization-callback, for
-  example `https://url-to-your-eddie-framework/region-connectors/fr-enedis/authorization-callback`. You will also need
+  example `https://url-to-your-eddie-instance/region-connectors/fr-enedis/authorization-callback`. You will also need
   to provide a URL where _Enedis_ can check your running application in order to switch it to __production__. Point the
   URL to wherever you plan to host a __Connect with EDDIE__ button.
 - Wait for the application to be approved. This may take some time.
@@ -59,7 +59,7 @@ REGION_CONNECTOR_FR_ENEDIS_CLIENT_ID=a5d5ce56-2bca-123d-1ccd-46a28f1ac132
 REGION_CONNECTOR_FR_ENEDIS_CLIENT_SECRET=11d145d8-25a6-55c1-b6af-04ac332211b1
 ```
 
-## Running the Region Connector via the framework
+## Running the Region Connector via EDDIE
 
-If you are using the framework, the region connector should appear in the list of available
+If you are using EDDIE, the region connector should appear in the list of available
 region connectors if it has been configured correctly.

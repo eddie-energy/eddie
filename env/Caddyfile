@@ -1,9 +1,9 @@
 :8080 {
     log
 
-    reverse_proxy {$PUBLIC_CONTEXT_PATH:}/lib/* eddie-framework:8080
-    reverse_proxy {$PUBLIC_CONTEXT_PATH:}/region-connectors/* eddie-framework:8080
-    reverse_proxy {$PUBLIC_CONTEXT_PATH:}/api/* eddie-framework:8080
+    reverse_proxy {$PUBLIC_CONTEXT_PATH:}/lib/* eddie:8080
+    reverse_proxy {$PUBLIC_CONTEXT_PATH:}/region-connectors/* eddie:8080
+    reverse_proxy {$PUBLIC_CONTEXT_PATH:}/api/* eddie:8080
     # There is intentionally no slash (/) between the context path and the asterix (*) on
     # the next rule's matcher, because that was also the base path is proxied.
     reverse_proxy {$PUBLIC_CONTEXT_PATH:}* eddie-example-app:8081
