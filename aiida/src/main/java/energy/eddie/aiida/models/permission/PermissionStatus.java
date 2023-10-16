@@ -26,10 +26,6 @@ public enum PermissionStatus {
      */
     REVOKED,
     /**
-     * The eligible party has requested a termination of the permission.
-     */
-    TERMINATION_RECEIVED,
-    /**
      * The permission was terminated by the eligible party.
      */
     TERMINATED,

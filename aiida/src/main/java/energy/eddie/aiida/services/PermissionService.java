@@ -57,20 +57,18 @@ public class PermissionService {
         Permission permission = findById(permissionId);
 
         Instant instant = clock.instant();
-        var terminationReceived = new ConnectionStatusMessage(permission.connectionId(), instant, TERMINATION_RECEIVED);
-        var terminated = new ConnectionStatusMessage(permission.connectionId(), instant, TERMINATED);
-        try {
-            streamerManager.sendConnectionStatusMessageForPermission(terminationReceived, permissionId);
-            streamerManager.sendConnectionStatusMessageForPermission(terminated, permissionId);
-        } catch (ConnectionStatusMessageSendFailedException ex) {
-            LOGGER.error("Failed to send TERMINATION_RECEIVED and TERMINATED status message for permission {}", permissionId, ex);
-        }
-
-        streamerManager.stopStreamer(permissionId);
-
         permission.revokeTime(instant);
         permission.updateStatus(TERMINATED);
         repository.save(permission);
+
+        try {
+            var terminated = new ConnectionStatusMessage(permission.connectionId(), instant, TERMINATED);
+            streamerManager.sendConnectionStatusMessageForPermission(terminated, permissionId);
+        } catch (ConnectionStatusMessageSendFailedException ex) {
+            LOGGER.error("Failed to send TERMINATED status message for permission {}", permissionId, ex);
+        }
+
+        streamerManager.stopStreamer(permissionId);
     }
 
     /**

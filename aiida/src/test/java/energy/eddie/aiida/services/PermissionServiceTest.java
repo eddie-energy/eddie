@@ -266,8 +266,6 @@ class PermissionServiceTest {
 
         verify(streamerManager).terminationRequestsFlux();
         verify(streamerManager).sendConnectionStatusMessageForPermission(
-                argThat(arg -> arg.status() == PermissionStatus.TERMINATION_RECEIVED), eq(permission.permissionId()));
-        verify(streamerManager).sendConnectionStatusMessageForPermission(
                 argThat(arg -> arg.status() == PermissionStatus.TERMINATED), eq(permission.permissionId()));
         verify(streamerManager).stopStreamer(permission.permissionId());
 
