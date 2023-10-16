@@ -180,8 +180,6 @@ class StreamerManagerTest {
 
             // cleanup
             manager.stopStreamer(permission.permissionId());
-            mockProducer.close(Duration.ofMillis(10));
-            mockConsumer.close(Duration.ofMillis(10));
         }
     }
 

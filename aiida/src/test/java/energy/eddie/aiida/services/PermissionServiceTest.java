@@ -19,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.Logger;
 import org.springframework.boot.task.TaskSchedulerBuilder;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -280,7 +279,8 @@ class PermissionServiceTest {
                 argThat(arg -> arg.status() == PermissionStatus.TERMINATED), eq(permission.permissionId()));
         verify(streamerManager).stopStreamer(permission.permissionId());
 
-        verify(repository).save(argThat(arg -> arg.status() == PermissionStatus.TERMINATED && arg.revokeTime() == terminationTime));
+        verify(repository).save(argThat(permission -> permission.status() == PermissionStatus.TERMINATED
+                && Objects.requireNonNull(permission.revokeTime()).toEpochMilli() == terminationTime.toEpochMilli()));
     }
 
     @Nested
