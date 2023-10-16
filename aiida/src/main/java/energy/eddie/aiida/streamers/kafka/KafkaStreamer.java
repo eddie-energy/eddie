@@ -38,7 +38,6 @@ public class KafkaStreamer extends AiidaStreamer {
     private Disposable recordSubscriptionDisposable;
     @Nullable
     private Disposable statusMessageSubscriptionDisposable;
-    private final Runnable terminationRequestPollRunnable;
     @Nullable
     private ScheduledFuture<?> pollFuture;
     private volatile boolean receivedTerminationRequest;
@@ -93,19 +92,19 @@ public class KafkaStreamer extends AiidaStreamer {
         this.mapper = mapper;
         this.scheduler = scheduler;
         this.terminationRequestPollDuration = terminationRequestPollDuration;
+    }
 
-        this.terminationRequestPollRunnable = () -> {
-            try {
-                ConsumerRecords<String, String> polled = consumer.poll(Duration.ofSeconds(1));
+    private void terminationRequestPollRunnable() {
+        try {
+            ConsumerRecords<String, String> polled = consumer.poll(Duration.ofSeconds(1));
 
-                consumer.commitAsync();
-                // only react to the first message received on the topic
-                if (polled.count() > 0)
-                    receivedTerminationRequest(polled.iterator().next().value());
-            } catch (KafkaException ex) {
-                LOGGER.error("Error while polling termination request for permission {}", permission.permissionId(), ex);
-            }
-        };
+            consumer.commitAsync();
+            // only react to the first message received on the topic
+            if (polled.count() > 0)
+                receivedTerminationRequest(polled.iterator().next().value());
+        } catch (KafkaException ex) {
+            LOGGER.error("Error while polling termination request for permission {}", permission.permissionId(), ex);
+        }
     }
 
     /**
@@ -120,7 +119,7 @@ public class KafkaStreamer extends AiidaStreamer {
 
         consumer.subscribe(List.of(permission.kafkaStreamingConfig().subscribeTopic()));
 
-        pollFuture = scheduler.scheduleAtFixedRate(terminationRequestPollRunnable, terminationRequestPollDuration);
+        pollFuture = scheduler.scheduleAtFixedRate(this::terminationRequestPollRunnable, terminationRequestPollDuration);
     }
 
     /**

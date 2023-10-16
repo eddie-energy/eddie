@@ -22,7 +22,6 @@ import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class StreamerFactoryTest {
-    // use annotation instead of mock(...) method to get typed mock
     @Mock
     Sinks.One<String> mockSink;
 
