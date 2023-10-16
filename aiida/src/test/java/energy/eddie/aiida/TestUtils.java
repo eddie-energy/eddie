@@ -1,4 +1,4 @@
-package energy.eddie.aiida.streamers;
+package energy.eddie.aiida;
 
 import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -8,7 +8,7 @@ import org.testcontainers.containers.KafkaContainer;
 
 import java.util.Properties;
 
-public class IntegrationTestUtils {
+public class TestUtils {
     /**
      * Creates a KafkaConsumer that connects to the testcontainer of this testclass and uses the displayName of
      * the supplied testInfo as <i>group.id</i>.

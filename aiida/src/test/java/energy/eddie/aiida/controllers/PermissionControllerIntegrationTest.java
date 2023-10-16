@@ -35,8 +35,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-import static energy.eddie.aiida.streamers.IntegrationTestUtils.getKafkaConfig;
-import static energy.eddie.aiida.streamers.IntegrationTestUtils.getKafkaConsumer;
+import static energy.eddie.aiida.TestUtils.getKafkaConfig;
+import static energy.eddie.aiida.TestUtils.getKafkaConsumer;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
 import static org.junit.jupiter.api.Assertions.*;
