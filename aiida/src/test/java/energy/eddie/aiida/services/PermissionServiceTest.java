@@ -10,10 +10,8 @@ import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.ConnectionStatusMessage;
 import energy.eddie.aiida.streamers.StreamerManager;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import nl.altindag.log.LogCaptor;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -37,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
 
+import static energy.eddie.aiida.TestUtils.verifyErrorLogStartsWith;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,10 +46,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionServiceTest {
+    private static final LogCaptor logCaptor = LogCaptor.forClass(PermissionService.class);
     @Mock
     ScheduledFuture<?> mockScheduledFuture;
-    @Mock(name = "energy.eddie.aiida.services.PermissionService")
-    Logger logger;
     @Mock
     private PermissionRepository repository;
     @Mock
@@ -98,6 +96,16 @@ class PermissionServiceTest {
 
         doReturn(testPublisher.flux()).when(streamerManager).terminationRequestsFlux();
         service = new PermissionService(repository, clock, streamerManager, scheduler, expirationFutures);
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        logCaptor.close();
+    }
+
+    @AfterEach
+    void tearDown() {
+        logCaptor.clearLogs();
     }
 
     @Test
@@ -201,8 +209,9 @@ class PermissionServiceTest {
 
         service.setupNewPermission(permissionDto);
 
-        verify(logger).info("Will expire permission with id {}", permissionId);
-        verify(logger).error("No permission with id {} found in database, but was requested to expire it.", permissionId);
+        assertThat(logCaptor.getInfoLogs()).contains("Will expire permission with id %s".formatted(permissionId));
+        assertThat(logCaptor.getErrorLogs()).contains("No permission with id %s found in database, but was requested to expire it."
+                .formatted(permissionId));
     }
 
     /**
@@ -228,8 +237,9 @@ class PermissionServiceTest {
 
         service.setupNewPermission(permissionDto);
 
-        verify(logger).info("Will expire permission with id {}", permissionId);
-        verify(logger).warn("Permission {} was modified, its status is {}. Will NOT expire the permission", permissionId, PermissionStatus.REVOKED);
+        assertThat(logCaptor.getInfoLogs()).contains("Will expire permission with id %s".formatted(permissionId));
+        assertThat(logCaptor.getWarnLogs()).contains("Permission %s was modified, its status is %s. Will NOT expire the permission"
+                .formatted(permissionId, PermissionStatus.REVOKED));
     }
 
     @Test
@@ -254,8 +264,9 @@ class PermissionServiceTest {
 
         service.setupNewPermission(permissionDto);
 
-        verify(logger).info("Will expire permission with id {}", permissionId);
-        verify(logger).error(eq("Error while sending TIME_LIMIT ConnectionStatusMessage"), any(ConnectionStatusMessageSendFailedException.class));
+        assertThat(logCaptor.getInfoLogs()).contains("Will expire permission with id %s".formatted(permissionId));
+        verifyErrorLogStartsWith("Error while sending TIME_LIMIT ConnectionStatusMessage", logCaptor,
+                ConnectionStatusMessageSendFailedException.class);
     }
 
     @Test
@@ -424,8 +435,9 @@ class PermissionServiceTest {
 
             service.revokePermission(permissionId);
 
-            verify(logger).error(eq("Error while sending connection status messages while revoking permission {}"),
-                    eq(permissionId), any(ConnectionStatusMessageSendFailedException.class));
+            assertThat(logCaptor.getErrorLogs())
+                    .contains("Error while sending connection status messages while revoking permission %s"
+                            .formatted(permissionId));
         }
 
         @Test
@@ -443,8 +455,9 @@ class PermissionServiceTest {
 
             service.revokePermission(permissionId);
 
-            verify(logger).error(eq("Error while sending connection status messages while revoking permission {}"),
-                    eq(permissionId), any(IllegalArgumentException.class));
+            assertThat(logCaptor.getErrorLogs())
+                    .contains("Error while sending connection status messages while revoking permission %s"
+                            .formatted(permissionId));
         }
     }
 

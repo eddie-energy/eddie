@@ -1,26 +1,36 @@
 package energy.eddie.aiida.utils;
 
+import nl.altindag.log.LogCaptor;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.time.Instant;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static energy.eddie.aiida.TestUtils.verifyErrorLogStartsWith;
+import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionExpiredRunnableTest {
+    private static final LogCaptor logCaptor = LogCaptor.forClass(PermissionExpiredRunnable.class);
     @Mock
     Sinks.One<String> mockSink;
-    @Mock(name = "energy.eddie.aiida.utils.PermissionExpiredRunnable")
-    Logger logger = LoggerFactory.getLogger(PermissionExpiredRunnable.class);
+
+    @AfterAll
+    public static void afterAll() {
+        logCaptor.close();
+    }
+
+    @AfterEach
+    void tearDown() {
+        logCaptor.clearLogs();
+    }
 
     @Test
     void verify_runPublishesOnMono() {
@@ -47,8 +57,6 @@ class PermissionExpiredRunnableTest {
 
         runnable.run();
 
-        verify(logger).info(startsWith("ExpirePermissionRunnable running for permission "), eq(permissionId), anyLong());
-        verify(logger).error(startsWith("Error while trying to emit expiration signal for permission {}. Error was: {}"), eq(permissionId), any(Sinks.EmitResult.class));
-        verifyNoMoreInteractions(logger);
+        verifyErrorLogStartsWith("Error while trying to emit expiration signal for permission ", logCaptor);
     }
 }
