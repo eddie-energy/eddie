@@ -1,6 +1,7 @@
 package energy.eddie.aiida.streamers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
@@ -21,12 +22,13 @@ import java.util.Map;
  * Other components should rely on the StreamerManager for creating or stopping streamers.
  */
 @Component
-public class StreamerManager {
+public class StreamerManager implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamerManager.class);
     private final ObjectMapper mapper;
     private final Map<String, StreamerSinkContainer> streamers;
     private final TaskScheduler scheduler;
     private final Duration terminationRequestPollDuration;
+    private final Aggregator aggregator;
     private final Sinks.Many<String> terminationRequests;
 
     /**
@@ -34,10 +36,11 @@ public class StreamerManager {
      * As the mapper is shared, make the used implementation is thread-safe and supports sharing.
      */
     @Autowired
-    public StreamerManager(ObjectMapper mapper, TaskScheduler scheduler, Duration terminationRequestPollDuration) {
+    public StreamerManager(ObjectMapper mapper, TaskScheduler scheduler, Duration terminationRequestPollDuration, Aggregator aggregator) {
         this.mapper = mapper;
         this.scheduler = scheduler;
         this.terminationRequestPollDuration = terminationRequestPollDuration;
+        this.aggregator = aggregator;
 
         streamers = new HashMap<>();
         terminationRequests = Sinks.many().unicast().onBackpressureBuffer();
@@ -46,6 +49,7 @@ public class StreamerManager {
     /**
      * Creates a new {@link AiidaStreamer} for the specified permission and stores it internally to enable calls to
      * other methods like {@link #sendConnectionStatusMessageForPermission}.
+     * The created streamer will receive any {@link AiidaRecord} that has a code that is in {@link Permission#requestedCodes()}.
      *
      * @param permission Permission for which an AiidaStreamer should be created.
      * @throws IllegalArgumentException If an AiidaStreamer for the passed permission has already been created.
@@ -57,8 +61,7 @@ public class StreamerManager {
             throw new IllegalStateException("An AiidaStreamer for permission %s has already been created.".formatted(permission.permissionId()));
 
         Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().unicast().onBackpressureBuffer();
-        // TODO get correct flux from aggregator
-        Flux<AiidaRecord> recordFlux = Flux.empty();
+        Flux<AiidaRecord> recordFlux = aggregator.getFilteredFlux(permission.requestedCodes());
         Sinks.One<String> streamerTerminationRequestSink = Sinks.one();
 
         streamerTerminationRequestSink.asMono().subscribe(permissionId -> {
@@ -140,6 +143,18 @@ public class StreamerManager {
         if (container == null)
             throw new IllegalArgumentException("No streamer for permissionId %s exists.".formatted(permissionId));
         return container;
+    }
+
+    /**
+     * Closes all streamer to allow for an orderly shutdown. Note that this blocks until all streamers have
+     * finished closing, which may be indefinitely in the current implementation.
+     */
+    @Override
+    public void close() {
+        LOGGER.info("Closing all {} streamers", streamers.keySet().size());
+        for (var entry : streamers.entrySet()) {
+            entry.getValue().streamer.close();
+        }
     }
 
     /**
