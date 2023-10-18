@@ -31,6 +31,8 @@ class ConcurrentHashMapConfigTest {
     StreamerManager manager;
     @MockBean
     TaskScheduler scheduler;
+    @MockBean
+    PermissionService service;
     @Autowired
     private ApplicationContext context;
 

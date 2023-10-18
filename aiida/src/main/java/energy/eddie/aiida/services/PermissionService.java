@@ -28,6 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
 
+import static energy.eddie.aiida.models.permission.PermissionStatus.*;
+
 @Service
 public class PermissionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
@@ -45,6 +47,28 @@ public class PermissionService {
         this.streamerManager = streamerManager;
         this.scheduler = scheduler;
         this.expirationFutures = expirationFutures;
+
+        streamerManager.terminationRequestsFlux().subscribe(this::terminationRequestReceived);
+    }
+
+    private void terminationRequestReceived(String permissionId) {
+        LOGGER.info("Will handle termination request for permission {}", permissionId);
+
+        Permission permission = findById(permissionId);
+
+        Instant instant = clock.instant();
+        permission.revokeTime(instant);
+        permission.updateStatus(TERMINATED);
+        repository.save(permission);
+
+        try {
+            var terminated = new ConnectionStatusMessage(permission.connectionId(), instant, TERMINATED);
+            streamerManager.sendConnectionStatusMessageForPermission(terminated, permissionId);
+        } catch (ConnectionStatusMessageSendFailedException ex) {
+            LOGGER.error("Failed to send TERMINATED status message for permission {}", permissionId, ex);
+        }
+
+        streamerManager.stopStreamer(permissionId);
     }
 
     /**
@@ -62,7 +86,7 @@ public class PermissionService {
         newPermission = repository.save(newPermission);
 
         var acceptedMessage = new ConnectionStatusMessage(newPermission.connectionId(),
-                clock.instant(), PermissionStatus.ACCEPTED);
+                clock.instant(), ACCEPTED);
         streamerManager.createNewStreamerForPermission(newPermission);
         streamerManager.sendConnectionStatusMessageForPermission(acceptedMessage, newPermission.permissionId());
 
@@ -107,8 +131,8 @@ public class PermissionService {
         }
 
         Instant revocationTime = clock.instant();
-        var revocationReceivedMessage = new ConnectionStatusMessage(permission.connectionId(), revocationTime, PermissionStatus.REVOCATION_RECEIVED);
-        var revokeMessage = new ConnectionStatusMessage(permission.connectionId(), revocationTime, PermissionStatus.REVOKED);
+        var revocationReceivedMessage = new ConnectionStatusMessage(permission.connectionId(), revocationTime, REVOCATION_RECEIVED);
+        var revokeMessage = new ConnectionStatusMessage(permission.connectionId(), revocationTime, REVOKED);
 
         try {
             streamerManager.sendConnectionStatusMessageForPermission(revocationReceivedMessage, permissionId);
@@ -118,7 +142,7 @@ public class PermissionService {
             LOGGER.error("Error while sending connection status messages while revoking permission {}", permissionId, ex);
         }
 
-        permission.updateStatus(PermissionStatus.REVOKED);
+        permission.updateStatus(REVOKED);
         permission.revokeTime(revocationTime);
 
         return repository.save(permission);
