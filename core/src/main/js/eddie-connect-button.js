@@ -46,6 +46,23 @@ function getDataNeedAttributes(dataNeedId) {
     .catch((err) => console.error(err));
 }
 
+function shortISOString(date) {
+  return date.toISOString().substring(0, 10);
+}
+
+function dateFromDuration(duration) {
+  const date = new Date();
+  date.setDate(date.getDate() + duration);
+  return shortISOString(date);
+}
+
+function durationFromDateString(dateString) {
+  const now = new Date();
+  const date = new Date(dateString);
+
+  return Math.ceil((date - now) / (1000 * 60 * 60 * 24));
+}
+
 class EddieConnectButton extends LitElement {
   static properties = {
     connectionId: { attribute: "connectionid" },
@@ -154,9 +171,13 @@ class EddieConnectButton extends LitElement {
 
     const formData = new FormData(event.target);
 
-    this._dataNeedAttributes.durationStart = Number.parseInt(formData.get("durationStart"));
+    this._dataNeedAttributes.durationStart = durationFromDateString(
+      formData.get("startDate")
+    );
     this._dataNeedAttributes.durationOpenEnd = formData.get("durationOpenEnd");
-    this._dataNeedAttributes.durationEnd = Number.parseInt(formData.get("durationEnd"));
+    this._dataNeedAttributes.durationEnd = durationFromDateString(
+      formData.get("endDate")
+    );
   }
 
   render() {
@@ -184,7 +205,7 @@ class EddieConnectButton extends LitElement {
 
         <br />
 
-        ${this._allowDataNeedModifications
+        ${this._allowDataNeedModifications && this._dataNeedAttributes.id // check if attributes did load by checking for id
           ? html`
               <sl-details
                 summary="The service allows the modification of data needs."
@@ -193,46 +214,52 @@ class EddieConnectButton extends LitElement {
                   <sl-input
                     label="Connection ID"
                     name="connectionId"
-                    .value="${this.connectionId}"
+                    value="${this.connectionId}"
                     disabled
                     readonly
-                  ></sl-input
-                  ><br />
+                  ></sl-input>
+                  <br />
                   <sl-input
                     label="DataNeed ID"
                     name="id"
-                    .value="${this._dataNeedAttributes.id}"
+                    value="${this._dataNeedAttributes.id}"
                     disabled
                     readonly
-                  ></sl-input
-                  ><br />
+                  ></sl-input>
+                  <br />
                   <sl-input
                     label="Granularity"
                     name="granularity"
-                    .value="${this._dataNeedAttributes.granularity}"
+                    value="${this._dataNeedAttributes.granularity}"
                     disabled
                     readonly
-                  ></sl-input
-                  ><br />
+                  ></sl-input>
+                  <br />
                   <sl-input
-                    label="Duration Start"
-                    name="durationStart"
-                    type="number"
-                    .value="${this._dataNeedAttributes.durationStart}"
+                    label="Start Date"
+                    name="startDate"
+                    type="date"
+                    value="${dateFromDuration(
+                      this._dataNeedAttributes.durationStart
+                    )}"
                   ></sl-input>
                   <br />
                   <div>
                     <sl-checkbox
                       name="durationOpenEnd"
-                      .checked="${this._dataNeedAttributes.durationOpenEnd}"
-                      >Duration Open End</sl-checkbox
+                      checked="${this._dataNeedAttributes.durationOpenEnd}"
                     >
+                      Open End
+                    </sl-checkbox>
                   </div>
                   <br />
                   <sl-input
-                    label="Duration End"
-                    type="number"
-                    .value="${this._dataNeedAttributes.durationEnd}"
+                    label="End Date"
+                    name="endDate"
+                    type="date"
+                    value="${dateFromDuration(
+                      this._dataNeedAttributes.durationEnd
+                    )}"
                   ></sl-input>
                   <br />
                   <sl-button type="submit">Save</sl-button>
