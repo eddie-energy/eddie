@@ -19,6 +19,7 @@ dependencies {
 node {
     version.set("18.14.0")
     pnpmVersion.set("8.5.0")
+    download.set(true)
 }
 
 tasks.register("run-db-server-create-db", JavaExec::class) {
@@ -42,3 +43,5 @@ tasks.register<PnpmTask>("pnpmBuild") {
     dependsOn("pnpmInstall")
     pnpmCommand.set(listOf("run", "build"))
 }
+
+tasks["build"].dependsOn(":pnpmBuild")
