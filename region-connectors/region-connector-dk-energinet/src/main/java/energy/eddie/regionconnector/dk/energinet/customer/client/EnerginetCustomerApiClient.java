@@ -42,8 +42,8 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     private void throwIfInvalidTimeframe(ZonedDateTime start, ZonedDateTime end) throws DateTimeException {
         LocalDate currentDate = LocalDate.ofInstant(Instant.now(), ZoneId.of("Europe/Copenhagen"));
 
-        if (start.isAfter(end)) {
-            throw new DateTimeException("Start date should be before end date.");
+        if (start.isEqual(end) || start.isAfter(end)) {
+            throw new DateTimeException("Start date must be before end date.");
         }
         if (end.toLocalDate().isEqual(currentDate) || end.toLocalDate().isAfter(currentDate)) {
             throw new DateTimeException("The end date parameter must be earlier than the current date.");

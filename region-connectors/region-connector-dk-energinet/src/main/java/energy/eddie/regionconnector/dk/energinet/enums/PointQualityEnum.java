@@ -2,6 +2,8 @@ package energy.eddie.regionconnector.dk.energinet.enums;
 
 import energy.eddie.regionconnector.dk.energinet.customer.model.Point;
 
+import java.util.Objects;
+
 /**
  * Enum for the Quality of the class Point
  * Documentation can be found at <a href="https://energinet.dk/media/xmdlhgel/customer-and-third-party-api-for-datahub-eloverblik-data-description.pdf">Energinet API Documentation</a> (last visited 12th of September 2023)
@@ -21,11 +23,14 @@ public enum PointQualityEnum {
     }
 
     public static PointQualityEnum fromString(String code) {
-        for (PointQualityEnum enumValue : values()) {
-            if (enumValue.name().equals(code)) {
-                return enumValue;
+        if (!Objects.requireNonNull(code).isBlank()) {
+            for (PointQualityEnum enumValue : values()) {
+                if (enumValue.name().equals(code)) {
+                    return enumValue;
+                }
             }
         }
+
         throw new IllegalArgumentException("Invalid PointQualityEnum value: " + code);
     }
 

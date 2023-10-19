@@ -33,7 +33,7 @@ public class ConsumptionRecordMapper {
         List<ConsumptionPoint> consumptionPoints = new ArrayList<>();
         for (TimeSeries timeSeries : Objects.requireNonNull(energyDataMarketDocument.getTimeSeries())) {
             for (Period period : Objects.requireNonNull(timeSeries.getPeriod())) {
-                consumptionRecord.setMeteringInterval(switch (PeriodResolutionEnum.valueOf(period.getResolution())) {
+                consumptionRecord.setMeteringInterval(switch (PeriodResolutionEnum.fromString(period.getResolution())) {
                     case PT15M -> ConsumptionRecord.MeteringInterval.PT_15_M;
                     case PT1H -> ConsumptionRecord.MeteringInterval.PT_1_H;
                     case PT1D -> ConsumptionRecord.MeteringInterval.P_1_D;

@@ -20,7 +20,7 @@ public enum TimeSeriesAggregationEnum {
     MONTH("Month"),
     YEAR("Year");
 
-    private static final int MIN_LEN = 2;
+    private static final int MIN_LEN = 3;
     private static final String EXCEPTION_MESSAGE = "Invalid TimeSeriesAggregationEnum value: ";
     private final String aggregation;
 
