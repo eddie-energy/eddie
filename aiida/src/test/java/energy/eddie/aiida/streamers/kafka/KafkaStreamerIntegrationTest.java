@@ -30,8 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static energy.eddie.aiida.streamers.IntegrationTestUtils.getKafkaConfig;
-import static energy.eddie.aiida.streamers.IntegrationTestUtils.getKafkaConsumer;
+import static energy.eddie.aiida.TestUtils.getKafkaConfig;
+import static energy.eddie.aiida.TestUtils.getKafkaConsumer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 

@@ -55,7 +55,7 @@ dependencies {
     testImplementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
 
     // test interaction with logger
-    testImplementation("org.simplify4u:slf4j2-mock:2.3.0")
+    testImplementation("io.github.hakky54:logcaptor:2.9.0")
 }
 
 configurations {

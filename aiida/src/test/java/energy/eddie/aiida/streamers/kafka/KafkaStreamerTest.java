@@ -10,6 +10,7 @@ import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordFactory;
 import energy.eddie.aiida.streamers.ConnectionStatusMessage;
+import nl.altindag.log.LogCaptor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
@@ -19,15 +20,10 @@ import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.Logger;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Sinks;
@@ -45,14 +41,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static energy.eddie.aiida.TestUtils.verifyErrorLogStartsWith;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class KafkaStreamerTest {
-    @Mock(name = "energy.eddie.aiida.streamers.kafka.KafkaStreamer")
-    private Logger logger;
+    private static final LogCaptor logCaptor = LogCaptor.forClass(KafkaStreamer.class);
     // use @Mock annotation instead of mock(...) method to get a typed mock
     @Mock
     private KafkaProducer<String, String> mockitoMock;
@@ -70,6 +67,11 @@ class KafkaStreamerTest {
     private MockConsumer<String, String> mockConsumer;
     private Sinks.One<String> terminationRequestSink;
     private Permission permission;
+
+    @AfterAll
+    public static void afterAll() {
+        logCaptor.close();
+    }
 
     @BeforeEach
     void setUp() {
@@ -98,6 +100,8 @@ class KafkaStreamerTest {
         terminationRequestSink = Sinks.one();
         streamer = new KafkaStreamer(mockProducer, mockConsumer, recordPublisher.flux(), statusMessagePublisher.flux(),
                 terminationRequestSink, permission, mapper, scheduler, Duration.ofSeconds(10));
+
+        logCaptor.setLogLevelToDebug();
     }
 
     @AfterEach
@@ -105,6 +109,7 @@ class KafkaStreamerTest {
         streamer.close();
         mockProducer.close(Duration.ofMillis(10));
         mockConsumer.close(Duration.ofMillis(10));
+        logCaptor.clearLogs();
     }
 
     @Test
@@ -183,7 +188,8 @@ class KafkaStreamerTest {
 
         assertEquals(0, mockProducer.history().size());
 
-        verify(logger, times(3)).debug("Got new aiidaRecord but won't send it as a termination request has been received.");
+        assertThat(logCaptor.getDebugLogs())
+                .containsAll(Collections.nCopies(3, "Got new aiidaRecord but won't send it as a termination request has been received."));
     }
 
     @Test
@@ -226,13 +232,15 @@ class KafkaStreamerTest {
         RuntimeException e = new SerializationException("expected by test");
         mockProducer.errorNext(e);
 
-        Mockito.verify(logger).error(startsWith("Failed to send data "), any(AiidaRecord.class), any(SerializationException.class));
+        verifyErrorLogStartsWith("Failed to send data ", logCaptor);
 
+        logCaptor.clearLogs();
 
+        // sending status message also fails
         statusMessagePublisher.next(statusMessage1);
         mockProducer.errorNext(e);
 
-        Mockito.verify(logger).error(startsWith("Failed to send data "), any(ConnectionStatusMessage.class), any(SerializationException.class));
+        verifyErrorLogStartsWith("Failed to send data ", logCaptor);
     }
 
     @Test
@@ -254,11 +262,12 @@ class KafkaStreamerTest {
         mockProducer.close();
 
         recordPublisher.next(record1);
-        Mockito.verify(logger).error(startsWith("Error while sending data "), any(AiidaRecord.class), any(IllegalStateException.class));
 
+        verifyErrorLogStartsWith("Error while sending data ", logCaptor, IllegalStateException.class);
+        logCaptor.clearLogs();
 
         statusMessagePublisher.next(statusMessage1);
-        Mockito.verify(logger).error(startsWith("Error while sending data "), any(ConnectionStatusMessage.class), any(IllegalStateException.class));
+        verifyErrorLogStartsWith("Error while sending data ", logCaptor, IllegalStateException.class);
     }
 
     @Test
@@ -275,8 +284,8 @@ class KafkaStreamerTest {
         recordPublisher.next(record1);
 
         streamer.close();
-        Mockito.verify(logger).error(eq("Error while shutting down KafkaStreamer for permission {}"),
-                anyString(), any(KafkaException.class));
+        verifyErrorLogStartsWith("Error while shutting down KafkaStreamer for permission ", logCaptor,
+                KafkaException.class, "Expected by test case");
     }
 
     @Test
@@ -347,7 +356,8 @@ class KafkaStreamerTest {
             recordPublisher.next(record2);
             recordPublisher.next(record3);
             assertEquals(1, mockProducer.history().size());
-            verify(logger, times(2)).debug("Got new aiidaRecord but won't send it as a termination request has been received.");
+            assertThat(logCaptor.getDebugLogs())
+                    .containsAll(Collections.nCopies(2, "Got new aiidaRecord but won't send it as a termination request has been received."));
         }
     }
 
@@ -372,16 +382,10 @@ class KafkaStreamerTest {
 
             streamer.close();
 
-            /* This verification fails, because somehow, when using the logger mock, the WARN log message is not logged
-               and therefore, the verify(logger) call fails. However, when running the test without the logger mock, the
-               WARN log message is correctly output to the console. Test coverage also shows, that the line is covered.
-               I assume that this is because the WARN log message is produced in another thread and the
-               slf4j2-mock implementation fails to properly mock it?
-             */
-            //verify(logger).warn("Got request from EP to terminate permission {} but they supplied wrong connectionId. Expected {}, but got {}",
-            //        permission.permissionId(), permission.connectionId(), invalidConnectionId);
+            assertThat(logCaptor.getWarnLogs()).contains("Got request from EP to terminate permission %s but they supplied wrong connectionId. Expected %s, but got %s"
+                    .formatted(permission.permissionId(), permission.connectionId(), invalidConnectionId));
 
-            // instead verify the side effect, that no permissionId is published on the Mono
+            // verify the side effect, that no permissionId is published on the Mono
             StepVerifier.create(terminationRequestSink.asMono())
                     .verifyComplete();
         }
