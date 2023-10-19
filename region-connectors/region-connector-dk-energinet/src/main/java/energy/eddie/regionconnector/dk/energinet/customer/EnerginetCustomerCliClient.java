@@ -46,7 +46,7 @@ public class EnerginetCustomerCliClient {
         String refreshToken = cliProperties.getProperty(REFRESH_TOKEN_KEY, "");
 
         while (refreshToken.isBlank()) {
-            System.out.println("Please provide your API refresh token");
+            LOGGER.info("Please provide your API refresh token");
             refreshToken = scanner.nextLine();
         }
 
@@ -55,7 +55,7 @@ public class EnerginetCustomerCliClient {
         String meteringPointId = cliProperties.getProperty(METERING_POINT_KEY, "");
 
         while (meteringPointId.isBlank()) {
-            System.out.println("Please enter your metering point id");
+            LOGGER.info("Please enter your metering point id");
             meteringPointId = scanner.nextLine();
         }
 
@@ -68,17 +68,17 @@ public class EnerginetCustomerCliClient {
             meteringPointsRequest = new MeteringPointsRequest().meteringPoints(meteringPoints);
 
             while (start.equals(reference)) {
-                System.out.println("Please enter the date from data should be retrieved (YYYY-MM-DD)");
+                LOGGER.info("Please enter the date from data should be retrieved (YYYY-MM-DD)");
                 start = DateTimeConverter.isoDateToZonedDateTime(scanner.nextLine(), DK_ZONE_ID);
             }
             while (end.equals(reference)) {
-                System.out.println("Please enter the date until data should be retrieved (YYYY-MM-DD)");
+                LOGGER.info("Please enter the date until data should be retrieved (YYYY-MM-DD)");
                 end = DateTimeConverter.isoDateToZonedDateTime(scanner.nextLine(), DK_ZONE_ID);
             }
 
             String aggregation = "";
             while (aggregation.isBlank()) {
-                System.out.println("Please enter your preferred aggregation [0 = Actual]");
+                LOGGER.info("Please enter your preferred aggregation [0 = Actual]");
                 aggregation = scanner.nextLine();
             }
 
@@ -91,7 +91,7 @@ public class EnerginetCustomerCliClient {
 
             var timeSeries = apiClient.getTimeSeries(start, end, periodResolutionEnum, meteringPointsRequest);
             LOGGER.info("Consumption Record received.");
-            LOGGER.info(timeSeries.toString(), timeSeries);
+            LOGGER.info("{}", timeSeries);
 
         } catch (FeignException feignException) {
             if (feignException.status() == 401) {
