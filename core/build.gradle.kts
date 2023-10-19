@@ -133,3 +133,5 @@ tasks.withType<JavaCompile>().configureEach {
         }
     }
 }
+
+tasks["installDist"].dependsOn(":pnpmBuild")
