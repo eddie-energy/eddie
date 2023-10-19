@@ -14,34 +14,32 @@ class PermissionRequestForm extends LitElement {
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
     _requestId: { type: String },
     _requestStatus: { type: String },
-    _isSubmitHidden: { type: Boolean },
   };
-  
+
   intervalId = null;
-  
+
   constructor() {
     super();
-    
+
     this._requestStatus = "";
     this._isSubmitDisabled = false;
-    this._isSubmitHidden = false;
   }
-  
+
   permissionId = null;
 
   handleSubmit(event) {
     this._isSubmitDisabled = true;
     event.preventDefault();
-    
+
     const formData = new FormData(event.target);
     formData.append("connectionId", this.connectionId);
     formData.append("periodResolution", this.dataNeedAttributes.granularity);
-    
+
     const startDate = new Date();
     startDate.setDate(
       startDate.getDate() + this.dataNeedAttributes.durationStart
     );
-    
+
     let endDate;
     if (this.dataNeedAttributes.durationEnd === 0) {
       endDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -49,10 +47,10 @@ class PermissionRequestForm extends LitElement {
       endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + this.dataNeedAttributes.durationEnd);
     }
-    
+
     formData.append("start", startDate.toISOString().substring(0, 10));
     formData.append("end", endDate.toISOString().substring(0, 10));
-    
+
     fetch(REQUEST_URL, {
       body: formData,
       method: "POST",
@@ -60,7 +58,7 @@ class PermissionRequestForm extends LitElement {
       .then((response) => response.json())
       .then((result) => {
         this.permissionId = result["permissionId"];
-        
+
         this.requestPermissionStatus(this.permissionId);
         this.intervalId = setInterval(
           this.requestPermissionStatus(this.permissionId),
@@ -72,7 +70,7 @@ class PermissionRequestForm extends LitElement {
         console.error(error);
       });
   }
-  
+
   requestPermissionStatus(permissionId) {
     return () => {
       fetch(BASE_URL + "permission-status?permissionId=" + permissionId)
@@ -80,7 +78,7 @@ class PermissionRequestForm extends LitElement {
           if (!response.ok) {
             throw new Error("HTTP status " + response.status);
           }
-          
+
           return response.json();
         })
         .then((result) => {
@@ -97,9 +95,9 @@ class PermissionRequestForm extends LitElement {
             currentStatus === "SENT_TO_PERMISSION_ADMINISTRATOR" ||
             currentStatus === "RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE"
           ) {
-            this._isSubmitHidden = true;
+            this._isSubmitDisabled = true;
           }
-          
+
           this._requestStatus = currentStatus;
         })
         .catch((error) => console.error(error));
@@ -129,7 +127,6 @@ class PermissionRequestForm extends LitElement {
           <br />
           <sl-button
             .disabled="${this._isSubmitDisabled}"
-            ?hidden="${this._isSubmitHidden}"
             type="submit"
             variant="primary"
           >
