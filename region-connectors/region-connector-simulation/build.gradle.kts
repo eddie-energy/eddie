@@ -4,6 +4,7 @@ import java.util.*
 
 plugins {
     id("energy.eddie.java-conventions")
+    id("energy.eddie.custom-element-js")
     id("org.gradlex.extra-java-module-info") version "1.3"
 }
 

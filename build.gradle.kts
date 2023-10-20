@@ -43,5 +43,3 @@ tasks.register<PnpmTask>("pnpmBuild") {
     dependsOn("pnpmInstall")
     pnpmCommand.set(listOf("run", "build"))
 }
-
-tasks["build"].dependsOn(":pnpmBuild")

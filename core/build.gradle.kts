@@ -5,6 +5,7 @@ import java.util.*
 plugins {
     application
     id("energy.eddie.java-conventions")
+    id("energy.eddie.custom-element-js")
     id("org.gradlex.extra-java-module-info") version "1.3"
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
@@ -133,5 +134,3 @@ tasks.withType<JavaCompile>().configureEach {
         }
     }
 }
-
-tasks["installDist"].dependsOn(":pnpmBuild")
