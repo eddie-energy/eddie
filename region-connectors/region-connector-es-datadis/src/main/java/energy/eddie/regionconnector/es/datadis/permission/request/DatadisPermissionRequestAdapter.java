@@ -34,6 +34,11 @@ public final class DatadisPermissionRequestAdapter implements EsPermissionReques
     }
 
     @Override
+    public String dataNeedId() {
+        return esPermissionRequest.dataNeedId();
+    }
+
+    @Override
     public PermissionRequestState state() {
         return esPermissionRequest.state();
     }

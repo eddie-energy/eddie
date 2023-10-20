@@ -69,7 +69,7 @@ class DatadisPermissionRequestTest {
 
         AuthorizationApi api = mock(AuthorizationApi.class);
         DatadisPermissionRequest request = new DatadisPermissionRequest(
-                "connectionId", ctx, api, mock(AuthorizationResponseHandler.class)
+                "connectionId", "dataNeedId", ctx, api, mock(AuthorizationResponseHandler.class)
         );
 
         assertNotNull(request.permissionId());
@@ -82,6 +82,7 @@ class DatadisPermissionRequestTest {
         Context ctx = mock(Context.class);
         when(ctx.formParamAsClass(anyString(), any())).thenReturn(nullValidator);
         when(ctx.formParam(CONNECTION_ID_KEY)).thenReturn(expectedConnectionId);
+        when(ctx.formParam(DATA_NEED_ID_KEY)).thenReturn("dataNeedId");
         AuthorizationApi api = mock(AuthorizationApi.class);
         DatadisPermissionRequest request = new DatadisPermissionRequest(
                 ctx, api, mock(AuthorizationResponseHandler.class)
@@ -93,7 +94,7 @@ class DatadisPermissionRequestTest {
     @Test
     void base_constructor_WithNullArguments_ThrowsNullPointerException() {
         assertThrows(NullPointerException.class, () -> new DatadisPermissionRequest(
-                null, null, null, null
+                null, null, null, null, null
         ));
     }
 
@@ -120,10 +121,26 @@ class DatadisPermissionRequestTest {
         AuthorizationApi api = mock(AuthorizationApi.class);
 
         DatadisPermissionRequest request = new DatadisPermissionRequest(
-                "connectionId", ctx, api, mock(AuthorizationResponseHandler.class)
+                "connectionId", "dataNeedId", ctx, api, mock(AuthorizationResponseHandler.class)
         );
 
         assertEquals(expectedNif, request.nif());
+    }
+
+    @Test
+    void dataNeedId_Comes_From_Context() {
+        var expectedDataNeedId = "dataNeedId";
+        Context ctx = mock(Context.class);
+        when(ctx.formParam(DATA_NEED_ID_KEY)).thenReturn(expectedDataNeedId);
+        when(ctx.formParam(CONNECTION_ID_KEY)).thenReturn("connectionID");
+        when(ctx.formParamAsClass(anyString(), any())).thenReturn(nullValidator);
+        AuthorizationApi api = mock(AuthorizationApi.class);
+
+        DatadisPermissionRequest request = new DatadisPermissionRequest(
+                ctx, api, mock(AuthorizationResponseHandler.class)
+        );
+
+        assertEquals(expectedDataNeedId, request.dataNeedId());
     }
 
     @Test
@@ -135,7 +152,7 @@ class DatadisPermissionRequestTest {
         AuthorizationApi api = mock(AuthorizationApi.class);
 
         DatadisPermissionRequest request = new DatadisPermissionRequest(
-                "connectionId", ctx, api, mock(AuthorizationResponseHandler.class)
+                "connectionId", "dataNeedId", ctx, api, mock(AuthorizationResponseHandler.class)
         );
 
         assertEquals(expectedMetringPointId, request.meteringPointId());
@@ -152,7 +169,7 @@ class DatadisPermissionRequestTest {
         AuthorizationApi api = mock(AuthorizationApi.class);
 
         DatadisPermissionRequest request = new DatadisPermissionRequest(
-                "connectionId", ctx, api, mock(AuthorizationResponseHandler.class)
+                "connectionId", "dataNeedId", ctx, api, mock(AuthorizationResponseHandler.class)
         );
 
         assertEquals(expected, request.requestDataFrom());
@@ -169,7 +186,7 @@ class DatadisPermissionRequestTest {
         AuthorizationApi api = mock(AuthorizationApi.class);
 
         DatadisPermissionRequest request = new DatadisPermissionRequest(
-                "connectionId", ctx, api, mock(AuthorizationResponseHandler.class)
+                "connectionId", "dataNeedId", ctx, api, mock(AuthorizationResponseHandler.class)
         );
 
         assertEquals(expected, request.requestDataTo());
@@ -186,7 +203,7 @@ class DatadisPermissionRequestTest {
         AuthorizationApi api = mock(AuthorizationApi.class);
 
         DatadisPermissionRequest request = new DatadisPermissionRequest(
-                "connectionId", ctx, api, mock(AuthorizationResponseHandler.class)
+                "connectionId", "dataNeedId", ctx, api, mock(AuthorizationResponseHandler.class)
         );
 
         assertEquals(expected, request.measurementType());
@@ -203,7 +220,7 @@ class DatadisPermissionRequestTest {
         AuthorizationApi api = mock(AuthorizationApi.class);
 
         DatadisPermissionRequest request = new DatadisPermissionRequest(
-                "connectionId", ctx, api, mock(AuthorizationResponseHandler.class)
+                "connectionId", "dataNeedId", ctx, api, mock(AuthorizationResponseHandler.class)
         );
 
         assertEquals(request.requestDataTo(), request.permissionEnd());
@@ -220,7 +237,7 @@ class DatadisPermissionRequestTest {
         AuthorizationApi api = mock(AuthorizationApi.class);
 
         DatadisPermissionRequest request = new DatadisPermissionRequest(
-                "connectionId", ctx, api, mock(AuthorizationResponseHandler.class)
+                "connectionId", "dataNeedId", ctx, api, mock(AuthorizationResponseHandler.class)
         );
 
         assertEquals(request.permissionStart(), request.permissionEnd());

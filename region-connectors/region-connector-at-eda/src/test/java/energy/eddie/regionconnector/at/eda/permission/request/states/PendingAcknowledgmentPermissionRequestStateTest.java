@@ -21,7 +21,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("conversationId");
-        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, edaAdapter);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 

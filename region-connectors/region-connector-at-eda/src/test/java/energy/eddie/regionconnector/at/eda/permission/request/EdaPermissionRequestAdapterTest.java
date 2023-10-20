@@ -16,7 +16,7 @@ class EdaPermissionRequestAdapterTest {
     @Test
     void adapter_returnsPermissionId() {
         // Given
-        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", null);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", null);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
 
@@ -30,7 +30,7 @@ class EdaPermissionRequestAdapterTest {
     @Test
     void adapter_returnsConnectionId() {
         // Given
-        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", null);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", null);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
 
@@ -44,7 +44,7 @@ class EdaPermissionRequestAdapterTest {
     @Test
     void adapter_returnsCmRequestId() {
         // Given
-        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", null);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", null);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
 
@@ -56,9 +56,23 @@ class EdaPermissionRequestAdapterTest {
     }
 
     @Test
+    void adapter_returnsDataNeedId() {
+        // Given
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", null);
+        PermissionRequest decorator = new ThrowingPermissionRequest(request);
+        EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
+
+        // When
+        var dataNeedId = adapter.dataNeedId();
+
+        // Then
+        assertEquals("dataNeedId", dataNeedId);
+    }
+
+    @Test
     void adapter_returnsConversationId() {
         // Given
-        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", null);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", null);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
 
@@ -73,7 +87,7 @@ class EdaPermissionRequestAdapterTest {
     void adapter_returnsState() {
         // Given
         AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
-        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", state);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", state);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
 
@@ -88,7 +102,7 @@ class EdaPermissionRequestAdapterTest {
     void adapter_changesState() {
         // Given
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        AtPermissionRequest permissionRequest = new EdaPermissionRequest("cid", ccmoRequest, null);
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("cid", "dataNeedId", ccmoRequest, null);
         AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
         PermissionRequest decorator = new ThrowingPermissionRequest(permissionRequest);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(permissionRequest, decorator);
@@ -104,7 +118,7 @@ class EdaPermissionRequestAdapterTest {
     void validateCallsDecorator() {
         // Given
         AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
-        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", state);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", state);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
 
@@ -117,7 +131,7 @@ class EdaPermissionRequestAdapterTest {
     void sendToPermissionAdministratorCallsDecorator() {
         // Given
         AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
-        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", state);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", state);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
 
@@ -130,7 +144,7 @@ class EdaPermissionRequestAdapterTest {
     void receivedPermissionAdministratorResponseCallsDecorator() {
         // Given
         AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
-        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", state);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", state);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
 
@@ -143,7 +157,7 @@ class EdaPermissionRequestAdapterTest {
     void terminateCallsDecorator() {
         // Given
         AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
-        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", state);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", state);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
 
@@ -156,7 +170,7 @@ class EdaPermissionRequestAdapterTest {
     void acceptCallsDecorator() {
         // Given
         AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
-        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", state);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", state);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
 
@@ -169,7 +183,7 @@ class EdaPermissionRequestAdapterTest {
     void invalidCallsDecorator() {
         // Given
         AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
-        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", state);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", state);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
 
@@ -182,7 +196,7 @@ class EdaPermissionRequestAdapterTest {
     void rejectedCallsDecorator() {
         // Given
         AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
-        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", state);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", state);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
 
@@ -195,7 +209,7 @@ class EdaPermissionRequestAdapterTest {
     void adapter_equalsReturnsTrueForPermissionRequest() {
         // Given
         AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
-        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", state);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", state);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
 
@@ -210,7 +224,7 @@ class EdaPermissionRequestAdapterTest {
     void adapter_equalsReturnsFalse() {
         // Given
         AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
-        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", state);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", state);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
 
@@ -225,7 +239,7 @@ class EdaPermissionRequestAdapterTest {
     void adapter_hashCodeIsEqualToPermissionRequestHashCode() {
         // Given
         AtInvalidPermissionRequestState state = new AtInvalidPermissionRequestState(null);
-        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "cmId", "conversationId", state);
+        AtPermissionRequest request = new SimplePermissionRequest("pid", "cid", "dataNeedId", "cmId", "conversationId", state);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         EdaPermissionRequestAdapter adapter = new EdaPermissionRequestAdapter(request, decorator);
 
@@ -246,6 +260,11 @@ class EdaPermissionRequestAdapterTest {
         @Override
         public String connectionId() {
             return request.connectionId();
+        }
+
+        @Override
+        public String dataNeedId() {
+            return request.dataNeedId();
         }
 
         @Override

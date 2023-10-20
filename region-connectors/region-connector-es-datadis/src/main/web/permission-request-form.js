@@ -22,6 +22,7 @@ class PermissionRequestForm extends LitElement {
   };
 
   intervalId = null;
+  permissionId = null;
 
   constructor() {
     super();
@@ -31,8 +32,6 @@ class PermissionRequestForm extends LitElement {
     this._isSubmitHidden = false;
     this._areResponseButtonsDisabled = false;
   }
-
-  permissionId = null;
 
   handleSubmit(event) {
     this._isSubmitDisabled = true;
@@ -56,6 +55,7 @@ class PermissionRequestForm extends LitElement {
 
     formData.append("start", startDate.toISOString().substring(0, 10));
     formData.append("end", endDate.toISOString().substring(0, 10));
+    formData.append("dataNeedId", this.dataNeedAttributes.id);
 
     fetch(REQUEST_URL, {
       body: formData,

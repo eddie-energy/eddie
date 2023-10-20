@@ -14,15 +14,17 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     private final String permissionId;
     private final String cmRequestId;
     private final String conversationId;
+    private final String dataNeedId;
     private PermissionRequestState state;
 
-    public EdaPermissionRequest(String connectionId, CCMORequest ccmoRequest, EdaAdapter edaAdapter) {
-        this(connectionId, UUID.randomUUID().toString(), ccmoRequest, edaAdapter);
+    public EdaPermissionRequest(String connectionId, String dataNeedId, CCMORequest ccmoRequest, EdaAdapter edaAdapter) {
+        this(connectionId, UUID.randomUUID().toString(), dataNeedId, ccmoRequest, edaAdapter);
     }
 
-    public EdaPermissionRequest(String connectionId, String permissionId, CCMORequest ccmoRequest, EdaAdapter edaAdapter) {
+    public EdaPermissionRequest(String connectionId, String permissionId, String dataNeedId, CCMORequest ccmoRequest, EdaAdapter edaAdapter) {
         this.connectionId = connectionId;
         this.permissionId = permissionId;
+        this.dataNeedId = dataNeedId;
         this.cmRequestId = ccmoRequest.cmRequestId();
         this.conversationId = ccmoRequest.messageId();
         this.state = new AtCreatedPermissionRequestState(this, ccmoRequest, edaAdapter);
@@ -36,6 +38,11 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     @Override
     public String connectionId() {
         return connectionId;
+    }
+
+    @Override
+    public String dataNeedId() {
+        return dataNeedId;
     }
 
     @Override
@@ -66,6 +73,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
 
         if (!Objects.equals(connectionId, that.connectionId())) return false;
         if (!Objects.equals(permissionId, that.permissionId())) return false;
+        if (!Objects.equals(dataNeedId, that.dataNeedId())) return false;
         if (!Objects.equals(cmRequestId, that.cmRequestId())) return false;
         if (!Objects.equals(conversationId, that.conversationId())) return false;
         return Objects.equals(state.getClass(), that.state().getClass());
@@ -75,6 +83,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     public int hashCode() {
         int result = connectionId != null ? connectionId.hashCode() : 0;
         result = 31 * result + (permissionId != null ? permissionId.hashCode() : 0);
+        result = 31 * result + (dataNeedId != null ? dataNeedId.hashCode() : 0);
         result = 31 * result + (cmRequestId != null ? cmRequestId.hashCode() : 0);
         result = 31 * result + (conversationId != null ? conversationId.hashCode() : 0);
         result = 31 * result + (state != null ? state.getClass().hashCode() : 0);

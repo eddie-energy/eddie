@@ -29,10 +29,11 @@ class PermissionRequestFactoryTest {
         PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(edaAdapterMock, permissionStateMessages, permissionRequestRepository);
 
         String connectionId = "connection123";
+        String dataNeedId = "dataNeedId";
         CCMORequest ccmoRequest = mock(CCMORequest.class);
 
         // When
-        PermissionRequest permissionRequest = permissionRequestFactory.create(connectionId, ccmoRequest);
+        PermissionRequest permissionRequest = permissionRequestFactory.create(connectionId, dataNeedId, ccmoRequest);
 
         // Then
         assertNotNull(permissionRequest);
@@ -47,10 +48,11 @@ class PermissionRequestFactoryTest {
         PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(edaAdapterMock, permissionStateMessages, permissionRequestRepository);
 
         String connectionId = "connection123";
+        String dataNeedId = "dataNeedId";
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        AtPermissionRequest permissionRequest = permissionRequestFactory.create(connectionId, ccmoRequest);
+        AtPermissionRequest permissionRequest = permissionRequestFactory.create(connectionId, dataNeedId, ccmoRequest);
         permissionRequestRepository.removeByPermissionId(permissionRequest.permissionId());
 
         // When
@@ -70,10 +72,11 @@ class PermissionRequestFactoryTest {
         PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(edaAdapterMock, permissionStateMessages, permissionRequestRepository);
 
         String connectionId = "connection123";
+        String dataNeedId = "dataNeedId";
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        AtPermissionRequest permissionRequest = permissionRequestFactory.create(connectionId, ccmoRequest);
+        AtPermissionRequest permissionRequest = permissionRequestFactory.create(connectionId, dataNeedId, ccmoRequest);
 
         // When
         permissionRequest.validate();

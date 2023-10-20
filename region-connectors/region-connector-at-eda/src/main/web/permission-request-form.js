@@ -46,6 +46,7 @@ class PermissionRequestForm extends LitElement {
 
     formData.append("start", startDate.toISOString().substring(0, 10));
     formData.append("end", endDate.toISOString().substring(0, 10));
+    formData.append("dataNeedId", this.dataNeedAttributes.id);
 
     fetch(REQUEST_URL, {
       body: formData,
@@ -128,9 +129,9 @@ class PermissionRequestForm extends LitElement {
             </p>
 
             ${this.jumpOffUrl
-              ? html`<sl-button href="${this.jumpOffUrl}" target="_blank"
-                  >Visit permission administrator website</sl-button
-                >`
+              ? html` <sl-button href="${this.jumpOffUrl}" target="_blank">
+                  Visit permission administrator website
+                </sl-button>`
               : ""}
           </sl-alert>`}
       </div>

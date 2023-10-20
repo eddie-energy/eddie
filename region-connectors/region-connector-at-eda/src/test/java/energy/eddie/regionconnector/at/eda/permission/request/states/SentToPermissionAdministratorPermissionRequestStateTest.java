@@ -19,7 +19,7 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
         AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 
@@ -36,7 +36,7 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
         AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 
@@ -53,7 +53,7 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
         AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 

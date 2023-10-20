@@ -15,15 +15,20 @@ import java.time.ZonedDateTime;
 
 public class ConnectionStatusHandler {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusHandler.class);
     @Nullable
     private static ConnectionStatusHandler singleton;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusHandler.class);
+    private final Sinks.Many<ConnectionStatusMessage> connectionStatusStreamSink = Sinks.many().multicast().onBackpressureBuffer();
 
     private ConnectionStatusHandler() {
     }
 
-    private final Sinks.Many<ConnectionStatusMessage> connectionStatusStreamSink = Sinks.many().multicast().onBackpressureBuffer();
+    public static synchronized ConnectionStatusHandler instance() {
+        if (null == singleton) {
+            ConnectionStatusHandler.singleton = new ConnectionStatusHandler();
+        }
+        return ConnectionStatusHandler.singleton;
+    }
 
     public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
         return connectionStatusStreamSink.asFlux();
@@ -36,11 +41,8 @@ public class ConnectionStatusHandler {
             var req = ctx.bodyAsClass(SetConnectionStatusRequest.class);
             LOGGER.info("Changing connection status of {} to {}", req.connectionId, req.connectionStatus);
             var now = ZonedDateTime.now(ZoneId.systemDefault());
-            if (null == connectionStatusStreamSink) {
-                throw new IllegalStateException("connectionStatusStreamSink not initialized yet");
-            }
-            if (null != req.connectionId && null != req.connectionStatus) {
-                connectionStatusStreamSink.tryEmitNext(new ConnectionStatusMessage(req.connectionId, req.connectionId, now, req.connectionStatus, req.connectionStatus.toString()));
+            if (req.connectionId != null && req.connectionStatus != null && req.dataNeedId != null) {
+                connectionStatusStreamSink.tryEmitNext(new ConnectionStatusMessage(req.connectionId, req.connectionId, req.dataNeedId, now, req.connectionStatus, req.connectionStatus.toString()));
             } else {
                 ctx.status(HttpStatus.BAD_REQUEST);
             }
@@ -51,13 +53,8 @@ public class ConnectionStatusHandler {
         @Nullable
         public String connectionId;
         @Nullable
+        public String dataNeedId;
+        @Nullable
         public PermissionProcessStatus connectionStatus;
-    }
-
-    public static synchronized ConnectionStatusHandler instance() {
-        if (null == singleton) {
-            ConnectionStatusHandler.singleton = new ConnectionStatusHandler();
-        }
-        return ConnectionStatusHandler.singleton;
     }
 }
