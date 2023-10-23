@@ -17,6 +17,9 @@ public class AiidaRecordFactory {
         RECORD_MAP.put("1-0:2.8.0", IntegerAiidaRecord.class);
         RECORD_MAP.put("1-0:1.7.0", IntegerAiidaRecord.class);
         RECORD_MAP.put("1-0:2.7.0", IntegerAiidaRecord.class);
+        RECORD_MAP.put("0-0:96.1.0", StringAiidaRecord.class);
+        RECORD_MAP.put("0-0:1.0.0", IntegerAiidaRecord.class);
+        RECORD_MAP.put("0-0:2.0.0", IntegerAiidaRecord.class);
     }
 
     private AiidaRecordFactory() {
