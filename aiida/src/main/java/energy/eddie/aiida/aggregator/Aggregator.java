@@ -32,7 +32,12 @@ public class Aggregator implements AutoCloseable {
         LOGGER.info("Will add datasource {} to aggregator", dataSource.name());
 
         sources.add(dataSource);
-        dataSource.start().subscribe(this::publishRecordToCombinedFlux);
+        dataSource.start().subscribe(this::publishRecordToCombinedFlux, throwable -> handleError(throwable, dataSource));
+    }
+
+    private void handleError(Throwable throwable, AiidaDataSource dataSource) {
+        // TODO: do we try to restart the affected datasource or only notify user?
+        LOGGER.error("Error from datasource {}", dataSource.name(), throwable);
     }
 
     private void publishRecordToCombinedFlux(AiidaRecord data) {
