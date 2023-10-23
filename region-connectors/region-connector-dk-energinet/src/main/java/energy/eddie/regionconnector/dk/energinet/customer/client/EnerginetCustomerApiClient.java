@@ -21,6 +21,8 @@ import java.util.UUID;
 
 public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     private static final String IS_ALIVE_API = "isAliveApi";
+    // Request period must not exceed the maximum number of days of 730
+    private static final int MAX_REQUEST_PERIOD = 730;
     private final ApiClient apiClient;
     private final TokenApi tokenApi;
     private final MeterDataApi meterDataApi;
@@ -47,6 +49,9 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
         }
         if (end.toLocalDate().isEqual(currentDate) || end.toLocalDate().isAfter(currentDate)) {
             throw new DateTimeException("The end date parameter must be earlier than the current date.");
+        }
+        if (start.plusDays(MAX_REQUEST_PERIOD).isBefore(end)) {
+            throw new DateTimeException("Request period exceeds the maximum number of days (" + MAX_REQUEST_PERIOD + ").");
         }
     }
 
