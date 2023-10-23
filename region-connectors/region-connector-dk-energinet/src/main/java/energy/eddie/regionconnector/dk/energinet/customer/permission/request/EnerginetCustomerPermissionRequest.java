@@ -17,6 +17,7 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
     public static final String REFRESH_TOKEN_KEY = "refreshToken";
     public static final String PERIOD_RESOLUTION_KEY = "periodResolution";
     public static final String METERING_POINT_KEY = "meteringPoint";
+    private static final String DATA_NEED_ID = "dataNeedId";
 
     private final String permissionId;
     private final String connectionId;
@@ -24,12 +25,14 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
     private final ZonedDateTime end;
     private final String refreshToken;
     private final String meteringPoint;
+    private final String dataNeedId;
     private final PeriodResolutionEnum periodResolution;
     private PermissionRequestState state;
 
-    public EnerginetCustomerPermissionRequest(String permissionId, String connectionId, Context ctx, EnerginetConfiguration configuration) {
+    public EnerginetCustomerPermissionRequest(String permissionId, String connectionId, String dataNeedId, Context ctx, EnerginetConfiguration configuration) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
+        this.dataNeedId = dataNeedId;
         this.state = new EnerginetCustomerCreatedState(this, ctx, configuration);
         this.start = ctx.formParamAsClass(START_KEY, ZonedDateTime.class).getOrDefault(null);
         this.end = ctx.formParamAsClass(END_KEY, ZonedDateTime.class).getOrDefault(null);
@@ -38,12 +41,12 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
         this.periodResolution = ctx.formParamAsClass(PERIOD_RESOLUTION_KEY, PeriodResolutionEnum.class).getOrDefault(null);
     }
 
-    public EnerginetCustomerPermissionRequest(String connectionId, Context ctx, EnerginetConfiguration configuration) {
-        this(UUID.randomUUID().toString(), connectionId, ctx, configuration);
+    public EnerginetCustomerPermissionRequest(String connectionId, String dataNeedId, Context ctx, EnerginetConfiguration configuration) {
+        this(UUID.randomUUID().toString(), connectionId, dataNeedId, ctx, configuration);
     }
 
     public EnerginetCustomerPermissionRequest(Context ctx, EnerginetConfiguration configuration) {
-        this(ctx.formParam(CONNECTION_ID), ctx, configuration);
+        this(ctx.formParam(CONNECTION_ID), ctx.formParam(DATA_NEED_ID), ctx, configuration);
     }
 
     @Override
@@ -54,6 +57,11 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
     @Override
     public String connectionId() {
         return connectionId;
+    }
+
+    @Override
+    public String dataNeedId() {
+        return dataNeedId;
     }
 
     @Override

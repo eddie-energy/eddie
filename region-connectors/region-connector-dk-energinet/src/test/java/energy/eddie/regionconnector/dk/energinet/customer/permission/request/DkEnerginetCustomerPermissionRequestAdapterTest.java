@@ -26,7 +26,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     @Test
     void adapter_returnsPermissionId() {
         // Given
-        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
+        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         PermissionRequest decorator = new ChangingPermissionRequest(request);
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);
 
@@ -40,7 +40,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     @Test
     void adapter_returnsConnectionId() {
         // Given
-        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
+        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         PermissionRequest decorator = new ChangingPermissionRequest(request);
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);
 
@@ -55,7 +55,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     void adapter_returnsStart() {
         // Given
         ZonedDateTime start = ZonedDateTime.now();
-        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", start, null);
+        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId", start, null);
         PermissionRequest decorator = new ChangingPermissionRequest(request);
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);
 
@@ -70,7 +70,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     void adapter_returnsEnd() {
         // Given
         ZonedDateTime end = ZonedDateTime.now();
-        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", null, end);
+        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId", null, end);
         PermissionRequest decorator = new ChangingPermissionRequest(request);
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);
 
@@ -85,7 +85,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     void adapter_returnsState() {
         // Given
         EnerginetCustomerMalformedState state = new EnerginetCustomerMalformedState(null, null);
-        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", null, null, state);
+        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId", null, null, state);
         PermissionRequest decorator = new ChangingPermissionRequest(request);
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);
 
@@ -125,7 +125,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     @Test
     void validateCallsDecorator() throws FutureStateException, PastStateException {
         // Given
-        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
+        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);
 
@@ -139,7 +139,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     @Test
     void sendToPermissionAdministratorCallsDecorator() throws FutureStateException, PastStateException {
         // Given
-        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
+        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);
 
@@ -153,7 +153,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     @Test
     void receivedPermissionAdministratorResponseCallsDecorator() throws FutureStateException, PastStateException {
         // Given
-        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
+        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);
 
@@ -167,7 +167,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     @Test
     void terminateCallsDecorator() throws FutureStateException, PastStateException {
         // Given
-        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
+        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);
 
@@ -181,7 +181,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     @Test
     void acceptCallsDecorator() throws FutureStateException, PastStateException {
         // Given
-        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
+        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);
 
@@ -195,7 +195,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     @Test
     void invalidCallsDecorator() throws FutureStateException, PastStateException {
         // Given
-        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
+        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);
 
@@ -209,7 +209,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     @Test
     void rejectedCallsDecorator() throws FutureStateException, PastStateException {
         // Given
-        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
+        DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);
 
@@ -236,6 +236,11 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
         @Override
         public String connectionId() {
             return request.connectionId();
+        }
+
+        @Override
+        public String dataNeedId() {
+            return request.dataNeedId();
         }
 
         @Override

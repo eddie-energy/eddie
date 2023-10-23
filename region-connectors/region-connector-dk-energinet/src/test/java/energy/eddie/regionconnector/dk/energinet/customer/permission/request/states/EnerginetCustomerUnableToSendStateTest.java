@@ -10,7 +10,7 @@ class EnerginetCustomerUnableToSendStateTest {
     @Test
     void testToString() {
         // Given
-        DkEnerginetCustomerPermissionRequest permissionRequest = new SimplePermissionRequest("pid", "cid");
+        DkEnerginetCustomerPermissionRequest permissionRequest = new SimplePermissionRequest("pid", "cid", "dataNeedId");
         Throwable throwable = new Throwable("Sample error message");
         EnerginetCustomerUnableToSendState unableToSendState = new EnerginetCustomerUnableToSendState(permissionRequest, throwable);
 

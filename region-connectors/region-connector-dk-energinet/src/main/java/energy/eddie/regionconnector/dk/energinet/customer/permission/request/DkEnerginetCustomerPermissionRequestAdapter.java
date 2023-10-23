@@ -29,6 +29,11 @@ public class DkEnerginetCustomerPermissionRequestAdapter implements DkEnerginetC
     }
 
     @Override
+    public String dataNeedId() {
+        return permissionRequest.dataNeedId();
+    }
+
+    @Override
     public PermissionRequestState state() {
         return permissionRequest.state();
     }

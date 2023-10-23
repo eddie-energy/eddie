@@ -18,6 +18,7 @@ import static org.mockito.Mockito.*;
 
 class EnerginetCustomerApiClientTest {
     private static final ZoneId DK_ZONE_ID = ZoneId.of("Europe/Copenhagen");
+    private static final int MAX_PERIOD = 730;
 
     @Test
     void isAlive_returnTrue() {
@@ -121,8 +122,10 @@ class EnerginetCustomerApiClientTest {
     @Test
     void getTimeSeries_asExpected() {
         // Given
-        var start = ZonedDateTime.of(LocalDate.of(2023, 1, 1).atStartOfDay(), DK_ZONE_ID);
-        var end = ZonedDateTime.of(LocalDate.of(2023, 2, 1).atStartOfDay(), DK_ZONE_ID);
+        var end = ZonedDateTime.of(LocalDate.now().minusDays(1).atStartOfDay(), DK_ZONE_ID);
+        var start = end.minusDays(1);
+        var startWithMaxPeriod = end.minusDays(MAX_PERIOD);
+
         var periodResolution = mock(PeriodResolutionEnum.class);
         var meteringPointsRequest = mock(MeteringPointsRequest.class);
         var client = mock(EnerginetCustomerApiClient.class);
@@ -131,6 +134,7 @@ class EnerginetCustomerApiClientTest {
         // When
         // Then
         assertDoesNotThrow(() -> client.getTimeSeries(start, end, periodResolution, meteringPointsRequest));
+        assertDoesNotThrow(() -> client.getTimeSeries(startWithMaxPeriod, end, periodResolution, meteringPointsRequest));
     }
 
     @Test
@@ -153,5 +157,22 @@ class EnerginetCustomerApiClientTest {
         assertThrows(DateTimeException.class, () -> client.getTimeSeries(start, today, periodResolution, meteringPointsRequest));
         assertThrows(DateTimeException.class, () -> client.getTimeSeries(today, today, periodResolution, meteringPointsRequest));
         assertThrows(DateTimeException.class, () -> client.getTimeSeries(start, start, periodResolution, meteringPointsRequest));
+    }
+
+    @Test
+    void getTimeSeries_invalidTimeFrame_exceedMaxPeriod_throws() {
+        // Given
+        var end = ZonedDateTime.of(LocalDate.now().minusDays(1).atStartOfDay(), DK_ZONE_ID);
+        var startExceedsMaxPeriod = end.minusDays(MAX_PERIOD + 1);
+        var periodResolution = mock(PeriodResolutionEnum.class);
+        var meteringPointsRequest = mock(MeteringPointsRequest.class);
+        var config = mock(PropertiesEnerginetConfiguration.class);
+        when(config.customerBasePath()).thenReturn("path");
+
+        var client = new EnerginetCustomerApiClient(config);
+
+        // When
+        // Then
+        assertThrows(DateTimeException.class, () -> client.getTimeSeries(startExceedsMaxPeriod, end, periodResolution, meteringPointsRequest));
     }
 }

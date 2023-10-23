@@ -23,6 +23,7 @@ class EnerginetCustomerPermissionRequestTest {
         // Given
         String permissionId = "testPermissionId";
         String connectionId = "testConnectionId";
+        String dataNeedId = "dataNeedId";
         EnerginetConfiguration configuration = mock(EnerginetConfiguration.class);
         Context ctx = mock(Context.class);
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.START_KEY, ZonedDateTime.class))
@@ -33,7 +34,7 @@ class EnerginetCustomerPermissionRequestTest {
                 .thenReturn(mock(Validator.class));
 
         // When
-        EnerginetCustomerPermissionRequest request = new EnerginetCustomerPermissionRequest(permissionId, connectionId, ctx, configuration);
+        EnerginetCustomerPermissionRequest request = new EnerginetCustomerPermissionRequest(permissionId, connectionId, dataNeedId, ctx, configuration);
 
         // Then
         assertEquals(permissionId, request.permissionId());
@@ -44,6 +45,7 @@ class EnerginetCustomerPermissionRequestTest {
         // Given
         String permissionId = "testPermissionId";
         String connectionId = "testConnectionId";
+        String dataNeedId = "dataNeedId";
         EnerginetConfiguration configuration = mock(EnerginetConfiguration.class);
         Context ctx = mock(Context.class);
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.START_KEY, ZonedDateTime.class))
@@ -54,7 +56,7 @@ class EnerginetCustomerPermissionRequestTest {
                 .thenReturn(mock(Validator.class));
 
         // When
-        EnerginetCustomerPermissionRequest request = new EnerginetCustomerPermissionRequest(permissionId, connectionId, ctx, configuration);
+        EnerginetCustomerPermissionRequest request = new EnerginetCustomerPermissionRequest(permissionId, connectionId, dataNeedId, ctx, configuration);
 
         // Then
         assertEquals(connectionId, request.connectionId());
@@ -64,6 +66,7 @@ class EnerginetCustomerPermissionRequestTest {
     void constructorWithoutPermissionId_generatesPermissionId() {
         // Given
         String connectionId = "testConnectionId";
+        String dataNeedId = "dataNeedId";
         EnerginetConfiguration configuration = mock(EnerginetConfiguration.class);
         Context ctx = mock(Context.class);
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.START_KEY, ZonedDateTime.class))
@@ -74,7 +77,7 @@ class EnerginetCustomerPermissionRequestTest {
                 .thenReturn(mock(Validator.class));
 
         // When
-        EnerginetCustomerPermissionRequest request = new EnerginetCustomerPermissionRequest(connectionId, ctx, configuration);
+        EnerginetCustomerPermissionRequest request = new EnerginetCustomerPermissionRequest(connectionId, dataNeedId, ctx, configuration);
 
         // Then
         assertNotNull(request.permissionId());
@@ -84,6 +87,7 @@ class EnerginetCustomerPermissionRequestTest {
     void constructorWithContextStart_setsStart() {
         // Given
         String connectionId = "testConnectionId";
+        String dataNeedId = "dataNeedId";
         EnerginetConfiguration configuration = mock(EnerginetConfiguration.class);
         Context ctx = mock(Context.class);
         Validator<ZonedDateTime> validator = mock(Validator.class);
@@ -97,7 +101,7 @@ class EnerginetCustomerPermissionRequestTest {
                 .thenReturn(mock(Validator.class));
 
         // When
-        EnerginetCustomerPermissionRequest request = new EnerginetCustomerPermissionRequest(connectionId, ctx, configuration);
+        EnerginetCustomerPermissionRequest request = new EnerginetCustomerPermissionRequest(connectionId, dataNeedId, ctx, configuration);
 
         // Then
         assertEquals(now, request.start());
@@ -107,6 +111,7 @@ class EnerginetCustomerPermissionRequestTest {
     void constructorWithContextEnd_setsEnd() {
         // Given
         String connectionId = "testConnectionId";
+        String dataNeedId = "dataNeedId";
         EnerginetConfiguration configuration = mock(EnerginetConfiguration.class);
         Context ctx = mock(Context.class);
         Validator<ZonedDateTime> validator = mock(Validator.class);
@@ -120,7 +125,7 @@ class EnerginetCustomerPermissionRequestTest {
                 .thenReturn(mock(Validator.class));
 
         // When
-        EnerginetCustomerPermissionRequest request = new EnerginetCustomerPermissionRequest(connectionId, ctx, configuration);
+        EnerginetCustomerPermissionRequest request = new EnerginetCustomerPermissionRequest(connectionId, dataNeedId, ctx, configuration);
 
         // Then
         assertEquals(now, request.end());
@@ -151,6 +156,8 @@ class EnerginetCustomerPermissionRequestTest {
     @Test
     void changeState_updatesState() {
         // Given
+        String connectionId = "testConnectionId";
+        String dataNeedId = "dataNeedId";
         EnerginetConfiguration configuration = mock(EnerginetConfiguration.class);
         Context ctx = mock(Context.class);
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.START_KEY, ZonedDateTime.class))
@@ -159,7 +166,7 @@ class EnerginetCustomerPermissionRequestTest {
                 .thenReturn(mock(Validator.class));
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.PERIOD_RESOLUTION_KEY, PeriodResolutionEnum.class))
                 .thenReturn(mock(Validator.class));
-        EnerginetCustomerPermissionRequest request = new EnerginetCustomerPermissionRequest("testConnectionId", ctx, configuration);
+        EnerginetCustomerPermissionRequest request = new EnerginetCustomerPermissionRequest(connectionId, dataNeedId, ctx, configuration);
         PermissionRequestState newState = new EnerginetCustomerMalformedState(request, Map.of());
 
         // When

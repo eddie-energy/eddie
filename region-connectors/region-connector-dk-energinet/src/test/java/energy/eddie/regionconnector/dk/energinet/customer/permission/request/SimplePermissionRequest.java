@@ -6,19 +6,25 @@ import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 
 import java.time.ZonedDateTime;
 
-public record SimplePermissionRequest(String permissionId, String connectionId, ZonedDateTime start, ZonedDateTime end,
+public record SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId, ZonedDateTime start,
+                                      ZonedDateTime end,
                                       PermissionRequestState state) implements DkEnerginetCustomerPermissionRequest {
-    public SimplePermissionRequest(String permissionId, String connectionId) {
-        this(permissionId, connectionId, null, null, null);
+    public SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId) {
+        this(permissionId, connectionId, dataNeedId, null, null, null);
     }
 
-    public SimplePermissionRequest(String permissionId, String connectionId, ZonedDateTime start, ZonedDateTime end) {
-        this(permissionId, connectionId, start, end, null);
+    public SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId, ZonedDateTime start, ZonedDateTime end) {
+        this(permissionId, connectionId, dataNeedId, start, end, null);
     }
 
     @Override
     public String connectionId() {
         return connectionId;
+    }
+
+    @Override
+    public String dataNeedId() {
+        return dataNeedId;
     }
 
     @Override

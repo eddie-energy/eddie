@@ -10,7 +10,7 @@ class EnerginetCustomerRejectedStateTest {
     @Test
     void constructor_doesNotThrow() {
         // Given
-        DkEnerginetCustomerPermissionRequest permissionRequest = new SimplePermissionRequest("pid", "cid");
+        DkEnerginetCustomerPermissionRequest permissionRequest = new SimplePermissionRequest("pid", "cid", "dataNeedId");
 
         // When
         // Then

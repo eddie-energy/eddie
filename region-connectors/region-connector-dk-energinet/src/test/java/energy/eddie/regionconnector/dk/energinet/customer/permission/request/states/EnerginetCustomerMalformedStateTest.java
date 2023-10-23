@@ -16,7 +16,7 @@ class EnerginetCustomerMalformedStateTest {
     @Test
     void toString_returnsErrorString() {
         // Given
-        DkEnerginetCustomerPermissionRequest permissionRequest = new SimplePermissionRequest("pid", "cid");
+        DkEnerginetCustomerPermissionRequest permissionRequest = new SimplePermissionRequest("pid", "cid", "dataNeedId");
         Map<String, List<ValidationError<?>>> errors = new HashMap<>();
         List<ValidationError<?>> errorList = new ArrayList<>();
         errorList.add(new ValidationError<>("Error message", Map.of("field", "errorField"), null));

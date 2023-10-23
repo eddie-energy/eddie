@@ -10,7 +10,7 @@ class EnerginetCustomerInvalidStateTest {
     @Test
     void invalidState_doesNotThrow() {
         // Given
-        DkEnerginetCustomerPermissionRequest timeframedPermissionRequest = new SimplePermissionRequest("pid", "cid");
+        DkEnerginetCustomerPermissionRequest timeframedPermissionRequest = new SimplePermissionRequest("pid", "cid", "dataNeedId");
         // When
         // Then
         assertDoesNotThrow(() -> new EnerginetCustomerInvalidState(timeframedPermissionRequest));

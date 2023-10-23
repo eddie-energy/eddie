@@ -64,6 +64,7 @@ class EnerginetRegionConnectorTest {
         SimplePermissionRequest request = new SimplePermissionRequest(
                 "pid",
                 "cid",
+                "dataNeedId",
                 ZonedDateTime.now(Clock.systemUTC()),
                 ZonedDateTime.now(Clock.systemUTC()),
                 new EnerginetCustomerAcceptedState(null)
@@ -88,6 +89,7 @@ class EnerginetRegionConnectorTest {
         SimplePermissionRequest request = new SimplePermissionRequest(
                 "pid",
                 "cid",
+                "dataNeedId",
                 ZonedDateTime.now(Clock.systemUTC()),
                 ZonedDateTime.now(Clock.systemUTC()),
                 new EnerginetCustomerInvalidState(null)

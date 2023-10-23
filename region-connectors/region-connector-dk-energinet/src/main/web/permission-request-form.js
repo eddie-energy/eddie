@@ -39,10 +39,10 @@ class PermissionRequestForm extends LitElement {
     startDate.setDate(
       startDate.getDate() + this.dataNeedAttributes.durationStart
     );
-
-    let endDate;
+    
+    let endDate = new Date();
     if (this.dataNeedAttributes.durationEnd === 0) {
-      endDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      endDate.setDate(endDate.getDate() - 1); // subtract one day by default
     } else {
       endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + this.dataNeedAttributes.durationEnd);
@@ -50,6 +50,7 @@ class PermissionRequestForm extends LitElement {
 
     formData.append("start", startDate.toISOString().substring(0, 10));
     formData.append("end", endDate.toISOString().substring(0, 10));
+    formData.append("dataNeedId", this.dataNeedAttributes.id);
 
     fetch(REQUEST_URL, {
       body: formData,

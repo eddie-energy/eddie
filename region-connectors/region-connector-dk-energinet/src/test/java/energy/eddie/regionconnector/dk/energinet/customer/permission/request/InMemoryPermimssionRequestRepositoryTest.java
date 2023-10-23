@@ -12,7 +12,7 @@ class InMemoryPermimssionRequestRepositoryTest {
     void givenNewRepository_whenSaveAndFindByPermissionId_thenPermissionRequestFound() {
         // Given
         InMemoryPermissionRequestRepository repository = new InMemoryPermissionRequestRepository();
-        var request = new SimplePermissionRequest("permissionId", "connectionId");
+        var request = new SimplePermissionRequest("permissionId", "connectionId", "dataNeedId");
 
         // When
         repository.save(request);
@@ -26,7 +26,7 @@ class InMemoryPermimssionRequestRepositoryTest {
     void givenRepositoryWithRequests_whenFindByPermissionIdNonExistent_thenNoRequestFound() {
         // Given
         InMemoryPermissionRequestRepository repository = new InMemoryPermissionRequestRepository();
-        var request = new SimplePermissionRequest("permissionId", "connectionId");
+        var request = new SimplePermissionRequest("permissionId", "connectionId", "dataNeedId");
         repository.save(request);
 
         // When
@@ -40,7 +40,7 @@ class InMemoryPermimssionRequestRepositoryTest {
     void givenRepositoryWithRequests_whenFindByPermissionIdNull_thenNoRequestFound() {
         // Given
         InMemoryPermissionRequestRepository repository = new InMemoryPermissionRequestRepository();
-        var request = new SimplePermissionRequest("permissionId", "connectionId");
+        var request = new SimplePermissionRequest("permissionId", "connectionId", "dataNeedId");
         repository.save(request);
 
         // When
@@ -54,8 +54,8 @@ class InMemoryPermimssionRequestRepositoryTest {
     void givenRepositoryWithMultipleRequests_whenFindByPermissionId_thenCorrectRequestsFound() {
         // Given
         var repository = new InMemoryPermissionRequestRepository();
-        var request1 = new SimplePermissionRequest("permissionId1", "connectionId1");
-        var request2 = new SimplePermissionRequest("permissionId2", "connectionId2");
+        var request1 = new SimplePermissionRequest("permissionId1", "connectionId1", "dataNeedId");
+        var request2 = new SimplePermissionRequest("permissionId2", "connectionId2", "dataNeedId");
         repository.save(request1);
         repository.save(request2);
 
@@ -63,14 +63,15 @@ class InMemoryPermimssionRequestRepositoryTest {
         Optional<DkEnerginetCustomerPermissionRequest> foundRequest1 = repository.findByPermissionId("permissionId1");
 
         // Then
-        assertEquals("connectionId1", foundRequest1.get().connectionId());
+        assertEquals("connectionId1", foundRequest1.orElseThrow().connectionId());
+        assertEquals("dataNeedId", foundRequest1.get().dataNeedId());
     }
 
     @Test
     void removeByPermissionId_withNonExistentKey_returnsFalse() {
         // Given
         var repository = new InMemoryPermissionRequestRepository();
-        var request = new SimplePermissionRequest("permissionId1", "connectionId1");
+        var request = new SimplePermissionRequest("permissionId1", "connectionId1", "dataNeedId");
         repository.save(request);
 
         // When
@@ -84,7 +85,7 @@ class InMemoryPermimssionRequestRepositoryTest {
     void removeByPermissionId_withExistingKey_returnsTrue() {
         // Given
         var repository = new InMemoryPermissionRequestRepository();
-        var request = new SimplePermissionRequest("permissionId", "connectionId1");
+        var request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         repository.save(request);
 
         // When
