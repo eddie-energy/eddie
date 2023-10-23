@@ -16,6 +16,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Random;
 
+import static energy.eddie.aiida.utils.ObisCode.*;
+
 public class SimulationDataSource extends AiidaDataSource {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimulationDataSource.class);
     private final Clock clock;
@@ -27,7 +29,7 @@ public class SimulationDataSource extends AiidaDataSource {
 
     /**
      * Creates a new SimulationDataSource with the given name.
-     * It will publish an {@link AiidaRecord} with a random value in {@code simulationPeriod} time gamps
+     * It will publish an {@link AiidaRecord} with a random value in {@code simulationPeriod} time gaps
      * for these OBIS codes:
      * <li>1.8.0</li>
      * <li>2.8.0</li>
@@ -44,7 +46,10 @@ public class SimulationDataSource extends AiidaDataSource {
         this.simulationPeriod = simulationPeriod;
 
         random = new Random();
-        obisCodes = List.of("1.8.0", "2.8.0", "1.7.0", "2.7.0");
+        obisCodes = List.of(POSITIVE_ACTIVE_ENERGY.code(),
+                NEGATIVE_ACTIVE_ENERGY.code(),
+                POSITIVE_ACTIVE_INSTANTANEOUS_POWER.code(),
+                NEGATIVE_ACTIVE_INSTANTANEOUS_POWER.code());
 
         LOGGER.info("Created new SimulationDataSource that will publish random values every {} seconds for obis codes {}",
                 simulationPeriod.toSeconds(), obisCodes);

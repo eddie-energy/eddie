@@ -5,7 +5,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 public abstract class AiidaDataSource implements AutoCloseable {
-    protected Sinks.Many<AiidaRecord> recordSink;
+    protected final Sinks.Many<AiidaRecord> recordSink;
     private final String name;
 
     /**

@@ -8,11 +8,15 @@ public class AiidaRecordFactory {
     private static final Map<String, Class<? extends AiidaRecord>> RECORD_MAP = new HashMap<>();
 
     static {
-        RECORD_MAP.put("1.7.0", IntegerAiidaRecord.class);      // Datasheet of OesterreichsEnergie Adapter shows no decimal
-        RECORD_MAP.put("2.7.0", IntegerAiidaRecord.class);      // Datasheet of OesterreichsEnergie Adapter shows no decimal
-        RECORD_MAP.put("1.8.0", IntegerAiidaRecord.class);      // Datasheet of OesterreichsEnergie Adapter shows no decimal
-        RECORD_MAP.put("2.8.0", IntegerAiidaRecord.class);      // Datasheet of OesterreichsEnergie Adapter shows no decimal
+        RECORD_MAP.put("1.7.0", IntegerAiidaRecord.class);
+        RECORD_MAP.put("2.7.0", IntegerAiidaRecord.class);
+        RECORD_MAP.put("1.8.0", IntegerAiidaRecord.class);
+        RECORD_MAP.put("2.8.0", IntegerAiidaRecord.class);
         RECORD_MAP.put("C.1.0", StringAiidaRecord.class);       // Meter serial number
+        RECORD_MAP.put("1-0:1.8.0", IntegerAiidaRecord.class);
+        RECORD_MAP.put("1-0:2.8.0", IntegerAiidaRecord.class);
+        RECORD_MAP.put("1-0:1.7.0", IntegerAiidaRecord.class);
+        RECORD_MAP.put("1-0:2.7.0", IntegerAiidaRecord.class);
     }
 
     private AiidaRecordFactory() {
