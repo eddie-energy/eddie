@@ -19,7 +19,6 @@ repositories {
 dependencies {
     implementation(libs.microprofile.config)
     implementation(libs.jackson.databind)
-    implementation(libs.javalin)
     testImplementation(libs.junit.jupiter)
 }
 

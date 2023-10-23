@@ -13,12 +13,8 @@ module energy.eddie.api {
     exports energy.eddie.api.v0;
     exports energy.eddie.api.v0.process.model;
     exports energy.eddie.api.v0.process.model.states;
-    exports energy.eddie.api.v0.utils;
 
     requires com.fasterxml.jackson.annotation;
     requires java.compiler;
     requires eclipse.microprofile.config.api;
-    requires io.javalin;
-    requires jakarta.annotation;
-    requires kotlin.stdlib;
 }
