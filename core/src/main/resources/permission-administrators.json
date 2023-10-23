@@ -710,7 +710,7 @@
   {
     "country": "dk",
     "company": "Energinet",
-    "jumpOffUrl": "",
+    "jumpOffUrl": "https://eloverblik.dk/customer/login",
     "regionConnector": "dk-energinet"
   },
   {
