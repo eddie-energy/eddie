@@ -30,7 +30,7 @@ public enum TimeSeriesAggregationEnum {
 
     public static TimeSeriesAggregationEnum fromString(String aggregation) {
         if (!Objects.requireNonNull(aggregation).isBlank()) {
-            var sanitisedAggregation = sanitiseAggregationInput(aggregation);
+            var sanitisedAggregation = sanitizeAggregationInput(aggregation);
 
             for (var aggregationEnum : values()) {
                 if (aggregationEnum.toString().equals(sanitisedAggregation)) {
@@ -52,7 +52,7 @@ public enum TimeSeriesAggregationEnum {
         };
     }
 
-    private static String sanitiseAggregationInput(String aggregation) {
+    private static String sanitizeAggregationInput(String aggregation) {
         var trimmedAggregation = aggregation.trim();
 
         if (trimmedAggregation.length() < MIN_LEN) {
