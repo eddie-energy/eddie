@@ -60,10 +60,7 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
             asyncClient = MqttFactory.getMqttAsyncClient(mqttConfig.serverURI(), clientId, null);
             asyncClient.setCallback(this);
 
-            MqttConnectOptions connectOptions = new MqttConnectOptions();
-            connectOptions.setCleanSession(mqttConfig.cleanSession());
-            connectOptions.setAutomaticReconnect(mqttConfig.automaticReconnect());
-            connectOptions.setKeepAliveInterval(mqttConfig.keepAliveInterval());
+            MqttConnectOptions connectOptions = createConnectOptions();
 
             LOGGER.info("Connecting to broker {}", mqttConfig.serverURI());
 
@@ -77,6 +74,19 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
         return recordSink.asFlux();
     }
 
+    private MqttConnectOptions createConnectOptions() {
+        MqttConnectOptions connectOptions = new MqttConnectOptions();
+        connectOptions.setCleanSession(mqttConfig.cleanSession());
+        connectOptions.setAutomaticReconnect(mqttConfig.automaticReconnect());
+        connectOptions.setKeepAliveInterval(mqttConfig.keepAliveInterval());
+
+        if (mqttConfig.username() != null && mqttConfig.password() != null) {
+            connectOptions.setUserName(mqttConfig.username());
+            connectOptions.setPassword(mqttConfig.password().toCharArray());
+        }
+        return connectOptions;
+    }
+
     /**
      * Close any open connections and free resources used by this class.
      * Also emit a complete signal on the {@code recordSink} of this datasource.
@@ -87,7 +97,8 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
 
         if (asyncClient != null) {
             try {
-                asyncClient.disconnect(1000L * 30);
+                if (asyncClient.isConnected())
+                    asyncClient.disconnect(1000L * 30);
                 asyncClient.close();
             } catch (MqttException ex) {
                 LOGGER.warn("Error while disconnecting or closing MQTT client", ex);

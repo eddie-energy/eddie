@@ -28,13 +28,14 @@ class OesterreichsEnergieAdapterTest {
     private static final LogCaptor logCaptor = LogCaptor.forClass(OesterreichsEnergieAdapter.class);
     private OesterreichsEnergieAdapter adapter;
     private MqttConfig config;
+    private ObjectMapper mapper;
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
         config = new MqttConfig("tcp://localhost:1883", "MyTestTopic");
-        var mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         adapter = new OesterreichsEnergieAdapter(config, mapper);
     }
 
@@ -48,6 +49,7 @@ class OesterreichsEnergieAdapterTest {
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
+            when(mockClient.isConnected()).thenReturn(true);
 
             StepVerifier.create(adapter.start())
                     .then(adapter::close)
@@ -60,12 +62,32 @@ class OesterreichsEnergieAdapterTest {
     }
 
     @Test
+    void verify_whenClientDisconnected_close_doesNotCallDisconnect() throws MqttException {
+        // calling .disconnect() on the MQTT client when it's not connected leads to an exception, therefore ensure to only call when it's connected
+
+        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
+            var mockClient = mock(MqttAsyncClient.class);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
+            when(mockClient.isConnected()).thenReturn(false);
+
+            StepVerifier.create(adapter.start())
+                    .then(adapter::close)
+                    .expectComplete()
+                    .verify();
+
+            verify(mockClient, never()).disconnect(anyLong());
+            verify(mockClient).close();
+        }
+    }
+
+    @Test
     void verify_errorsDuringClose_areLogged() throws MqttException {
         try (LogCaptor logCaptor = LogCaptor.forClass(OesterreichsEnergieAdapter.class)) {
             try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
                 var mockClient = mock(MqttAsyncClient.class);
                 mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
                 when(mockClient.disconnect(anyLong())).thenThrow(new MqttException(998877));
+                when(mockClient.isConnected()).thenReturn(true);
 
                 adapter.start().subscribe();
                 adapter.close();
@@ -84,6 +106,22 @@ class OesterreichsEnergieAdapterTest {
             adapter.start().subscribe();
 
             verify(mockClient).connect(any());
+        }
+    }
+
+    @Test
+    void givenUsernameAndPassword_isUsedByAdapter() {
+        config = spy(new MqttConfig("tcp://localhost:1883", "MyTestTopic", "User", "Pass"));
+        adapter = new OesterreichsEnergieAdapter(config, mapper);
+
+        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
+            var mockClient = mock(MqttAsyncClient.class);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
+
+            adapter.start().subscribe();
+
+            verify(config, atLeastOnce()).username();
+            verify(config, atLeastOnce()).password();
         }
     }
 

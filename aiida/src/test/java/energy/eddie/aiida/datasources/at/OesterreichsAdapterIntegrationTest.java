@@ -21,6 +21,7 @@ import org.testcontainers.containers.ToxiproxyContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
@@ -31,6 +32,9 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
+/**
+ * Also tests that authentication works with username/password
+ */
 @Testcontainers
 class OesterreichsAdapterIntegrationTest {
     private static final LogCaptor logCaptor = LogCaptor.forClass(OesterreichsEnergieAdapter.class);
@@ -41,6 +45,8 @@ class OesterreichsAdapterIntegrationTest {
     public static GenericContainer<?> mqtt = new GenericContainer<>(DockerImageName.parse("emqx/nanomq:0.20.0"))
             .withExposedPorts(1883)
             .withNetwork(network)
+            .withCopyFileToContainer(MountableFile.forClasspathResource("nanomq/nanomq_pwd.conf"), "/etc/nanomq_pwd.conf")
+            .withCopyFileToContainer(MountableFile.forClasspathResource("nanomq/nanomq.conf"), "/etc/nanomq.conf")
             .withNetworkAliases("mqtt");
     @Container
     public static ToxiproxyContainer toxiproxy = new ToxiproxyContainer("ghcr.io/shopify/toxiproxy:2.5.0")
@@ -48,6 +54,8 @@ class OesterreichsAdapterIntegrationTest {
     private ObjectMapper mapper;
     private Proxy proxy;
     private String serverURI;
+    private final String username = "testUser";
+    private final String password = "testPassword";
 
     @BeforeEach
     void setUp() throws IOException {
@@ -77,7 +85,7 @@ class OesterreichsAdapterIntegrationTest {
     void givenSampleJsonViaMqtt_recordsArePublishedToFlux() {
         var sampleJson = "{\"0-0:96.1.0\":{\"value\":\"90296857\"},\"0-0:1.0.0\":{\"value\":0,\"time\":1697623015},\"1-0:1.8.0\":{\"value\":83403,\"time\":1697623015},\"1-0:2.8.0\":{\"value\":16564,\"time\":1697623015},\"1-0:1.7.0\":{\"value\":40,\"time\":1697623015},\"1-0:2.7.0\":{\"value\":0,\"time\":1697623015},\"0-0:2.0.0\":{\"value\":481,\"time\":0},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2435.7}";
 
-        MqttConfig config = new MqttConfig(serverURI, "MyTestTopic");
+        MqttConfig config = new MqttConfig(serverURI, "MyTestTopic", username, password);
 
         var adapter = new OesterreichsEnergieAdapter(config, mapper);
 
@@ -102,6 +110,8 @@ class OesterreichsAdapterIntegrationTest {
                     var options = new MqttConnectOptions();
                     options.setAutomaticReconnect(false);
                     options.setCleanSession(true);
+                    options.setUserName(username);
+                    options.setPassword(password.toCharArray());
                     client.connect(options);
                     client.publish(topic, msg.getBytes(), 2, false);
                     client.disconnect();
@@ -117,7 +127,7 @@ class OesterreichsAdapterIntegrationTest {
     // adapter is closed by StepVerifier
     @SuppressWarnings("resource")
     void verify_mqttClientAutomaticallyReconnects() {
-        MqttConfig config = new MqttConfig(serverURI, "MyReconnectTopic", 1);
+        MqttConfig config = new MqttConfig(serverURI, "MyReconnectTopic", true, true, 1, username, password);
         var json1 = "{\"1-0:2.7.0\":{\"value\":0,\"time\":1697622950},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2370.6}";
         var json2 = "{\"1-0:2.7.0\":{\"value\":10,\"time\":1697622960},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2380.6}";
         var json3 = "{\"1-0:2.7.0\":{\"value\":20,\"time\":1697622970},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2390.6}";

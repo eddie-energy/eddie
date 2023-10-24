@@ -1,5 +1,6 @@
 package energy.eddie.aiida.utils;
 
+import jakarta.annotation.Nullable;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
 /**
@@ -17,17 +18,32 @@ public record MqttConfig(
         String subscribeTopic,
         Boolean cleanSession,
         Boolean automaticReconnect,
-        Integer keepAliveInterval) {
+        Integer keepAliveInterval,
+        @Nullable String username,
+        @Nullable String password) {
+    public static final Integer DEFAULT_KEEP_ALIVE_INTERVAL = 60;
+
     public MqttConfig(String serverURI, String subscribeTopic) {
-        this(serverURI, subscribeTopic, false, true, 60);
+        this(serverURI, subscribeTopic, false, true, DEFAULT_KEEP_ALIVE_INTERVAL, null, null);
     }
 
     public MqttConfig(String serverURI, String subscribeTopic, Integer keepAliveInterval) {
-        this(serverURI, subscribeTopic, false, true, keepAliveInterval);
+        this(serverURI, subscribeTopic, false, true, keepAliveInterval, null, null);
+    }
+
+    public MqttConfig(String serverURI, String subscribeTopic, String username, String password) {
+        this(serverURI, subscribeTopic, false, true, DEFAULT_KEEP_ALIVE_INTERVAL, username, password);
     }
 
     public MqttConfig {
         if (keepAliveInterval < 0)
             throw new IllegalArgumentException("keepAliveInterval needs to be <= 0 seconds");
+
+        if (!bothNullOrNotNull(username, password))
+            throw new IllegalArgumentException("When using authentication, both username and password have to be supplied");
+    }
+
+    private static boolean bothNullOrNotNull(@Nullable String a, @Nullable String b) {
+        return (a == null && b == null) || (a != null && b != null);
     }
 }
