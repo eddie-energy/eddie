@@ -1,5 +1,6 @@
 package energy.eddie.aiida.utils;
 
+import energy.eddie.aiida.utils.MqttConfig.MqttConfigBuilder;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -7,27 +8,39 @@ import static org.junit.jupiter.api.Assertions.*;
 class MqttConfigTest {
     @Test
     void givenInvalidKeepAlive_throws() {
-        var thrown = assertThrows(IllegalArgumentException.class, () -> new MqttConfig("localhost:9092", "subscribeTopic", -10));
+        var builder = new MqttConfigBuilder("localhost:9092", "subscribeTopic");
+
+        var thrown = assertThrows(IllegalArgumentException.class, () -> builder.setKeepAliveInterval(-10));
+
         assertEquals("keepAliveInterval needs to be <= 0 seconds", thrown.getMessage());
     }
 
     @Test
-    void givenEitherUsernameOrPasswordNull_throws() {
-        var thrown = assertThrows(IllegalArgumentException.class, () -> new MqttConfig("localhost:9092",
-                "subscribeTopic", true, true, 60, null, "NotNull"));
-        assertEquals("When using authentication, both username and password have to be supplied", thrown.getMessage());
+    void givenUsernameButNoPassword_throws() {
+        var builder = new MqttConfigBuilder("localhost:9092", "subscribeTopic")
+                .setUsername("Username")
+                .setPassword(null);
 
-        thrown = assertThrows(IllegalArgumentException.class, () -> new MqttConfig("localhost:9092",
-                "subscribeTopic", true, true, 60, "NotNull", null));
-        assertEquals("When using authentication, both username and password have to be supplied", thrown.getMessage());
+        var thrown = assertThrows(IllegalArgumentException.class, builder::build);
+
+        assertEquals("When supplying a username, a password has to be supplied as well", thrown.getMessage());
     }
 
     @Test
-    void givenValidInput_doesNotThrow() {
-        assertDoesNotThrow(() -> new MqttConfig("localhost:9092", "subscribeTopic",
-                true, true, 60, "User", "Pass"));
-        assertDoesNotThrow(() -> new MqttConfig("localhost:9092", "subscribeTopic", "user", "pass"));
-        assertDoesNotThrow(() -> new MqttConfig("localhost:9092", "subscribeTopic", 5));
-        assertDoesNotThrow(() -> new MqttConfig("localhost:9092", "subscribeTopic"));
+    void givenValidInput_asExpected() {
+        var mqttConfig = new MqttConfigBuilder("localhost:9092", "subscribeTopic")
+                .setUsername("Username")
+                .setPassword("Password")
+                .setKeepAliveInterval(40)
+                .setAutomaticReconnect(false)
+                .setCleanStart(true).build();
+
+        assertEquals("localhost:9092", mqttConfig.serverURI());
+        assertEquals("subscribeTopic", mqttConfig.subscribeTopic());
+        assertEquals("Username", mqttConfig.username());
+        assertEquals("Password", mqttConfig.password());
+        assertEquals(40, mqttConfig.keepAliveInterval());
+        assertFalse(mqttConfig.automaticReconnect());
+        assertTrue(mqttConfig.cleanStart());
     }
 }

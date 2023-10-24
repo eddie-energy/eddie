@@ -76,7 +76,7 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
 
     private MqttConnectOptions createConnectOptions() {
         MqttConnectOptions connectOptions = new MqttConnectOptions();
-        connectOptions.setCleanSession(mqttConfig.cleanSession());
+        connectOptions.setCleanSession(mqttConfig.cleanStart());
         connectOptions.setAutomaticReconnect(mqttConfig.automaticReconnect());
         connectOptions.setKeepAliveInterval(mqttConfig.keepAliveInterval());
 

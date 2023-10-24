@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.aiida.models.record.IntegerAiidaRecord;
 import energy.eddie.aiida.utils.MqttConfig;
+import energy.eddie.aiida.utils.MqttConfig.MqttConfigBuilder;
 import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
@@ -85,7 +86,10 @@ class OesterreichsAdapterIntegrationTest {
     void givenSampleJsonViaMqtt_recordsArePublishedToFlux() {
         var sampleJson = "{\"0-0:96.1.0\":{\"value\":\"90296857\"},\"0-0:1.0.0\":{\"value\":0,\"time\":1697623015},\"1-0:1.8.0\":{\"value\":83403,\"time\":1697623015},\"1-0:2.8.0\":{\"value\":16564,\"time\":1697623015},\"1-0:1.7.0\":{\"value\":40,\"time\":1697623015},\"1-0:2.7.0\":{\"value\":0,\"time\":1697623015},\"0-0:2.0.0\":{\"value\":481,\"time\":0},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2435.7}";
 
-        MqttConfig config = new MqttConfig(serverURI, "MyTestTopic", username, password);
+        MqttConfig config = new MqttConfigBuilder(serverURI, "MyTestTopic")
+                .setUsername(username)
+                .setPassword(password)
+                .build();
 
         var adapter = new OesterreichsEnergieAdapter(config, mapper);
 
@@ -127,7 +131,11 @@ class OesterreichsAdapterIntegrationTest {
     // adapter is closed by StepVerifier
     @SuppressWarnings("resource")
     void verify_mqttClientAutomaticallyReconnects() {
-        MqttConfig config = new MqttConfig(serverURI, "MyReconnectTopic", true, true, 1, username, password);
+        MqttConfig config = new MqttConfigBuilder(serverURI, "MyReconnectTopic")
+                .setKeepAliveInterval(1)
+                .setUsername(username)
+                .setPassword(password).build();
+
         var json1 = "{\"1-0:2.7.0\":{\"value\":0,\"time\":1697622950},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2370.6}";
         var json2 = "{\"1-0:2.7.0\":{\"value\":10,\"time\":1697622960},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2380.6}";
         var json3 = "{\"1-0:2.7.0\":{\"value\":20,\"time\":1697622970},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2390.6}";

@@ -19,6 +19,7 @@ import reactor.test.StepVerifier;
 
 import java.time.Duration;
 
+import static energy.eddie.aiida.utils.MqttConfig.MqttConfigBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -34,7 +35,7 @@ class OesterreichsEnergieAdapterTest {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        config = new MqttConfig("tcp://localhost:1883", "MyTestTopic");
+        config = new MqttConfigBuilder("tcp://localhost:1883", "MyTestTopic").build();
         mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         adapter = new OesterreichsEnergieAdapter(config, mapper);
     }
@@ -111,7 +112,11 @@ class OesterreichsEnergieAdapterTest {
 
     @Test
     void givenUsernameAndPassword_isUsedByAdapter() {
-        config = spy(new MqttConfig("tcp://localhost:1883", "MyTestTopic", "User", "Pass"));
+        config = new MqttConfigBuilder("tcp://localhost:1883", "MyTestTopic")
+                .setUsername("User")
+                .setPassword("Pass")
+                .build();
+        config = spy(config);
         adapter = new OesterreichsEnergieAdapter(config, mapper);
 
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
