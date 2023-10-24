@@ -57,7 +57,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleInvalidPermissionRevocationException(InvalidPermissionRevocationException ex) {
         var errors = List.of(ex.getMessage());
 
-        return createErrorResponse(errors, HttpStatus.BAD_REQUEST);
+        return createErrorResponse(errors, HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     @ExceptionHandler(value = {InvalidPatchOperationException.class})

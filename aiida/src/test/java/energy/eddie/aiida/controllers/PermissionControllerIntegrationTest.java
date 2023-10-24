@@ -269,11 +269,11 @@ class PermissionControllerIntegrationTest {
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
         RestTemplate restTemplate = new RestTemplate(requestFactory);
 
-        HttpClientErrorException.BadRequest badRequestException = assertThrows(HttpClientErrorException.BadRequest.class,
+        var notAllowedException = assertThrows(HttpClientErrorException.MethodNotAllowed.class,
                 () -> restTemplate.exchange(request, String.class));
 
-        assertEquals(HttpStatus.BAD_REQUEST, badRequestException.getStatusCode());
-        assertEquals(expected, badRequestException.getResponseBodyAsString());
+        assertEquals(HttpStatus.METHOD_NOT_ALLOWED, notAllowedException.getStatusCode());
+        assertEquals(expected, notAllowedException.getResponseBodyAsString());
     }
 
     @Test
