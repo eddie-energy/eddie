@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.at.eda;
 
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
 import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.ConsumptionRecord;
+import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import at.ebutilities.schemata.customerprocesses.masterdata._01p30.MasterData;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;

@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Mit XMLSpy v2019 rel. 3 (x64) (http://www.altova.com) von Vorarlberger Kraftwerke AG (Vorarlberger Kraftwerke AG) bearbeitet -->
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ct="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20" xmlns:cp="http://www.ebutilities.at/schemata/customerprocesses/consumptionrecord/01p30" targetNamespace="http://www.ebutilities.at/schemata/customerprocesses/consumptionrecord/01p30" elementFormDefault="qualified">
+<!-- Mit XMLSpy v2020 rel. 2 sp1 (x64) (http://www.altova.com) von Illwerke VKW Aktiengesellschaft (illwerke vkw Aktiengesellschaft) bearbeitet -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ct="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20" xmlns:cp="http://www.ebutilities.at/schemata/customerprocesses/consumptionrecord/01p31" targetNamespace="http://www.ebutilities.at/schemata/customerprocesses/consumptionrecord/01p31" elementFormDefault="qualified">
 	<xsd:import namespace="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20" schemaLocation="CPCommonTypes_01p20.xsd"/>
 	<xsd:annotation>
 		<xsd:documentation>
-			schema version: 01.30
+			schema version: 01.31
 			autor: Reinhold Hansmann
-			last update: 2021-04-01
-			Änderungen zu 1.30 (Auslöser: MSCONS-Ablöse)
-			- Umbenennung (hauptsächlich Kürzung) von diversen Feld-Bezeichnungen
-			- Der Konten Consumption (neu „Energy“) wird mehrfach verwendbar
-			- Entfernung AdministrativeContact
-			- Entfernung des Feldes „Consumption/ReferenceNumber“ (alte Bezeichnung)
-			- ConsumptionPosition/BillingUOM als Attribut UOM von EnergyData (früher ConsumptionData) 
+			last update: 2023-07-03
+			Änderungen zu 1.31 
+			- Entfernung Ennumeration bei MessageCode
+			- Ableseart L4?
+			- MeteringReason optional?
 		</xsd:documentation>
 	</xsd:annotation>
 	<xsd:element name="ConsumptionRecord">
@@ -30,16 +28,7 @@
 		<xsd:complexContent>
 			<xsd:extension base="ct:MarketParticipantDirectory">
 				<xsd:sequence>
-					<xsd:element name="MessageCode">
-						<xsd:annotation>
-							<xsd:documentation>DATEN_CRMSG</xsd:documentation>
-						</xsd:annotation>
-						<xsd:simpleType>
-							<xsd:restriction base="ct:MessageCode">
-								<xsd:enumeration value="DATEN_CRMSG"/>
-							</xsd:restriction>
-						</xsd:simpleType>
-					</xsd:element>
+					<xsd:element name="MessageCode" type="ct:MessageCode"/>
 				</xsd:sequence>
 				<xsd:attribute name="SchemaVersion" type="cp:ConsumptionRecordVersion" use="required"/>
 			</xsd:extension>
@@ -67,7 +56,7 @@
 			<xsd:documentation>Energie-Mengen</xsd:documentation>
 		</xsd:annotation>
 		<xsd:sequence>
-			<xsd:element name="MeteringReason" type="cp:MeteringReason"/>
+			<xsd:element name="MeteringReason" type="cp:MeteringReason" minOccurs="0"/>
 			<xsd:element name="MeteringPeriodStart" type="cp:DateTimeU"/>
 			<xsd:element name="MeteringPeriodEnd" type="cp:DateTimeU"/>
 			<xsd:element name="MeteringIntervall" type="cp:MeteringIntervall"/>
@@ -108,7 +97,7 @@
 					<xsd:documentation>Datum/Zeit von</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="DTT" type="cp:DateTimeU" minOccurs="0">
+			<xsd:element name="DTT" type="cp:DateTimeU">
 				<xsd:annotation>
 					<xsd:documentation>Datum/Zeit bis</xsd:documentation>
 				</xsd:annotation>
@@ -153,7 +142,7 @@
 			<xsd:documentation>Schema-Version</xsd:documentation>
 		</xsd:annotation>
 		<xsd:restriction base="xsd:token">
-			<xsd:enumeration value="01.30"/>
+			<xsd:enumeration value="01.31"/>
 		</xsd:restriction>
 	</xsd:simpleType>
 	<xsd:simpleType name="Email">
