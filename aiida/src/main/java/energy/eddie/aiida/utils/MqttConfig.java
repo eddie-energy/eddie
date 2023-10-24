@@ -1,6 +1,7 @@
 package energy.eddie.aiida.utils;
 
 import jakarta.annotation.Nullable;
+import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 
 public class MqttConfig {
     public static final Integer DEFAULT_KEEP_ALIVE_INTERVAL = 60;
@@ -15,7 +16,7 @@ public class MqttConfig {
     private String password;
 
     // Must only be constructed by builder
-    @SuppressWarnings("NullAway.Init")
+    @SuppressWarnings({"NullAway.Init", "unused"})
     private MqttConfig() {
     }
 

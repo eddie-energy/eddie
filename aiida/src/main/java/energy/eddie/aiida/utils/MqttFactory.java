@@ -1,9 +1,9 @@
 package energy.eddie.aiida.utils;
 
 import jakarta.annotation.Nullable;
-import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
-import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
-import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
+import org.eclipse.paho.mqttv5.client.MqttClientPersistence;
+import org.eclipse.paho.mqttv5.common.MqttException;
 
 public class MqttFactory {
     private MqttFactory() {

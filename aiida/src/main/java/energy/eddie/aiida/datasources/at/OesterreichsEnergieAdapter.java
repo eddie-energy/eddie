@@ -8,16 +8,21 @@ import energy.eddie.aiida.models.record.AiidaRecordFactory;
 import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.aiida.utils.MqttFactory;
 import jakarta.annotation.Nullable;
-import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.mqttv5.client.*;
+import org.eclipse.paho.mqttv5.common.MqttException;
+import org.eclipse.paho.mqttv5.common.MqttMessage;
+import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 
-public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttCallbackExtended {
+public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(OesterreichsEnergieAdapter.class);
+    private static final Duration DISCONNECT_TIMEOUT = Duration.ofSeconds(30);
     private final MqttConfig mqttConfig;
     private final ObjectMapper mapper;
     private final String clientId;
@@ -60,7 +65,7 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
             asyncClient = MqttFactory.getMqttAsyncClient(mqttConfig.serverURI(), clientId, null);
             asyncClient.setCallback(this);
 
-            MqttConnectOptions connectOptions = createConnectOptions();
+            MqttConnectionOptions connectOptions = createConnectOptions();
 
             LOGGER.info("Connecting to broker {}", mqttConfig.serverURI());
 
@@ -74,17 +79,23 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
         return recordSink.asFlux();
     }
 
-    private MqttConnectOptions createConnectOptions() {
-        MqttConnectOptions connectOptions = new MqttConnectOptions();
-        connectOptions.setCleanSession(mqttConfig.cleanStart());
-        connectOptions.setAutomaticReconnect(mqttConfig.automaticReconnect());
-        connectOptions.setKeepAliveInterval(mqttConfig.keepAliveInterval());
+    private MqttConnectionOptions createConnectOptions() {
+        MqttConnectionOptions options = new MqttConnectionOptions();
+        options.setCleanStart(mqttConfig.cleanStart());
+        options.setAutomaticReconnect(mqttConfig.automaticReconnect());
+        options.setKeepAliveInterval(mqttConfig.keepAliveInterval());
 
-        if (mqttConfig.username() != null && mqttConfig.password() != null) {
-            connectOptions.setUserName(mqttConfig.username());
-            connectOptions.setPassword(mqttConfig.password().toCharArray());
+        if (mqttConfig.username() != null) {
+            options.setUserName(mqttConfig.username());
         }
-        return connectOptions;
+
+        // extra variable required to avoid NPE warning
+        String password = mqttConfig.password();
+        if (password != null) {
+            options.setPassword(password.getBytes());
+        }
+
+        return options;
     }
 
     /**
@@ -97,8 +108,9 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
 
         if (asyncClient != null) {
             try {
-                if (asyncClient.isConnected())
-                    asyncClient.disconnect(1000L * 30);
+                if (asyncClient.isConnected()) {
+                    asyncClient.disconnect(DISCONNECT_TIMEOUT.toMillis());
+                }
                 asyncClient.close();
             } catch (MqttException ex) {
                 LOGGER.warn("Error while disconnecting or closing MQTT client", ex);
@@ -108,9 +120,29 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
         recordSink.tryEmitComplete();
     }
 
+    /**
+     * Called when the connection to the broker has been established and will then subscribe to the topic specified in {@code mqttConfig}.
+     *
+     * @param reconnect If true, the connection was the result of automatic reconnect.
+     * @param serverURI The server URI that the connection was made to.
+     */
     @Override
-    public void connectionLost(Throwable cause) {
-        LOGGER.warn("Lost connection to MQTT broker", cause);
+    public void connectComplete(boolean reconnect, String serverURI) {
+        LOGGER.info("{} connected successfully to broker {}, was from automatic reconnect is {}", name(), serverURI, reconnect);
+        LOGGER.info("Will subscribe to topic {}", mqttConfig.subscribeTopic());
+
+        try {
+            if (asyncClient != null)
+                asyncClient.subscribe(mqttConfig.subscribeTopic(), 2);
+        } catch (MqttException ex) {
+            LOGGER.error("Error while subscribing to topic {}", mqttConfig.subscribeTopic(), ex);
+            recordSink.tryEmitError(ex);
+        }
+    }
+
+    @Override
+    public void authPacketArrived(int reasonCode, MqttProperties properties) {
+        // implementation not needed by this datasource
     }
 
     /**
@@ -142,24 +174,14 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
         }
     }
 
-    /**
-     * Called when the connection to the broker has been established and will then subscribe to the topic specified in {@code mqttConfig}.
-     *
-     * @param reconnect If true, the connection was the result of automatic reconnect.
-     * @param serverURI The server URI that the connection was made to.
-     */
     @Override
-    public void connectComplete(boolean reconnect, String serverURI) {
-        LOGGER.info("{} connected successfully to broker {}, was from automatic reconnect is {}", name(), serverURI, reconnect);
-        LOGGER.info("Will subscribe to topic {}", mqttConfig.subscribeTopic());
+    public void disconnected(MqttDisconnectResponse disconnectResponse) {
+        LOGGER.warn("Disconnected from MQTT broker", disconnectResponse.getException());
+    }
 
-        try {
-            if (asyncClient != null)
-                asyncClient.subscribe(mqttConfig.subscribeTopic(), 2);
-        } catch (MqttException ex) {
-            LOGGER.error("Error while subscribing to topic {}", mqttConfig.subscribeTopic(), ex);
-            recordSink.tryEmitError(ex);
-        }
+    @Override
+    public void mqttErrorOccurred(MqttException exception) {
+        LOGGER.error("MQTT error occurred", exception);
     }
 
     /**
@@ -169,7 +191,7 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
      * @throws UnsupportedOperationException Always thrown, as this datasource is not designed to publish data.
      */
     @Override
-    public void deliveryComplete(IMqttDeliveryToken token) throws UnsupportedOperationException {
+    public void deliveryComplete(IMqttToken token) throws UnsupportedOperationException {
         LOGGER.warn("Got deliveryComplete notification, but OesterreichsEnergieAdapter mustn't publish any MQTT messages but just listen. Token was {}", token);
         throw new UnsupportedOperationException("The OesterreichsEnergieAdapter mustn't publish any MQTT messages");
     }

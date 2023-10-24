@@ -8,9 +8,10 @@ import energy.eddie.aiida.models.record.StringAiidaRecord;
 import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.aiida.utils.MqttFactory;
 import nl.altindag.log.LogCaptor;
-import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
+import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
+import org.eclipse.paho.mqttv5.common.MqttException;
+import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -215,7 +216,7 @@ class OesterreichsEnergieAdapterTest {
 
     @Test
     void givenConnectionLost_warningIsLogged() {
-        adapter.connectionLost(new MqttException(998877));
-        assertThat(logCaptor.getWarnLogs()).contains("Lost connection to MQTT broker");
+        adapter.disconnected(new MqttDisconnectResponse(new MqttException(998877)));
+        assertThat(logCaptor.getWarnLogs()).contains("Disconnected from MQTT broker");
     }
 }

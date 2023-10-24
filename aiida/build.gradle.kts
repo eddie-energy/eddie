@@ -59,7 +59,7 @@ dependencies {
     testImplementation("io.github.hakky54:logcaptor:2.9.0")
 
     // mqtt
-    implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
+    implementation("org.eclipse.paho:org.eclipse.paho.mqttv5.client:1.2.5")
 }
 
 dependencyManagement {

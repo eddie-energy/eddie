@@ -9,9 +9,9 @@ import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
 import nl.altindag.log.LogCaptor;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.mqttv5.client.MqttClient;
+import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
+import org.eclipse.paho.mqttv5.common.MqttException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +27,7 @@ import reactor.test.StepVerifier;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -110,12 +111,12 @@ class OesterreichsAdapterIntegrationTest {
         try (var executor = Executors.newSingleThreadExecutor()) {
             executor.submit(() -> {
                 try {
-                    var client = new MqttClient(directServerURI, MqttClient.generateClientId());
-                    var options = new MqttConnectOptions();
+                    var client = new MqttClient(directServerURI, UUID.randomUUID().toString());
+                    var options = new MqttConnectionOptions();
                     options.setAutomaticReconnect(false);
-                    options.setCleanSession(true);
+                    options.setCleanStart(true);
                     options.setUserName(username);
-                    options.setPassword(password.toCharArray());
+                    options.setPassword(password.getBytes());
                     client.connect(options);
                     client.publish(topic, msg.getBytes(), 2, false);
                     client.disconnect();
@@ -160,7 +161,7 @@ class OesterreichsAdapterIntegrationTest {
                 .expectComplete()
                 .verify(Duration.ofSeconds(10));
 
-        assertThat(logCaptor.getWarnLogs()).contains("Lost connection to MQTT broker");
+        assertThat(logCaptor.getWarnLogs()).contains("Disconnected from MQTT broker");
     }
 
     private void cutConnection() {
