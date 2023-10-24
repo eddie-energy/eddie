@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.dk.energinet;
 import energy.eddie.api.v0.*;
 import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
-import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
@@ -25,7 +24,6 @@ import reactor.core.publisher.Sinks;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -112,7 +110,7 @@ public class EnerginetRegionConnector implements RegionConnector {
         });
 
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
-            PermissionRequest permissionRequest = permissionRequestFactory.create(ctx);
+            DkEnerginetCustomerPermissionRequest permissionRequest = permissionRequestFactory.create(ctx);
             permissionRequest.validate();
             try {
                 permissionRequest.sendToPermissionAdministrator();
@@ -120,28 +118,17 @@ public class EnerginetRegionConnector implements RegionConnector {
                 // The given refresh token for the API is not valid -> therefore no consent was given
                 permissionRequest.receivedPermissionAdministratorResponse();
                 permissionRequest.rejected();
-            }
-
-            String permissionId = permissionRequest.permissionId();
-            Optional<DkEnerginetCustomerPermissionRequest> optionalPermissionRequest = permissionRequestRepository.findByPermissionId(permissionRequest.permissionId());
-
-            if (optionalPermissionRequest.isEmpty()) {
-                // unknown state / permissionId => not coming / initiated by our frontend
-                LOGGER.warn("permission-request called with unknown state '{}'", permissionId);
-                ctx.status(HttpStatus.BAD_REQUEST);
                 return;
             }
 
-            DkEnerginetCustomerPermissionRequest energinetCustomerPermissionRequest = optionalPermissionRequest.get();
-            energinetCustomerPermissionRequest.receivedPermissionAdministratorResponse();
-
-            energinetCustomerApi.setRefreshToken(energinetCustomerPermissionRequest.refreshToken());
-            energinetCustomerApi.setUserCorrelationId(UUID.fromString(energinetCustomerPermissionRequest.permissionId()));
+            permissionRequest.receivedPermissionAdministratorResponse();
+            energinetCustomerApi.setRefreshToken(permissionRequest.refreshToken());
+            energinetCustomerApi.setUserCorrelationId(UUID.fromString(permissionRequest.permissionId()));
             MeteringPoints meteringPoints = new MeteringPoints();
-            meteringPoints.addMeteringPointItem(energinetCustomerPermissionRequest.meteringPoint());
+            meteringPoints.addMeteringPointItem(permissionRequest.meteringPoint());
             MeteringPointsRequest meteringPointsRequest = new MeteringPointsRequest().meteringPoints(meteringPoints);
 
-            energinetCustomerPermissionRequest.accept();
+            permissionRequest.accept();
 
             new Thread(() -> {
                 try {
@@ -152,14 +139,14 @@ public class EnerginetRegionConnector implements RegionConnector {
 
                 try {
                     var consumptionRecord = energinetCustomerApi.getTimeSeries(
-                            energinetCustomerPermissionRequest.start(),
-                            energinetCustomerPermissionRequest.end(),
-                            energinetCustomerPermissionRequest.periodResolution(),
+                            permissionRequest.start(),
+                            permissionRequest.end(),
+                            permissionRequest.periodResolution(),
                             meteringPointsRequest
                     );
 
-                    consumptionRecord.setConnectionId(energinetCustomerPermissionRequest.connectionId());
-                    consumptionRecord.setPermissionId(energinetCustomerPermissionRequest.permissionId());
+                    consumptionRecord.setConnectionId(permissionRequest.connectionId());
+                    consumptionRecord.setPermissionId(permissionRequest.permissionId());
                     consumptionRecordSink.tryEmitNext(consumptionRecord);
                 } catch (FeignException e) {
                     LOGGER.error("Something went wrong while fetching data from Energinet:", e);
