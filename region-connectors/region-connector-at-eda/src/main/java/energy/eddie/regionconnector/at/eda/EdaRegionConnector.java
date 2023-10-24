@@ -298,24 +298,9 @@ public class EdaRegionConnector implements RegionConnector {
         permissionIdToConnectionStatusMessages.put(permissionId, connectionStatusMessage);
     }
 
-    /**
-     * Map an EDA consumption record to a CIM consumption record
-     * and add connectionId and permissionId for identification
-     *
-     * @param consumptionRecord the consumption record to process
-     */
     private @Nullable ConsumptionRecord mapConsumptionRecordToCIMConsumptionRecord(at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord consumptionRecord) {
-        // map an EDA consumption record it to a CIM consumption record
-        // and add connectionId and permissionId for identification
-        String conversationId = consumptionRecord.getProcessDirectory().getConversationId();
-        Optional<AtPermissionRequest> permissionRequest = permissionRequestRepository
-                .findByConversationIdOrCMRequestId(conversationId, null);
-        String permissionId = permissionRequest.map(PermissionRequest::permissionId).orElse(null);
-        String connectionId = permissionRequest.map(PermissionRequest::connectionId).orElse(null);
-        String dataNeedId = permissionRequest.map(PermissionRequest::dataNeedId).orElse(null);
-        LOGGER.info("Received consumption record (ConversationId '{}') for permissionId {} and connectionId {}", conversationId, permissionId, connectionId);
         try {
-            return consumptionRecordMapper.mapToCIM(consumptionRecord, permissionId, connectionId, dataNeedId);
+            return consumptionRecordMapper.mapToCIM(consumptionRecord);
         } catch (InvalidMappingException e) {
             LOGGER.error("Could not map consumption record to CIM consumption record", e);
             return null;
