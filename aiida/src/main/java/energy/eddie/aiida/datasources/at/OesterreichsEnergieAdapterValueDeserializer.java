@@ -17,21 +17,16 @@ public class OesterreichsEnergieAdapterValueDeserializer extends StdDeserializer
     public OesterreichAdapterJson.AdapterValue deserialize(JsonParser jp, DeserializationContext context) throws IOException {
         JsonNode node = jp.getCodec().readTree(jp);
 
-        // Try to convert the value to a Double, Integer or String
+        // use value either as Integer or String
         JsonNode valueNode = node.get("value");
-        Object value;
-
-        if (valueNode.isInt()) {
-            value = valueNode.intValue();
-        } else {
-            value = valueNode.asText();
-        }
+        Object value = valueNode.isInt()
+                ? valueNode.intValue()
+                : valueNode.asText();
 
         JsonNode timeNode = node.get("time");
-        long time = 0L;
-
-        if (timeNode != null)
-            time = timeNode.longValue();
+        long time = timeNode != null
+                ? timeNode.longValue()
+                : 0;
 
         return new OesterreichAdapterJson.AdapterValue(value, time);
     }
