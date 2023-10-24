@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Flow;
 
+import static energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint.DSO_ID_LENGTH;
 import static java.util.Objects.requireNonNull;
 
 public class EdaRegionConnector implements RegionConnector {
@@ -60,6 +61,8 @@ public class EdaRegionConnector implements RegionConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
     private static final String CONNECTION_ID = "connectionId";
     private static final String DATA_NEED_ID = "dataNeedId";
+    private static final String METERING_POINT_ID = "meteringPointId";
+    private static final String DSO_ID = "dsoId";
     private final AtConfiguration atConfiguration;
     private final EdaAdapter edaAdapter;
     private final ConsumptionRecordMapper consumptionRecordMapper;
@@ -148,27 +151,38 @@ public class EdaRegionConnector implements RegionConnector {
         });
 
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
-            // TODO rework validation after mvp1
             var connectionIdValidator = ctx.formParamAsClass(CONNECTION_ID, String.class).check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
             var dataNeedIdValidator = ctx.formParamAsClass(DATA_NEED_ID, String.class).check(s -> s != null && !s.isBlank(), "dataNeedId must not be null or blank");
-            var meteringPointIdValidator = ctx.formParamAsClass("meteringPointId", String.class).check(s -> s != null && s.length() == 33, "meteringPointId must be 33 characters long");
+            var meteringPointIdValidator = ctx.formParamAsClass(METERING_POINT_ID, String.class)
+                    .allowNullable()
+                    .check(s -> s.length() == 33, "meteringPointId must be 33 characters long");
+            var dsoIdValidator = ctx.formParamAsClass(DSO_ID, String.class)
+                    .allowNullable()
+                    .check(s -> s.length() == DSO_ID_LENGTH, "dsoId must be " + DSO_ID_LENGTH + " characters long");
 
             LocalDate now = LocalDate.now(ZoneId.of("Europe/Vienna"));
             var startValidator = ctx.formParamAsClass("start", LocalDate.class).check(Objects::nonNull, "start must not be null").check(start -> start.isAfter(now.minusMonths(MAXIMUM_MONTHS_IN_THE_PAST)), "start must not be older than 36 months");
 
             var endValidator = ctx.formParamAsClass("end", LocalDate.class)
-                    //.allowNullable() // disable for now as we don't support Future data yet
                     .check(Objects::nonNull, "end must not be null")
-                    .check(end -> !startValidator.errors().isEmpty() || end.isAfter(startValidator.get()), "end must be after start")
-                    .check(end -> end.isBefore(now), "end must be in the past"); // for now, we only support historical data
+                    .check(end -> !startValidator.errors().isEmpty() ||
+                                    end.isAfter(startValidator.get()),
+                            "end must be after start")
+                    .check(end -> !startValidator.errors().isEmpty() ||
+                                    (startValidator.get().isBefore(now) && end.isBefore(now)) ||
+                                    !startValidator.get().isBefore(now),
+                            "end and start must either be completely in the past or completely in the future"
+                    );
 
             var errors = JavalinValidation.collectErrors(
                     connectionIdValidator,
                     dataNeedIdValidator,
                     meteringPointIdValidator,
+                    dsoIdValidator,
                     startValidator,
                     endValidator
             );
+
             if (!errors.isEmpty()) {
                 ctx.status(HttpStatus.BAD_REQUEST);
                 ctx.json(errors);
@@ -177,7 +191,7 @@ public class EdaRegionConnector implements RegionConnector {
 
             var start = startValidator.get();
             var end = Objects.requireNonNullElseGet(endValidator.get(), () -> now.minusDays(1));
-            DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint(null, meteringPointIdValidator.get());
+            DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint(dsoIdValidator.get(), meteringPointIdValidator.get());
 
             var ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, new CCMOTimeFrame(start, end), this.atConfiguration, RequestDataType.METERING_DATA, // for now only allow metering data
                     AllowedMeteringIntervalType.QH, AllowedTransmissionCycle.D);
