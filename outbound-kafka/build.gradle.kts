@@ -45,6 +45,8 @@ extraJavaModuleInfo {
     automaticModule("com.google.code.findbugs:jsr305", "com.google.code.findbugs.jsr305")
     automaticModule("com.google.j2objc:j2objc-annotations", "j2objc.annotations")
     automaticModule("org.xerial.snappy:snappy-java", "snappy.java")
+    automaticModule("org.jetbrains.kotlin:kotlin-stdlib-common", "kotlin.stdlib.common")
+    automaticModule("org.jetbrains:annotations", "annotations")
 
     automaticModule("org.eclipse.microprofile.config:microprofile-config-api", "eclipse.microprofile.config.api")
 }

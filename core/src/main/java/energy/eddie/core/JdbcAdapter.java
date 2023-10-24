@@ -19,7 +19,8 @@ public class JdbcAdapter implements energy.eddie.api.v0.ApplicationConnector {
             "PT15M", 900,
             "PT30M", 1800,
             "PT1H", 3600,
-            "PT1D", 86400
+            "PT1D", 86400,
+            "P1D", 86400
     );
 
     private final Jdbi jdbi;

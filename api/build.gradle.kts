@@ -1,5 +1,6 @@
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
+import java.util.*
 
 plugins {
     id("energy.eddie.java-conventions")
@@ -76,11 +77,13 @@ sourceSets {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.errorprone {
-        check("NullAway", CheckSeverity.ERROR)
-        option("NullAway:AnnotatedPackages", "energy.eddie")
+    if (!name.lowercase(Locale.getDefault()).contains("test")) {
+        options.errorprone {
+            check("NullAway", CheckSeverity.ERROR)
+            option("NullAway:AnnotatedPackages", "energy.eddie")
 
-        // disable warnings for generated classes
-        option("NullAway:TreatGeneratedAsUnannotated", true)
+            // disable warnings for generated classes
+            option("NullAway:TreatGeneratedAsUnannotated", true)
+        }
     }
 }
