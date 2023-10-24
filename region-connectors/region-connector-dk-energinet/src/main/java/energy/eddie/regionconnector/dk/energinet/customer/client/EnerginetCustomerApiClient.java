@@ -23,6 +23,7 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     private static final String IS_ALIVE_API = "isAliveApi";
     // Request period must not exceed the maximum number of days of 730
     private static final int MAX_REQUEST_PERIOD = 730;
+    private static final String DK_ZONE_ID = "Europe/Copenhagen";
     private final ApiClient apiClient;
     private final TokenApi tokenApi;
     private final MeterDataApi meterDataApi;
@@ -42,7 +43,7 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     }
 
     private void throwIfInvalidTimeframe(ZonedDateTime start, ZonedDateTime end) throws DateTimeException {
-        LocalDate currentDate = LocalDate.ofInstant(Instant.now(), ZoneId.of("Europe/Copenhagen"));
+        LocalDate currentDate = LocalDate.ofInstant(Instant.now(), ZoneId.of(DK_ZONE_ID));
 
         if (start.isEqual(end) || start.isAfter(end)) {
             throw new DateTimeException("Start date must be before end date.");
