@@ -290,7 +290,7 @@ public class EdaRegionConnector implements RegionConnector {
      *
      * @param consumptionRecord the consumption record to process
      */
-    private @Nullable ConsumptionRecord mapConsumptionRecordToCIMConsumptionRecord(at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.ConsumptionRecord consumptionRecord) {
+    private @Nullable ConsumptionRecord mapConsumptionRecordToCIMConsumptionRecord(at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord consumptionRecord) {
         // map an EDA consumption record it to a CIM consumption record
         // and add connectionId and permissionId for identification
         String conversationId = consumptionRecord.getProcessDirectory().getConversationId();
@@ -303,7 +303,6 @@ public class EdaRegionConnector implements RegionConnector {
         try {
             return consumptionRecordMapper.mapToCIM(consumptionRecord, permissionId, connectionId, dataNeedId);
         } catch (InvalidMappingException e) {
-            // TODO In the future this should also inform the administrative console about the invalid mapping
             LOGGER.error("Could not map consumption record to CIM consumption record", e);
             return null;
         }

@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda;
 
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.*;
+import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;

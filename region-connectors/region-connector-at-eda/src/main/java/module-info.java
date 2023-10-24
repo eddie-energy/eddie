@@ -38,7 +38,7 @@ module energy.eddie.regionconnector.at {
     opens at.ebutilities.schemata.customerconsent.cmrequest._01p10 to jakarta.xml.bind;
     opens at.ebutilities.schemata.customerconsent.cmrevoke._01p00 to jakarta.xml.bind;
     opens at.ebutilities.schemata.customerconsent.cmnotification._01p11 to jakarta.xml.bind;
-    opens at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30 to jakarta.xml.bind;
+    opens at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31 to jakarta.xml.bind;
     opens at.ebutilities.schemata.customerprocesses.masterdata._01p30 to jakarta.xml.bind;
     opens at.ebutilities.schemata.customerprocesses.common.types._01p20 to org.glassfish.jaxb.core, org.glassfish.jaxb.runtime;
 

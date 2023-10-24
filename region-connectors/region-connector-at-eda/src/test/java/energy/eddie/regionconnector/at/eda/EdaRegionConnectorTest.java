@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda;
 
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.*;
+import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.PermissionProcessStatus;
