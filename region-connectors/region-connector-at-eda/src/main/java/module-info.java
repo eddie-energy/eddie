@@ -20,6 +20,7 @@ module energy.eddie.regionconnector.at {
     requires spring.boot.autoconfigure;
     requires spring.web;
     requires spring.context;
+    requires org.reactivestreams;
 
     exports energy.eddie.regionconnector.at.eda.requests;
     exports energy.eddie.regionconnector.at.eda.requests.restricted.enums;

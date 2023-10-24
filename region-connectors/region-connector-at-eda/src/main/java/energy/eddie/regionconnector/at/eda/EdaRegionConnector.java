@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.at.eda;
 import energy.eddie.api.v0.*;
 import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
-import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
@@ -23,6 +22,7 @@ import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.io.FileInputStream;
@@ -33,7 +33,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Flow;
@@ -113,7 +112,8 @@ public class EdaRegionConnector implements RegionConnector {
     public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
         return JdkFlowAdapter.publisherToFlowPublisher(
                 edaAdapter.getConsumptionRecordStream()
-                        .mapNotNull(this::mapConsumptionRecordToCIMConsumptionRecord)
+                        .mapNotNull(this::mapConsumptionRecordToCIM)
+                        .flatMap(this::emitForEachPermissionRequest)
         );
     }
 
@@ -266,7 +266,13 @@ public class EdaRegionConnector implements RegionConnector {
 
         try {
             switch (cmRequestStatus.getStatus()) {
-                case ACCEPTED -> permissionRequest.accept();
+                case ACCEPTED -> {
+                    if (permissionRequest.meteringPointId().isEmpty()) {
+                        permissionRequest.setMeteringPointId(cmRequestStatus.getMeteringPoint()
+                                .orElseThrow(() -> new IllegalStateException("This should never happen! Metering point id is missing in ACCEPTED CMRequestStatus message")));
+                    }
+                    permissionRequest.accept();
+                }
                 case ERROR -> permissionRequest.invalid();
                 case REJECTED -> permissionRequest.rejected();
                 case RECEIVED -> permissionRequest.receivedPermissionAdministratorResponse();
@@ -298,7 +304,7 @@ public class EdaRegionConnector implements RegionConnector {
         permissionIdToConnectionStatusMessages.put(permissionId, connectionStatusMessage);
     }
 
-    private @Nullable ConsumptionRecord mapConsumptionRecordToCIMConsumptionRecord(at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord consumptionRecord) {
+    private @Nullable ConsumptionRecord mapConsumptionRecordToCIM(at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord consumptionRecord) {
         try {
             return consumptionRecordMapper.mapToCIM(consumptionRecord);
         } catch (InvalidMappingException e) {
@@ -306,4 +312,29 @@ public class EdaRegionConnector implements RegionConnector {
             return null;
         }
     }
+
+    /**
+     * Emit a {@link ConsumptionRecord} for each {@link AtPermissionRequest} that matches the {@link ConsumptionRecord#getMeteringPoint()} and {@link ConsumptionRecord#getStartDateTime()} of the given {@link ConsumptionRecord}
+     *
+     * @param consumptionRecord the consumption record to emit for each permission request
+     */
+    private Flux<ConsumptionRecord> emitForEachPermissionRequest(ConsumptionRecord consumptionRecord) {
+        var permissionRequests = permissionRequestRepository.findByMeteringPointIdAndDate(
+                consumptionRecord.getMeteringPoint(),
+                consumptionRecord.getStartDateTime().toLocalDate()
+        );
+
+        if (permissionRequests.isEmpty()) {
+            LOGGER.warn("No permission requests found for consumption record {}", consumptionRecord);
+            return Flux.empty(); // Return an empty Flux if no permission requests are found
+        }
+
+        return Flux.fromIterable(permissionRequests).map(permissionRequest -> {
+            consumptionRecord.setPermissionId(permissionRequest.permissionId());
+            consumptionRecord.setConnectionId(permissionRequest.connectionId());
+            consumptionRecord.setDataNeedId(permissionRequest.dataNeedId());
+            return consumptionRecord;
+        });
+    }
+
 }
