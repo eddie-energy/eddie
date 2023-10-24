@@ -44,10 +44,8 @@ class InMemoryPermimssionRequestRepositoryTest {
         repository.save(request);
 
         // When
-        Optional<DkEnerginetCustomerPermissionRequest> foundRequest = repository.findByPermissionId(null);
-
         // Then
-        assertTrue(foundRequest.isEmpty());
+        assertThrows(NullPointerException.class, () -> repository.findByPermissionId(null));
     }
 
     @Test
