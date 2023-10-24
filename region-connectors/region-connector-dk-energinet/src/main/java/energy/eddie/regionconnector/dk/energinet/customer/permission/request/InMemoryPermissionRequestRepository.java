@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
 import energy.eddie.api.v0.process.model.PermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.shared.permission.requests.decorators.SavingPermissionRequest;
 
 import java.util.Map;
 import java.util.Optional;
@@ -17,10 +18,10 @@ public class InMemoryPermissionRequestRepository implements PermissionRequestRep
 
     @Override
     public Optional<DkEnerginetCustomerPermissionRequest> findByPermissionId(String permissionId) {
-        if (permissionId == null) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(requests.get(permissionId));
+        // wrap the request with a SavingPermissionRequest so changes will be persisted
+        // TODO this is a temporary workaround
+        return Optional.ofNullable(requests.get(permissionId))
+                .map(request -> new DkEnerginetCustomerPermissionRequestAdapter(request, new SavingPermissionRequest<>(request, this)));
     }
 
     @Override
