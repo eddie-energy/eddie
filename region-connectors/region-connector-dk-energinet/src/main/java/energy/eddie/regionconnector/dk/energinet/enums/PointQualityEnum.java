@@ -12,14 +12,11 @@ import java.util.Objects;
  * @see Point#getOutQuantityQuality()
  */
 public enum PointQualityEnum {
-    A01("Adjusted", "Will no longer be used after February 2020. Until then it specifies energy quantities which are calculated by DataHub."), A02("Not available", "Specifies that the grid operator has submitted a 'missing indicator' to DataHub for the specific position, meaning that the energy quantity is not available. Therefore, no quantity will be returned for the specific position."), A03("Estimated", "Specifies that the grid operator has submitted the quantity to DataHub as an estimate."), A04("As provided", "Specifies that the grid operator has submitted the quantity to DataHub as measured."), A05("Incomplete", "Is applied to an aggregated energy quantity if at least one of the quantities included in the aggregation has been submitted to DataHub with a 'missing indicator', meaning that the quantity is not available (as described under code A02).");
-
+    A01("Adjusted"), A02("Not available"), A03("Estimated"), A04("As provided"), A05("Incomplete");
     private final String description;
-    private final String comment;
 
-    PointQualityEnum(String description, String comment) {
+    PointQualityEnum(String description) {
         this.description = description;
-        this.comment = comment;
     }
 
     public static PointQualityEnum fromString(String code) {
@@ -38,12 +35,8 @@ public enum PointQualityEnum {
         return description;
     }
 
-    public String getComment() {
-        return comment;
-    }
-
     @Override
     public String toString() {
-        return name() + "{" + "description='" + description + '\'' + ", comment='" + comment + '\'' + '}';
+        return name() + "{" + "description='" + description + '\'' + '}';
     }
 }
