@@ -53,7 +53,7 @@ public class TestUtils {
     public static void verifyErrorLogStartsWith(String startString, LogCaptor logCaptor, Class<?> expectedExceptionClass, String exceptionMessage) {
         var errorEvents = getErrorEvents(logCaptor);
         assertEquals(1, errorEvents.size());
-        assertThat(errorEvents.get(0).getMessage()).startsWith(startString);
+        assertThat(errorEvents.get(0).getFormattedMessage()).startsWith(startString);
 
         if (expectedExceptionClass == null)
             return;
