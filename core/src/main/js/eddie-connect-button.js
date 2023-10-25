@@ -65,7 +65,7 @@ function durationFromDateString(dateString) {
 
 class EddieConnectButton extends LitElement {
   static properties = {
-    connectionId: { attribute: "connectionid" },
+    connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
     _selectedCountry: { type: String },
     _selectedPermissionAdministrator: { type: Object },
