@@ -14,6 +14,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaException;
+import org.apache.kafka.common.errors.WakeupException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
@@ -95,13 +96,20 @@ public class KafkaStreamer extends AiidaStreamer {
     }
 
     private void terminationRequestPollRunnable() {
-        try {
-            ConsumerRecords<String, String> polled = consumer.poll(Duration.ofSeconds(1));
+        LOGGER.trace("TerminationRequestPollRunnable is running");
 
-            consumer.commitAsync();
-            // only react to the first message received on the topic
-            if (polled.count() > 0)
-                receivedTerminationRequest(polled.iterator().next().value());
+        try {
+            synchronized (consumer) {
+                ConsumerRecords<String, String> polled = consumer.poll(Duration.ofSeconds(5));
+
+                var iterator = polled.iterator();
+                while (iterator.hasNext() && !receivedTerminationRequest) {
+                    consumer.commitAsync();
+                    receivedTerminationRequest(iterator.next().value());
+                }
+            }
+        } catch (WakeupException ignored) {
+            // happens when the KafkaStreamer is currently polling and #close() is called
         } catch (KafkaException ex) {
             LOGGER.error("Error while polling termination request for permission {}", permission.permissionId(), ex);
         }
@@ -117,9 +125,12 @@ public class KafkaStreamer extends AiidaStreamer {
         recordSubscriptionDisposable = recordFlux.subscribe(this::produceAiidaRecord);
         statusMessageSubscriptionDisposable = statusMessageFlux.subscribe(this::produceStatusMessage);
 
-        consumer.subscribe(List.of(permission.kafkaStreamingConfig().subscribeTopic()));
+        synchronized (consumer) {
+            consumer.subscribe(List.of(permission.kafkaStreamingConfig().subscribeTopic()));
+        }
+        LOGGER.info("Subscribed to Kafka topic {}", permission.kafkaStreamingConfig().subscribeTopic());
 
-        pollFuture = scheduler.scheduleAtFixedRate(this::terminationRequestPollRunnable, terminationRequestPollDuration);
+        pollFuture = scheduler.scheduleWithFixedDelay(this::terminationRequestPollRunnable, terminationRequestPollDuration);
     }
 
     /**
@@ -134,7 +145,7 @@ public class KafkaStreamer extends AiidaStreamer {
             LOGGER.debug("Got new aiidaRecord but won't send it as a termination request has been received.");
             return;
         }
-        LOGGER.debug("Sending new aiidaRecord: {}", aiidaRecord);
+        LOGGER.trace("Sending new aiidaRecord: {}", aiidaRecord);
         produceRecord(permission.kafkaStreamingConfig().dataTopic(), aiidaRecord);
     }
 
@@ -175,7 +186,7 @@ public class KafkaStreamer extends AiidaStreamer {
             producer.send(kafkaRecord, (metadata, exception) -> {
                 // callback is executed in IO thread of producer, so delegate expensive work to other threads
                 if (exception == null)
-                    LOGGER.info("Successfully produced data {} to topic {}, metadata: {}", data, topic, metadata);
+                    LOGGER.trace("Successfully produced data {} to topic {}, metadata: {}", data, topic, metadata);
                 else
                     LOGGER.error("Failed to send data {}", data, exception);
             });
@@ -231,6 +242,10 @@ public class KafkaStreamer extends AiidaStreamer {
 
             // don't flush before calling close(), as flush may block for a long time and KafkaProducer still accepts new send requests which we want to avoid
             producer.close();
+            synchronized (consumer) {
+                consumer.wakeup();
+                consumer.close();
+            }
             LOGGER.info("KafkaStreamer for permission {} successfully shutdown", permission.permissionId());
         } catch (KafkaException e) {
             LOGGER.error("Error while shutting down KafkaStreamer for permission {}", permission.permissionId(), e);

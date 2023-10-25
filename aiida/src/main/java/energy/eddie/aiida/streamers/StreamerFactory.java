@@ -26,7 +26,7 @@ public class StreamerFactory {
      * @param terminationRequestSink         Sink, to which the permissionId will be published, when the EP requests a termination.
      * @param mapper                         {@link ObjectMapper} that should be used to convert the records to JSON.
      * @param scheduler                      Scheduler to schedule the periodic polling for EP termination requests.
-     * @param terminationRequestPollDuration Duration between the end of one poll interval and the start of the next. Needs to be at least 10 seconds.
+     * @param terminationRequestPollInterval Duration between the end of one poll interval and the start of the next. Needs to be at least 10 seconds.
      * @return A KafkaStreamer with the configuration applied and default values for the Kafka properties as specified in {@link KafkaFactory}.
      */
     protected static AiidaStreamer getAiidaStreamer(
@@ -36,9 +36,9 @@ public class StreamerFactory {
             Sinks.One<String> terminationRequestSink,
             ObjectMapper mapper,
             TaskScheduler scheduler,
-            Duration terminationRequestPollDuration) {
+            Duration terminationRequestPollInterval) {
         var producer = KafkaFactory.getKafkaProducer(permission.kafkaStreamingConfig(), permission.connectionId());
-        var consumer = KafkaFactory.getKafkaConsumer(permission.kafkaStreamingConfig(), permission.connectionId());
+        var consumer = KafkaFactory.getKafkaConsumer(permission.kafkaStreamingConfig(), permission.connectionId(), terminationRequestPollInterval);
 
         return new KafkaStreamer(
                 producer,
@@ -49,6 +49,6 @@ public class StreamerFactory {
                 permission,
                 mapper,
                 scheduler,
-                terminationRequestPollDuration);
+                terminationRequestPollInterval);
     }
 }

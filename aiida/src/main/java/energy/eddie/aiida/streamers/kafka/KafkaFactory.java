@@ -10,6 +10,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
+import java.time.Duration;
 import java.util.Properties;
 
 public class KafkaFactory {
@@ -40,11 +41,16 @@ public class KafkaFactory {
         return new KafkaProducer<>(properties, new StringSerializer(), new StringSerializer());
     }
 
-    public static Consumer<String, String> getKafkaConsumer(KafkaStreamingConfig streamingConfig, String connectionId) {
+    public static Consumer<String, String> getKafkaConsumer(KafkaStreamingConfig streamingConfig, String connectionId, Duration terminationRequestPollInterval) {
         Properties properties = new Properties();
         properties.put(ConsumerConfig.CLIENT_ID_CONFIG, connectionId);
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, connectionId);
+        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        properties.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, "5000");
+        // Kafka server should not consider the client dead if it doesn't poll for a long time.
+        // The poll loop is simple, therefore we should not miss any intervals, *3 is generous
+        properties.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, (int) terminationRequestPollInterval.toMillis() * 3);
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, streamingConfig.bootstrapServers());
 
         return new KafkaConsumer<>(properties, new StringDeserializer(), new StringDeserializer());

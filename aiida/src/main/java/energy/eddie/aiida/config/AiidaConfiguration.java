@@ -46,9 +46,11 @@ public class AiidaConfiguration {
     /**
      * Specifies how frequent a {@link AiidaStreamer} should poll the EP framework if they have issued
      * a termination request.
+     * Note that the actual polling interval may be higher, as the KafkaConsumer blocks for some time.
+     * The specified interval is the delay between the completion of one full poll execution and the start of the next.
      */
     @Bean
-    public Duration terminationRequestPollDuration() {
+    public Duration terminationRequestPollInterval() {
         return Duration.ofSeconds(pollDurationSeconds);
     }
 }

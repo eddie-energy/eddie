@@ -58,7 +58,7 @@ class StreamerManagerIntegrationTest {
      * is sent to the correct topic and received by the broker.
      */
     @Test
-    @Timeout(5)
+    @Timeout(10)
     void test_createStreamer_sendStatusMessages_stopStreamer(TestInfo testInfo) throws ConnectionStatusMessageSendFailedException {
         var permission = getPermissionForTest(testInfo);
         KafkaConsumer<String, String> consumer = getKafkaConsumer(testInfo, kafka);
