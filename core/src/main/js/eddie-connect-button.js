@@ -32,24 +32,21 @@ const COUNTRIES = [
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
 const BASE_URL = new URL(import.meta.url).origin;
-const METADATA_URL = new URL("/api/region-connectors-metadata", BASE_URL);
+
+function fetchJson(path) {
+  return fetch(new URL(path, BASE_URL))
+    .then((response) => response.json())
+    .catch((error) => console.error(error));
+}
 
 function getRegionConnectors() {
-  return fetch(METADATA_URL)
-    .then((response) => response.json())
-    .then((json) => Object.fromEntries(json.map((it) => [it.mdaCode, it])));
+  return fetchJson("/api/region-connectors-metadata").then((json) =>
+    Object.fromEntries(json.map((it) => [it.mdaCode, it]))
+  );
 }
 
 function getDataNeedAttributes(dataNeedId) {
-  return fetch(new URL(`/api/data-needs/${dataNeedId}`, BASE_URL))
-    .then((response) => response.json())
-    .catch((err) => console.error(err));
-}
-
-function getDataNeedIds() {
-  return fetch(new URL("/api/data-needs", BASE_URL)).then((response) =>
-    response.json()
-  );
+  return fetchJson(`/api/data-needs/${dataNeedId}`);
 }
 
 function shortISOString(date) {
@@ -125,7 +122,7 @@ class EddieConnectButton extends LitElement {
     }
 
     if (this.allowDataNeedSelection) {
-      this._dataNeedIds = await getDataNeedIds();
+      this._dataNeedIds = await fetchJson("/api/data-needs");
     }
 
     if (this.dataNeedId) {
@@ -133,13 +130,10 @@ class EddieConnectButton extends LitElement {
     }
 
     if (this.allowDataNeedModifications) {
-      this._dataNeedTypes = await fetch(
-        new URL("/api/data-needs/types", BASE_URL)
-      ).then((response) => response.json());
-
-      this._dataNeedGranularities = await fetch(
-        new URL("/api/data-needs/granularities", BASE_URL)
-      ).then((response) => response.json());
+      this._dataNeedTypes = await fetchJson("/api/data-needs/types");
+      this._dataNeedGranularities = await fetchJson(
+        "/api/data-needs/granularities"
+      );
     }
 
     this._availableConnectors = await getRegionConnectors();
