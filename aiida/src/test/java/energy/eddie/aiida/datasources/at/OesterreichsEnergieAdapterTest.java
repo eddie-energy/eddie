@@ -214,6 +214,27 @@ class OesterreichsEnergieAdapterTest {
         stepVerifier.verify();
     }
 
+    /**
+     * When receiving a JSON with an unmapped/unknown OBIS code, for the known OBIS codes,
+     * {@link energy.eddie.aiida.models.record.AiidaRecord}s are still emitted and the parsing does not fail
+     * when encountering the unknown OBIS code.
+     */
+    @Test
+    void givenUnknownObisCode_otherValuesAreStillEmitted() {
+        var json = "{\"1-0:1.8.0\":{\"value\":83622,\"time\":1698218800},\"UNKNOWN-OBIS-CODE\":{\"value\":0,\"time\":0},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":83854.3}";
+
+        StepVerifier.create(adapter.start())
+                .then(() -> {
+                    adapter.messageArrived(config.subscribeTopic(), new MqttMessage(json.getBytes()));
+                })
+                .expectNextMatches(aiidaRecord -> aiidaRecord.code().equals("1-0:1.8.0"))
+                .then(adapter::close)
+                .expectComplete()
+                .verify();
+
+        assertThat(logCaptor.getWarnLogs()).contains("Got OBIS code UNKNOWN-OBIS-CODE from SMA, but AiidaRecordFactory does not know how to handle it");
+    }
+
     @Test
     void givenConnectionLost_warningIsLogged() {
         adapter.disconnected(new MqttDisconnectResponse(new MqttException(998877)));
