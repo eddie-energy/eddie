@@ -4,6 +4,7 @@ import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
@@ -26,7 +27,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -97,19 +100,20 @@ class EdaRegionConnectorTest {
     void subscribeToConsumptionRecordPublisher_returnsCorrectlyMappedRecords() throws TransmissionException {
         var config = mock(AtConfiguration.class);
         var consumptionRecord = createConsumptionRecord();
-        consumptionRecord.getProcessDirectory().setConversationId("any1");
-
         var consumptionRecord2 = createConsumptionRecord();
-        consumptionRecord2.getProcessDirectory().setConversationId("any2");
 
         var adapter = mock(EdaAdapter.class);
         when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         TestPublisher<ConsumptionRecord> testPublisher = TestPublisher.create();
         when(adapter.getConsumptionRecordStream()).thenReturn(testPublisher.flux());
 
-        var repo = new InMemoryPermissionRequestRepository();
-        repo.save(new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1", null));
-        repo.save(new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2", null));
+        var repo = mock(AtPermissionRequestRepository.class);
+        when(repo.findByMeteringPointIdAndDate(anyString(), any()))
+                .thenReturn(List.of(
+                        new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1", null))
+                ).thenReturn(List.of(
+                        new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2", null))
+                );
 
         var uut = new EdaRegionConnector(config, adapter, repo);
 
@@ -133,6 +137,40 @@ class EdaRegionConnectorTest {
                 .expectComplete().verify();
     }
 
+    @Test
+    void subscribeToConsumptionRecordPublisher_emitsConsumptionRecord_forEveryMatchingRequest() throws TransmissionException {
+        var config = mock(AtConfiguration.class);
+        var consumptionRecord = createConsumptionRecord();
+
+        var adapter = mock(EdaAdapter.class);
+        when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
+        TestPublisher<ConsumptionRecord> testPublisher = TestPublisher.create();
+        when(adapter.getConsumptionRecordStream()).thenReturn(testPublisher.flux());
+
+        var repo = mock(AtPermissionRequestRepository.class);
+        when(repo.findByMeteringPointIdAndDate(anyString(), any()))
+                .thenReturn(List.of(
+                        new SimplePermissionRequest("pmId1", "connId1", "dataNeedId", "test1", "any1", null),
+                        new SimplePermissionRequest("pmId2", "connId2", "dataNeedId", "test2", "any2", null))
+                );
+
+        var uut = new EdaRegionConnector(config, adapter, repo);
+
+        var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConsumptionRecordStream());
+
+        StepVerifier.create(source)
+                .then(() -> testPublisher.emit(consumptionRecord))
+                .assertNext(csm -> {
+                    assertEquals("connId1", csm.getConnectionId());
+                    assertEquals("pmId1", csm.getPermissionId());
+                })
+                .assertNext(csm -> {
+                    assertEquals("connId2", csm.getConnectionId());
+                    assertEquals("pmId2", csm.getPermissionId());
+                })
+                .expectComplete().verify();
+    }
+
 
     @Test
     void subscribeToConnectionStatusMessagePublisher_returnsAccepted_onAccepted() throws TransmissionException {
@@ -146,6 +184,7 @@ class EdaRegionConnectorTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
+        when(ccmoRequest.meteringPointId()).thenReturn(Optional.of("meteringPointId"));
         var permissionRequest = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
         permissionRequest.changeState(new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest));
 

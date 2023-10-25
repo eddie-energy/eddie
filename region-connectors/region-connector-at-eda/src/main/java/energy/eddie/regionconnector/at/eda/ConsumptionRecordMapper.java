@@ -4,7 +4,6 @@ import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.Consum
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
-import jakarta.annotation.Nullable;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.ZonedDateTime;
@@ -29,22 +28,13 @@ public class ConsumptionRecordMapper {
      * Maps an EDA consumption record to a CIM consumption record
      *
      * @param externalConsumptionRecord The external consumption record to map
-     * @param permissionId              The permissionId to set on the mapped consumption record
-     * @param connectionId              The connectionId to set on the mapped consumption record
-     * @param dataNeedId                The dataNeedId to set on the mapped consumption record
      * @return a CIM consumption record
      * @throws InvalidMappingException if the mapping cant be completed because of invalid {@link ConsumptionRecord}. This can happen if the {@link ConsumptionRecord} is missing required fields such as Energy and EnergyData
      */
-    public energy.eddie.api.v0.ConsumptionRecord mapToCIM(ConsumptionRecord externalConsumptionRecord,
-                                                          @Nullable String permissionId,
-                                                          @Nullable String connectionId,
-                                                          @Nullable String dataNeedId) throws InvalidMappingException {
+    public energy.eddie.api.v0.ConsumptionRecord mapToCIM(ConsumptionRecord externalConsumptionRecord) throws InvalidMappingException {
         requireNonNull(externalConsumptionRecord);
 
         var consumptionRecord = new energy.eddie.api.v0.ConsumptionRecord();
-        consumptionRecord.setPermissionId(permissionId); // permissionId is optional so setting null is ok
-        consumptionRecord.setConnectionId(connectionId); // connectionId is optional so setting null is ok
-        consumptionRecord.setDataNeedId(dataNeedId); // dataNeedId is optional so setting null is ok
 
         var crEnergy = externalConsumptionRecord.getProcessDirectory().getEnergy().stream().findFirst().orElseThrow(() -> new InvalidMappingException("No Energy found in ProcessDirectory of ConsumptionRecord"));
         consumptionRecord.setMeteringPoint(externalConsumptionRecord.getProcessDirectory().getMeteringPoint());

@@ -6,6 +6,9 @@ import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
 /**
  * Adapter to use adapt the shared decorators to the AtPermissionRequest interface.
  */
@@ -52,6 +55,26 @@ public final class EdaPermissionRequestAdapter implements AtPermissionRequest {
     @Override
     public String conversationId() {
         return edaPermissionRequest.conversationId();
+    }
+
+    @Override
+    public Optional<String> meteringPointId() {
+        return edaPermissionRequest.meteringPointId();
+    }
+
+    @Override
+    public void setMeteringPointId(String meteringPointId) {
+        edaPermissionRequest.setMeteringPointId(meteringPointId);
+    }
+
+    @Override
+    public LocalDate dataFrom() {
+        return edaPermissionRequest.dataFrom();
+    }
+
+    @Override
+    public Optional<LocalDate> dataTo() {
+        return edaPermissionRequest.dataTo();
     }
 
     @Override

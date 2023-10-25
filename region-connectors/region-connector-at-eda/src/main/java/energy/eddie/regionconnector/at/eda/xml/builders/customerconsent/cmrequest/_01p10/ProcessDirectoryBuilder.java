@@ -157,7 +157,7 @@ public class ProcessDirectoryBuilder extends ProcessDirectorySBuilder {
         processDir.setMessageId(Objects.requireNonNull(messageId, "Attributes `messageId` is required."));
         processDir.setConversationId(Objects.requireNonNull(conversationId, "Attributes `conversationId` is required."));
         processDir.setProcessDate(DateTimeConverter.dateToXml(Objects.requireNonNullElseGet(processDate, LocalDate::now)));
-        processDir.setMeteringPoint(Objects.requireNonNull(meteringPoint, "Attribute `meteringPoint` is required."));
+        processDir.setMeteringPoint(meteringPoint);
         processDir.setCMRequestId(Objects.requireNonNullElseGet(cmRequestId, () -> new CMRequestId(Objects.requireNonNull(messageId)).toString()));
         processDir.setConsentId(consentId);
         processDir.setCMRequest(cmRequest);
