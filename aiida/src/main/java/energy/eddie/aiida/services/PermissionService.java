@@ -98,20 +98,25 @@ public class PermissionService {
         streamerManager.createNewStreamerForPermission(newPermission);
         streamerManager.sendConnectionStatusMessageForPermission(acceptedMessage, newPermission.permissionId());
 
-        Sinks.One<String> sink = Sinks.one();
-        sink.asMono().subscribe(this::expirePermission);
-
-        var expirationRunnable = new PermissionExpiredRunnable(newPermission.permissionId(),
-                newPermission.expirationTime(), sink);
-        ScheduledFuture<?> future = scheduler.schedule(expirationRunnable, newPermission.expirationTime());
-
-        expirationFutures.put(newPermission.permissionId(), future);
+        schedulePermissionExpirationRunnable(newPermission);
 
         // scheduled start will be implemented later, for now, streaming is started right away and should be reflected in db
         newPermission.updateStatus(PermissionStatus.STREAMING_DATA);
         newPermission = repository.save(newPermission);
 
         return newPermission;
+    }
+
+    private void schedulePermissionExpirationRunnable(Permission permission) {
+        LOGGER.info("Will schedule a PermissionExpirationRunnable for permission {} to run at  {}", permission.permissionId(), permission.expirationTime());
+
+        Sinks.One<String> expirationSink = Sinks.one();
+        expirationSink.asMono().subscribe(this::expirePermission);
+        var expirationRunnable = new PermissionExpiredRunnable(permission.permissionId(),
+                permission.expirationTime(), expirationSink);
+        ScheduledFuture<?> future = scheduler.schedule(expirationRunnable, permission.expirationTime());
+
+        expirationFutures.put(permission.permissionId(), future);
     }
 
     /**
@@ -241,6 +246,7 @@ public class PermissionService {
 
         for (Permission permission : repository.findAllActivePermissions()) {
             if (permission.expirationTime().isAfter(clock.instant())) {
+                schedulePermissionExpirationRunnable(permission);
                 streamerManager.createNewStreamerForPermission(permission);
 
                 permission.updateStatus(PermissionStatus.STREAMING_DATA);

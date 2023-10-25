@@ -528,6 +528,7 @@ class PermissionServiceTest {
                 savedByMethod.put(per.permissionId(), per);
                 return per;
             });
+            when(scheduler.schedule(any(), any(Instant.class))).thenReturn(mock(ScheduledFuture.class));
 
 
             getUpdatePermissionsOnStartup().invoke(service);
@@ -547,6 +548,10 @@ class PermissionServiceTest {
             assertEquals(PermissionStatus.STREAMING_DATA, permission.status());
             verify(streamerManager).createNewStreamerForPermission(argThat(arg ->
                     arg.permissionId().equals(streamingDataId)));
+
+            verify(scheduler, times(2)).schedule(any(), any(Instant.class));
+            verify(expirationFutures).put(eq(shouldStreamPermissionId), any());
+            verify(expirationFutures).put(eq(streamingDataId), any());
         }
 
         private Method getUpdatePermissionsOnStartup() throws NoSuchMethodException {
