@@ -5,7 +5,7 @@ import jakarta.annotation.Nullable;
 import java.util.Optional;
 
 public class DsoIdAndMeteringPoint {
-    public static final int DSO_ID_LENGTH = 8;
+    private static final int DSO_ID_LENGTH = 8;
 
     @Nullable
     private final String meteringPoint;

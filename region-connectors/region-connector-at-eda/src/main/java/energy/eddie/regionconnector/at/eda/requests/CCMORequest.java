@@ -25,7 +25,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
@@ -102,18 +101,6 @@ public class CCMORequest {
 
     public String cmRequestId() {
         return new CMRequestId(messageId()).toString();
-    }
-
-    public Optional<String> meteringPointId() {
-        return dsoIdAndMeteringPoint.meteringPoint();
-    }
-
-    public LocalDate dataFrom() {
-        return timeframe.start();
-    }
-
-    public Optional<LocalDate> dataTo() {
-        return timeframe.end();
     }
 
     public CMRequest toCMRequest() throws InvalidDsoIdException {

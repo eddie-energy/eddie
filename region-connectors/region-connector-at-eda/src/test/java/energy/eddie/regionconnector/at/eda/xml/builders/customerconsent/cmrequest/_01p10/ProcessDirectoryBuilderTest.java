@@ -108,5 +108,9 @@ public class ProcessDirectoryBuilderTest {
                 .withMessageId("GC100007201912170930001230001234567")
                 .build());
 
+        // Assign only two required attribute
+        assertThrows(NullPointerException.class, () -> processDirBuilder
+                .withConversationId("GC100007201912170930001230012345678")
+                .build());
     }
 }

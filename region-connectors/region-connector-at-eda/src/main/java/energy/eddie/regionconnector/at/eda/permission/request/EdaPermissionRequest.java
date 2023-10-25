@@ -5,11 +5,8 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtCreatedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
-import jakarta.annotation.Nullable;
 
-import java.time.LocalDate;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 public class EdaPermissionRequest implements AtPermissionRequest {
@@ -17,11 +14,6 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     private final String permissionId;
     private final String cmRequestId;
     private final String conversationId;
-    private final LocalDate dataFrom;
-    @Nullable
-    private final LocalDate dataTo;
-    @Nullable
-    private String meteringPointId;
     private final String dataNeedId;
     private PermissionRequestState state;
 
@@ -35,9 +27,6 @@ public class EdaPermissionRequest implements AtPermissionRequest {
         this.dataNeedId = dataNeedId;
         this.cmRequestId = ccmoRequest.cmRequestId();
         this.conversationId = ccmoRequest.messageId();
-        this.meteringPointId = ccmoRequest.meteringPointId().orElse(null);
-        this.dataFrom = ccmoRequest.dataFrom();
-        this.dataTo = ccmoRequest.dataTo().orElse(null);
         this.state = new AtCreatedPermissionRequestState(this, ccmoRequest, edaAdapter);
     }
 
@@ -64,26 +53,6 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     @Override
     public String conversationId() {
         return conversationId;
-    }
-
-    @Override
-    public Optional<String> meteringPointId() {
-        return Optional.ofNullable(meteringPointId);
-    }
-
-    @Override
-    public void setMeteringPointId(String meteringPointId) {
-        this.meteringPointId = meteringPointId;
-    }
-
-    @Override
-    public LocalDate dataFrom() {
-        return dataFrom;
-    }
-
-    @Override
-    public Optional<LocalDate> dataTo() {
-        return Optional.ofNullable(dataTo);
     }
 
     @Override

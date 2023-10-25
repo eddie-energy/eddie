@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.at.eda;
 import energy.eddie.api.v0.*;
 import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
+import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
@@ -22,7 +23,6 @@ import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.io.FileInputStream;
@@ -33,11 +33,11 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Flow;
 
-import static energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint.DSO_ID_LENGTH;
 import static java.util.Objects.requireNonNull;
 
 public class EdaRegionConnector implements RegionConnector {
@@ -60,8 +60,6 @@ public class EdaRegionConnector implements RegionConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
     private static final String CONNECTION_ID = "connectionId";
     private static final String DATA_NEED_ID = "dataNeedId";
-    private static final String METERING_POINT_ID = "meteringPointId";
-    private static final String DSO_ID = "dsoId";
     private final AtConfiguration atConfiguration;
     private final EdaAdapter edaAdapter;
     private final ConsumptionRecordMapper consumptionRecordMapper;
@@ -112,8 +110,7 @@ public class EdaRegionConnector implements RegionConnector {
     public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
         return JdkFlowAdapter.publisherToFlowPublisher(
                 edaAdapter.getConsumptionRecordStream()
-                        .mapNotNull(this::mapConsumptionRecordToCIM)
-                        .flatMap(this::emitForEachPermissionRequest)
+                        .mapNotNull(this::mapConsumptionRecordToCIMConsumptionRecord)
         );
     }
 
@@ -151,38 +148,27 @@ public class EdaRegionConnector implements RegionConnector {
         });
 
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
+            // TODO rework validation after mvp1
             var connectionIdValidator = ctx.formParamAsClass(CONNECTION_ID, String.class).check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
             var dataNeedIdValidator = ctx.formParamAsClass(DATA_NEED_ID, String.class).check(s -> s != null && !s.isBlank(), "dataNeedId must not be null or blank");
-            var meteringPointIdValidator = ctx.formParamAsClass(METERING_POINT_ID, String.class)
-                    .allowNullable()
-                    .check(s -> s.length() == 33, "meteringPointId must be 33 characters long");
-            var dsoIdValidator = ctx.formParamAsClass(DSO_ID, String.class)
-                    .allowNullable()
-                    .check(s -> s.length() == DSO_ID_LENGTH, "dsoId must be " + DSO_ID_LENGTH + " characters long");
+            var meteringPointIdValidator = ctx.formParamAsClass("meteringPointId", String.class).check(s -> s != null && s.length() == 33, "meteringPointId must be 33 characters long");
 
             LocalDate now = LocalDate.now(ZoneId.of("Europe/Vienna"));
             var startValidator = ctx.formParamAsClass("start", LocalDate.class).check(Objects::nonNull, "start must not be null").check(start -> start.isAfter(now.minusMonths(MAXIMUM_MONTHS_IN_THE_PAST)), "start must not be older than 36 months");
 
             var endValidator = ctx.formParamAsClass("end", LocalDate.class)
+                    //.allowNullable() // disable for now as we don't support Future data yet
                     .check(Objects::nonNull, "end must not be null")
-                    .check(end -> !startValidator.errors().isEmpty() ||
-                                    end.isAfter(startValidator.get()),
-                            "end must be after start")
-                    .check(end -> !startValidator.errors().isEmpty() ||
-                                    (startValidator.get().isBefore(now) && end.isBefore(now)) ||
-                                    !startValidator.get().isBefore(now),
-                            "end and start must either be completely in the past or completely in the future"
-                    );
+                    .check(end -> !startValidator.errors().isEmpty() || end.isAfter(startValidator.get()), "end must be after start")
+                    .check(end -> end.isBefore(now), "end must be in the past"); // for now, we only support historical data
 
             var errors = JavalinValidation.collectErrors(
                     connectionIdValidator,
                     dataNeedIdValidator,
                     meteringPointIdValidator,
-                    dsoIdValidator,
                     startValidator,
                     endValidator
             );
-
             if (!errors.isEmpty()) {
                 ctx.status(HttpStatus.BAD_REQUEST);
                 ctx.json(errors);
@@ -191,7 +177,7 @@ public class EdaRegionConnector implements RegionConnector {
 
             var start = startValidator.get();
             var end = Objects.requireNonNullElseGet(endValidator.get(), () -> now.minusDays(1));
-            DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint(dsoIdValidator.get(), meteringPointIdValidator.get());
+            DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint(null, meteringPointIdValidator.get());
 
             var ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, new CCMOTimeFrame(start, end), this.atConfiguration, RequestDataType.METERING_DATA, // for now only allow metering data
                     AllowedMeteringIntervalType.QH, AllowedTransmissionCycle.D);
@@ -266,13 +252,7 @@ public class EdaRegionConnector implements RegionConnector {
 
         try {
             switch (cmRequestStatus.getStatus()) {
-                case ACCEPTED -> {
-                    if (permissionRequest.meteringPointId().isEmpty()) {
-                        permissionRequest.setMeteringPointId(cmRequestStatus.getMeteringPoint()
-                                .orElseThrow(() -> new IllegalStateException("This should never happen! Metering point id is missing in ACCEPTED CMRequestStatus message")));
-                    }
-                    permissionRequest.accept();
-                }
+                case ACCEPTED -> permissionRequest.accept();
                 case ERROR -> permissionRequest.invalid();
                 case REJECTED -> permissionRequest.rejected();
                 case RECEIVED -> permissionRequest.receivedPermissionAdministratorResponse();
@@ -304,37 +284,27 @@ public class EdaRegionConnector implements RegionConnector {
         permissionIdToConnectionStatusMessages.put(permissionId, connectionStatusMessage);
     }
 
-    private @Nullable ConsumptionRecord mapConsumptionRecordToCIM(at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord consumptionRecord) {
+    /**
+     * Map an EDA consumption record to a CIM consumption record
+     * and add connectionId and permissionId for identification
+     *
+     * @param consumptionRecord the consumption record to process
+     */
+    private @Nullable ConsumptionRecord mapConsumptionRecordToCIMConsumptionRecord(at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord consumptionRecord) {
+        // map an EDA consumption record it to a CIM consumption record
+        // and add connectionId and permissionId for identification
+        String conversationId = consumptionRecord.getProcessDirectory().getConversationId();
+        Optional<AtPermissionRequest> permissionRequest = permissionRequestRepository
+                .findByConversationIdOrCMRequestId(conversationId, null);
+        String permissionId = permissionRequest.map(PermissionRequest::permissionId).orElse(null);
+        String connectionId = permissionRequest.map(PermissionRequest::connectionId).orElse(null);
+        String dataNeedId = permissionRequest.map(PermissionRequest::dataNeedId).orElse(null);
+        LOGGER.info("Received consumption record (ConversationId '{}') for permissionId {} and connectionId {}", conversationId, permissionId, connectionId);
         try {
-            return consumptionRecordMapper.mapToCIM(consumptionRecord);
+            return consumptionRecordMapper.mapToCIM(consumptionRecord, permissionId, connectionId, dataNeedId);
         } catch (InvalidMappingException e) {
             LOGGER.error("Could not map consumption record to CIM consumption record", e);
             return null;
         }
     }
-
-    /**
-     * Emit a {@link ConsumptionRecord} for each {@link AtPermissionRequest} that matches the {@link ConsumptionRecord#getMeteringPoint()} and {@link ConsumptionRecord#getStartDateTime()} of the given {@link ConsumptionRecord}
-     *
-     * @param consumptionRecord the consumption record to emit for each permission request
-     */
-    private Flux<ConsumptionRecord> emitForEachPermissionRequest(ConsumptionRecord consumptionRecord) {
-        var permissionRequests = permissionRequestRepository.findByMeteringPointIdAndDate(
-                consumptionRecord.getMeteringPoint(),
-                consumptionRecord.getStartDateTime().toLocalDate()
-        );
-
-        if (permissionRequests.isEmpty()) {
-            LOGGER.warn("No permission requests found for consumption record {}", consumptionRecord);
-            return Flux.empty(); // Return an empty Flux if no permission requests are found
-        }
-
-        return Flux.fromIterable(permissionRequests).map(permissionRequest -> {
-            consumptionRecord.setPermissionId(permissionRequest.permissionId());
-            consumptionRecord.setConnectionId(permissionRequest.connectionId());
-            consumptionRecord.setDataNeedId(permissionRequest.dataNeedId());
-            return consumptionRecord;
-        });
-    }
-
 }

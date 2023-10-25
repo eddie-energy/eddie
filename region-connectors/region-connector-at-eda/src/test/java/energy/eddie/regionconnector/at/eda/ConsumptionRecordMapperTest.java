@@ -5,6 +5,7 @@ import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import energy.eddie.regionconnector.at.eda.xml.builders.helper.DateTimeConverter;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -34,6 +35,9 @@ class ConsumptionRecordMapperTest {
     @MethodSource("consumptionRecordConfigurations")
     void mapToCIM_mapsEDAConsumptionRecordWithSingleConsumptionPoint_asExpected(String meteringType, double consumptionValue, MeteringIntervall meteringInterval, UOMType unit) throws InvalidMappingException {
         var meteringPoint = "meteringPoint";
+        var permissionId = "permissionId";
+        var connectionId = "connectionId";
+        var dataNeedId = "dataNeedId";
         var expectedMeteringType = meteringType.equals("L1") ? ConsumptionPoint.MeteringType.MEASURED_VALUE : ConsumptionPoint.MeteringType.EXTRAPOLATED_VALUE;
         var conversionFactor = switch (unit) {
             case KWH -> ConversionFactor.KWH_TO_WH;
@@ -52,8 +56,11 @@ class ConsumptionRecordMapperTest {
 
         var uut = new ConsumptionRecordMapper();
 
-        var cimCR = uut.mapToCIM(edaCR);
+        var cimCR = uut.mapToCIM(edaCR, permissionId, connectionId, dataNeedId);
 
+        assertEquals(permissionId, cimCR.getPermissionId());
+        assertEquals(connectionId, cimCR.getConnectionId());
+        assertEquals(dataNeedId, cimCR.getDataNeedId());
         assertEquals(meteringPoint, cimCR.getMeteringPoint());
         assertNotNull(cimCR.getConsumptionPoints());
         assertEquals(expectedMeteringInterval, cimCR.getMeteringInterval());
@@ -68,7 +75,7 @@ class ConsumptionRecordMapperTest {
         edaCR.setProcessDirectory(new ProcessDirectory());
         var uut = new ConsumptionRecordMapper();
 
-        assertThrows(InvalidMappingException.class, () -> uut.mapToCIM(edaCR));
+        assertThrows(InvalidMappingException.class, () -> uut.mapToCIM(edaCR, null, null, null));
     }
 
     @Test
@@ -77,14 +84,33 @@ class ConsumptionRecordMapperTest {
         edaCR.getProcessDirectory().getEnergy().forEach(e -> e.getEnergyData().clear());
         var uut = new ConsumptionRecordMapper();
 
-        assertThrows(InvalidMappingException.class, () -> uut.mapToCIM(edaCR));
+        assertThrows(InvalidMappingException.class, () -> uut.mapToCIM(edaCR, null, null, null));
     }
 
     @Test
     void mapToCIM_EdaConsumptionRecordIsNull_throwsNullPointerException() {
         var uut = new ConsumptionRecordMapper();
 
-        assertThrows(NullPointerException.class, () -> uut.mapToCIM(null));
+        assertThrows(NullPointerException.class, () -> uut.mapToCIM(null, null, null, null));
+    }
+
+    @Test
+    @DisplayName("mapToCIM maps EDA consumption record with permissionId, no connectionId and no dataNeedId as expected")
+    void mapToCIM_mapsEDAConsumptionRecordWithNullParameters_asExpected() throws InvalidMappingException {
+        var meteringPoint = "meteringPoint";
+        var edaCR = createConsumptionRecord(meteringPoint, "L1", ZonedDateTime.now(ZoneOffset.UTC), MeteringIntervall.QH, 1, UOMType.KWH);
+
+        var uut = new ConsumptionRecordMapper();
+
+        var cimCR = uut.mapToCIM(edaCR, null, null, null);
+
+        assertNull(cimCR.getPermissionId());
+        assertNull(cimCR.getConnectionId());
+        assertEquals(meteringPoint, cimCR.getMeteringPoint());
+        assertNotNull(cimCR.getConsumptionPoints());
+        assertEquals(1, cimCR.getConsumptionPoints().size());
+        assertEquals(ConsumptionPoint.MeteringType.MEASURED_VALUE, cimCR.getConsumptionPoints().get(0).getMeteringType());
+        assertEquals(1000, cimCR.getConsumptionPoints().get(0).getConsumption());
     }
 
     @Test
@@ -94,7 +120,7 @@ class ConsumptionRecordMapperTest {
 
         var uut = new ConsumptionRecordMapper();
 
-        var cimCR = uut.mapToCIM(edaCR);
+        var cimCR = uut.mapToCIM(edaCR, null, null, null);
 
         assertNotNull(cimCR.getConsumptionPoints());
         assertEquals(1, cimCR.getConsumptionPoints().size());

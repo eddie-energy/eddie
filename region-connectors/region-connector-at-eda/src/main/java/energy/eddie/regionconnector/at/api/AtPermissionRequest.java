@@ -3,9 +3,6 @@ package energy.eddie.regionconnector.at.api;
 
 import energy.eddie.api.v0.process.model.PermissionRequest;
 
-import java.time.LocalDate;
-import java.util.Optional;
-
 public interface AtPermissionRequest extends PermissionRequest {
     /**
      * The CM Request ID of this permission request.
@@ -21,30 +18,4 @@ public interface AtPermissionRequest extends PermissionRequest {
      * @return conversationId
      */
     String conversationId();
-
-    /**
-     * In austria every permission request is associated with exactly one metering point.
-     * When the request is sent without a metering point id, the user is asked to select a metering point in his DSO web portal.
-     * So it can be empty in the beginning, but it will always be set once the request has been accepted.
-     *
-     * @return meteringPointId
-     */
-    Optional<String> meteringPointId();
-
-    void setMeteringPointId(String meteringPointId);
-
-    /**
-     * The start date from when data is requested.
-     *
-     * @return dataFrom
-     */
-    LocalDate dataFrom();
-
-    /**
-     * The end date until when the data is requested.
-     * If this is not present, the permission request is active until it is revoked.
-     *
-     * @return dataTo
-     */
-    Optional<LocalDate> dataTo();
 }
