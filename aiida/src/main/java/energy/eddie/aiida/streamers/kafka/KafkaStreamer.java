@@ -223,7 +223,8 @@ public class KafkaStreamer extends AiidaStreamer {
                 statusMessageSubscriptionDisposable.dispose();
 
             if (pollFuture != null)
-                pollFuture.cancel(true);
+                // don't interrupt otherwise consumer.poll() will throw InterruptedException and test may fail
+                pollFuture.cancel(false);
 
             if (!receivedTerminationRequest)
                 terminationRequestSink.tryEmitEmpty();

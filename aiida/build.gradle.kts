@@ -37,9 +37,10 @@ dependencies {
 
     // testcontainers
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
-    testImplementation("org.testcontainers:junit-jupiter:1.19.0")
-    testImplementation("org.testcontainers:postgresql:1.19.0")
-    testImplementation("org.testcontainers:kafka:1.19.0")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:toxiproxy")
+    testImplementation("org.testcontainers:kafka")
 
     // Kafka
     implementation("org.apache.kafka:kafka-clients:3.2.3")
@@ -56,6 +57,15 @@ dependencies {
 
     // test interaction with logger
     testImplementation("io.github.hakky54:logcaptor:2.9.0")
+
+    // mqtt
+    implementation("org.eclipse.paho:org.eclipse.paho.mqttv5.client:1.2.5")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.testcontainers:testcontainers-bom:1.19.1")
+    }
 }
 
 configurations {
