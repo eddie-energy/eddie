@@ -58,7 +58,7 @@ web application as it's implemented using standard HTML custom elements.
 
 <script type="module" src="${eddieUrl}/lib/eddie-components.js"></script>
 <!-- ... -->
-<eddie-connect-button connectionid="${connectionId}"
+<eddie-connect-button connection-id="${connectionId}"
                       data-need-id="${dataNeedId}"></eddie-connect-button>
 ```
 

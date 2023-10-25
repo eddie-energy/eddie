@@ -8,7 +8,7 @@ function range(n) {
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
 class ProduceConsumptionRecordCe extends LitElement {
-  static properties = { connectionid: {}, _measurementsPerDay: {}, _date: {} };
+  static properties = { connectionId: { attribute: "connection-id" }, _measurementsPerDay: {}, _date: {} };
   static meteringIntervalOptions = {
     PT1D: 1,
     P1D: 1,
@@ -90,7 +90,7 @@ class ProduceConsumptionRecordCe extends LitElement {
         : "extrapolatedValue",
     }));
     const cr = {
-      connectionId: this.connectionid,
+      connectionId: this.connectionId,
       meteringPoint: this.meteringPointInputRef?.value?.value,
       startDateTime: new Date(this._date + "T00:00:00").toISOString(),
       meteringInterval: this.measurementsPerDayRef?.value?.value,
