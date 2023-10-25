@@ -56,13 +56,19 @@ public class PermissionService {
 
         Permission permission = findById(permissionId);
 
-        Instant instant = clock.instant();
-        permission.revokeTime(instant);
+        var future = expirationFutures.get(permissionId);
+        if (future != null) {
+            LOGGER.info("Cancelling expiration future for permission {}", permissionId);
+            future.cancel(true);
+        }
+
+        Instant terminateTime = clock.instant();
+        permission.revokeTime(terminateTime);
         permission.updateStatus(TERMINATED);
         repository.save(permission);
 
         try {
-            var terminated = new ConnectionStatusMessage(permission.connectionId(), instant, TERMINATED);
+            var terminated = new ConnectionStatusMessage(permission.connectionId(), terminateTime, TERMINATED);
             streamerManager.sendConnectionStatusMessageForPermission(terminated, permissionId);
         } catch (ConnectionStatusMessageSendFailedException ex) {
             LOGGER.error("Failed to send TERMINATED status message for permission {}", permissionId, ex);
@@ -240,6 +246,7 @@ public class PermissionService {
                 permission.updateStatus(PermissionStatus.STREAMING_DATA);
                 repository.save(permission);
             } else {
+                LOGGER.info("Permission {} has expired but AIIDA was not running at that time, will expire it now", permission.permissionId());
                 permission.updateStatus(PermissionStatus.TIME_LIMIT);
                 repository.save(permission);
             }
