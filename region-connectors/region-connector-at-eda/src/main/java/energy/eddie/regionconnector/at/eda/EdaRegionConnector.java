@@ -155,10 +155,10 @@ public class EdaRegionConnector implements RegionConnector {
             var dataNeedIdValidator = ctx.formParamAsClass(DATA_NEED_ID, String.class).check(s -> s != null && !s.isBlank(), "dataNeedId must not be null or blank");
             var meteringPointIdValidator = ctx.formParamAsClass(METERING_POINT_ID, String.class)
                     .allowNullable()
-                    .check(s -> s.length() == 33, "meteringPointId must be 33 characters long");
+                    .check(s -> s == null || s.length() == 33, "meteringPointId must be 33 characters long");
             var dsoIdValidator = ctx.formParamAsClass(DSO_ID, String.class)
                     .allowNullable()
-                    .check(s -> s.length() == DSO_ID_LENGTH, "dsoId must be " + DSO_ID_LENGTH + " characters long");
+                    .check(s -> s == null || s.length() == DSO_ID_LENGTH, "dsoId must be " + DSO_ID_LENGTH + " characters long");
 
             LocalDate now = LocalDate.now(ZoneId.of("Europe/Vienna"));
             var startValidator = ctx.formParamAsClass("start", LocalDate.class).check(Objects::nonNull, "start must not be null").check(start -> start.isAfter(now.minusMonths(MAXIMUM_MONTHS_IN_THE_PAST)), "start must not be older than 36 months");
