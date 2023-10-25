@@ -82,11 +82,6 @@ class EddieConnectButton extends LitElement {
     _dataNeedGranularities: { type: Array },
   };
 
-  static CONTEXT_PATH = new URL(import.meta.url).pathname.replace(
-    /\/lib\/.*$/,
-    ""
-  );
-
   dialogRef = createRef();
   permissionAdministratorSelectRef = createRef();
 
