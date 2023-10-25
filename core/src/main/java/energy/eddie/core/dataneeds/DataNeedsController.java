@@ -34,4 +34,14 @@ public class DataNeedsController {
         final var result = dataNeedsService.getDataNeed(id);
         return null != result ? ResponseEntity.ok(result) : ResponseEntity.notFound().build();
     }
+
+    @GetMapping("/types")
+    public ResponseEntity<Set<String>> getDataTypes() {
+        return ResponseEntity.ok(dataNeedsService.getDataNeedTypes());
+    }
+
+    @GetMapping("/granularities")
+    public ResponseEntity<Set<String>> getDataGranularities() {
+        return ResponseEntity.ok(dataNeedsService.getDataNeedGranularities());
+    }
 }

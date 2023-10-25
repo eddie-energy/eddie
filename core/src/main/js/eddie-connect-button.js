@@ -81,6 +81,8 @@ class EddieConnectButton extends LitElement {
     _selectedPermissionAdministrator: { type: Object },
     _availableConnectors: { type: Object },
     _dataNeedAttributes: { type: Object },
+    _dataNeedTypes: { type: Array },
+    _dataNeedGranularities: { type: Array },
   };
 
   static CONTEXT_PATH = new URL(import.meta.url).pathname.replace(
@@ -111,6 +113,8 @@ class EddieConnectButton extends LitElement {
     this._availableConnectors = {};
     this._dataNeedAttributes = {};
     this._dataNeedIds = [];
+    this._dataNeedTypes = [];
+    this._dataNeedGranularities = [];
   }
 
   async connect() {
@@ -126,6 +130,16 @@ class EddieConnectButton extends LitElement {
 
     if (this.dataNeedId) {
       this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
+    }
+
+    if (this.allowDataNeedModifications) {
+      this._dataNeedTypes = await fetch(
+        new URL("/api/data-needs/types", BASE_URL)
+      ).then((response) => response.json());
+
+      this._dataNeedGranularities = await fetch(
+        new URL("/api/data-needs/granularities", BASE_URL)
+      ).then((response) => response.json());
     }
 
     this._availableConnectors = await getRegionConnectors();
@@ -257,21 +271,33 @@ class EddieConnectButton extends LitElement {
                   readonly
                 ></sl-input>
                 <br />
-                <sl-input
+                <sl-select
                   label="DataNeed Type"
                   name="type"
                   value="${this._dataNeedAttributes.type}"
-                  disabled
-                  readonly
-                ></sl-input>
+                  @sl-change="${(event) => {
+                    this._dataNeedAttributes.type = event.target.value;
+                  }}"
+                >
+                  ${this._dataNeedTypes.map(
+                    (value) =>
+                      html`<sl-option value="${value}">${value}</sl-option> `
+                  )}
+                </sl-select>
                 <br />
-                <sl-input
+                <sl-select
                   label="Granularity"
                   name="granularity"
                   value="${this._dataNeedAttributes.granularity}"
-                  disabled
-                  readonly
-                ></sl-input>
+                  @sl-change="${(event) => {
+                    this._dataNeedAttributes.granularity = event.target.value;
+                  }}"
+                >
+                  ${this._dataNeedGranularities.map(
+                    (value) =>
+                      html`<sl-option value="${value}">${value}</sl-option> `
+                  )}
+                </sl-select>
                 <br />
                 <sl-input
                   label="Start Date"

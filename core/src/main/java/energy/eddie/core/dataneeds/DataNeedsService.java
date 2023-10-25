@@ -1,14 +1,13 @@
 package energy.eddie.core.dataneeds;
 
+import energy.eddie.api.v0.ConsumptionRecord;
 import org.slf4j.Logger;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DataNeedsService {
@@ -28,6 +27,14 @@ public class DataNeedsService {
 
     public Set<String> getDataNeeds() {
         return dataNeedsConfig.getDataNeedForId().keySet();
+    }
+
+    public Set<String> getDataNeedTypes() {
+        return Arrays.stream(DataType.values()).map(Enum::toString).collect(Collectors.toSet());
+    }
+
+    public Set<String> getDataNeedGranularities() {
+        return Arrays.stream(ConsumptionRecord.MeteringInterval.values()).map(Enum::toString).collect(Collectors.toSet());
     }
 
     @ConfigurationProperties(prefix = "eddie.data-needs-config")
