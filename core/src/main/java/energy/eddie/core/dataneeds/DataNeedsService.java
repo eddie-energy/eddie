@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class DataNeedsService {
@@ -23,6 +24,10 @@ public class DataNeedsService {
     @Nullable
     public DataNeed getDataNeed(String id) {
         return dataNeedsConfig.getDataNeedForId().get(id);
+    }
+
+    public Set<String> getDataNeeds() {
+        return dataNeedsConfig.getDataNeedForId().keySet();
     }
 
     @ConfigurationProperties(prefix = "eddie.data-needs-config")

@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Set;
+
 /**
  * REST controller for DataNeeds, limited to getting single data needs.
  * <ul>
@@ -20,6 +22,11 @@ public class DataNeedsController {
 
     public DataNeedsController(DataNeedsService dataNeedsService) {
         this.dataNeedsService = dataNeedsService;
+    }
+
+    @GetMapping()
+    public ResponseEntity<Set<String>> getDataNeeds() {
+        return ResponseEntity.ok(dataNeedsService.getDataNeeds());
     }
 
     @GetMapping("/{id}")

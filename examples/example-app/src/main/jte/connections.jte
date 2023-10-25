@@ -31,12 +31,23 @@ content = @`
         @endfor
         </tbody>
     </table>
+
+    <div class="uk-flex uk-margin uk-flex-middle">
+        <div class="uk-width-medium">Connect without data need id</div>
+        <eddie-connect-button
+                class="uk-display-block"
+                connection-id="${nextConnectionId}"
+                allow-data-need-modifications="true"
+                allow-data-need-selection="true"
+        ></eddie-connect-button>
+    </div>
     <div class="uk-flex uk-margin uk-flex-middle">
         <div class="uk-width-medium">Connect with historical data:</div>
         <eddie-connect-button
                 class="uk-display-block"
                 connection-id="${nextConnectionId}"
                 data-need-id="LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY"
+                allow-data-need-modifications="true"
         ></eddie-connect-button>
     </div>
     <div class="uk-flex uk-margin uk-flex-middle">
@@ -45,6 +56,7 @@ content = @`
                 class="uk-display-block"
                 connection-id="${nextConnectionId}"
                 data-need-id="FUTURE_NEAR_REALTIME_DATA"
+                allow-data-need-modifications="true"
         ></eddie-connect-button>
     </div>
 `

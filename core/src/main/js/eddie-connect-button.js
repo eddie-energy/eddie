@@ -46,6 +46,12 @@ function getDataNeedAttributes(dataNeedId) {
     .catch((err) => console.error(err));
 }
 
+function getDataNeedIds() {
+  return fetch(new URL("/api/data-needs", BASE_URL)).then((response) =>
+    response.json()
+  );
+}
+
 function shortISOString(date) {
   return date.toISOString().substring(0, 10);
 }
@@ -67,11 +73,14 @@ class EddieConnectButton extends LitElement {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
+    allowDataNeedModifications: { attribute: "allow-data-need-modifications" },
+    allowDataNeedSelection: { attribute: "allow-data-need-selection" },
+
+    _dataNeedIds: { type: Array },
     _selectedCountry: { type: String },
     _selectedPermissionAdministrator: { type: Object },
     _availableConnectors: { type: Object },
     _dataNeedAttributes: { type: Object },
-    _allowDataNeedModifications: { type: Boolean },
   };
 
   static CONTEXT_PATH = new URL(import.meta.url).pathname.replace(
@@ -101,12 +110,25 @@ class EddieConnectButton extends LitElement {
     super();
     this._availableConnectors = {};
     this._dataNeedAttributes = {};
-    this._allowDataNeedModifications = true;
+    this._dataNeedIds = [];
   }
 
   async connect() {
+    if (!this.dataNeedId && !this.allowDataNeedSelection) {
+      console.error(
+        "EDDIE button loaded without data-need-id or allow-data-need-selection."
+      );
+    }
+
+    if (this.allowDataNeedSelection) {
+      this._dataNeedIds = await getDataNeedIds();
+    }
+
+    if (this.dataNeedId) {
+      this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
+    }
+
     this._availableConnectors = await getRegionConnectors();
-    this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
 
     this.dialogRef.value.show();
   }
@@ -131,7 +153,7 @@ class EddieConnectButton extends LitElement {
     element.setAttribute("connection-id", this.connectionId);
     element.setAttribute(
       "allow-data-need-modifications",
-      this._allowDataNeedModifications
+      this.allowDataNeedModifications
     );
     element.setAttribute(
       "data-need-attributes",
@@ -143,6 +165,11 @@ class EddieConnectButton extends LitElement {
     );
 
     return element;
+  }
+
+  async handleDataNeedSelect(event) {
+    this.dataNeedId = event.target.value;
+    this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
   }
 
   handleCountrySelect(event) {
@@ -198,17 +225,35 @@ class EddieConnectButton extends LitElement {
       >
         <div slot="label">${unsafeSVG(headerImage)}</div>
 
-        <sl-alert open>
-          <sl-icon slot="icon" name="info-circle"></sl-icon>
-          This service is requesting: ${this._dataNeedAttributes.description}
-        </sl-alert>
-
-        <br />
-
-        ${this._allowDataNeedModifications && this._dataNeedAttributes.id // check if attributes did load by checking for id
+        ${this.allowDataNeedSelection
+          ? html`
+              <sl-select
+                label="Data need specification"
+                placeholder="Select a data need"
+                @sl-change="${this.handleDataNeedSelect}"
+                help-text="The service allows the selection of a data need. This feature is meant for development purposes only."
+              >
+                ${this._dataNeedIds.map(
+                  (id) => html`<sl-option value="${id}">${id}</sl-option> `
+                )}
+              </sl-select>
+              <br />
+            `
+          : ""}
+        ${this._dataNeedAttributes.description
+          ? html`
+              <sl-alert open>
+                <sl-icon slot="icon" name="info-circle"></sl-icon>
+                This service is requesting:
+                ${this._dataNeedAttributes.description}
+              </sl-alert>
+              <br />
+            `
+          : ""}
+        ${this.allowDataNeedModifications && this._dataNeedAttributes.id
           ? html`
               <sl-details
-                summary="The service allows the modification of data needs."
+                summary="The service allows the modification of data needs. This feature is meant for development purposes only."
               >
                 <form @submit="${this.handleDataNeedModifications}">
                   <sl-input
