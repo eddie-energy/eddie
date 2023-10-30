@@ -40,8 +40,8 @@ public class AiidaConfiguration {
 
 
     @SuppressWarnings("NullAway.Init")
-    @Value("${aiidastreamer.pollduration:10}")
-    private Integer pollDurationSeconds;
+    @Value("${aiida.streamer.poll_interval}")
+    private Integer pollIntervalSeconds;
 
     /**
      * Specifies how frequent a {@link AiidaStreamer} should poll the EP framework if they have issued
@@ -51,6 +51,6 @@ public class AiidaConfiguration {
      */
     @Bean
     public Duration terminationRequestPollInterval() {
-        return Duration.ofSeconds(pollDurationSeconds);
+        return Duration.ofSeconds(pollIntervalSeconds);
     }
 }
