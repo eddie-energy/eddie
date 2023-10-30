@@ -32,6 +32,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -138,17 +139,13 @@ class OesterreichsAdapterIntegrationTest {
                 .setPassword(password).build();
 
         var json1 = "{\"1-0:2.7.0\":{\"value\":0,\"time\":1697622950},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2370.6}";
-        var json2 = "{\"1-0:2.7.0\":{\"value\":10,\"time\":1697622960},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2380.6}";
         var json3 = "{\"1-0:2.7.0\":{\"value\":20,\"time\":1697622970},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2390.6}";
 
         var adapter = new OesterreichsEnergieAdapter(config, mapper);
 
         var scheduler = Executors.newSingleThreadScheduledExecutor();
 
-        scheduler.schedule(() -> {
-            cutConnection();
-            publishSampleMqttMessage(config.subscribeTopic(), json2);
-        }, 1, TimeUnit.SECONDS);
+        scheduler.schedule(this::cutConnection, 1, TimeUnit.SECONDS);
         scheduler.schedule(this::restoreConnection, 3, TimeUnit.SECONDS);
         scheduler.schedule(() -> publishSampleMqttMessage(config.subscribeTopic(), json3), 4, TimeUnit.SECONDS);
 
@@ -161,6 +158,7 @@ class OesterreichsAdapterIntegrationTest {
                 .expectComplete()
                 .verify(Duration.ofSeconds(10));
 
+        assertTrue(logCaptor.getInfoLogs().stream().anyMatch(s -> s.endsWith("was from automatic reconnect is true")));
         assertThat(logCaptor.getWarnLogs()).contains("Disconnected from MQTT broker");
     }
 
