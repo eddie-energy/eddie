@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 
+import static energy.eddie.aiida.datasources.at.OesterreichAdapterJson.AdapterValue;
+
 public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(OesterreichsEnergieAdapter.class);
     private static final Duration DISCONNECT_TIMEOUT = Duration.ofSeconds(30);
@@ -47,8 +49,7 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
         clientId = "AIIDA";
 
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(OesterreichAdapterJson.AdapterValue.class,
-                new OesterreichsEnergieAdapterValueDeserializer(null));
+        module.addDeserializer(AdapterValue.class, new OesterreichsEnergieAdapterValueDeserializer(null));
         mapper.registerModule(module);
     }
 
@@ -161,16 +162,24 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
 
             for (String code : json.energyData().keySet()) {
                 var entry = json.energyData().get(code);
-                Instant timestamp = Instant.ofEpochMilli(entry.time());
-
-                var aiidaRecord = AiidaRecordFactory.createRecord(code, timestamp, entry.value());
-                var result = recordSink.tryEmitNext(aiidaRecord);
-
-                if (result.isFailure())
-                    LOGGER.error("Error while emitting new AiidaRecord {}. Error was {}", aiidaRecord, result);
+                emitNextAiidaRecord(code, entry);
             }
         } catch (IOException e) {
             LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}", new String(message.getPayload()), e);
+        }
+    }
+
+    private void emitNextAiidaRecord(String code, AdapterValue entry) {
+        try {
+            Instant timestamp = Instant.ofEpochMilli(entry.time());
+
+            var aiidaRecord = AiidaRecordFactory.createRecord(code, timestamp, entry.value());
+            var result = recordSink.tryEmitNext(aiidaRecord);
+
+            if (result.isFailure())
+                LOGGER.error("Error while emitting new AiidaRecord {}. Error was {}", aiidaRecord, result);
+        } catch (IllegalArgumentException e) {
+            LOGGER.warn("Got OBIS code {} from SMA, but AiidaRecordFactory does not know how to handle it", code, e);
         }
     }
 

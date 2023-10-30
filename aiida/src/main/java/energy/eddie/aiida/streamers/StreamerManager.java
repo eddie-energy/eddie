@@ -27,7 +27,7 @@ public class StreamerManager implements AutoCloseable {
     private final ObjectMapper mapper;
     private final Map<String, StreamerSinkContainer> streamers;
     private final TaskScheduler scheduler;
-    private final Duration terminationRequestPollDuration;
+    private final Duration terminationRequestPollInterval;
     private final Aggregator aggregator;
     private final Sinks.Many<String> terminationRequests;
 
@@ -36,10 +36,10 @@ public class StreamerManager implements AutoCloseable {
      * As the mapper is shared, make the used implementation is thread-safe and supports sharing.
      */
     @Autowired
-    public StreamerManager(ObjectMapper mapper, TaskScheduler scheduler, Duration terminationRequestPollDuration, Aggregator aggregator) {
+    public StreamerManager(ObjectMapper mapper, TaskScheduler scheduler, Duration terminationRequestPollInterval, Aggregator aggregator) {
         this.mapper = mapper;
         this.scheduler = scheduler;
-        this.terminationRequestPollDuration = terminationRequestPollDuration;
+        this.terminationRequestPollInterval = terminationRequestPollInterval;
         this.aggregator = aggregator;
 
         streamers = new HashMap<>();
@@ -71,7 +71,7 @@ public class StreamerManager implements AutoCloseable {
         });
 
         var streamer = StreamerFactory.getAiidaStreamer(permission, recordFlux, statusMessageSink.asFlux(),
-                streamerTerminationRequestSink, mapper, scheduler, terminationRequestPollDuration);
+                streamerTerminationRequestSink, mapper, scheduler, terminationRequestPollInterval);
         streamer.connect();
 
         StreamerSinkContainer container = new StreamerSinkContainer(streamer, statusMessageSink);

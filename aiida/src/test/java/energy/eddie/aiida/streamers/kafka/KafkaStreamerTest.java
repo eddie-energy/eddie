@@ -407,7 +407,7 @@ class KafkaStreamerTest {
         });
 
         // run scheduled task with higher frequency
-        when(scheduler.scheduleAtFixedRate(any(), any(Duration.class))).thenAnswer(i ->
+        when(scheduler.scheduleWithFixedDelay(any(), any(Duration.class))).thenAnswer(i ->
                 scheduledExecutorService.scheduleAtFixedRate(() ->
                         ((Runnable) i.getArgument(0)).run(), 0, 100, TimeUnit.MILLISECONDS));
     }

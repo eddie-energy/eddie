@@ -144,7 +144,7 @@ class StreamerManagerTest {
             var mockConsumer = new MockConsumer<String, String>(OffsetResetStrategy.LATEST);
 
             mockKafkaFactory.when(() -> KafkaFactory.getKafkaProducer(any(), anyString())).thenReturn(mockProducer);
-            mockKafkaFactory.when(() -> KafkaFactory.getKafkaConsumer(any(), anyString())).thenReturn(mockConsumer);
+            mockKafkaFactory.when(() -> KafkaFactory.getKafkaConsumer(any(), anyString(), any())).thenReturn(mockConsumer);
             when(aggregatorMock.getFilteredFlux(any())).thenReturn(Flux.empty());
 
             manager.createNewStreamerForPermission(permission);
@@ -169,7 +169,7 @@ class StreamerManagerTest {
             var mockProducer = mock(KafkaProducer.class);
             var mockConsumer = mock(KafkaConsumer.class);
             mockKafkaFactory.when(() -> KafkaFactory.getKafkaProducer(any(), anyString())).thenReturn(mockProducer);
-            mockKafkaFactory.when(() -> KafkaFactory.getKafkaConsumer(any(), anyString())).thenReturn(mockConsumer);
+            mockKafkaFactory.when(() -> KafkaFactory.getKafkaConsumer(any(), anyString(), any())).thenReturn(mockConsumer);
             when(aggregatorMock.getFilteredFlux(any())).thenReturn(Flux.empty());
 
             manager.createNewStreamerForPermission(permission);
