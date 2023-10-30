@@ -60,6 +60,9 @@ dependencies {
 
     // mqtt
     implementation("org.eclipse.paho:org.eclipse.paho.mqttv5.client:1.2.5")
+
+    // generate openAPI documentation for swagger
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 }
 
 dependencyManagement {

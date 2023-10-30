@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.aiida.dtos.PermissionDto;
+import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.errors.InvalidPermissionRevocationException;
 import energy.eddie.aiida.errors.PermissionNotFoundException;
 import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
@@ -201,6 +202,23 @@ class PermissionControllerTest {
         }
 
         @Test
+        void givenErrorWhileSendingConnectionStatusMessage_returnsInternalServerError() throws Exception {
+            when(permissionService.setupNewPermission(ArgumentMatchers.any(PermissionDto.class)))
+                    .thenThrow(new ConnectionStatusMessageSendFailedException("Expected by Test"));
+
+            var json = mapper.writeValueAsString(permissionDto);
+
+            mockMvc.perform(post("/permissions")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+                    .andExpect(status().isInternalServerError())
+                    .andExpect(jsonPath("$.errors", allOf(
+                            iterableWithSize(1),
+                            hasItem("Failed to setup permission, please try again later.")
+                    )));
+        }
+
+        @Test
         void givenValidInput_asExpected() throws Exception {
             // mock database setting the permissionId
             String permissionId = "72831e2c-a01c-41b8-9db6-3f51670df7a5";
@@ -385,9 +403,7 @@ class PermissionControllerTest {
         }
 
         @Test
-        void givenPermissionInInvalidState_revokePermission_returnsBadRequest() throws
-                Exception {
-
+        void givenPermissionInInvalidState_revokePermission_returnsBadRequest() throws Exception {
             when(permissionService.revokePermission(permissionId)).then(i -> {
                 throw new InvalidPermissionRevocationException(i.getArgument(0));
             });
@@ -395,7 +411,7 @@ class PermissionControllerTest {
             mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(validPatchOperationBody))
-                    .andExpect(status().isBadRequest())
+                    .andExpect(status().isMethodNotAllowed())
                     .andExpect(jsonPath("$.errors", allOf(
                             iterableWithSize(1),
                             hasItem(("Permission with id " + permissionId + " cannot be revoked. Only a permission with status " +

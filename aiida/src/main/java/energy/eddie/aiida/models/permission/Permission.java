@@ -3,6 +3,7 @@ package energy.eddie.aiida.models.permission;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.constraints.ExpirationTimeAfterStartTime;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
@@ -20,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ExpirationTimeAfterStartTime
 public class Permission {
+    @Schema(description = "Unique ID of this permission.", requiredMode = Schema.RequiredMode.REQUIRED, example = "a4dc1bad-b9fe-47ae-9336-690cfb4aada9")
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(nullable = false, name = "permission_id")
@@ -27,33 +29,41 @@ public class Permission {
     // permissionId is set by db...
     @SuppressWarnings("NullAway")
     private String permissionId;
+    @Schema(description = "Status of this permission.", requiredMode = Schema.RequiredMode.REQUIRED, example = "ACCEPTED")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @JsonProperty
     private PermissionStatus status;
+    @Schema(description = "Name of the EP service that requested near real-time data.", example = "My Energy Visualization Service")
     @Column(nullable = false)
     @JsonProperty(required = true)
     @NotBlank(message = "serviceName must not be null or blank.")
     private String serviceName;
+    @Schema(description = "ISO8601 timestamp when the data sharing should start.", example = "2023-10-01T08:00:00.000Z")
     @Column(nullable = false)
     @JsonProperty(required = true)
     @NotNull(message = "startTime must not be null.")
     private Instant startTime;
+    @Schema(description = "ISO8601 timestamp when the data sharing should automatically stop. Must be after startTime.", example = "2023-10-31T20:00:00.000Z")
     @Column(nullable = false)
     @JsonProperty(required = true)
     @NotNull(message = "expirationTime must not be null.")
     private Instant expirationTime;
+    @Schema(description = "ISO8601 timestamp when the customer granted the sharing permission.", example = "2023-10-01T08:00:00.000Z")
     @Column(nullable = false)
     @JsonProperty(required = true)
     @NotNull(message = "grantTime must not be null.")
     private Instant grantTime;
+    @Schema(description = "ISO8601 timestamp when the permission was revoked or terminated. See status for the exact reason.", example = "2023-10-20T08:00:00.000Z")
     @JsonProperty
     @Nullable
     private Instant revokeTime = null;
+    @Schema(description = "Connection ID as supplied by EDDIE/EP.", example = "SomeRandomString")
     @Column(nullable = false)
     @JsonProperty(required = true)
     @NotBlank(message = "connectionId must not be null or blank.")
     private String connectionId;
+    @Schema(description = "Set of OBIS codes that the EP wants to receive.", type = "array", implementation = String.class, example = "[\"1-0:1.8.0\", \"1-0:1.7.0\"]")
     @Column(nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
     @JsonProperty(required = true)

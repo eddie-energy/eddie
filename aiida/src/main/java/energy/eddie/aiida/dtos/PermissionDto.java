@@ -3,6 +3,7 @@ package energy.eddie.aiida.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.constraints.ExpirationTimeAfterStartTime;
 import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -25,21 +26,27 @@ import java.util.Set;
  */
 @ExpirationTimeAfterStartTime
 public record PermissionDto(
+        @Schema(description = "Name of the EP service that requested near real-time data.", example = "My Energy Visualization Service")
         @NotBlank(message = "serviceName must not be null or blank.")
         @JsonProperty(required = true)
         String serviceName,
+        @Schema(description = "ISO8601 timestamp when the data sharing should start.", example = "2023-10-01T08:00:00.000Z")
         @NotNull(message = "startTime must not be null.")
         @JsonProperty(required = true)
         Instant startTime,
+        @Schema(description = "ISO8601 timestamp when the data sharing should automatically stop. Must be after startTime.", example = "2023-10-31T20:00:00.000Z")
         @NotNull(message = "expirationTime must not be null.")
         @JsonProperty(required = true)
         Instant expirationTime,
+        @Schema(description = "ISO8601 timestamp when the customer granted the sharing permission.", example = "2023-10-01T08:00:00.000Z")
         @NotNull(message = "grantTime must not be null.")
         @JsonProperty(required = true)
         Instant grantTime,
+        @Schema(description = "Connection ID as supplied by EDDIE/EP.", example = "SomeRandomString")
         @NotBlank(message = "connectionId must not be null or blank.")
         @JsonProperty(required = true)
         String connectionId,
+        @Schema(description = "Set of OBIS codes that the EP wants to receive. All requested codes must be available at this AIIDA instance, otherwise the permission cannot be accepted.", type = "array", implementation = String.class, example = "[\"1-0:1.8.0\", \"1-0:1.7.0\"]")
         @NotEmpty(message = "At least one OBIS code needs to be requested.")
         @JsonProperty(required = true)
         Set<String> requestedCodes,

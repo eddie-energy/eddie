@@ -78,6 +78,8 @@ public class PermissionService {
      *
      * @param dto Data transfer object containing the information for the new permission.
      * @return Permission object as returned by the database (i.e. with a permissionId).
+     * @throws ConnectionStatusMessageSendFailedException Thrown when the connection status message couldn't be sent.
+     *                                                    This will result in a rollback and the permission will not be saved.
      */
     @Transactional(rollbackFor = ConnectionStatusMessageSendFailedException.class)
     public Permission setupNewPermission(PermissionDto dto) throws ConnectionStatusMessageSendFailedException {

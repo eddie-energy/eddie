@@ -1,5 +1,6 @@
 package energy.eddie.aiida.controllers;
 
+import energy.eddie.aiida.dtos.ErrorResponse;
 import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.errors.InvalidPatchOperationException;
 import energy.eddie.aiida.errors.InvalidPermissionRevocationException;
@@ -17,16 +18,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private static ResponseEntity<Object> createErrorResponse(List<String> errors, HttpStatus status) {
-        Map<String, List<String>> body = new HashMap<>();
-        body.put("errors", errors);
-        return new ResponseEntity<>(body, status);
+        return new ResponseEntity<>(new ErrorResponse(errors), status);
     }
 
     @Override
@@ -36,7 +33,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull HttpStatusCode status,
             @NonNull WebRequest request
     ) {
-
         List<String> errors = ex.getBindingResult()
                 .getAllErrors()
                 .stream()
@@ -57,7 +53,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleInvalidPermissionRevocationException(InvalidPermissionRevocationException ex) {
         var errors = List.of(ex.getMessage());
 
-        return createErrorResponse(errors, HttpStatus.BAD_REQUEST);
+        return createErrorResponse(errors, HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     @ExceptionHandler(value = {InvalidPatchOperationException.class})
@@ -69,7 +65,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {ConnectionStatusMessageSendFailedException.class})
     protected ResponseEntity<Object> handleConnectionStatusMessageSendFailedException(ConnectionStatusMessageSendFailedException ignored) {
-        var errors = List.of("Failed to setup permission, please try again later");
+        var errors = List.of("Failed to setup permission, please try again later.");
 
         return createErrorResponse(errors, HttpStatus.INTERNAL_SERVER_ERROR);
     }
