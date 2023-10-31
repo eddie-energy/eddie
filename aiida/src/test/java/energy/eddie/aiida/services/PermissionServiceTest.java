@@ -20,12 +20,12 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.task.TaskSchedulerBuilder;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.test.util.ReflectionTestUtils;
 import reactor.test.publisher.TestPublisher;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -473,11 +473,9 @@ class PermissionServiceTest {
         /**
          * Tests that permissions are queried from the DB on startup and if their expiration time has passed,
          * their status is set accordingly or streaming is started again otherwise.
-         * Mainly exists to cover the @PostConstruct method by using reflection, as test coverage is only
-         * taken from unit tests not integration tests.
          * <p>
          * {@link PermissionServiceIntegrationTest} tests the same functionality but with a database and
-         * ensures that the method is correctly configured to be called by Spring on startup.
+         * ensures that the method is correctly called by Spring on startup.
          * </p>
          */
         @Test
@@ -530,8 +528,7 @@ class PermissionServiceTest {
             });
             when(scheduler.schedule(any(), any(Instant.class))).thenReturn(mock(ScheduledFuture.class));
 
-
-            getUpdatePermissionsOnStartup().invoke(service);
+            service.onApplicationEvent(mock(ContextRefreshedEvent.class));
 
             var permission = savedByMethod.get(shouldStreamPermissionId);
             assertEquals(PermissionStatus.STREAMING_DATA, permission.status());
@@ -552,12 +549,6 @@ class PermissionServiceTest {
             verify(scheduler, times(2)).schedule(any(), any(Instant.class));
             verify(expirationFutures).put(eq(shouldStreamPermissionId), any());
             verify(expirationFutures).put(eq(streamingDataId), any());
-        }
-
-        private Method getUpdatePermissionsOnStartup() throws NoSuchMethodException {
-            Method method = PermissionService.class.getDeclaredMethod("updatePermissionsOnStartup");
-            method.setAccessible(true);
-            return method;
         }
     }
 }

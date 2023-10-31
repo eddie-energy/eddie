@@ -10,12 +10,14 @@ import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.ConnectionStatusMessage;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.aiida.utils.PermissionExpiredRunnable;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.lang.NonNull;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +33,7 @@ import java.util.concurrent.ScheduledFuture;
 import static energy.eddie.aiida.models.permission.PermissionStatus.*;
 
 @Service
-public class PermissionService {
+public class PermissionService implements ApplicationListener<ContextRefreshedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
     private final ConcurrentMap<String, ScheduledFuture<?>> expirationFutures;
     private final PermissionRepository repository;
@@ -239,9 +241,11 @@ public class PermissionService {
     /**
      * Gets all active permissions from the database and checks if they have expired.
      * If not, streaming is resumed, otherwise their database entry will be updated accordingly.
+     * This is done when a {@link ContextRefreshedEvent} is received, which ensures that all beans are started
+     * and the database is set up correctly.
      */
-    @PostConstruct
-    private void updatePermissionsOnStartup() {
+    @Override
+    public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
         LOGGER.info("Getting all permissions from database and will resume streaming or update them if they are expired.");
 
         for (Permission permission : repository.findAllActivePermissions()) {
