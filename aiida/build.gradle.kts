@@ -7,6 +7,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.2"
     id("net.ltgt.errorprone") version "3.0.1"
     id("org.sonarqube") version "4.0.0.2929"
+    id("com.google.cloud.tools.jib") version "3.4.0"
     jacoco
 }
 
@@ -130,5 +131,25 @@ tasks.withType<Test>().configureEach {
 tasks.withType<JacocoReport> {
     reports {
         xml.required.set(true)
+    }
+}
+
+
+jib {
+    from {
+        image = "eclipse-temurin:19"
+    }
+    to {
+        image = System.getProperty("jib.to.image")
+        auth {
+            username = "oauth2accesstoken"
+            password = System.getProperty("jib.to.auth.password")
+        }
+    }
+    container {
+        // Using the current timestamp as image creation date instead of Unix timestamp 0.
+        // This leads to not reproducible build timestamps, if this is desired, remove the line.
+        // see https://github.com/GoogleContainerTools/jib/blob/master/docs/faq.md#why-is-my-image-created-48-years-ago
+        creationTime = "USE_CURRENT_TIMESTAMP"
     }
 }

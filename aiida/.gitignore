@@ -108,3 +108,4 @@ build
 **/jte-classes
 
 application-local.properties
+application-local.yml
