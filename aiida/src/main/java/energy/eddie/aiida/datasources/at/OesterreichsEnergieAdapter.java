@@ -55,7 +55,7 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
 
     /**
      * Start the listening or active polling for data from the datasource.
-     * The {@code time} field from the adapter is interpreted as UTC unix timestamp.
+     * The {@code time} field from the adapter is interpreted as unix timestamp.
      */
     @Override
     public Flux<AiidaRecord> start() {
@@ -171,7 +171,7 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
 
     private void emitNextAiidaRecord(String code, AdapterValue entry) {
         try {
-            Instant timestamp = Instant.ofEpochMilli(entry.time());
+            Instant timestamp = Instant.ofEpochSecond(entry.time());
 
             var aiidaRecord = AiidaRecordFactory.createRecord(code, timestamp, entry.value());
             var result = recordSink.tryEmitNext(aiidaRecord);
