@@ -250,9 +250,7 @@ class OesterreichsEnergieAdapterTest {
         var json = "{\"1-0:1.8.0\":{\"value\":83622,\"time\":1698218800},\"UNKNOWN-OBIS-CODE\":{\"value\":0,\"time\":0},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":83854.3}";
 
         StepVerifier.create(adapter.start())
-                .then(() -> {
-                    adapter.messageArrived(config.subscribeTopic(), new MqttMessage(json.getBytes()));
-                })
+                .then(() -> adapter.messageArrived(config.subscribeTopic(), new MqttMessage(json.getBytes())))
                 .expectNextMatches(aiidaRecord -> aiidaRecord.code().equals("1-0:1.8.0"))
                 .then(adapter::close)
                 .expectComplete()
