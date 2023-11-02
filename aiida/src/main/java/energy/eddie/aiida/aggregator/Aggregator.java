@@ -2,11 +2,13 @@ package energy.eddie.aiida.aggregator;
 
 import energy.eddie.aiida.datasources.AiidaDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +19,28 @@ public class Aggregator implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Aggregator.class);
     private final List<AiidaDataSource> sources;
     private final Sinks.Many<AiidaRecord> combinedSink;
+    private final AiidaRecordRepository repository;
 
-    public Aggregator() {
+    public Aggregator(AiidaRecordRepository repository) {
+        this.repository = repository;
+
         sources = new ArrayList<>();
         combinedSink = Sinks.many().multicast().directAllOrNothing();
+
+        combinedSink.asFlux()
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(this::saveRecordToDatabase)
+                .doOnError(this::handleCombinedSinkError)
+                .subscribe();
+    }
+
+    private void saveRecordToDatabase(AiidaRecord aiidaRecord) {
+        LOGGER.trace("Saving new record to db");
+        repository.save(aiidaRecord);
+    }
+
+    private void handleCombinedSinkError(Throwable throwable) {
+        LOGGER.error("Got error from combined sink", throwable);
     }
 
     /**
