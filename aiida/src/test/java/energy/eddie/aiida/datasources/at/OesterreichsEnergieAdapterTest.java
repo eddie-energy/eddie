@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import reactor.test.StepVerifier;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -153,7 +154,7 @@ class OesterreichsEnergieAdapterTest {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
 
-            MqttMessage message = new MqttMessage(recordJson.getBytes());
+            MqttMessage message = new MqttMessage(recordJson.getBytes(StandardCharsets.UTF_8));
 
             StepVerifier.create(adapter.start())
                     // call method to simulate arrived message
@@ -176,7 +177,7 @@ class OesterreichsEnergieAdapterTest {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
 
-            MqttMessage message = new MqttMessage(recordJson.getBytes());
+            MqttMessage message = new MqttMessage(recordJson.getBytes(StandardCharsets.UTF_8));
 
             StepVerifier.create(adapter.start())
                     // call method to simulate arrived message
@@ -231,8 +232,8 @@ class OesterreichsEnergieAdapterTest {
                 .expectComplete()
                 .verifyLater();
 
-        adapter.messageArrived(config.subscribeTopic(), new MqttMessage(invalidJson.getBytes()));
-        adapter.messageArrived(config.subscribeTopic(), new MqttMessage(validJson.getBytes()));
+        adapter.messageArrived(config.subscribeTopic(), new MqttMessage(invalidJson.getBytes(StandardCharsets.UTF_8)));
+        adapter.messageArrived(config.subscribeTopic(), new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
 
         TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(invalidJson),
                 logCaptor, JsonMappingException.class);
@@ -250,7 +251,7 @@ class OesterreichsEnergieAdapterTest {
         var json = "{\"1-0:1.8.0\":{\"value\":83622,\"time\":1698218800},\"UNKNOWN-OBIS-CODE\":{\"value\":0,\"time\":0},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":83854.3}";
 
         StepVerifier.create(adapter.start())
-                .then(() -> adapter.messageArrived(config.subscribeTopic(), new MqttMessage(json.getBytes())))
+                .then(() -> adapter.messageArrived(config.subscribeTopic(), new MqttMessage(json.getBytes(StandardCharsets.UTF_8))))
                 .expectNextMatches(aiidaRecord -> aiidaRecord.code().equals("1-0:1.8.0"))
                 .then(adapter::close)
                 .expectComplete()

@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Represents the JSON that is received from the Oesterreichs Energie Smart Meter Adapter.
+ *
  * @param energyData Holds the values from the smart meter adapter. Keys are the OBIS codes and the value and timestamp are stored in the values.
  * @param apiVersion API version of the smart meter adapter.
  * @param name       Name as entered during the smart meter adapter setup.

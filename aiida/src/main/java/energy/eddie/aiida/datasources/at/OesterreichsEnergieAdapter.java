@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -93,7 +94,7 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
         // extra variable required to avoid NPE warning
         String password = mqttConfig.password();
         if (password != null) {
-            options.setPassword(password.getBytes());
+            options.setPassword(password.getBytes(StandardCharsets.UTF_8));
         }
 
         return options;
@@ -160,12 +161,13 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
         try {
             var json = mapper.readValue(message.getPayload(), OesterreichAdapterJson.class);
 
-            for (String code : json.energyData().keySet()) {
-                var entry = json.energyData().get(code);
-                emitNextAiidaRecord(code, entry);
+            var energyData = json.energyData();
+            for (var entry : energyData.entrySet()) {
+                emitNextAiidaRecord(entry.getKey(), entry.getValue());
             }
         } catch (IOException e) {
-            LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}", new String(message.getPayload()), e);
+            LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
+                    new String(message.getPayload(), StandardCharsets.UTF_8), e);
         }
     }
 

@@ -83,6 +83,9 @@ public class MqttConfig {
         }
 
         /**
+         * Sets whether the client and server should remember state across restarts and reconnects.
+         * This is required for sending QoS 1 or QoS 2 messages.
+         *
          * @param cleanStart If true, server and client will not retain state across client restarts.
          */
         public MqttConfigBuilder setCleanStart(Boolean cleanStart) {
@@ -91,7 +94,9 @@ public class MqttConfig {
         }
 
         /**
-         * @param automaticReconnect If true, the MQTT client will automatically try to reconnect to the server if connection is lost.
+         * Sets whether the MQTT client should automatically try to reconnect to the server if the connection is lost.
+         *
+         * @param automaticReconnect If true, the MQTT client will automatically try to reconnect.
          */
         public MqttConfigBuilder setAutomaticReconnect(Boolean automaticReconnect) {
             this.automaticReconnect = automaticReconnect;
@@ -113,7 +118,10 @@ public class MqttConfig {
         }
 
         /**
-         * @param username Username to use for authentication to the server. When using a username, a password has to be specified as well.
+         * Specify the username to use for authentication to the server.
+         * When supplying a username, a password has to be specified as well.
+         *
+         * @param username Username to use for authentication to the server.
          */
         public MqttConfigBuilder setUsername(String username) {
             this.username = username;
