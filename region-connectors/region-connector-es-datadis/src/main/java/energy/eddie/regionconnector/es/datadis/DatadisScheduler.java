@@ -147,7 +147,9 @@ public class DatadisScheduler {
                     meteringData,
                     permissionRequest.permissionId(),
                     permissionRequest.connectionId(),
-                    permissionRequest.measurementType());
+                    permissionRequest.measurementType(),
+                    permissionRequest.dataNeedId()
+            );
             consumptionRecordSink.tryEmitNext(consumptionRecord);
             return Mono.empty();
         } catch (InvalidMappingException e) {

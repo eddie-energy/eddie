@@ -1,19 +1,25 @@
 package energy.eddie.regionconnector.at.eda;
 
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p30.*;
+import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
+import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
+import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequestAdapter;
 import energy.eddie.regionconnector.at.eda.permission.request.InMemoryPermissionRequestRepository;
+import energy.eddie.regionconnector.at.eda.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtPendingAcknowledgmentPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtSentToPermissionAdministratorPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.xml.builders.helper.DateTimeConverter;
+import energy.eddie.regionconnector.shared.permission.requests.decorators.MessagingPermissionRequest;
 import org.junit.jupiter.api.Test;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
@@ -21,7 +27,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -92,19 +100,20 @@ class EdaRegionConnectorTest {
     void subscribeToConsumptionRecordPublisher_returnsCorrectlyMappedRecords() throws TransmissionException {
         var config = mock(AtConfiguration.class);
         var consumptionRecord = createConsumptionRecord();
-        consumptionRecord.getProcessDirectory().setConversationId("any1");
-
         var consumptionRecord2 = createConsumptionRecord();
-        consumptionRecord2.getProcessDirectory().setConversationId("any2");
 
         var adapter = mock(EdaAdapter.class);
         when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         TestPublisher<ConsumptionRecord> testPublisher = TestPublisher.create();
         when(adapter.getConsumptionRecordStream()).thenReturn(testPublisher.flux());
 
-        var repo = new InMemoryPermissionRequestRepository();
-        repo.save(new SimplePermissionRequest("pmId1", "connId1", "test1", "any1", null));
-        repo.save(new SimplePermissionRequest("pmId2", "connId2", "test2", "any2", null));
+        var repo = mock(AtPermissionRequestRepository.class);
+        when(repo.findByMeteringPointIdAndDate(anyString(), any()))
+                .thenReturn(List.of(
+                        new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1", null))
+                ).thenReturn(List.of(
+                        new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2", null))
+                );
 
         var uut = new EdaRegionConnector(config, adapter, repo);
 
@@ -115,35 +124,88 @@ class EdaRegionConnectorTest {
 
         StepVerifier.create(source)
                 .then(() -> testPublisher.emit(unmapableConsumptionRecord, consumptionRecord, consumptionRecord2))
-                .assertNext(cr -> {
-                    assertEquals("connId1", cr.getConnectionId());
-                    assertEquals("pmId1", cr.getPermissionId());
+                .assertNext(csm -> {
+                    assertEquals("connId1", csm.getConnectionId());
+                    assertEquals("pmId1", csm.getPermissionId());
+                    assertEquals("dataNeedId1", csm.getDataNeedId());
                 })
-                .assertNext(cr -> {
-                    assertEquals("connId2", cr.getConnectionId());
-                    assertEquals("pmId2", cr.getPermissionId());
+                .assertNext(csm -> {
+                    assertEquals("connId2", csm.getConnectionId());
+                    assertEquals("pmId2", csm.getPermissionId());
+                    assertEquals("dataNeedId2", csm.getDataNeedId());
+                })
+                .expectComplete().verify();
+    }
+
+    @Test
+    void subscribeToConsumptionRecordPublisher_emitsConsumptionRecord_forEveryMatchingRequest() throws TransmissionException {
+        var config = mock(AtConfiguration.class);
+        var consumptionRecord = createConsumptionRecord();
+
+        var adapter = mock(EdaAdapter.class);
+        when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
+        TestPublisher<ConsumptionRecord> testPublisher = TestPublisher.create();
+        when(adapter.getConsumptionRecordStream()).thenReturn(testPublisher.flux());
+
+        var repo = mock(AtPermissionRequestRepository.class);
+        when(repo.findByMeteringPointIdAndDate(anyString(), any()))
+                .thenReturn(List.of(
+                        new SimplePermissionRequest("pmId1", "connId1", "dataNeedId", "test1", "any1", null),
+                        new SimplePermissionRequest("pmId2", "connId2", "dataNeedId", "test2", "any2", null))
+                );
+
+        var uut = new EdaRegionConnector(config, adapter, repo);
+
+        var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConsumptionRecordStream());
+
+        StepVerifier.create(source)
+                .then(() -> testPublisher.emit(consumptionRecord))
+                .assertNext(csm -> {
+                    assertEquals("connId1", csm.getConnectionId());
+                    assertEquals("pmId1", csm.getPermissionId());
+                })
+                .assertNext(csm -> {
+                    assertEquals("connId2", csm.getConnectionId());
+                    assertEquals("pmId2", csm.getPermissionId());
                 })
                 .expectComplete().verify();
     }
 
 
     @Test
-    void subscribeToConnectionStatusMessagePublisher_returnsCorrectlyMappedMessages() throws TransmissionException {
+    void subscribeToConnectionStatusMessagePublisher_returnsAccepted_onAccepted() throws TransmissionException {
         var config = mock(AtConfiguration.class);
 
         var adapter = mock(EdaAdapter.class);
         TestPublisher<CMRequestStatus> testPublisher = TestPublisher.create();
         when(adapter.getCMRequestStatusStream()).thenReturn(testPublisher.flux());
 
-        var repo = new InMemoryPermissionRequestRepository();
-        repo.save(new SimplePermissionRequest("permissionId", "connectionId", "test", "test", null));
 
-        var uut = new EdaRegionConnector(config, adapter, repo);
+        CCMORequest ccmoRequest = mock(CCMORequest.class);
+        when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
+        when(ccmoRequest.messageId()).thenReturn("messageId");
+        when(ccmoRequest.meteringPointId()).thenReturn(Optional.of("meteringPointId"));
+        var permissionRequest = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
+        permissionRequest.changeState(new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest));
+
+        var repo = new InMemoryPermissionRequestRepository();
+        Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().multicast().onBackpressureBuffer();
+        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(adapter, permissionStateMessages, repo);
+
+        // wrap the request in a MessagingPermissionRequest to emit messages to the sink
+        var messagingPermissionRequest = new MessagingPermissionRequest<>(permissionRequest, permissionStateMessages);
+        repo.save(new EdaPermissionRequestAdapter(permissionRequest, messagingPermissionRequest));
+
+        var uut = new EdaRegionConnector(config, adapter, repo, permissionRequestFactory, permissionStateMessages);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
-        var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "test");
+        var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "messageId");
 
         StepVerifier.create(source)
+                .assertNext(csm -> {
+                    // Creating the MessagingPermissionRequest adds a message to the sink
+                    assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, csm.status());
+                })
                 .then(() -> {
                     testPublisher.emit(cmRequestStatus);
                     try {
@@ -152,9 +214,10 @@ class EdaRegionConnectorTest {
                         throw new RuntimeException(e);
                     }
                 })
-                .assertNext(cr -> {
-                    assertEquals("connectionId", cr.connectionId());
-                    assertEquals("permissionId", cr.permissionId());
+                .assertNext(csm -> {
+                    assertEquals("connectionId", csm.connectionId());
+                    assertEquals("permissionId", csm.permissionId());
+                    assertEquals(PermissionProcessStatus.ACCEPTED, csm.status());
                 })
                 .expectComplete()
                 .verify();
@@ -169,7 +232,7 @@ class EdaRegionConnectorTest {
         when(adapter.getCMRequestStatusStream()).thenReturn(testPublisher.flux());
 
         var repo = new InMemoryPermissionRequestRepository();
-        repo.save(new SimplePermissionRequest("permissionId", "connectionId", "test", "test", null));
+        repo.save(new SimplePermissionRequest("permissionId", "connectionId", "dataNeedId", "test", "test", null));
 
         var uut = new EdaRegionConnector(config, adapter, repo);
 
@@ -201,18 +264,27 @@ class EdaRegionConnectorTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
+        var request = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
         request.changeState(new AtSentToPermissionAdministratorPermissionRequestState(request));
 
         var repo = new InMemoryPermissionRequestRepository();
-        repo.save(request);
+        Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().multicast().onBackpressureBuffer();
+        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(adapter, permissionStateMessages, repo);
 
-        var uut = new EdaRegionConnector(config, adapter, repo);
+        // wrap the request in a MessagingPermissionRequest to emit messages to the sink
+        var messagingPermissionRequest = new MessagingPermissionRequest<>(request, permissionStateMessages);
+        repo.save(new EdaPermissionRequestAdapter(request, messagingPermissionRequest));
+
+        var uut = new EdaRegionConnector(config, adapter, repo, permissionRequestFactory, permissionStateMessages);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ERROR, "", "messageId");
 
         StepVerifier.create(source)
+                .assertNext(csm -> {
+                    // Creating the MessagingPermissionRequest adds a message to the sink
+                    assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, csm.status());
+                })
                 .then(() -> {
                     testPublisher.emit(cmRequestStatus);
                     try {
@@ -221,10 +293,10 @@ class EdaRegionConnectorTest {
                         throw new RuntimeException(e);
                     }
                 })
-                .assertNext(cr -> {
-                    assertEquals("connectionId", cr.connectionId());
-                    assertEquals("permissionId", cr.permissionId());
-                    assertEquals(PermissionProcessStatus.INVALID, cr.status());
+                .assertNext(csm -> {
+                    assertEquals("connectionId", csm.connectionId());
+                    assertEquals("permissionId", csm.permissionId());
+                    assertEquals(PermissionProcessStatus.INVALID, csm.status());
                 })
                 .expectComplete()
                 .verify();
@@ -241,18 +313,27 @@ class EdaRegionConnectorTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
+        var request = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
         request.changeState(new AtSentToPermissionAdministratorPermissionRequestState(request));
 
         var repo = new InMemoryPermissionRequestRepository();
-        repo.save(request);
+        Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().multicast().onBackpressureBuffer();
+        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(adapter, permissionStateMessages, repo);
 
-        var uut = new EdaRegionConnector(config, adapter, repo);
+        // wrap the request in a MessagingPermissionRequest to emit messages to the sink
+        var messagingPermissionRequest = new MessagingPermissionRequest<>(request, permissionStateMessages);
+        repo.save(new EdaPermissionRequestAdapter(request, messagingPermissionRequest));
+
+        var uut = new EdaRegionConnector(config, adapter, repo, permissionRequestFactory, permissionStateMessages);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.REJECTED, "", "messageId");
 
         StepVerifier.create(source)
+                .assertNext(csm -> {
+                    // Creating the MessagingPermissionRequest adds a message to the sink
+                    assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, csm.status());
+                })
                 .then(() -> {
                     testPublisher.emit(cmRequestStatus);
                     try {
@@ -261,17 +342,17 @@ class EdaRegionConnectorTest {
                         throw new RuntimeException(e);
                     }
                 })
-                .assertNext(cr -> {
-                    assertEquals("connectionId", cr.connectionId());
-                    assertEquals("permissionId", cr.permissionId());
-                    assertEquals(PermissionProcessStatus.REJECTED, cr.status());
+                .assertNext(csm -> {
+                    assertEquals("connectionId", csm.connectionId());
+                    assertEquals("permissionId", csm.permissionId());
+                    assertEquals(PermissionProcessStatus.REJECTED, csm.status());
                 })
                 .expectComplete()
                 .verify();
     }
 
     @Test
-    void subscribeToConnectionStatusMessagePublisher_returnsSentToPermissionAdmin_onSent() throws TransmissionException {
+    void subscribeToConnectionStatusMessagePublisher_returnsPendingAcknowledgement_onSentAndonDelivered() throws TransmissionException {
         var config = mock(AtConfiguration.class);
 
         var adapter = mock(EdaAdapter.class);
@@ -285,28 +366,34 @@ class EdaRegionConnectorTest {
         request.changeState(new AtPendingAcknowledgmentPermissionRequestState(request));
 
         var repo = new InMemoryPermissionRequestRepository();
-        repo.save(request);
+        Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().multicast().onBackpressureBuffer();
+        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(adapter, permissionStateMessages, repo);
 
-        var uut = new EdaRegionConnector(config, adapter, repo);
+        // wrap the request in a MessagingPermissionRequest to emit messages to the sink
+        var messagingPermissionRequest = new MessagingPermissionRequest<>(request, permissionStateMessages);
+        repo.save(new EdaPermissionRequestAdapter(request, messagingPermissionRequest));
+
+        var uut = new EdaRegionConnector(config, adapter, repo, permissionRequestFactory, permissionStateMessages);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
-        var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.SENT, "", "messageId");
+        var cmRequestStatusSent = new CMRequestStatus(CMRequestStatus.Status.SENT, "", "messageId");
+        var cmRequestStatusDelivered = new CMRequestStatus(CMRequestStatus.Status.DELIVERED, "", "messageId");
 
         StepVerifier.create(source)
+                .assertNext(csm -> {
+                    // Creating the MessagingPermissionRequest adds a message to the sink
+                    assertEquals(PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT, csm.status());
+                })
                 .then(() -> {
-                    testPublisher.emit(cmRequestStatus);
+                    testPublisher.emit(cmRequestStatusSent);
+                    testPublisher.emit(cmRequestStatusDelivered);
                     try {
                         uut.close();
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 })
-                .assertNext(cr -> {
-                    assertEquals("connectionId", cr.connectionId());
-                    assertEquals("permissionId", cr.permissionId());
-                    assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, cr.status());
-                })
-                .expectComplete()
+                .expectComplete() // receiving SENT or DELIVERED should not change the state of the PermissionRequest and thus not emit a ConnectionStatusMessage
                 .verify();
     }
 
@@ -321,18 +408,27 @@ class EdaRegionConnectorTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
+        var request = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
         request.changeState(new AtPendingAcknowledgmentPermissionRequestState(request));
 
         var repo = new InMemoryPermissionRequestRepository();
-        repo.save(request);
+        Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().multicast().onBackpressureBuffer();
+        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(adapter, permissionStateMessages, repo);
 
-        var uut = new EdaRegionConnector(config, adapter, repo);
+        // wrap the request in a MessagingPermissionRequest to emit messages to the sink
+        var messagingPermissionRequest = new MessagingPermissionRequest<>(request, permissionStateMessages);
+        repo.save(new EdaPermissionRequestAdapter(request, messagingPermissionRequest));
+
+        var uut = new EdaRegionConnector(config, adapter, repo, permissionRequestFactory, permissionStateMessages);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.RECEIVED, "", "messageId");
 
         StepVerifier.create(source)
+                .assertNext(csm -> {
+                    // Creating the MessagingPermissionRequest adds a message to the sink
+                    assertEquals(PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT, csm.status());
+                })
                 .then(() -> {
                     testPublisher.emit(cmRequestStatus);
                     try {
@@ -341,10 +437,10 @@ class EdaRegionConnectorTest {
                         throw new RuntimeException(e);
                     }
                 })
-                .assertNext(cr -> {
-                    assertEquals("connectionId", cr.connectionId());
-                    assertEquals("permissionId", cr.permissionId());
-                    assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, cr.status());
+                .assertNext(csm -> {
+                    assertEquals("connectionId", csm.connectionId());
+                    assertEquals("permissionId", csm.permissionId());
+                    assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, csm.status());
                 })
                 .expectComplete()
                 .verify();

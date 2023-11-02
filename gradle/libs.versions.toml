@@ -26,6 +26,8 @@ jte = "2.3.0"
 log4j = "2.20.0"
 kafka-clients = "3.4.0"
 microprofile-config = "3.0.3"
+openfeign-feign = "12.5"
+openfeign-feign-form = "3.8.0"
 
 swagger-codegen-version = "3.0.45"
 apache-httpcomponents-version = "4.5.14"
@@ -72,7 +74,7 @@ commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons
 # dependencies required by kafka-outbound
 kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients" }
 
-# used by framework
+# used by core
 h2database = { module = "com.h2database:h2", version.ref = "h2database" }
 javalin = { module = "io.javalin:javalin", version.ref = "javalin" }
 jetty-proxy = { module = "org.eclipse.jetty:jetty-proxy", version.ref = "jetty" }
@@ -97,6 +99,13 @@ microprofile-config = { module = "org.eclipse.microprofile.config:microprofile-c
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+
+# dependencies required by region-connector-dk-energinet
+feign-core = { module = "io.github.openfeign:feign-core", version.ref = "openfeign-feign" }
+feign-okhttp = { module = "io.github.openfeign:feign-okhttp", version.ref = "openfeign-feign" }
+feign-jackson = { module = "io.github.openfeign:feign-jackson", version.ref = "openfeign-feign" }
+feign-slf4j = { module = "io.github.openfeign:feign-slf4j", version.ref = "openfeign-feign" }
+feign-form = { module = "io.github.openfeign.form:feign-form", version.ref = "openfeign-feign-form" }
 
 [bundles]
 

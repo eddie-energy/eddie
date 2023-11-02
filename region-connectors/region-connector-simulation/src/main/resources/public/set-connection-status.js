@@ -1,7 +1,10 @@
 import { css, html, LitElement } from "https://esm.sh/lit";
 
 class SetConnectionStatusCe extends LitElement {
-  static properties = { connectionid: {}, _statusValues: {} };
+  static properties = {
+    connectionId: { attribute: "connection-id" },
+    _statusValues: {},
+  };
   static styles = css``;
 
   constructor() {
@@ -16,10 +19,10 @@ class SetConnectionStatusCe extends LitElement {
   switchStatus(e) {
     const connectionStatus = e.target.value;
     console.log(
-      `switching connection status of ${this.connectionid} to ${connectionStatus}`
+      `switching connection status of ${this.connectionId} to ${connectionStatus}`
     );
     const body = JSON.stringify({
-      connectionId: this.connectionid,
+      connectionId: this.connectionId,
       connectionStatus,
     });
     fetch("api/connection-status", { method: "POST", body }).catch(

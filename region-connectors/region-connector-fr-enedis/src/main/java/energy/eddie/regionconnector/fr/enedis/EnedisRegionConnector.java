@@ -22,7 +22,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -38,6 +37,7 @@ public class EnedisRegionConnector implements RegionConnector {
     public static final int COVERED_METERING_POINTS = 36951446;
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
     private static final String CONNECTION_ID = "connectionId";
+    private static final String DATA_NEED_ID = "dataNeedId";
     final Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
     private final EnedisApi enedisApi;
@@ -79,13 +79,18 @@ public class EnedisRegionConnector implements RegionConnector {
 
     @Override
     public void terminatePermission(String permissionId) {
-        String connectionId = Optional.ofNullable(permissionIdToRequestInfo.get(permissionId))
-                .map(RequestInfo::connectionId)
-                .orElse(null);
+        RequestInfo requestInfo = permissionIdToRequestInfo.get(permissionId);
+
+        if (requestInfo == null) {
+            LOGGER.warn("terminatePermission called with unknown permissionId '{}'", permissionId);
+            return;
+        }
+
         connectionStatusSink.tryEmitNext(
                 new ConnectionStatusMessage(
-                        connectionId,
+                        requestInfo.connectionId(),
                         permissionId,
+                        requestInfo.dataNeedId(),
                         PermissionProcessStatus.TERMINATED
                 )
         );
@@ -119,16 +124,17 @@ public class EnedisRegionConnector implements RegionConnector {
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
             // TODO rework validation after mvp1
             connectionStatusSink.tryEmitNext(
-                    new ConnectionStatusMessage(ctx.formParam(CONNECTION_ID), null, PermissionProcessStatus.CREATED)
+                    new ConnectionStatusMessage(ctx.formParam(CONNECTION_ID), null, ctx.formParam(DATA_NEED_ID), PermissionProcessStatus.CREATED)
             );
             var connectionIdValidator = ctx.formParamAsClass(CONNECTION_ID, String.class).check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
+            var dataNeedIdValidator = ctx.formParamAsClass(DATA_NEED_ID, String.class).check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
 
             var startValidator = ctx.formParamAsClass("start", ZonedDateTime.class)
                     .check(Objects::nonNull, "start must not be null");
             var endValidator = ctx.formParamAsClass("end", ZonedDateTime.class)
                     .check(end -> end == null || end.isAfter(startValidator.get()), "end must not be null and after start");
 
-            var errors = JavalinValidation.collectErrors(connectionIdValidator, startValidator, endValidator);
+            var errors = JavalinValidation.collectErrors(connectionIdValidator, dataNeedIdValidator, startValidator, endValidator);
             if (!errors.isEmpty()) {
                 ctx.status(HttpStatus.BAD_REQUEST);
                 ctx.json(errors);
@@ -138,10 +144,10 @@ public class EnedisRegionConnector implements RegionConnector {
             var permissionId = UUID.randomUUID().toString();
             connectionStatusSink.tryEmitNext(
                     new ConnectionStatusMessage(
-                            connectionIdValidator.get(), permissionId, PermissionProcessStatus.VALIDATED
+                            connectionIdValidator.get(), permissionId, dataNeedIdValidator.get(), PermissionProcessStatus.VALIDATED
                     )
             );
-            var requestInfo = new RequestInfo(connectionIdValidator.get(), startValidator.get(), endValidator.get());
+            var requestInfo = new RequestInfo(connectionIdValidator.get(), dataNeedIdValidator.get(), startValidator.get(), endValidator.get());
             permissionIdToRequestInfo.put(permissionId, requestInfo);
 
             var redirectUri = new URIBuilder()
@@ -156,7 +162,7 @@ public class EnedisRegionConnector implements RegionConnector {
 
             ctx.json(Map.of("permissionId", permissionId, "redirectUri", redirectUri.toString()));
 
-            connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, "Access to data requested"));
+            connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, requestInfo.dataNeedId(), ZonedDateTime.now(requestInfo.start().getZone()), PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, "Access to data requested"));
         });
 
         javalin.get(BASE_PATH + "/authorization-callback", ctx -> {
@@ -178,12 +184,12 @@ public class EnedisRegionConnector implements RegionConnector {
 
             var usagePointId = ctx.queryParam("usage_point_id");
             if (usagePointId == null || ctx.status() == HttpStatus.FORBIDDEN) { // probably when request was denied
-                connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), PermissionProcessStatus.REJECTED, "Access to data rejected"));
+                connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, requestInfo.dataNeedId(), ZonedDateTime.now(requestInfo.start().getZone()), PermissionProcessStatus.REJECTED, "Access to data rejected"));
                 ctx.html("<h1>Access to data denied, you can close this window.</h1>");
                 return;
             }
 
-            connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, ZonedDateTime.now(requestInfo.start().getZone()), PermissionProcessStatus.ACCEPTED, "Access to data granted"));
+            connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, requestInfo.dataNeedId(), ZonedDateTime.now(requestInfo.start().getZone()), PermissionProcessStatus.ACCEPTED, "Access to data granted"));
             ctx.html("<h1>Access to data granted, you can close this window.</h1>");
             new Thread(() -> {
                 // TODO rework the retry logic after mvp1
@@ -208,6 +214,7 @@ public class EnedisRegionConnector implements RegionConnector {
                         // map ids
                         consumptionRecord.setConnectionId(requestInfo.connectionId());
                         consumptionRecord.setPermissionId(permissionId);
+                        consumptionRecord.setDataNeedId(requestInfo.dataNeedId());
                         // publish
                         consumptionRecordSink.tryEmitNext(consumptionRecord);
                         start = endOfRequest;

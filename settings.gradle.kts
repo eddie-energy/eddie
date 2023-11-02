@@ -7,6 +7,9 @@ findProject("api")?.name = "api"
 include("region-connectors:region-connector-at-eda")
 findProject(":region-connectors:region-connector-at-eda")?.name = "region-connector-at-eda"
 
+include("region-connectors:region-connector-dk-energinet")
+findProject(":region-connectors:region-connector-dk-energinet")?.name = "region-connector-dk-energinet"
+
 include("region-connectors:region-connector-fr-enedis")
 findProject(":region-connectors:region-connector-fr-enedis")?.name = "region-connector-fr-enedis"
 
@@ -19,10 +22,11 @@ findProject(":region-connectors:region-connector-simulation")?.name = "region-co
 include("examples:example-app")
 findProject(":examples:example-app")?.name = "example-app"
 
-include("framework")
+include("core")
+findProject("core")?.name = "core"
+
 include("outbound-kafka")
 
 include("region-connectors:shared")
 findProject(":region-connectors:shared")?.name = "shared"
 
-findProject("framework")?.name = "framework"

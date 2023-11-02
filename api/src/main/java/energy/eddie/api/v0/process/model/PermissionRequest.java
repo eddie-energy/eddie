@@ -12,18 +12,26 @@ public interface PermissionRequest {
 
     /**
      * The permissionId of a request.
-     * It is used internally of the eddie framework to map permission requests or incoming consumption data
+     * It is used internally of EDDIE to map permission requests or incoming consumption data
      *
      * @return permissionId
      */
     String permissionId();
 
     /**
-     * The connectionId is an id that is given by the eligible party of the eddie framework.
+     * The connectionId is an id that is given by the eligible party using EDDIE.
      *
      * @return connectionId
      */
     String connectionId();
+
+
+    /**
+     * The dataNeedId identifies the data need that should be met by the permission request.
+     *
+     * @return dataNeedId
+     */
+    String dataNeedId();
 
     /**
      * The state of the permission request.

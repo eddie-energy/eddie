@@ -29,6 +29,11 @@ public class MessagingPermissionRequest<T extends PermissionRequest> implements 
     }
 
     @Override
+    public String dataNeedId() {
+        return permissionRequest.dataNeedId();
+    }
+
+    @Override
     public PermissionRequestState state() {
         return permissionRequest.state();
     }
@@ -98,6 +103,7 @@ public class MessagingPermissionRequest<T extends PermissionRequest> implements 
                 new ConnectionStatusMessage(
                         connectionId(),
                         permissionId(),
+                        dataNeedId(),
                         permissionRequest.state().status()
                 )
         );

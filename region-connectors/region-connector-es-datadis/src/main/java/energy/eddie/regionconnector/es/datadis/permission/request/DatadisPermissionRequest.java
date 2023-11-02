@@ -31,6 +31,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     private final ZonedDateTime requestDataFrom;
     private final ZonedDateTime requestDataTo;
     private final MeasurementType measurementType;
+    private final String dataNeedId;
     private PermissionRequestState state;
     @Nullable
     private String distributorCode;
@@ -39,15 +40,17 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     @Nullable
     private ZonedDateTime lastPulledMeterReading;
 
-    public DatadisPermissionRequest(String permissionId, String connectionId, Context ctx, AuthorizationApi authorizationApi, AuthorizationResponseHandler authorizationResponseHandler) {
+    public DatadisPermissionRequest(String permissionId, String connectionId, String dataNeedId, Context ctx, AuthorizationApi authorizationApi, AuthorizationResponseHandler authorizationResponseHandler) {
         requireNonNull(permissionId);
         requireNonNull(connectionId);
+        requireNonNull(dataNeedId);
         requireNonNull(ctx);
         requireNonNull(authorizationApi);
         requireNonNull(authorizationResponseHandler);
 
         this.permissionId = permissionId;
         this.connectionId = connectionId;
+        this.dataNeedId = dataNeedId;
         this.state = new CreatedState(this, ctx, authorizationApi, authorizationResponseHandler);
         this.nif = ctx.formParam(NIF_KEY);
         this.meteringPointId = ctx.formParam(METERING_POINT_ID_KEY);
@@ -58,12 +61,12 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
         this.measurementType = ctx.formParamAsClass(MEASUREMENT_TYPE_KEY, MeasurementType.class).getOrDefault(null);
     }
 
-    public DatadisPermissionRequest(String connectionId, Context ctx, AuthorizationApi authorizationApi, AuthorizationResponseHandler authorizationResponseHandler) {
-        this(UUID.randomUUID().toString(), connectionId, ctx, authorizationApi, authorizationResponseHandler);
+    public DatadisPermissionRequest(String connectionId, String dataNeedId, Context ctx, AuthorizationApi authorizationApi, AuthorizationResponseHandler authorizationResponseHandler) {
+        this(UUID.randomUUID().toString(), connectionId, dataNeedId, ctx, authorizationApi, authorizationResponseHandler);
     }
 
     public DatadisPermissionRequest(Context ctx, AuthorizationApi authorizationApi, AuthorizationResponseHandler authorizationResponseHandler) {
-        this(ctx.formParam(CONNECTION_ID_KEY), ctx, authorizationApi, authorizationResponseHandler);
+        this(ctx.formParam(CONNECTION_ID_KEY), ctx.formParam(DATA_NEED_ID_KEY), ctx, authorizationApi, authorizationResponseHandler);
     }
 
     /**
@@ -109,6 +112,11 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     @Override
     public String connectionId() {
         return connectionId;
+    }
+
+    @Override
+    public String dataNeedId() {
+        return dataNeedId;
     }
 
     @Override

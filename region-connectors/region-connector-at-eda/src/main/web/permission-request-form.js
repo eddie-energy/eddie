@@ -37,16 +37,16 @@ class PermissionRequestForm extends LitElement {
       startDate.getDate() + this.dataNeedAttributes.durationStart
     );
 
-    let endDate;
+    let endDate = new Date();
     if (this.dataNeedAttributes.durationEnd === 0) {
-      endDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      endDate.setDate(endDate.getDate() - 1); // subtract one day by default
     } else {
-      endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + this.dataNeedAttributes.durationEnd);
     }
 
     formData.append("start", startDate.toISOString().substring(0, 10));
     formData.append("end", endDate.toISOString().substring(0, 10));
+    formData.append("dataNeedId", this.dataNeedAttributes.id);
 
     fetch(REQUEST_URL, {
       body: formData,
@@ -129,9 +129,9 @@ class PermissionRequestForm extends LitElement {
             </p>
 
             ${this.jumpOffUrl
-              ? html`<sl-button href="${this.jumpOffUrl}" target="_blank"
-                  >Visit permission administrator website</sl-button
-                >`
+              ? html` <sl-button href="${this.jumpOffUrl}" target="_blank">
+                  Visit permission administrator website
+                </sl-button>`
               : ""}
           </sl-alert>`}
       </div>

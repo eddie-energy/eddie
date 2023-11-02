@@ -8,11 +8,11 @@ services:
       H2_USER: "test"
       H2_PASSWORD: "test"
 
-  eddie-framework:
-    image: ghcr.io/eddie-energy/eddie-framework:latest
+  eddie:
+    image: ghcr.io/eddie-energy/eddie:latest
     build:
       dockerfile: src/main/docker/Dockerfile
-      context: ../framework
+      context: ../core
     env_file:
       - .env
     environment:
@@ -22,7 +22,7 @@ services:
       PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
     volumes:
       - ./ponton:/ponton # mount a folder to store ponton files
-      - ./data-needs.yml:/opt/framework/config/data-needs.yml
+      - ./data-needs.yml:/opt/eddie/config/data-needs.yml
 
   eddie-example-app:
     image: ghcr.io/eddie-energy/eddie-example-app:latest
@@ -33,8 +33,26 @@ services:
       JDBC_URL: "jdbc:h2:tcp://h2/demo-db"
       JDBC_USER: "test"
       JDBC_PASSWORD: "test"
-      EDDIE_FRAMEWORK_PUBLIC_URL: ${PUBLIC_CONTEXT_PATH}
+      EDDIE_PUBLIC_URL: ${PUBLIC_CONTEXT_PATH}
       PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
+
+  kafka:
+    image: bitnami/kafka:3.6
+    ports:
+      - "9092:9092"
+    environment:
+      # KRaft settings
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      # Listeners
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+    profiles:
+      - "kafka"
 
   caddy:
     image: caddy:alpine

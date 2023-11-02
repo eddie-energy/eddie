@@ -26,6 +26,11 @@ public class SavingPermissionRequest<T extends PermissionRequest> implements Per
     }
 
     @Override
+    public String dataNeedId() {
+        return permissionRequest.dataNeedId();
+    }
+
+    @Override
     public PermissionRequestState state() {
         return permissionRequest.state();
     }

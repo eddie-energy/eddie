@@ -1,0 +1,17 @@
+eddie:
+  data-needs-config:
+    data-needs:
+      - id: LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY
+        description: Historical validated consumption data for the last three months, one measurement per day
+        type: HISTORICAL_VALIDATED_CONSUMPTION_DATA
+        granularity: P_1_D
+        duration-start: -90
+        duration-open-end: false
+        duration-end: 0
+      - id: FUTURE_NEAR_REALTIME_DATA
+        description: Near realtime consumption data from the smart meter
+        type: SMART_METER_P1_DATA
+        granularity: PT_5_M
+        duration-start: 0
+        duration-open-end: true
+        duration-end: null

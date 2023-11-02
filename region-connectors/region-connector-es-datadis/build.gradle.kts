@@ -5,6 +5,7 @@ import java.util.*
 plugins {
     id("java")
     id("energy.eddie.java-conventions")
+    id("energy.eddie.pnpm-build")
     id("org.gradlex.extra-java-module-info") version "1.3"
 }
 

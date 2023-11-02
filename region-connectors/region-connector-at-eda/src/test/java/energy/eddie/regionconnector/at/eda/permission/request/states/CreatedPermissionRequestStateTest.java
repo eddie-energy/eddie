@@ -20,7 +20,7 @@ class CreatedPermissionRequestStateTest {
         // Given
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.toCMRequest()).thenReturn(mock(CMRequest.class));
-        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
         AtCreatedPermissionRequestState permissionRequestState = new AtCreatedPermissionRequestState(permissionRequest, ccmoRequest, null);
 
         // When
@@ -35,7 +35,7 @@ class CreatedPermissionRequestStateTest {
         // Given
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.toCMRequest()).thenThrow(new InvalidDsoIdException("msg"));
-        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", ccmoRequest, null);
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
         AtCreatedPermissionRequestState permissionRequestState = new AtCreatedPermissionRequestState(permissionRequest, ccmoRequest, null);
 
         // When
