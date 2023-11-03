@@ -17,6 +17,12 @@ import java.util.Set;
 import static java.util.Objects.requireNonNull;
 
 @Entity
+@NamedEntityGraph(
+        name = "graph.Permission.kafkaConfig",
+        attributeNodes = {
+                @NamedAttributeNode("kafkaStreamingConfig")
+        }
+)
 @Table(name = "permission")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ExpirationTimeAfterStartTime
