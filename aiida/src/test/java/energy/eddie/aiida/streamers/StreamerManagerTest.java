@@ -78,7 +78,7 @@ class StreamerManagerTest {
         try (MockedStatic<StreamerFactory> mockStatic = mockStatic(StreamerFactory.class)) {
             var streamerMock = mock(KafkaStreamer.class);
             mockStatic.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any(), any(), any())).thenReturn(streamerMock);
-            when(aggregatorMock.getFilteredFlux(any())).thenReturn(Flux.empty());
+            when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
 
             manager.createNewStreamerForPermission(permission);
 
@@ -89,7 +89,7 @@ class StreamerManagerTest {
 
     @Test
     void givenSamePermissionTwice_createNewStreamerForPermission_throws() {
-        when(aggregatorMock.getFilteredFlux(any())).thenReturn(Flux.empty());
+        when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
 
         // first time should result in valid creation
         assertDoesNotThrow(() -> manager.createNewStreamerForPermission(permission));
@@ -111,7 +111,7 @@ class StreamerManagerTest {
             var mockStreamer = mock(KafkaStreamer.class);
             mockStatic.when(() -> StreamerFactory.getAiidaStreamer(argThat(i -> i.connectionId().equals(connectionId)),
                     any(), any(), any(), any(), any(), any())).thenReturn(mockStreamer);
-            when(aggregatorMock.getFilteredFlux(any())).thenReturn(Flux.empty());
+            when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
 
             // need to create streamer before stopping
             manager.createNewStreamerForPermission(permission);
@@ -145,7 +145,7 @@ class StreamerManagerTest {
 
             mockKafkaFactory.when(() -> KafkaFactory.getKafkaProducer(any(), anyString())).thenReturn(mockProducer);
             mockKafkaFactory.when(() -> KafkaFactory.getKafkaConsumer(any(), anyString(), any())).thenReturn(mockConsumer);
-            when(aggregatorMock.getFilteredFlux(any())).thenReturn(Flux.empty());
+            when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
 
             manager.createNewStreamerForPermission(permission);
 
@@ -170,7 +170,7 @@ class StreamerManagerTest {
             var mockConsumer = mock(KafkaConsumer.class);
             mockKafkaFactory.when(() -> KafkaFactory.getKafkaProducer(any(), anyString())).thenReturn(mockProducer);
             mockKafkaFactory.when(() -> KafkaFactory.getKafkaConsumer(any(), anyString(), any())).thenReturn(mockConsumer);
-            when(aggregatorMock.getFilteredFlux(any())).thenReturn(Flux.empty());
+            when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
 
             manager.createNewStreamerForPermission(permission);
 
@@ -200,7 +200,7 @@ class StreamerManagerTest {
         try (MockedStatic<StreamerFactory> mockStatic = mockStatic(StreamerFactory.class)) {
             var streamerMock = mock(KafkaStreamer.class);
             mockStatic.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any(), any(), any())).thenReturn(streamerMock);
-            when(aggregatorMock.getFilteredFlux(any())).thenReturn(Flux.empty());
+            when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
 
             manager.createNewStreamerForPermission(permission);
 
@@ -222,7 +222,7 @@ class StreamerManagerTest {
             var mockStreamer = mock(KafkaStreamer.class);
             mockStatic.when(() -> StreamerFactory.getAiidaStreamer(argThat(i -> i.connectionId().equals(connectionId)),
                     any(), any(), any(), any(), any(), any())).thenReturn(mockStreamer);
-            when(aggregatorMock.getFilteredFlux(any())).thenReturn(Flux.empty());
+            when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
 
             manager.createNewStreamerForPermission(permission);
 

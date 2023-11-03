@@ -61,7 +61,7 @@ public class StreamerManager implements AutoCloseable {
             throw new IllegalStateException("An AiidaStreamer for permission %s has already been created.".formatted(permission.permissionId()));
 
         Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().unicast().onBackpressureBuffer();
-        Flux<AiidaRecord> recordFlux = aggregator.getFilteredFlux(permission.requestedCodes());
+        Flux<AiidaRecord> recordFlux = aggregator.getFilteredFlux(permission.requestedCodes(), permission.expirationTime());
         Sinks.One<String> streamerTerminationRequestSink = Sinks.one();
 
         streamerTerminationRequestSink.asMono().subscribe(permissionId -> {
