@@ -12,12 +12,12 @@ import jakarta.validation.constraints.NotBlank;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class KafkaStreamingConfig {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Nullable
     @Column(name = "id")
     // id field is required by JPA but not used in business logic
     @SuppressWarnings("unused")
-    private Long id;
+    private Integer id;
     @Schema(description = "Comma separated list of Kafka boostrap servers.", example = "localhost:9092")
     @Column(nullable = false)
     @NotBlank(message = "bootstrapServers must not be null or blank.")

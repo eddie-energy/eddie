@@ -24,7 +24,7 @@ public class Permission {
     @Schema(description = "Unique ID of this permission.", requiredMode = Schema.RequiredMode.REQUIRED, example = "a4dc1bad-b9fe-47ae-9336-690cfb4aada9")
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(nullable = false, name = "permission_id")
+    @Column(nullable = false, name = "permission_id", columnDefinition = "bpchar", length = 36)
     @JsonProperty
     // permissionId is set by db...
     @SuppressWarnings("NullAway")
