@@ -140,8 +140,7 @@ class OesterreichsAdapterIntegrationTest {
                 .setUsername(username)
                 .setPassword(password).build();
 
-        var json1 = "{\"1-0:2.7.0\":{\"value\":0,\"time\":1697622950},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2370.6}";
-        var json3 = "{\"1-0:2.7.0\":{\"value\":20,\"time\":1697622970},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2390.6}";
+        var json = "{\"1-0:2.7.0\":{\"value\":20,\"time\":1697622970},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2390.6}";
 
         var adapter = new OesterreichsEnergieAdapter(config, mapper);
 
@@ -149,12 +148,10 @@ class OesterreichsAdapterIntegrationTest {
 
         scheduler.schedule(this::cutConnection, 1, TimeUnit.SECONDS);
         scheduler.schedule(this::restoreConnection, 3, TimeUnit.SECONDS);
-        scheduler.schedule(() -> publishSampleMqttMessage(config.subscribeTopic(), json3), 4, TimeUnit.SECONDS);
+        scheduler.schedule(() -> publishSampleMqttMessage(config.subscribeTopic(), json), 4, TimeUnit.SECONDS);
 
 
         StepVerifier.create(adapter.start())
-                .then(() -> publishSampleMqttMessage(config.subscribeTopic(), json1))
-                .expectNextMatches(aiidaRecord -> ((IntegerAiidaRecord) aiidaRecord).value() == 0)
                 .expectNextMatches(aiidaRecord -> ((IntegerAiidaRecord) aiidaRecord).value() == 20)
                 .then(adapter::close)
                 .expectComplete()

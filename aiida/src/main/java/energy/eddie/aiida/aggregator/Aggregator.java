@@ -10,6 +10,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -69,17 +70,20 @@ public class Aggregator implements AutoCloseable {
 
     /**
      * Returns a filtered Flux of {@link AiidaRecord}s that only contains records with a {@link AiidaRecord#code()}
-     * that is in the set {@code allowedCodes}.
+     * that is in the set {@code allowedCodes} and that have a timestamp before {@code permissionExpirationTime}.
      *
-     * @param allowedCodes Codes which should be included in the returned Flux.
-     * @return A Flux on which will only have AiidaRecords with a code matching one of the codes of the allowedCodes set.
+     * @param allowedCodes             Codes which should be included in the returned Flux.
+     * @param permissionExpirationTime Instant when the permission expires.
+     * @return A Flux on which will only have AiidaRecords with a code matching one of the codes of the
+     * {@code allowedCodes} set and a timestamp that is before {@code permissionExpirationTime}.
      */
-    public Flux<AiidaRecord> getFilteredFlux(Set<String> allowedCodes) {
-        return combinedSink.asFlux().filter(aiidaRecord -> allowedCodes.contains(aiidaRecord.code()));
+    public Flux<AiidaRecord> getFilteredFlux(Set<String> allowedCodes, Instant permissionExpirationTime) {
+        return combinedSink.asFlux().filter(aiidaRecord -> allowedCodes.contains(aiidaRecord.code())
+                && aiidaRecord.timestamp().isBefore(permissionExpirationTime));
     }
 
     /**
-     * Closes all {@link AiidaDataSource}s and emits a complete signal for all the Flux returned by {@link #getFilteredFlux(Set)}.
+     * Closes all {@link AiidaDataSource}s and emits a complete signal for all the Flux returned by {@link #getFilteredFlux(Set, Instant)}.
      */
     @Override
     public void close() {
