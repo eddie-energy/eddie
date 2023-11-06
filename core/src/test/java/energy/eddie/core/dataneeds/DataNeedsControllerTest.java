@@ -1,7 +1,9 @@
 package energy.eddie.core.dataneeds;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.v0.ConsumptionRecord;
+import org.json.JSONArray;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -9,8 +11,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -41,5 +47,40 @@ class DataNeedsControllerTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(dataNeed), true));
         mvc.perform(get("/api/data-needs/nonexistent-id").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testGetDataTypes() throws Exception {
+        given(this.dataNeedsConfigService.getDataNeedTypes())
+                .willReturn(Arrays.stream(DataType.values()).map(Enum::toString).collect(Collectors.toSet()));
+
+        var dataTypesJson = mvc.perform(get("/api/data-needs/types").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
+        // assert that we have a valid JSON array
+        assertThat(new JSONArray(dataTypesJson)).isNotNull();
+        // assert that we have all possible values in there
+        assertThat(objectMapper.readValue(dataTypesJson, new TypeReference<Set<DataType>>() {
+        }))
+                .isNotNull()
+                .hasSize(DataType.values().length);
+    }
+
+    @Test
+    void testGetDataGranularities() throws Exception {
+        given(this.dataNeedsConfigService.getDataNeedGranularities())
+                .willReturn(Arrays.stream(ConsumptionRecord.MeteringInterval.values()).map(Enum::toString).collect(Collectors.toSet()));
+        var dataGranularitiesJson = mvc.perform(get("/api/data-needs/granularities").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
+        // assert that we have a valid JSON array
+        assertThat(new JSONArray(dataGranularitiesJson)).isNotNull();
+        // assert that we have all possible values in there
+        assertThat(objectMapper.readValue(dataGranularitiesJson, new TypeReference<Set<ConsumptionRecord.MeteringInterval>>() {
+        }))
+                .isNotNull()
+                .hasSize(ConsumptionRecord.MeteringInterval.values().length);
     }
 }
