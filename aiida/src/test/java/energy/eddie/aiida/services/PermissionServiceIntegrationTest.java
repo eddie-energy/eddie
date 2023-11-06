@@ -3,6 +3,7 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
+import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,9 @@ import static org.mockito.Mockito.verify;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @TestPropertySource(properties = {
-        "spring.main.allow-bean-definition-overriding=true"
+        "spring.main.allow-bean-definition-overriding=true",
+        // manually trigger migration
+        "spring.flyway.enabled=false"
 })
 @Testcontainers
 public class PermissionServiceIntegrationTest {
@@ -50,15 +53,20 @@ public class PermissionServiceIntegrationTest {
     StreamerManager streamerManager;
 
     /**
-     * Populate the database before the Spring context loads to ensure the DB is populated with test data
-     * when any @PostConstruct methods are run.
-     * This would not be possible with the @Sql annotation.
+     * Create the DB tables with flyway and populate data needed for this testcase.
+     * This has to be done in @BeforeAll, to make sure that the DB is populated before the onApplicationEvent method
+     * runs, which wouldn't be possible with the @Sql annotation.
      */
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         DriverManagerDataSource dataSource = getDataSource();
+
+        Flyway flyway = Flyway.configure()
+                .dataSource(dataSource)
+                .load();
+        flyway.migrate();
+
         Connection conn = dataSource.getConnection();
-        ScriptUtils.executeSqlScript(conn, new ClassPathResource("schema.sql"));
         ScriptUtils.executeSqlScript(conn, new ClassPathResource("updatePermissionOnStartup.sql"));
         JdbcUtils.closeConnection(conn);
     }

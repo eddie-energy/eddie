@@ -15,7 +15,7 @@ VALUES ('25ee5365-5d71-4b01-b21f-9c61f76a5cc9', 'TEST', '2023-12-24 03:47:20.650
         '2023-09-20 13:39:42.610389 +00:00', NULL, 'My NewAIIDA Test Service', '2023-09-20 13:39:42.610385 +00:00',
         'STREAMING_DATA', 202);
 
-INSERT INTO public.permission_requested_codes (permission_permission_id, requested_codes)
+INSERT INTO public.permission_requested_codes (permission_id, code)
 VALUES ('25ee5365-5d71-4b01-b21f-9c61f76a5cc9', '2.8.0'),
        ('25ee5365-5d71-4b01-b21f-9c61f76a5cc9', '1.8.0'),
        ('9609a9b3-0718-4082-935d-6a98c0f8c5a2', '1.8.0'),
