@@ -32,7 +32,7 @@ class DataNeedsConfigServiceTest {
     }
 
     @Test
-    void testGetDataNeed() {
+    void testGetAllDataNeedIds() {
         assertThat(dataNeedsConfigService.getDataNeed(HISTORICAL_DATA_NEED_KEY)).isPresent().get()
                 .extracting("type").isEqualTo(DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA);
         assertThat(dataNeedsConfigService.getDataNeed(REALTIME_DATA_NEED_KEY)).isPresent().get()

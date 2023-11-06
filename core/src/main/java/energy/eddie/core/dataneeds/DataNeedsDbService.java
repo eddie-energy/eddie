@@ -25,20 +25,7 @@ public class DataNeedsDbService implements DataNeedsService {
     }
 
     @Override
-    public Set<String> getDataNeeds() {
-        // TODO: Implement after merge
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    @Override
-    public Set<String> getDataNeedGranularities() {
-        // TODO: Implement after merge
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    @Override
-    public Set<String> getDataNeedTypes() {
-        // TODO: Implement after merge
-        throw new UnsupportedOperationException("Not yet implemented");
+    public Set<String> getAllDataNeedIds() {
+        return repository.findAllIds();
     }
 }

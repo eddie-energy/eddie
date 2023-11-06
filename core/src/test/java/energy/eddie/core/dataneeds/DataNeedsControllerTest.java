@@ -11,10 +11,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -51,9 +49,6 @@ class DataNeedsControllerTest {
 
     @Test
     void testGetDataTypes() throws Exception {
-        given(this.dataNeedsConfigService.getDataNeedTypes())
-                .willReturn(Arrays.stream(DataType.values()).map(Enum::toString).collect(Collectors.toSet()));
-
         var dataTypesJson = mvc.perform(get("/api/data-needs/types").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -69,8 +64,6 @@ class DataNeedsControllerTest {
 
     @Test
     void testGetDataGranularities() throws Exception {
-        given(this.dataNeedsConfigService.getDataNeedGranularities())
-                .willReturn(Arrays.stream(ConsumptionRecord.MeteringInterval.values()).map(Enum::toString).collect(Collectors.toSet()));
         var dataGranularitiesJson = mvc.perform(get("/api/data-needs/granularities").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))

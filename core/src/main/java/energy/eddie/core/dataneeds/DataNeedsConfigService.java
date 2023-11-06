@@ -1,14 +1,11 @@
 package energy.eddie.core.dataneeds;
 
-import energy.eddie.api.v0.ConsumptionRecord;
 import org.slf4j.Logger;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * DataNeedService that retrieves data needs from the spring configuration.
@@ -31,18 +28,8 @@ public class DataNeedsConfigService implements DataNeedsService {
     }
 
     @Override
-    public Set<String> getDataNeeds() {
+    public Set<String> getAllDataNeedIds() {
         return dataNeedsConfig.getDataNeedForId().keySet();
-    }
-
-    @Override
-    public Set<String> getDataNeedTypes() {
-        return Arrays.stream(DataType.values()).map(Enum::toString).collect(Collectors.toSet());
-    }
-
-    @Override
-    public Set<String> getDataNeedGranularities() {
-        return Arrays.stream(ConsumptionRecord.MeteringInterval.values()).map(Enum::toString).collect(Collectors.toSet());
     }
 
 }

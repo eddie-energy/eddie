@@ -1,5 +1,6 @@
 package energy.eddie.core.dataneeds;
 
+import energy.eddie.api.v0.ConsumptionRecord;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,8 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Set;
 
 /**
- * REST controller for DataNeeds, limited to getting single data needs.
+ * REST controller for retrieving DataNeeds and their possible values.
  * <ul>
+ *     <li>GET /api/data-needs : retrieve just the ids of all data needs</li>
+ *     <li>GET /api/data-needs/types : get all possible values for the type field of a data need</li>
+ *     <li>GET /api/data-needs/granularities : get all possible values for the granularity field of a data need</li>
  *     <li>GET /api/data-needs/{id} : retrieve a data need by it's id</li>
  * </ul>
  */
@@ -26,7 +30,7 @@ public class DataNeedsController {
 
     @GetMapping()
     public ResponseEntity<Set<String>> getDataNeeds() {
-        return ResponseEntity.ok(dataNeedsService.getDataNeeds());
+        return ResponseEntity.ok(dataNeedsService.getAllDataNeedIds());
     }
 
     @GetMapping("/{id}")
@@ -35,12 +39,12 @@ public class DataNeedsController {
     }
 
     @GetMapping("/types")
-    public ResponseEntity<Set<String>> getDataTypes() {
-        return ResponseEntity.ok(dataNeedsService.getDataNeedTypes());
+    public ResponseEntity<DataType[]> getDataTypes() {
+        return ResponseEntity.ok(DataType.values());
     }
 
     @GetMapping("/granularities")
-    public ResponseEntity<Set<String>> getDataGranularities() {
-        return ResponseEntity.ok(dataNeedsService.getDataNeedGranularities());
+    public ResponseEntity<ConsumptionRecord.MeteringInterval[]> getDataGranularities() {
+        return ResponseEntity.ok(ConsumptionRecord.MeteringInterval.values());
     }
 }

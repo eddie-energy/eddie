@@ -7,11 +7,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static energy.eddie.core.dataneeds.DataNeedTest.EXAMPLE_DATA_NEED;
 import static energy.eddie.core.dataneeds.DataNeedTest.EXAMPLE_DATA_NEED_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest()
 @ActiveProfiles("dataneeds-from-db")
@@ -34,4 +36,17 @@ class DataNeedsDbServiceTest {
         assertThat(dataNeedsDbService.getDataNeed(NONEXISTENT_DATA_NEED_ID)).isEmpty();
     }
 
+    @Test
+    void testGetAllDataNeedIds() {
+        given(dataNeedsDbRepository.findAllIds()).willReturn(Set.of(EXAMPLE_DATA_NEED_KEY));
+        assertThat(dataNeedsDbService.getAllDataNeedIds()).containsExactly(EXAMPLE_DATA_NEED_KEY);
+        verify(dataNeedsDbRepository).findAllIds();
+        verifyNoMoreInteractions(dataNeedsDbRepository);
+        reset(dataNeedsDbRepository);
+
+        given(dataNeedsDbRepository.findAllIds()).willReturn(Set.of());
+        assertThat(dataNeedsDbService.getAllDataNeedIds()).isEmpty();
+        verify(dataNeedsDbRepository).findAllIds();
+        verifyNoMoreInteractions(dataNeedsDbRepository);
+    }
 }
