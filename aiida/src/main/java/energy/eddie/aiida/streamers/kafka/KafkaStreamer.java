@@ -170,6 +170,7 @@ public class KafkaStreamer extends AiidaStreamer {
      * @param topic To which topic the data should be produced.
      * @param data  Data that should be sent.
      */
+    @SuppressWarnings("FutureReturnValueIgnored")
     private void produceRecord(String topic, Object data) {
         String json;
         try {

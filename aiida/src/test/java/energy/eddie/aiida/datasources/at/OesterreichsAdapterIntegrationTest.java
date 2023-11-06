@@ -26,6 +26,7 @@ import org.testcontainers.utility.MountableFile;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -106,6 +107,7 @@ class OesterreichsAdapterIntegrationTest {
     /**
      * Blockingly publishes the msg <b>directly</b> to the server, i.e. without the proxy.
      */
+    @SuppressWarnings("FutureReturnValueIgnored")
     private void publishSampleMqttMessage(String topic, String msg) {
         var directServerURI = "tcp://" + mqtt.getHost() + ":" + mqtt.getMappedPort(1883);
 
@@ -117,9 +119,9 @@ class OesterreichsAdapterIntegrationTest {
                     options.setAutomaticReconnect(false);
                     options.setCleanStart(true);
                     options.setUserName(username);
-                    options.setPassword(password.getBytes());
+                    options.setPassword(password.getBytes(StandardCharsets.UTF_8));
                     client.connect(options);
-                    client.publish(topic, msg.getBytes(), 2, false);
+                    client.publish(topic, msg.getBytes(StandardCharsets.UTF_8), 2, false);
                     client.disconnect();
                     client.close();
                 } catch (MqttException ignored) {
@@ -131,7 +133,7 @@ class OesterreichsAdapterIntegrationTest {
 
     @Test
     // adapter is closed by StepVerifier
-    @SuppressWarnings("resource")
+    @SuppressWarnings({"resource", "FutureReturnValueIgnored"})
     void verify_mqttClientAutomaticallyReconnects() {
         MqttConfig config = new MqttConfigBuilder(serverURI, "MyReconnectTopic")
                 .setKeepAliveInterval(1)

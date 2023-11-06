@@ -5,6 +5,7 @@ import energy.eddie.aiida.datasources.AiidaDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordFactory;
 import energy.eddie.aiida.models.record.IntegerAiidaRecord;
+import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,10 +20,8 @@ import reactor.test.publisher.TestPublisher;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +35,8 @@ class AggregatorTest {
     private AiidaRecord wanted2;
     @Mock
     private Flux<AiidaRecord> mockFlux;
+    @Mock
+    private AiidaRecordRepository mockRepository;
 
     @BeforeEach
     void setUp() {
@@ -45,7 +46,7 @@ class AggregatorTest {
         wanted1 = AiidaRecordFactory.createRecord("1.8.0", Instant.now(), 50);
         wanted2 = AiidaRecordFactory.createRecord("2.8.0", Instant.now(), 60);
 
-        aggregator = new Aggregator();
+        aggregator = new Aggregator(mockRepository);
     }
 
     @AfterEach
@@ -124,10 +125,6 @@ class AggregatorTest {
         publisher.next(unwanted1);
         publisher.next(unwanted2);
 
-        // emitting data without subscribers isn't possible with Sinks.Many
-        assertThat(logCaptor.getErrorLogs())
-                .containsAll(Collections.nCopies(2, "Error while emitting record to combined sink. Error was: FAIL_ZERO_SUBSCRIBER"));
-
         StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes))
                 .expectNextMatches(aiidaRecord -> aiidaRecord.code().equals("2.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 60)
                 .expectNextMatches(aiidaRecord -> aiidaRecord.code().equals("1.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 50)
@@ -140,6 +137,28 @@ class AggregatorTest {
         publisher.next(wanted1);
 
         stepVerifier.verify(Duration.ofSeconds(2));
+    }
+
+    @Test
+    void givenAiidaRecordFromDatasource_isSavedInDatabase() {
+        TestPublisher<AiidaRecord> publisher1 = TestPublisher.create();
+        var mockDataSource1 = mock(AiidaDataSource.class);
+        when(mockDataSource1.start()).thenReturn(publisher1.flux());
+
+        TestPublisher<AiidaRecord> publisher2 = TestPublisher.create();
+        var mockDataSource2 = mock(AiidaDataSource.class);
+        when(mockDataSource2.start()).thenReturn(publisher2.flux());
+
+
+        aggregator.addNewAiidaDataSource(mockDataSource1);
+        aggregator.addNewAiidaDataSource(mockDataSource2);
+
+        publisher1.next(wanted1);
+        publisher1.next(wanted2);
+        publisher2.next(wanted2);
+        publisher2.next(wanted1);
+
+        verify(mockRepository, times(4)).save(any(AiidaRecord.class));
     }
 
     @Test

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.aiida.TestUtils;
+import energy.eddie.aiida.models.record.IntegerAiidaRecord;
 import energy.eddie.aiida.models.record.StringAiidaRecord;
 import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.aiida.utils.MqttFactory;
@@ -18,7 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import reactor.test.StepVerifier;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
 
 import static energy.eddie.aiida.utils.MqttConfig.MqttConfigBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -145,19 +148,43 @@ class OesterreichsEnergieAdapterTest {
     }
 
     @Test
-    void givenRecordFromMqttBroker_isPublishedOnFlux() {
+    void givenRecordFromMqttBrokerWithoutTimestamp_isPublishedOnFlux() {
         var recordJson = "{\"0-0:96.1.0\":{\"value\":\"90296857\"},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2370.6}";
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
 
-            MqttMessage message = new MqttMessage(recordJson.getBytes());
+            MqttMessage message = new MqttMessage(recordJson.getBytes(StandardCharsets.UTF_8));
 
             StepVerifier.create(adapter.start())
                     // call method to simulate arrived message
                     .then(() -> adapter.messageArrived("MyTestTopic", message))
                     .expectNextMatches(received -> received.code().equals("0-0:96.1.0") && received.timestamp().toEpochMilli() == 0L
                             && ((StringAiidaRecord) received).value().equals("90296857"))
+                    .then(adapter::close)
+                    .expectComplete()
+                    .log()
+                    .verify();
+        }
+    }
+
+    @Test
+    void givenRecordFromMqttBroker_isPublishedOnFlux() {
+        var recordJson = "{\"1-0:1.7.0\":{\"value\":45,\"time\":1698915600},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":782238.7}";
+        var expectedTimestamp = Instant.ofEpochSecond(1698915600);
+
+        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
+            var mockClient = mock(MqttAsyncClient.class);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
+
+            MqttMessage message = new MqttMessage(recordJson.getBytes(StandardCharsets.UTF_8));
+
+            StepVerifier.create(adapter.start())
+                    // call method to simulate arrived message
+                    .then(() -> adapter.messageArrived("MyTestTopic", message))
+                    .expectNextMatches(received -> received.code().equals("1-0:1.7.0")
+                            && received.timestamp().toEpochMilli() == expectedTimestamp.toEpochMilli()
+                            && ((IntegerAiidaRecord) received).value() == 45)
                     .then(adapter::close)
                     .expectComplete()
                     .log()
@@ -205,8 +232,8 @@ class OesterreichsEnergieAdapterTest {
                 .expectComplete()
                 .verifyLater();
 
-        adapter.messageArrived(config.subscribeTopic(), new MqttMessage(invalidJson.getBytes()));
-        adapter.messageArrived(config.subscribeTopic(), new MqttMessage(validJson.getBytes()));
+        adapter.messageArrived(config.subscribeTopic(), new MqttMessage(invalidJson.getBytes(StandardCharsets.UTF_8)));
+        adapter.messageArrived(config.subscribeTopic(), new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
 
         TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(invalidJson),
                 logCaptor, JsonMappingException.class);
@@ -224,9 +251,7 @@ class OesterreichsEnergieAdapterTest {
         var json = "{\"1-0:1.8.0\":{\"value\":83622,\"time\":1698218800},\"UNKNOWN-OBIS-CODE\":{\"value\":0,\"time\":0},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":83854.3}";
 
         StepVerifier.create(adapter.start())
-                .then(() -> {
-                    adapter.messageArrived(config.subscribeTopic(), new MqttMessage(json.getBytes()));
-                })
+                .then(() -> adapter.messageArrived(config.subscribeTopic(), new MqttMessage(json.getBytes(StandardCharsets.UTF_8))))
                 .expectNextMatches(aiidaRecord -> aiidaRecord.code().equals("1-0:1.8.0"))
                 .then(adapter::close)
                 .expectComplete()
