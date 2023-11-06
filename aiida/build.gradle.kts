@@ -67,6 +67,9 @@ dependencies {
 
     // execute database scripts and migrations
     implementation("org.flywaydb:flyway-core:9.22.3")
+
+    // enable Jackson support for Hibernate lazy loaded properties
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate6:2.15.2")
 }
 
 dependencyManagement {

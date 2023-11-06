@@ -1,6 +1,7 @@
 package energy.eddie.aiida.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.aiida.streamers.AiidaStreamer;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,12 @@ public class AiidaConfiguration {
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
+
+        Hibernate6Module module = new Hibernate6Module();
+        // Jackson should automatically query any lazy loaded fields before serialization
+        module.enable(Hibernate6Module.Feature.FORCE_LAZY_LOADING);
+        objectMapper.registerModule(module);
+
         return objectMapper;
     }
 
