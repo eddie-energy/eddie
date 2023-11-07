@@ -44,7 +44,6 @@ class PermissionRequestForm extends LitElement {
     if (this.dataNeedAttributes.durationEnd === 0) {
       endDate.setDate(endDate.getDate() - 1); // subtract one day by default
     } else {
-      endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + this.dataNeedAttributes.durationEnd);
     }
 
