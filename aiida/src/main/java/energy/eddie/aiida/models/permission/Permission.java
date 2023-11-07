@@ -17,6 +17,12 @@ import java.util.Set;
 import static java.util.Objects.requireNonNull;
 
 @Entity
+@NamedEntityGraph(
+        name = "graph.Permission.kafkaConfig",
+        attributeNodes = {
+                @NamedAttributeNode("kafkaStreamingConfig")
+        }
+)
 @Table(name = "permission")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ExpirationTimeAfterStartTime
@@ -24,7 +30,7 @@ public class Permission {
     @Schema(description = "Unique ID of this permission.", requiredMode = Schema.RequiredMode.REQUIRED, example = "a4dc1bad-b9fe-47ae-9336-690cfb4aada9")
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(nullable = false, name = "permission_id")
+    @Column(nullable = false, name = "permission_id", columnDefinition = "bpchar", length = 36)
     @JsonProperty
     // permissionId is set by db...
     @SuppressWarnings("NullAway")
@@ -64,12 +70,13 @@ public class Permission {
     @NotBlank(message = "connectionId must not be null or blank.")
     private String connectionId;
     @Schema(description = "Set of OBIS codes that the EP wants to receive.", type = "array", implementation = String.class, example = "[\"1-0:1.8.0\", \"1-0:1.7.0\"]")
-    @Column(nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "permission_requested_codes", joinColumns = @JoinColumn(name = "permission_id"))
+    @Column(name = "code", nullable = false)
     @JsonProperty(required = true)
     @NotEmpty(message = "At least one OBIS code needs to be requested.")
     private Set<String> requestedCodes;
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "kafka_streaming_config_id", referencedColumnName = "id")
     @JsonProperty(required = true)
     @Valid

@@ -1,8 +1,4 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://REPLACE_ME:5432/aiida
-    username: REPLACE_ME
-    password: REPLACE_ME
   jpa:
     properties:
       hibernate:
@@ -14,7 +10,6 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
-
 
 aiida:
   streamer:

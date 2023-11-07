@@ -25,7 +25,7 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("org.postgresql:postgresql:42.6.0")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation("org.springframework.boot:spring-boot-starter-web")
 
@@ -64,6 +64,12 @@ dependencies {
 
     // generate openAPI documentation for swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+
+    // execute database scripts and migrations
+    implementation("org.flywaydb:flyway-core:9.22.3")
+
+    // enable Jackson support for Hibernate lazy loaded properties
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate6:2.15.2")
 }
 
 dependencyManagement {

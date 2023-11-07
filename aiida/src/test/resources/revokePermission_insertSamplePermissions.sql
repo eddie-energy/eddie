@@ -11,7 +11,7 @@ VALUES ('592c372e-bced-45b7-a4a9-5f39e66b8d30', 'NewAiidaRandomConnectionId', '2
        ('1a1c5995-71fc-4078-acd3-46027a2faa51', 'NewAiidaRandomConnectionId', '2023-09-23 16:52:19.533439 +00:00',
         '2023-09-13 06:08:59.533440 +00:00', NULL, 'BlaService2', '2023-09-14 10:38:59.533439 +00:00', 'ACCEPTED', 3);
 
-INSERT INTO public.permission_requested_codes (permission_permission_id, requested_codes)
+INSERT INTO public.permission_requested_codes (permission_id, code)
 VALUES ('592c372e-bced-45b7-a4a9-5f39e66b8d30', '1.8.0'),
        ('592c372e-bced-45b7-a4a9-5f39e66b8d30', '2.8.0'),
        ('1a1c5995-71fc-4078-acd3-46027a2faa51', '1.8.0'),

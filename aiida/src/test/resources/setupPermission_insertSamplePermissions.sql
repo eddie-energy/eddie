@@ -13,7 +13,7 @@ VALUES ('6ad75c0c-b622-4f4a-b195-3e8cf1f09676', 'NewAiidaRandomConnectionId', '2
         '2023-09-13 10:00:00.000000 +00:00', NULL, 'Service1', '2023-09-14 12:06:58.396911 +00:00', 'ACCEPTED', 7);
 
 
-INSERT INTO public.permission_requested_codes (permission_permission_id, requested_codes)
+INSERT INTO public.permission_requested_codes (permission_id, code)
 VALUES ('6ad75c0c-b622-4f4a-b195-3e8cf1f09676', '1.8.0'),
        ('6ad75c0c-b622-4f4a-b195-3e8cf1f09676', '2.8.0'),
        ('d8dcfee0-2a3c-4974-866f-fefaead06345', '1.8.0'),

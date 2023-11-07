@@ -246,9 +246,11 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      */
     @Override
     public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
-        LOGGER.info("Getting all permissions from database and will resume streaming or update them if they are expired.");
+        // fields of permissions are loaded eagerly to avoid n+1 select problem in loop
+        List<Permission> allActivePermissions = repository.findAllActivePermissions();
+        LOGGER.info("Fetched {} active permissions from database and will resume streaming or update them if they are expired.", allActivePermissions.size());
 
-        for (Permission permission : repository.findAllActivePermissions()) {
+        for (Permission permission : allActivePermissions) {
             if (permission.expirationTime().isAfter(clock.instant())) {
                 schedulePermissionExpirationRunnable(permission);
                 streamerManager.createNewStreamerForPermission(permission);
