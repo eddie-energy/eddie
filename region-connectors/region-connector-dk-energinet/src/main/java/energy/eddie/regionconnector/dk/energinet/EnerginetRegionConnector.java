@@ -147,6 +147,7 @@ public class EnerginetRegionConnector implements RegionConnector {
 
                     consumptionRecord.setConnectionId(permissionRequest.connectionId());
                     consumptionRecord.setPermissionId(permissionRequest.permissionId());
+                    consumptionRecord.setDataNeedId(permissionRequest.dataNeedId());
                     consumptionRecordSink.tryEmitNext(consumptionRecord);
                 } catch (FeignException e) {
                     LOGGER.error("Something went wrong while fetching data from Energinet:", e);
