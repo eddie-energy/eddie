@@ -13,8 +13,14 @@ module energy.eddie.api {
     exports energy.eddie.api.v0;
     exports energy.eddie.api.v0.process.model;
     exports energy.eddie.api.v0.process.model.states;
+    exports energy.eddie.cim.validated_historical_data.v0_82;
+    exports energy.eddie.api.v0_82.cim;
+    exports energy.eddie.api.v0_82.cim.config;
+    exports energy.eddie.api.v0_82;
 
     requires com.fasterxml.jackson.annotation;
     requires java.compiler;
     requires eclipse.microprofile.config.api;
+    requires jakarta.annotation;
+    requires jakarta.xml.bind;
 }
