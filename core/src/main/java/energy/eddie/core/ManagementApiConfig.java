@@ -1,4 +1,4 @@
-package energy.eddie.framework;
+package energy.eddie.core;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -27,9 +27,9 @@ import java.io.IOException;
  * <p>
  * The following configuration properties are used:
  * <ul>
- *      <li>management.server.port=9090
- *      <li>management.server.urlprefix=management
- *      <li>spring.data.rest.basePath=${management.server.urlprefix}
+ *      <li>management.server.port=9090</li>
+ *      <li>management.server.urlprefix=management</li>
+ *      <li>spring.data.rest.basePath=${management.server.urlprefix}</li>
  * </ul>
  *
  * @see <a href="https://dmytro-lazarenko.hashnode.dev/spring-boot-2-multiple-ports-for-internal-and-external-rest-apis-jetty">Spring boot 2: multiple ports for Internal and External REST APIs + Jetty</a>
