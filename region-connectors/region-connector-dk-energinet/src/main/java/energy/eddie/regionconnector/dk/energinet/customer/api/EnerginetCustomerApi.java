@@ -37,5 +37,7 @@ public interface EnerginetCustomerApi {
 
     void setUserCorrelationId(UUID userCorrelationId);
 
+    void setRefreshToken(String refreshToken);
+
     Map<String, HealthState> health();
 }
