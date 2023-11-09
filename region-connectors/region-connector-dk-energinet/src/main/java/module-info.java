@@ -9,7 +9,6 @@ module energy.eddie.regionconnector.dk.energinet {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
     requires org.slf4j;
-    requires org.apache.logging.log4j;
     requires kotlin.stdlib;
 
     requires eclipse.microprofile.config.api;
@@ -23,6 +22,8 @@ module energy.eddie.regionconnector.dk.energinet {
     requires io.javalin;
     requires reactor.core;
     requires energy.eddie.region.connector.shared;
+    requires spring.context;
+    requires spring.boot;
 
     exports energy.eddie.regionconnector.dk.energinet.customer.model;
     opens energy.eddie.regionconnector.dk.energinet.customer.model;
