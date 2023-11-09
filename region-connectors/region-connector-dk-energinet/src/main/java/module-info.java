@@ -25,6 +25,10 @@ module energy.eddie.regionconnector.dk.energinet {
     requires spring.context;
     requires spring.boot;
 
+    // Needed for spring
+    opens energy.eddie.regionconnector.dk to spring.core;
+    exports energy.eddie.regionconnector.dk;
+
     exports energy.eddie.regionconnector.dk.energinet.customer.model;
     opens energy.eddie.regionconnector.dk.energinet.customer.model;
     provides RegionConnectorFactory with EnerginetRegionConnectorFactory;
