@@ -20,17 +20,17 @@ A sample container configuration in `docker-compose.yml`:
 ````yaml
 version: "3.9"
 services:
-  eddie-framework:
-    image: ghcr.io/eddie-energy/eddie-framework:latest
+  eddie:
+    image: ghcr.io/eddie-energy/eddie:latest
     environment:
       JDBC_URL: "jdbc:h2:tcp://h2/demo-db"
       JDBC_USER: "test"
       JDBC_PASSWORD: "test"
-      PUBLIC_CONTEXT_PATH: ""
-      IMPORT_CONFIG_FILE: "file:./framework/src/test/resources/data-needs.yml"
+      PUBLIC_CONTEXT_PATH: ""                            # default value
+      IMPORT_CONFIG_FILE: "file:./config/data-needs.yml" # default value
     volumes:
       - ./ponton:/ponton
-      - ./data-needs.yml:/opt/framework/config/data-needs.yml
+      - ./data-needs.yml:/opt/eddie/config/data-needs.yml
 ````
 
 | Variable             | Description                                             |
@@ -116,14 +116,14 @@ eddie:
       - id: LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY
         description: Historical validated consumption data for the last three months, one measurement per day
         type: HISTORICAL_VALIDATED_CONSUMPTION_DATA
-        granularity: P_1_D
+        granularity: P1D
         duration-start: -90
         duration-open-end: false
         duration-end: 0
       - id: FUTURE_NEAR_REALTIME_DATA
         description: Near realtime consumption data from the smart meter
         type: SMART_METER_P1_DATA
-        granularity: PT_5_M
+        granularity: PT5M
         duration-start: 0
         duration-open-end: true
         duration-end: null
@@ -168,6 +168,8 @@ eddie:
 
 | Value   | Values per 24h | Description      |
 |---------|----------------|------------------|
+| `P1Y`   | n.a.           | once per year    |
+| `P1M`   | n.a.           | once per month   |
 | `P1D`   | 1              | once per day     |
 | `PT1H`  | 24             | once per hour    |
 | `PT30M` | 48             | every 30 minutes |
