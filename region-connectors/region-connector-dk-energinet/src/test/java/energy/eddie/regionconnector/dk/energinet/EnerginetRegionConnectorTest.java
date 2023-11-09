@@ -1,12 +1,11 @@
 package energy.eddie.regionconnector.dk.energinet;
 
 import energy.eddie.api.v0.HealthState;
-import energy.eddie.api.v0.process.model.PermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
-import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.InMemoryPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.SimplePermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerAcceptedState;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerInvalidState;
 import org.junit.jupiter.api.Test;
@@ -44,7 +43,7 @@ class EnerginetRegionConnectorTest {
         when(config.thirdpartyBasePath()).thenReturn("thirdpartyPath");
         var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);
         when(energinetCustomerApi.health()).thenReturn(Map.of("service", HealthState.UP));
-        PermissionRequestRepository<DkEnerginetCustomerPermissionRequest> permissionRequestRepository = new InMemoryPermissionRequestRepository();
+        DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository = new InMemoryPermissionRequestRepository();
         var rc = new EnerginetRegionConnector(config, energinetCustomerApi, permissionRequestRepository);
 
         // When
@@ -60,7 +59,7 @@ class EnerginetRegionConnectorTest {
         when(config.thirdpartyBasePath()).thenReturn("thirdpartyPath");
         var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);
         when(energinetCustomerApi.health()).thenReturn(Map.of("service", HealthState.UP));
-        PermissionRequestRepository<DkEnerginetCustomerPermissionRequest> permissionRequestRepository = new InMemoryPermissionRequestRepository();
+        DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository = new InMemoryPermissionRequestRepository();
         SimplePermissionRequest request = new SimplePermissionRequest(
                 "pid",
                 "cid",
@@ -85,7 +84,7 @@ class EnerginetRegionConnectorTest {
         when(config.thirdpartyBasePath()).thenReturn("thirdpartyPath");
         var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);
         when(energinetCustomerApi.health()).thenReturn(Map.of("service", HealthState.UP));
-        PermissionRequestRepository<DkEnerginetCustomerPermissionRequest> permissionRequestRepository = new InMemoryPermissionRequestRepository();
+        DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository = new InMemoryPermissionRequestRepository();
         SimplePermissionRequest request = new SimplePermissionRequest(
                 "pid",
                 "cid",

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
 import energy.eddie.api.v0.process.model.PermissionRequestState;
-import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 
 import java.time.ZonedDateTime;

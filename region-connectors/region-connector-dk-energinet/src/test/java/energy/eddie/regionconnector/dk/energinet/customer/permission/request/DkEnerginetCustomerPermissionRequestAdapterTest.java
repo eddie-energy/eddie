@@ -4,7 +4,7 @@ import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
-import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerMalformedState;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import io.javalin.http.Context;

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.states;
 
-import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.SimplePermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;

@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request.st
 
 import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
 import energy.eddie.api.v0.process.model.states.InvalidPermissionRequestState;
-import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 
 public class EnerginetCustomerInvalidState extends ContextualizedPermissionRequestState<DkEnerginetCustomerPermissionRequest>
         implements InvalidPermissionRequestState {

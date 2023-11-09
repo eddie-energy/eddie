@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.states;
 
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
-import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import energy.eddie.regionconnector.dk.energinet.utils.PeriodResolutionEnumConverter;
 import energy.eddie.regionconnector.shared.utils.ZonedDateTimeConverter;

@@ -3,13 +3,13 @@ package energy.eddie.regionconnector.dk.energinet;
 import energy.eddie.api.v0.*;
 import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
-import energy.eddie.api.v0.process.model.PermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
-import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
+import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPoints;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.utils.PeriodResolutionEnumConverter;
 import energy.eddie.regionconnector.shared.utils.ZonedDateTimeConverter;
 import feign.FeignException;
@@ -41,13 +41,13 @@ public class EnerginetRegionConnector implements RegionConnector {
 
     final Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
-    private final EnerginetCustomerApiClient energinetCustomerApi;
+    private final EnerginetCustomerApi energinetCustomerApi;
     private final Javalin javalin = Javalin.create();
     private final ConcurrentMap<String, ConnectionStatusMessage> permissionIdToConnectionStatusMessages = new ConcurrentHashMap<>();
-    private final PermissionRequestRepository<DkEnerginetCustomerPermissionRequest> permissionRequestRepository;
+    private final DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository;
     private final PermissionRequestFactory permissionRequestFactory;
 
-    public EnerginetRegionConnector(EnerginetConfiguration configuration, EnerginetCustomerApiClient energinetCustomerApi, PermissionRequestRepository<DkEnerginetCustomerPermissionRequest> permissionRequestRepository) {
+    public EnerginetRegionConnector(EnerginetConfiguration configuration, EnerginetCustomerApi energinetCustomerApi, DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository) {
         this.energinetCustomerApi = requireNonNull(energinetCustomerApi);
         this.permissionRequestRepository = requireNonNull(permissionRequestRepository);
         this.permissionRequestFactory = new PermissionRequestFactory(permissionRequestRepository, connectionStatusSink, requireNonNull(configuration));
