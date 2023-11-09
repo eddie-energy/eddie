@@ -6,7 +6,6 @@ plugins {
     application
     id("energy.eddie.java-conventions")
     id("energy.eddie.pnpm-build")
-    id("org.gradlex.extra-java-module-info") version "1.3"
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
@@ -21,11 +20,11 @@ repositories {
 dependencies {
     implementation(project(":api"))
     implementation(project(mapOf("path" to ":outbound-kafka")))
-    runtimeOnly(project(":region-connectors:region-connector-at-eda"))
-    runtimeOnly(project(":region-connectors:region-connector-dk-energinet"))
-    runtimeOnly(project(":region-connectors:region-connector-fr-enedis"))
-    runtimeOnly(project(":region-connectors:region-connector-es-datadis"))
-    runtimeOnly(project(":region-connectors:region-connector-simulation"))
+    implementation(project(":region-connectors:region-connector-at-eda"))
+    implementation(project(":region-connectors:region-connector-dk-energinet"))
+    implementation(project(":region-connectors:region-connector-fr-enedis"))
+    implementation(project(":region-connectors:region-connector-es-datadis"))
+    implementation(project(":region-connectors:region-connector-simulation"))
 
     implementation(libs.microprofile.config)
     implementation("io.smallrye.config:smallrye-config:3.3.0")
@@ -34,6 +33,7 @@ dependencies {
     implementation("io.smallrye.common:smallrye-common-expression:2.1.0")
 
     implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.guice)
     implementation(libs.javalin)
     implementation(libs.jetty.proxy)
@@ -48,53 +48,6 @@ dependencies {
     testImplementation(libs.junit.mockito)
 }
 
-extraJavaModuleInfo {
-    // This is needed because gradle puts jdbi3 on the classpath, not the module path.
-    automaticModule("org.jdbi:jdbi3-core", "org.jdbi.v3.core")
-
-    // These other two are needed, because the plugin extra-java-module-info would complain about them
-    automaticModule("org.jetbrains:annotations", "org.jetbrains.annotations")
-    automaticModule("org.jetbrains.kotlin:kotlin-stdlib-common", "kotlin.stdlib")
-    automaticModule("com.google.inject:guice", "com.google.guice")
-    automaticModule("javax.inject:javax.inject", "javax.inject")
-    automaticModule("com.google.guava:failureaccess", "failureaccess")
-    automaticModule("com.google.guava:listenablefuture", "listenablefuture")
-    automaticModule("com.google.code.findbugs:jsr305", "com.google.code.findbugs.jsr305")
-    automaticModule("com.google.j2objc:j2objc-annotations", "j2objc.annotations")
-
-    // stuff that comes from the convention plugin, only errorprone.annotations has a set automatic module name, the others haven't
-    automaticModule("com.google.errorprone:error_prone_annotation", "com.google.errorprone.annotations")
-    automaticModule("com.uber.nullaway:nullaway", "com.uber.nullaway:nullaway")
-    automaticModule("com.google.auto:auto-common", "com.google.auto:auto-common")
-    automaticModule("com.google.auto.value:auto-value-annotations", "com.google.auto.value:auto-value-annotations")
-    automaticModule("com.google.errorprone:error_prone_core", "com.google.errorprone:error_prone_core")
-    automaticModule("com.google.errorprone:error_prone_check_api", "com.google.errorprone:error_prone_check_api")
-    automaticModule(
-        "com.google.errorprone:error_prone_type_annotations",
-        "com.google.errorprone:error_prone_type_annotations"
-    )
-    automaticModule("org.pcollections:pcollections", "org.pcollections:pcollections")
-    automaticModule("com.github.kevinstern:software-and-algorithms", "com.github.kevinstern:software-and-algorithms")
-    automaticModule("org.eclipse.jgit:org.eclipse.jgit", "org.eclipse.jgit:org.eclipse.jgit")
-    automaticModule("org.xerial.snappy:snappy-java", "snappy.java")
-    automaticModule("org.apache.kafka:kafka-clients", "kafka.clients")
-    automaticModule("commons-logging:commons-logging", "commons.logging")
-    automaticModule("io.github.openfeign.form:feign-form", "feign.form")
-
-    // Smallrye-Config does not support JPMS, other smallrye projects do
-    automaticModule("io.smallrye.config:smallrye-config", "io.smallrye.config")
-    automaticModule("io.smallrye.config:smallrye-config-core", "io.smallrye.config.core")
-    automaticModule("io.smallrye.config:smallrye-config-common", "io.smallrye.config.common")
-    automaticModule("org.eclipse.microprofile.config:microprofile-config-api", "eclipse.microprofile.config.api")
-
-    // for spring test
-    automaticModule("com.jayway.jsonpath:json-path", "")
-    automaticModule("net.minidev:json-smart", "")
-    automaticModule("org.skyscreamer:jsonassert", "")
-    automaticModule("net.minidev:accessors-smart", "")
-    automaticModule("com.vaadin.external.google:android-json", "")
-}
-
 configurations.all {
     // the aop package is already contained in spring-aop
     exclude(group = "aopalliance", module = "aopalliance")
@@ -104,7 +57,6 @@ configurations.all {
 }
 
 application {
-    mainModule.set("energy.eddie.core")
     mainClass.set("energy.eddie.core.Core")
 }
 
@@ -114,7 +66,6 @@ tasks.getByName<Test>("test") {
 
 tasks.register("run-core", JavaExec::class) {
     dependsOn(":pnpmBuild")
-    mainModule.set("energy.eddie.core")
     mainClass.set("energy.eddie.core.Core")
     classpath = sourceSets["main"].runtimeClasspath
     systemProperties.set("developmentMode", "true")

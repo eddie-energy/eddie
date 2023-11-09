@@ -12,6 +12,11 @@ import energy.eddie.core.web.JavalinApp;
 import energy.eddie.core.web.JavalinPathHandler;
 import energy.eddie.core.web.PermissionFacade;
 import energy.eddie.outbound.kafka.KafkaConnector;
+import energy.eddie.regionconnector.at.eda.EdaRegionConnectorFactory;
+import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorFactory;
+import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorFactory;
+import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorFactory;
+import energy.eddie.regionconnector.simulation.SimulationRegionConnectorFactory;
 import io.smallrye.config.PropertiesConfigSource;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
@@ -23,9 +28,9 @@ import reactor.adapter.JdkFlowAdapter;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.Set;
 
 public class Core {
@@ -88,14 +93,22 @@ public class Core {
             getAllConnectors(config).forEach(rc -> regionConnectorBinder.addBinding().toInstance(rc));
         }
 
+        private static final RegionConnectorFactory[] regionConnectorFactories = {
+                new DatadisRegionConnectorFactory(),
+                new EdaRegionConnectorFactory(),
+                new EnerginetRegionConnectorFactory(),
+                new EnedisRegionConnectorFactory(),
+                new SimulationRegionConnectorFactory()
+        };
+
         private Collection<RegionConnector> getAllConnectors(Config config) {
-            var allConnectors = ServiceLoader.load(RegionConnectorFactory.class).stream()
-                    .map(provider -> {
+            var allConnectors = Arrays.stream(regionConnectorFactories)
+                    .map(regionConnectorFactory -> {
                         try {
                             // instantiate all connectors and ignore those that can't be constructed
-                            return Optional.of(provider.get().create(config));
+                            return Optional.of(regionConnectorFactory.create(config));
                         } catch (Exception e) {
-                            LOGGER.error("Could not load/create RegionConnector '{}'", provider.type().getName(), e);
+                            LOGGER.error("Could not load/create RegionConnector '{}'", regionConnectorFactories.getClass().getName(), e);
                             return Optional.<RegionConnector>empty();
                         }
                     })
