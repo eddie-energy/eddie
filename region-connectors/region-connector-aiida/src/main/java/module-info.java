@@ -26,6 +26,7 @@ module energy.eddie.regionconnector.aiida {
 
     exports energy.eddie.regionconnector.aiida;
     // Needed for spring
+    exports energy.eddie.regionconnector.aiida.api;
     exports energy.eddie.regionconnector.aiida.web;
     exports energy.eddie.regionconnector.aiida.services;
     exports energy.eddie.regionconnector.aiida.dtos;

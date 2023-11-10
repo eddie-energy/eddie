@@ -61,6 +61,12 @@ public class SpringConfig {
 
     @Bean
     @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public AiidaFactory aiidaFactory(AiidaConfiguration configuration) {
+        return new AiidaFactory(configuration);
+    }
+
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
     public RegionConnector regionConnector(@Value("${server.port:0}") int port, AiidaRegionConnectorService aiidaService) {
         return new AiidaRegionConnector(port, aiidaService);
     }
