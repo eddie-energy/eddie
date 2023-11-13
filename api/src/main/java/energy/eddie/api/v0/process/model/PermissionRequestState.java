@@ -29,4 +29,10 @@ public interface PermissionRequestState {
     void reject() throws PastStateException, FutureStateException;
 
     void terminate() throws PastStateException, FutureStateException;
+
+    void revoke() throws PastStateException, FutureStateException;
+
+    void timeLimit() throws PastStateException, FutureStateException;
+
+    void timeOut() throws PastStateException, FutureStateException;
 }

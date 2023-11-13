@@ -40,4 +40,19 @@ public interface PendingAcknowledgmentPermissionRequestState extends PermissionR
     default void terminate() throws FutureStateException {
         throw new FutureStateException(this);
     }
+
+    @Override
+    default void revoke() throws FutureStateException {
+        throw new FutureStateException(this);
+    }
+
+    @Override
+    default void timeLimit() throws FutureStateException {
+        throw new FutureStateException(this);
+    }
+
+    @Override
+    default void timeOut() throws FutureStateException {
+        throw new FutureStateException(this);
+    }
 }

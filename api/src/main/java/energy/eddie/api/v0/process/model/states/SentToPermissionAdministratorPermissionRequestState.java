@@ -30,4 +30,14 @@ public interface SentToPermissionAdministratorPermissionRequestState extends Per
     default void terminate() throws FutureStateException {
         throw new FutureStateException(this);
     }
+
+    @Override
+    default void timeLimit() throws FutureStateException {
+        throw new FutureStateException(this);
+    }
+
+    @Override
+    default void revoke() throws FutureStateException {
+        throw new FutureStateException(this);
+    }
 }

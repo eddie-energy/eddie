@@ -75,4 +75,20 @@ public interface PermissionRequest {
     default void rejected() throws FutureStateException, PastStateException {
         state().reject();
     }
+
+    default void terminated() throws FutureStateException, PastStateException {
+        state().timeLimit();
+    }
+
+    default void revoked() throws FutureStateException, PastStateException {
+        state().revoke();
+    }
+
+    default void timeLimit() throws FutureStateException, PastStateException {
+        state().timeLimit();
+    }
+
+    default void timedOut() throws FutureStateException, PastStateException {
+        state().timeOut();
+    }
 }
