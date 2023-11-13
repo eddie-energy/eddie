@@ -1,6 +1,10 @@
 package energy.eddie.regionconnector.aiida;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.v0.RegionConnector;
+import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
+import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +15,8 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
+
+import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
 
 @SpringBootApplication
 public class SpringConfig {
@@ -27,6 +33,18 @@ public class SpringConfig {
         }
         var factory = ctx.getBeanFactory();
         return factory.getBean(RegionConnector.class);
+    }
+
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public AiidaConfiguration aiidaConfiguration(
+            @Value("${" + KAFKA_BOOTSTRAP_SERVERS + "}") String kafkaBootstrapServers,
+            @Value("${" + KAFKA_DATA_TOPIC + "}") String kafkaDataTopic,
+            @Value("${" + KAFKA_STATUS_MESSAGES_TOPIC + "}") String kafkaStatusMessagesTopic,
+            @Value("${" + KAFKA_TERMINATION_TOPIC_PREFIX + "}") String kafkaTerminationTopicPrefix
+    ) {
+        return new PlainAiidaConfiguration(kafkaBootstrapServers, kafkaDataTopic,
+                kafkaStatusMessagesTopic, kafkaTerminationTopicPrefix);
     }
 
     public static void main(String[] args) {
