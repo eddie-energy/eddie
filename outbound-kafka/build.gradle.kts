@@ -20,6 +20,7 @@ dependencies {
     implementation(libs.reactor.core)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.jackson.datatype.jdk8)
     implementation(libs.slf4j.simple)
     testImplementation(libs.junit.jupiter)
 }

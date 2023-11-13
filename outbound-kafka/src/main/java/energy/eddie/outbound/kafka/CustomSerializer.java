@@ -2,21 +2,29 @@ package energy.eddie.outbound.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 class CustomSerializer implements Serializer<Object> {
     private final StringSerializer stringSerializer = new StringSerializer();
-    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .registerModule(new Jdk8Module())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // Ensures XMLGregorianCalendar is serialized as ISO 8601
+
 
     @Override
     public byte[] serialize(String topic, Object data) {
-        if (data instanceof ConsumptionRecord || data instanceof ConnectionStatusMessage) {
+        if (data instanceof ConsumptionRecord || data instanceof ConnectionStatusMessage || data instanceof EddieValidatedHistoricalDataMarketDocument) {
             return serializeJson(data);
         }
+
         if (data == null) {
             return new byte[0];
         }
