@@ -31,10 +31,10 @@ const COUNTRIES = [
 ];
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
-const BASE_URL = new URL(import.meta.url).origin;
+const BASE_URL = import.meta.url.replace("/lib/eddie-components.js", "");
 
 function fetchJson(path) {
-  return fetch(new URL(path, BASE_URL))
+  return fetch(BASE_URL + path)
     .then((response) => response.json())
     .catch((error) => console.error(error));
 }

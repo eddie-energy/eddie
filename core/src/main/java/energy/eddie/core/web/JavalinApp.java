@@ -42,7 +42,7 @@ public class JavalinApp {
 
     @Inject
     public JavalinApp(Config config, Set<JavalinPathHandler> javalinPathHandlers, Set<RegionConnector> regionConnectors) {
-        devMode = config.getOptionalValue(DEVELOPMENT_MODE, Boolean.class).orElse(true);
+        devMode = config.getOptionalValue(DEVELOPMENT_MODE, Boolean.class).orElse(false);
         baseUrl = config.getOptionalValue(Env.PUBLIC_CONTEXT_PATH.name(), String.class).orElse("");
         port = config.getOptionalValue(Env.CORE_PORT.name(), Integer.class).orElse(DEFAULT_PORT);
         this.javalinPathHandlers = javalinPathHandlers;

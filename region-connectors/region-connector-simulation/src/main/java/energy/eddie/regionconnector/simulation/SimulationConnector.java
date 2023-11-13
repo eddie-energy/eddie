@@ -48,7 +48,7 @@ public class SimulationConnector implements RegionConnector {
 
         javalin.get(basePath() + "/ce.js", context -> {
             context.contentType(ContentType.TEXT_JS);
-            context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js")));
+            context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/region-connectors/simulation/ce.js")));
         });
 
         javalin.get(basePath() + "/produce-consumption-records.js", context -> {

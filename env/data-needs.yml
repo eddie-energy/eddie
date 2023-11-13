@@ -1,5 +1,6 @@
 eddie:
   data-needs-config:
+    data-need-source: CONFIG
     data-needs:
       - id: LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY
         description: Historical validated consumption data for the last three months, one measurement per day

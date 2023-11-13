@@ -34,7 +34,7 @@ import static java.util.Objects.requireNonNull;
 public class EnerginetRegionConnector implements RegionConnector {
     private static final String COUNTRY_CODE = "dk";
     private static final String MDA_CODE = COUNTRY_CODE + "-energinet";
-    private static final String BASE_PATH = "/region-connectors/" + MDA_CODE;
+    private static final String BASE_PATH = "/region-connectors/dk-energinet/";
     private static final String MDA_DISPLAY_NAME = "Denmark ENERGINET";
     private static final int COVERED_METERING_POINTS = 36951446; // TODO: Evaluate covered metering points
     private static final Logger LOGGER = LoggerFactory.getLogger(EnerginetRegionConnector.class);
@@ -96,7 +96,7 @@ public class EnerginetRegionConnector implements RegionConnector {
 
         javalin.get(BASE_PATH + "/ce.js", context -> {
             context.contentType(ContentType.TEXT_JS);
-            context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js")));
+            context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public" + BASE_PATH + "ce.js")));
         });
 
         javalin.get(BASE_PATH + "/permission-status", ctx -> {

@@ -32,7 +32,7 @@ import static java.util.Objects.requireNonNull;
 public class EnedisRegionConnector implements RegionConnector {
     public static final String COUNTRY_CODE = "fr";
     public static final String MDA_CODE = COUNTRY_CODE + "-enedis";
-    public static final String BASE_PATH = "/region-connectors/" + MDA_CODE;
+    public static final String BASE_PATH = "/region-connectors/fr-enedis/";
     public static final String MDA_DISPLAY_NAME = "France ENEDIS";
     public static final int COVERED_METERING_POINTS = 36951446;
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
@@ -105,9 +105,9 @@ public class EnedisRegionConnector implements RegionConnector {
         javalin.get(BASE_PATH + "/ce.js", context -> {
             context.contentType(ContentType.TEXT_JS);
             if (devMode) {
-                context.result(new FileInputStream("./region-connectors/region-connector-fr-enedis/src/main/resources/public/ce.js"));
+                context.result(new FileInputStream("./region-connectors/region-connector-fr-enedis/src/main/resources/public" + BASE_PATH + "ce.js"));
             } else {
-                context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js")));
+                context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public" + BASE_PATH + "ce.js")));
             }
         });
 
