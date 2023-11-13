@@ -32,6 +32,7 @@ dependencies {
     // dependencies needed to generate code
     jaxb(libs.jaxb.xjc)
     jaxb(libs.jaxb.runtime)
+    jaxb(libs.jaxb.plugins)
 
     implementation(libs.jaxb.runtime)
     implementation(libs.jakarta.xml.bind.api)
@@ -97,7 +98,7 @@ val generateEDASchemaClasses = tasks.create<JavaExec>("generateEDASchemaClasses"
     val edaSchemaFiles = "src/main/schemas/eda/xsd/"
 
     // explicitly set the encoding because of rare issues discovered on Windows 10
-    args("-d", generatedXJCJavaDir, edaSchemaFiles, "-mark-generated", "-npa", "-encoding", "UTF-8")
+    args("-d", generatedXJCJavaDir, edaSchemaFiles, "-mark-generated", "-npa", "-encoding", "UTF-8", "-extension", "-Xfluent-api")
 
     // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed
     inputs.files(fileTree(edaSchemaFiles).include("**/*.xsd"))
