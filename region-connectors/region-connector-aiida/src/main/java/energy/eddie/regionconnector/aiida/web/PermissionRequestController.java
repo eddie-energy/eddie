@@ -4,6 +4,7 @@ import energy.eddie.regionconnector.aiida.AiidaRegionConnector;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +62,7 @@ public class PermissionRequestController {
 
     @PostMapping(value = "/permission-request", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<PermissionDto> createPermissionRequest(@RequestBody PermissionRequestForCreation permissionRequestForCreation) {
+    public ResponseEntity<PermissionDto> createPermissionRequest(@Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation) {
         LOGGER.info("Got new request for connectionId {}", permissionRequestForCreation.connectionId());
         return ResponseEntity.ok(aiidaService.createNewPermission(permissionRequestForCreation));
     }

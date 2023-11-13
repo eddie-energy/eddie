@@ -30,6 +30,7 @@ module energy.eddie.regionconnector.aiida {
     exports energy.eddie.regionconnector.aiida.services;
     exports energy.eddie.regionconnector.aiida.dtos;
     exports energy.eddie.regionconnector.aiida.config;
+    exports energy.eddie.regionconnector.aiida.web.validation;
 
     // Needed for spring
     opens energy.eddie.regionconnector.aiida to spring.core;
