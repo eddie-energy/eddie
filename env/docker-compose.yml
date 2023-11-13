@@ -22,7 +22,7 @@ services:
       PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
     volumes:
       - ./ponton:/ponton # mount a folder to store ponton files
-      - ./data-needs.yml:/opt/eddie/config/data-needs.yml
+      - ./data-needs.yml:/opt/core/config/data-needs.yml
 
   eddie-example-app:
     image: ghcr.io/eddie-energy/eddie-example-app:latest
