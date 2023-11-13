@@ -1,20 +1,25 @@
 package energy.eddie.regionconnector.aiida.web;
 
+import energy.eddie.regionconnector.aiida.AiidaRegionConnector;
+import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
+import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 @RestController
-public class AiidaRegionConnectorController {
+@RequestMapping(AiidaRegionConnector.BASE_PATH)
+public class PermissionRequestController {
     /**
      * We have to check two different paths depending if the Region-Connector is run by the core or in standalone.
      */
@@ -22,12 +27,12 @@ public class AiidaRegionConnectorController {
             "./region-connectors/region-connector-aiida/src/main/resources/public/ce.js",
             "./src/main/resources/public/ce.js"
     };
-    private static final Logger LOGGER = LoggerFactory.getLogger(AiidaRegionConnectorController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final AiidaRegionConnectorService aiidaService;
     private final Environment environment;
 
     @Autowired
-    public AiidaRegionConnectorController(Environment environment, AiidaRegionConnectorService aiidaService) {
+    public PermissionRequestController(Environment environment, AiidaRegionConnectorService aiidaService) {
         this.environment = environment;
         this.aiidaService = aiidaService;
     }
@@ -52,5 +57,12 @@ public class AiidaRegionConnectorController {
         return !environment.matchesProfiles("dev")
                 ? new FileInputStream(findCEDevPath())
                 : Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js"));
+    }
+
+    @PostMapping(value = "/permission-request", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<PermissionDto> createPermissionRequest(@RequestBody PermissionRequestForCreation permissionRequestForCreation) {
+        LOGGER.info("Got new request for connectionId {}", permissionRequestForCreation.connectionId());
+        return ResponseEntity.ok(aiidaService.createNewPermission(permissionRequestForCreation));
     }
 }

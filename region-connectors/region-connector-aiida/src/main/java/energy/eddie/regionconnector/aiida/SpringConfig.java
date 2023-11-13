@@ -53,6 +53,14 @@ public class SpringConfig {
 
     @Bean
     @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public ObjectMapper objectMapper() {
+        var mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return mapper;
+    }
+
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
     public RegionConnector regionConnector(@Value("${server.port:0}") int port, AiidaRegionConnectorService aiidaService) {
         return new AiidaRegionConnector(port, aiidaService);
     }
