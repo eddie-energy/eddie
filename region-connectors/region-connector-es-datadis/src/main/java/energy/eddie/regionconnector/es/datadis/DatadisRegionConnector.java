@@ -112,9 +112,9 @@ public class DatadisRegionConnector implements RegionConnector, AuthorizationRes
         javalin.get(BASE_PATH + "/ce.js", context -> {
             context.contentType(ContentType.TEXT_JS);
             if (devMode) {
-                context.result(new FileInputStream("./region-connectors/region-connector-es-datadis/src/main/resources/public/ce.js"));
+                context.result(new FileInputStream("./region-connectors/region-connector-es-datadis/src/main/resources/public" + BASE_PATH + "ce.js"));
             } else {
-                context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js")));
+                context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public" + BASE_PATH + "ce.js")));
             }
         });
 
