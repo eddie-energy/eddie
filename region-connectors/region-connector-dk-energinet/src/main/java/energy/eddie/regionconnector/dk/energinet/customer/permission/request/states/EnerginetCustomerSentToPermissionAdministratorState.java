@@ -24,4 +24,9 @@ public class EnerginetCustomerSentToPermissionAdministratorState extends Context
     public void reject() {
         permissionRequest.changeState(new EnerginetCustomerRejectedState(permissionRequest));
     }
+
+    @Override
+    public void timeOut() {
+        throw new IllegalStateException("Not implemented yet");
+    }
 }

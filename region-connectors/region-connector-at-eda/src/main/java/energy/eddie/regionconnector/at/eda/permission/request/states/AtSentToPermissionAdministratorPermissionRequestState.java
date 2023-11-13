@@ -27,4 +27,8 @@ public class AtSentToPermissionAdministratorPermissionRequestState
         permissionRequest.changeState(new AtRejectedPermissionRequestState(permissionRequest));
     }
 
+    @Override
+    public void timeOut() {
+        throw new IllegalStateException("Not implemented yet");
+    }
 }

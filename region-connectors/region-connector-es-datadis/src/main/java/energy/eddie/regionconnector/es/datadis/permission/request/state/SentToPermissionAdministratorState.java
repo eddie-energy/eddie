@@ -24,4 +24,9 @@ public class SentToPermissionAdministratorState extends ContextualizedPermission
     public void reject() {
         permissionRequest.changeState(new RejectedState(permissionRequest));
     }
+
+    @Override
+    public void timeOut() {
+        throw new IllegalStateException("Not implemented yet");
+    }
 }
