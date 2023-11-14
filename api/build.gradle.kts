@@ -130,13 +130,14 @@ val generateCIMSchemaClasses = tasks.create<JavaExec>("generateCIMSchemaClasses"
     val cimSchemaFiles = file("src/main/schemas/cim/xsd/")
 
     // iterate each folder and generate the classes with the same package name
-    cimSchemaFiles.walk().forEach { file ->
-        if (file.isFile && file.extension == "xsd") {
-            val xjbFile = file.parentFile.resolve("bindings.xjb")
+    cimSchemaFiles.walk().forEach { srcFile ->
+        if (srcFile.isFile && srcFile.extension == "xsd") {
+            val file = srcFile.copyTo(temporaryDir.resolve(srcFile.name), true)
+            val xjbFile = temporaryDir.resolve("bindings.xjb")
             // generate the bindings file
             generateBindingsFile(file, xjbFile.absolutePath)
 
-            val packageName = "energy.eddie.cim." + file.parentFile.parentFile.name + "." + file.parentFile.name
+            val packageName = "energy.eddie.cim." + srcFile.parentFile.parentFile.name + "." + srcFile.parentFile.name
             args("-d", generatedXJCJavaDir, file.absolutePath, "-p", packageName, "-b", xjbFile.absolutePath, "-mark-generated", "-npa", "-extension", "-Xfluent-api")
         }
     }
