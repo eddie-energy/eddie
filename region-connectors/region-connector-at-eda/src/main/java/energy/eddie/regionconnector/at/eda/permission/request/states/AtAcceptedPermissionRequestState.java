@@ -16,4 +16,14 @@ public class AtAcceptedPermissionRequestState
     public void terminate() {
         throw new IllegalStateException("Not implemented yet");
     }
+
+    @Override
+    public void revoke() {
+        throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
+    public void timeLimit() {
+        throw new IllegalStateException("Not implemented yet");
+    }
 }

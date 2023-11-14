@@ -35,4 +35,19 @@ public interface TerminalPermissionRequestState extends PermissionRequestState {
     default void terminate() throws PastStateException {
         throw new PastStateException(this);
     }
+
+    @Override
+    default void revoke() throws PastStateException {
+        throw new PastStateException(this);
+    }
+
+    @Override
+    default void timeLimit() throws PastStateException {
+        throw new PastStateException(this);
+    }
+
+    @Override
+    default void timeOut() throws PastStateException {
+        throw new PastStateException(this);
+    }
 }

@@ -40,4 +40,9 @@ public interface AcceptedPermissionRequestState extends PermissionRequestState {
     default void reject() throws PastStateException {
         throw new PastStateException(this);
     }
+
+    @Override
+    default void timeOut() throws PastStateException {
+        throw new PastStateException(this);
+    }
 }

@@ -60,6 +60,21 @@ public class TransitionableState implements PermissionRequestState {
     }
 
     @Override
+    public void revoke() {
+
+    }
+
+    @Override
+    public void timeLimit() {
+
+    }
+
+    @Override
+    public void timeOut() {
+
+    }
+
+    @Override
     public String toString() {
         return "TransitionableState{" +
                 "initialStatus=" + initialStatus +

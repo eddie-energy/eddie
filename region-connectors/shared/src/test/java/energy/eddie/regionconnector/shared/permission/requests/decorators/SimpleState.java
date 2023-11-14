@@ -4,8 +4,6 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 
 public class SimpleState implements PermissionRequestState {
-
-
     private PermissionProcessStatus status;
 
     public SimpleState() {
@@ -52,6 +50,21 @@ public class SimpleState implements PermissionRequestState {
 
     @Override
     public void terminate() {
+
+    }
+
+    @Override
+    public void revoke() {
+
+    }
+
+    @Override
+    public void timeLimit() {
+
+    }
+
+    @Override
+    public void timeOut() {
 
     }
 }
