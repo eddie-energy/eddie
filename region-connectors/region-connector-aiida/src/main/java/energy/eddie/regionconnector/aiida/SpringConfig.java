@@ -15,10 +15,12 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
+import org.springframework.kafka.annotation.EnableKafka;
 
 import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
 
 @SpringBootApplication
+@EnableKafka
 public class SpringConfig {
     @Nullable
     private static ConfigurableApplicationContext ctx;

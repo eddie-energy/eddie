@@ -28,4 +28,9 @@ public class InMemoryAiidaPermissionRequestRepository implements AiidaPermission
 
         return removed != null;
     }
+
+    @Override
+    public Optional<AiidaPermissionRequest> findByConnectionId(String connectionId) {
+        return requests.values().stream().filter(entry -> entry.connectionId().equals(connectionId)).findFirst();
+    }
 }

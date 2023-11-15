@@ -23,24 +23,39 @@ public class AiidaRegionConnectorService implements AutoCloseable {
     private final AiidaFactory aiidaFactory;
     private final AiidaPermissionRequestRepository repository;
 
+    /**
+     * Creates a new {@link energy.eddie.regionconnector.aiida.AiidaRegionConnector} that can be used to request
+     * permissions for near real-time data.
+     *
+     * @param aiidaFactory Factory used to construct {@link AiidaPermissionRequest}s and {@link PermissionDto}s.
+     * @param repository   Repository to be used for persisting permission requests.
+     */
     @Autowired
     public AiidaRegionConnectorService(AiidaFactory aiidaFactory, AiidaPermissionRequestRepository repository) {
         this.aiidaFactory = aiidaFactory;
         this.repository = repository;
     }
 
+    /**
+     * Returns the Flux where all {@link ConnectionStatusMessage}s will be published.
+     *
+     * @return Flux of status messages
+     */
     public Publisher<ConnectionStatusMessage> connectionStatusMessageFlux() {
         return statusMessageSink.asFlux();
     }
 
+    /**
+     * Closes the service and emits a complete signal on the connection status message Flux.
+     */
     @Override
     public void close() {
         statusMessageSink.tryEmitComplete();
     }
 
     /**
-     * Creates a new {@link energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest} and persists it
-     * to be compliant with the process model.
+     * Creates a new {@link energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest} and initiates the
+     * permission process (i.e. validates and sends to PA).
      * Returns the necessary information which AIIDA needs to set up a permission with this EP's service.
      * This information is intended to be encoded in a QR code and be displayed to the customer.
      *
@@ -51,20 +66,22 @@ public class AiidaRegionConnectorService implements AutoCloseable {
         var permissionRequest = aiidaFactory.createPermissionRequest(creationRequest.connectionId(),
                 creationRequest.dataNeedId(), creationRequest.startTime(), creationRequest.expirationTime(), this);
 
-        LOGGER.info("Created a new permission request with permissionId {} for connectionId {}", permissionRequest.permissionId(),
-                permissionRequest.connectionId());
-
-        // TODO need to save in db before these calls or after each one or is it sufficient to save after all
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
-
         repository.save(permissionRequest);
+
+        LOGGER.info("Created, validated, sent to PA and persisted a new permission request with permissionId {} for connectionId {}", permissionRequest.permissionId(),
+                permissionRequest.connectionId());
 
         return aiidaFactory.createPermissionDto(permissionRequest);
     }
 
-    // TODO is this intended like this, that createNewPermission calls a method on the aiidaRequest, which in turn calls this method
-    // and just for this, the permissionrequests need to get passed a reference to this service.
+    /**
+     * Publishes a {@link ConnectionStatusMessage} with status {@link PermissionProcessStatus#SENT_TO_PERMISSION_ADMINISTRATOR},
+     * as the actual sending to permission manager is done by the REST API by returning the response for the permission request.
+     *
+     * @param permissionRequest Request for which the status message should be sent
+     */
     public void sendToPermissionAdministrator(AiidaPermissionRequest permissionRequest) {
         String connectionId = permissionRequest.connectionId();
         var statusMessage = new ConnectionStatusMessage(connectionId, permissionRequest.permissionId(),
