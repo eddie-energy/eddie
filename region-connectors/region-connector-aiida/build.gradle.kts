@@ -23,6 +23,7 @@ dependencies {
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
+    implementation(libs.spring.kafka)
 
     implementation(libs.microprofile.config)
     implementation(libs.reactor.core)
