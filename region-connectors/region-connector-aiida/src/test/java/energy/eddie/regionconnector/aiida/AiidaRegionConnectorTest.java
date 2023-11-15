@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.aiida;
 
 import energy.eddie.api.v0.HealthState;
+import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,16 +9,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class AiidaRegionConnectorTest {
-    private final String expectedMdaCode = "aiida";
-    private AiidaRegionConnector connector;
     @Mock
     private AiidaRegionConnectorService service;
+    private final String expectedMdaCode = "aiida";
+    private AiidaRegionConnector connector;
 
     @BeforeEach
     void setUp() {
@@ -40,6 +42,14 @@ class AiidaRegionConnectorTest {
     void verify_close_closesService() {
         connector.close();
         verify(service).close();
+    }
+
+    @Test
+    void verify_terminate_callsService() throws StateTransitionException {
+        var permissionId = UUID.randomUUID().toString();
+        connector.terminatePermission(permissionId);
+
+        verify(service).terminatePermission(permissionId);
     }
 
     @Test

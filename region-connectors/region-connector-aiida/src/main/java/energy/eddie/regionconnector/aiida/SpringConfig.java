@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
+import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +17,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.annotation.EnableKafka;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 
 import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
 
@@ -69,7 +72,24 @@ public class SpringConfig {
 
     @Bean
     @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
-    public RegionConnector regionConnector(@Value("${server.port:0}") int port, AiidaRegionConnectorService aiidaService) {
+    public RegionConnector regionConnector(
+            @Value("${server.port:0}") int port,
+            AiidaRegionConnectorService aiidaService) {
         return new AiidaRegionConnector(port, aiidaService);
+    }
+
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public Sinks.Many<TerminationRequest> terminationRequestSink() {
+        return Sinks
+                .many()
+                .unicast()
+                .onBackpressureBuffer();
+    }
+
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public Flux<TerminationRequest> terminationRequestFlux(Sinks.Many<TerminationRequest> terminationRequestSink) {
+        return terminationRequestSink.asFlux();
     }
 }

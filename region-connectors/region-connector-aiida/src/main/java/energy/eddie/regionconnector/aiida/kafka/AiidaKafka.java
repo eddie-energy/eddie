@@ -6,11 +6,14 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequestRepository;
+import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
 
@@ -19,10 +22,16 @@ public class AiidaKafka {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaKafka.class);
     private final ObjectMapper mapper;
     private final AiidaPermissionRequestRepository repository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
-    public AiidaKafka(ObjectMapper mapper, AiidaPermissionRequestRepository repository) {
+    public AiidaKafka(ObjectMapper mapper, AiidaPermissionRequestRepository repository,
+                      Flux<TerminationRequest> terminationRequestFlux,
+                      KafkaTemplate<String, String> kafkaTemplate) {
         this.mapper = mapper;
         this.repository = repository;
+        this.kafkaTemplate = kafkaTemplate;
+
+        terminationRequestFlux.subscribe(this::sendTerminationRequest);
     }
 
     /**
@@ -71,5 +80,15 @@ public class AiidaKafka {
         } catch (StateTransitionException e) {
             LOGGER.error("Error while transitioning state", e);
         }
+    }
+
+    private void sendTerminationRequest(TerminationRequest terminationRequest) {
+        LOGGER.info("Sending new terminationRequest {}", terminationRequest);
+
+        var future = kafkaTemplate.send(terminationRequest.terminationTopic(), terminationRequest.connectionId(), terminationRequest.connectionId());
+        future.exceptionally(throwable -> {
+            LOGGER.error("Error while sending termination request for connectionId {}", terminationRequest.connectionId(), throwable);
+            return null;
+        });
     }
 }

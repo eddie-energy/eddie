@@ -11,15 +11,23 @@ public class AiidaPermissionRequest implements PermissionRequest {
     private final String permissionId;
     private final String connectionId;
     private final String dataNeedId;
+    private final String terminationTopic;
     private final Instant startTime;
     private final Instant expirationTime;
     private PermissionRequestState state;
 
-    public AiidaPermissionRequest(String permissionId, String connectionId, String dataNeedId, Instant startTime,
-                                  Instant expirationTime, AiidaRegionConnectorService service) {
+    public AiidaPermissionRequest(
+            String permissionId,
+            String connectionId,
+            String dataNeedId,
+            String terminationTopic,
+            Instant startTime,
+            Instant expirationTime,
+            AiidaRegionConnectorService service) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
+        this.terminationTopic = terminationTopic;
         this.startTime = startTime;
         this.expirationTime = expirationTime;
         this.state = new AiidaCreatedPermissionRequestState(this, service);
@@ -41,6 +49,15 @@ public class AiidaPermissionRequest implements PermissionRequest {
      */
     public Instant expirationTime() {
         return expirationTime;
+    }
+
+    /**
+     * Topic on which a permission termination request should be published.
+     *
+     * @return terminationTopic
+     */
+    public String terminationTopic() {
+        return terminationTopic;
     }
 
     @Override

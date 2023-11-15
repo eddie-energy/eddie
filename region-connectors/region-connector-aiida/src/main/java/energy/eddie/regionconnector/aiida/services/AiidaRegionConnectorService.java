@@ -2,13 +2,13 @@ package energy.eddie.regionconnector.aiida.services;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.process.model.FutureStateException;
-import energy.eddie.api.v0.process.model.PastStateException;
+import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.aiida.AiidaFactory;
 import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequestRepository;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,12 +16,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Sinks;
 
+import java.util.Optional;
+
 @Service
 public class AiidaRegionConnectorService implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaRegionConnectorService.class);
     private final Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().multicast().onBackpressureBuffer();
     private final AiidaFactory aiidaFactory;
     private final AiidaPermissionRequestRepository repository;
+    private final Sinks.Many<TerminationRequest> terminationRequestSink;
 
     /**
      * Creates a new {@link energy.eddie.regionconnector.aiida.AiidaRegionConnector} that can be used to request
@@ -31,9 +34,13 @@ public class AiidaRegionConnectorService implements AutoCloseable {
      * @param repository   Repository to be used for persisting permission requests.
      */
     @Autowired
-    public AiidaRegionConnectorService(AiidaFactory aiidaFactory, AiidaPermissionRequestRepository repository) {
+    public AiidaRegionConnectorService(
+            AiidaFactory aiidaFactory,
+            AiidaPermissionRequestRepository repository,
+            Sinks.Many<TerminationRequest> terminationRequestSink) {
         this.aiidaFactory = aiidaFactory;
         this.repository = repository;
+        this.terminationRequestSink = terminationRequestSink;
     }
 
     /**
@@ -46,11 +53,12 @@ public class AiidaRegionConnectorService implements AutoCloseable {
     }
 
     /**
-     * Closes the service and emits a complete signal on the connection status message Flux.
+     * Closes the service and emits a complete signal on the connection status message and the termination request Flux.
      */
     @Override
     public void close() {
         statusMessageSink.tryEmitComplete();
+        terminationRequestSink.tryEmitComplete();
     }
 
     /**
@@ -62,7 +70,7 @@ public class AiidaRegionConnectorService implements AutoCloseable {
      * @param creationRequest Request from the frontend containing necessary information for creating a new permission.
      * @return Necessary data that should be displayed on the frontend.
      */
-    public PermissionDto createNewPermission(PermissionRequestForCreation creationRequest) throws FutureStateException, PastStateException {
+    public PermissionDto createNewPermission(PermissionRequestForCreation creationRequest) throws StateTransitionException {
         var permissionRequest = aiidaFactory.createPermissionRequest(creationRequest.connectionId(),
                 creationRequest.dataNeedId(), creationRequest.startTime(), creationRequest.expirationTime(), this);
 
@@ -87,11 +95,22 @@ public class AiidaRegionConnectorService implements AutoCloseable {
         var statusMessage = new ConnectionStatusMessage(connectionId, permissionRequest.permissionId(),
                 permissionRequest.dataNeedId(), PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
 
-        var result = statusMessageSink.tryEmitNext(statusMessage);
+        statusMessageSink.tryEmitNext(statusMessage);
+    }
 
-        if (result.isFailure()) {
-            LOGGER.error("Error while emitting ConnectionStatusMessage for new permission with connectionId {}. Error was {}",
-                    connectionId, result);
+    public void terminatePermission(String permissionId) throws StateTransitionException {
+        LOGGER.info("Got request to terminate permission {}", permissionId);
+        Optional<AiidaPermissionRequest> optional = repository.findByPermissionId(permissionId);
+
+        if (optional.isEmpty()) {
+            LOGGER.error("Was requested to terminate permission {}, but could not find a matching permission in the repository", permissionId);
+            return;
         }
+
+        var request = optional.get();
+        terminationRequestSink.tryEmitNext(new TerminationRequest(request.connectionId(), request.terminationTopic()));
+
+        request.terminate();
+        repository.save(request);
     }
 }

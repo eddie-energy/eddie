@@ -26,7 +26,8 @@ public class AiidaFactory {
             Instant expirationTime,
             AiidaRegionConnectorService service) {
         var permissionId = UUID.randomUUID().toString();
-        return new AiidaPermissionRequest(permissionId, connectionId, dataNeedId, startTime, expirationTime, service);
+        var terminationTopic = terminationTopicForPermissionId(permissionId);
+        return new AiidaPermissionRequest(permissionId, connectionId, dataNeedId, terminationTopic, startTime, expirationTime, service);
     }
 
     /**
@@ -38,12 +39,11 @@ public class AiidaFactory {
      *                               permissionId is not a valid UUID-4, or the prefix from the configuration is invalid.
      */
     public PermissionDto createPermissionDto(AiidaPermissionRequest aiidaRequest) throws InvalidTopicException {
-        var terminationTopic = terminationTopicForPermissionId(aiidaRequest.connectionId());
         var kafkaConfig = new KafkaStreamingConfig(
                 configuration.kafkaBoostrapServers(),
                 configuration.kafkaDataTopic(),
                 configuration.kafkaStatusMessagesTopic(),
-                terminationTopic
+                aiidaRequest.terminationTopic()
         );
 
         // TODO use dataNeed for service name and requested codes

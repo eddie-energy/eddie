@@ -7,6 +7,7 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequestRepository;
+import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import energy.eddie.regionconnector.aiida.states.AiidaAcceptedPermissionRequestState;
 import energy.eddie.regionconnector.aiida.states.AiidaSentToPermissionAdministratorPermissionRequestState;
@@ -15,11 +16,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.core.KafkaTemplate;
+import reactor.test.publisher.TestPublisher;
 
 import java.time.Instant;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,11 +30,15 @@ class AiidaKafkaTest {
     private AiidaPermissionRequestRepository mockRepository;
     private AiidaKafka kafka;
     private ObjectMapper mapper;
+    @Mock
+    private KafkaTemplate<String, String> mockTemplate;
+    private TestPublisher<TerminationRequest> publisher;
 
     @BeforeEach
     void setUp() {
         mapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        kafka = new AiidaKafka(mapper, mockRepository);
+        publisher = TestPublisher.create();
+        kafka = new AiidaKafka(mapper, mockRepository, publisher.flux(), mockTemplate);
     }
 
     @Test
@@ -104,10 +110,23 @@ class AiidaKafkaTest {
     private AiidaPermissionRequest createTestRequest() {
         String connectionId = "TestConnectionId";
         String permissionId = "TestPermissionId";
+        String terminationTopic = "TestTopic";
         String dataNeedId = "1";
         Instant start = Instant.now();
-        return new AiidaPermissionRequest(permissionId, connectionId, dataNeedId,
+        return new AiidaPermissionRequest(permissionId, connectionId, dataNeedId, terminationTopic,
                 start, start.plusSeconds(10000), mock(AiidaRegionConnectorService.class));
+    }
+
+    @Test
+    void givenTerminationRequest_sendsViaKafkaTemplate() {
+        var connectionId = "SomeId";
+        var terminationTopic = "MyTerminationTopic";
+
+        publisher.assertSubscribers(1);
+
+        publisher.next(new TerminationRequest(connectionId, terminationTopic));
+
+        verify(mockTemplate).send(terminationTopic, connectionId, connectionId);
     }
 
     // TODO how to handle it, when we get status messages from AIIDA but request is in a different state? i.e. just random messages from aiida

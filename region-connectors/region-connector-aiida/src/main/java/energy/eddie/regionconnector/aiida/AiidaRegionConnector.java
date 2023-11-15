@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.aiida;
 
 import energy.eddie.api.v0.*;
+import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,11 @@ public class AiidaRegionConnector implements RegionConnector, Mvp1ConnectionStat
 
     @Override
     public void terminatePermission(String permissionId) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        try {
+            aiidaService.terminatePermission(permissionId);
+        } catch (StateTransitionException e) {
+            LOGGER.error("Error while terminating permission {}", permissionId, e);
+        }
     }
 
     @Override

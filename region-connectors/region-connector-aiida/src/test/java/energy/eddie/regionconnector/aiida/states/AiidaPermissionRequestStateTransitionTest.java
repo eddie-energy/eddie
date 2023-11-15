@@ -25,7 +25,7 @@ class AiidaPermissionRequestStateTransitionTest {
     void setUp() {
         Instant now = Instant.now();
         request = new AiidaPermissionRequest("TestId", "TestConn", "dataNeed",
-                now, now.plusSeconds(2000), mockService);
+                "terminate", now, now.plusSeconds(2000), mockService);
     }
 
     @Test
