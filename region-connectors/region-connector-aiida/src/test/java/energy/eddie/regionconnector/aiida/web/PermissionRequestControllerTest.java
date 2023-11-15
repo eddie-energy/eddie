@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.aiida.web;
 
+import energy.eddie.api.v0.process.model.PastStateException;
+import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -13,7 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -74,6 +76,22 @@ class PermissionRequestControllerTest {
                     .andExpect(jsonPath("$.errors", allOf(
                             iterableWithSize(1),
                             hasItem("startTime must be before expirationTime")
+                    )));
+        }
+
+        @Test
+        void givenStateTransitionException_returnsInternalServerError() throws Exception {
+            var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\",\"startTime\":1695095000,\"expirationTime\":1705095000}";
+
+            when(service.createNewPermission(any())).thenThrow(new PastStateException(mock(PermissionRequestState.class)));
+
+            mockMvc.perform(post("/region-connectors/aiida/permission-request")
+                            .content(json)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isInternalServerError())
+                    .andExpect(jsonPath("$.errors", allOf(
+                            iterableWithSize(1),
+                            hasItem("Error occurred while trying to transition a state")
                     )));
         }
 

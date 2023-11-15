@@ -1,6 +1,9 @@
 package energy.eddie.regionconnector.aiida.web;
 
+import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.aiida.dtos.ErrorResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -10,6 +13,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -17,6 +21,8 @@ import java.util.List;
 
 @ControllerAdvice
 public class PermissionRequestControllerAdvice extends ResponseEntityExceptionHandler {
+    private static final Logger LOGGER_AIIDA = LoggerFactory.getLogger(PermissionRequestControllerAdvice.class);
+
     private static ResponseEntity<Object> createErrorResponse(List<String> errors, HttpStatus status) {
         return new ResponseEntity<>(new ErrorResponse(errors), status);
     }
@@ -47,5 +53,14 @@ public class PermissionRequestControllerAdvice extends ResponseEntityExceptionHa
         var errors = List.of("Failed to read request");
 
         return createErrorResponse(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {StateTransitionException.class})
+    protected ResponseEntity<Object> handleStateTransitionException(StateTransitionException stateTransitionException) {
+        LOGGER_AIIDA.info("Error occurred while trying to transition a state", stateTransitionException);
+
+        var errors = List.of("Error occurred while trying to transition a state");
+
+        return createErrorResponse(errors, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

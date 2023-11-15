@@ -2,7 +2,10 @@ package energy.eddie.regionconnector.aiida.services;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.regionconnector.aiida.AiidaFactory;
+import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequestRepository;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
@@ -44,15 +47,25 @@ public class AiidaRegionConnectorService implements AutoCloseable {
      * @param creationRequest Request from the frontend containing necessary information for creating a new permission.
      * @return Necessary data that should be displayed on the frontend.
      */
-    public PermissionDto createNewPermission(PermissionRequestForCreation creationRequest) {
+    public PermissionDto createNewPermission(PermissionRequestForCreation creationRequest) throws FutureStateException, PastStateException {
         var permissionRequest = aiidaFactory.createPermissionRequest(creationRequest.connectionId(),
-                creationRequest.dataNeedId(), creationRequest.startTime(), creationRequest.expirationTime());
+                creationRequest.dataNeedId(), creationRequest.startTime(), creationRequest.expirationTime(), this);
 
         LOGGER.info("Created a new permission request with permissionId {} for connectionId {}", permissionRequest.permissionId(),
                 permissionRequest.connectionId());
 
+        // TODO need to save in db before these calls or after each one or is it sufficient to save after all
+        permissionRequest.validate();
+        permissionRequest.sendToPermissionAdministrator();
+
         repository.save(permissionRequest);
 
+        return aiidaFactory.createPermissionDto(permissionRequest);
+    }
+
+    // TODO is this intended like this, that createNewPermission calls a method on the aiidaRequest, which in turn calls this method
+    // and just for this, the permissionrequests need to get passed a reference to this service.
+    public void sendToPermissionAdministrator(AiidaPermissionRequest permissionRequest) {
         String connectionId = permissionRequest.connectionId();
         var statusMessage = new ConnectionStatusMessage(connectionId, permissionRequest.permissionId(),
                 permissionRequest.dataNeedId(), PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
@@ -63,7 +76,5 @@ public class AiidaRegionConnectorService implements AutoCloseable {
             LOGGER.error("Error while emitting ConnectionStatusMessage for new permission with connectionId {}. Error was {}",
                     connectionId, result);
         }
-
-        return aiidaFactory.createPermissionDto(permissionRequest);
     }
 }

@@ -4,6 +4,7 @@ import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.KafkaStreamingConfig;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
+import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 
 import java.time.Instant;
 import java.util.Set;
@@ -16,10 +17,14 @@ public class AiidaFactory {
         this.configuration = configuration;
     }
 
-    public AiidaPermissionRequest createPermissionRequest(String connectionId, String dataNeedId,
-                                                          Instant startTime, Instant expirationTime) {
+    public AiidaPermissionRequest createPermissionRequest(
+            String connectionId,
+            String dataNeedId,
+            Instant startTime,
+            Instant expirationTime,
+            AiidaRegionConnectorService service) {
         var permissionId = UUID.randomUUID().toString();
-        return new AiidaPermissionRequest(permissionId, connectionId, dataNeedId, startTime, expirationTime);
+        return new AiidaPermissionRequest(permissionId, connectionId, dataNeedId, startTime, expirationTime, service);
     }
 
     public PermissionDto createPermissionDto(AiidaPermissionRequest aiidaRequest) {

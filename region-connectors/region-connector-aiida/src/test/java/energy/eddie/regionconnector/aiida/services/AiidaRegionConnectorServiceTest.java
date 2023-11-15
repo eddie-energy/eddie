@@ -1,6 +1,8 @@
 package energy.eddie.regionconnector.aiida.services;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.regionconnector.aiida.AiidaFactory;
 import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequestRepository;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
@@ -48,7 +50,7 @@ class AiidaRegionConnectorServiceTest {
     }
 
     @Test
-    void verify_createNewPermission_persistsAndPublishesConnectionStatusMessage() {
+    void verify_createNewPermission_persistsAndPublishesConnectionStatusMessage() throws FutureStateException, PastStateException {
         var connectionId = "TestConnectionId";
         var start = Instant.now();
         var expiration = start.plusSeconds(1000);

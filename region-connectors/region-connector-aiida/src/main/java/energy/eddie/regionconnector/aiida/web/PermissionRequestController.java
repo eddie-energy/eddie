@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.aiida.web;
 
+import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnector;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
@@ -62,7 +64,9 @@ public class PermissionRequestController {
 
     @PostMapping(value = "/permission-request", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<PermissionDto> createPermissionRequest(@Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation) {
+    public ResponseEntity<PermissionDto> createPermissionRequest(
+            @Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation)
+            throws FutureStateException, PastStateException {
         LOGGER.info("Got new request for connectionId {}", permissionRequestForCreation.connectionId());
         return ResponseEntity.ok(aiidaService.createNewPermission(permissionRequestForCreation));
     }

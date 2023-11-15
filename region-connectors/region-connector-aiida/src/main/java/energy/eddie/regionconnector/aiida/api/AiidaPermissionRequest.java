@@ -2,6 +2,8 @@ package energy.eddie.regionconnector.aiida.api;
 
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
+import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
+import energy.eddie.regionconnector.aiida.states.AiidaCreatedPermissionRequestState;
 
 import java.time.Instant;
 
@@ -11,14 +13,16 @@ public class AiidaPermissionRequest implements PermissionRequest {
     private final String dataNeedId;
     private final Instant startTime;
     private final Instant expirationTime;
+    private PermissionRequestState state;
 
     public AiidaPermissionRequest(String permissionId, String connectionId, String dataNeedId, Instant startTime,
-                                  Instant expirationTime) {
+                                  Instant expirationTime, AiidaRegionConnectorService service) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
         this.startTime = startTime;
         this.expirationTime = expirationTime;
+        this.state = new AiidaCreatedPermissionRequestState(this, service);
     }
 
     /**
@@ -55,13 +59,12 @@ public class AiidaPermissionRequest implements PermissionRequest {
     }
 
     @Override
-    @SuppressWarnings("NullAway")
     public PermissionRequestState state() {
-        return null;
+        return state;
     }
 
     @Override
     public void changeState(PermissionRequestState state) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        this.state = state;
     }
 }
