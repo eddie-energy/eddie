@@ -2,10 +2,8 @@
 cd $(dirname $0)
 
 separator="===============================================================> "
-echo $separator "BUILD SW WITH GRADLE: clean"
-./gradlew clean
-echo $separator "BUILD SW WITH GRADLE: installDist"
-./gradlew installDist
+echo $separator "BUILD SW WITH GRADLE"
+./gradlew clean installDist
 echo $separator "BUILD CONTAINERS WITH DOCKER COMPOSE"
 docker compose -f ./env/docker-compose.yml build
 echo $separator "START CONTAINERS WITH DOCKER COMPOSE"

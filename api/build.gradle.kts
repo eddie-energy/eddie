@@ -3,6 +3,7 @@ import net.ltgt.gradle.errorprone.errorprone
 import org.w3c.dom.Element
 import java.util.*
 import javax.xml.parsers.DocumentBuilderFactory
+import kotlin.io.path.Path
 
 plugins {
     id("energy.eddie.java-conventions")
@@ -118,35 +119,39 @@ sourceSets {
     }
 }
 
-val generateCIMSchemaClasses = tasks.create<JavaExec>("generateCIMSchemaClasses") {
+val generateCIMSchemaClasses = tasks.create("generateCIMSchemaClasses") {
     description = "Generate CIM Java Classes from XSD files"
-    classpath(jaxb)
-    mainClass.set("com.sun.tools.xjc.XJCFacade")
-
-    // make sure the directory exists
-    file(generatedXJCJavaDir).mkdirs()
+    group = "Build"
 
     // Path to XSD files
     val cimSchemaFiles = file("src/main/schemas/cim/xsd/")
 
-    // iterate each folder and generate the classes with the same package name
-    cimSchemaFiles.walk().forEach { srcFile ->
-        if (srcFile.isFile && srcFile.extension == "xsd") {
-            val file = srcFile.copyTo(temporaryDir.resolve(srcFile.name), true)
-            val xjbFile = temporaryDir.resolve("bindings.xjb")
-            // generate the bindings file
-            generateBindingsFile(file, xjbFile.absolutePath)
-
-            val packageName = "energy.eddie.cim." + srcFile.parentFile.parentFile.name + "." + srcFile.parentFile.name
-            args("-d", generatedXJCJavaDir, file.absolutePath, "-p", packageName, "-b", xjbFile.absolutePath, "-mark-generated", "-npa", "-extension", "-Xfluent-api")
-        }
-    }
-
     // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed
     inputs.files(fileTree(cimSchemaFiles).include("**/*.xsd"))
     outputs.dir(generatedXJCJavaDir)
-}
 
+    doLast {
+        // make sure the directory exists
+        file(generatedXJCJavaDir).mkdirs()
+
+        // iterate each folder and generate the classes with the same package name
+        cimSchemaFiles.walk().forEach { srcFile ->
+            if (srcFile.isFile && srcFile.extension == "xsd") {
+                val file = srcFile.copyTo(temporaryDir.resolve(srcFile.name), true)
+                val xjbFile = temporaryDir.resolve("bindings.xjb")
+                // generate the bindings file
+                generateBindingsFile(srcFile, xjbFile.absolutePath)
+
+                val packageName = "energy.eddie.cim." + srcFile.parentFile.parentFile.name + "." + srcFile.parentFile.name
+                exec {
+                    executable(Path(System.getProperty("java.home"), "bin", "java"))
+                    val classpath = jaxb.resolve().joinToString(File.pathSeparator)
+                    args("-cp", classpath, "com.sun.tools.xjc.XJCFacade", "-d", generatedXJCJavaDir, file.absolutePath, "-p", packageName, "-b", xjbFile.absolutePath, "-mark-generated", "-npa", "-extension", "-Xfluent-api")
+                }
+            }
+        }
+    }
+}
 
 tasks.named("compileJava") {
     // generate the classes before compiling
