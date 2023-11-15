@@ -4,7 +4,7 @@
 <!--
 Schema agency: Gasunie 
 Schema version: 1p0
-Schema date: dinsdag 7 november 2023 10:23:11
+Schema date: woensdag 15 november 2023 10:41:21
  
 Generator name: EA_Toolkit by E. van Slooten
 Generator builddate: 15-7-2019 09:08:22
@@ -17,8 +17,9 @@ LIMITED TO ANY WARRANTY THAT THE USE OF THE INFORMATION HEREIN WILL NOT INFRINGE
  ANY RIGHTS OR ANY IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
 PURPOSE
 -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ns1="http://www.eddie.energy/VHD/EDD01/20231102"
-           targetNamespace="http://www.eddie.energy/VHD/EDD01/20231102" attributeFormDefault="unqualified"
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:ns1="http://www.eddie.energy/VHD/EDD01/20231115"
+           targetNamespace="http://www.eddie.energy/VHD/EDD01/20231115" attributeFormDefault="unqualified"
            elementFormDefault="qualified" version="1p0">
     <xs:element name="ValidatedHistoricalData_MarketDocument"
                 type="ns1:ValidatedHistoricalData_MarketDocumentComplexType">
@@ -385,15 +386,12 @@ PURPOSE
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="Series_PeriodList">
+            <xs:element name="ReasonList">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="Series_Period" type="ns1:Series_PeriodComplexType" minOccurs="0"
-                                    maxOccurs="unbounded">
+                        <xs:element name="Reason" type="ns1:ReasonComplexType" minOccurs="0" maxOccurs="unbounded">
                             <xs:annotation>
-                                <xs:documentation>The identification of the period of time corresponding to a given time
-                                    interval and resolution.
-                                </xs:documentation>
+                                <xs:documentation>The motivation of an act.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
                     </xs:sequence>
@@ -406,52 +404,14 @@ PURPOSE
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="ReasonList">
+            <xs:element name="Series_PeriodList">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="Reason" type="ns1:ReasonComplexType" minOccurs="0" maxOccurs="unbounded">
+                        <xs:element name="Series_Period" type="ns1:Series_PeriodComplexType" minOccurs="0"
+                                    maxOccurs="unbounded">
                             <xs:annotation>
-                                <xs:documentation>The motivation of an act.</xs:documentation>
-                            </xs:annotation>
-                        </xs:element>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-        </xs:sequence>
-    </xs:complexType>
-    <xs:complexType name="Series_PeriodComplexType">
-        <xs:sequence>
-            <xs:element name="timeInterval" type="ns1:ESMP_DateTimeIntervalComplexType">
-                <xs:annotation>
-                    <xs:documentation>The start and end time of the period.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="resolution" type="ns1:Duration">
-                <xs:annotation>
-                    <xs:documentation>The definition of the number of units of time that compose an individual step
-                        within a period.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="ReasonList">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="Reason" type="ns1:ReasonComplexType" minOccurs="0" maxOccurs="unbounded">
-                            <xs:annotation>
-                                <xs:documentation>The motivation of an act.</xs:documentation>
-                            </xs:annotation>
-                        </xs:element>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="PointList">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="Point" type="ns1:PointComplexType" minOccurs="0" maxOccurs="unbounded">
-                            <xs:annotation>
-                                <xs:documentation>The identification of the values being addressed within a specific
-                                    interval of time.
+                                <xs:documentation>The identification of the period of time corresponding to a given time
+                                    interval and resolution.
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:element>
@@ -471,73 +431,24 @@ PURPOSE
             <xs:element name="code" type="ns1:ReasonCodeTypeList"/>
         </xs:sequence>
     </xs:complexType>
-    <xs:complexType name="PointComplexType">
-        <xs:sequence>
-            <xs:element name="position" type="ns1:Position_Integer">
-                <xs:annotation>
-                    <xs:documentation>A sequential value representing the relative position within a given time
-                        interval.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="energyQuality_Quantity.quantity" type="xs:decimal" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation>The quantity value.
-                        The association role provides the information about what is expressed.
-
-                        --- The Quantity information associated with a given Point.
-
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="energyQuality_Quantity.quality" type="ns1:QualityTypeList" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation>The description of the quality of the quantity.
-
-                        --- The Quantity information associated with a given Point.
-
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="energy_Quantity.quantity" type="xs:decimal" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation>The quantity value.
-                        The association role provides the information about what is expressed.
-
-                        --- The Quantity information associated with a given Point.
-
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="energy_Quantity.quality" type="ns1:QualityTypeList" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation>The description of the quality of the quantity.
-
-                        --- The Quantity information associated with a given Point.
-
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:element>
-        </xs:sequence>
-    </xs:complexType>
     <xs:complexType name="RegisteredResourceComplexType">
         <xs:sequence>
-            <xs:element name="mRID" type="xs:string"/>
-            <xs:element name="name" type="xs:string">
+            <xs:element name="mRID" type="ns1:ID_String"/>
+            <xs:element name="name" type="xs:string" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>The name is any free human readable and possibly non unique text naming the
                         object.
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="description" type="xs:string">
+            <xs:element name="description" type="xs:string" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>The description is a free human readable text describing or naming the object. It
                         may be non unique and may not correlate to a naming hierarchy.
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="fuel.fuel" type="ns1:FuelTypeList">
+            <xs:element name="fuel.fuel" type="ns1:FuelTypeList" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>An indication of the fuel used for the energy production, or part of the energy
                         production, that is potentially fed into the grid at the related object.
@@ -678,6 +589,96 @@ PURPOSE
             <xs:element name="defaultCapacity" type="xs:decimal" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>The default capacity.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Series_PeriodComplexType">
+        <xs:sequence>
+            <xs:element name="timeInterval" type="ns1:ESMP_DateTimeIntervalComplexType">
+                <xs:annotation>
+                    <xs:documentation>The start and end time of the period.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="resolution" type="ns1:Duration">
+                <xs:annotation>
+                    <xs:documentation>The definition of the number of units of time that compose an individual step
+                        within a period.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ReasonList">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Reason" type="ns1:ReasonComplexType" minOccurs="0" maxOccurs="unbounded">
+                            <xs:annotation>
+                                <xs:documentation>The motivation of an act.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="PointList">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Point" type="ns1:PointComplexType" minOccurs="0" maxOccurs="unbounded">
+                            <xs:annotation>
+                                <xs:documentation>The identification of the values being addressed within a specific
+                                    interval of time.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="PointComplexType">
+        <xs:sequence>
+            <xs:element name="position" type="ns1:Position_Integer">
+                <xs:annotation>
+                    <xs:documentation>A sequential value representing the relative position within a given time
+                        interval.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="energyQuality_Quantity.quantity" type="xs:decimal" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>The quantity value.
+                        The association role provides the information about what is expressed.
+
+                        --- The Quantity information associated with a given Point.
+
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="energyQuality_Quantity.quality" type="ns1:QualityTypeList" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>The description of the quality of the quantity.
+
+                        --- The Quantity information associated with a given Point.
+
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="energy_Quantity.quantity" type="xs:decimal" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>The quantity value.
+                        The association role provides the information about what is expressed.
+
+                        --- The Quantity information associated with a given Point.
+
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="energy_Quantity.quality" type="ns1:QualityTypeList" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>The description of the quality of the quantity.
+
+                        --- The Quantity information associated with a given Point.
+
+                    </xs:documentation>
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
@@ -2329,13 +2330,13 @@ PURPOSE
     </xs:simpleType>
     <xs:complexType name="DateAndOrTimeComplexType">
         <xs:sequence>
-            <xs:element name="date" type="xs:dateTime" minOccurs="0">
+            <xs:element name="date" type="xs:date" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>The date as &quot;YYYY-MM-DD&quot;, which conforms with ISO 8601.
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="time" type="xs:dateTime" minOccurs="0">
+            <xs:element name="time" type="xs:time" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>The time as &quot;hh:mm:ss.sssZ&quot;, which conforms with ISO 8601.
                     </xs:documentation>
