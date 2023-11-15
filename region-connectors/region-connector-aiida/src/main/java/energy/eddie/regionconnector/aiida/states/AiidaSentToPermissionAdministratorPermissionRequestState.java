@@ -7,7 +7,6 @@ import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
 public class AiidaSentToPermissionAdministratorPermissionRequestState
         extends ContextualizedPermissionRequestState<AiidaPermissionRequest>
         implements SentToPermissionAdministratorPermissionRequestState {
-
     public AiidaSentToPermissionAdministratorPermissionRequestState(AiidaPermissionRequest permissionRequest) {
         super(permissionRequest);
     }
@@ -27,4 +26,8 @@ public class AiidaSentToPermissionAdministratorPermissionRequestState
         throw new UnsupportedOperationException("AIIDA doesn't send rejected status messages to EDDIE, so this state is not supported");
     }
 
+    @Override
+    public void timeOut() {
+        throw new UnsupportedOperationException("This region-connector doesn't support timeout for permission requests");
+    }
 }

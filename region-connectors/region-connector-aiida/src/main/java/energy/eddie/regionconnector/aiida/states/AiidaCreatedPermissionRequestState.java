@@ -8,7 +8,6 @@ import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 public class AiidaCreatedPermissionRequestState
         extends ContextualizedPermissionRequestState<AiidaPermissionRequest>
         implements CreatedPermissionRequestState {
-
     private final AiidaRegionConnectorService service;
 
     public AiidaCreatedPermissionRequestState(AiidaPermissionRequest permissionRequest, AiidaRegionConnectorService service) {
@@ -18,7 +17,7 @@ public class AiidaCreatedPermissionRequestState
 
     @Override
     public void validate() {
-        // TODO what to validate?
+        // request already contains only valid values because controller validates input
         permissionRequest.changeState(new AiidaValidatedPermissionRequestState(permissionRequest, service));
     }
 }

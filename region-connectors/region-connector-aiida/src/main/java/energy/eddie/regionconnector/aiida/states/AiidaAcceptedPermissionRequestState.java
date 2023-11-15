@@ -7,7 +7,6 @@ import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
 public class AiidaAcceptedPermissionRequestState
         extends ContextualizedPermissionRequestState<AiidaPermissionRequest>
         implements AcceptedPermissionRequestState {
-
     public AiidaAcceptedPermissionRequestState(AiidaPermissionRequest permissionRequest) {
         super(permissionRequest);
     }
@@ -15,5 +14,15 @@ public class AiidaAcceptedPermissionRequestState
     @Override
     public void terminate() {
         permissionRequest.changeState(new AiidaTerminatedPermissionRequestState(permissionRequest));
+    }
+
+    @Override
+    public void revoke() {
+        permissionRequest.changeState(new AiidaRevokedPermissionRequestState(permissionRequest));
+    }
+
+    @Override
+    public void timeLimit() {
+        permissionRequest.changeState(new AiidaTimeLimitPermissionRequestState(permissionRequest));
     }
 }
