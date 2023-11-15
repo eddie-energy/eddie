@@ -34,7 +34,7 @@ public class SpringConfig {
                     .build();
             // These arguments are needed, since this spring instance tries to load the data needs configs of the core configuration.
             // Random port for this spring application, subject to change in GH-109
-            ctx = app.run("--spring.config.import=", "--import.config.file=", "--server.port=0");
+            ctx = app.run("--spring.config.import=", "--import.config.file=", "--server.port=${region-connector.aiida.server.port}");
         }
         var factory = ctx.getBeanFactory();
         return factory.getBean(RegionConnector.class);
