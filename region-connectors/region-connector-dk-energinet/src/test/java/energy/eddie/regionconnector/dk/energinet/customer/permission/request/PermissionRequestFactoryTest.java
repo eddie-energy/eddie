@@ -2,9 +2,8 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.api.v0.process.model.PermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
-import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import energy.eddie.regionconnector.dk.energinet.utils.PeriodResolutionEnumConverter;
 import energy.eddie.regionconnector.shared.utils.ZonedDateTimeConverter;
@@ -35,7 +34,7 @@ class PermissionRequestFactoryTest {
     void testCreatePermissionRequest() {
         // Given
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
-        PermissionRequestRepository<DkEnerginetCustomerPermissionRequest> permissionRequestRepository = new InMemoryPermissionRequestRepository();
+        DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository = new InMemoryPermissionRequestRepository();
         EnerginetConfiguration conf = mock(EnerginetConfiguration.class);
         PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(permissionRequestRepository, permissionStateMessages, conf);
         Context ctx = mock(Context.class);

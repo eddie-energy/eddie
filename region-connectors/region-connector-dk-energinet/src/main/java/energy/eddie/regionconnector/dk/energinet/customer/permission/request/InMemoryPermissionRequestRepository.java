@@ -1,14 +1,14 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
-import energy.eddie.api.v0.process.model.PermissionRequestRepository;
-import energy.eddie.regionconnector.dk.energinet.customer.api.DkEnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.permission.requests.decorators.SavingPermissionRequest;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class InMemoryPermissionRequestRepository implements PermissionRequestRepository<DkEnerginetCustomerPermissionRequest> {
+public class InMemoryPermissionRequestRepository implements DkEnerginetCustomerPermissionRequestRepository {
     private final Map<String, DkEnerginetCustomerPermissionRequest> requests = new ConcurrentHashMap<>();
 
     @Override

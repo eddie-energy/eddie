@@ -103,6 +103,7 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
         this.userCorrelationId = userCorrelationId;
     }
 
+    @Override
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = Objects.requireNonNull(refreshToken);
     }
