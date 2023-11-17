@@ -64,7 +64,7 @@ public class EnedisRegionConnector implements RegionConnector {
 
     @Override
     public RegionConnectorMetadata getMetadata() {
-        return new RegionConnectorMetadata(MDA_CODE, MDA_DISPLAY_NAME, COUNTRY_CODE, BASE_PATH + "/", COVERED_METERING_POINTS);
+        return new RegionConnectorMetadata(MDA_CODE, MDA_DISPLAY_NAME, COUNTRY_CODE, BASE_PATH, COVERED_METERING_POINTS);
     }
 
     @Override
