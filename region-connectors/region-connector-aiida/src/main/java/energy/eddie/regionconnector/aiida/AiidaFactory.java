@@ -22,9 +22,11 @@ public class AiidaFactory {
     public AiidaPermissionRequest createPermissionRequest(
             String connectionId,
             String dataNeedId,
-            Instant startTime,
-            Instant expirationTime,
             AiidaRegionConnectorService service) {
+        // TODO get start and expiration from dataNeed API
+        var startTime = Instant.now();
+        var expirationTime = startTime.plusSeconds(864000); // roughly 10 days
+
         var permissionId = UUID.randomUUID().toString();
         var terminationTopic = terminationTopicForPermissionId(permissionId);
         return new AiidaPermissionRequest(permissionId, connectionId, dataNeedId, terminationTopic, startTime, expirationTime, service);

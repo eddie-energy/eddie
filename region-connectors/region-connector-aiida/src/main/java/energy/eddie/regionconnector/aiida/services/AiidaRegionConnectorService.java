@@ -72,7 +72,7 @@ public class AiidaRegionConnectorService implements AutoCloseable {
      */
     public PermissionDto createNewPermission(PermissionRequestForCreation creationRequest) throws StateTransitionException {
         var permissionRequest = aiidaFactory.createPermissionRequest(creationRequest.connectionId(),
-                creationRequest.dataNeedId(), creationRequest.startTime(), creationRequest.expirationTime(), this);
+                creationRequest.dataNeedId(), this);
 
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();

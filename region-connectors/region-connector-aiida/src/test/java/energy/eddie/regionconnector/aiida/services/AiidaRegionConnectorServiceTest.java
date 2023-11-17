@@ -36,8 +36,6 @@ class AiidaRegionConnectorServiceTest {
     private final String statusTopic = "statusTopic";
     private final String terminationPrefix = "terminationPrefix";
     private final String connectionId = "TestConnectionId";
-    private final Instant start = Instant.now();
-    private final Instant expiration = start.plusSeconds(1000);
     @Mock
     private AiidaPermissionRequestRepository mockRepository;
     private Sinks.Many<TerminationRequest> terminationSink;
@@ -63,7 +61,7 @@ class AiidaRegionConnectorServiceTest {
 
     @Test
     void verify_createNewPermission_persistsAndPublishesConnectionStatusMessage() throws StateTransitionException {
-        var request = new PermissionRequestForCreation(connectionId, "1", start, expiration);
+        var request = new PermissionRequestForCreation(connectionId, "1");
 
         StepVerifier stepVerifier = StepVerifier.create(service.connectionStatusMessageFlux())
                 .expectNextMatches(msg -> msg.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
@@ -75,8 +73,6 @@ class AiidaRegionConnectorServiceTest {
         PermissionDto newPermission = service.createNewPermission(request);
 
         assertEquals(connectionId, newPermission.connectionId());
-        assertEquals(start, newPermission.startTime());
-        assertEquals(expiration, newPermission.expirationTime());
         assertEquals(bootstrapServers, newPermission.kafkaStreamingConfig().bootstrapServers());
         assertEquals(statusTopic, newPermission.kafkaStreamingConfig().statusTopic());
         assertEquals(dataTopic, newPermission.kafkaStreamingConfig().dataTopic());
@@ -89,6 +85,8 @@ class AiidaRegionConnectorServiceTest {
     @Test
     void givenPermissionId_terminateRequest_publishesTerminationRequestOnFluxAndUpdatesDB() throws StateTransitionException {
         var permissionId = UUID.randomUUID().toString();
+        var start = Instant.now();
+        var expiration = start.plusSeconds(1000);
         AiidaPermissionRequest request = new AiidaPermissionRequest(permissionId, connectionId,
                 "dataNeedId", "SomeTopic", start, expiration, service);
         request.changeState(new AiidaAcceptedPermissionRequestState(request));

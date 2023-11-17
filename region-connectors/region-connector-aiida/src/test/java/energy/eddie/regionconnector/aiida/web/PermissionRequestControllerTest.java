@@ -55,7 +55,7 @@ class PermissionRequestControllerTest {
 
         @Test
         void givenMissingConnectionId_returnsBadRequest() throws Exception {
-            var json = "{\"dataNeedId\":\"1\",\"startTime\":1695095000,\"expirationTime\":1695200000}";
+            var json = "{\"dataNeedId\":\"1\"}";
 
             mockMvc.perform(post("/region-connectors/aiida/permission-request")
                             .content(json)
@@ -68,8 +68,8 @@ class PermissionRequestControllerTest {
         }
 
         @Test
-        void givenStartTimeAfterEndTime_returnsBadRequest() throws Exception {
-            var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\",\"startTime\":1695095000,\"expirationTime\":1000000000}";
+        void givenAdditionalNotNeededInformation_returnsBadRequest() throws Exception {
+            var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"11\",\"extra\":\"information\"}";
 
             mockMvc.perform(post("/region-connectors/aiida/permission-request")
                             .content(json)
@@ -77,13 +77,13 @@ class PermissionRequestControllerTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errors", allOf(
                             iterableWithSize(1),
-                            hasItem("startTime must be before expirationTime")
+                            hasItem("Failed to read request")
                     )));
         }
 
         @Test
         void givenStateTransitionException_returnsInternalServerError() throws Exception {
-            var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\",\"startTime\":1695095000,\"expirationTime\":1705095000}";
+            var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\"}";
 
             when(service.createNewPermission(any())).thenThrow(new PastStateException(mock(PermissionRequestState.class)));
 
@@ -99,7 +99,7 @@ class PermissionRequestControllerTest {
 
         @Test
         void givenValidInput_asExpected() throws Exception {
-            var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\",\"startTime\":1695095000,\"expirationTime\":1705095000}";
+            var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\"}";
 
             mockMvc.perform(post("/region-connectors/aiida/permission-request")
                             .content(json)
