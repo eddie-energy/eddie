@@ -133,7 +133,8 @@ val generateEDASchemaClasses = tasks.create<JavaExec>("generateEDASchemaClasses"
     // Path to XSD files
     val edaSchemaFiles = "src/main/schemas/eda/xsd/"
 
-    args("-d", generatedXJCJavaDir, edaSchemaFiles, "-mark-generated", "-npa")
+    // explicitly set the encoding because of rare issues discovered on Windows 10
+    args("-d", generatedXJCJavaDir, edaSchemaFiles, "-mark-generated", "-npa", "-encoding", "UTF-8")
 
     // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed
     inputs.files(fileTree(edaSchemaFiles).include("**/*.xsd"))
