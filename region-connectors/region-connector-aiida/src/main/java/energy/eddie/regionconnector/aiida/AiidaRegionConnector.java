@@ -1,14 +1,16 @@
 package energy.eddie.regionconnector.aiida;
 
 import energy.eddie.api.v0.*;
+import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.adapter.JdkFlowAdapter;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.Flow;
 
-public class AiidaRegionConnector implements RegionConnector {
+public class AiidaRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider {
     public static final String COUNTRY_CODE = "aiida";
     public static final String MDA_CODE = "aiida";
     public static final String MDA_DISPLAY_NAME = "AIIDA";
@@ -16,9 +18,11 @@ public class AiidaRegionConnector implements RegionConnector {
     public static final int COVERED_METERING_POINTS = 1;
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaRegionConnector.class);
     private final int port;
+    private final AiidaRegionConnectorService aiidaService;
 
-    public AiidaRegionConnector(int port) {
+    public AiidaRegionConnector(int port, AiidaRegionConnectorService aiidaService) {
         this.port = port;
+        this.aiidaService = aiidaService;
     }
 
     @Override
@@ -28,12 +32,7 @@ public class AiidaRegionConnector implements RegionConnector {
 
     @Override
     public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
-        throw new UnsupportedOperationException("This region connector does not publish consumption records itself");
+        return JdkFlowAdapter.publisherToFlowPublisher(aiidaService.connectionStatusMessageFlux());
     }
 
     @Override
@@ -54,6 +53,6 @@ public class AiidaRegionConnector implements RegionConnector {
 
     @Override
     public void close() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        aiidaService.close();
     }
 }

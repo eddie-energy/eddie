@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.aiida;
 
 import energy.eddie.api.v0.RegionConnector;
+import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -34,7 +35,7 @@ public class SpringConfig {
 
     @Bean
     @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
-    public RegionConnector regionConnector(@Value("${server.port:0}") int port) {
-        return new AiidaRegionConnector(port);
+    public RegionConnector regionConnector(@Value("${server.port:0}") int port, AiidaRegionConnectorService aiidaService) {
+        return new AiidaRegionConnector(port, aiidaService);
     }
 }

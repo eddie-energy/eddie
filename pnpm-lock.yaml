@@ -31,6 +31,15 @@ importers:
         specifier: ^4.3.9
         version: 4.3.9
 
+  region-connectors/region-connector-aiida:
+    dependencies:
+      lit:
+        specifier: ^2.7.5
+        version: 2.7.5
+      vite:
+        specifier: ^4.3.9
+        version: 4.3.9
+
   region-connectors/region-connector-at-eda:
     dependencies:
       lit:

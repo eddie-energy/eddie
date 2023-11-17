@@ -25,6 +25,9 @@ module energy.eddie.regionconnector.aiida {
     requires org.reactivestreams;
 
     exports energy.eddie.regionconnector.aiida;
+    // Needed for spring
+    exports energy.eddie.regionconnector.aiida.web;
+    exports energy.eddie.regionconnector.aiida.services;
 
     // Needed for spring
     opens energy.eddie.regionconnector.aiida to spring.core;
