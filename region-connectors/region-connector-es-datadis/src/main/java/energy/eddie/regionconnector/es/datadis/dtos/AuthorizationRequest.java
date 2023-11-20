@@ -17,16 +17,20 @@ public class AuthorizationRequest {
 
     @JsonProperty("startDatePull")
     @JsonSerialize(using = LocalDateToEpochSerializer.class)
+    @SuppressWarnings("unused")
     private LocalDate startDate;
 
     @JsonProperty("endDatePull")
     @JsonSerialize(using = LocalDateToEpochSerializer.class)
+    @SuppressWarnings("unused")
     private LocalDate endDate;
 
     @JsonProperty("nifSolicitante")
+    @SuppressWarnings("unused")
     private String nif;
 
     @JsonProperty("cups")
+    @SuppressWarnings("unused")
     private List<Cups> meteringPoints;
 
     public AuthorizationRequest(LocalDate startDate, LocalDate endDate, String nif, List<String> meteringPoints) {

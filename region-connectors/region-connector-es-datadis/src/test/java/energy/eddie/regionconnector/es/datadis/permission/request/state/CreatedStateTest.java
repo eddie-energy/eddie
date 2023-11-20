@@ -138,9 +138,7 @@ class CreatedStateTest {
     @Test
     void validate_reportsAllErrors_whenEverythingIsNull() {
         // Given
-        ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
         Context ctx = mock(Context.class);
-        Map<String, List<ValidationError<Object>>> errors;
         when(ctx.formParam(NIF_KEY)).thenReturn("nif");
         when(ctx.formParam(METERING_POINT_ID_KEY)).thenReturn("meteringPoint");
 

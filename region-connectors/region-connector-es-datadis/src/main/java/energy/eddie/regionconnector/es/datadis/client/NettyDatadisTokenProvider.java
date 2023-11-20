@@ -58,7 +58,7 @@ public class NettyDatadisTokenProvider implements DatadisTokenProvider {
     }
 
     Mono<String> updateTokenAndExpiry(String jwtToken) {
-        String[] splitToken = jwtToken.split("\\.");
+        String[] splitToken = jwtToken.split("\\.", -1);
         if (splitToken.length != 3) {
             return Mono.error(new TokenProviderException("Invalid JWT token"));
         }
