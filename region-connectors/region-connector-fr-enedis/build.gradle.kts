@@ -6,9 +6,8 @@ plugins {
     id("energy.eddie.java-conventions")
     id("energy.eddie.pnpm-build")
     application
-    id("org.openapi.generator") version "6.6.0"
+    id("org.openapi.generator") version "7.1.0"
     id("org.gradlex.extra-java-module-info") version "1.3"
-
 }
 
 
@@ -121,6 +120,7 @@ tasks.named("compileJava").configure {
 }
 
 tasks.withType<JavaCompile>().configureEach {
+    options.errorprone.disableWarningsInGeneratedCode.set(true)
     if (!name.lowercase(Locale.getDefault()).contains("test") && !name.lowercase(Locale.getDefault()).contains("generated")) {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)

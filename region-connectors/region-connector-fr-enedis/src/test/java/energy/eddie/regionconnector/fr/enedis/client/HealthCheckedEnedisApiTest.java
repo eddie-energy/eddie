@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import org.junit.jupiter.api.Test;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -80,7 +81,11 @@ class HealthCheckedEnedisApiTest {
         // When
         // Then
         assertDoesNotThrow(() ->
-                healthCheckedEnedisApi.getDailyConsumption("123", ZonedDateTime.now(), ZonedDateTime.now())
+                healthCheckedEnedisApi.getDailyConsumption(
+                        "123",
+                        ZonedDateTime.now(ZoneId.systemDefault()),
+                        ZonedDateTime.now(ZoneId.systemDefault())
+                )
         );
     }
 
@@ -95,7 +100,12 @@ class HealthCheckedEnedisApiTest {
         // When
         // Then
         assertThrows(ApiException.class, () ->
-                healthCheckedEnedisApi.getDailyConsumption("123", ZonedDateTime.now(), ZonedDateTime.now()));
+                healthCheckedEnedisApi.getDailyConsumption(
+                        "123",
+                        ZonedDateTime.now(ZoneId.systemDefault()),
+                        ZonedDateTime.now(ZoneId.systemDefault())
+                )
+        );
     }
 
     @Test
@@ -106,7 +116,11 @@ class HealthCheckedEnedisApiTest {
         ConsumptionRecord dummyRecord = new ConsumptionRecord();
         when(mockedEnedisApi.getDailyConsumption(anyString(), any(ZonedDateTime.class), any(ZonedDateTime.class)))
                 .thenReturn(dummyRecord);
-        healthCheckedEnedisApi.getDailyConsumption("123", ZonedDateTime.now(), ZonedDateTime.now());
+        healthCheckedEnedisApi.getDailyConsumption(
+                "123",
+                ZonedDateTime.now(ZoneId.systemDefault()),
+                ZonedDateTime.now(ZoneId.systemDefault())
+        );
 
         // When
         var res = healthCheckedEnedisApi.health();
@@ -123,7 +137,11 @@ class HealthCheckedEnedisApiTest {
         when(mockedEnedisApi.getDailyConsumption(anyString(), any(ZonedDateTime.class), any(ZonedDateTime.class)))
                 .thenThrow(new ApiException("Metering point not found"));
         try {
-            healthCheckedEnedisApi.getDailyConsumption("123", ZonedDateTime.now(), ZonedDateTime.now());
+            healthCheckedEnedisApi.getDailyConsumption(
+                    "123",
+                    ZonedDateTime.now(ZoneId.systemDefault()),
+                    ZonedDateTime.now(ZoneId.systemDefault())
+            );
         } catch (ApiException ignored) {
         }
 
@@ -146,7 +164,11 @@ class HealthCheckedEnedisApiTest {
         // When
         // Then
         assertDoesNotThrow(() ->
-                healthCheckedEnedisApi.getConsumptionLoadCurve("123", ZonedDateTime.now(), ZonedDateTime.now())
+                healthCheckedEnedisApi.getConsumptionLoadCurve(
+                        "123",
+                        ZonedDateTime.now(ZoneId.systemDefault()),
+                        ZonedDateTime.now(ZoneId.systemDefault())
+                )
         );
     }
 
@@ -161,7 +183,11 @@ class HealthCheckedEnedisApiTest {
         // When
         // Then
         assertThrows(ApiException.class, () ->
-                healthCheckedEnedisApi.getConsumptionLoadCurve("123", ZonedDateTime.now(), ZonedDateTime.now()));
+                healthCheckedEnedisApi.getConsumptionLoadCurve(
+                        "123",
+                        ZonedDateTime.now(ZoneId.systemDefault()),
+                        ZonedDateTime.now(ZoneId.systemDefault()))
+        );
     }
 
     @Test
@@ -172,7 +198,11 @@ class HealthCheckedEnedisApiTest {
         ConsumptionRecord dummyRecord = new ConsumptionRecord();
         when(mockedEnedisApi.getConsumptionLoadCurve(anyString(), any(ZonedDateTime.class), any(ZonedDateTime.class)))
                 .thenReturn(dummyRecord);
-        healthCheckedEnedisApi.getConsumptionLoadCurve("123", ZonedDateTime.now(), ZonedDateTime.now());
+        healthCheckedEnedisApi.getConsumptionLoadCurve(
+                "123",
+                ZonedDateTime.now(ZoneId.systemDefault()),
+                ZonedDateTime.now(ZoneId.systemDefault())
+        );
 
         // When
         var res = healthCheckedEnedisApi.health();
@@ -189,7 +219,11 @@ class HealthCheckedEnedisApiTest {
         when(mockedEnedisApi.getConsumptionLoadCurve(anyString(), any(ZonedDateTime.class), any(ZonedDateTime.class)))
                 .thenThrow(new ApiException("Metering point not found"));
         try {
-            healthCheckedEnedisApi.getConsumptionLoadCurve("123", ZonedDateTime.now(), ZonedDateTime.now());
+            healthCheckedEnedisApi.getConsumptionLoadCurve(
+                    "123",
+                    ZonedDateTime.now(ZoneId.systemDefault()),
+                    ZonedDateTime.now(ZoneId.systemDefault())
+            );
         } catch (ApiException ignored) {
         }
 
