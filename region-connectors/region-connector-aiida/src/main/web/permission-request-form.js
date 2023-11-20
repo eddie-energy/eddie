@@ -95,7 +95,10 @@ class PermissionRequestForm extends LitElement {
       connectionId: this.connectionId,
     };
 
-    fetch(REQUEST_URL, {
+    // CORS doesn't succeed --> use direct URL instead of proxy until Spring migration is done
+    let tempUrl =
+      "http://localhost:9988/region-connectors/aiida/permission-request";
+    fetch(tempUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
