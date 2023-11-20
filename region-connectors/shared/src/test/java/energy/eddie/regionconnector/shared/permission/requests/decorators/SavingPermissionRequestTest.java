@@ -127,8 +127,8 @@ class SavingPermissionRequestTest {
         // Given
         PermissionRequestRepository<PermissionRequest> repo = new SimplePermissionRequestRepository();
         SimpleState createdState = new SimpleState();
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
-        SavingPermissionRequest<PermissionRequest> savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
+        PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
+        PermissionRequest savingPermissionRequest = new SavingPermissionRequest<>(permissionRequest, repo);
 
         // When
         var res = savingPermissionRequest.equals(permissionRequest);
