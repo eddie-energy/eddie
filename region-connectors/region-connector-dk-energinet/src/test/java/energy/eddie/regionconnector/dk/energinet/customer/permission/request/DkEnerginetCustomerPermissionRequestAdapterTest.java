@@ -11,6 +11,7 @@ import io.javalin.http.Context;
 import io.javalin.validation.Validator;
 import org.junit.jupiter.api.Test;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -54,7 +55,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     @Test
     void adapter_returnsStart() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now();
+        ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
         DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId", start, null);
         PermissionRequest decorator = new ChangingPermissionRequest(request);
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);
@@ -69,7 +70,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     @Test
     void adapter_returnsEnd() {
         // Given
-        ZonedDateTime end = ZonedDateTime.now();
+        ZonedDateTime end = ZonedDateTime.now(ZoneId.systemDefault());
         DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId", null, end);
         PermissionRequest decorator = new ChangingPermissionRequest(request);
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);

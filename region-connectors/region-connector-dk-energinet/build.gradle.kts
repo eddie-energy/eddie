@@ -114,15 +114,16 @@ tasks.named("compileJava").configure {
 }
 
 tasks.withType<JavaCompile>().configureEach {
+    options.errorprone.disableWarningsInGeneratedCode.set(true)
+    // Regex fits to Windows and Unix-style path separators. CAVEAT: excludedPaths needs a regex string!
+    val regexString = ".*/energy/eddie/regionconnector/dk/energinet/customer/(model|invoker)/.*".replace("/", "[/\\\\]")
+    options.errorprone.excludedPaths.set(regexString)
     if (!name.lowercase(Locale.getDefault()).contains("test") && !name.lowercase(Locale.getDefault()).contains("generated")) {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
             option("NullAway:AnnotatedPackages", packagePrefix)
             option("NullAway:UnannotatedClasses", "${customerApiPackagePrefix}.model")
             option("NullAway:TreatGeneratedAsUnannotated", true)
-            // Regex fits to Windows and Unix-style path separators. CAVEAT: excludedPaths needs a regex string!
-            val regexString = ".*/energy/eddie/regionconnector/dk/energinet/customer/(model|invoker)/.*".replace("/", "[/\\\\]")
-            this.excludedPaths.set(regexString)
             option("NullawayExcludedClasses=EnerginetCliClient.java")
         }
     }
