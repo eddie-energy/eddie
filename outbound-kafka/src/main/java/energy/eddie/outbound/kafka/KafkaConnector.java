@@ -39,7 +39,7 @@ public class KafkaConnector implements ApplicationConnector, Closeable {
 
     @Override
     public void init() {
-        // To be removed
+        // Kafka producer has already started
     }
 
     @Override
