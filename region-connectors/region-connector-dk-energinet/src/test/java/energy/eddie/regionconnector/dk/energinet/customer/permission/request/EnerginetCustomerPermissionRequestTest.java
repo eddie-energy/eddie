@@ -8,6 +8,7 @@ import io.javalin.http.Context;
 import io.javalin.validation.Validator;
 import org.junit.jupiter.api.Test;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Map;
 
@@ -91,7 +92,7 @@ class EnerginetCustomerPermissionRequestTest {
         EnerginetConfiguration configuration = mock(EnerginetConfiguration.class);
         Context ctx = mock(Context.class);
         Validator<ZonedDateTime> validator = mock(Validator.class);
-        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
         when(validator.getOrDefault(any())).thenReturn(now);
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.START_KEY, ZonedDateTime.class))
                 .thenReturn(validator);
@@ -115,7 +116,7 @@ class EnerginetCustomerPermissionRequestTest {
         EnerginetConfiguration configuration = mock(EnerginetConfiguration.class);
         Context ctx = mock(Context.class);
         Validator<ZonedDateTime> validator = mock(Validator.class);
-        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
         when(validator.getOrDefault(any())).thenReturn(now);
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.START_KEY, ZonedDateTime.class))
                 .thenReturn(validator);
@@ -138,7 +139,6 @@ class EnerginetCustomerPermissionRequestTest {
         Context ctx = mock(Context.class);
         when(ctx.formParam(EnerginetCustomerPermissionRequest.CONNECTION_ID)).thenReturn("testConnectionId");
         Validator<ZonedDateTime> validator = mock(Validator.class);
-        ZonedDateTime now = ZonedDateTime.now();
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.START_KEY, ZonedDateTime.class))
                 .thenReturn(validator);
         when(ctx.formParamAsClass(EnerginetCustomerPermissionRequest.END_KEY, ZonedDateTime.class))

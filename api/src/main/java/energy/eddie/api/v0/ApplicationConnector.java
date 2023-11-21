@@ -23,8 +23,6 @@ public interface ApplicationConnector {
 
     /**
      * Initialize and start application connector (life-cycle method).
-     * @deprecated since it introduces temporal coupling
      */
-    @Deprecated(since = "it introduces temporal coupling")
     void init();
 }

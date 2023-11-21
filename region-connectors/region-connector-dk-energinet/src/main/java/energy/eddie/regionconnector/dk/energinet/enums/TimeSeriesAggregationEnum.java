@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.enums;
 import energy.eddie.regionconnector.dk.energinet.customer.api.MeterDataApi;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -59,8 +60,8 @@ public enum TimeSeriesAggregationEnum {
             throw new IllegalArgumentException(EXCEPTION_MESSAGE + aggregation);
         }
 
-        String firstLetter = trimmedAggregation.substring(0, 1).toUpperCase();
-        String restOfString = trimmedAggregation.substring(1).toLowerCase();
+        String firstLetter = trimmedAggregation.substring(0, 1).toUpperCase(Locale.ROOT);
+        String restOfString = trimmedAggregation.substring(1).toLowerCase(Locale.ROOT);
 
         return firstLetter + restOfString;
     }

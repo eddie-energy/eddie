@@ -17,11 +17,11 @@ dependencies {
 
     implementation(libs.reactor.core)
     implementation(project(mapOf("path" to ":api")))
-    testImplementation(libs.reactor.test)
     implementation(libs.javalin)
+    implementation(libs.jakarta.annotation.api)
 
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation(libs.reactor.test)
+    testImplementation(libs.junit.jupiter)
 }
 
 tasks.test {

@@ -12,7 +12,7 @@ abstract class StateTransitionException extends Exception {
     }
 
     @Override
-    public String toString() {
+    public String getMessage() {
         return this.getClass().getSimpleName() + "{" +
                 "permissionRequestStateClass=" + permissionRequestStateClass +
                 '}';

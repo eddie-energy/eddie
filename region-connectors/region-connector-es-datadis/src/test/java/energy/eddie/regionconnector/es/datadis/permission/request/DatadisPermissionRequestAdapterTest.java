@@ -7,10 +7,10 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import energy.eddie.regionconnector.es.datadis.permission.request.state.MalformedState;
 import org.junit.jupiter.api.Test;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class DatadisPermissionRequestAdapterTest {
     @Test
@@ -37,7 +37,7 @@ class DatadisPermissionRequestAdapterTest {
 
     @Test
     void adapter_returnsPermissionStart() {
-        ZonedDateTime start = ZonedDateTime.now();
+        ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
         EsPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", start, null);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         DatadisPermissionRequestAdapter adapter = new DatadisPermissionRequestAdapter(request, decorator);
@@ -49,7 +49,7 @@ class DatadisPermissionRequestAdapterTest {
 
     @Test
     void adapter_returnsPermissionEnd() {
-        ZonedDateTime end = ZonedDateTime.now();
+        ZonedDateTime end = ZonedDateTime.now(ZoneId.systemDefault());
         EsPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", null, end);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         DatadisPermissionRequestAdapter adapter = new DatadisPermissionRequestAdapter(request, decorator);
@@ -62,7 +62,7 @@ class DatadisPermissionRequestAdapterTest {
     @Test
     void adapter_returnsRequestDateTo() {
         // Given
-        ZonedDateTime end = ZonedDateTime.now();
+        ZonedDateTime end = ZonedDateTime.now(ZoneId.systemDefault());
         EsPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", null, end);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         DatadisPermissionRequestAdapter adapter = new DatadisPermissionRequestAdapter(request, decorator);
@@ -74,7 +74,7 @@ class DatadisPermissionRequestAdapterTest {
 
     @Test
     void adapter_returnsRequestDateFrom() {
-        ZonedDateTime start = ZonedDateTime.now();
+        ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
         EsPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", start, null);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         DatadisPermissionRequestAdapter adapter = new DatadisPermissionRequestAdapter(request, decorator);
@@ -87,28 +87,30 @@ class DatadisPermissionRequestAdapterTest {
 
     @Test
     void adapter_returnsLastPulledMeterReading() {
-        ZonedDateTime start = ZonedDateTime.now();
+        ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
         EsPermissionRequest request = SimplePermissionRequest.fromLastPulledMeterReading(start);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         DatadisPermissionRequestAdapter adapter = new DatadisPermissionRequestAdapter(request, decorator);
 
-        var res = adapter.lastPulledMeterReading().get();
+        var res = adapter.lastPulledMeterReading();
 
-        assertEquals(start, res);
+        assertTrue(res.isPresent());
+        assertEquals(start, res.get());
     }
 
     @Test
     void adapter_setsLastPulledMeterReading() {
-        ZonedDateTime start = ZonedDateTime.now();
+        ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
         EsPermissionRequest request = new SimplePermissionRequest();
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         DatadisPermissionRequestAdapter adapter = new DatadisPermissionRequestAdapter(request, decorator);
 
 
         adapter.setLastPulledMeterReading(start);
-        var res = adapter.lastPulledMeterReading().get();
+        var res = adapter.lastPulledMeterReading();
 
-        assertEquals(start, res);
+        assertTrue(res.isPresent());
+        assertEquals(start, res.get());
     }
 
 
