@@ -28,24 +28,29 @@ public class EnerginetCustomerValidatedState extends ContextualizedPermissionReq
     public void sendToPermissionAdministrator() {
         EnerginetCustomerApiClient apiClient = new EnerginetCustomerApiClient(configuration);
         apiClient.setRefreshToken(refreshToken);
+        var payload = new java.util.HashMap<>(Map.of("permissionId", permissionRequest.permissionId()));
+        ctx.json(payload);
 
         try {
             apiClient.apiToken();
         } catch (FeignException e) {
             var errorStatus = HttpStatus.forStatus(e.status());
 
+            // TODO: Log other client error status codes 4xx
             if (errorStatus.equals(HttpStatus.UNAUTHORIZED)) {
                 ctx.status(HttpStatus.BAD_REQUEST);
-                ctx.json(Map.of("error", "The given refresh token is not valid."));
+                payload.put("error", "The given refresh token is not valid.");
+                ctx.json(payload);
             } else {
-                ctx.status(errorStatus);
-                ctx.json(Map.of("error", "An error occured."));
-            }
+                ctx.status(HttpStatus.BAD_GATEWAY);
+                payload.put("error", "An error occured.");
+                ctx.json(payload);
+                permissionRequest.changeState(new EnerginetCustomerUnableToSendState(permissionRequest, e));
 
-            permissionRequest.changeState(new EnerginetCustomerUnableToSendState(permissionRequest, e));
-            return;
+                return;
+            }
         }
-        ctx.json(Map.of("permissionId", permissionRequest.permissionId()));
+
         permissionRequest.changeState(new EnerginetCustomerPendingAcknowledgmentState(permissionRequest));
     }
 }

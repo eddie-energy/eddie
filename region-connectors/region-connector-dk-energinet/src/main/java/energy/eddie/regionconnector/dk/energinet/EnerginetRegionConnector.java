@@ -112,16 +112,21 @@ public class EnerginetRegionConnector implements RegionConnector {
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
             DkEnerginetCustomerPermissionRequest permissionRequest = permissionRequestFactory.create(ctx);
             permissionRequest.validate();
-            try {
-                permissionRequest.sendToPermissionAdministrator();
-            } catch (PastStateException ignored) {
-                // The given refresh token for the API is not valid -> therefore no consent was given
-                permissionRequest.receivedPermissionAdministratorResponse();
-                permissionRequest.rejected();
+            permissionRequest.sendToPermissionAdministrator();
+
+            if (ctx.status() == HttpStatus.BAD_GATEWAY) {
+                // Unable to send to the PA
                 return;
             }
 
             permissionRequest.receivedPermissionAdministratorResponse();
+
+            if (ctx.status() == HttpStatus.BAD_REQUEST) {
+                // The given refresh token for the API is not valid -> therefore no consent was given
+                permissionRequest.rejected();
+                return;
+            }
+
             energinetCustomerApi.setRefreshToken(permissionRequest.refreshToken());
             energinetCustomerApi.setUserCorrelationId(UUID.fromString(permissionRequest.permissionId()));
             MeteringPoints meteringPoints = new MeteringPoints();
