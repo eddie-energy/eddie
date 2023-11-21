@@ -26,6 +26,7 @@ class PermissionRequestForm extends LitElement {
   }
 
   permissionId = null;
+  error = null;
 
   handleSubmit(event) {
     this._isSubmitDisabled = true;
@@ -39,7 +40,7 @@ class PermissionRequestForm extends LitElement {
     startDate.setDate(
       startDate.getDate() + this.dataNeedAttributes.durationStart
     );
-    
+
     let endDate = new Date();
     if (this.dataNeedAttributes.durationEnd === 0) {
       endDate.setDate(endDate.getDate() - 1); // subtract one day by default
@@ -58,11 +59,12 @@ class PermissionRequestForm extends LitElement {
       .then((response) => response.json())
       .then((result) => {
         this.permissionId = result["permissionId"];
+        this.error = result["error"];
 
         this.requestPermissionStatus(this.permissionId);
         this.intervalId = setInterval(
           this.requestPermissionStatus(this.permissionId),
-          5000
+          500
         );
       })
       .catch((error) => {
@@ -73,7 +75,7 @@ class PermissionRequestForm extends LitElement {
 
   requestPermissionStatus(permissionId) {
     return () => {
-      fetch(BASE_URL + "permission-status?permissionId=" + permissionId)
+      fetch(`${BASE_URL}permission-status?permissionId=${permissionId}`)
         .then((response) => {
           if (!response.ok) {
             throw new Error("HTTP status " + response.status);
@@ -85,17 +87,12 @@ class PermissionRequestForm extends LitElement {
           let currentStatus = result["status"];
           if (
             currentStatus === "ACCEPTED" ||
+            currentStatus === "UNABLE_TO_SEND" ||
             currentStatus === "REJECTED" ||
             currentStatus === "INVALID" ||
             currentStatus === "TERMINATED"
           ) {
             clearInterval(this.intervalId);
-          }
-          if (
-            currentStatus === "SENT_TO_PERMISSION_ADMINISTRATOR" ||
-            currentStatus === "RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE"
-          ) {
-            this._isSubmitDisabled = true;
           }
 
           this._requestStatus = currentStatus;
@@ -141,6 +138,7 @@ class PermissionRequestForm extends LitElement {
           <sl-icon slot="icon" name="info-circle"></sl-icon>
 
           <p>The request status is: ${this._requestStatus}</p>
+          <p>${this.error}</p>
         </sl-alert>`}
       </div>
     `;
