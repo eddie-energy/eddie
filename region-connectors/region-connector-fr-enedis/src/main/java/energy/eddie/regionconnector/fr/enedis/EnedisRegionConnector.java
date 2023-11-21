@@ -1,14 +1,15 @@
 package energy.eddie.regionconnector.fr.enedis;
 
 import energy.eddie.api.v0.*;
+import energy.eddie.api.v0.process.model.*;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
+import energy.eddie.regionconnector.fr.enedis.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.shared.utils.ZonedDateTimeConverter;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 import io.javalin.http.HttpStatus;
-import io.javalin.validation.JavalinValidation;
-import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
@@ -16,13 +17,9 @@ import reactor.core.publisher.Sinks;
 
 import java.io.FileInputStream;
 import java.net.InetSocketAddress;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Flow;
@@ -36,22 +33,22 @@ public class EnedisRegionConnector implements RegionConnector {
     public static final String MDA_DISPLAY_NAME = "France ENEDIS";
     public static final int COVERED_METERING_POINTS = 36951446;
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
-    private static final String CONNECTION_ID = "connectionId";
-    private static final String DATA_NEED_ID = "dataNeedId";
     final Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
     private final EnedisApi enedisApi;
     private final Javalin javalin = Javalin.create();
-    private final EnedisConfiguration configuration;
-    private final ConcurrentMap<String, RequestInfo> permissionIdToRequestInfo = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, ConnectionStatusMessage> permissionIdToConnectionStatusMessages = new ConcurrentHashMap<>();
+    private final PermissionRequestRepository<TimeframedPermissionRequest> permissionRequestRepository;
+    private final PermissionRequestFactory permissionRequestFactory;
 
-    public EnedisRegionConnector(EnedisConfiguration configuration, EnedisApi enedisApi) {
+    public EnedisRegionConnector(EnedisConfiguration configuration, EnedisApi enedisApi, PermissionRequestRepository<TimeframedPermissionRequest> permissionRequestRepository) {
         requireNonNull(configuration);
         requireNonNull(enedisApi);
+        requireNonNull(permissionRequestRepository);
 
-        this.configuration = configuration;
         this.enedisApi = enedisApi;
+        this.permissionRequestRepository = permissionRequestRepository;
+        this.permissionRequestFactory = new PermissionRequestFactory(permissionRequestRepository, connectionStatusSink, configuration);
 
         connectionStatusSink.asFlux().subscribe(connectionStatusMessage -> {
             var permissionId = connectionStatusMessage.permissionId();
@@ -79,29 +76,20 @@ public class EnedisRegionConnector implements RegionConnector {
 
     @Override
     public void terminatePermission(String permissionId) {
-        RequestInfo requestInfo = permissionIdToRequestInfo.get(permissionId);
-
-        if (requestInfo == null) {
-            LOGGER.warn("terminatePermission called with unknown permissionId '{}'", permissionId);
+        var permissionRequest = permissionRequestRepository.findByPermissionId(permissionId);
+        if (permissionRequest.isEmpty()) {
             return;
         }
-
-        connectionStatusSink.tryEmitNext(
-                new ConnectionStatusMessage(
-                        requestInfo.connectionId(),
-                        permissionId,
-                        requestInfo.dataNeedId(),
-                        PermissionProcessStatus.TERMINATED
-                )
-        );
-        // Nothing to implement yet, needs to be done after we support pulling data from the future
-        throw new UnsupportedOperationException("revokePermission is not yet implemented");
+        try {
+            permissionRequest.get().terminate();
+        } catch (FutureStateException | PastStateException e) {
+            LOGGER.error("PermissionRequest with permissionID {} cannot be revoked", permissionId, e);
+        }
     }
 
     @Override
     public int startWebapp(InetSocketAddress address, boolean devMode) {
-        JavalinValidation.register(ZonedDateTime.class, value -> value != null && !value.isBlank() ? LocalDate.parse(value, DateTimeFormatter.ISO_DATE).atStartOfDay(ZoneOffset.UTC) : null);
-
+        ZonedDateTimeConverter.register();
         javalin.get(BASE_PATH + "/ce.js", context -> {
             context.contentType(ContentType.TEXT_JS);
             if (devMode) {
@@ -122,74 +110,37 @@ public class EnedisRegionConnector implements RegionConnector {
         });
 
         javalin.post(BASE_PATH + "/permission-request", ctx -> {
-            // TODO rework validation after mvp1
-            connectionStatusSink.tryEmitNext(
-                    new ConnectionStatusMessage(ctx.formParam(CONNECTION_ID), null, ctx.formParam(DATA_NEED_ID), PermissionProcessStatus.CREATED)
-            );
-            var connectionIdValidator = ctx.formParamAsClass(CONNECTION_ID, String.class).check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
-            var dataNeedIdValidator = ctx.formParamAsClass(DATA_NEED_ID, String.class).check(s -> s != null && !s.isBlank(), "connectionId must not be null or blank");
-
-            var startValidator = ctx.formParamAsClass("start", ZonedDateTime.class)
-                    .check(Objects::nonNull, "start must not be null");
-            var endValidator = ctx.formParamAsClass("end", ZonedDateTime.class)
-                    .check(end -> end == null || end.isAfter(startValidator.get()), "end must not be null and after start");
-
-            var errors = JavalinValidation.collectErrors(connectionIdValidator, dataNeedIdValidator, startValidator, endValidator);
-            if (!errors.isEmpty()) {
-                ctx.status(HttpStatus.BAD_REQUEST);
-                ctx.json(errors);
-                return;
+            PermissionRequest permissionRequest = permissionRequestFactory.create(ctx);
+            permissionRequest.validate();
+            try {
+                permissionRequest.sendToPermissionAdministrator();
+            } catch (PastStateException ignored) {
+                // The request was malformed and there is nothing more to do.
+                // The permission request itself will create the http response
             }
-
-            var permissionId = UUID.randomUUID().toString();
-            connectionStatusSink.tryEmitNext(
-                    new ConnectionStatusMessage(
-                            connectionIdValidator.get(), permissionId, dataNeedIdValidator.get(), PermissionProcessStatus.VALIDATED
-                    )
-            );
-            var requestInfo = new RequestInfo(connectionIdValidator.get(), dataNeedIdValidator.get(), startValidator.get(), endValidator.get());
-            permissionIdToRequestInfo.put(permissionId, requestInfo);
-
-            var redirectUri = new URIBuilder()
-                    .setScheme("https")
-                    .setHost("mon-compte-particulier.enedis.fr")
-                    .setPath("/dataconnect/v1/oauth2/authorize")
-                    .addParameter("client_id", configuration.clientId())
-                    .addParameter("response_type", "code")
-                    .addParameter("state", permissionId)
-                    .addParameter("duration", "P1Y") // TODO move to config
-                    .build();
-
-            ctx.json(Map.of("permissionId", permissionId, "redirectUri", redirectUri.toString()));
-
-            connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, requestInfo.dataNeedId(), ZonedDateTime.now(requestInfo.start().getZone()), PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, "Access to data requested"));
         });
 
         javalin.get(BASE_PATH + "/authorization-callback", ctx -> {
             // TODO implement non happy path
             var permissionId = ctx.queryParam("state");
-            if (permissionId == null || !permissionIdToRequestInfo.containsKey(permissionId)) {
+            Optional<TimeframedPermissionRequest> optionalPermissionRequest = permissionRequestRepository.findByPermissionId(permissionId);
+            if (optionalPermissionRequest.isEmpty()) {
                 // unknown state / permissionId => not coming / initiated by our frontend
                 LOGGER.warn("authorization-callback called with unknown state '{}'", permissionId);
                 ctx.status(HttpStatus.BAD_REQUEST);
                 return;
             }
 
-            var requestInfo = permissionIdToRequestInfo.get(permissionId);
-            if (requestInfo == null) {
-                LOGGER.warn("authorization-callback called with unknown state (permissionId) '{}', can't find requestInfo", permissionId);
-                ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
-                return;
-            }
-
+            TimeframedPermissionRequest permissionRequest = optionalPermissionRequest.get();
+            permissionRequest.receivedPermissionAdministratorResponse();
             var usagePointId = ctx.queryParam("usage_point_id");
             if (usagePointId == null || ctx.status() == HttpStatus.FORBIDDEN) { // probably when request was denied
-                connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, requestInfo.dataNeedId(), ZonedDateTime.now(requestInfo.start().getZone()), PermissionProcessStatus.REJECTED, "Access to data rejected"));
+                permissionRequest.rejected();
                 ctx.html("<h1>Access to data denied, you can close this window.</h1>");
                 return;
             }
 
-            connectionStatusSink.tryEmitNext(new ConnectionStatusMessage(requestInfo.connectionId(), permissionId, requestInfo.dataNeedId(), ZonedDateTime.now(requestInfo.start().getZone()), PermissionProcessStatus.ACCEPTED, "Access to data granted"));
+            permissionRequest.accept();
             ctx.html("<h1>Access to data granted, you can close this window.</h1>");
             new Thread(() -> {
                 // TODO rework the retry logic after mvp1
@@ -199,8 +150,8 @@ public class EnedisRegionConnector implements RegionConnector {
                     LOGGER.error("Something went wrong while fetching token from ENEDIS:", e);
                 }
                 // request data from enedis
-                var start = requestInfo.start();
-                var end = requestInfo.end();
+                var start = permissionRequest.start();
+                var end = permissionRequest.end();
                 var tryCount = 0;
                 // the api allows for a maximum of 7 days per request, so we need to split the request
                 while (start.isBefore(end)) {
@@ -212,9 +163,9 @@ public class EnedisRegionConnector implements RegionConnector {
                         LOGGER.info("Fetching data from ENEDIS for usage_point '{}' from '{}' to '{}'", usagePointId, start, endOfRequest);
                         var consumptionRecord = enedisApi.getConsumptionLoadCurve(usagePointId, start, endOfRequest);
                         // map ids
-                        consumptionRecord.setConnectionId(requestInfo.connectionId());
+                        consumptionRecord.setConnectionId(permissionRequest.connectionId());
                         consumptionRecord.setPermissionId(permissionId);
-                        consumptionRecord.setDataNeedId(requestInfo.dataNeedId());
+                        consumptionRecord.setDataNeedId(permissionRequest.dataNeedId());
                         // publish
                         consumptionRecordSink.tryEmitNext(consumptionRecord);
                         start = endOfRequest;
@@ -258,5 +209,4 @@ public class EnedisRegionConnector implements RegionConnector {
         connectionStatusSink.tryEmitComplete();
         consumptionRecordSink.tryEmitComplete();
     }
-
 }
