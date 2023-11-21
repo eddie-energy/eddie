@@ -39,7 +39,7 @@ public class PermissionRequestFactory {
                 ctx,
                 authorizationApi,
                 authorizationResponseHandler);
-        PermissionRequest messagingPermissionRequest = new MessagingPermissionRequest<>(permissionRequest, permissionStateMessages);
+        PermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
         PermissionRequest savingPermissionRequest = new SavingPermissionRequest<>(
                 new DatadisPermissionRequestAdapter(permissionRequest, messagingPermissionRequest),
                 permissionRequestRepository

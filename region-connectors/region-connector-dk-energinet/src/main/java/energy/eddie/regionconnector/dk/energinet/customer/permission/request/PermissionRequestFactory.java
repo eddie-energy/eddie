@@ -25,7 +25,7 @@ public class PermissionRequestFactory {
 
     public DkEnerginetCustomerPermissionRequest create(Context ctx) {
         DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(ctx, configuration);
-        PermissionRequest messagingPermissionRequest = new MessagingPermissionRequest<>(permissionRequest, connectionStatusSink);
+        PermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, connectionStatusSink);
         PermissionRequest savingPermissionRequest = new SavingPermissionRequest<>(
                 new DkEnerginetCustomerPermissionRequestAdapter(permissionRequest, messagingPermissionRequest),
                 permissionRequestRepository
