@@ -41,6 +41,7 @@ dependencies {
 
 
     implementation(project(mapOf("path" to ":api")))
+    implementation(project(":region-connectors:shared"))
     implementation(libs.microprofile.config)
 }
 
