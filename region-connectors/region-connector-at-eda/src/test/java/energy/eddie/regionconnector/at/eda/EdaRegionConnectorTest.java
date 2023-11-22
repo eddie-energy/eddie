@@ -193,7 +193,7 @@ class EdaRegionConnectorTest {
         PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(adapter, permissionStateMessages, repo);
 
         // wrap the request in a MessagingPermissionRequest to emit messages to the sink
-        var messagingPermissionRequest = new MessagingPermissionRequest<>(permissionRequest, permissionStateMessages);
+        var messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
         repo.save(new EdaPermissionRequestAdapter(permissionRequest, messagingPermissionRequest));
 
         var uut = new EdaRegionConnector(config, adapter, repo, permissionRequestFactory, permissionStateMessages);
@@ -272,7 +272,7 @@ class EdaRegionConnectorTest {
         PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(adapter, permissionStateMessages, repo);
 
         // wrap the request in a MessagingPermissionRequest to emit messages to the sink
-        var messagingPermissionRequest = new MessagingPermissionRequest<>(request, permissionStateMessages);
+        var messagingPermissionRequest = new MessagingPermissionRequest(request, permissionStateMessages);
         repo.save(new EdaPermissionRequestAdapter(request, messagingPermissionRequest));
 
         var uut = new EdaRegionConnector(config, adapter, repo, permissionRequestFactory, permissionStateMessages);
@@ -321,7 +321,7 @@ class EdaRegionConnectorTest {
         PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(adapter, permissionStateMessages, repo);
 
         // wrap the request in a MessagingPermissionRequest to emit messages to the sink
-        var messagingPermissionRequest = new MessagingPermissionRequest<>(request, permissionStateMessages);
+        var messagingPermissionRequest = new MessagingPermissionRequest(request, permissionStateMessages);
         repo.save(new EdaPermissionRequestAdapter(request, messagingPermissionRequest));
 
         var uut = new EdaRegionConnector(config, adapter, repo, permissionRequestFactory, permissionStateMessages);
@@ -370,7 +370,7 @@ class EdaRegionConnectorTest {
         PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(adapter, permissionStateMessages, repo);
 
         // wrap the request in a MessagingPermissionRequest to emit messages to the sink
-        var messagingPermissionRequest = new MessagingPermissionRequest<>(request, permissionStateMessages);
+        var messagingPermissionRequest = new MessagingPermissionRequest(request, permissionStateMessages);
         repo.save(new EdaPermissionRequestAdapter(request, messagingPermissionRequest));
 
         var uut = new EdaRegionConnector(config, adapter, repo, permissionRequestFactory, permissionStateMessages);
@@ -416,7 +416,7 @@ class EdaRegionConnectorTest {
         PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(adapter, permissionStateMessages, repo);
 
         // wrap the request in a MessagingPermissionRequest to emit messages to the sink
-        var messagingPermissionRequest = new MessagingPermissionRequest<>(request, permissionStateMessages);
+        var messagingPermissionRequest = new MessagingPermissionRequest(request, permissionStateMessages);
         repo.save(new EdaPermissionRequestAdapter(request, messagingPermissionRequest));
 
         var uut = new EdaRegionConnector(config, adapter, repo, permissionRequestFactory, permissionStateMessages);
@@ -539,5 +539,4 @@ class EdaRegionConnectorTest {
         processDirectory.getEnergy().add(energy);
         return edaCR;
     }
-
 }

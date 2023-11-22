@@ -24,7 +24,7 @@ public class PermissionRequestFactory {
 
     public AtPermissionRequest create(String connectionId, String dataNeedId, CCMORequest ccmoRequest) {
         AtPermissionRequest permissionRequest = new EdaPermissionRequest(connectionId, dataNeedId, ccmoRequest, edaAdapter);
-        PermissionRequest messagingPermissionRequest = new MessagingPermissionRequest<>(permissionRequest, permissionStateMessages);
+        PermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
         PermissionRequest savingPermissionRequest = new SavingPermissionRequest<>(
                 new EdaPermissionRequestAdapter(permissionRequest, messagingPermissionRequest),
                 permissionRequestRepository

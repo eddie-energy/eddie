@@ -41,7 +41,7 @@ class MessagingPermissionRequestTest {
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
         TransitionableState createdState = new TransitionableState(PermissionProcessStatus.CREATED, expectedStatus);
         PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
-        MessagingPermissionRequest<PermissionRequest> messagingPermissionRequest = new MessagingPermissionRequest<>(permissionRequest, permissionStateMessages);
+        MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When
         Method actionMethod = MessagingPermissionRequest.class.getMethod(actionMethodName);
@@ -60,14 +60,13 @@ class MessagingPermissionRequestTest {
                 .verifyComplete();
     }
 
-
     @Test
     void messagingPermissionRequest_returnsStateOfWrappedPermissionRequest() {
         // Given
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
         SimpleState createdState = new SimpleState();
         PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
-        MessagingPermissionRequest<PermissionRequest> messagingPermissionRequest = new MessagingPermissionRequest<>(permissionRequest, permissionStateMessages);
+        MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When
         var state = messagingPermissionRequest.state();
@@ -83,7 +82,7 @@ class MessagingPermissionRequestTest {
         SimpleState initialState = new SimpleState();
         TransitionableState changedState = new TransitionableState(PermissionProcessStatus.CREATED, PermissionProcessStatus.ACCEPTED);
         PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", initialState, "dataNeedId");
-        MessagingPermissionRequest<PermissionRequest> messagingPermissionRequest = new MessagingPermissionRequest<>(permissionRequest, permissionStateMessages);
+        MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When
         messagingPermissionRequest.changeState(changedState);
@@ -100,7 +99,7 @@ class MessagingPermissionRequestTest {
         PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
 
         // When
-        new MessagingPermissionRequest<>(permissionRequest, permissionStateMessages);
+        new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
         permissionStateMessages.tryEmitComplete();
 
         // Then
@@ -118,7 +117,7 @@ class MessagingPermissionRequestTest {
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
         SimpleState createdState = new SimpleState();
         PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
-        MessagingPermissionRequest<PermissionRequest> messagingPermissionRequest = new MessagingPermissionRequest<>(permissionRequest, permissionStateMessages);
+        MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When
         var res = messagingPermissionRequest.equals(permissionRequest);
@@ -132,7 +131,7 @@ class MessagingPermissionRequestTest {
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
         SimpleState createdState = new SimpleState();
         PermissionRequest permissionRequest1 = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
-        MessagingPermissionRequest<PermissionRequest> messagingPermissionRequest = new MessagingPermissionRequest<>(permissionRequest1, permissionStateMessages);
+        MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest1, permissionStateMessages);
 
         // When
         var res = messagingPermissionRequest.equals(new Object());
@@ -146,7 +145,7 @@ class MessagingPermissionRequestTest {
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
         SimpleState createdState = new SimpleState();
         PermissionRequest permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", createdState, "dataNeedId");
-        MessagingPermissionRequest<PermissionRequest> messagingPermissionRequest = new MessagingPermissionRequest<>(permissionRequest, permissionStateMessages);
+        MessagingPermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
 
         // When
         var res = messagingPermissionRequest.hashCode();
@@ -154,5 +153,4 @@ class MessagingPermissionRequestTest {
         // Then
         assertEquals(permissionRequest.hashCode(), res);
     }
-
 }
