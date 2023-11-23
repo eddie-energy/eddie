@@ -26,6 +26,9 @@ import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
 
+import static energy.eddie.regionconnector.at.eda.config.AtConfiguration.ELIGIBLE_PARTY_ID_KEY;
+import static energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration.*;
+
 @SpringBootApplication
 public class SpringConfig {
     @Nullable
