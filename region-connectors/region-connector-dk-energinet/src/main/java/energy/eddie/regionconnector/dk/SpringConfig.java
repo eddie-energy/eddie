@@ -72,7 +72,6 @@ public class SpringConfig {
         return Sinks.many().unicast().onBackpressureBuffer();
     }
 
-
     @Bean
     public EnerginetCustomerApi energinetCustomerApi(EnerginetConfiguration config) {
         return new EnerginetCustomerApiClient(config);

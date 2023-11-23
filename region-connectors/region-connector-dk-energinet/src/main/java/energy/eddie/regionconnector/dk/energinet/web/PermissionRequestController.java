@@ -10,6 +10,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.permission.request.Per
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import feign.FeignException;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,7 +130,7 @@ public class PermissionRequestController {
     }
 
     @PostMapping(value = "/permission-request", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> permissionRequest(@ModelAttribute PermissionRequestForCreation request) throws StateTransitionException {
+    public ResponseEntity<String> permissionRequest(@Valid @ModelAttribute PermissionRequestForCreation request) throws StateTransitionException {
         LOGGER.info("request was: {}", request);
 
         var permissionRequest = requestFactory.create(request);

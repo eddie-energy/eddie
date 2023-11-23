@@ -19,6 +19,7 @@ import static java.util.Objects.requireNonNull;
 
 public class EnerginetRegionConnector implements RegionConnector {
     public static final String BASE_PATH = "/region-connectors/dk-energinet/";
+    public static final int MAXIMUM_MONTHS_IN_THE_PAST = 24;
     private static final String COUNTRY_CODE = "dk";
     private static final String MDA_CODE = COUNTRY_CODE + "-energinet";
     private static final String MDA_DISPLAY_NAME = "Denmark ENERGINET";
