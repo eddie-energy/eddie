@@ -28,8 +28,7 @@ dependencies {
     // dependencies needed to generate code
     jaxb(libs.jaxb.xjc)
     jaxb(libs.jaxb.runtime)
-    // https://mvnrepository.com/artifact/org.jvnet.jaxb2_commons/jaxb2-fluent-api
-    jaxb("org.jvnet.jaxb2_commons:jaxb2-fluent-api:3.0")
+    jaxb(libs.jaxb.plugins)
 
     implementation(libs.jakarta.xml.bind.api)
     implementation(libs.jakarta.annotation.api)
