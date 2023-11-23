@@ -28,9 +28,6 @@ dependencies {
 
     implementation(libs.microprofile.config)
     implementation("io.smallrye.config:smallrye-config:3.3.0")
-    // Needed for JPMS modules
-    implementation("io.smallrye.common:smallrye-common-function:2.1.0")
-    implementation("io.smallrye.common:smallrye-common-expression:2.1.0")
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)
