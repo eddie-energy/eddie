@@ -7,16 +7,16 @@ import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnector;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
-import energy.eddie.regionconnector.at.eda.config.ConfigAtConfiguration;
+import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.InMemoryPermissionRequestRepository;
-import energy.eddie.regionconnector.at.eda.ponton.ConfigPontonXPAdapterConfiguration;
+import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
-import energy.eddie.regionconnector.at.spring.ConfigInitializer;
 import jakarta.annotation.Nullable;
 import jakarta.xml.bind.JAXBException;
-import org.eclipse.microprofile.config.Config;
 import org.springframework.boot.WebApplicationType;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -29,11 +29,9 @@ public class SpringConfig {
     @Nullable
     private static ConfigurableApplicationContext ctx;
 
-    public static synchronized RegionConnector start(Config config) {
+    public static synchronized RegionConnector start() {
         if (ctx == null) {
             var app = new SpringApplicationBuilder(SpringConfig.class)
-                    .web(WebApplicationType.NONE)
-                    .initializers(new ConfigInitializer(config))
                     .build();
             // These arguments are needed, since this spring instance tries to load the data needs configs of the core configuration.
             ctx = app.run("--spring.config.import=", "--import.config.file=");
@@ -43,17 +41,19 @@ public class SpringConfig {
     }
 
     @Bean
-    // The config is wired via the SpringApplicationBuilder, which leads to the warning that config is not wired.
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    public PontonXPAdapterConfiguration pontonXPAdapterConfiguration(Config config) {
-        return new ConfigPontonXPAdapterConfiguration(config);
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public PontonXPAdapterConfiguration pontonXPAdapterConfiguration(@Value("${" + ADAPTER_ID_KEY + "}") String adapterId,
+                                                                     @Value("${" + ADAPTER_VERSION_KEY + "}") String adapterVersion,
+                                                                     @Value("${" + HOSTNAME_KEY + "}") String hostname,
+                                                                     @Value("${" + PORT_KEY + "}") int port,
+                                                                     @Value("${" + WORK_FOLDER_KEY + "}") String workFolder) {
+        return new PlainPontonXPAdapterConfiguration(adapterId, adapterVersion, hostname, port, workFolder);
     }
 
     @Bean
-    // The config is wired via the SpringApplicationBuilder, which leads to the warning that config is not wired.
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    public AtConfiguration atConfiguration(Config config) {
-        return new ConfigAtConfiguration(config);
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public AtConfiguration atConfiguration(@Value("${" + ELIGIBLE_PARTY_ID_KEY + "}") String eligiblePartyId) {
+        return new PlainAtConfiguration(eligiblePartyId);
     }
 
     @Bean
