@@ -15,6 +15,8 @@ import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import jakarta.annotation.Nullable;
 import jakarta.xml.bind.JAXBException;
 import org.springframework.boot.WebApplicationType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.SpringApplication;
@@ -31,6 +33,7 @@ import static energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfigur
 
 @SpringBootApplication
 public class SpringConfig {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpringConfig.class);
     @Nullable
     private static ConfigurableApplicationContext ctx;
 
@@ -71,8 +74,36 @@ public class SpringConfig {
     }
 
     @Bean
-    public EdaAdapter edaAdapter(PontonXPAdapterConfiguration configuration) throws JAXBException, IOException, ConnectionException {
-        return new PontonXPAdapter(configuration);
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public EdaAdapter edaAdapter(PontonXPAdapterConfiguration configuration, Environment environment) throws JAXBException, IOException, ConnectionException {
+        try {
+            return new PontonXPAdapter(configuration);
+        } catch (Exception exception) {
+            if (environment.matchesProfiles("dev")) {
+                LOGGER.warn("Using NoOp Eda Adapter, since exception occurred", exception);
+                return new NoOpEdaAdapter();
+            }
+            throw exception;
+        }
+    }
+
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink() {
+        return Sinks
+                .many()
+                .multicast()
+                .onBackpressureBuffer();
+    }
+
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public Set<Extension<AtPermissionRequest>> permissionRequestExtensions(AtPermissionRequestRepository repository,
+                                                                           Sinks.Many<ConnectionStatusMessage> messages) {
+        return Set.of(
+                new SavingExtension(repository),
+                new MessagingExtension(messages)
+        );
     }
 
     @Bean
