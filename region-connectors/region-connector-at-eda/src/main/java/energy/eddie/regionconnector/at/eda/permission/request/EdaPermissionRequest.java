@@ -72,7 +72,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     }
 
     @Override
-    public void setMeteringPointId(String meteringPointId) {
+    public void setMeteringPointId(@Nullable String meteringPointId) {
         this.meteringPointId = meteringPointId;
     }
 

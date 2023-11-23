@@ -3,10 +3,21 @@ package energy.eddie.regionconnector.at.eda.permission.request.states;
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
 import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
 import energy.eddie.api.v0.process.model.states.CreatedPermissionRequestState;
+import energy.eddie.api.v0.process.model.validation.AttributeError;
+import energy.eddie.api.v0.process.model.validation.ValidationException;
+import energy.eddie.api.v0.process.model.validation.Validator;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
+import energy.eddie.regionconnector.at.eda.EdaRegionConnector;
+import energy.eddie.regionconnector.at.eda.permission.request.validation.CompletelyInThePastOrInTheFutureValidator;
+import energy.eddie.regionconnector.at.eda.permission.request.validation.NotOlderThanValidator;
+import energy.eddie.regionconnector.at.eda.permission.request.validation.StartIsBeforeOrEqualEndValidator;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.InvalidDsoIdException;
+
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The first state a PermissionRequest is in.
@@ -15,6 +26,11 @@ import energy.eddie.regionconnector.at.eda.requests.InvalidDsoIdException;
 public class AtCreatedPermissionRequestState
         extends ContextualizedPermissionRequestState<AtPermissionRequest>
         implements CreatedPermissionRequestState {
+    private static final Set<Validator<AtPermissionRequest>> VALIDATORS = Set.of(
+            new NotOlderThanValidator(ChronoUnit.MONTHS, EdaRegionConnector.MAXIMUM_MONTHS_IN_THE_PAST),
+            new CompletelyInThePastOrInTheFutureValidator(),
+            new StartIsBeforeOrEqualEndValidator()
+    );
     private final CCMORequest ccmoRequest;
     private final EdaAdapter edaAdapter;
 
@@ -25,13 +41,30 @@ public class AtCreatedPermissionRequestState
     }
 
     @Override
-    public void validate() {
+    public void validate() throws ValidationException {
+        validateAttributes();
         try {
             CMRequest cmRequest = ccmoRequest.toCMRequest();
             permissionRequest.changeState(new AtValidatedPermissionRequestState(permissionRequest, cmRequest, edaAdapter));
         } catch (InvalidDsoIdException e) {
-            permissionRequest.changeState(new AtMalformedPermissionRequestState(permissionRequest, e));
+            changeToMalformedState(e);
+            throw new ValidationException(this, "dsoId", e.getMessage() == null ? "" : e.getMessage());
         }
+    }
+
+    private void validateAttributes() throws ValidationException {
+        List<AttributeError> errors = VALIDATORS.stream()
+                .flatMap(validator -> validator.validate(this.permissionRequest).stream())
+                .toList();
+        if (!errors.isEmpty()) {
+            ValidationException exception = new ValidationException(this, errors);
+            changeToMalformedState(exception);
+            throw exception;
+        }
+    }
+
+    private void changeToMalformedState(Exception e) {
+        permissionRequest.changeState(new AtMalformedPermissionRequestState(permissionRequest, e));
     }
 
 }

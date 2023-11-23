@@ -2,11 +2,17 @@ package energy.eddie.regionconnector.at.eda.permission.request.states;
 
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
 import energy.eddie.api.v0.process.model.FutureStateException;
+import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.api.v0.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.InvalidDsoIdException;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,9 +22,11 @@ import static org.mockito.Mockito.when;
 class CreatedPermissionRequestStateTest {
 
     @Test
-    void createdStated_changesToValidated_whenValid() throws InvalidDsoIdException {
+    void createdStated_changesToValidated_whenValid() throws InvalidDsoIdException, ValidationException {
         // Given
         CCMORequest ccmoRequest = mock(CCMORequest.class);
+        when(ccmoRequest.dataFrom()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(5));
+        when(ccmoRequest.dataTo()).thenReturn(Optional.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1)));
         when(ccmoRequest.toCMRequest()).thenReturn(mock(CMRequest.class));
         AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
         AtCreatedPermissionRequestState permissionRequestState = new AtCreatedPermissionRequestState(permissionRequest, ccmoRequest, null);
@@ -34,12 +42,14 @@ class CreatedPermissionRequestStateTest {
     void createdStated_changesToMalformed_whenExceptionOccurs() throws InvalidDsoIdException {
         // Given
         CCMORequest ccmoRequest = mock(CCMORequest.class);
+        when(ccmoRequest.dataFrom()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(5));
+        when(ccmoRequest.dataTo()).thenReturn(Optional.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1)));
         when(ccmoRequest.toCMRequest()).thenThrow(new InvalidDsoIdException("msg"));
         AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
         AtCreatedPermissionRequestState permissionRequestState = new AtCreatedPermissionRequestState(permissionRequest, ccmoRequest, null);
 
         // When
-        permissionRequestState.validate();
+        assertThrows(StateTransitionException.class, permissionRequestState::validate);
 
         // Then
         assertEquals(AtMalformedPermissionRequestState.class, permissionRequest.state().getClass());
