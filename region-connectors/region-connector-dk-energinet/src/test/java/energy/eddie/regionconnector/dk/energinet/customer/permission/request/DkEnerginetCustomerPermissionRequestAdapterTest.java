@@ -1,9 +1,8 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
-import energy.eddie.api.v0.process.model.FutureStateException;
-import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
+import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerMalformedState;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
@@ -124,7 +123,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     }
 
     @Test
-    void validateCallsDecorator() throws FutureStateException, PastStateException {
+    void validateCallsDecorator() throws StateTransitionException {
         // Given
         DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
@@ -138,7 +137,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     }
 
     @Test
-    void sendToPermissionAdministratorCallsDecorator() throws FutureStateException, PastStateException {
+    void sendToPermissionAdministratorCallsDecorator() throws StateTransitionException {
         // Given
         DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
@@ -152,7 +151,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     }
 
     @Test
-    void receivedPermissionAdministratorResponseCallsDecorator() throws FutureStateException, PastStateException {
+    void receivedPermissionAdministratorResponseCallsDecorator() throws StateTransitionException {
         // Given
         DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
@@ -166,7 +165,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     }
 
     @Test
-    void terminateCallsDecorator() throws FutureStateException, PastStateException {
+    void terminateCallsDecorator() throws StateTransitionException {
         // Given
         DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
@@ -180,7 +179,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     }
 
     @Test
-    void acceptCallsDecorator() throws FutureStateException, PastStateException {
+    void acceptCallsDecorator() throws StateTransitionException {
         // Given
         DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
@@ -194,7 +193,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     }
 
     @Test
-    void invalidCallsDecorator() throws FutureStateException, PastStateException {
+    void invalidCallsDecorator() throws StateTransitionException {
         // Given
         DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
@@ -208,7 +207,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     }
 
     @Test
-    void rejectedCallsDecorator() throws FutureStateException, PastStateException {
+    void rejectedCallsDecorator() throws StateTransitionException {
         // Given
         DkEnerginetCustomerPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", "dataNeedId");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);

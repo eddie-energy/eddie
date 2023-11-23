@@ -38,16 +38,6 @@ class CCMOTimeFrameTest {
     }
 
     @Test()
-    void ccmoTimeFrameInPastAndEndNull_throws() {
-        // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-
-        // when
-        // then
-        assertThrows(NullPointerException.class, () -> new CCMOTimeFrame(start, null));
-    }
-
-    @Test()
     void ccmoTimeFrameInFutureAndEndNull_doesNotThrow() {
         // given
         LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(10);
@@ -56,17 +46,4 @@ class CCMOTimeFrameTest {
         // then
         assertDoesNotThrow(() -> new CCMOTimeFrame(start, null));
     }
-
-    @Test()
-    void ccmoTimeFrameEndBeforeStart() {
-        // given
-        LocalDate start = LocalDate.of(2023, 5, 5);
-        LocalDate end = LocalDate.of(2023, 5, 1);
-
-        // when
-        // then
-        assertThrows(IllegalArgumentException.class, () -> new CCMOTimeFrame(start, end));
-    }
-
-
 }

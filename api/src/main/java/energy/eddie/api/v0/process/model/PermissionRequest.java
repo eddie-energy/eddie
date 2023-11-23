@@ -48,47 +48,47 @@ public interface PermissionRequest {
      */
     void changeState(PermissionRequestState state);
 
-    default void validate() throws FutureStateException, PastStateException {
+    default void validate() throws StateTransitionException {
         state().validate();
     }
 
-    default void sendToPermissionAdministrator() throws FutureStateException, PastStateException {
+    default void sendToPermissionAdministrator() throws StateTransitionException {
         state().sendToPermissionAdministrator();
     }
 
-    default void receivedPermissionAdministratorResponse() throws FutureStateException, PastStateException {
+    default void receivedPermissionAdministratorResponse() throws StateTransitionException {
         state().receivedPermissionAdministratorResponse();
     }
 
-    default void terminate() throws FutureStateException, PastStateException {
+    default void terminate() throws StateTransitionException {
         state().terminate();
     }
 
-    default void accept() throws FutureStateException, PastStateException {
+    default void accept() throws StateTransitionException {
         state().accept();
     }
 
-    default void invalid() throws FutureStateException, PastStateException {
+    default void invalid() throws StateTransitionException {
         state().invalid();
     }
 
-    default void rejected() throws FutureStateException, PastStateException {
+    default void rejected() throws StateTransitionException {
         state().reject();
     }
 
-    default void terminated() throws FutureStateException, PastStateException {
+    default void terminated() throws StateTransitionException {
         state().timeLimit();
     }
 
-    default void revoked() throws FutureStateException, PastStateException {
+    default void revoked() throws StateTransitionException {
         state().revoke();
     }
 
-    default void timeLimit() throws FutureStateException, PastStateException {
+    default void timeLimit() throws StateTransitionException {
         state().timeLimit();
     }
 
-    default void timedOut() throws FutureStateException, PastStateException {
+    default void timedOut() throws StateTransitionException {
         state().timeOut();
     }
 }

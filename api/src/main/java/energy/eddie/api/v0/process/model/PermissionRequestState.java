@@ -16,23 +16,23 @@ public interface PermissionRequestState {
      */
     PermissionProcessStatus status();
 
-    void validate() throws PastStateException, FutureStateException;
+    void validate() throws StateTransitionException;
 
-    void sendToPermissionAdministrator() throws PastStateException, FutureStateException;
+    void sendToPermissionAdministrator() throws StateTransitionException;
 
-    void receivedPermissionAdministratorResponse() throws PastStateException, FutureStateException;
+    void receivedPermissionAdministratorResponse() throws StateTransitionException;
 
-    void accept() throws PastStateException, FutureStateException;
+    void accept() throws StateTransitionException;
 
-    void invalid() throws PastStateException, FutureStateException;
+    void invalid() throws StateTransitionException;
 
-    void reject() throws PastStateException, FutureStateException;
+    void reject() throws StateTransitionException;
 
-    void terminate() throws PastStateException, FutureStateException;
+    void terminate() throws StateTransitionException;
 
-    void revoke() throws PastStateException, FutureStateException;
+    void revoke() throws StateTransitionException;
 
-    void timeLimit() throws PastStateException, FutureStateException;
+    void timeLimit() throws StateTransitionException;
 
-    void timeOut() throws PastStateException, FutureStateException;
+    void timeOut() throws StateTransitionException;
 }

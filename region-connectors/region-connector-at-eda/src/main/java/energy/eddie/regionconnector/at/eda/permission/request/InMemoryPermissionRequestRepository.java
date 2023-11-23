@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.at.eda.permission.request;
 
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
-import energy.eddie.regionconnector.shared.permission.requests.decorators.SavingPermissionRequest;
 import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
@@ -33,20 +32,14 @@ public class InMemoryPermissionRequestRepository implements AtPermissionRequestR
 
     @Override
     public Optional<AtPermissionRequest> findByPermissionId(String permissionId) {
-        // wrap the request with a SavingPermissionRequest so changes will be persisted
-        // TODO this is a temporary workaround
-        return Optional.ofNullable(requests.get(permissionId))
-                .map(r -> new EdaPermissionRequestAdapter(r, new SavingPermissionRequest<>(r, this)));
+        return Optional.ofNullable(requests.get(permissionId));
     }
 
     @Override
     public Optional<AtPermissionRequest> findByConversationIdOrCMRequestId(String conversationId, @Nullable String cmRequestId) {
         for (AtPermissionRequest request : requests.values()) {
             if (matchesConversationIdOrCMRequestId(conversationId, cmRequestId, request)) {
-                // wrap the request with a SavingPermissionRequest so changes will be persisted
-                // TODO this is a temporary workaround
-                return Optional.of(request)
-                        .map(r -> new EdaPermissionRequestAdapter(r, new SavingPermissionRequest<>(r, this)));
+                return Optional.of(request);
             }
         }
         return Optional.empty();
@@ -59,9 +52,6 @@ public class InMemoryPermissionRequestRepository implements AtPermissionRequestR
         return requests.values().stream()
                 .filter(r -> r.meteringPointId().isPresent() && Objects.equals(r.meteringPointId().get(), meteringPointId))
                 .filter(r -> isInTimeFrame(r, date))
-                // wrap the request with a SavingPermissionRequest so changes will be persisted
-                // TODO this is a temporary workaround
-                .map(r -> new EdaPermissionRequestAdapter(r, new SavingPermissionRequest<>(r, this)))
                 .collect(Collectors.toList());
     }
 

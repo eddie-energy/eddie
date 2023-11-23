@@ -66,14 +66,14 @@ public record SimplePermissionRequest(String permissionId,
     }
 
     @Override
+    public void setMeteringPointId(String meteringPointId) {
+
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AtPermissionRequest that)) return false;
         return permissionId.equals(that.permissionId()) && connectionId.equals(that.connectionId()) && cmRequestId.equals(that.cmRequestId()) && conversationId.equals(that.conversationId()) && state == that.state();
-    }
-
-    @Override
-    public void setMeteringPointId(String meteringPointId) {
-
     }
 }

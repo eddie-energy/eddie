@@ -1,0 +1,33 @@
+package energy.eddie.regionconnector.at.eda.permission.request.validation;
+
+import energy.eddie.api.v0.process.model.validation.AttributeError;
+import energy.eddie.api.v0.process.model.validation.Validator;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
+
+import java.time.Clock;
+import java.time.LocalDate;
+import java.util.List;
+
+public class CompletelyInThePastOrInTheFutureValidator implements Validator<AtPermissionRequest> {
+
+    private static boolean isPresentToFuture(AtPermissionRequest value, LocalDate now) {
+        return value.dataFrom().isEqual(now);
+    }
+
+    private static boolean isFuture(AtPermissionRequest value, LocalDate now) {
+        return value.dataFrom().isAfter(now);
+    }
+
+    @Override
+    public List<AttributeError> validate(AtPermissionRequest value) {
+        LocalDate now = LocalDate.now(Clock.systemUTC());
+        boolean isDataToInThePast = value.dataTo().map(dataTo -> dataTo.isBefore(now)).orElse(false);
+        boolean completelyInThePast = value.dataFrom().isBefore(now) && isDataToInThePast;
+        if (completelyInThePast
+                || isFuture(value, now)
+                || isPresentToFuture(value, now)) {
+            return List.of();
+        }
+        return List.of(new AttributeError("dataFrom", "dataFrom and dataTo must lie completely in the past or completely in the future"));
+    }
+}

@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.es.datadis;
 
 import energy.eddie.api.v0.*;
-import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
@@ -99,7 +99,7 @@ public class DatadisRegionConnector implements RegionConnector, AuthorizationRes
 
         try {
             permissionRequest.get().terminate();
-        } catch (FutureStateException | PastStateException e) {
+        } catch (StateTransitionException e) {
             throw new IllegalStateException(e);
         }
     }
@@ -213,7 +213,7 @@ public class DatadisRegionConnector implements RegionConnector, AuthorizationRes
             if (response == AuthorizationRequestResponse.NO_SUPPLIES || response == AuthorizationRequestResponse.NO_NIF) {
                 permissionRequest.invalid();
             }
-        } catch (FutureStateException | PastStateException e) {
+        } catch (StateTransitionException e) {
             LOGGER.error("Error changing state of permission request {}", permissionRequest, e);
         }
     }

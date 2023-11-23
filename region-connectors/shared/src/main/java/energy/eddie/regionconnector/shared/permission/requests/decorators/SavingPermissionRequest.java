@@ -1,6 +1,9 @@
 package energy.eddie.regionconnector.shared.permission.requests.decorators;
 
-import energy.eddie.api.v0.process.model.*;
+import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.api.v0.process.model.PermissionRequestRepository;
+import energy.eddie.api.v0.process.model.PermissionRequestState;
+import energy.eddie.api.v0.process.model.StateTransitionException;
 
 /**
  * This class will save a permission request everytime a potential state change has happened.
@@ -41,37 +44,37 @@ public class SavingPermissionRequest<T extends PermissionRequest> implements Per
     }
 
     @Override
-    public void validate() throws FutureStateException, PastStateException {
+    public void validate() throws StateTransitionException {
         executeAndSave(permissionRequest::validate);
     }
 
     @Override
-    public void sendToPermissionAdministrator() throws FutureStateException, PastStateException {
+    public void sendToPermissionAdministrator() throws StateTransitionException {
         executeAndSave(permissionRequest::sendToPermissionAdministrator);
     }
 
     @Override
-    public void receivedPermissionAdministratorResponse() throws FutureStateException, PastStateException {
+    public void receivedPermissionAdministratorResponse() throws StateTransitionException {
         executeAndSave(permissionRequest::receivedPermissionAdministratorResponse);
     }
 
     @Override
-    public void terminate() throws FutureStateException, PastStateException {
+    public void terminate() throws StateTransitionException {
         executeAndSave(permissionRequest::terminate);
     }
 
     @Override
-    public void accept() throws FutureStateException, PastStateException {
+    public void accept() throws StateTransitionException {
         executeAndSave(permissionRequest::accept);
     }
 
     @Override
-    public void invalid() throws FutureStateException, PastStateException {
+    public void invalid() throws StateTransitionException {
         executeAndSave(permissionRequest::invalid);
     }
 
     @Override
-    public void rejected() throws FutureStateException, PastStateException {
+    public void rejected() throws StateTransitionException {
         executeAndSave(permissionRequest::rejected);
     }
 
@@ -88,13 +91,13 @@ public class SavingPermissionRequest<T extends PermissionRequest> implements Per
         return permissionRequest.hashCode();
     }
 
-    private void executeAndSave(Transition transition) throws FutureStateException, PastStateException {
+    private void executeAndSave(Transition transition) throws StateTransitionException {
         transition.transit();
         permissionRequestRepository.save(permissionRequest);
     }
 
     @FunctionalInterface
     private interface Transition {
-        void transit() throws PastStateException, FutureStateException;
+        void transit() throws StateTransitionException;
     }
 }

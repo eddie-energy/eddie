@@ -1,13 +1,16 @@
 package energy.eddie.regionconnector.at.eda.permission.request;
 
-import energy.eddie.api.v0.process.model.FutureStateException;
-import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.permission.request.states.*;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -225,11 +228,13 @@ class EdaPermissionRequestTest {
     }
 
     @Test
-    void validatedTransitionsEdaPermissionRequest() throws FutureStateException, PastStateException {
+    void validatedTransitionsEdaPermissionRequest() throws StateTransitionException {
         // Given
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
+        when(ccmoRequest.dataFrom()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(5));
+        when(ccmoRequest.dataTo()).thenReturn(Optional.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1)));
         PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
 
         // When
@@ -240,12 +245,14 @@ class EdaPermissionRequestTest {
     }
 
     @Test
-    void sendToPermissionAdministratorTransitionsEdaPermissionRequest() throws FutureStateException, PastStateException {
+    void sendToPermissionAdministratorTransitionsEdaPermissionRequest() throws StateTransitionException {
         // Given
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
+        when(ccmoRequest.dataFrom()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(5));
+        when(ccmoRequest.dataTo()).thenReturn(Optional.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1)));
         PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.validate();
 
@@ -258,12 +265,14 @@ class EdaPermissionRequestTest {
     }
 
     @Test
-    void receivedPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws FutureStateException, PastStateException {
+    void receivedPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws StateTransitionException {
         // Given
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
+        when(ccmoRequest.dataFrom()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(5));
+        when(ccmoRequest.dataTo()).thenReturn(Optional.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1)));
         PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
@@ -276,12 +285,14 @@ class EdaPermissionRequestTest {
     }
 
     @Test
-    void acceptPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws FutureStateException, PastStateException {
+    void acceptPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws StateTransitionException {
         // Given
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
+        when(ccmoRequest.dataFrom()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(5));
+        when(ccmoRequest.dataTo()).thenReturn(Optional.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1)));
         PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
@@ -295,12 +306,14 @@ class EdaPermissionRequestTest {
     }
 
     @Test
-    void invalidPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws FutureStateException, PastStateException {
+    void invalidPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws StateTransitionException {
         // Given
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
+        when(ccmoRequest.dataFrom()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(5));
+        when(ccmoRequest.dataTo()).thenReturn(Optional.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1)));
         PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
@@ -314,12 +327,14 @@ class EdaPermissionRequestTest {
     }
 
     @Test
-    void rejectPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws FutureStateException, PastStateException {
+    void rejectPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws StateTransitionException {
         // Given
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
+        when(ccmoRequest.dataFrom()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(5));
+        when(ccmoRequest.dataTo()).thenReturn(Optional.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1)));
         PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();

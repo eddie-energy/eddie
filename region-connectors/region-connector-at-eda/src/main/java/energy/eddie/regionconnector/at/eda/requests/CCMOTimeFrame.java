@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.at.eda.requests;
 
-import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
@@ -12,7 +11,7 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * A specialized class for ccmo-requests.
- * It allows for the end date to be null, if start lies in the future
+ * It allows for the end date to be null
  */
 public final class CCMOTimeFrame {
     private final LocalDate start;
@@ -21,16 +20,6 @@ public final class CCMOTimeFrame {
 
     public CCMOTimeFrame(LocalDate start, @Nullable LocalDate end) {
         requireNonNull(start);
-
-        // start lies in the past
-        LocalDate now = LocalDate.now(DateTimeConstants.AT_ZONE_ID);
-        if (start.isBefore(now)) {
-            requireNonNull(end);
-        }
-
-        if (end != null && !start.isBefore(end) && !start.equals(end)) {
-            throw new IllegalArgumentException("End date has to be after/equal start date");
-        }
         this.start = start;
         this.end = end;
     }

@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.dk.energinet;
 
 import energy.eddie.api.v0.*;
-import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
+import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPoints;
@@ -84,7 +84,7 @@ public class EnerginetRegionConnector implements RegionConnector {
         }
         try {
             permissionRequest.get().terminate();
-        } catch (FutureStateException | PastStateException e) {
+        } catch (StateTransitionException e) {
             LOGGER.error("PermissionRequest with permissionID {} cannot be revoked", permissionId, e);
         }
     }
@@ -173,7 +173,7 @@ public class EnerginetRegionConnector implements RegionConnector {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         javalin.close();
         connectionStatusSink.tryEmitComplete();
         consumptionRecordSink.tryEmitComplete();
