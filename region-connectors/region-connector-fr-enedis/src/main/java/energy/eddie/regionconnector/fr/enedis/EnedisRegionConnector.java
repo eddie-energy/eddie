@@ -82,7 +82,7 @@ public class EnedisRegionConnector implements RegionConnector {
         }
         try {
             permissionRequest.get().terminate();
-        } catch (FutureStateException | PastStateException e) {
+        } catch (StateTransitionException e) {
             LOGGER.error("PermissionRequest with permissionID {} cannot be revoked", permissionId, e);
         }
     }

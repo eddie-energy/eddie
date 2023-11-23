@@ -1,6 +1,9 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
-import energy.eddie.api.v0.process.model.*;
+import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.api.v0.process.model.PermissionRequestState;
+import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisMalformedState;
 import io.javalin.http.Context;
 import io.javalin.validation.Validator;
@@ -111,7 +114,7 @@ class TimeFramedPermissionRequestAdapterTest {
     }
 
     @Test
-    void validateCallsDecorator() throws FutureStateException, PastStateException {
+    void validateCallsDecorator() throws StateTransitionException {
         // Given
         TimeframedPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
@@ -125,7 +128,7 @@ class TimeFramedPermissionRequestAdapterTest {
     }
 
     @Test
-    void sendToPermissionAdministratorCallsDecorator() throws FutureStateException, PastStateException {
+    void sendToPermissionAdministratorCallsDecorator() throws StateTransitionException {
         // Given
         TimeframedPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
@@ -139,7 +142,7 @@ class TimeFramedPermissionRequestAdapterTest {
     }
 
     @Test
-    void receivedPermissionAdministratorResponseCallsDecorator() throws FutureStateException, PastStateException {
+    void receivedPermissionAdministratorResponseCallsDecorator() throws StateTransitionException {
         // Given
         TimeframedPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
@@ -153,7 +156,7 @@ class TimeFramedPermissionRequestAdapterTest {
     }
 
     @Test
-    void terminateCallsDecorator() throws FutureStateException, PastStateException {
+    void terminateCallsDecorator() throws StateTransitionException {
         // Given
         TimeframedPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
@@ -167,7 +170,7 @@ class TimeFramedPermissionRequestAdapterTest {
     }
 
     @Test
-    void acceptCallsDecorator() throws FutureStateException, PastStateException {
+    void acceptCallsDecorator() throws StateTransitionException {
         // Given
         TimeframedPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
@@ -181,7 +184,7 @@ class TimeFramedPermissionRequestAdapterTest {
     }
 
     @Test
-    void invalidCallsDecorator() throws FutureStateException, PastStateException {
+    void invalidCallsDecorator() throws StateTransitionException {
         // Given
         TimeframedPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);
@@ -195,7 +198,7 @@ class TimeFramedPermissionRequestAdapterTest {
     }
 
     @Test
-    void rejectedCallsDecorator() throws FutureStateException, PastStateException {
+    void rejectedCallsDecorator() throws StateTransitionException {
         // Given
         TimeframedPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1");
         ChangingPermissionRequest decorator = new ChangingPermissionRequest(request);

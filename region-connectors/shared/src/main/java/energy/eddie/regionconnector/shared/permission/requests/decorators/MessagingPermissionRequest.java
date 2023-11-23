@@ -1,10 +1,9 @@
 package energy.eddie.regionconnector.shared.permission.requests.decorators;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.process.model.FutureStateException;
-import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
+import energy.eddie.api.v0.process.model.StateTransitionException;
 import reactor.core.publisher.Sinks;
 
 public class MessagingPermissionRequest implements PermissionRequest {
@@ -44,43 +43,43 @@ public class MessagingPermissionRequest implements PermissionRequest {
     }
 
     @Override
-    public void validate() throws FutureStateException, PastStateException {
+    public void validate() throws StateTransitionException {
         permissionRequest.validate();
         emitState();
     }
 
     @Override
-    public void sendToPermissionAdministrator() throws FutureStateException, PastStateException {
+    public void sendToPermissionAdministrator() throws StateTransitionException {
         permissionRequest.sendToPermissionAdministrator();
         emitState();
     }
 
     @Override
-    public void receivedPermissionAdministratorResponse() throws FutureStateException, PastStateException {
+    public void receivedPermissionAdministratorResponse() throws StateTransitionException {
         permissionRequest.receivedPermissionAdministratorResponse();
         emitState();
     }
 
     @Override
-    public void terminate() throws FutureStateException, PastStateException {
+    public void terminate() throws StateTransitionException {
         permissionRequest.terminate();
         emitState();
     }
 
     @Override
-    public void accept() throws FutureStateException, PastStateException {
+    public void accept() throws StateTransitionException {
         permissionRequest.accept();
         emitState();
     }
 
     @Override
-    public void invalid() throws FutureStateException, PastStateException {
+    public void invalid() throws StateTransitionException {
         permissionRequest.invalid();
         emitState();
     }
 
     @Override
-    public void rejected() throws FutureStateException, PastStateException {
+    public void rejected() throws StateTransitionException {
         permissionRequest.rejected();
         emitState();
     }

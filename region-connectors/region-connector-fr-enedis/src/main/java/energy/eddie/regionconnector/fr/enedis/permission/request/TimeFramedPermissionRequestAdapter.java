@@ -1,6 +1,9 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
-import energy.eddie.api.v0.process.model.*;
+import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.api.v0.process.model.PermissionRequestState;
+import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 
 import java.time.ZonedDateTime;
 
@@ -49,37 +52,37 @@ public class TimeFramedPermissionRequestAdapter implements TimeframedPermissionR
     }
 
     @Override
-    public void validate() throws FutureStateException, PastStateException {
+    public void validate() throws StateTransitionException {
         adaptee.validate();
     }
 
     @Override
-    public void sendToPermissionAdministrator() throws FutureStateException, PastStateException {
+    public void sendToPermissionAdministrator() throws StateTransitionException {
         adaptee.sendToPermissionAdministrator();
     }
 
     @Override
-    public void receivedPermissionAdministratorResponse() throws FutureStateException, PastStateException {
+    public void receivedPermissionAdministratorResponse() throws StateTransitionException {
         adaptee.receivedPermissionAdministratorResponse();
     }
 
     @Override
-    public void terminate() throws FutureStateException, PastStateException {
+    public void terminate() throws StateTransitionException {
         adaptee.terminate();
     }
 
     @Override
-    public void accept() throws FutureStateException, PastStateException {
+    public void accept() throws StateTransitionException {
         adaptee.accept();
     }
 
     @Override
-    public void invalid() throws FutureStateException, PastStateException {
+    public void invalid() throws StateTransitionException {
         adaptee.invalid();
     }
 
     @Override
-    public void rejected() throws FutureStateException, PastStateException {
+    public void rejected() throws StateTransitionException {
         adaptee.rejected();
     }
 }

@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 
 class EnedisPermissionRequestTest {
     @Test
+    @SuppressWarnings("unchecked")
     void constructorWithPermissionId_setsPermissionId() {
         // Given
         String permissionId = "testPermissionId";
@@ -38,6 +39,7 @@ class EnedisPermissionRequestTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void constructorWithConnectionId_setsConnectionId() {
         // Given
         String permissionId = "testPermissionId";
@@ -57,6 +59,7 @@ class EnedisPermissionRequestTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void constructorWithoutPermissionId_generatesPermissionId() {
         // Given
         String connectionId = "testConnectionId";
@@ -75,6 +78,7 @@ class EnedisPermissionRequestTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void constructorWithContextStart_setsStart() {
         // Given
         String connectionId = "testConnectionId";
@@ -96,6 +100,7 @@ class EnedisPermissionRequestTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void constructorWithContextEnd_setsEnd() {
         // Given
         String connectionId = "testConnectionId";
@@ -117,6 +122,7 @@ class EnedisPermissionRequestTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void constructorWithContextConnectionId_setConnectionId() {
         // Given
         EnedisConfiguration configuration = mock(EnedisConfiguration.class);
@@ -136,6 +142,7 @@ class EnedisPermissionRequestTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void changeState_updatesState() {
         // Given
         EnedisConfiguration configuration = mock(EnedisConfiguration.class);

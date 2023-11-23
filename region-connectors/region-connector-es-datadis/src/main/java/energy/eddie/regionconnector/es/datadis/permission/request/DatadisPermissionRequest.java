@@ -1,8 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.permission.request;
 
-import energy.eddie.api.v0.process.model.FutureStateException;
-import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
+import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
@@ -130,37 +129,37 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     }
 
     @Override
-    public void validate() throws FutureStateException, PastStateException {
+    public void validate() throws StateTransitionException {
         state.validate();
     }
 
     @Override
-    public void sendToPermissionAdministrator() throws FutureStateException, PastStateException {
+    public void sendToPermissionAdministrator() throws StateTransitionException {
         state.sendToPermissionAdministrator();
     }
 
     @Override
-    public void receivedPermissionAdministratorResponse() throws FutureStateException, PastStateException {
+    public void receivedPermissionAdministratorResponse() throws StateTransitionException {
         state.receivedPermissionAdministratorResponse();
     }
 
     @Override
-    public void terminate() throws FutureStateException, PastStateException {
+    public void terminate() throws StateTransitionException {
         state.terminate();
     }
 
     @Override
-    public void accept() throws FutureStateException, PastStateException {
+    public void accept() throws StateTransitionException {
         state.accept();
     }
 
     @Override
-    public void invalid() throws FutureStateException, PastStateException {
+    public void invalid() throws StateTransitionException {
         state.invalid();
     }
 
     @Override
-    public void rejected() throws FutureStateException, PastStateException {
+    public void rejected() throws StateTransitionException {
         state.reject();
     }
 
