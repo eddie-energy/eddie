@@ -154,7 +154,7 @@ class EddieConnectButton extends LitElement {
 
     if (!customElements.get(customElementName)) {
       const regionConnector = this._availableConnectors[regionConnectorId];
-      // loaded module needs to have the custom element class as it's default export
+      // loaded module needs to have the custom element class as its default export
       const module = await import(`${BASE_URL}${regionConnector.urlPath}ce.js`);
       customElements.define(customElementName, module.default);
     }
@@ -303,7 +303,7 @@ class EddieConnectButton extends LitElement {
                     this._dataNeedAttributes.durationStart
                   )}"
                   @sl-change="${(event) => {
-                    this._dataNeedAttributes.durationEnd =
+                    this._dataNeedAttributes.durationStart =
                       durationFromDateString(event.target.value);
                   }}"
                 ></sl-input>
@@ -313,8 +313,7 @@ class EddieConnectButton extends LitElement {
                     name="durationOpenEnd"
                     checked="${this._dataNeedAttributes.durationOpenEnd}"
                     @sl-change="${(event) => {
-                      this._dataNeedAttributes.durationOpenEnd =
-                        event.target.value;
+                      this._dataNeedAttributes.durationOpenEnd = event.target.checked;
                     }}"
                   >
                     Open End
