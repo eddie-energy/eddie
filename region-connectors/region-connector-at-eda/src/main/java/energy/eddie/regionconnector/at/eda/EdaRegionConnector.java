@@ -1,10 +1,15 @@
 package energy.eddie.regionconnector.at.eda;
 
-import energy.eddie.api.v0.*;
+import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.v0.HealthState;
+import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
+import energy.eddie.regionconnector.at.eda.processing.v0_82.ConsumptionRecordProcessor;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
@@ -22,7 +27,9 @@ import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
-public class EdaRegionConnector implements RegionConnector {
+public class EdaRegionConnector implements
+        energy.eddie.api.v0.RegionConnector,
+        energy.eddie.api.v0_82.RegionConnector {
 
     public static final String COUNTRY_CODE = "at";
     public static final String MDA_CODE = COUNTRY_CODE + "-eda";
@@ -42,6 +49,7 @@ public class EdaRegionConnector implements RegionConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
     private final EdaAdapter edaAdapter;
     private final ConsumptionRecordMapper consumptionRecordMapper;
+    private final ConsumptionRecordProcessor consumptionRecordProcessor;
     private final PermissionRequestService permissionRequestService;
 
     /**
@@ -50,10 +58,11 @@ public class EdaRegionConnector implements RegionConnector {
     private final Sinks.Many<ConnectionStatusMessage> permissionStateMessages;
     private final Supplier<Integer> port;
 
-    public EdaRegionConnector(EdaAdapter edaAdapter, PermissionRequestService permissionRequestService) throws TransmissionException {
+    public EdaRegionConnector(EdaAdapter edaAdapter, PermissionRequestService permissionRequestService, ConsumptionRecordProcessor consumptionRecordProcessor) throws TransmissionException {
         this(
                 edaAdapter,
                 permissionRequestService,
+                consumptionRecordProcessor,
                 Sinks.many()
                         .multicast()
                         .onBackpressureBuffer(),
@@ -61,15 +70,17 @@ public class EdaRegionConnector implements RegionConnector {
         );
     }
 
-    public EdaRegionConnector(EdaAdapter edaAdapter, PermissionRequestService permissionRequestService, Sinks.Many<ConnectionStatusMessage> permissionStateMessages, Supplier<Integer> port) throws TransmissionException {
+    public EdaRegionConnector(EdaAdapter edaAdapter, PermissionRequestService permissionRequestService, ConsumptionRecordProcessor consumptionRecordProcessor, Sinks.Many<ConnectionStatusMessage> permissionStateMessages, Supplier<Integer> port) throws TransmissionException {
         requireNonNull(edaAdapter);
         requireNonNull(permissionRequestService);
+        requireNonNull(consumptionRecordProcessor);
         requireNonNull(permissionStateMessages);
 
         this.edaAdapter = edaAdapter;
         this.consumptionRecordMapper = new ConsumptionRecordMapper();
-        this.permissionStateMessages = permissionStateMessages;
         this.permissionRequestService = permissionRequestService;
+        this.consumptionRecordProcessor = consumptionRecordProcessor;
+        this.permissionStateMessages = permissionStateMessages;
 
         edaAdapter.getCMRequestStatusStream()
                 .subscribe(this::processIncomingCmStatusMessages);
@@ -115,6 +126,13 @@ public class EdaRegionConnector implements RegionConnector {
     @Override
     public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
         return JdkFlowAdapter.publisherToFlowPublisher(permissionStateMessages.asFlux());
+    }
+
+    @Override
+    public Flow.Publisher<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
+        return JdkFlowAdapter.publisherToFlowPublisher(
+                consumptionRecordProcessor.getEddieValidatedHistoricalDataMarketDocumentStream()
+        );
     }
 
     @Override
@@ -222,5 +240,4 @@ public class EdaRegionConnector implements RegionConnector {
             return consumptionRecord;
         });
     }
-
 }

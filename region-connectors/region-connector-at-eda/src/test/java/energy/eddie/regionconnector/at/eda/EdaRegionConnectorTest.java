@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.at.eda;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
 import energy.eddie.api.v0.HealthState;
+import energy.eddie.regionconnector.at.eda.processing.v0_82.ConsumptionRecordProcessor;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
 import energy.eddie.regionconnector.at.eda.xml.builders.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
@@ -26,20 +27,33 @@ class EdaRegionConnectorTest {
     void connectorThrows_ifEdaAdapterNull() {
         // given
         var requestService = mock(PermissionRequestService.class);
+        var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
 
         // when
         // then
-        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(null, requestService));
+        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(null, requestService, consumptionRecordProcessor));
     }
 
     @Test
     void connectorThrows_ifPermissionRequestRepoNull() {
         // given
         var adapter = mock(EdaAdapter.class);
+        var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
 
         // when
         // then
-        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(adapter, null));
+        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(adapter, null, consumptionRecordProcessor));
+    }
+
+    @Test
+    void connectorThrows_ifConsumptionRecordProcessorNull() {
+        // given
+        var adapter = mock(EdaAdapter.class);
+        var requestService = mock(PermissionRequestService.class);
+
+        // when
+        // then
+        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(adapter, requestService, null));
     }
 
     @Test
@@ -48,10 +62,11 @@ class EdaRegionConnectorTest {
         var adapter = mock(EdaAdapter.class);
         when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         var requestService = mock(PermissionRequestService.class);
+        var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
 
         // when
         // then
-        assertDoesNotThrow(() -> new EdaRegionConnector(adapter, requestService));
+        assertDoesNotThrow(() -> new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor));
     }
 
     @Test
@@ -61,7 +76,8 @@ class EdaRegionConnectorTest {
         when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         when(adapter.getConsumptionRecordStream()).thenReturn(Flux.empty());
         var requestService = mock(PermissionRequestService.class);
-        var connector = new EdaRegionConnector(adapter, requestService);
+        var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+        var connector = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor);
 
         // when
         // then
@@ -77,6 +93,7 @@ class EdaRegionConnectorTest {
         when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         TestPublisher<ConsumptionRecord> testPublisher = TestPublisher.create();
         when(adapter.getConsumptionRecordStream()).thenReturn(testPublisher.flux());
+        var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
 
         var requestService = mock(PermissionRequestService.class);
         when(requestService.findByMeteringPointIdAndDate(anyString(), any()))
@@ -86,7 +103,7 @@ class EdaRegionConnectorTest {
                         new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2", null))
                 );
 
-        var uut = new EdaRegionConnector(adapter, requestService);
+        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConsumptionRecordStream());
 
@@ -116,6 +133,7 @@ class EdaRegionConnectorTest {
         when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         TestPublisher<ConsumptionRecord> testPublisher = TestPublisher.create();
         when(adapter.getConsumptionRecordStream()).thenReturn(testPublisher.flux());
+        var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
 
         var requestService = mock(PermissionRequestService.class);
         when(requestService.findByMeteringPointIdAndDate(anyString(), any()))
@@ -124,7 +142,7 @@ class EdaRegionConnectorTest {
                         new SimplePermissionRequest("pmId2", "connId2", "dataNeedId", "test2", "any2", null))
                 );
 
-        var uut = new EdaRegionConnector(adapter, requestService);
+        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConsumptionRecordStream());
 
@@ -147,7 +165,8 @@ class EdaRegionConnectorTest {
         var adapter = mock(EdaAdapter.class);
         when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         var requestService = mock(PermissionRequestService.class);
-        var connector = new EdaRegionConnector(adapter, requestService);
+        var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+        var connector = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor);
 
         // when
         // then
@@ -160,7 +179,8 @@ class EdaRegionConnectorTest {
         var adapter = mock(EdaAdapter.class);
         when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         var requestService = mock(PermissionRequestService.class);
-        var connector = new EdaRegionConnector(adapter, requestService);
+        var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+        var connector = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor);
 
         // when
         var result = connector.getMetadata();
@@ -178,8 +198,9 @@ class EdaRegionConnectorTest {
         var adapter = mock(EdaAdapter.class);
         when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         var requestService = mock(PermissionRequestService.class);
+        var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
 
-        var connector = new EdaRegionConnector(adapter, requestService);
+        var connector = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor);
 
         connector.close();
 
@@ -193,7 +214,9 @@ class EdaRegionConnectorTest {
         var requestService = mock(PermissionRequestService.class);
         when(edaAdapter.health()).thenReturn(Map.of("service", HealthState.UP));
         when(edaAdapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
-        var rc = new EdaRegionConnector(edaAdapter, requestService);
+        var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+
+        var rc = new EdaRegionConnector(edaAdapter, requestService, consumptionRecordProcessor);
 
         // When
         var res = rc.health();

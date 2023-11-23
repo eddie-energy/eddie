@@ -3,6 +3,9 @@ package energy.eddie.regionconnector.at;
 import de.ponton.xp.adapter.api.ConnectionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.RegionConnector;
+import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.cim.validated_historical_data.v0_82.CodingSchemeTypeList;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
@@ -19,6 +22,10 @@ import energy.eddie.regionconnector.at.eda.ponton.NoOpEdaAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
+import energy.eddie.regionconnector.at.eda.processing.v0_82.ConsumptionRecordProcessor;
+import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.EddieValidatedHistoricalDataMarketDocumentPublisher;
+import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
+import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestCreationService;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
 import jakarta.annotation.Nullable;
@@ -41,6 +48,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.at.eda.config.AtConfiguration.ELIGIBLE_PARTY_ID_KEY;
 import static energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration.*;
 
@@ -137,10 +145,31 @@ public class SpringConfig {
     @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
     public RegionConnector regionConnector(
             PermissionRequestService permissionRequestService,
+            ConsumptionRecordProcessor consumptionRecordProcessor,
             EdaAdapter edaAdapter,
             Sinks.Many<ConnectionStatusMessage> sink,
             Supplier<Integer> portSupplier
     ) throws TransmissionException {
-        return new EdaRegionConnector(edaAdapter, permissionRequestService, sink, portSupplier);
+        return new EdaRegionConnector(edaAdapter, permissionRequestService, consumptionRecordProcessor, sink, portSupplier);
+    }
+
+    @Bean
+    public CommonInformationModelConfiguration commonInformationModelConfiguration(@Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingSchemeTypeList) {
+        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingSchemeTypeList));
+    }
+
+    @Bean
+    public ConsumptionRecordProcessor consumptionRecordProcessor(
+            PermissionRequestService permissionRequestService,
+            CommonInformationModelConfiguration commonInformationModelConfiguration,
+            EdaAdapter edaAdapter) {
+        return new ConsumptionRecordProcessor(
+                new ValidatedHistoricalDataMarketDocumentDirector(
+                        commonInformationModelConfiguration,
+                        new ValidatedHistoricalDataMarketDocumentBuilderFactory()
+                ),
+                new EddieValidatedHistoricalDataMarketDocumentPublisher(permissionRequestService),
+                edaAdapter
+        );
     }
 }
