@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRe
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
+import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
 import feign.FeignException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -33,8 +34,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.BASE_PATH;
 
@@ -51,9 +50,10 @@ public class PermissionRequestController {
             "./src/main/resources/public" + BASE_PATH + CE_JS
     };
     private static final String CE_PRODUCTION_PATH = "/public" + BASE_PATH + CE_JS;
+    private static final String PERMISSION_STATUS_PATH = "/permission-status";
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final Environment environment;
-    private final ConcurrentMap<String, ConnectionStatusMessage> permissionIdToConnectionStatusMessages = new ConcurrentHashMap<>();
+    private final PermissionRequestService service;
     private final PermissionRequestFactory requestFactory;
     private final EnerginetCustomerApi energinetCustomerApi;
     private final TaskExecutor fetchRecordsExecutor;
@@ -62,11 +62,13 @@ public class PermissionRequestController {
     @Autowired
     public PermissionRequestController(
             Environment environment,
+            PermissionRequestService service,
             PermissionRequestFactory requestFactory,
             EnerginetCustomerApi energinetCustomerApi,
             TaskExecutor fetchRecordsExecutor,
             Sinks.Many<ConsumptionRecord> consumptionRecordSink) {
         this.environment = environment;
+        this.service = service;
         this.requestFactory = requestFactory;
         this.energinetCustomerApi = energinetCustomerApi;
         this.fetchRecordsExecutor = fetchRecordsExecutor;
@@ -119,14 +121,12 @@ public class PermissionRequestController {
                 : Objects.requireNonNull(getClass().getResourceAsStream(CE_PRODUCTION_PATH));
     }
 
-    @GetMapping("/permission-status")
-    public ResponseEntity<ConnectionStatusMessage> permissionStatus(@RequestParam String permissionId) {
-        var connectionStatusMessage = permissionIdToConnectionStatusMessages.get(permissionId);
-        if (connectionStatusMessage == null) {
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping(PERMISSION_STATUS_PATH + "/{permissionId}")
+    public ResponseEntity<ConnectionStatusMessage> permissionStatus(@PathVariable String permissionId) {
+        var statusMessage = service.findConnectionStatusMessageById(permissionId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Unable to find permission request"));
 
-        return ResponseEntity.ok(connectionStatusMessage);
+        return ResponseEntity.ok(statusMessage);
     }
 
     @PostMapping(value = "/permission-request", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

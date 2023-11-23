@@ -21,7 +21,7 @@ import java.util.List;
 
 @ControllerAdvice
 public class PermissionRequestControllerAdvice extends ResponseEntityExceptionHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestControllerAdvice.class);
+    private static final Logger LOGGER_ADVICE = LoggerFactory.getLogger(PermissionRequestControllerAdvice.class);
 
     private static ResponseEntity<Object> createErrorResponse(List<String> errors, HttpStatus status) {
         return new ResponseEntity<>(new ErrorResponse(errors), status);
@@ -57,7 +57,7 @@ public class PermissionRequestControllerAdvice extends ResponseEntityExceptionHa
 
     @ExceptionHandler(value = {StateTransitionException.class})
     protected ResponseEntity<Object> handleStateTransitionException(StateTransitionException stateTransitionException) {
-        LOGGER.info("Error occurred while trying to transition a state", stateTransitionException);
+        LOGGER_ADVICE.info("Error occurred while trying to transition a state", stateTransitionException);
 
         var errors = List.of("Error occurred while trying to transition a state");
 

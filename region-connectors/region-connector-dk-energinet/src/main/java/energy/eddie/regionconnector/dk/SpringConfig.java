@@ -88,7 +88,7 @@ public class SpringConfig {
             Sinks.Many<ConsumptionRecord> consumptionRecordSink,
             EnerginetCustomerApi energinetCustomerApi,
             DkEnerginetCustomerPermissionRequestRepository repository,
-            @Value("${server.port}") int port) {
+            @Value("${server.port:0}") int port) {
         return new EnerginetRegionConnector(connectionStatusSink, consumptionRecordSink, energinetCustomerApi, repository, port);
     }
 }

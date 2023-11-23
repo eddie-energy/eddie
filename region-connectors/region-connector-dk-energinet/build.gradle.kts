@@ -22,6 +22,7 @@ dependencies {
     implementation(project(mapOf("path" to ":api")))
     implementation(project(mapOf("path" to ":region-connectors:shared")))
     implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.validation)
 
     // Required for openapi generator
     implementation(libs.jackson.databind)
@@ -49,6 +50,7 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.reactor.test)
+    testImplementation(libs.spring.boot.starter.test)
 }
 
 configurations.all {
