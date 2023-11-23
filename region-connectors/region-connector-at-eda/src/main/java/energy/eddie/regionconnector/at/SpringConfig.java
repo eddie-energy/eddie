@@ -1,7 +1,9 @@
 package energy.eddie.regionconnector.at;
 
 import de.ponton.xp.adapter.api.ConnectionException;
+import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.RegionConnector;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnector;
@@ -9,9 +11,16 @@ import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.InMemoryPermissionRequestRepository;
+import energy.eddie.regionconnector.at.eda.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.at.eda.permission.request.extensions.Extension;
+import energy.eddie.regionconnector.at.eda.permission.request.extensions.MessagingExtension;
+import energy.eddie.regionconnector.at.eda.permission.request.extensions.SavingExtension;
+import energy.eddie.regionconnector.at.eda.ponton.NoOpEdaAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
+import energy.eddie.regionconnector.at.eda.services.PermissionRequestCreationService;
+import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
 import jakarta.annotation.Nullable;
 import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
@@ -21,11 +30,16 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.env.Environment;
+import reactor.core.publisher.Sinks;
 
 import java.io.IOException;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.at.eda.config.AtConfiguration.ELIGIBLE_PARTY_ID_KEY;
 import static energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration.*;
@@ -41,7 +55,8 @@ public class SpringConfig {
             var app = new SpringApplicationBuilder(SpringConfig.class)
                     .build();
             // These arguments are needed, since this spring instance tries to load the data needs configs of the core configuration.
-            ctx = app.run("--spring.config.import=", "--import.config.file=");
+            // Random port for this spring application, subject to change in GH-109
+            ctx = app.run("--spring.config.import=", "--import.config.file=", "--server.port=0");
         }
         var factory = ctx.getBeanFactory();
         return factory.getBean(RegionConnector.class);
@@ -68,6 +83,7 @@ public class SpringConfig {
     }
 
     @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
     public AtPermissionRequestRepository permissionRequestRepository() {
         return new InMemoryPermissionRequestRepository();
     }
@@ -106,11 +122,25 @@ public class SpringConfig {
     }
 
     @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public PermissionRequestCreationService creationService(PermissionRequestFactory permissionRequestFactory,
+                                                            AtConfiguration configuration) {
+        return new PermissionRequestCreationService(permissionRequestFactory, configuration);
+    }
+
+    @Bean
+    public Supplier<Integer> portSupplier(ServletWebServerApplicationContext server) {
+        return server.getWebServer()::getPort;
+    }
+
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
     public RegionConnector regionConnector(
-            AtConfiguration atConfiguration,
-            AtPermissionRequestRepository repository,
-            EdaAdapter edaAdapter
+            PermissionRequestService permissionRequestService,
+            EdaAdapter edaAdapter,
+            Sinks.Many<ConnectionStatusMessage> sink,
+            Supplier<Integer> portSupplier
     ) throws TransmissionException {
-        return new EdaRegionConnector(atConfiguration, edaAdapter, repository);
+        return new EdaRegionConnector(edaAdapter, permissionRequestService, sink, portSupplier);
     }
 }
