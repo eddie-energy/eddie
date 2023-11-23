@@ -17,6 +17,8 @@ import jakarta.xml.bind.JAXBException;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +26,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
 
-@Configuration
+@SpringBootApplication
 public class SpringConfig {
     @Nullable
     private static ConfigurableApplicationContext ctx;
@@ -38,6 +40,10 @@ public class SpringConfig {
         }
         var factory = ctx.getBeanFactory();
         return factory.getBean(RegionConnector.class);
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(SpringConfig.class, args);
     }
 
     @Bean
