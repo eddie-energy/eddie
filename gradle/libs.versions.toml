@@ -26,6 +26,7 @@ jte = "2.3.0"
 log4j = "2.20.0"
 kafka-clients = "3.4.0"
 microprofile-config = "3.0.3"
+hibernate-validator = "8.0.1.Final"
 openfeign-feign = "12.5"
 openfeign-feign-form = "3.8.0"
 
@@ -98,8 +99,11 @@ microprofile-config = { module = "org.eclipse.microprofile.config:microprofile-c
 
 # Spring Boot
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+
+hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", version.ref = "hibernate-validator" }
 
 # dependencies required by region-connector-dk-energinet
 feign-core = { module = "io.github.openfeign:feign-core", version.ref = "openfeign-feign" }
