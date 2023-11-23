@@ -2,6 +2,9 @@ package energy.eddie.regionconnector.dk.energinet.web;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,18 +13,19 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = {PermissionRequestController.class})
 class PermissionRequestControllerTest {
@@ -163,7 +167,18 @@ class PermissionRequestControllerTest {
 
     @Test
     void givenAdditionalFields_areIgnored() throws Exception {
-//        when(service.)
+        var permissionId = UUID.randomUUID().toString();
+
+        when(service.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
+            PermissionRequestForCreation request = invocation.getArgument(0);
+            return new EnerginetCustomerPermissionRequest(
+                    permissionId, request.connectionId(), request.start(), request.end(),
+                    request.refreshToken(), request.meteringPoint(), request.dataNeedId(),
+                    request.periodResolution(), mock(EnerginetConfiguration.class)
+            );
+        });
+
+
         mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .param("connectionId", "214")
@@ -174,13 +189,25 @@ class PermissionRequestControllerTest {
                         .param("additionalField", "Useless")
                         .param("start", "2023-10-10")   // TODO this is not zoneddatetime
                         .param("end", "2023-12-12"))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.permissionId", is(permissionId)))
+                .andExpect(header().string("Location", is("/permission-status/" + permissionId)));
     }
 
     @Test
     void givenValidInput_returnsLocationAndPermissionRequest() throws Exception {
-//        when(service.)
-        MockHttpServletResponse response = mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
+        var permissionId = UUID.randomUUID().toString();
+
+        when(service.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
+            PermissionRequestForCreation request = invocation.getArgument(0);
+            return new EnerginetCustomerPermissionRequest(
+                    permissionId, request.connectionId(), request.start(), request.end(),
+                    request.refreshToken(), request.meteringPoint(), request.dataNeedId(),
+                    request.periodResolution(), mock(EnerginetConfiguration.class)
+            );
+        });
+
+        mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .param("connectionId", "214")
                         .param("meteringPoint", "92345")
@@ -191,12 +218,7 @@ class PermissionRequestControllerTest {
                         .param("start", "2023-10-10")   // TODO this is not zoneddatetime
                         .param("end", "2023-11-11"))
                 .andExpect(status().isCreated())
-                .andReturn().getResponse();
-
-        String location = response.getHeader("Location");
-        String permissionId = response.getContentAsString();
-
-        System.out.println(permissionId);
-//                .andExpect(header().string("Location", hasLength("/permission-status/".length() + 36)));    // UUID is 36 chars long
+                .andExpect(jsonPath("$.permissionId", is(permissionId)))
+                .andExpect(header().string("Location", is("/permission-status/" + permissionId)));
     }
 }

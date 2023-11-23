@@ -1,29 +1,23 @@
 package energy.eddie.regionconnector.dk.energinet.web;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.process.model.StateTransitionException;
-import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
-import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPoints;
-import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
-import energy.eddie.regionconnector.dk.energinet.customer.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
-import feign.FeignException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Sinks;
+import org.springframework.web.util.UriTemplate;
 
 import java.beans.PropertyEditorSupport;
 import java.io.*;
@@ -33,7 +27,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
-import java.util.UUID;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.BASE_PATH;
 
@@ -54,25 +47,13 @@ public class PermissionRequestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final Environment environment;
     private final PermissionRequestService service;
-    private final PermissionRequestFactory requestFactory;
-    private final EnerginetCustomerApi energinetCustomerApi;
-    private final TaskExecutor fetchRecordsExecutor;
-    private final Sinks.Many<ConsumptionRecord> consumptionRecordSink;
 
     @Autowired
     public PermissionRequestController(
             Environment environment,
-            PermissionRequestService service,
-            PermissionRequestFactory requestFactory,
-            EnerginetCustomerApi energinetCustomerApi,
-            TaskExecutor fetchRecordsExecutor,
-            Sinks.Many<ConsumptionRecord> consumptionRecordSink) {
+            PermissionRequestService service) {
         this.environment = environment;
         this.service = service;
-        this.requestFactory = requestFactory;
-        this.energinetCustomerApi = energinetCustomerApi;
-        this.fetchRecordsExecutor = fetchRecordsExecutor;
-        this.consumptionRecordSink = consumptionRecordSink;
     }
 
     private static String findCEDevPath() throws FileNotFoundException {
@@ -130,49 +111,15 @@ public class PermissionRequestController {
     }
 
     @PostMapping(value = "/permission-request", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> permissionRequest(@Valid @ModelAttribute PermissionRequestForCreation request) throws StateTransitionException {
-        LOGGER.info("request was: {}", request);
+    public ResponseEntity<CreatedPermissionRequest> permissionRequest(@Valid @ModelAttribute PermissionRequestForCreation requestForCreation)
+            throws StateTransitionException {
+        LOGGER.info("requestForCreation was: {}", requestForCreation);
 
-        var permissionRequest = requestFactory.create(request);
-        permissionRequest.validate();
-        permissionRequest.sendToPermissionAdministrator();
+        var permissionId = service.createAndSendPermissionRequest(requestForCreation).permissionId();
 
-        var response = ResponseEntity.ok("{\"permissionId\":\"" + permissionRequest.permissionId() + "\"}");
+        var location = new UriTemplate("{statusPath}/{permissionId}")
+                .expand(PERMISSION_STATUS_PATH, permissionId);
 
-        permissionRequest.receivedPermissionAdministratorResponse();
-
-        energinetCustomerApi.setRefreshToken(permissionRequest.refreshToken());
-        energinetCustomerApi.setUserCorrelationId(UUID.fromString(permissionRequest.permissionId()));
-        MeteringPoints meteringPoints = new MeteringPoints();
-        meteringPoints.addMeteringPointItem(permissionRequest.meteringPoint());
-        MeteringPointsRequest meteringPointsRequest = new MeteringPointsRequest().meteringPoints(meteringPoints);
-        permissionRequest.accept();
-
-
-        fetchRecordsExecutor.execute(() -> {
-            try {
-                energinetCustomerApi.apiToken();
-            } catch (FeignException e) {
-                LOGGER.error("Something went wrong while fetching token from Energinet:", e);
-            }
-
-            try {
-                var consumptionRecord = energinetCustomerApi.getTimeSeries(
-                        permissionRequest.start(),
-                        permissionRequest.end(),
-                        permissionRequest.periodResolution(),
-                        meteringPointsRequest
-                );
-
-                consumptionRecord.setConnectionId(permissionRequest.connectionId());
-                consumptionRecord.setPermissionId(permissionRequest.permissionId());
-                consumptionRecord.setDataNeedId(permissionRequest.dataNeedId());
-                consumptionRecordSink.tryEmitNext(consumptionRecord);
-            } catch (FeignException e) {
-                LOGGER.error("Something went wrong while fetching data from Energinet:", e);
-            }
-        });
-
-        return response;
+        return ResponseEntity.created(location).body(new CreatedPermissionRequest(permissionId));
     }
 }
