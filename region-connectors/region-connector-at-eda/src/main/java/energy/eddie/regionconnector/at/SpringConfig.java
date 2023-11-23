@@ -14,7 +14,6 @@ import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import jakarta.annotation.Nullable;
 import jakarta.xml.bind.JAXBException;
-import org.springframework.boot.WebApplicationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
