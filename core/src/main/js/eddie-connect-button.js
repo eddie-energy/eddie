@@ -75,7 +75,10 @@ class EddieConnectButton extends LitElement {
 
     _dataNeedIds: { type: Array },
     _selectedCountry: { type: String },
-    _selectedPermissionAdministrator: { type: Object },
+    _selectedPermissionAdministrator: {
+      type: Object,
+      name: "selected-permission-administrator",
+    },
     _availableConnectors: { type: Object },
     _dataNeedAttributes: { type: Object },
     _dataNeedTypes: { type: Array },
@@ -88,7 +91,9 @@ class EddieConnectButton extends LitElement {
   static styles = css`
     :host {
       color: black;
-      font-family: -apple-system, BlinkMacSystemFont, ‘Segoe UI’, Roboto, Helvetica, Arial, sans-serif, ‘Apple Color Emoji’, ‘Segoe UI Emoji’, ‘Segoe UI Symbol’;
+      font-family: -apple-system, BlinkMacSystemFont, ‘Segoe UI’, Roboto,
+        Helvetica, Arial, sans-serif, ‘Apple Color Emoji’, ‘Segoe UI Emoji’,
+        ‘Segoe UI Symbol’;
       font-size: 16px;
       font-weight: normal;
     }
@@ -178,6 +183,8 @@ class EddieConnectButton extends LitElement {
   }
 
   async handleDataNeedSelect(event) {
+    this._selectedPermissionAdministrator = null;
+
     this.dataNeedId = event.target.value;
     this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
   }
@@ -201,6 +208,28 @@ class EddieConnectButton extends LitElement {
   handlePermissionAdministratorSelect(event) {
     this._selectedPermissionAdministrator =
       PERMISSION_ADMINISTRATORS[event.target.value];
+  }
+
+  handleDataNeedModification(event) {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+
+    this._dataNeedAttributes.type = formData.get("type");
+    this._dataNeedAttributes.granularity = formData.get("granularity");
+    this._dataNeedAttributes.durationStart = durationFromDateString(
+      formData.get("startDate")
+    );
+    this._dataNeedAttributes.durationOpenEnd =
+      formData.get("durationOpenEnd") === "on";
+    this._dataNeedAttributes.durationEnd = durationFromDateString(
+      formData.get("endDate")
+    );
+
+    this.requestUpdate(
+      "selected-permission-administrator",
+      this._selectedPermissionAdministrator
+    );
   }
 
   render() {
@@ -251,87 +280,74 @@ class EddieConnectButton extends LitElement {
               <sl-details
                 summary="The service allows the modification of data needs. This feature is meant for development purposes only."
               >
-                <sl-input
-                  label="Connection ID"
-                  name="connectionId"
-                  value="${this.connectionId}"
-                  disabled
-                  readonly
-                ></sl-input>
-                <br />
-                <sl-input
-                  label="DataNeed ID"
-                  name="id"
-                  value="${this._dataNeedAttributes.id}"
-                  disabled
-                  readonly
-                ></sl-input>
-                <br />
-                <sl-select
-                  label="DataNeed Type"
-                  name="type"
-                  value="${this._dataNeedAttributes.type}"
-                  @sl-change="${(event) => {
-                    this._dataNeedAttributes.type = event.target.value;
-                  }}"
-                >
-                  ${this._dataNeedTypes.map(
-                    (value) =>
-                      html`<sl-option value="${value}">${value}</sl-option> `
-                  )}
-                </sl-select>
-                <br />
-                <sl-select
-                  label="Granularity"
-                  name="granularity"
-                  value="${this._dataNeedAttributes.granularity}"
-                  @sl-change="${(event) => {
-                    this._dataNeedAttributes.granularity = event.target.value;
-                  }}"
-                >
-                  ${this._dataNeedGranularities.map(
-                    (value) =>
-                      html`<sl-option value="${value}">${value}</sl-option> `
-                  )}
-                </sl-select>
-                <br />
-                <sl-input
-                  label="Start Date"
-                  name="startDate"
-                  type="date"
-                  value="${dateFromDuration(
-                    this._dataNeedAttributes.durationStart
-                  )}"
-                  @sl-change="${(event) => {
-                    this._dataNeedAttributes.durationStart =
-                      durationFromDateString(event.target.value);
-                  }}"
-                ></sl-input>
-                <br />
-                <div>
-                  <sl-checkbox
-                    name="durationOpenEnd"
-                    checked="${this._dataNeedAttributes.durationOpenEnd}"
-                    @sl-change="${(event) => {
-                      this._dataNeedAttributes.durationOpenEnd = event.target.checked;
-                    }}"
+                <form @submit="${this.handleDataNeedModification}">
+                  <sl-input
+                    label="Connection ID"
+                    name="connectionId"
+                    value="${this.connectionId}"
+                    disabled
+                    readonly
+                  ></sl-input>
+                  <br />
+                  <sl-input
+                    label="DataNeed ID"
+                    name="id"
+                    value="${this._dataNeedAttributes.id}"
+                    disabled
+                    readonly
+                  ></sl-input>
+                  <br />
+                  <sl-select
+                    label="DataNeed Type"
+                    name="type"
+                    value="${this._dataNeedAttributes.type}"
                   >
-                    Open End
-                  </sl-checkbox>
-                </div>
-                <br />
-                <sl-input
-                  label="End Date"
-                  name="endDate"
-                  type="date"
-                  value="${dateFromDuration(
-                    this._dataNeedAttributes.durationEnd
-                  )}"
-                  @sl-change="${(event) => {
-                    this._dataNeedAttributes.durationEnd =
-                      durationFromDateString(event.target.value);
-                  }}"
-                ></sl-input>
+                    ${this._dataNeedTypes.map(
+                      (value) =>
+                        html`<sl-option value="${value}">${value}</sl-option> `
+                    )}
+                  </sl-select>
+                  <br />
+                  <sl-select
+                    label="Granularity"
+                    name="granularity"
+                    value="${this._dataNeedAttributes.granularity}"
+                  >
+                    ${this._dataNeedGranularities.map(
+                      (value) =>
+                        html`<sl-option value="${value}">${value}</sl-option> `
+                    )}
+                  </sl-select>
+                  <br />
+                  <sl-input
+                    label="Start Date"
+                    name="startDate"
+                    type="date"
+                    value="${dateFromDuration(
+                      this._dataNeedAttributes.durationStart
+                    )}"
+                  ></sl-input>
+                  <br />
+                  <div>
+                    <sl-checkbox
+                      name="durationOpenEnd"
+                      .checked="${this._dataNeedAttributes.durationOpenEnd}"
+                    >
+                      Open End
+                    </sl-checkbox>
+                  </div>
+                  <br />
+                  <sl-input
+                    label="End Date"
+                    name="endDate"
+                    type="date"
+                    value="${dateFromDuration(
+                      this._dataNeedAttributes.durationEnd
+                    )}"
+                  ></sl-input>
+                  <br />
+                  <sl-button type="submit">Save</sl-button>
+                </form>
               </sl-details>
 
               <br />
