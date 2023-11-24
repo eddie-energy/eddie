@@ -102,7 +102,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
                 "convId",
                 Optional.empty(),
                 start,
-                Optional.empty(),
+                Optional.of(start),
                 new AtAcceptedPermissionRequestState(null)
         );
         // When
