@@ -17,7 +17,7 @@ public class StartIsBeforeOrEqualEndValidator implements Validator<DkEnerginetCu
     @Override
     public List<AttributeError> validate(DkEnerginetCustomerPermissionRequest value) {
         if (value.start().isAfter(value.end())) {
-            return List.of(new AttributeError("start", "start must be after end"));
+            return List.of(new AttributeError("start", "start must be before end"));
         }
 
         return Collections.emptyList();

@@ -1,9 +1,8 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.states;
 
 import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
-import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.api.v0.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.v0.process.model.states.ValidatedPermissionRequestState;
-import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import feign.FeignException;
@@ -11,18 +10,17 @@ import org.springframework.http.HttpStatus;
 
 public class EnerginetCustomerValidatedState extends ContextualizedPermissionRequestState<DkEnerginetCustomerPermissionRequest>
         implements ValidatedPermissionRequestState {
-    private final EnerginetConfiguration configuration;
+    private final EnerginetCustomerApiClient apiClient;
 
     public EnerginetCustomerValidatedState(
             DkEnerginetCustomerPermissionRequest permissionRequest,
-            EnerginetConfiguration configuration) {
+            EnerginetCustomerApiClient apiClient) {
         super(permissionRequest);
-        this.configuration = configuration;
+        this.apiClient = apiClient;
     }
 
     @Override
-    public void sendToPermissionAdministrator() throws StateTransitionException {
-        EnerginetCustomerApiClient apiClient = new EnerginetCustomerApiClient(configuration);
+    public void sendToPermissionAdministrator() throws SendToPermissionAdministratorException {
         apiClient.setRefreshToken(permissionRequest.refreshToken());
 
         try {
@@ -33,15 +31,11 @@ public class EnerginetCustomerValidatedState extends ContextualizedPermissionReq
             permissionRequest.changeState(new EnerginetCustomerUnableToSendState(permissionRequest, e));
 
             if (errorStatus == HttpStatus.UNAUTHORIZED) {
-                // TODO: this is not like how the process model is defined...
-                // The given refresh token for the API is not valid -> therefore no consent was given
-//                permissionRequest.receivedPermissionAdministratorResponse();
-//                permissionRequest.rejected();
-                // TODO "Exceptions should only be used for exceptional cases" - how to notify controller about this then?
-                // passing a responseEntity doesn't make sense either because then it's not separated anymore
-//                throw new SendToPermissionAdministratorFailedException(this, "The given refresh token is not valid.", true);
+                throw new SendToPermissionAdministratorException(this, "The given refresh token is not valid", true);
+            } else if (errorStatus == HttpStatus.TOO_MANY_REQUESTS) {
+                throw new SendToPermissionAdministratorException(this, "Energinet is refusing to process the request at the moment, please try again later", false);
             } else {
-//                throw new SendToPermissionAdministratorFailedException(this, "An error occurred, status: " + errorStatus, false);
+                throw new SendToPermissionAdministratorException(this, "An error occurred, response status from Energinet: " + errorStatus, false);
             }
         }
         permissionRequest.changeState(new EnerginetCustomerPendingAcknowledgmentState(permissionRequest));

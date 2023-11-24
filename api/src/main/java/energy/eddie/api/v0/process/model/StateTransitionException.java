@@ -11,4 +11,9 @@ public abstract class StateTransitionException extends Exception {
     protected StateTransitionException(PermissionRequestState permissionRequestState) {
         this(permissionRequestState.getClass());
     }
+
+    protected StateTransitionException(PermissionRequestState permissionRequestState, String message) {
+        super(message);
+        this.permissionRequestStateClass = permissionRequestState.getClass();
+    }
 }

@@ -7,6 +7,7 @@ import energy.eddie.api.v0.process.model.validation.ValidationException;
 import energy.eddie.api.v0.process.model.validation.Validator;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
+import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.validation.CompletelyInThePastValidator;
@@ -15,7 +16,6 @@ import energy.eddie.regionconnector.dk.energinet.customer.permission.request.val
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 public class EnerginetCustomerCreatedState
@@ -30,14 +30,15 @@ public class EnerginetCustomerCreatedState
 
     public EnerginetCustomerCreatedState(EnerginetCustomerPermissionRequest request, EnerginetConfiguration configuration) {
         super(request);
-        this.configuration = Objects.requireNonNull(configuration);
+        this.configuration = configuration;
     }
 
     @Override
     public void validate() throws ValidationException {
         validateAttributes();
 
-        permissionRequest.changeState(new EnerginetCustomerValidatedState(permissionRequest, configuration));
+        var apiClient = new EnerginetCustomerApiClient(configuration);
+        permissionRequest.changeState(new EnerginetCustomerValidatedState(permissionRequest, apiClient));
     }
 
     private void validateAttributes() throws ValidationException {
