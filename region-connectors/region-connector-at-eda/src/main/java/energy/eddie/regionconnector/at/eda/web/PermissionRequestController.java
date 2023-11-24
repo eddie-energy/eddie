@@ -78,7 +78,7 @@ public class PermissionRequestController {
     public CreatedPermissionRequest createPermissionRequest(
             @ModelAttribute @Valid PermissionRequestForCreation permissionRequestForCreation
     ) throws StateTransitionException {
-        LOGGER.info("Creating new permission request");
+        LOGGER.info("Creating new permission request {}", permissionRequestForCreation);
         return creationService.createAndSendPermissionRequest(permissionRequestForCreation);
     }
 
