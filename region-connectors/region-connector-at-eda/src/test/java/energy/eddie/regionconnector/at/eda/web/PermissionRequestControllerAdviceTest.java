@@ -15,6 +15,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,17 +27,19 @@ import static org.mockito.Mockito.when;
 
 class PermissionRequestControllerAdviceTest {
 
-    private static Stream<Arguments> validationErrors() {
+    private static Stream<Arguments> validationErrors() throws NoSuchMethodException {
         return Stream.of(
                 Arguments.of(createMockExceptionWithErrorFields()),
                 Arguments.of(createMockExceptionWithObjectErrors())
         );
     }
 
-    private static MethodArgumentNotValidException createMockExceptionWithErrorFields() {
+    private static MethodArgumentNotValidException createMockExceptionWithErrorFields() throws NoSuchMethodException {
         BindingResult bindingResult = mock(BindingResult.class);
         when(bindingResult.getAllErrors()).thenReturn(createErrorFields());
-        return new MethodArgumentNotValidException(mock(MethodParameter.class), bindingResult);
+        Method dummyMethod = PermissionRequestControllerAdviceTest.class.getMethod("dummyMethod");
+        MethodParameter methodParameter = new MethodParameter(dummyMethod, -1);
+        return new MethodArgumentNotValidException((methodParameter), bindingResult);
     }
 
     private static List<ObjectError> createErrorFields() {
@@ -57,6 +60,11 @@ class PermissionRequestControllerAdviceTest {
         errors.add(new ObjectError("field1", "Error message 1"));
         errors.add(new ObjectError("field2", "Error message 2"));
         return errors;
+    }
+
+    // Dummy method for creating MethodParameter
+    public void dummyMethod() {
+        // This method doesn't need to do anything
     }
 
     @Test
@@ -90,7 +98,7 @@ class PermissionRequestControllerAdviceTest {
 
     @ParameterizedTest
     @MethodSource("validationErrors")
-    void handleValidationExceptionsReturnsMapOfErrors() {
+    void handleValidationExceptionsReturnsMapOfErrors() throws NoSuchMethodException {
         // Given
         PermissionRequestControllerAdvice permissionRequestControllerAdvice = new PermissionRequestControllerAdvice();
         MethodArgumentNotValidException exception = createMockExceptionWithErrorFields();
@@ -106,6 +114,5 @@ class PermissionRequestControllerAdviceTest {
                 () -> assertEquals("Error message 1", errors.get("field1")),
                 () -> assertEquals("Error message 2", errors.get("field2"))
         );
-
     }
 }

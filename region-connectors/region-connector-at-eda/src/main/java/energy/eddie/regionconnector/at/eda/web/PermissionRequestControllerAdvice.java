@@ -23,13 +23,14 @@ public class PermissionRequestControllerAdvice {
 
     @ExceptionHandler(value = {StateTransitionException.class})
     public ResponseEntity<String> stateTransitionException(StateTransitionException stateTransitionException) {
-        LOGGER.info("Error occurred while trying to transition a state", stateTransitionException);
+        LOGGER.error("Error occurred while trying to transition a state", stateTransitionException);
         return new ResponseEntity<>(stateTransitionException.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        LOGGER.error("Error occurred while trying to validate a request", ex);
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
             if (error instanceof FieldError fieldError) {
@@ -48,6 +49,7 @@ public class PermissionRequestControllerAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ValidationException.class)
     public Map<String, String> handleStateValidationExceptions(ValidationException ex) {
+        LOGGER.error("Error occurred while trying to validate a state", ex);
         return ex.errors()
                 .stream()
                 .collect(Collectors.toMap(AttributeError::name, AttributeError::message));
