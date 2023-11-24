@@ -75,10 +75,7 @@ class EddieConnectButton extends LitElement {
 
     _dataNeedIds: { type: Array },
     _selectedCountry: { type: String },
-    _selectedPermissionAdministrator: {
-      type: Object,
-      name: "selected-permission-administrator",
-    },
+    _selectedPermissionAdministrator: { type: Object },
     _availableConnectors: { type: Object },
     _dataNeedAttributes: { type: Object },
     _dataNeedTypes: { type: Array },
@@ -145,6 +142,11 @@ class EddieConnectButton extends LitElement {
 
     this._availableConnectors = await getRegionConnectors();
 
+    if (this.isAiida()) {
+      this._selectedCountry = null;
+      this._selectedPermissionAdministrator = { regionConnector: "aiida" };
+    }
+
     this.dialogRef.value.show();
   }
 
@@ -187,10 +189,10 @@ class EddieConnectButton extends LitElement {
   }
 
   async handleDataNeedSelect(event) {
-    this._selectedPermissionAdministrator = null;
-
     this.dataNeedId = event.target.value;
     this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
+
+    this._selectedPermissionAdministrator = null;
   }
 
   handleCountrySelect(event) {
@@ -230,10 +232,11 @@ class EddieConnectButton extends LitElement {
       formData.get("endDate")
     );
 
-    this.requestUpdate(
-      "selected-permission-administrator",
-      this._selectedPermissionAdministrator
-    );
+    this.requestUpdate();
+  }
+
+  isAiida() {
+    return this._dataNeedAttributes?.type === "SMART_METER_P1_DATA";
   }
 
   render() {
@@ -357,26 +360,27 @@ class EddieConnectButton extends LitElement {
               <br />
             `
           : ""}
-
-        <sl-select
-          label="Country"
-          placeholder="Select your country"
-          @sl-change="${this.handleCountrySelect}"
-        >
-          ${COUNTRIES.map(
-            (country) => html`
-              <sl-option value="${country}">
-                ${COUNTRY_NAMES.of(country.toUpperCase())}
-              </sl-option>
+        ${!this.isAiida()
+          ? html`
+              <sl-select
+                label="Country"
+                placeholder="Select your country"
+                @sl-change="${this.handleCountrySelect}"
+              >
+                ${COUNTRIES.map(
+                  (country) => html`
+                    <sl-option value="${country}">
+                      ${COUNTRY_NAMES.of(country.toUpperCase())}
+                    </sl-option>
+                  `
+                )}
+                <sl-divider></sl-divider>
+                <small>Development</small>
+                <sl-option value="sim">Simulation</sl-option>
+              </sl-select>
+              <br />
             `
-          )}
-          <sl-divider></sl-divider>
-          <small>Development</small>
-          <sl-option value="sim">Simulation</sl-option>
-        </sl-select>
-
-        <br />
-
+          : ""}
         ${this._selectedCountry
           ? html`
               <sl-select
@@ -402,10 +406,9 @@ class EddieConnectButton extends LitElement {
                   `
                 )}
               </sl-select>
+              <br />
             `
           : ""}
-
-        <br />
 
         <div>
           ${this._selectedPermissionAdministrator
