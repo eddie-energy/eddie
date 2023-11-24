@@ -18,6 +18,8 @@ import java.util.concurrent.Flow;
 import static java.util.Objects.requireNonNull;
 
 public class EnerginetRegionConnector implements RegionConnector {
+    // this path will stay hard-coded
+    @SuppressWarnings("java:S1075")
     public static final String BASE_PATH = "/region-connectors/dk-energinet/";
     public static final int MAXIMUM_MONTHS_IN_THE_PAST = 24;
     private static final String COUNTRY_CODE = "dk";

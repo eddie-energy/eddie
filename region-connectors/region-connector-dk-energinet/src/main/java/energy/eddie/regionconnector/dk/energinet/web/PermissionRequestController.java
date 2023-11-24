@@ -43,6 +43,8 @@ public class PermissionRequestController {
             "./src/main/resources/public" + BASE_PATH + CE_JS
     };
     private static final String CE_PRODUCTION_PATH = "/public" + BASE_PATH + CE_JS;
+    // this path will stay hard-coded
+    @SuppressWarnings("java:S1075")
     private static final String PERMISSION_STATUS_PATH = "/permission-status";
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final Environment environment;
@@ -110,7 +112,7 @@ public class PermissionRequestController {
         return ResponseEntity.ok(statusMessage);
     }
 
-    @PostMapping(value = "/permission-request", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/permission-request", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedPermissionRequest> permissionRequest(@Valid @ModelAttribute PermissionRequestForCreation requestForCreation)
             throws StateTransitionException {
         LOGGER.info("requestForCreation was: {}", requestForCreation);

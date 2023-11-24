@@ -102,16 +102,16 @@ class PermissionRequestControllerTest {
     }
 
     @Test
-    void givenMultiPartFormData_returnsBadRequest() throws Exception {
+    void givenFormUrlEncoded_returnsBadRequest() throws Exception {
         mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
-                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(status().isUnsupportedMediaType());
     }
 
     @Test
     void givenNoRequestBody_returnsBadRequest() throws Exception {
         mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", allOf(
                         iterableWithSize(7),
@@ -122,7 +122,7 @@ class PermissionRequestControllerTest {
     @Test
     void givenSomeMissingFields_returnsBadRequest() throws Exception {
         mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
                         .param("connectionId", "23")
                         .param("meteringPoint", "92345")
                         .param("periodResolution", "PT1H"))
@@ -139,7 +139,7 @@ class PermissionRequestControllerTest {
     @Test
     void givenInvalidPeriodResolution_returnsBadRequest() throws Exception {
         mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
                         .param("connectionId", "23")
                         .param("periodResolution", "PT4h"))
                 .andExpect(status().isBadRequest())
@@ -149,7 +149,7 @@ class PermissionRequestControllerTest {
     @Test
     void givenBlankFields_returnsBadRequest() throws Exception {
         mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
                         .param("connectionId", "")
                         .param("meteringPoint", "92345")
                         .param("periodResolution", "PT1H")
@@ -180,14 +180,14 @@ class PermissionRequestControllerTest {
 
 
         mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
                         .param("connectionId", "214")
                         .param("meteringPoint", "92345")
                         .param("periodResolution", "PT1H")
                         .param("refreshToken", "HelloRefreshToken")
                         .param("dataNeedId", "Need")
                         .param("additionalField", "Useless")
-                        .param("start", "2023-10-10")   // TODO this is not zoneddatetime
+                        .param("start", "2023-10-10")
                         .param("end", "2023-12-12"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.permissionId", is(permissionId)))
@@ -208,14 +208,14 @@ class PermissionRequestControllerTest {
         });
 
         mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
                         .param("connectionId", "214")
                         .param("meteringPoint", "92345")
                         .param("periodResolution", "PT1H")
                         .param("refreshToken", "HelloRefreshToken")
                         .param("dataNeedId", "Need")
                         .param("additionalField", "Useless")
-                        .param("start", "2023-10-10")   // TODO this is not zoneddatetime
+                        .param("start", "2023-10-10")
                         .param("end", "2023-11-11"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.permissionId", is(permissionId)))

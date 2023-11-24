@@ -1,6 +1,8 @@
 package energy.eddie.regionconnector.dk.energinet.web;
 
+import energy.eddie.api.v0.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.api.v0.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.dk.energinet.dtos.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +11,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -43,24 +44,30 @@ public class PermissionRequestControllerAdvice extends ResponseEntityExceptionHa
         return createErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 
-    @Override
-    protected ResponseEntity<Object> handleHttpMessageNotReadable(
-            @NonNull HttpMessageNotReadableException ex,
-            @NonNull HttpHeaders headers,
-            @NonNull HttpStatusCode status,
-            @NonNull WebRequest request
-    ) {
-        var errors = List.of("Failed to read request");
-
-        return createErrorResponse(errors, HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler(value = {StateTransitionException.class})
     protected ResponseEntity<Object> handleStateTransitionException(StateTransitionException stateTransitionException) {
         LOGGER_ADVICE.info("Error occurred while trying to transition a state", stateTransitionException);
 
-        var errors = List.of("Error occurred while trying to transition a state");
+        var errors = List.of("An error occurred while trying to transition a permission request to a new state");
 
         return createErrorResponse(errors, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Object> handleValidationException(ValidationException exception) {
+        List<String> errors = exception.errors().stream()
+                .map(error -> "%s: %s".formatted(error.name(), error.message()))
+                .toList();
+
+        return createErrorResponse(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {SendToPermissionAdministratorException.class})
+    protected ResponseEntity<Object> handleSendToPermissionAdministratorException(SendToPermissionAdministratorException exception) {
+        LOGGER_ADVICE.info("Error occurred while sending a permission request to a PA", exception);
+
+        var status = exception.userFault() ? HttpStatus.BAD_REQUEST : HttpStatus.INTERNAL_SERVER_ERROR;
+
+        return createErrorResponse(List.of(exception.getMessage()), status);
     }
 }
