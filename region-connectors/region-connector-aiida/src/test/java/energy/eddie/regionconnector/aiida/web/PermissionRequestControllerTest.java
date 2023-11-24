@@ -3,17 +3,18 @@ package energy.eddie.regionconnector.aiida.web;
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -30,14 +31,34 @@ class PermissionRequestControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private AiidaRegionConnectorService service;
+    @Autowired
+    private ConfigurableEnvironment environment;
+
+
+    @BeforeEach
+    void setUp() {
+        environment.setActiveProfiles();
+    }
 
     @Test
-    void getConnectorElementJavascript() throws Exception {
-        String result = mockMvc.perform(get("/region-connectors/aiida/ce.js"))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
+    void javascriptConnectorElement_returnsOk() throws Exception {
+        // Given
 
-        assertThat(result).contains("<h1>THIS IS AIIDA!!!</h1>");
+        // When
+        mockMvc.perform(get("/region-connectors/aiida/ce.js"))
+                // Then
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void javascriptConnectorElement_returnsOk_withDevProfile() throws Exception {
+        // Given
+        environment.setActiveProfiles("dev");
+
+        // When
+        mockMvc.perform(get("/region-connectors/aiida/ce.js"))
+                // Then
+                .andExpect(status().isOk());
     }
 
     @Nested

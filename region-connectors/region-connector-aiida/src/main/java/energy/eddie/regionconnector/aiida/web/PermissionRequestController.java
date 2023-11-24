@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.aiida.web;
 
 import energy.eddie.api.v0.process.model.StateTransitionException;
-import energy.eddie.regionconnector.aiida.AiidaRegionConnector;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
@@ -19,16 +18,20 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+import static energy.eddie.regionconnector.aiida.AiidaRegionConnector.BASE_PATH;
+
 @RestController
-@RequestMapping(AiidaRegionConnector.BASE_PATH)
+@RequestMapping(BASE_PATH)
 public class PermissionRequestController {
+    private static final String CE_JS = "ce.js";
     /**
      * We have to check two different paths depending if the Region-Connector is run by the core or in standalone.
      */
     private static final String[] CE_DEV_PATHS = new String[]{
-            "./region-connectors/region-connector-aiida/src/main/resources/public/ce.js",
-            "./src/main/resources/public/ce.js"
+            "./region-connectors/region-connector-aiida/src/main/resources/public" + BASE_PATH + CE_JS,
+            "./src/main/resources/public" + BASE_PATH + CE_JS
     };
+    private static final String CE_PRODUCTION_PATH = "/public" + BASE_PATH + CE_JS;
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final AiidaRegionConnectorService aiidaService;
     private final Environment environment;
@@ -58,7 +61,7 @@ public class PermissionRequestController {
     private InputStream getCEInputStream() throws FileNotFoundException {
         return !environment.matchesProfiles("dev")
                 ? new FileInputStream(findCEDevPath())
-                : Objects.requireNonNull(getClass().getResourceAsStream("/public/ce.js"));
+                : Objects.requireNonNull(getClass().getResourceAsStream(CE_PRODUCTION_PATH));
     }
 
     @PostMapping(value = "/permission-request", produces = MediaType.APPLICATION_JSON_VALUE)
