@@ -57,6 +57,7 @@ jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", ver
 jaxb-xjc = { module = "org.glassfish.jaxb:jaxb-xjc", version.ref = "jaxb" }
 jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "jaxb" }
 jaxb-plugins = { module = "org.jvnet.jaxb:jaxb-plugins", version.ref = "jaxb-plugins" }
+jaxb-plugin-annotate = { module = "org.jvnet.jaxb:jaxb-plugin-annotate", version.ref = "jaxb-plugins" }
 jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 
 
