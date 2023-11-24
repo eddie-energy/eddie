@@ -1,33 +1,91 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.states;
 
-import energy.eddie.regionconnector.dk.energinet.customer.permission.request.SimplePermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
-import io.javalin.validation.ValidationError;
+import energy.eddie.api.v0.process.model.PastStateException;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class EnerginetCustomerMalformedStateTest {
     @Test
-    void toString_returnsErrorString() {
+    void malformedStateToString_containsCause() {
         // Given
-        DkEnerginetCustomerPermissionRequest permissionRequest = new SimplePermissionRequest("pid", "cid", "dataNeedId");
-        Map<String, List<ValidationError<?>>> errors = new HashMap<>();
-        List<ValidationError<?>> errorList = new ArrayList<>();
-        errorList.add(new ValidationError<>("Error message", Map.of("field", "errorField"), null));
-        errors.put("key", errorList);
-        EnerginetCustomerMalformedState malformedState = new EnerginetCustomerMalformedState(permissionRequest, errors);
+        var malformed = new EnerginetCustomerMalformedState(null, new Exception());
 
         // When
-        String toStringResult = malformedState.toString();
+        var res = malformed.toString();
 
         // Then
-        String expectedToString = "MalformedState{errors={key=[ValidationError(message=Error message, args={field=errorField}, value=null)]}}";
-        assertEquals(expectedToString, toStringResult);
+        assertEquals("MalformedPermissionRequestState{cause=java.lang.Exception}", res);
+    }
+
+    @Test
+    void validate_throws() {
+        // Given
+        EnerginetCustomerMalformedState state = new EnerginetCustomerMalformedState(null, null);
+
+        // When
+        // Then
+        assertThrows(PastStateException.class, state::validate);
+    }
+
+    @Test
+    void sendToPermissionAdministrator_throws() {
+        // Given
+        EnerginetCustomerMalformedState state = new EnerginetCustomerMalformedState(null, null);
+
+        // When
+        // Then
+        assertThrows(PastStateException.class, state::sendToPermissionAdministrator);
+    }
+
+    @Test
+    void receivedPermissionAdministratorResponse_throws() {
+        // Given
+        EnerginetCustomerMalformedState state = new EnerginetCustomerMalformedState(null, null);
+
+        // When
+        // Then
+        assertThrows(PastStateException.class, state::receivedPermissionAdministratorResponse);
+    }
+
+    @Test
+    void accept_throws() {
+        // Given
+        EnerginetCustomerMalformedState state = new EnerginetCustomerMalformedState(null, null);
+
+        // When
+        // Then
+        assertThrows(PastStateException.class, state::accept);
+    }
+
+    @Test
+    void invalid_throws() {
+        // Given
+        EnerginetCustomerMalformedState state = new EnerginetCustomerMalformedState(null, null);
+
+        // When
+        // Then
+        assertThrows(PastStateException.class, state::invalid);
+    }
+
+    @Test
+    void reject_throws() {
+        // Given
+        EnerginetCustomerMalformedState state = new EnerginetCustomerMalformedState(null, null);
+
+        // When
+        // Then
+        assertThrows(PastStateException.class, state::reject);
+    }
+
+    @Test
+    void terminate_throws() {
+        // Given
+        EnerginetCustomerMalformedState state = new EnerginetCustomerMalformedState(null, null);
+
+        // When
+        // Then
+        assertThrows(PastStateException.class, state::terminate);
     }
 }

@@ -5,20 +5,10 @@ import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerCreatedState;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
-import io.javalin.http.Context;
 
 import java.time.ZonedDateTime;
-import java.util.UUID;
 
 public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPermissionRequest {
-    public static final String CONNECTION_ID = "connectionId";
-    public static final String START_KEY = "start";
-    public static final String END_KEY = "end";
-    public static final String REFRESH_TOKEN_KEY = "refreshToken";
-    public static final String PERIOD_RESOLUTION_KEY = "periodResolution";
-    public static final String METERING_POINT_KEY = "meteringPoint";
-    private static final String DATA_NEED_ID = "dataNeedId";
-
     private final String permissionId;
     private final String connectionId;
     private final ZonedDateTime start;
@@ -29,24 +19,26 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
     private final PeriodResolutionEnum periodResolution;
     private PermissionRequestState state;
 
-    public EnerginetCustomerPermissionRequest(String permissionId, String connectionId, String dataNeedId, Context ctx, EnerginetConfiguration configuration) {
+    public EnerginetCustomerPermissionRequest(
+            String permissionId,
+            String connectionId,
+            ZonedDateTime start,
+            ZonedDateTime end,
+            String refreshToken,
+            String meteringPoint,
+            String dataNeedId,
+            PeriodResolutionEnum periodResolution,
+            EnerginetConfiguration configuration) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
+        this.start = start;
+        this.end = end;
+        this.refreshToken = refreshToken;
+        this.meteringPoint = meteringPoint;
         this.dataNeedId = dataNeedId;
-        this.state = new EnerginetCustomerCreatedState(this, ctx, configuration);
-        this.start = ctx.formParamAsClass(START_KEY, ZonedDateTime.class).getOrDefault(null);
-        this.end = ctx.formParamAsClass(END_KEY, ZonedDateTime.class).getOrDefault(null);
-        this.refreshToken = ctx.formParam(REFRESH_TOKEN_KEY);
-        this.meteringPoint = ctx.formParam(METERING_POINT_KEY);
-        this.periodResolution = ctx.formParamAsClass(PERIOD_RESOLUTION_KEY, PeriodResolutionEnum.class).getOrDefault(null);
-    }
+        this.periodResolution = periodResolution;
 
-    public EnerginetCustomerPermissionRequest(String connectionId, String dataNeedId, Context ctx, EnerginetConfiguration configuration) {
-        this(UUID.randomUUID().toString(), connectionId, dataNeedId, ctx, configuration);
-    }
-
-    public EnerginetCustomerPermissionRequest(Context ctx, EnerginetConfiguration configuration) {
-        this(ctx.formParam(CONNECTION_ID), ctx.formParam(DATA_NEED_ID), ctx, configuration);
+        this.state = new EnerginetCustomerCreatedState(this, configuration);
     }
 
     @Override

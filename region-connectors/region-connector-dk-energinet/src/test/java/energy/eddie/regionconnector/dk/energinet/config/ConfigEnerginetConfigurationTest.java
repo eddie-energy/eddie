@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.dk.energinet.config;
 
-import energy.eddie.regionconnector.dk.energinet.config.ConfigEnerginetConfiguration;
 import org.eclipse.microprofile.config.Config;
 import org.junit.jupiter.api.Test;
 
@@ -32,23 +31,23 @@ class ConfigEnerginetConfigurationTest {
         var expectedThirdPartyBasePath = "thirdPartyPath";
 
         when(config.getValue(ConfigEnerginetConfiguration.ENERGINET_CUSTOMER_BASE_PATH_KEY, String.class)).thenReturn(expectedCustomerBasePath);
-        when(config.getValue(ConfigEnerginetConfiguration.ENERGINET_THIRDPARTY_BASE_PATH_KEY, String.class)).thenReturn(expectedThirdPartyBasePath);
+        when(config.getValue(ConfigEnerginetConfiguration.ENERGINET_THIRD_PARTY_BASE_PATH_KEY, String.class)).thenReturn(expectedThirdPartyBasePath);
 
         var uut = new ConfigEnerginetConfiguration(config);
 
         assertEquals(expectedCustomerBasePath, uut.customerBasePath());
-        assertEquals(expectedThirdPartyBasePath, uut.thirdpartyBasePath());
+        assertEquals(expectedThirdPartyBasePath, uut.thirdPartyBasePath());
     }
 
     @Test
     void getters_withMissingValues_throwsNoSuchElementException() {
         var config = mock(Config.class);
         when(config.getValue(ConfigEnerginetConfiguration.ENERGINET_CUSTOMER_BASE_PATH_KEY, String.class)).thenThrow(NoSuchElementException.class);
-        when(config.getValue(ConfigEnerginetConfiguration.ENERGINET_THIRDPARTY_BASE_PATH_KEY, String.class)).thenThrow(NoSuchElementException.class);
+        when(config.getValue(ConfigEnerginetConfiguration.ENERGINET_THIRD_PARTY_BASE_PATH_KEY, String.class)).thenThrow(NoSuchElementException.class);
 
         var uut = new ConfigEnerginetConfiguration(config);
         assertThrows(NoSuchElementException.class, uut::customerBasePath);
-        assertThrows(NoSuchElementException.class, uut::thirdpartyBasePath);
+        assertThrows(NoSuchElementException.class, uut::thirdPartyBasePath);
     }
 
     @Test
@@ -62,7 +61,7 @@ class ConfigEnerginetConfigurationTest {
         when(config.getValue(ConfigEnerginetConfiguration.ENERGINET_CUSTOMER_BASE_PATH_KEY, String.class))
                 .thenReturn(expectedCustomerBasePath)
                 .thenReturn(updatedCustomerBasePath);
-        when(config.getValue(ConfigEnerginetConfiguration.ENERGINET_THIRDPARTY_BASE_PATH_KEY, String.class))
+        when(config.getValue(ConfigEnerginetConfiguration.ENERGINET_THIRD_PARTY_BASE_PATH_KEY, String.class))
                 .thenReturn(expectedThirdPartyBasePath)
                 .thenReturn(updatedThirdPartyBasePath);
 
@@ -72,13 +71,13 @@ class ConfigEnerginetConfigurationTest {
         // first values
         assertAll(
                 () -> assertEquals(expectedCustomerBasePath, uut.customerBasePath()),
-                () -> assertEquals(expectedThirdPartyBasePath, uut.thirdpartyBasePath())
+                () -> assertEquals(expectedThirdPartyBasePath, uut.thirdPartyBasePath())
         );
 
         // updated values
         assertAll(
                 () -> assertEquals(updatedCustomerBasePath, uut.customerBasePath()),
-                () -> assertEquals(updatedThirdPartyBasePath, uut.thirdpartyBasePath())
+                () -> assertEquals(updatedThirdPartyBasePath, uut.thirdPartyBasePath())
         );
     }
 }

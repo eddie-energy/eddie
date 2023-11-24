@@ -13,7 +13,7 @@ class PropertiesEnerginetConfigurationTest {
         // given
         Properties props = new Properties();
         props.put(PropertiesEnerginetConfiguration.ENERGINET_CUSTOMER_BASE_PATH_KEY, "customerPath");
-        props.put(PropertiesEnerginetConfiguration.ENERGINET_THIRDPARTY_BASE_PATH_KEY, "thirdPartyPath");
+        props.put(PropertiesEnerginetConfiguration.ENERGINET_THIRD_PARTY_BASE_PATH_KEY, "thirdPartyPath");
         String expected = "customerPath";
         PropertiesEnerginetConfiguration enedisConfiguration = new PropertiesEnerginetConfiguration(props);
 
@@ -29,12 +29,12 @@ class PropertiesEnerginetConfigurationTest {
         // given
         Properties props = new Properties();
         props.put(PropertiesEnerginetConfiguration.ENERGINET_CUSTOMER_BASE_PATH_KEY, "customerPath");
-        props.put(PropertiesEnerginetConfiguration.ENERGINET_THIRDPARTY_BASE_PATH_KEY, "thirdPartyPath");
+        props.put(PropertiesEnerginetConfiguration.ENERGINET_THIRD_PARTY_BASE_PATH_KEY, "thirdPartyPath");
         String expected = "thirdPartyPath";
         PropertiesEnerginetConfiguration enedisConfiguration = new PropertiesEnerginetConfiguration(props);
 
         // when
-        var actual = enedisConfiguration.thirdpartyBasePath();
+        var actual = enedisConfiguration.thirdPartyBasePath();
 
         // then
         assertEquals(expected, actual);

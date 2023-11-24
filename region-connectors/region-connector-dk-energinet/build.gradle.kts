@@ -44,8 +44,6 @@ dependencies {
 
     implementation(libs.reactor.core)
 
-    implementation(libs.javalin)
-
     implementation(libs.microprofile.config)
 
     testImplementation(libs.junit.jupiter)

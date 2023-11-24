@@ -12,7 +12,7 @@ public class PropertiesEnerginetConfiguration implements EnerginetConfiguration 
         this.properties = requireNonNull(properties);
 
         customerBasePath();
-        thirdpartyBasePath();
+        thirdPartyBasePath();
     }
 
     private String get(String key) {
@@ -25,7 +25,7 @@ public class PropertiesEnerginetConfiguration implements EnerginetConfiguration 
     }
 
     @Override
-    public String thirdpartyBasePath() {
-        return get(ENERGINET_THIRDPARTY_BASE_PATH_KEY);
+    public String thirdPartyBasePath() {
+        return get(ENERGINET_THIRD_PARTY_BASE_PATH_KEY);
     }
 }

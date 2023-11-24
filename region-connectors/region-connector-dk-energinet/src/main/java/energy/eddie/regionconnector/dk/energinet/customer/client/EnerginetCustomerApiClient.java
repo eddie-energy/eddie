@@ -33,9 +33,9 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     private String refreshToken = "";
     private String accessToken = "";
 
-    public EnerginetCustomerApiClient(EnerginetConfiguration propertiesEnerginetConfiguration) {
+    public EnerginetCustomerApiClient(EnerginetConfiguration configuration) {
         apiClient = new ApiClient("Bearer");
-        apiClient.setBasePath(propertiesEnerginetConfiguration.customerBasePath());
+        apiClient.setBasePath(configuration.customerBasePath());
 
         tokenApi = apiClient.buildClient(TokenApi.class);
         meterDataApi = apiClient.buildClient(MeterDataApi.class);

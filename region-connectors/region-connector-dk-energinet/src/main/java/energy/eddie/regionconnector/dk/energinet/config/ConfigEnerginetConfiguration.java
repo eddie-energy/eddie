@@ -18,7 +18,7 @@ public class ConfigEnerginetConfiguration implements EnerginetConfiguration {
     }
 
     @Override
-    public String thirdpartyBasePath() {
-        return config.getValue(ENERGINET_THIRDPARTY_BASE_PATH_KEY, String.class);
+    public String thirdPartyBasePath() {
+        return config.getValue(ENERGINET_THIRD_PARTY_BASE_PATH_KEY, String.class);
     }
 }

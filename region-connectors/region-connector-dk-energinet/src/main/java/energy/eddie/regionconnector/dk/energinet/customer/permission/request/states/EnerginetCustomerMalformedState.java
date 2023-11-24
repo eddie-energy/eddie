@@ -1,26 +1,27 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.states;
 
 import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.states.MalformedPermissionRequestState;
-import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
-import io.javalin.validation.ValidationError;
 
-import java.util.List;
-import java.util.Map;
-
-public class EnerginetCustomerMalformedState extends ContextualizedPermissionRequestState<DkEnerginetCustomerPermissionRequest>
+/**
+ * When a permission request cannot be successfully validated, it's state will be malformed.
+ */
+public class EnerginetCustomerMalformedState
+        extends ContextualizedPermissionRequestState<PermissionRequest>
         implements MalformedPermissionRequestState {
-    private final Map<String, List<ValidationError<?>>> errors;
+    private final Throwable cause;
 
-    public EnerginetCustomerMalformedState(DkEnerginetCustomerPermissionRequest permissionRequest, Map<String, List<ValidationError<?>>> errors) {
+    public EnerginetCustomerMalformedState(PermissionRequest permissionRequest, Throwable cause) {
         super(permissionRequest);
-        this.errors = errors;
+        this.cause = cause;
     }
 
     @Override
     public String toString() {
-        return "MalformedState{" +
-                "errors=" + errors +
+        return "MalformedPermissionRequestState{" +
+                "cause=" + cause +
                 '}';
     }
 }
+

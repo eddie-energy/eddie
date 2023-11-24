@@ -33,7 +33,7 @@ public class EnerginetCustomerCliClient {
         PeriodResolutionEnum periodResolutionEnum = PeriodResolutionEnum.PT1H;
 
         Properties regionConnectorProperties = new Properties();
-        var rcIn = EnerginetCustomerCliClient.class.getClassLoader().getResourceAsStream("regionconnector-dk-energinet.properties");
+        var rcIn = EnerginetCustomerCliClient.class.getClassLoader().getResourceAsStream("application-standalone.properties");
         regionConnectorProperties.load(rcIn);
         PropertiesEnerginetConfiguration propertiesEnerginetConfiguration = new PropertiesEnerginetConfiguration(regionConnectorProperties);
 
