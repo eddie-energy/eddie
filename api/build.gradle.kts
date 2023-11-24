@@ -27,8 +27,7 @@ dependencies {
     // dependencies needed to generate code
     jaxb(libs.jaxb.xjc)
     jaxb(libs.jaxb.runtime)
-    // https://mvnrepository.com/artifact/org.jvnet.jaxb2_commons/jaxb2-fluent-api
-    jaxb("org.jvnet.jaxb2_commons:jaxb2-fluent-api:3.0")
+    jaxb(libs.jaxb.plugins)
 
     implementation(libs.jakarta.xml.bind.api)
     implementation(libs.jakarta.annotation.api)
@@ -160,7 +159,7 @@ fun generateBindingsFile(xsdFile: File, bindingsFilePath: String) {
             for (j in 0 until enumerationElements.length) {
                 val enumElement = enumerationElements.item(j) as Element
                 val value = enumElement.getAttribute("value")
-                val doc = enumElement.getElementsByTagName("xs:documentation").item(0).textContent
+                val doc = enumElement.getElementsByTagName("xs:documentation").item(0).textContent.trimEnd()
                 val javaName = doc.toJavaEnumName()
                 // Makes the generated enums have usable names
                 bindings.append("                <typesafeEnumMember name=\"$javaName\" value=\"$value\"/>\n")

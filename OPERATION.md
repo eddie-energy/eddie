@@ -87,6 +87,21 @@ Configuration parameters can be modified in the following locations:
 
 ### Business domain related configuration
 
+#### Common Information Model (CIM)
+
+For the mapping of region specific data to the common information model (CIM) the following configuration parameters
+need to be set:
+
+| Parameter                                 | Type                               | Description                                                                         |
+|-------------------------------------------|------------------------------------|-------------------------------------------------------------------------------------|
+| cim.eligible-party.national-coding-scheme | A valid CodingSchemeTypeList value | Most of the time just 'N' + your country code e.g NAT if you are located in Austria |
+
+E.g. eligible party in Austria:
+
+```
+cim.eligible-party.national-coding-scheme=NAT
+```
+
 #### Data need configuration
 
 A data need

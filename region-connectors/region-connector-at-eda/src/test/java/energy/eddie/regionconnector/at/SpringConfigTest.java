@@ -7,6 +7,7 @@ import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
+import energy.eddie.regionconnector.at.eda.processing.v0_82.ConsumptionRecordProcessor;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -58,6 +59,7 @@ class SpringConfigTest {
     void springConfig_createsRegionConnector() throws TransmissionException {
         // Given
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
+        ConsumptionRecordProcessor consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
         when(edaAdapter.getCMRequestStatusStream())
                 .thenReturn(Flux.empty());
@@ -69,7 +71,7 @@ class SpringConfigTest {
 
 
         // When
-        RegionConnector regionConnector = springConfig.regionConnector(permissionRequestService, edaAdapter, messages, () -> 0);
+        RegionConnector regionConnector = springConfig.regionConnector(permissionRequestService, consumptionRecordProcessor, edaAdapter, messages, () -> 0);
 
         // Then
         assertNotNull(regionConnector);
@@ -87,5 +89,4 @@ class SpringConfigTest {
         // Clean Up
         regionConnector.close();
     }
-
 }
