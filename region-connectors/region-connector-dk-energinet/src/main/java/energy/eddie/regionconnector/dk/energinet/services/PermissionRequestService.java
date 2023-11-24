@@ -3,7 +3,9 @@ package energy.eddie.regionconnector.dk.energinet.services;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.api.v0.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.api.v0.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPoints;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
@@ -49,6 +51,15 @@ public class PermissionRequestService {
         );
     }
 
+    /**
+     * Creates a new {@link PermissionRequest}, validates it and sends it to the permission administrator.
+     *
+     * @param requestForCreation Dto that contains the necessary information for this permission request.
+     * @return The created PermissionRequest
+     * @throws ValidationException                    If the {@code requestForCreation} is not valid.
+     * @throws SendToPermissionAdministratorException When an error occurs while sending the request to the PA.
+     *                                                If {@link SendToPermissionAdministratorException#userFault()} is true, the customer provided an invalid refresh token.
+     */
     public PermissionRequest createAndSendPermissionRequest(PermissionRequestForCreation requestForCreation) throws StateTransitionException {
         var permissionRequest = requestFactory.create(requestForCreation);
         permissionRequest.validate();
@@ -57,7 +68,7 @@ public class PermissionRequestService {
         permissionRequest.receivedPermissionAdministratorResponse();
 
         fetchRecordsExecutor.execute(() -> {
-            // TODO use function or whatever
+            // TODO refactor this and use non-blocking api client
             energinetCustomerApi.setRefreshToken(permissionRequest.refreshToken());
             energinetCustomerApi.setUserCorrelationId(UUID.fromString(permissionRequest.permissionId()));
             MeteringPoints meteringPoints = new MeteringPoints();
@@ -69,8 +80,7 @@ public class PermissionRequestService {
             } catch (FeignException e) {
                 LOGGER.error("Something went wrong while fetching token from Energinet:", e);
             } catch (StateTransitionException e) {
-                // TODO change to better exception
-                throw new RuntimeException(e);
+                LOGGER.error("Error while transitioning a state", e);
             }
 
             try {

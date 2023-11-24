@@ -1,0 +1,102 @@
+package energy.eddie.regionconnector.dk.energinet.services;
+
+import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerAcceptedState;
+import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.task.TaskExecutor;
+
+import java.time.ZonedDateTime;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class PermissionRequestServiceTest {
+    @Mock
+    private DkEnerginetCustomerPermissionRequestRepository repository;
+    @Mock
+    private TaskExecutor executor;
+    @Mock
+    private PermissionRequestFactory requestFactory;
+    @InjectMocks
+    private PermissionRequestService service;
+
+    @Test
+    void givenNonExistingId_findConnectionStatusMessageById_returnsEmptyOptional() {
+        var permissionId = "NonExistingId";
+
+        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.empty());
+
+        Optional<ConnectionStatusMessage> status = service.findConnectionStatusMessageById(permissionId);
+        assertTrue(status.isEmpty());
+    }
+
+    @Test
+    void givenExistingId_findConnectionStatusMessageById_returnsEmptyOptional() {
+        // Given
+        var permissionId = "a0ec0288-7eaf-4aa2-8387-77c6413cfd31";
+        String connectionId = "connId";
+        String dataNeedId = "dataNeedId";
+        var permissionRequest = mock(EnerginetCustomerPermissionRequest.class);
+        var state = new EnerginetCustomerAcceptedState(permissionRequest);
+
+        doReturn(permissionId).when(permissionRequest).permissionId();
+        doReturn(connectionId).when(permissionRequest).connectionId();
+        doReturn(dataNeedId).when(permissionRequest).dataNeedId();
+        doReturn(state).when(permissionRequest).state();
+
+        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
+
+        // When
+        Optional<ConnectionStatusMessage> optionalStatus = service.findConnectionStatusMessageById(permissionId);
+
+        // Then
+        assertTrue(optionalStatus.isPresent());
+        var status = optionalStatus.get();
+        assertEquals(permissionId, status.permissionId());
+        assertEquals(connectionId, status.connectionId());
+        assertEquals(dataNeedId, status.dataNeedId());
+        assertEquals(PermissionProcessStatus.ACCEPTED, status.status());
+        assertNotNull(status.timestamp());
+    }
+
+    @Test
+    void createAndSendPermissionRequest_calls() throws StateTransitionException {
+        // Given
+        var start = ZonedDateTime.now().minusDays(10);
+        var end = start.plusDays(5);
+        String connectionId = "connId";
+        String dataNeedId = "dataNeedId";
+        String refreshToken = "token";
+        String meteringPoint = "meteringPoint";
+        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId, start, end,
+                refreshToken, PeriodResolutionEnum.PT1H, meteringPoint, dataNeedId);
+
+        DkEnerginetCustomerPermissionRequest mockRequest = mock(DkEnerginetCustomerPermissionRequest.class);
+        when(requestFactory.create(requestForCreation)).thenReturn(mockRequest);
+
+        // When
+        service.createAndSendPermissionRequest(requestForCreation);
+
+
+        // Then
+        verify(requestFactory).create(requestForCreation);
+        verify(mockRequest).validate();
+        verify(mockRequest).sendToPermissionAdministrator();
+        verify(mockRequest).receivedPermissionAdministratorResponse();
+        verify(executor).execute(any());
+    }
+}
