@@ -28,19 +28,23 @@ result = []
 for row in rows[1:]:
     country = row[0].lower()
     company = row[2]
-    jumpOffUrl = row[6] if "https" in row[6] else ''
-    if country == 'es':
+    companyId = row[4] if row[4] != 'n.a.' else ''
+    jumpOffUrl = row[6] if 'https' in row[6] else ''
+    if country == 'at':
+        regionConnector = 'at-eda'
+    elif country == 'dk':
+        regionConnector = 'dk-energinet'
+    elif country == 'es':
         regionConnector = 'es-datadis'
     elif country == 'fr':
         regionConnector = 'fr-enedis'
-    elif country == 'at':
-        regionConnector = 'at-eda'
     else:
         regionConnector = country
 
     result.append({
         'country': country,
         'company': company,
+        'companyId': companyId,
         'jumpOffUrl': jumpOffUrl,
         'regionConnector': regionConnector
     })

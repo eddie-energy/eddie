@@ -1,4 +1,4 @@
-import { html, LitElement } from "lit";
+import { html, LitElement, nothing } from "lit";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/input/input.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/button/button.js";
@@ -12,6 +12,7 @@ class PermissionRequestForm extends LitElement {
     connectionId: { attribute: "connection-id" },
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
     jumpOffUrl: { attribute: "jump-off-url" },
+    companyId: { attribute: "company-id" },
     _requestId: { type: String },
     _requestStatus: { type: String },
   };
@@ -30,6 +31,10 @@ class PermissionRequestForm extends LitElement {
 
     const formData = new FormData(event.target);
 
+    if (formData.get("meteringPointId") === "") {
+      formData.delete("meteringPointId");
+      formData.append("dsoId", this.companyId);
+    }
     formData.append("connectionId", this.connectionId);
 
     const startDate = new Date();
@@ -52,7 +57,13 @@ class PermissionRequestForm extends LitElement {
       body: formData,
       method: "POST",
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("HTTP status " + response.status);
+        }
+
+        return response.json();
+      })
       .then((result) => {
         this._requestId = result["cmRequestId"];
         const permissionId = result["permissionId"];
@@ -100,12 +111,14 @@ class PermissionRequestForm extends LitElement {
       <div>
         <form @submit="${this.handleSubmit}">
           <sl-input
-            label="Metering Point Number"
+            label="Zählpunktnummer"
             type="text"
+            help-text="Enter your Zählpunktnummer for the request to show up in your DSO portal. Leave blank to search for the generated Consent Request ID."
             name="meteringPointId"
             minlength="33"
             maxlength="33"
-            required
+            placeholder="${this.companyId}"
+            required="${this.companyId ? nothing : true}"
           ></sl-input>
 
           <br />
@@ -120,12 +133,14 @@ class PermissionRequestForm extends LitElement {
           <sl-alert open>
             <sl-icon slot="icon" name="info-circle"></sl-icon>
 
-            <p>The CM request ID for this connection is: ${this._requestId}</p>
+            <p>The Consent Request ID for this connection is: ${this._requestId}</p>
             <p>The request status is: ${this._requestStatus}</p>
 
             <p>
-              Further steps may be required at the website of the permission
-              administrator.
+              Further steps are required at the website of the permission
+              administrator. Visit the website using the button below and look
+              for your provided Zählpunktnummer or the Consent Request with ID
+              ${this._requestId}.
             </p>
 
             ${this.jumpOffUrl

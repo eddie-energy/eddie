@@ -178,6 +178,10 @@ class EddieConnectButton extends LitElement {
       "jump-off-url",
       this._selectedPermissionAdministrator.jumpOffUrl
     );
+    element.setAttribute(
+      "company-id",
+      this._selectedPermissionAdministrator.companyId
+    );
 
     return element;
   }
