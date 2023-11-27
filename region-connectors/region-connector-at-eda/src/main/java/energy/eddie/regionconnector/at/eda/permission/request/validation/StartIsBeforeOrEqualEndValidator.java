@@ -12,7 +12,7 @@ public class StartIsBeforeOrEqualEndValidator implements Validator<AtPermissionR
     @Override
     public List<AttributeError> validate(AtPermissionRequest value) {
         Optional<LocalDate> dataTo = value.dataTo();
-        if (dataTo.isEmpty() || dataTo.get().isAfter(value.dataFrom())) {
+        if (dataTo.isEmpty() || !dataTo.get().isBefore(value.dataFrom())) {
             return List.of();
         }
         return List.of(new AttributeError("dataFrom", "DateFrom must be before or equal to DateTo"));
