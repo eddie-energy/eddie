@@ -57,6 +57,7 @@ jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", ver
 jaxb-xjc = { module = "org.glassfish.jaxb:jaxb-xjc", version.ref = "jaxb" }
 jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "jaxb" }
 jaxb-plugins = { module = "org.jvnet.jaxb:jaxb-plugins", version.ref = "jaxb-plugins" }
+jaxb-plugin-annotate = { module = "org.jvnet.jaxb:jaxb-plugin-annotate", version.ref = "jaxb-plugins" }
 jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 
 
@@ -64,6 +65,7 @@ jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", versi
 jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakarta-annotation" }
 
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+jackson-datatype-jdk8 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jdk8", version.ref = "jackson" }
 
 reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor" }
 reactor-test = { module = "io.projectreactor:reactor-test", version.ref = "reactor" }

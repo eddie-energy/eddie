@@ -1,8 +1,8 @@
 package energy.eddie.outbound.kafka;
 
-import energy.eddie.api.v0.ApplicationConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -15,7 +15,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Flow;
 
-public class KafkaConnector implements ApplicationConnector, Closeable {
+public class KafkaConnector implements energy.eddie.api.v0.ApplicationConnector, energy.eddie.api.v0_82.ApplicationConnector, Closeable {
     private final Logger logger = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaProducer<String, Object> kafkaProducer;
 
@@ -28,6 +28,13 @@ public class KafkaConnector implements ApplicationConnector, Closeable {
         JdkFlowAdapter
                 .flowPublisherToFlux(statusMessageStream)
                 .subscribe(this::produceStatusMessage);
+    }
+
+    @Override
+    public void setEddieValidatedHistoricalDataMarketDocumentStream(Flow.Publisher<EddieValidatedHistoricalDataMarketDocument> marketDocumentStream) {
+        JdkFlowAdapter
+                .flowPublisherToFlux(marketDocumentStream)
+                .subscribe(this::produceEddieValidatedHistoricalDataMarketDocument);
     }
 
     @Override
@@ -68,6 +75,19 @@ public class KafkaConnector implements ApplicationConnector, Closeable {
             logger.info("Produced consumption record message");
         } catch (RuntimeException | ExecutionException e) {
             logger.warn("Could not produce consumption record message", e);
+        } catch (InterruptedException e) {
+            reinterrupt(e);
+        }
+    }
+
+    private void produceEddieValidatedHistoricalDataMarketDocument(EddieValidatedHistoricalDataMarketDocument marketDocument) {
+        try {
+            kafkaProducer
+                    .send(new ProducerRecord<>("validated-historical-data", marketDocument.connectionId().orElse(null), marketDocument))
+                    .get();
+            logger.info("Produced validated historical data market document message");
+        } catch (RuntimeException | ExecutionException e) {
+            logger.warn("Could not produce validated historical data market document message", e);
         } catch (InterruptedException e) {
             reinterrupt(e);
         }

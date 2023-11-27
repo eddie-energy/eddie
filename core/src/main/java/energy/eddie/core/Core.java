@@ -39,16 +39,19 @@ public class Core {
     private final JavalinApp javalinApp;
     private final PermissionService permissionService;
     private final ConsumptionRecordService consumptionRecordService;
+    private final EddieValidatedHistoricalDataMarketDocumentService eddieValidatedHistoricalDataMarketDocumentService;
     private final Set<ApplicationConnector> applicationConnectors;
 
     @Inject
     public Core(JavalinApp javalinApp,
                 PermissionService permissionService,
                 ConsumptionRecordService consumptionRecordService,
+                EddieValidatedHistoricalDataMarketDocumentService eddieValidatedHistoricalDataMarketDocumentService,
                 Set<ApplicationConnector> applicationConnectors) {
         this.javalinApp = javalinApp;
         this.permissionService = permissionService;
         this.consumptionRecordService = consumptionRecordService;
+        this.eddieValidatedHistoricalDataMarketDocumentService = eddieValidatedHistoricalDataMarketDocumentService;
         this.applicationConnectors = applicationConnectors;
     }
 
@@ -62,11 +65,16 @@ public class Core {
         LOGGER.info("Starting up EDDIE");
         var connectionStatusMessageStream = JdkFlowAdapter.publisherToFlowPublisher(permissionService.getConnectionStatusMessageStream());
         var consumptionRecordMessageStream = JdkFlowAdapter.publisherToFlowPublisher(consumptionRecordService.getConsumptionRecordStream());
+        var eddieValidatedHistoricalDataMarketDocumentStream = JdkFlowAdapter.publisherToFlowPublisher(eddieValidatedHistoricalDataMarketDocumentService.getEddieValidatedHistoricalDataMarketDocumentStream());
 
         applicationConnectors.forEach(applicationConnector -> {
             applicationConnector.init();
             applicationConnector.setConnectionStatusMessageStream(connectionStatusMessageStream);
             applicationConnector.setConsumptionRecordStream(consumptionRecordMessageStream);
+
+            if (applicationConnector instanceof energy.eddie.api.v0_82.ApplicationConnector ac) {
+                ac.setEddieValidatedHistoricalDataMarketDocumentStream(eddieValidatedHistoricalDataMarketDocumentStream);
+            }
         });
         javalinApp.init();
     }
@@ -74,6 +82,13 @@ public class Core {
     private static class Module extends AbstractModule {
 
         private static final String APPLICATION_PROPERTIES = "application.properties";
+        private static final RegionConnectorFactory[] regionConnectorFactories = {
+                new DatadisRegionConnectorFactory(),
+                new EdaRegionConnectorFactory(),
+                new EnerginetRegionConnectorFactory(),
+                new EnedisRegionConnectorFactory(),
+                new SimulationRegionConnectorFactory()
+        };
 
         @Override
         protected void configure() {
@@ -92,14 +107,6 @@ public class Core {
             var regionConnectorBinder = Multibinder.newSetBinder(binder(), RegionConnector.class);
             getAllConnectors(config).forEach(rc -> regionConnectorBinder.addBinding().toInstance(rc));
         }
-
-        private static final RegionConnectorFactory[] regionConnectorFactories = {
-                new DatadisRegionConnectorFactory(),
-                new EdaRegionConnectorFactory(),
-                new EnerginetRegionConnectorFactory(),
-                new EnedisRegionConnectorFactory(),
-                new SimulationRegionConnectorFactory()
-        };
 
         private Collection<RegionConnector> getAllConnectors(Config config) {
             var allConnectors = Arrays.stream(regionConnectorFactories)
