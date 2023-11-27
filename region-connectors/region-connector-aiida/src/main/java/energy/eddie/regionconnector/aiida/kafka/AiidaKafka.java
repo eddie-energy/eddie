@@ -53,7 +53,7 @@ public class AiidaKafka {
 
             LOGGER.info("new status message {}", statusMessage);
 
-            var optionalRequest = repository.findByConnectionId(statusMessage.connectionId());
+            var optionalRequest = repository.findByPermissionId(statusMessage.permissionId());
 
             if (optionalRequest.isEmpty()) {
                 LOGGER.warn("Got ConnectionStatusMessage {}, but couldn't find a matching permission in the database.", statusMessage);

@@ -52,7 +52,7 @@ class AiidaKafkaTest {
         // make sure the request is in a valid state
         request.changeState(new AiidaSentToPermissionAdministratorPermissionRequestState(request));
 
-        when(mockRepository.findByConnectionId(request.connectionId())).thenReturn(Optional.of(request));
+        when(mockRepository.findByPermissionId(request.permissionId())).thenReturn(Optional.of(request));
 
         kafka.listenForConnectionStatusMessages(json);
 
@@ -68,7 +68,7 @@ class AiidaKafkaTest {
 
         request.changeState(new AiidaAcceptedPermissionRequestState(request));
 
-        when(mockRepository.findByConnectionId(request.connectionId())).thenReturn(Optional.of(request));
+        when(mockRepository.findByPermissionId(request.permissionId())).thenReturn(Optional.of(request));
 
         kafka.listenForConnectionStatusMessages(json);
 
@@ -84,7 +84,7 @@ class AiidaKafkaTest {
 
         request.changeState(new AiidaAcceptedPermissionRequestState(request));
 
-        when(mockRepository.findByConnectionId(request.connectionId())).thenReturn(Optional.of(request));
+        when(mockRepository.findByPermissionId(request.permissionId())).thenReturn(Optional.of(request));
 
         kafka.listenForConnectionStatusMessages(json);
 
@@ -100,7 +100,7 @@ class AiidaKafkaTest {
 
         request.changeState(new AiidaAcceptedPermissionRequestState(request));
 
-        when(mockRepository.findByConnectionId(request.connectionId())).thenReturn(Optional.of(request));
+        when(mockRepository.findByPermissionId(request.permissionId())).thenReturn(Optional.of(request));
 
         kafka.listenForConnectionStatusMessages(json);
 
