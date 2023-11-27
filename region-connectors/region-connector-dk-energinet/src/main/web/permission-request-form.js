@@ -27,11 +27,20 @@ class PermissionRequestForm extends LitElement {
 
   permissionId = null;
 
+  isFormFilled(formData) {
+    return !!(formData.get("refreshToken") && formData.get("meteringPoint"));
+  }
+
   handleSubmit(event) {
     this._isSubmitDisabled = true;
     event.preventDefault();
 
     const formData = new FormData(event.target);
+
+    if (!this.isFormFilled(formData)) {
+      return;
+    }
+
     formData.append("connectionId", this.connectionId);
     formData.append("periodResolution", this.dataNeedAttributes.granularity);
 
@@ -39,7 +48,7 @@ class PermissionRequestForm extends LitElement {
     startDate.setDate(
       startDate.getDate() + this.dataNeedAttributes.durationStart
     );
-    
+
     let endDate = new Date();
     if (this.dataNeedAttributes.durationEnd === 0) {
       endDate.setDate(endDate.getDate() - 1); // subtract one day by default
