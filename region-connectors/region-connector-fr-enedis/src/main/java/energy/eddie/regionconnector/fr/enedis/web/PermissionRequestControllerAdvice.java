@@ -1,7 +1,8 @@
-package energy.eddie.regionconnector.at.eda.web;
+package energy.eddie.regionconnector.fr.enedis.web;
 
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.api.v0.process.model.validation.ValidationException;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.shared.web.StateValidationErrors;
 import energy.eddie.regionconnector.shared.web.ValidationErrors;
 import org.slf4j.Logger;
@@ -22,7 +23,7 @@ public class PermissionRequestControllerAdvice {
     @ExceptionHandler(value = {StateTransitionException.class})
     public ResponseEntity<String> stateTransitionException(StateTransitionException stateTransitionException) {
         LOGGER.info("Error occurred while trying to transition a state", stateTransitionException);
-        return new ResponseEntity<>(stateTransitionException.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(stateTransitionException.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -35,5 +36,10 @@ public class PermissionRequestControllerAdvice {
     @ExceptionHandler(ValidationException.class)
     public Map<String, String> handleStateValidationExceptions(ValidationException ex) {
         return new StateValidationErrors(ex).asMap();
+    }
+
+    @ExceptionHandler(PermissionNotFoundException.class)
+    public ResponseEntity<String> handlePermissionRequestNotFound(PermissionNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 }

@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,9 +22,9 @@ class CustomElementPathTest {
         String prodPath = "dummyPath";
 
         String content = "This is a test file content";
-        try (PrintWriter out = new PrintWriter(devPaths[0])) {
+        try (PrintWriter out = new PrintWriter(devPaths[0], Charset.defaultCharset())) {
             out.print(content);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             fail("Failed to create a test file.");
         }
 
@@ -34,7 +35,7 @@ class CustomElementPathTest {
 
             // Then
             assertNotNull(inputStream);
-            String fileContent = new BufferedReader(new InputStreamReader(inputStream)).readLine();
+            String fileContent = new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset())).readLine();
             assertEquals(content, fileContent);
         } catch (IOException e) {
             fail("Failed to read from the test file.");

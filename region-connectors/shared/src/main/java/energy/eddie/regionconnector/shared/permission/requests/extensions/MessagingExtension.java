@@ -20,7 +20,7 @@ public class MessagingExtension<T extends PermissionRequest> implements Extensio
                         permissionRequest.dataNeedId(),
                         permissionRequest.dataSourceInformation(),
                         permissionRequest.state().status(),
-                        permissionRequest.stateTransitionMessage()
+                        ""
                 )
         );
     }

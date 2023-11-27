@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.at.eda.web;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestCreationService;
@@ -22,7 +23,7 @@ import java.util.Optional;
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.BASE_PATH;
 
 @RestController
-@RequestMapping(BASE_PATH)
+@RequestMapping(EdaRegionConnectorMetadata.BASE_PATH)
 public class PermissionRequestController {
 
     private static final String CE_JS = "/ce.js";

@@ -1,15 +1,9 @@
-package energy.eddie.regionconnector.at.eda.web;
+package energy.eddie.regionconnector.shared.web;
 
-import energy.eddie.api.v0.process.model.PastStateException;
-import energy.eddie.api.v0.process.model.PermissionRequestState;
-import energy.eddie.api.v0.process.model.validation.ValidationException;
-import energy.eddie.regionconnector.at.eda.permission.request.states.AtAcceptedPermissionRequestState;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.core.MethodParameter;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -24,8 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class PermissionRequestControllerAdviceTest {
-
+class ValidationErrorsTest {
     private static Stream<Arguments> validationErrors() {
         return Stream.of(
                 Arguments.of(createMockExceptionWithErrorFields()),
@@ -59,43 +52,14 @@ class PermissionRequestControllerAdviceTest {
         return errors;
     }
 
-    @Test
-    void controllerAdviceStateTransitionException_returnsBadRequest() {
-        // Given
-        PermissionRequestControllerAdvice permissionRequestControllerAdvice = new PermissionRequestControllerAdvice();
-
-        // When
-        var res = permissionRequestControllerAdvice.stateTransitionException(new PastStateException(PermissionRequestState.class));
-
-        // Then
-        assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
-    }
-
-    @Test
-    void controllerAdviceHandleStateValidationException_returnsMapOfErrors() {
-        // Given
-        PermissionRequestControllerAdvice permissionRequestControllerAdvice = new PermissionRequestControllerAdvice();
-        ValidationException exception = new ValidationException(new AtAcceptedPermissionRequestState(null), "field1", "Error message 1");
-
-        // When
-        Map<String, String> errors = permissionRequestControllerAdvice.handleStateValidationExceptions(exception);
-
-        // Then
-        assertAll(
-                () -> assertEquals(1, errors.size()),
-                () -> assertTrue(errors.containsKey("field1")),
-                () -> assertEquals("Error message 1", errors.get("field1"))
-        );
-    }
-
     @ParameterizedTest
     @MethodSource("validationErrors")
     void handleValidationExceptionsReturnsMapOfErrors(MethodArgumentNotValidException exception) {
         // Given
-        PermissionRequestControllerAdvice permissionRequestControllerAdvice = new PermissionRequestControllerAdvice();
+        ValidationErrors validationErrors = new ValidationErrors(exception);
 
         // When
-        Map<String, String> errors = permissionRequestControllerAdvice.handleValidationExceptions(exception);
+        Map<String, String> errors = validationErrors.asMap();
 
         // Then
         assertAll(

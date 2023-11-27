@@ -5,7 +5,7 @@ import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.process.model.states.PendingAcknowledgmentPermissionRequestState;
 
 public class FrEnedisPendingAcknowledgmentState extends ContextualizedPermissionRequestState<TimeframedPermissionRequest> implements PendingAcknowledgmentPermissionRequestState {
-    protected FrEnedisPendingAcknowledgmentState(TimeframedPermissionRequest permissionRequest) {
+    public FrEnedisPendingAcknowledgmentState(TimeframedPermissionRequest permissionRequest) {
         super(permissionRequest);
     }
 

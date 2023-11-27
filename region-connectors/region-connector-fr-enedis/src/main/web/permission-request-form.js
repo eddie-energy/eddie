@@ -27,9 +27,6 @@ class PermissionRequestForm extends LitElement {
   handleSubmit(event) {
     event.preventDefault();
 
-    const formData = new FormData(event.target);
-    formData.append("connectionId", this.connectionId);
-
     const startDate = new Date();
     startDate.setDate(
       startDate.getDate() + this.dataNeedAttributes.durationStart
@@ -42,51 +39,59 @@ class PermissionRequestForm extends LitElement {
       endDate.setDate(endDate.getDate() + this.dataNeedAttributes.durationEnd);
     }
 
-    formData.append("start", startDate.toISOString().substring(0, 10));
-    formData.append("end", endDate.toISOString().substring(0, 10));
-    formData.append("dataNeedId", this.dataNeedAttributes.id);
+    const payload = {
+      connectionId: this.connectionId,
+      start: startDate,
+      end: endDate,
+      dataNeedId: this.dataNeedAttributes.id,
+    };
 
     fetch(REQUEST_URL, {
-      body: formData,
+      body: JSON.stringify(payload),
       method: "POST",
+      "Content-Type": "application/json",
     })
+      .then((response) => {
+        const locationHeader = "Location";
+        if (response.headers.has(locationHeader)) {
+          const location = response.headers.get(locationHeader);
+          this.requestPermissionStatus(location);
+          this.intervalId = setInterval(
+            this.requestPermissionStatus(location),
+            5000
+          );
+        }
+      })
       .then((response) => response.json())
       .then((result) => {
-        const permissionId = result["permissionId"];
-
-        this.requestPermissionStatus(permissionId);
-        this.intervalId = setInterval(
-          this.requestPermissionStatus(permissionId),
-          5000
-        );
         window.open(result["redirectUri"], "_blank");
       })
       .catch((error) => console.log("error", error));
   }
 
-  requestPermissionStatus(permissionId) {
+    requestPermissionStatus(location) {
     return () => {
-      fetch(`${BASE_URL}permission-status?permissionId=${permissionId}`)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("HTTP status " + response.status);
-          }
+        fetch(location)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("HTTP status " + response.status);
+            }
 
-          return response.json();
-        })
-        .then((result) => {
-          if (
-            result["status"] === "ACCEPTED" ||
-            result["status"] === "REJECTED" ||
-            result["status"] === "INVALID" ||
-            result["status"] === "TERMINATED"
-          ) {
-            clearInterval(this.intervalId);
-          }
-          console.log("Status:" + result);
-          this._requestStatus = result["status"];
-        })
-        .catch((error) => console.error(error));
+            return response.json();
+          })
+          .then((result) => {
+            if (
+              result["status"] === "ACCEPTED" ||
+              result["status"] === "REJECTED" ||
+              result["status"] === "INVALID" ||
+              result["status"] === "TERMINATED"
+            ) {
+              clearInterval(this.intervalId);
+            }
+            console.log("Status:" + result);
+            this._requestStatus = result["status"];
+          })
+          .catch((error) => console.error(error));
     };
   }
 

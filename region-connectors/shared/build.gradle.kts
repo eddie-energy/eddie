@@ -4,7 +4,16 @@ import java.util.*
 
 plugins {
     id("energy.eddie.java-conventions")
+    alias(libs.plugins.spring.boot).apply(false)
+    alias(libs.plugins.spring.dependency.management)
 }
+
+dependencyManagement {
+    imports {
+        mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+    }
+}
+
 group = "energy.eddie"
 version = "0.0.0"
 
@@ -17,8 +26,10 @@ dependencies {
 
     implementation(libs.reactor.core)
     implementation(project(mapOf("path" to ":api")))
-    implementation(libs.javalin)
     implementation(libs.jakarta.annotation.api)
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.validation)
+    implementation(libs.hibernate.validator)
 
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
