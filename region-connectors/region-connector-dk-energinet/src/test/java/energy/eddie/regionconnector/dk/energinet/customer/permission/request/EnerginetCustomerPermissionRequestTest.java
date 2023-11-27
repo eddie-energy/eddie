@@ -1,12 +1,12 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
 import energy.eddie.api.v0.process.model.PermissionRequestState;
+import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerRejectedState;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import org.junit.jupiter.api.Test;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,7 +19,7 @@ class EnerginetCustomerPermissionRequestTest {
         String permissionId = "testPermissionId";
         String connectionId = "testConnectionId";
         String dataNeedId = "dataNeedId";
-        var start = ZonedDateTime.now(ZoneId.of("Europe/Copenhagen")).minusDays(10);
+        var start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(1);
         String refreshToken = "refreshToken";
         String meteringPoint = "meteringPoint";
@@ -47,7 +47,7 @@ class EnerginetCustomerPermissionRequestTest {
         String permissionId = "testPermissionId";
         String connectionId = "testConnectionId";
         String dataNeedId = "dataNeedId";
-        var start = ZonedDateTime.now(ZoneId.of("Europe/Copenhagen")).minusDays(10);
+        var start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(1);
         String refreshToken = "refreshToken";
         String meteringPoint = "meteringPoint";

@@ -5,6 +5,7 @@ import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.SendToPermissionAdministratorException;
+import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
@@ -14,7 +15,6 @@ import feign.Request;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -47,7 +47,7 @@ class EnerginetCustomerValidatedStateTest {
     @Test
     void sendToPermissionAdministrator_changesToSentToPermissionAdministrator() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneId.of("Europe/Copenhagen")).minusDays(30);
+        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
         ZonedDateTime end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
@@ -128,7 +128,7 @@ class EnerginetCustomerValidatedStateTest {
     }
 
     private PermissionRequest createPermissionRequestInValidatedState(EnerginetCustomerApiClient mockApiClient) {
-        ZonedDateTime start = ZonedDateTime.now(ZoneId.of("Europe/Copenhagen")).minusDays(30);
+        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
         ZonedDateTime end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";

@@ -3,12 +3,12 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request.st
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
+import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import org.junit.jupiter.api.Test;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -29,7 +29,7 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void accept_changesToAcceptedState() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneId.of("Europe/Copenhagen")).minusDays(30);
+        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
         ZonedDateTime end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
@@ -54,7 +54,7 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void invalid_changesToInvalidState() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneId.of("Europe/Copenhagen")).minusDays(30);
+        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
         ZonedDateTime end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
@@ -79,7 +79,7 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void reject_changesToRejectedState() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneId.of("Europe/Copenhagen")).minusDays(30);
+        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
         ZonedDateTime end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";

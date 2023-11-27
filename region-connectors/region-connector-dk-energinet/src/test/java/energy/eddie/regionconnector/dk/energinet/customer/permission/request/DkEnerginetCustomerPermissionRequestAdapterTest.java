@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerMalformedState;
@@ -95,7 +96,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     @Test
     void adapter_changesState() {
         // Given
-        var start = ZonedDateTime.now(ZoneId.of("Europe/Copenhagen")).minusDays(10);
+        var start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
         String meteringPoint = "meteringPoint";

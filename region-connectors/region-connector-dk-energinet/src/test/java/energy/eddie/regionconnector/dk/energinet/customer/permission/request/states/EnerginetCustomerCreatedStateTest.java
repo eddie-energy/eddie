@@ -3,13 +3,13 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request.st
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.validation.ValidationException;
+import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.config.PlainEnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import org.junit.jupiter.api.Test;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -21,7 +21,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void validate_changesToValidatedState_whenValid() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneId.of("Europe/Copenhagen")).minusDays(30);
+        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
         ZonedDateTime end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
@@ -44,7 +44,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void validate_changesToMalformedState_whenEndBeforeStart() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneId.of("Europe/Copenhagen"));
+        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID);
         var end = start.minusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
@@ -68,7 +68,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void validate_changesToMalformedState_whenStartIsOlderThan24Months() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneId.of("Europe/Copenhagen")).minusMonths(30);
+        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusMonths(30);
         ZonedDateTime end = start.plusDays(1);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
@@ -92,7 +92,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void validate_changesToMalformedState_whenNotCompletelyInPast() {
         // Given
-        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Europe/Copenhagen"));
+        ZonedDateTime now = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID);
         ZonedDateTime start = now.minusDays(5);
         ZonedDateTime end = now.plusDays(5);
         String permissionId = UUID.randomUUID().toString();

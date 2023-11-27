@@ -10,6 +10,7 @@ import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 
 import java.net.InetSocketAddress;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -21,6 +22,7 @@ public class EnerginetRegionConnector implements RegionConnector {
     // this path will stay hard-coded
     @SuppressWarnings("java:S1075")
     public static final String BASE_PATH = "/region-connectors/dk-energinet/";
+    public static final ZoneId DK_ZONE_ID = ZoneId.of("Europe/Copenhagen");
     public static final int MAXIMUM_MONTHS_IN_THE_PAST = 24;
     private static final String COUNTRY_CODE = "dk";
     private static final String MDA_CODE = COUNTRY_CODE + "-energinet";

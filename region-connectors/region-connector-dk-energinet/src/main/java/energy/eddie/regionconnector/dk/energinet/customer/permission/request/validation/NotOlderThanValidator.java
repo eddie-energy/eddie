@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request.va
 
 import energy.eddie.api.v0.process.model.validation.AttributeError;
 import energy.eddie.api.v0.process.model.validation.Validator;
+import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 
 import java.time.ZoneId;
@@ -10,14 +11,14 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class NotOlderThanValidator implements Validator<DkEnerginetCustomerPermissionRequest> {
-    private static final ZoneId zoneId = ZoneId.of("Europe/Copenhagen");
+    private static final ZoneId zoneId = EnerginetRegionConnector.DK_ZONE_ID;
     private final ChronoUnit unit;
     private final long limit;
 
     /**
      * Creates a new Validator that checks if the {@code start} time of the {@link DkEnerginetCustomerPermissionRequest}
      * is before {@code now - limit}.
-     * Uses <i>Europe/Copenhagen</i> as timezone for the comparison timestamp.
+     * Uses {@link EnerginetRegionConnector#DK_ZONE_ID} as timezone for the comparison timestamp.
      * Assumes non-null values.
      *
      * @param limit Duration to subtract from the current time resulting in the earliest date for which data may be requested.

@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.customer.client;
 
 import energy.eddie.api.v0.HealthState;
+import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class EnerginetCustomerApiClientTest {
-    private static final ZoneId DK_ZONE_ID = ZoneId.of("Europe/Copenhagen");
+    private static final ZoneId DK_ZONE_ID = EnerginetRegionConnector.DK_ZONE_ID;
     private static final int MAX_PERIOD = 730;
 
     @Test
