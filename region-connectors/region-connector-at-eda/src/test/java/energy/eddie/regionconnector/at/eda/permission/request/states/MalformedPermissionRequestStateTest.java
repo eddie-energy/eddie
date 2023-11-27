@@ -89,5 +89,4 @@ class MalformedPermissionRequestStateTest {
         // Then
         assertThrows(PastStateException.class, state::terminate);
     }
-
 }

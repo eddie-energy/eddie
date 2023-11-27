@@ -17,11 +17,11 @@ public class EnerginetCustomerAcceptedState extends ContextualizedPermissionRequ
 
     @Override
     public void revoke() {
-        throw new IllegalStateException("Not implemented yet");
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override
     public void timeLimit() {
-        throw new IllegalStateException("Not implemented yet");
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 }

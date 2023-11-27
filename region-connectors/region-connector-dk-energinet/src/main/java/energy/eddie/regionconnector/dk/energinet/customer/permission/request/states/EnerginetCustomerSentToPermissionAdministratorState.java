@@ -27,6 +27,6 @@ public class EnerginetCustomerSentToPermissionAdministratorState extends Context
 
     @Override
     public void timeOut() {
-        throw new IllegalStateException("Not implemented yet");
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 }

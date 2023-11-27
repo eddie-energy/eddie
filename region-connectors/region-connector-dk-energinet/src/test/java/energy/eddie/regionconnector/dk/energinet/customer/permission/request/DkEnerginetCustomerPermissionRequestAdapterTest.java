@@ -3,24 +3,21 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
+import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerMalformedState;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
-import io.javalin.http.Context;
-import io.javalin.validation.Validator;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import java.util.UUID;
 
-import static energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class DkEnerginetCustomerPermissionRequestAdapterTest {
     @Test
@@ -99,19 +96,19 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
     @Test
     void adapter_changesState() {
         // Given
-        Context ctx = mock(Context.class);
-        when(ctx.formParamAsClass(any(), eq(ZonedDateTime.class)))
-                .thenReturn(new Validator<>(null, ZonedDateTime.class, START_KEY));
-        when(ctx.formParamAsClass(any(), eq(ZonedDateTime.class)))
-                .thenReturn(new Validator<>(null, ZonedDateTime.class, END_KEY));
-        when(ctx.formParamAsClass(any(), eq(String.class)))
-                .thenReturn(new Validator<>("", String.class, REFRESH_TOKEN_KEY));
-        when(ctx.formParamAsClass(any(), eq(String.class)))
-                .thenReturn(new Validator<>("", String.class, METERING_POINT_KEY));
-        when(ctx.formParamAsClass(any(), eq(PeriodResolutionEnum.class)))
-                .thenReturn(new Validator<>(null, PeriodResolutionEnum.class, PERIOD_RESOLUTION_KEY));
+        var start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(10);
+        String permissionId = UUID.randomUUID().toString();
+        String refreshToken = "refreshToken";
+        String meteringPoint = "meteringPoint";
+        PeriodResolutionEnum resolution = PeriodResolutionEnum.PT1H;
+        String connectionId = "cid";
+        String dataNeedId = "dataNeedId";
+        EnerginetConfiguration config = mock(EnerginetConfiguration.class);
+
+        var request = new EnerginetCustomerPermissionRequest(permissionId, connectionId, start, start.plusDays(1),
+                refreshToken, meteringPoint, dataNeedId, resolution, config);
+
         EnerginetCustomerMalformedState state = new EnerginetCustomerMalformedState(null, null);
-        DkEnerginetCustomerPermissionRequest request = new EnerginetCustomerPermissionRequest("pid", "cid", ctx, null);
         PermissionRequest decorator = new ChangingPermissionRequest(request);
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);
 

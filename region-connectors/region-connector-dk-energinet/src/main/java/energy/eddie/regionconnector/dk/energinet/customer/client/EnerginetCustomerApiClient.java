@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.dk.energinet.customer.client;
 
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.HealthState;
+import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.api.IsAliveApi;
@@ -13,7 +14,10 @@ import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
 import energy.eddie.regionconnector.dk.energinet.utils.ConsumptionRecordMapper;
 
-import java.time.*;
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -23,7 +27,6 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     private static final String IS_ALIVE_API = "isAliveApi";
     // Request period must not exceed the maximum number of days of 730
     private static final int MAX_REQUEST_PERIOD = 730;
-    private static final String DK_ZONE_ID = "Europe/Copenhagen";
     private final ApiClient apiClient;
     private final TokenApi tokenApi;
     private final MeterDataApi meterDataApi;
@@ -33,9 +36,9 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     private String refreshToken = "";
     private String accessToken = "";
 
-    public EnerginetCustomerApiClient(EnerginetConfiguration propertiesEnerginetConfiguration) {
+    public EnerginetCustomerApiClient(EnerginetConfiguration configuration) {
         apiClient = new ApiClient("Bearer");
-        apiClient.setBasePath(propertiesEnerginetConfiguration.customerBasePath());
+        apiClient.setBasePath(configuration.customerBasePath());
 
         tokenApi = apiClient.buildClient(TokenApi.class);
         meterDataApi = apiClient.buildClient(MeterDataApi.class);
@@ -43,7 +46,7 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     }
 
     private void throwIfInvalidTimeframe(ZonedDateTime start, ZonedDateTime end) throws DateTimeException {
-        LocalDate currentDate = LocalDate.ofInstant(Instant.now(), ZoneId.of(DK_ZONE_ID));
+        LocalDate currentDate = LocalDate.ofInstant(Instant.now(), EnerginetRegionConnector.DK_ZONE_ID);
 
         if (start.isEqual(end) || start.isAfter(end)) {
             throw new DateTimeException("Start date must be before end date.");

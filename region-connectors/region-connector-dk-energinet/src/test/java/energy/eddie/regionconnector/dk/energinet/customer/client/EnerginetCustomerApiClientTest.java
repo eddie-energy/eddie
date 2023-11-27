@@ -1,7 +1,8 @@
 package energy.eddie.regionconnector.dk.energinet.customer.client;
 
 import energy.eddie.api.v0.HealthState;
-import energy.eddie.regionconnector.dk.energinet.config.PropertiesEnerginetConfiguration;
+import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
+import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import org.junit.jupiter.api.Test;
@@ -16,13 +17,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class EnerginetCustomerApiClientTest {
-    private static final ZoneId DK_ZONE_ID = ZoneId.of("Europe/Copenhagen");
+    private static final ZoneId DK_ZONE_ID = EnerginetRegionConnector.DK_ZONE_ID;
     private static final int MAX_PERIOD = 730;
 
     @Test
     void health_returnHealthUpState() {
         // Given
-        var config = mock(PropertiesEnerginetConfiguration.class);
+        var config = mock(EnerginetConfiguration.class);
         when(config.customerBasePath()).thenReturn("path");
 
         var client = new EnerginetCustomerApiClient(config);
@@ -40,7 +41,7 @@ class EnerginetCustomerApiClientTest {
     @Test
     void health_returnHealthDownState() {
         // Given
-        var config = mock(PropertiesEnerginetConfiguration.class);
+        var config = mock(EnerginetConfiguration.class);
         when(config.customerBasePath()).thenReturn("path");
 
         var client = new EnerginetCustomerApiClient(config);
@@ -58,7 +59,7 @@ class EnerginetCustomerApiClientTest {
     @Test
     void apiToken_refreshTokenNotSet_throws() {
         // Given
-        var config = mock(PropertiesEnerginetConfiguration.class);
+        var config = mock(EnerginetConfiguration.class);
         when(config.customerBasePath()).thenReturn("path");
 
         var client = new EnerginetCustomerApiClient(config);
@@ -75,7 +76,7 @@ class EnerginetCustomerApiClientTest {
         var end = ZonedDateTime.of(LocalDate.of(2023, 2, 1).atStartOfDay(), DK_ZONE_ID);
         var periodResolution = mock(PeriodResolutionEnum.class);
         var meteringPointsRequest = mock(MeteringPointsRequest.class);
-        var config = mock(PropertiesEnerginetConfiguration.class);
+        var config = mock(EnerginetConfiguration.class);
         when(config.customerBasePath()).thenReturn("path");
 
         var client = new EnerginetCustomerApiClient(config);
@@ -94,7 +95,7 @@ class EnerginetCustomerApiClientTest {
 
         var periodResolution = mock(PeriodResolutionEnum.class);
         var meteringPointsRequest = mock(MeteringPointsRequest.class);
-        var config = mock(PropertiesEnerginetConfiguration.class);
+        var config = mock(EnerginetConfiguration.class);
         when(config.customerBasePath()).thenReturn("path");
 
         var client = new EnerginetCustomerApiClient(config);
@@ -114,7 +115,7 @@ class EnerginetCustomerApiClientTest {
         var startExceedsMaxPeriod = end.minusDays(MAX_PERIOD + 1);
         var periodResolution = mock(PeriodResolutionEnum.class);
         var meteringPointsRequest = mock(MeteringPointsRequest.class);
-        var config = mock(PropertiesEnerginetConfiguration.class);
+        var config = mock(EnerginetConfiguration.class);
         when(config.customerBasePath()).thenReturn("path");
 
         var client = new EnerginetCustomerApiClient(config);
