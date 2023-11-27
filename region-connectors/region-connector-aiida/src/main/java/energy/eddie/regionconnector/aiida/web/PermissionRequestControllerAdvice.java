@@ -59,7 +59,7 @@ public class PermissionRequestControllerAdvice extends ResponseEntityExceptionHa
     protected ResponseEntity<Object> handleStateTransitionException(StateTransitionException stateTransitionException) {
         LOGGER_AIIDA.info("Error occurred while trying to transition a state", stateTransitionException);
 
-        var errors = List.of("Error occurred while trying to transition a state");
+        var errors = List.of("An error occurred while trying to transition a permission request to a new state");
 
         return createErrorResponse(errors, HttpStatus.INTERNAL_SERVER_ERROR);
     }

@@ -114,7 +114,7 @@ class PermissionRequestControllerTest {
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.errors", allOf(
                             iterableWithSize(1),
-                            hasItem("Error occurred while trying to transition a state")
+                            hasItem("An error occurred while trying to transition a permission request to a new state")
                     )));
         }
 
