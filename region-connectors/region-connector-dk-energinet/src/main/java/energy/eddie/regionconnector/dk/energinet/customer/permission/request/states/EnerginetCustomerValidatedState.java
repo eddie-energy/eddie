@@ -25,6 +25,7 @@ public class EnerginetCustomerValidatedState extends ContextualizedPermissionReq
 
         try {
             apiClient.apiToken();
+            permissionRequest.changeState(new EnerginetCustomerPendingAcknowledgmentState(permissionRequest));
         } catch (FeignException e) {
             var errorStatus = HttpStatus.resolve(e.status());
 
@@ -38,6 +39,5 @@ public class EnerginetCustomerValidatedState extends ContextualizedPermissionReq
                 throw new SendToPermissionAdministratorException(this, "An error occurred, response status from Energinet: " + errorStatus, false);
             }
         }
-        permissionRequest.changeState(new EnerginetCustomerPendingAcknowledgmentState(permissionRequest));
     }
 }

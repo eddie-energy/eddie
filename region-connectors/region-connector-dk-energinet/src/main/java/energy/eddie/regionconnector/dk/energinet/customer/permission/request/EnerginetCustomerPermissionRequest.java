@@ -7,7 +7,8 @@ import energy.eddie.regionconnector.dk.energinet.customer.permission.request.sta
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 
 import java.time.ZonedDateTime;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPermissionRequest {
     private final String permissionId;
@@ -30,16 +31,16 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
             String dataNeedId,
             PeriodResolutionEnum periodResolution,
             EnerginetConfiguration configuration) {
-        Objects.requireNonNull(configuration);
+        requireNonNull(configuration);
 
-        this.permissionId = Objects.requireNonNull(permissionId);
-        this.connectionId = Objects.requireNonNull(connectionId);
-        this.start = Objects.requireNonNull(start);
-        this.end = Objects.requireNonNull(end);
-        this.refreshToken = Objects.requireNonNull(refreshToken);
-        this.meteringPoint = Objects.requireNonNull(meteringPoint);
-        this.dataNeedId = Objects.requireNonNull(dataNeedId);
-        this.periodResolution = Objects.requireNonNull(periodResolution);
+        this.permissionId = requireNonNull(permissionId);
+        this.connectionId = requireNonNull(connectionId);
+        this.start = requireNonNull(start);
+        this.end = requireNonNull(end);
+        this.refreshToken = requireNonNull(refreshToken);
+        this.meteringPoint = requireNonNull(meteringPoint);
+        this.dataNeedId = requireNonNull(dataNeedId);
+        this.periodResolution = requireNonNull(periodResolution);
 
         this.state = new EnerginetCustomerCreatedState(this, configuration);
     }
