@@ -1,4 +1,4 @@
-import { html, LitElement, nothing } from "lit";
+import { html, LitElement } from "lit";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/input/input.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/button/button.js";
@@ -31,11 +31,11 @@ class PermissionRequestForm extends LitElement {
 
     const formData = new FormData(event.target);
 
+    formData.append("dsoId", this.companyId);
+    formData.append("connectionId", this.connectionId);
     if (formData.get("meteringPointId") === "") {
       formData.delete("meteringPointId");
-      formData.append("dsoId", this.companyId);
     }
-    formData.append("connectionId", this.connectionId);
 
     const startDate = new Date();
     startDate.setDate(
@@ -118,7 +118,6 @@ class PermissionRequestForm extends LitElement {
             minlength="33"
             maxlength="33"
             placeholder="${this.companyId}"
-            required="${this.companyId ? nothing : true}"
           ></sl-input>
 
           <br />

@@ -26,7 +26,7 @@ class PermissionRequestCreationServiceTest {
 
         LocalDate start = LocalDate.now(Clock.systemUTC()).minusDays(10);
         LocalDate end = start.plusDays(5);
-        PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT9999990699900000000000206868100", "dnid", "AT000000", start, end);
+        PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100", "dnid", "AT000000", start, end);
         PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(edaAdapter, Set.of());
         PermissionRequestCreationService creationService = new PermissionRequestCreationService(permissionRequestFactory, config);
 
@@ -36,5 +36,4 @@ class PermissionRequestCreationServiceTest {
         // Then
         assertNotNull(res);
     }
-
 }
