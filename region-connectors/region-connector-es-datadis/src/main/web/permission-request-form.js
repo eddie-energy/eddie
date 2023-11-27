@@ -33,11 +33,20 @@ class PermissionRequestForm extends LitElement {
     this._areResponseButtonsDisabled = false;
   }
 
+  isFormFilled(formData) {
+    return !!(formData.get("meteringPointId") && formData.get("nif"));
+  }
+
   handleSubmit(event) {
     this._isSubmitDisabled = true;
     event.preventDefault();
 
     const formData = new FormData(event.target);
+
+    if (!this.isFormFilled(formData)) {
+      return;
+    }
+
     formData.append("connectionId", this.connectionId);
     formData.append("measurementType", "HOURLY");
 
@@ -134,12 +143,19 @@ class PermissionRequestForm extends LitElement {
     return html`
       <div>
         <form @submit="${this.handleSubmit}">
-          <sl-input label="DNI/Nif" type="text" name="nif" required></sl-input>
+          <sl-input
+            label="DNI/Nif"
+            type="text"
+            id="nif"
+            name="nif"
+            required
+          ></sl-input>
 
           <br />
 
           <sl-input
             label="CUPS"
+            id="meteringPointId"
             type="text"
             name="meteringPointId"
             required
