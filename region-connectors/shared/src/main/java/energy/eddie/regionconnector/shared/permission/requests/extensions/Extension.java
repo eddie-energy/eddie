@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.at.eda.permission.request.extensions;
+package energy.eddie.regionconnector.shared.permission.requests.extensions;
 
 import energy.eddie.api.v0.process.model.PermissionRequest;
 

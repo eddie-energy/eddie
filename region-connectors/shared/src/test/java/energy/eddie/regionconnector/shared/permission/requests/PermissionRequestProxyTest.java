@@ -1,8 +1,8 @@
-package energy.eddie.regionconnector.at.eda.permission.request;
+package energy.eddie.regionconnector.shared.permission.requests;
 
 import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
-import energy.eddie.regionconnector.at.eda.permission.request.extensions.Extension;
+import energy.eddie.regionconnector.shared.permission.requests.decorators.SimplePermissionRequest;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
@@ -42,7 +42,7 @@ class PermissionRequestProxyTest {
     @SuppressWarnings("unchecked")
     void testCreateProxy() {
         // Given
-        PermissionRequest delegate = new SimplePermissionRequest("pid", "cid");
+        PermissionRequest delegate = new SimplePermissionRequest("pid", "cid", null, "dnid");
         Set<Extension<PermissionRequest>> consumers = new HashSet<>();
         Extension<PermissionRequest> consumer1 = mock(Extension.class);
         Extension<PermissionRequest> consumer2 = mock(Extension.class);

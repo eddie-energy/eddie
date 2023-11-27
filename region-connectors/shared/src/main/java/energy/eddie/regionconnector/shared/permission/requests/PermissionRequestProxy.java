@@ -1,14 +1,14 @@
-package energy.eddie.regionconnector.at.eda.permission.request;
+package energy.eddie.regionconnector.shared.permission.requests;
 
 import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.regionconnector.at.eda.permission.request.extensions.Extension;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Set;
 
-class PermissionRequestProxy<T extends PermissionRequest> implements InvocationHandler {
+public class PermissionRequestProxy<T extends PermissionRequest> implements InvocationHandler {
     private final T delegate;
     private final Set<Extension<T>> consumers;
 

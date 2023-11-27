@@ -1,10 +1,10 @@
-package energy.eddie.regionconnector.at.eda.permission.request.extensions;
+package energy.eddie.regionconnector.shared.permission.requests.extensions;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.regionconnector.at.api.AtPermissionRequest;
+import energy.eddie.api.v0.process.model.PermissionRequest;
 import reactor.core.publisher.Sinks;
 
-public class MessagingExtension implements Extension<AtPermissionRequest> {
+public class MessagingExtension<T extends PermissionRequest> implements Extension<T> {
     private final Sinks.Many<ConnectionStatusMessage> messages;
 
     public MessagingExtension(Sinks.Many<ConnectionStatusMessage> messages) {
@@ -12,7 +12,7 @@ public class MessagingExtension implements Extension<AtPermissionRequest> {
     }
 
     @Override
-    public void accept(AtPermissionRequest permissionRequest) {
+    public void accept(T permissionRequest) {
         messages.tryEmitNext(
                 new ConnectionStatusMessage(
                         permissionRequest.connectionId(),

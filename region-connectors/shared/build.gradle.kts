@@ -25,6 +25,7 @@ dependencies {
 
     testImplementation(libs.reactor.test)
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.mockito)
 }
 
 tasks.test {
