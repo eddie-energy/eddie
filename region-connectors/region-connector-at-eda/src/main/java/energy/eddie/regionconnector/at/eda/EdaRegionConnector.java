@@ -87,6 +87,7 @@ public class EdaRegionConnector implements RegionConnector, CimConsumptionRecord
 
     private static void transitionPermissionRequest(CMRequestStatus cmRequestStatus, AtPermissionRequest request)
             throws StateTransitionException {
+        request.setStateTransitionMessage(cmRequestStatus.getMessage());
         switch (cmRequestStatus.getStatus()) {
             case ACCEPTED -> {
                 if (request.meteringPointId().isEmpty()) {
