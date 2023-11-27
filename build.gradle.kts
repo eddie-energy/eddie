@@ -34,7 +34,7 @@ tasks.register("run-db-server", JavaExec::class) {
     dependsOn("run-db-server-create-db")
     mainClass.set("org.h2.tools.Server")
     classpath = sourceSets["main"].runtimeClasspath
-    args = listOf("-tcp", "-web")
+    args = listOf("-tcp", "-tcpPort", "9091", "-web")
     group = "development"
     description = "run the H2 db server"
 }

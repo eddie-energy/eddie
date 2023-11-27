@@ -50,7 +50,7 @@ tasks.register("run-example-app", JavaExec::class) {
     systemProperties.set("developmentMode", "true")
     group = "development"
     description = "run the example-app in development mode (for Jte templates)"
-    environment["JDBC_URL"] = "jdbc:h2:tcp://localhost/./examples/example-app"
+    environment["JDBC_URL"] = "jdbc:h2:tcp://localhost:9091/./examples/example-app"
     environment["PUBLIC_CONTEXT_PATH"] = ""
     environment["EDDIE_PUBLIC_URL"] = "http://localhost:8080"
 }

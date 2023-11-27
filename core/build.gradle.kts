@@ -69,7 +69,7 @@ tasks.register("run-core", JavaExec::class) {
     workingDir = parent?.projectDir ?: projectDir
     group = "development"
     description = "run EDDIE"
-    environment["JDBC_URL"] = "jdbc:h2:tcp://localhost/./examples/example-app"
+    environment["JDBC_URL"] = "jdbc:h2:tcp://localhost:9091/./examples/example-app"
     environment["PUBLIC_CONTEXT_PATH"] = ""
     environment["CORE_PORT"] = 8080
     environment["IMPORT_CONFIG_FILE"] = "file:./core/src/test/resources/data-needs.yml"
