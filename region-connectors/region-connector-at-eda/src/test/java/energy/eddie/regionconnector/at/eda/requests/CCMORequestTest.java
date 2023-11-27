@@ -161,6 +161,22 @@ class CCMORequestTest {
     }
 
     @Test
+    void toCmRequest_ifDsoIdDoesNotMatchMeteringPoint_throwsInvalidDsoIdException() {
+        // given
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
+        LocalDate end = start.plusMonths(1);
+        CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
+        DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT000000", "AT9999990699900000000000206868100");
+        AtConfiguration atConfiguration = new SimpleAtConfiguration("RC100007");
+        CCMORequest ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
+                RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D);
+
+        // when
+        // then
+        assertThrows(InvalidDsoIdException.class, ccmoRequest::toCMRequest);
+    }
+
+    @Test
     void messageId_returnsCorrectId() {
         // given
         LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
@@ -203,6 +219,5 @@ class CCMORequestTest {
         SimpleAtConfiguration {
             requireNonNull(eligiblePartyId);
         }
-
     }
 }
