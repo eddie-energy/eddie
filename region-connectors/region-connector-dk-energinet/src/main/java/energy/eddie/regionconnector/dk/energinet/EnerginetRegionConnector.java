@@ -18,7 +18,8 @@ import java.util.concurrent.Flow;
 
 import static java.util.Objects.requireNonNull;
 
-public class EnerginetRegionConnector implements RegionConnector {
+public class EnerginetRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider,
+        Mvp1ConsumptionRecordProvider {
     // this path will stay hard-coded
     @SuppressWarnings("java:S1075")
     public static final String BASE_PATH = "/region-connectors/dk-energinet/";

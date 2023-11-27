@@ -2,18 +2,24 @@ package energy.eddie.api.v0;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
-import java.util.concurrent.Flow.Publisher;
 
 /**
- * A region connector connects MDAs to EDDIE. It implements conversion of the MDA specific data records
- * to the EDDIE CIM format {@link ConsumptionRecord} as well as the MDA and CA specifics related to these MDAs.
+ * A region connector connects MDAs to EDDIE. It implements the MDA specific processes and converts requests for
+ * permissions to the format expected by the MDA and also implements MDA and CA specifics related to these MDAs.
  * If offers:
  * <ul>
  *     <li>metadata describing the region connector and the supported MDAs</li>
- *     <li>data streams with all the machine processable data this region connector provides</li>
  *     <li>a web-UI component for the consent process</li>
+ *     <li>methods for managing permissions</li>
  *     <li>methods to perform administrative tasks like closing a connection</li>
  * </ul>
+ * <p>
+ * The interfaces in the see also section extend the functionality of the region connector.
+ * Note that there may be more versions than are referenced.
+ *
+ * @see energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider
+ * @see energy.eddie.api.v0.Mvp1ConsumptionRecordProvider
+ * @see energy.eddie.api.v0_82.CimConsumptionRecordProvider
  */
 public interface RegionConnector extends AutoCloseable {
     /**
@@ -22,20 +28,6 @@ public interface RegionConnector extends AutoCloseable {
      * @return metadata object
      */
     RegionConnectorMetadata getMetadata();
-
-    /**
-     * Data stream of all connection status updates created by this region connector.
-     *
-     * @return connection status message stream that can be consumed only once
-     */
-    Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream();
-
-    /**
-     * Data stream of all consumption records received by this region connector.
-     *
-     * @return consumption record stream that can be consumed only once
-     */
-    Publisher<ConsumptionRecord> getConsumptionRecordStream();
 
     /**
      * Terminates the permission at the permission administrator's system and closes the associated connection.

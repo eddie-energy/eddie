@@ -26,7 +26,8 @@ import java.util.concurrent.Flow;
 
 import static java.util.Objects.requireNonNull;
 
-public class EnedisRegionConnector implements RegionConnector {
+public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider,
+        Mvp1ConsumptionRecordProvider {
     public static final String COUNTRY_CODE = "fr";
     public static final String MDA_CODE = COUNTRY_CODE + "-enedis";
     public static final String BASE_PATH = "/region-connectors/fr-enedis/";

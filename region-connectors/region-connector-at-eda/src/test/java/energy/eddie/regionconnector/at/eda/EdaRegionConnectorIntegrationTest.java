@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.at.eda;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
@@ -67,7 +68,7 @@ class EdaRegionConnectorIntegrationTest {
         permissionRequest.changeState(new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest));
         repository.save(permissionRequest);
 
-        var source = JdkFlowAdapter.flowPublisherToFlux(rc.getConnectionStatusMessageStream());
+        var source = JdkFlowAdapter.flowPublisherToFlux(((Mvp1ConnectionStatusMessageProvider) rc).getConnectionStatusMessageStream());
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "messageId");
 
         StepVerifier.create(source)
