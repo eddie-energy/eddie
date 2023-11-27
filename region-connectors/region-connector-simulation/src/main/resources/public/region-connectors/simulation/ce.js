@@ -2,7 +2,7 @@ import { css, html, LitElement } from "https://esm.sh/lit";
 
 class SimulationConnectorButtonCe extends LitElement {
   static properties = {
-    connectionid: { attribute: "connection-id" },
+    connectionId: { attribute: "connection-id" },
     allowDataNeedModifications: {
       type: Boolean,
       attribute: "allow-data-need-modifications",
@@ -10,9 +10,9 @@ class SimulationConnectorButtonCe extends LitElement {
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
   };
   /**
-   * CSS variables for Bootstrap. Unfortunately, Bootstrap defines it's variables
+   * CSS variables for Bootstrap. Unfortunately, Bootstrap defines its variables
    * on :root only and not on :host. So they need to be redefined to make them
-   * usable inside of a custom element.
+   * usable inside a custom element.
    *
    * @type {CSS}
    */
@@ -30,7 +30,11 @@ class SimulationConnectorButtonCe extends LitElement {
   launchSimulation() {
     const url = new URL(import.meta.url);
     url.pathname = url.pathname.replace(/\/[^/]*$/, "/simulation.html");
-    url.hash = "?connectionid=" + this.connectionid;
+    url.hash =
+      "?connectionId=" +
+      encodeURIComponent(this.connectionId) +
+      "&dataNeedId=" +
+      encodeURIComponent(this.dataNeedAttributes.id);
     window.open(url, "_blank");
   }
 
@@ -56,7 +60,7 @@ class SimulationConnectorButtonCe extends LitElement {
           <tbody>
             <tr>
               <td>connectionId (ce parameter)</td>
-              <td>${this.connectionid}</td>
+              <td>${this.connectionId}</td>
             </tr>
             <tr>
               <td>allowDataNeedModifications (ce parameter)</td>
