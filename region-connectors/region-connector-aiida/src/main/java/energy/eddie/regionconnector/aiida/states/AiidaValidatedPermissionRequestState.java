@@ -18,6 +18,7 @@ public class AiidaValidatedPermissionRequestState
     @Override
     public void sendToPermissionAdministrator() {
         service.sendToPermissionAdministrator(permissionRequest);
+        // AIIDA region connector skips the PendingAcknowledgmentPermissionRequestState, as there is no acknowledgement from AIIDA
         permissionRequest.changeState(new AiidaSentToPermissionAdministratorPermissionRequestState(permissionRequest));
     }
 }
