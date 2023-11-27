@@ -16,7 +16,6 @@ API endpoints are needed and already provided. Right now the customer API endpoi
 | Configuration values                                       | Description                             |
 |------------------------------------------------------------|-----------------------------------------|
 | `region-connector.dk.energinet.customer.client.basePath`   | The URL to the customer API endpoint.   |
-| `region-connector.dk.energinet.thirdparty.client.basePath` | The URL to the thirdparty API endpoint. |
 
 ### .properties file
 
@@ -24,7 +23,6 @@ Example configuration for an `application.properties` file:
 
 ```properties
 region-connector.dk.energinet.customer.client.basePath=https://api.eloverblik.dk/customerapi
-region-connector.dk.energinet.thirdparty.client.basePath=https://api.eloverblik.dk/thirdpartyapi
 ```
 
 ### Environment variables
@@ -38,7 +36,6 @@ Example configuration for dotenv file:
 
 ```dotenv
 REGION_CONNECTOR_DK_ENERGINET_CUSTOMER_CLIENT_BASEPATH=https://api.eloverblik.dk/customerapi
-REGION_CONNECTOR_DK_ENERGINET_THIRDPARTY_CLIENT_BASEPATH=https://api.eloverblik.dk/thirdpartyapi
 ```
 
 ## Running the Region Connector via EDDIE

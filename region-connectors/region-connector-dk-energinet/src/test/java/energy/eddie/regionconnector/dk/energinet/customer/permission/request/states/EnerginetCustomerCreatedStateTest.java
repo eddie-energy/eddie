@@ -29,7 +29,7 @@ class EnerginetCustomerCreatedStateTest {
         PeriodResolutionEnum resolution = PeriodResolutionEnum.PT1H;
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
-        EnerginetConfiguration config = new PlainEnerginetConfiguration("foo:bar", "bloo:too");
+        EnerginetConfiguration config = new PlainEnerginetConfiguration("foo:bar");
 
         var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, connectionId, start, end,
                 refreshToken, meteringPoint, dataNeedId, resolution, config);

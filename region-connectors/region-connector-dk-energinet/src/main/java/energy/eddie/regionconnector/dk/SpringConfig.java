@@ -23,7 +23,6 @@ import org.springframework.context.annotation.Scope;
 import reactor.core.publisher.Sinks;
 
 import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.ENERGINET_CUSTOMER_BASE_PATH_KEY;
-import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.ENERGINET_THIRD_PARTY_BASE_PATH_KEY;
 
 @SpringBootApplication
 public class SpringConfig {
@@ -47,9 +46,8 @@ public class SpringConfig {
 
     @Bean
     public EnerginetConfiguration energinetConfiguration(
-            @Value("${" + ENERGINET_CUSTOMER_BASE_PATH_KEY + "}") String customerBasePath,
-            @Value("${" + ENERGINET_THIRD_PARTY_BASE_PATH_KEY + "}") String thirdPartyBasePath) {
-        return new PlainEnerginetConfiguration(customerBasePath, thirdPartyBasePath);
+            @Value("${" + ENERGINET_CUSTOMER_BASE_PATH_KEY + "}") String customerBasePath) {
+        return new PlainEnerginetConfiguration(customerBasePath);
     }
 
     @Bean
