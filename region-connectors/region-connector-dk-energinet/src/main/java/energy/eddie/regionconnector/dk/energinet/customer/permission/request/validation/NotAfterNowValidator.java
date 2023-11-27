@@ -12,11 +12,11 @@ import java.util.List;
 
 /**
  * A Validator that checks if the {@code start} and {@code end} time of the {@link DkEnerginetCustomerPermissionRequest}
- * are both in the past.
+ * are both not after now, i.e. they are either in the past or equal to now.
  * Uses {@link EnerginetRegionConnector#DK_ZONE_ID} as timezone for the comparison timestamp.
  * Assumes non-null values.
  */
-public class CompletelyInThePastValidator implements Validator<DkEnerginetCustomerPermissionRequest> {
+public class NotAfterNowValidator implements Validator<DkEnerginetCustomerPermissionRequest> {
     @Override
     public List<AttributeError> validate(DkEnerginetCustomerPermissionRequest value) {
         var now = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID);

@@ -59,7 +59,7 @@ class EnerginetCustomerCreatedStateTest {
 
         // When
         var thrown = assertThrows(ValidationException.class, permissionRequest::validate);
-        assertThat(thrown.getMessage()).contains("start must be before end");
+        assertThat(thrown.getMessage()).contains("start must be before or equal to end");
 
         // Then
         assertEquals(EnerginetCustomerMalformedState.class, permissionRequest.state().getClass());
