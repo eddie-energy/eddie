@@ -20,10 +20,11 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     private final LocalDate dataFrom;
     @Nullable
     private final LocalDate dataTo;
+    private final String dataNeedId;
     @Nullable
     private String meteringPointId;
-    private final String dataNeedId;
     private PermissionRequestState state;
+    private String statusTransitionMessage = "";
 
     public EdaPermissionRequest(String connectionId, String dataNeedId, CCMORequest ccmoRequest, EdaAdapter edaAdapter) {
         this(connectionId, UUID.randomUUID().toString(), dataNeedId, ccmoRequest, edaAdapter);
@@ -72,7 +73,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     }
 
     @Override
-    public void setMeteringPointId(@Nullable String meteringPointId) {
+    public void setMeteringPointId(String meteringPointId) {
         this.meteringPointId = meteringPointId;
     }
 
@@ -89,6 +90,16 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     @Override
     public PermissionRequestState state() {
         return state;
+    }
+
+    @Override
+    public String stateTransitionMessage() {
+        return statusTransitionMessage;
+    }
+
+    @Override
+    public void setStateTransitionMessage(String message) {
+        this.statusTransitionMessage = message;
     }
 
     @Override
