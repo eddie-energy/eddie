@@ -167,7 +167,7 @@ public class DatadisRegionConnector implements RegionConnector, AuthorizationRes
                 return;
             }
 
-            permissionRequest.get().rejected();
+            permissionRequest.get().reject();
             ctx.status(HttpStatus.OK);
         });
 

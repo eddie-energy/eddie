@@ -22,7 +22,7 @@ class SavingPermissionRequestTest {
                 "receivedPermissionAdministratorResponse",
                 "invalid",
                 "accept",
-                "rejected",
+                "reject",
                 "terminate"
         );
     }

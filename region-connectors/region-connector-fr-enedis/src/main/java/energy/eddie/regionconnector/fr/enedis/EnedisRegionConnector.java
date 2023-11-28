@@ -135,7 +135,7 @@ public class EnedisRegionConnector implements RegionConnector {
             permissionRequest.receivedPermissionAdministratorResponse();
             var usagePointId = ctx.queryParam("usage_point_id");
             if (usagePointId == null || ctx.status() == HttpStatus.FORBIDDEN) { // probably when request was denied
-                permissionRequest.rejected();
+                permissionRequest.reject();
                 ctx.html("<h1>Access to data denied, you can close this window.</h1>");
                 return;
             }

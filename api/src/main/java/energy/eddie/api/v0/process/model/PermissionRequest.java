@@ -72,15 +72,11 @@ public interface PermissionRequest {
         state().invalid();
     }
 
-    default void rejected() throws StateTransitionException {
+    default void reject() throws StateTransitionException {
         state().reject();
     }
 
-    default void terminated() throws StateTransitionException {
-        state().timeLimit();
-    }
-
-    default void revoked() throws StateTransitionException {
+    default void revoke() throws StateTransitionException {
         state().revoke();
     }
 
@@ -88,7 +84,7 @@ public interface PermissionRequest {
         state().timeLimit();
     }
 
-    default void timedOut() throws StateTransitionException {
+    default void timeOut() throws StateTransitionException {
         state().timeOut();
     }
 }

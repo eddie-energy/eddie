@@ -105,7 +105,7 @@ public class EdaRegionConnector implements
                 request.accept();
             }
             case ERROR -> request.invalid();
-            case REJECTED -> request.rejected();
+            case REJECTED -> request.reject();
             case RECEIVED -> request.receivedPermissionAdministratorResponse();
             default -> {
                 // Other CMRequestStatus do not change the state of the permission request,

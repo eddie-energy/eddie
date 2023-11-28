@@ -95,7 +95,7 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
         permissionRequest.changeState(state);
 
         // When
-        assertDoesNotThrow(permissionRequest::rejected);
+        assertDoesNotThrow(permissionRequest::reject);
 
         // Then
         assertEquals(EnerginetCustomerRejectedState.class, permissionRequest.state().getClass());

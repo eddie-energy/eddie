@@ -25,7 +25,7 @@ class MessagingPermissionRequestTest {
                 Arguments.of(PermissionProcessStatus.TERMINATED, "terminate"),
                 Arguments.of(PermissionProcessStatus.ACCEPTED, "accept"),
                 Arguments.of(PermissionProcessStatus.INVALID, "invalid"),
-                Arguments.of(PermissionProcessStatus.REJECTED, "rejected"),
+                Arguments.of(PermissionProcessStatus.REJECTED, "reject"),
                 Arguments.of(PermissionProcessStatus.VALIDATED, "validate"),
                 Arguments.of(PermissionProcessStatus.MALFORMED, "validate")
         );

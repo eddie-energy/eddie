@@ -205,7 +205,7 @@ class TimeFramedPermissionRequestAdapterTest {
         TimeFramedPermissionRequestAdapter adapter = new TimeFramedPermissionRequestAdapter(request, decorator);
 
         // When
-        adapter.rejected();
+        adapter.reject();
 
         // Then
         assertTrue(decorator.didChange());
@@ -275,7 +275,7 @@ class TimeFramedPermissionRequestAdapterTest {
         }
 
         @Override
-        public void rejected() {
+        public void reject() {
             change = true;
         }
 

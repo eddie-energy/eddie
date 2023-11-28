@@ -61,7 +61,7 @@ public record SimplePermissionRequest(String permissionId,
     }
 
     @Override
-    public void rejected() {
+    public void reject() {
 
     }
 

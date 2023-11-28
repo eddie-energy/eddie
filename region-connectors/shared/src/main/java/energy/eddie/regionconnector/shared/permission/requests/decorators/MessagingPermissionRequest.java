@@ -79,8 +79,8 @@ public class MessagingPermissionRequest implements PermissionRequest {
     }
 
     @Override
-    public void rejected() throws StateTransitionException {
-        permissionRequest.rejected();
+    public void reject() throws StateTransitionException {
+        permissionRequest.reject();
         emitState();
     }
 

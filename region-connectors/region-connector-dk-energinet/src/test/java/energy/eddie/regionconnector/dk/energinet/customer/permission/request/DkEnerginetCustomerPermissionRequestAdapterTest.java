@@ -211,7 +211,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
         DkEnerginetCustomerPermissionRequestAdapter adapter = new DkEnerginetCustomerPermissionRequestAdapter(request, decorator);
 
         // When
-        adapter.rejected();
+        adapter.reject();
 
         // Then
         assertTrue(decorator.didChange());
@@ -281,7 +281,7 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
         }
 
         @Override
-        public void rejected() {
+        public void reject() {
             change = true;
         }
 

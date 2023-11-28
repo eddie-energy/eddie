@@ -82,7 +82,7 @@ public class TimeFramedPermissionRequestAdapter implements TimeframedPermissionR
     }
 
     @Override
-    public void rejected() throws StateTransitionException {
-        adaptee.rejected();
+    public void reject() throws StateTransitionException {
+        adaptee.reject();
     }
 }

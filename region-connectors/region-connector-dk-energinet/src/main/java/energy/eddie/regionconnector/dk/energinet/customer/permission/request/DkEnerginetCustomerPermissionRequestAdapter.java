@@ -98,7 +98,7 @@ public class DkEnerginetCustomerPermissionRequestAdapter implements DkEnerginetC
     }
 
     @Override
-    public void rejected() throws StateTransitionException {
-        adaptee.rejected();
+    public void reject() throws StateTransitionException {
+        adaptee.reject();
     }
 }
