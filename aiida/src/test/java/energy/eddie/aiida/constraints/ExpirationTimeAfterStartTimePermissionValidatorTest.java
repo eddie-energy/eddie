@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,6 +24,7 @@ class ExpirationTimeAfterStartTimePermissionValidatorTest {
     private Instant start;
     private Instant end;
     private Instant grant;
+    private String permissionId;
     private String name;
     private String connectionId;
     private Set<String> codes;
@@ -34,6 +36,7 @@ class ExpirationTimeAfterStartTimePermissionValidatorTest {
         validator = validatorFactory.getValidator();
 
         // valid parameters
+        permissionId = UUID.randomUUID().toString();
         name = "My Test Service";
         connectionId = "RandomId";
         start = Instant.now();
@@ -57,7 +60,7 @@ class ExpirationTimeAfterStartTimePermissionValidatorTest {
     @Test
     void givenExpirationTimeBeforeStartTime_validation_willFail() {
         end = start.minusSeconds(1000);
-        var dto = new Permission(name, start, end, grant, connectionId, codes, streamingConfig);
+        var dto = new Permission(permissionId, name, start, end, grant, connectionId, codes, streamingConfig);
 
         var violations = validator.validate(dto);
         assertEquals(1, violations.size());
@@ -67,7 +70,7 @@ class ExpirationTimeAfterStartTimePermissionValidatorTest {
 
     @Test
     void givenNull_validation_willFail() {
-        var dto = new Permission(name, null, end, grant, connectionId, codes, streamingConfig);
+        var dto = new Permission(permissionId, name, null, end, grant, connectionId, codes, streamingConfig);
 
         var violations = validator.validate(dto);
         assertEquals(2, violations.size());
@@ -76,7 +79,7 @@ class ExpirationTimeAfterStartTimePermissionValidatorTest {
                 "startTime must not be null."));
 
 
-        dto = new Permission(name, start, null, grant, connectionId, codes, streamingConfig);
+        dto = new Permission(permissionId, name, start, null, grant, connectionId, codes, streamingConfig);
 
         violations = validator.validate(dto);
         assertEquals(2, violations.size());
@@ -87,7 +90,7 @@ class ExpirationTimeAfterStartTimePermissionValidatorTest {
 
     @Test
     void givenValidInput_validation_passes() {
-        var dto = new Permission(name, start, end, grant, connectionId, codes, streamingConfig);
+        var dto = new Permission(permissionId, name, start, end, grant, connectionId, codes, streamingConfig);
 
         var violations = validator.validate(dto);
         assertEquals(0, violations.size());

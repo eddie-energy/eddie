@@ -23,6 +23,7 @@ class ExpirationTimeAfterStartTimePermissionDtoValidatorTest {
     private Instant start;
     private Instant end;
     private Instant grant;
+    private String permissionId;
     private String name;
     private String connectionId;
     private Set<String> codes;
@@ -34,6 +35,7 @@ class ExpirationTimeAfterStartTimePermissionDtoValidatorTest {
         validator = validatorFactory.getValidator();
 
         // valid parameters
+        permissionId = "08770fd7-84b5-4b4e-9db5-9b6066bb2af5";
         name = "My Test Service";
         connectionId = "RandomId";
         start = Instant.now();
@@ -57,7 +59,7 @@ class ExpirationTimeAfterStartTimePermissionDtoValidatorTest {
     @Test
     void givenExpirationTimeBeforeStartTime_validation_willFail() {
         end = start.minusSeconds(1000);
-        var dto = new PermissionDto(name, start, end, grant, connectionId, codes, streamingConfig);
+        var dto = new PermissionDto(permissionId, name, start, end, grant, connectionId, codes, streamingConfig);
 
         var violations = validator.validate(dto);
         assertEquals(1, violations.size());
@@ -67,7 +69,7 @@ class ExpirationTimeAfterStartTimePermissionDtoValidatorTest {
 
     @Test
     void givenNull_validation_willFail() {
-        var dto = new PermissionDto(name, null, end, grant, connectionId, codes, streamingConfig);
+        var dto = new PermissionDto(permissionId, name, null, end, grant, connectionId, codes, streamingConfig);
 
         var violations = validator.validate(dto);
         assertEquals(2, violations.size());
@@ -76,7 +78,7 @@ class ExpirationTimeAfterStartTimePermissionDtoValidatorTest {
                 "startTime must not be null."));
 
 
-        dto = new PermissionDto(name, start, null, grant, connectionId, codes, streamingConfig);
+        dto = new PermissionDto(permissionId, name, start, null, grant, connectionId, codes, streamingConfig);
 
         violations = validator.validate(dto);
         assertEquals(2, violations.size());
@@ -87,7 +89,7 @@ class ExpirationTimeAfterStartTimePermissionDtoValidatorTest {
 
     @Test
     void givenValidInput_validation_passes() {
-        var dto = new PermissionDto(name, start, end, grant, connectionId, codes, streamingConfig);
+        var dto = new PermissionDto(permissionId, name, start, end, grant, connectionId, codes, streamingConfig);
 
         var violations = validator.validate(dto);
         assertEquals(0, violations.size());

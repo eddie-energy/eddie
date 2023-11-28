@@ -25,7 +25,6 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.test.util.ReflectionTestUtils;
 import reactor.test.publisher.TestPublisher;
 
-import java.lang.reflect.InvocationTargetException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -86,8 +85,7 @@ class PermissionServiceTest {
         var validSubscribeTopic = "ValidSubscribeTopic";
         streamingConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
 
-        permission = new Permission(serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
-        ReflectionTestUtils.setField(permission, "permissionId", permissionId);
+        permission = new Permission(permissionId, serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
 
         testPublisher = TestPublisher.create();
         terminationTime = start.plusSeconds(200_000);
@@ -118,13 +116,9 @@ class PermissionServiceTest {
 
     @Test
     void givenValidInput_setupPermission_asExpected() throws ConnectionStatusMessageSendFailedException {
-        var permissionDto = new PermissionDto(serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
+        var permissionDto = new PermissionDto(permissionId, serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
 
-        when(repository.save(any(Permission.class))).then(i -> {
-            var arg = ((Permission) i.getArgument(0));
-            ReflectionTestUtils.setField(arg, "permissionId", permissionId);
-            return arg;
-        });
+        when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
         Mockito.doReturn(mockScheduledFuture).when(scheduler).schedule(Mockito.any(), Mockito.any(Instant.class));
 
         Permission newPermission = service.setupNewPermission(permissionDto);
@@ -156,18 +150,13 @@ class PermissionServiceTest {
     @Test
     void verify_expirePermission_sendsStatusMessage_andStopsStreamer_andUpdatesDb()
             throws ConnectionStatusMessageSendFailedException {
+        // Given
         start = Instant.now();
         expiration = start.plusMillis(500);
-        var permissionDto = new PermissionDto(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
-        permission = new Permission(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
-        ReflectionTestUtils.setField(permission, "permissionId", permissionId);
+        var permissionDto = new PermissionDto(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+        permission = new Permission(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
 
-        when(repository.save(any(Permission.class))).then(i -> {
-            var arg = ((Permission) i.getArgument(0));
-            ReflectionTestUtils.setField(arg, "permissionId", permissionId);
-            return arg;
-        });
-
+        when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(repository.findById(permissionId)).thenReturn(Optional.of(permission));
 
         when(scheduler.schedule(any(), any(Instant.class))).thenAnswer(i -> {
@@ -175,8 +164,10 @@ class PermissionServiceTest {
             return mockScheduledFuture;
         });
 
+        // When
         service.setupNewPermission(permissionDto);
 
+        // Then
         verify(streamerManager).createNewStreamerForPermission(any());
         verify(streamerManager).sendConnectionStatusMessageForPermission(
                 argThat(arg -> arg.status() == PermissionStatus.ACCEPTED), eq(permissionId));
@@ -190,24 +181,23 @@ class PermissionServiceTest {
 
     @Test
     void givenNonExistingPermission_expirePermission_willLogError() throws ConnectionStatusMessageSendFailedException {
+        // Given
         var permissionId = "ba1c641e-df74-4bdf-8cd4-2ae2785c05a9";
         start = Instant.now();
         expiration = start.plusMillis(500);
-        var permissionDto = new PermissionDto(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+        var permissionDto = new PermissionDto(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
 
-        when(repository.save(any(Permission.class))).then(i -> {
-            var arg = ((Permission) i.getArgument(0));
-            ReflectionTestUtils.setField(arg, "permissionId", permissionId);
-            return arg;
-        });
+        when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(repository.findById(permissionId)).thenReturn(Optional.empty());
         when(scheduler.schedule(any(), any(Instant.class))).thenAnswer(i -> {
             ((Runnable) i.getArgument(0)).run();
             return mockScheduledFuture;
         });
 
+        // When
         service.setupNewPermission(permissionDto);
 
+        // Then
         assertThat(logCaptor.getInfoLogs()).contains("Will expire permission with id %s".formatted(permissionId));
         assertThat(logCaptor.getErrorLogs()).contains("No permission with id %s found in database, but was requested to expire it."
                 .formatted(permissionId));
@@ -222,10 +212,9 @@ class PermissionServiceTest {
         var permissionId = "ba1c641e-df74-4bdf-8cd4-2ae2785c05a9";
         start = Instant.now();
         expiration = start.plusMillis(500);
-        var permissionDto = new PermissionDto(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
-        permission = new Permission(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
-        ReflectionTestUtils.setField(permission, "permissionId", permissionId);
-        ReflectionTestUtils.setField(permission, "status", PermissionStatus.REVOKED);
+        var permissionDto = new PermissionDto(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+        permission = new Permission(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+        permission.updateStatus(PermissionStatus.REVOKED);
 
         when(repository.save(any(Permission.class))).thenReturn(permission);
         when(repository.findById(permissionId)).thenReturn(Optional.of(permission));
@@ -246,10 +235,9 @@ class PermissionServiceTest {
         var permissionId = "ba1c641e-df74-4bdf-8cd4-2ae2785c05a9";
         start = Instant.now();
         expiration = start.plusMillis(500);
-        var permissionDto = new PermissionDto(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
-        permission = new Permission(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
-        ReflectionTestUtils.setField(permission, "permissionId", permissionId);
-        ReflectionTestUtils.setField(permission, "status", PermissionStatus.STREAMING_DATA);
+        var permissionDto = new PermissionDto(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+        permission = new Permission(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+        permission.updateStatus(PermissionStatus.STREAMING_DATA);
 
         when(repository.save(any(Permission.class))).thenReturn(permission);
         when(repository.findById(permissionId)).thenReturn(Optional.of(permission));
@@ -323,9 +311,7 @@ class PermissionServiceTest {
         void givenValidPermission_revokePermission_asExpected(PermissionStatus status) throws ConnectionStatusMessageSendFailedException {
             Instant revokeTime = Instant.parse("2023-09-13T10:15:30.00Z");
             doReturn(revokeTime).when(clock).instant();
-
-            ReflectionTestUtils.setField(permission, "permissionId", permissionId);
-            ReflectionTestUtils.setField(permission, "status", status);
+            permission.updateStatus(status);
 
             when(repository.findById(permissionId)).thenReturn(Optional.of(permission));
             when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
@@ -364,7 +350,6 @@ class PermissionServiceTest {
             Instant revokeTime = Instant.parse("2023-09-01T10:00:00.00Z");
             doReturn(revokeTime).when(clock).instant();
 
-            ReflectionTestUtils.setField(permission, "permissionId", permissionId);
             ReflectionTestUtils.setField(permission, "grantTime", grantTime);
 
             when(repository.findById(permissionId)).thenReturn(Optional.of(permission));
@@ -386,15 +371,10 @@ class PermissionServiceTest {
 
             start = Instant.now();
             expiration = start.plusMillis(500);
-            var permissionDto = new PermissionDto(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
-            permission = new Permission(serviceName, start, expiration, start, connectionId, codes, streamingConfig);
-            ReflectionTestUtils.setField(permission, "permissionId", permissionId);
+            var permissionDto = new PermissionDto(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+            permission = new Permission(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
 
-            when(repository.save(any(Permission.class))).then(i -> {
-                var arg = ((Permission) i.getArgument(0));
-                ReflectionTestUtils.setField(arg, "permissionId", permissionId);
-                return arg;
-            });
+            when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
             when(clock.instant()).thenReturn(Instant.now());
             when(repository.findById(permissionId)).thenReturn(Optional.of(permission));
 
@@ -479,43 +459,40 @@ class PermissionServiceTest {
          * </p>
          */
         @Test
-        void givenVariousPermissions_statusAsExpected() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        void givenVariousPermissions_statusAsExpected() {
             var codes = Set.of("1.8.0", "2.8.0");
             var streamingConfig = new KafkaStreamingConfig("localhost:9093", "foo", "bar", "tock");
 
             var start = Instant.parse("2023-09-01T00:00:00.000Z");
             var expiration = Instant.parse("2023-12-24T00:00:00.000Z");
-            var acceptedShouldBeStreamingData = new Permission("Should be STREAMING_DATA after test completes", start,
-                    expiration, start, "SomeConnectionId", codes, streamingConfig);
             String shouldStreamPermissionId = "25ee5365-5d71-4b01-b21f-9c61f76a5cc9";
-            ReflectionTestUtils.setField(acceptedShouldBeStreamingData, "permissionId", shouldStreamPermissionId);
+            var acceptedShouldBeStreamingData = new Permission(shouldStreamPermissionId,
+                    "Should be STREAMING_DATA after test completes", start,
+                    expiration, start, "SomeConnectionId", codes, streamingConfig);
 
             start = Instant.parse("2023-09-01T00:00:00.000Z");
             expiration = Instant.parse("2023-09-19T00:00:00.000Z");
-            var waitingForStartShouldBeTimeLimit = new Permission(
+            String timeLimit1 = "9609a9b3-0718-4082-935d-6a98c0f8c5a2";
+            var waitingForStartShouldBeTimeLimit = new Permission(timeLimit1,
                     "Was WAITING_FOR_START and should be TIME_LIMIT after test completes", start,
                     expiration, start, "SomeConnectionId", codes, streamingConfig);
-            String timeLimit1 = "9609a9b3-0718-4082-935d-6a98c0f8c5a2";
-            ReflectionTestUtils.setField(waitingForStartShouldBeTimeLimit, "permissionId", timeLimit1);
-            ReflectionTestUtils.setField(waitingForStartShouldBeTimeLimit, "status", PermissionStatus.WAITING_FOR_START);
+            waitingForStartShouldBeTimeLimit.updateStatus(PermissionStatus.WAITING_FOR_START);
 
             start = Instant.parse("2023-09-11T00:00:00.000Z");
             expiration = Instant.parse("2023-09-30T00:00:00.000Z");
-            var streamingDataShouldBeTimeLimit = new Permission(
+            String timeLimit2 = "0b3b6f6d-d878-49dd-9dfd-62156b5cdc37";
+            var streamingDataShouldBeTimeLimit = new Permission(timeLimit2,
                     "Was STREAMING_DATA and should be TIME_LIMIT after test completes", start,
                     expiration, start, "SomeConnectionId", codes, streamingConfig);
-            String timeLimit2 = "0b3b6f6d-d878-49dd-9dfd-62156b5cdc37";
-            ReflectionTestUtils.setField(streamingDataShouldBeTimeLimit, "permissionId", timeLimit2);
-            ReflectionTestUtils.setField(streamingDataShouldBeTimeLimit, "status", PermissionStatus.STREAMING_DATA);
+            streamingDataShouldBeTimeLimit.updateStatus(PermissionStatus.STREAMING_DATA);
 
             start = Instant.parse("2023-09-11T00:00:00.000Z");
             expiration = Instant.parse("2023-10-31T00:00:00.000Z");
-            var streamingDataShouldBeStreamingData = new Permission(
+            String streamingDataId = "f53aa9e2-1969-4d86-a5e0-d76b2fd72863";
+            var streamingDataShouldBeStreamingData = new Permission(streamingDataId,
                     "Was STREAMING_DATA and should be STREAMING_DATA after test completes", start,
                     expiration, start, "SomeConnectionId", codes, streamingConfig);
-            String streamingDataId = "f53aa9e2-1969-4d86-a5e0-d76b2fd72863";
-            ReflectionTestUtils.setField(streamingDataShouldBeStreamingData, "permissionId", streamingDataId);
-            ReflectionTestUtils.setField(streamingDataShouldBeStreamingData, "status", PermissionStatus.STREAMING_DATA);
+            streamingDataShouldBeStreamingData.updateStatus(PermissionStatus.STREAMING_DATA);
 
             doReturn(Instant.parse("2023-10-01T12:00:00.00Z")).when(clock).instant();
             when(repository.findAllActivePermissions()).thenReturn(List.of(acceptedShouldBeStreamingData,

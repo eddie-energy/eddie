@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static energy.eddie.aiida.TestUtils.getKafkaConfig;
 import static energy.eddie.aiida.TestUtils.getKafkaConsumer;
@@ -75,9 +76,10 @@ class KafkaStreamerIntegrationTest {
         var start = Instant.now();
         var expiration = start.plusSeconds(10000);
         var config = getKafkaConfig(testInfo, kafka);
-        String connectionId = "IntegrationTestConnectionId";
-        var permission = new Permission("IntegrationTest Service Name", start, expiration, start,
-                connectionId, Set.of("1.8.0"), config);
+        var permissionId = UUID.randomUUID().toString();
+        var connectionId = "IntegrationTestConnectionId";
+        var permission = new Permission(permissionId, "IntegrationTest Service Name", start,
+                expiration, start, connectionId, Set.of("1.8.0"), config);
         var producer = KafkaFactory.getKafkaProducer(config, connectionId);
         var mockConsumer = new MockConsumer<String, String>(OffsetResetStrategy.LATEST);
 
@@ -134,9 +136,10 @@ class KafkaStreamerIntegrationTest {
         var start = Instant.now();
         var expiration = start.plusSeconds(10000);
         var config = getKafkaConfig(testInfo, kafka);
+        var permissionId = UUID.randomUUID().toString();
         String connectionId = "StatusMessageIntegrationTestConnectionId";
-        var permission = new Permission("IntegrationTest Service Name", start, expiration, start,
-                connectionId, Set.of("1.8.0"), config);
+        var permission = new Permission(permissionId, "IntegrationTest Service Name", start,
+                expiration, start, connectionId, Set.of("1.8.0"), config);
         var producer = KafkaFactory.getKafkaProducer(config, connectionId);
         var mockConsumer = new MockConsumer<String, String>(OffsetResetStrategy.LATEST);
 

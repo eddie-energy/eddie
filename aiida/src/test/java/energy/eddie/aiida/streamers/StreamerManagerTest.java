@@ -68,9 +68,7 @@ class StreamerManagerTest {
         var validSubscribeTopic = "ValidSubscribeTopic";
 
         var streamingConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
-        permission = new Permission(serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
-        // set permissionId via reflections to mimic database
-        ReflectionTestUtils.setField(permission, "permissionId", permissionId);
+        permission = new Permission(permissionId, serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
     }
 
     @Test

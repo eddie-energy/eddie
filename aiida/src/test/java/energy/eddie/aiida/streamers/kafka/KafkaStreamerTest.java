@@ -83,9 +83,8 @@ class KafkaStreamerTest {
         String validStatusTopic = "ValidStatusTopic";
         String validSubscribeTopic = "ValidSubscribeTopic";
         kafkaConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
-        permission = new Permission("SomeTest Service Name", start, expiration, start, "ConnId",
-                Set.of("1.8.0"), kafkaConfig);
-        ReflectionTestUtils.setField(permission, "permissionId", permissionId);
+        permission = new Permission(permissionId, "SomeTest Service Name", start, expiration,
+                start, "ConnId", Set.of("1.8.0"), kafkaConfig);
 
         var now = Instant.now();
         record1 = AiidaRecordFactory.createRecord("1.8.0", now.plusSeconds(1), 10);

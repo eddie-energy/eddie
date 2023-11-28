@@ -63,13 +63,14 @@ class PermissionControllerIntegrationTest {
     private TestRestTemplate restTemplate;
 
     private PermissionDto getPermissionDto(Instant start, Instant expiration, TestInfo testInfo) {
+        var permissionId = UUID.randomUUID().toString();
         var name = "My NewAIIDA Test Service";
         var grant = Instant.now();
         var connectionId = "NewAiidaRandomConnectionId";
         var codes = Set.of("1.8.0", "2.8.0");
         var streamingConfig = getKafkaConfig(testInfo, kafka);
 
-        return new PermissionDto(name, start, expiration, grant, connectionId, codes, streamingConfig);
+        return new PermissionDto(permissionId, name, start, expiration, grant, connectionId, codes, streamingConfig);
     }
 
     // Truncate DB script doesn't work with @Sql annotation, so execute it manually to ensure clean DB for each test

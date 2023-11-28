@@ -85,13 +85,13 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * As of current implementation, streaming is started right away, even if the permission's start time lies in the future.
      *
      * @param dto Data transfer object containing the information for the new permission.
-     * @return Permission object as returned by the database (i.e. with a permissionId).
+     * @return Permission object as returned by the database.
      * @throws ConnectionStatusMessageSendFailedException Thrown when the connection status message couldn't be sent.
      *                                                    This will result in a rollback and the permission will not be saved.
      */
     @Transactional(rollbackFor = ConnectionStatusMessageSendFailedException.class)
     public Permission setupNewPermission(PermissionDto dto) throws ConnectionStatusMessageSendFailedException {
-        Permission newPermission = new Permission(dto.serviceName(), dto.startTime(), dto.expirationTime(),
+        Permission newPermission = new Permission(dto.permissionId(), dto.serviceName(), dto.startTime(), dto.expirationTime(),
                 dto.grantTime(), dto.connectionId(), dto.requestedCodes(), dto.kafkaStreamingConfig());
         newPermission = repository.save(newPermission);
 

@@ -15,9 +15,11 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @DataJpaTest
 // deactivate the default behaviour, instead use testcontainer
@@ -35,9 +37,10 @@ class PermissionRepositoryIntegrationTest {
     PermissionRepository permissionRepository;
 
     @Test
-    void testThatDbSetsPermissionId() {
+    void givenPermission_save_returnsInstanceWithAllFieldsSet() {
         var start = Instant.now().plusSeconds(100_000);
         var end = start.plusSeconds(400_000);
+        var permissionId = UUID.randomUUID().toString();
 
         var codes = Set.of("1.8.0", "2.8.0");
         var validDataTopic = "ValidPublishTopic";
@@ -49,33 +52,32 @@ class PermissionRepositoryIntegrationTest {
         String name = "My NewAIIDA Test Service";
         String connectionId = "NewAiidaRandomConnectionId";
         Instant grant = Instant.now();
-        Permission permission = new Permission(name, start, end, grant,
-                connectionId, codes, streamingConfig);
-        // DB should set permissionId
-        assertNull(permission.permissionId());
+        Permission permission = new Permission(permissionId, name, start, end,
+                grant, connectionId, codes, streamingConfig);
 
-        permissionRepository.save(permission);
-        assertNotNull(permission.permissionId());
+        var savedPermission = permissionRepository.save(permission);
 
-        assertEquals(name, permission.serviceName());
-        assertEquals(start, permission.startTime());
-        assertEquals(end, permission.expirationTime());
-        assertEquals(grant, permission.grantTime());
-        assertEquals(connectionId, permission.connectionId());
-        assertNull(permission.revokeTime());
-        assertEquals(PermissionStatus.ACCEPTED, permission.status());
+        assertEquals(permissionId, savedPermission.permissionId());
+        assertEquals(name, savedPermission.serviceName());
+        assertEquals(start, savedPermission.startTime());
+        assertEquals(end, savedPermission.expirationTime());
+        assertEquals(grant, savedPermission.grantTime());
+        assertEquals(connectionId, savedPermission.connectionId());
+        assertNull(savedPermission.revokeTime());
+        assertEquals(PermissionStatus.ACCEPTED, savedPermission.status());
 
-        assertThat(codes).hasSameElementsAs(permission.requestedCodes());
-        assertEquals(bootstrapServers, permission.kafkaStreamingConfig().bootstrapServers());
-        assertEquals(validDataTopic, permission.kafkaStreamingConfig().dataTopic());
-        assertEquals(validStatusTopic, permission.kafkaStreamingConfig().statusTopic());
-        assertEquals(validSubscribeTopic, permission.kafkaStreamingConfig().subscribeTopic());
+        assertThat(codes).hasSameElementsAs(savedPermission.requestedCodes());
+        assertEquals(bootstrapServers, savedPermission.kafkaStreamingConfig().bootstrapServers());
+        assertEquals(validDataTopic, savedPermission.kafkaStreamingConfig().dataTopic());
+        assertEquals(validStatusTopic, savedPermission.kafkaStreamingConfig().statusTopic());
+        assertEquals(validSubscribeTopic, savedPermission.kafkaStreamingConfig().subscribeTopic());
     }
 
     @Test
     void givenRevokedPermission_save_asExpected() {
         var start = Instant.now().plusSeconds(100_000);
         var end = start.plusSeconds(400_000);
+        var permissionId = UUID.randomUUID().toString();
 
         var codes = Set.of("1.8.0", "2.8.0");
         var validDataTopic = "ValidPublishTopic";
@@ -89,30 +91,29 @@ class PermissionRepositoryIntegrationTest {
         Instant grant = Instant.now();
         Instant revokeTime = grant.plusSeconds(1000);
 
-        Permission permission = new Permission(name, start, end, grant,
+        Permission permission = new Permission(permissionId, name, start, end, grant,
                 connectionId, codes, streamingConfig);
-        // DB should set permissionId
-        assertNull(permission.permissionId());
+
         assertEquals(PermissionStatus.ACCEPTED, permission.status());
 
         permission.updateStatus(PermissionStatus.REVOKED);
         permission.revokeTime(revokeTime);
 
-        permissionRepository.save(permission);
-        assertNotNull(permission.permissionId());
+        var savedPermission = permissionRepository.save(permission);
 
-        assertEquals(name, permission.serviceName());
-        assertEquals(start, permission.startTime());
-        assertEquals(end, permission.expirationTime());
-        assertEquals(grant, permission.grantTime());
-        assertEquals(connectionId, permission.connectionId());
-        assertEquals(revokeTime, permission.revokeTime());
-        assertEquals(PermissionStatus.REVOKED, permission.status());
+        assertEquals(permissionId, savedPermission.permissionId());
+        assertEquals(name, savedPermission.serviceName());
+        assertEquals(start, savedPermission.startTime());
+        assertEquals(end, savedPermission.expirationTime());
+        assertEquals(grant, savedPermission.grantTime());
+        assertEquals(connectionId, savedPermission.connectionId());
+        assertEquals(revokeTime, savedPermission.revokeTime());
+        assertEquals(PermissionStatus.REVOKED, savedPermission.status());
 
-        assertThat(codes).hasSameElementsAs(permission.requestedCodes());
-        assertEquals(bootstrapServers, permission.kafkaStreamingConfig().bootstrapServers());
-        assertEquals(validDataTopic, permission.kafkaStreamingConfig().dataTopic());
-        assertEquals(validStatusTopic, permission.kafkaStreamingConfig().statusTopic());
-        assertEquals(validSubscribeTopic, permission.kafkaStreamingConfig().subscribeTopic());
+        assertThat(codes).hasSameElementsAs(savedPermission.requestedCodes());
+        assertEquals(bootstrapServers, savedPermission.kafkaStreamingConfig().bootstrapServers());
+        assertEquals(validDataTopic, savedPermission.kafkaStreamingConfig().dataTopic());
+        assertEquals(validStatusTopic, savedPermission.kafkaStreamingConfig().statusTopic());
+        assertEquals(validSubscribeTopic, savedPermission.kafkaStreamingConfig().subscribeTopic());
     }
 }

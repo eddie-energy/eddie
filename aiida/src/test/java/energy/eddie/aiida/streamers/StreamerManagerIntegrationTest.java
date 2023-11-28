@@ -13,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -99,9 +98,6 @@ class StreamerManagerIntegrationTest {
         var codes = Set.of("1.8.0", "2.8.0");
 
         var streamingConfig = getKafkaConfig(testInfo, kafka);
-        var permission = new Permission(serviceName, time, expiration, time, connectionId, codes, streamingConfig);
-        // set permissionId via reflections to mimic database
-        ReflectionTestUtils.setField(permission, "permissionId", permissionId);
-        return permission;
+        return new Permission(permissionId, serviceName, time, expiration, time, connectionId, codes, streamingConfig);
     }
 }
