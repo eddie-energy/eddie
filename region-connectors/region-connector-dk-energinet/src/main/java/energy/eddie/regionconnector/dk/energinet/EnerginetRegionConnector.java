@@ -12,8 +12,6 @@ import reactor.core.publisher.Sinks;
 import java.net.InetSocketAddress;
 import java.time.ZoneId;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Flow;
 
 import static java.util.Objects.requireNonNull;
@@ -27,7 +25,6 @@ public class EnerginetRegionConnector implements RegionConnector, Mvp1Connection
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
     private final Sinks.Many<ConsumptionRecord> consumptionRecordSink;
     private final EnerginetCustomerApi energinetCustomerApi;
-    private final ConcurrentMap<String, ConnectionStatusMessage> permissionIdToConnectionStatusMessages = new ConcurrentHashMap<>();
     private final DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository;
     private final int port;
 
@@ -45,9 +42,6 @@ public class EnerginetRegionConnector implements RegionConnector, Mvp1Connection
         this.connectionStatusSink.asFlux().subscribe(connectionStatusMessage -> {
             var permissionId = connectionStatusMessage.permissionId();
             LOGGER.info("Received connectionStatusMessage for permissionId '{}': {}", permissionId, connectionStatusMessage);
-            if (permissionId != null) {
-                permissionIdToConnectionStatusMessages.put(permissionId, connectionStatusMessage);
-            }
         });
     }
 
