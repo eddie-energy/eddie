@@ -249,7 +249,7 @@ class DatadisPermissionRequestAdapterTest {
         PermissionRequest decorator = new ThrowingPermissionRequest(request);
         DatadisPermissionRequestAdapter adapter = new DatadisPermissionRequestAdapter(request, decorator);
 
-        assertThrows(IllegalStateException.class, adapter::rejected);
+        assertThrows(IllegalStateException.class, adapter::reject);
     }
 
     private record ThrowingPermissionRequest(PermissionRequest request) implements PermissionRequest {
@@ -310,7 +310,7 @@ class DatadisPermissionRequestAdapterTest {
         }
 
         @Override
-        public void rejected() {
+        public void reject() {
             throw new IllegalStateException();
         }
     }

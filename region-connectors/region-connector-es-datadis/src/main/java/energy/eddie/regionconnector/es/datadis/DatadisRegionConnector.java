@@ -168,7 +168,7 @@ public class DatadisRegionConnector implements RegionConnector, Mvp1ConnectionSt
                 return;
             }
 
-            permissionRequest.get().rejected();
+            permissionRequest.get().reject();
             ctx.status(HttpStatus.OK);
         });
 

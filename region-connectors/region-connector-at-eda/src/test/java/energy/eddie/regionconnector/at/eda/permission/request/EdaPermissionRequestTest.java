@@ -341,7 +341,7 @@ class EdaPermissionRequestTest {
         permissionRequest.receivedPermissionAdministratorResponse();
 
         // When
-        permissionRequest.rejected();
+        permissionRequest.reject();
 
         // Then
         assertEquals(AtRejectedPermissionRequestState.class, permissionRequest.state().getClass());

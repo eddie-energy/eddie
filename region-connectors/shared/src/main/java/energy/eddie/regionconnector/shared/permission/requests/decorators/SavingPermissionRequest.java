@@ -74,8 +74,8 @@ public class SavingPermissionRequest<T extends PermissionRequest> implements Per
     }
 
     @Override
-    public void rejected() throws StateTransitionException {
-        executeAndSave(permissionRequest::rejected);
+    public void reject() throws StateTransitionException {
+        executeAndSave(permissionRequest::reject);
     }
 
     @Override

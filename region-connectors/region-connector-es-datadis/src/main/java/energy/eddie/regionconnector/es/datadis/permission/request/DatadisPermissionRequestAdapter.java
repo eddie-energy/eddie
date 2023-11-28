@@ -79,8 +79,8 @@ public final class DatadisPermissionRequestAdapter implements EsPermissionReques
     }
 
     @Override
-    public void rejected() throws StateTransitionException {
-        adaptee.rejected();
+    public void reject() throws StateTransitionException {
+        adaptee.reject();
     }
 
     @Override

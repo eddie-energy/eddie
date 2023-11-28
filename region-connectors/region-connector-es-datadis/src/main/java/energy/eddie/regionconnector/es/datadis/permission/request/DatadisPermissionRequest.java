@@ -159,7 +159,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     }
 
     @Override
-    public void rejected() throws StateTransitionException {
+    public void reject() throws StateTransitionException {
         state.reject();
     }
 
