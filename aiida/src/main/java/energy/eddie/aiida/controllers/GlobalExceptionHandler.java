@@ -77,7 +77,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull HttpStatusCode status,
             @NonNull WebRequest request
     ) {
-        var errors = List.of("Failed to read request");
+        var errors = List.of(ex.getMessage());
 
         return createErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }

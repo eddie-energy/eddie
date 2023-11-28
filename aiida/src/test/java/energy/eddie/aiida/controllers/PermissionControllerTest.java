@@ -160,8 +160,7 @@ class PermissionControllerTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errors", allOf(
                             iterableWithSize(1),
-                            // TODO: better error message?
-                            hasItem("Failed to read request")
+                            hasItem(org.hamcrest.Matchers.startsWith("Required request body is missing"))
                     )));
         }
 
@@ -177,9 +176,9 @@ class PermissionControllerTest {
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(json))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errors", allOf(
-                            iterableWithSize(1),
-                            hasItem("Failed to read request"))));
+                    .andExpect(jsonPath("$.errors", hasSize(1)))
+                    .andExpect(jsonPath("$.errors[0]", containsString("Missing required")))
+                    .andExpect(jsonPath("$.errors[0]", containsString("startTime")));
 
 
             // remove some required fields by renaming the JSON keys
@@ -194,10 +193,9 @@ class PermissionControllerTest {
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(json))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errors", allOf(
-                            iterableWithSize(1),
-                            hasItem("Failed to read request")
-                    )));
+                    .andExpect(jsonPath("$.errors", hasSize(1)))
+                    .andExpect(jsonPath("$.errors[0]", containsString("Missing required")))
+                    .andExpect(jsonPath("$.errors[0]", containsString("serviceName")));
         }
 
         @Test
@@ -418,7 +416,7 @@ class PermissionControllerTest {
                             .content(""))
                     .andExpect(jsonPath("$.errors", allOf(
                             iterableWithSize(1),
-                            hasItem("Failed to read request")
+                            hasItem(org.hamcrest.Matchers.startsWith("Required request body is missing"))
                     )));
         }
 
