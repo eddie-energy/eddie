@@ -44,6 +44,7 @@ public class ConnectionStatusHandler {
             if (req.connectionId != null && req.connectionStatus != null && req.dataNeedId != null) {
                 connectionStatusStreamSink.tryEmitNext(new ConnectionStatusMessage(req.connectionId, req.connectionId, req.dataNeedId, now, req.connectionStatus, req.connectionStatus.toString()));
             } else {
+                LOGGER.error("Mandatory attribute missing (connectionId,connectionStatus,dataNeedId) on ConnectionStatusMessage from frontend: {}", ctx.body());
                 ctx.status(HttpStatus.BAD_REQUEST);
             }
         });

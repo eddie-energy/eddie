@@ -8,7 +8,12 @@ function range(n) {
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
 class ProduceConsumptionRecordCe extends LitElement {
-  static properties = { connectionId: { attribute: "connection-id" }, _measurementsPerDay: {}, _date: {} };
+  static properties = {
+    connectionId: { attribute: "connection-id" },
+    dataNeedId: { attribute: "data-need-id" },
+    _measurementsPerDay: {},
+    _date: {},
+  };
   static meteringIntervalOptions = {
     PT1D: 1,
     P1D: 1,
@@ -23,6 +28,7 @@ class ProduceConsumptionRecordCe extends LitElement {
       ProduceConsumptionRecordCe.meteringIntervalOptions.PT1H;
     this._date = new Date().toISOString().split("T")[0];
     this.meteringPointInputRef = createRef();
+    this.permissionIdInputRef = createRef();
     this.measurementsPerDayRef = createRef();
     this.consumptionPointsDivRef = createRef();
   }
@@ -91,6 +97,8 @@ class ProduceConsumptionRecordCe extends LitElement {
     }));
     const cr = {
       connectionId: this.connectionId,
+      dataNeedId: this.dataNeedId,
+      permissionId: this.permissionIdInputRef?.value?.value,
       meteringPoint: this.meteringPointInputRef?.value?.value,
       startDateTime: new Date(this._date + "T00:00:00").toISOString(),
       meteringInterval: this.measurementsPerDayRef?.value?.value,
@@ -144,6 +152,18 @@ class ProduceConsumptionRecordCe extends LitElement {
                 type="text"
                 id="meteringPoint"
                 ${ref(this.meteringPointInputRef)}
+                value="MP-4711"
+              />
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-2" for="permissionId">Permission Id</label>
+            <div class="col-2">
+              <input
+                class="form-control"
+                type="text"
+                id="permissionId"
+                ${ref(this.permissionIdInputRef)}
                 value="MP-4711"
               />
             </div>

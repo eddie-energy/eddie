@@ -3,6 +3,7 @@ import { css, html, LitElement } from "https://esm.sh/lit";
 class SetConnectionStatusCe extends LitElement {
   static properties = {
     connectionId: { attribute: "connection-id" },
+    dataNeedId: { attribute: "dataneed-id" },
     _statusValues: {},
   };
   static styles = css``;
@@ -23,6 +24,7 @@ class SetConnectionStatusCe extends LitElement {
     );
     const body = JSON.stringify({
       connectionId: this.connectionId,
+      dataNeedId: this.dataNeedId,
       connectionStatus,
     });
     fetch("api/connection-status", { method: "POST", body }).catch(
