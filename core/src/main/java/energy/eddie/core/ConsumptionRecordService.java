@@ -32,7 +32,7 @@ public class ConsumptionRecordService {
                 try {
                     consumptionRecordFluxes.add(JdkFlowAdapter.flowPublisherToFlux(provider.getConsumptionRecordStream()));
                 } catch (Exception e) {
-                    LOGGER.warn("Got no consumption record stream for connector {}", connector.getMetadata().mdaCode(), e);
+                    LOGGER.warn("Got no consumption record stream for connector {}", connector.getMetadata().id(), e);
                 }
             }
         }

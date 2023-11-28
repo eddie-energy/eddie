@@ -27,13 +27,13 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.BASE_PATH;
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.BASE_PATH;
 
 
 @RestController
 @RequestMapping(BASE_PATH)
 public class PermissionRequestController {
-    private static final String CE_JS = "ce.js";
+    private static final String CE_JS = "/ce.js";
     private static final String CE_PRODUCTION_PATH = "/public" + BASE_PATH + CE_JS;
     // this path will stay hard-coded
     @SuppressWarnings("java:S1075")
@@ -68,7 +68,7 @@ public class PermissionRequestController {
         });
     }
 
-    @GetMapping(value = "/" + CE_JS, produces = "text/javascript")
+    @GetMapping(value = CE_JS, produces = "text/javascript")
     public String javascriptConnectorElement() {
         try (InputStream in = getCEInputStream()) {
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);

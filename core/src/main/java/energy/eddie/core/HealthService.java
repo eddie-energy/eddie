@@ -18,6 +18,6 @@ public class HealthService {
 
     public Map<String, Map<String, HealthState>> getRegionConnectorHealth() {
         return regionConnectors.stream()
-                .collect(Collectors.toMap(rc -> rc.getMetadata().mdaDisplayName(), RegionConnector::health));
+                .collect(Collectors.toMap(rc -> rc.getMetadata().id(), RegionConnector::health));
     }
 }

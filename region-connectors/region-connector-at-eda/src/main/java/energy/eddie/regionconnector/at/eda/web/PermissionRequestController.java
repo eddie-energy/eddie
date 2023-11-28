@@ -19,13 +19,13 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-import static energy.eddie.regionconnector.at.eda.EdaRegionConnector.BASE_PATH;
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.BASE_PATH;
 
 @RestController
 @RequestMapping(BASE_PATH)
 public class PermissionRequestController {
 
-    private static final String CE_JS = "ce.js";
+    private static final String CE_JS = "/ce.js";
     private static final String CE_PRODUCTION_PATH = "/public" + BASE_PATH + CE_JS;
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final PermissionRequestService permissionRequestService;
@@ -45,7 +45,7 @@ public class PermissionRequestController {
         return connectionStatusMessage.get();
     }
 
-    @GetMapping(value = "/" + CE_JS, produces = "text/javascript")
+    @GetMapping(value = CE_JS, produces = "text/javascript")
     public String javascriptConnectorElement() {
         try (InputStream in = getCEInputStream()) {
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);

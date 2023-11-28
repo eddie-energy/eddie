@@ -40,6 +40,24 @@ class EnedisRegionConnectorTest {
     }
 
     @Test
+    void getMetadata_returnsExpected() {
+        // Given
+        var config = mock(EnedisConfiguration.class);
+        when(config.clientId()).thenReturn("id");
+        when(config.clientSecret()).thenReturn("secret");
+        when(config.basePath()).thenReturn("path");
+        var enedisApi = mock(EnedisApi.class);
+        try (var rc = new EnedisRegionConnector(config, enedisApi, new InMemoryPermissionRequestRepository())) {
+
+            // When
+            var res = rc.getMetadata();
+
+            // Then
+            assertEquals(EnedisRegionConnectorMetadata.getInstance(), res);
+        }
+    }
+
+    @Test
     void terminatePermission_withNonExistentPermissionId_doesNotThrow() {
         // Given
         var config = mock(EnedisConfiguration.class);
