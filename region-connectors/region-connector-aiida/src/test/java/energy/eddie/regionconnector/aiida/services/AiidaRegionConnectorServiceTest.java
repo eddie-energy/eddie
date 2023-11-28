@@ -61,7 +61,8 @@ class AiidaRegionConnectorServiceTest {
 
     @Test
     void verify_createNewPermission_persistsAndPublishesConnectionStatusMessage() throws StateTransitionException {
-        var request = new PermissionRequestForCreation(connectionId, "1");
+        String dataNeedId = "1";
+        var request = new PermissionRequestForCreation(connectionId, dataNeedId);
 
         StepVerifier stepVerifier = StepVerifier.create(service.connectionStatusMessageFlux())
                 .expectNextMatches(msg -> msg.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
@@ -73,6 +74,7 @@ class AiidaRegionConnectorServiceTest {
         PermissionDto newPermission = service.createNewPermission(request);
 
         assertEquals(connectionId, newPermission.connectionId());
+        assertEquals(dataNeedId, newPermission.dataNeedId());
         assertEquals(bootstrapServers, newPermission.kafkaStreamingConfig().bootstrapServers());
         assertEquals(statusTopic, newPermission.kafkaStreamingConfig().statusTopic());
         assertEquals(dataTopic, newPermission.kafkaStreamingConfig().dataTopic());

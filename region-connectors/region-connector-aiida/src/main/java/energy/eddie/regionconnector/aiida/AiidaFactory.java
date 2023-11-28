@@ -19,11 +19,20 @@ public class AiidaFactory {
         this.configuration = configuration;
     }
 
+    /**
+     * Creates and populates a new permission request.
+     * TODO: The dataNeed API is queried for the required information (e.g. start, expiration time).
+     *
+     * @param connectionId connectionId that should be used for this new permission request.
+     * @param dataNeedId   dataNeedId that should be used for this new permission request.
+     * @param service      Reference to the service that allows the request to transition states.
+     * @return Populated permission request.
+     */
     public AiidaPermissionRequest createPermissionRequest(
             String connectionId,
             String dataNeedId,
             AiidaRegionConnectorService service) {
-        // TODO get start and expiration from dataNeed API
+        // TODO get start and expiration from dataNeed API --> follow-up issue: #431
         var startTime = Instant.now();
         var expirationTime = startTime.plusSeconds(864000); // roughly 10 days
 
@@ -50,7 +59,9 @@ public class AiidaFactory {
 
         // TODO use dataNeed for service name and requested codes
         return new PermissionDto(
+                UUID.randomUUID().toString(),
                 "My super cool test service",
+                aiidaRequest.dataNeedId(),
                 aiidaRequest.startTime(),
                 aiidaRequest.expirationTime(),
                 aiidaRequest.connectionId(),
