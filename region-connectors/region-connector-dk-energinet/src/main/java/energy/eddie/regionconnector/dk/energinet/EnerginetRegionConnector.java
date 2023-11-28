@@ -20,15 +20,9 @@ import static java.util.Objects.requireNonNull;
 
 public class EnerginetRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider,
         Mvp1ConsumptionRecordProvider {
-    // this path will stay hard-coded
-    @SuppressWarnings("java:S1075")
-    public static final String BASE_PATH = "/region-connectors/dk-energinet/";
+
     public static final ZoneId DK_ZONE_ID = ZoneId.of("Europe/Copenhagen");
     public static final int MAXIMUM_MONTHS_IN_THE_PAST = 24;
-    private static final String COUNTRY_CODE = "dk";
-    private static final String MDA_CODE = COUNTRY_CODE + "-energinet";
-    private static final String MDA_DISPLAY_NAME = "Denmark ENERGINET";
-    private static final int COVERED_METERING_POINTS = 36951446; // TODO: Evaluate covered metering points
     private static final Logger LOGGER = LoggerFactory.getLogger(EnerginetRegionConnector.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
     private final Sinks.Many<ConsumptionRecord> consumptionRecordSink;
@@ -59,7 +53,7 @@ public class EnerginetRegionConnector implements RegionConnector, Mvp1Connection
 
     @Override
     public RegionConnectorMetadata getMetadata() {
-        return new RegionConnectorMetadata(MDA_CODE, MDA_DISPLAY_NAME, COUNTRY_CODE, BASE_PATH, COVERED_METERING_POINTS);
+        return EnerginetRegionConnectorMetadata.getInstance();
     }
 
     @Override

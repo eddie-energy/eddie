@@ -49,6 +49,20 @@ public class JavalinApp {
         this.regionConnectors = regionConnectors;
     }
 
+    /**
+     * Configures the servletContextHandler to proxy requests from the sourcePath to the proxTarget.
+     *
+     * @param servletContextHandler Jetty's ServletContextHandler
+     * @param proxySource           wildcarded path to select the requests to be proxied, e.g. /api/*
+     * @param proxyTarget           HTTP URL proxy target, e.g. http://localhost:8079/
+     */
+    private static void proxy(ServletContextHandler servletContextHandler, String proxySource, String proxyTarget) {
+        logger.info("Proxying requests for {} to {}", proxySource, proxyTarget);
+        var proxy = new ServletHolder(CorsEnablingProxyServlet.class);
+        proxy.setInitParameter("proxyTo", proxyTarget);
+        servletContextHandler.addServlet(proxy, proxySource);
+    }
+
     private boolean inDevelopmentMode() {
         return devMode;
     }
@@ -82,7 +96,7 @@ public class JavalinApp {
             config.jetty.contextHandlerConfig(servletContextHandler -> {
                 regionConnectors.forEach(rc -> {
                     var regionConnectorAddress = rc.startWebapp(new InetSocketAddress("localhost", 0), inDevelopmentMode());
-                    proxy(servletContextHandler, rc.getMetadata().urlPath() + "*", "http://localhost:" + regionConnectorAddress + "/");
+                    proxy(servletContextHandler, "/region-connectors/" + rc.getMetadata().id() + "/*", "http://localhost:" + regionConnectorAddress + "/");
                 });
                 proxy(servletContextHandler, "/api/data-needs/*", "http://localhost:8079/");
             });
@@ -103,26 +117,10 @@ public class JavalinApp {
             while (!Thread.interrupted()) {
                 Thread.sleep(Long.MAX_VALUE);
             }
-
-
         } catch (InterruptedException e) {
             logger.info("Exiting.");
             Thread.currentThread().interrupt();
         }
-    }
-
-    /**
-     * Configures the servletContextHandler to proxy requests from the sourcePath to the proxTarget.
-     *
-     * @param servletContextHandler Jetty's ServletContextHandler
-     * @param proxySource           wildcarded path to select the requests to be proxied, e.g. /api/*
-     * @param proxyTarget           HTTP URL proxy target, e.g. http://localhost:8079/
-     */
-    private static void proxy(ServletContextHandler servletContextHandler, String proxySource, String proxyTarget) {
-        logger.info("Proxying requests for {} to {}", proxySource, proxyTarget);
-        var proxy = new ServletHolder(CorsEnablingProxyServlet.class);
-        proxy.setInitParameter("proxyTo", proxyTarget);
-        servletContextHandler.addServlet(proxy, proxySource);
     }
 
     /**

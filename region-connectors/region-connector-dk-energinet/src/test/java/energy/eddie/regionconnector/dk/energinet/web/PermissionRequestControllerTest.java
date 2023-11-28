@@ -4,6 +4,7 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetRegionalInformation;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
 import org.junit.jupiter.api.BeforeEach;
@@ -81,8 +82,12 @@ class PermissionRequestControllerTest {
     @Test
     void givenExistingPermissionId_returnsConnectionStatusMessage() throws Exception {
         String permissionId = "68916faf-9020-4453-a469-068f076e6d87";
-        ConnectionStatusMessage statusMessage = new ConnectionStatusMessage("foo", permissionId,
-                "bar", PermissionProcessStatus.ACCEPTED);
+        ConnectionStatusMessage statusMessage = new ConnectionStatusMessage(
+                "foo",
+                permissionId,
+                "bar",
+                new EnerginetRegionalInformation(),
+                PermissionProcessStatus.ACCEPTED);
         when(service.findConnectionStatusMessageById(permissionId)).thenReturn(Optional.of(statusMessage));
 
         mockMvc.perform(get("/region-connectors/dk-energinet/permission-status/{permissionId}", permissionId))

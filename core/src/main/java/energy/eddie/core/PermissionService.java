@@ -29,7 +29,7 @@ public class PermissionService {
                 try {
                     connectionStatusFluxes.add(JdkFlowAdapter.flowPublisherToFlux(statusMessageProvider.getConnectionStatusMessageStream()));
                 } catch (Exception e) {
-                    LOGGER.warn("Got no connection status message stream for connector {}", connector.getMetadata().mdaCode(), e);
+                    LOGGER.warn("Got no connection status message stream for connector {}", connector.getMetadata().id(), e);
                 }
             }
         }

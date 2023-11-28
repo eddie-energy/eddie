@@ -14,18 +14,13 @@ import java.util.concurrent.Flow;
 
 public class SimulationConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider,
         Mvp1ConsumptionRecordProvider {
-    public static final String MDA_CODE = "sim";
 
     @Nullable
     private Javalin javalin;
 
-    public static String basePath() {
-        return "/region-connectors/" + MDA_CODE;
-    }
-
     @Override
     public RegionConnectorMetadata getMetadata() {
-        return new RegionConnectorMetadata(MDA_CODE, "Simulation", "de", basePath() + "/", 1);
+        return SimulationConnectorMetadata.getInstance();
     }
 
     @Override
@@ -46,23 +41,25 @@ public class SimulationConnector implements RegionConnector, Mvp1ConnectionStatu
     @Override
     public int startWebapp(InetSocketAddress address, boolean devMode) {
         javalin = Javalin.create(config -> config.jetty.server(() -> new Server(address)));
+        String basePath = SimulationConnectorMetadata.getInstance().id();
+        String ceJsPath = basePath + "/ce.js";
 
-        javalin.get(basePath() + "/ce.js", context -> {
+        javalin.get(ceJsPath, context -> {
             context.contentType(ContentType.TEXT_JS);
             context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/region-connectors/simulation/ce.js")));
         });
 
-        javalin.get(basePath() + "/produce-consumption-records.js", context -> {
+        javalin.get(basePath + "/produce-consumption-records.js", context -> {
             context.contentType(ContentType.TEXT_JS);
             context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/produce-consumption-records.js")));
         });
 
-        javalin.get(basePath() + "/set-connection-status.js", context -> {
+        javalin.get(basePath + "/set-connection-status.js", context -> {
             context.contentType(ContentType.TEXT_JS);
             context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/set-connection-status.js")));
         });
 
-        javalin.get(basePath() + "/simulation.html", context -> {
+        javalin.get(basePath + "/simulation.html", context -> {
             context.contentType(ContentType.TEXT_HTML);
             context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public/simulation.html")));
         });
