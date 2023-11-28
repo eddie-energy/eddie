@@ -80,7 +80,7 @@ class KafkaStreamerIntegrationTest {
         var connectionId = "IntegrationTestConnectionId";
         var permission = new Permission(permissionId, "IntegrationTest Service Name", start,
                 expiration, start, connectionId, Set.of("1.8.0"), config);
-        var producer = KafkaFactory.getKafkaProducer(config, connectionId);
+        var producer = KafkaFactory.getKafkaProducer(config, permissionId);
         var mockConsumer = new MockConsumer<String, String>(OffsetResetStrategy.LATEST);
 
         KafkaConsumer<String, String> verifyConsumer = getKafkaConsumer(testInfo, kafka);
@@ -140,7 +140,7 @@ class KafkaStreamerIntegrationTest {
         String connectionId = "StatusMessageIntegrationTestConnectionId";
         var permission = new Permission(permissionId, "IntegrationTest Service Name", start,
                 expiration, start, connectionId, Set.of("1.8.0"), config);
-        var producer = KafkaFactory.getKafkaProducer(config, connectionId);
+        var producer = KafkaFactory.getKafkaProducer(config, permissionId);
         var mockConsumer = new MockConsumer<String, String>(OffsetResetStrategy.LATEST);
 
         KafkaConsumer<String, String> verifyConsumer = getKafkaConsumer(testInfo, kafka);

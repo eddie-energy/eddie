@@ -20,16 +20,16 @@ public class KafkaFactory {
     /**
      * Creates a new {@link KafkaProducer} that uses a {@link StringSerializer} to serialize key and value.
      * for the values.
-     * Sets the <i>client.id</i> of the Producer to {@code connectionId} and the <i>bootstrap.servers</i>
+     * Sets the <i>client.id</i> of the Producer to {@code permissionId} and the <i>bootstrap.servers</i>
      * to the value of {@code streamingConfig.bootstrapServers()}.
      *
      * @param streamingConfig {@link KafkaStreamingConfig} object with config that should be applied to the returned KafkaProducer.
-     * @param connectionId    The string that should be used as <i>client.id</i>
+     * @param permissionId    The string that should be used as <i>client.id</i>
      * @return A KafkaProducer instance with the default config applied to it.
      */
-    public static Producer<String, String> getKafkaProducer(KafkaStreamingConfig streamingConfig, String connectionId) {
+    public static Producer<String, String> getKafkaProducer(KafkaStreamingConfig streamingConfig, String permissionId) {
         Properties properties = new Properties();
-        properties.put(ProducerConfig.CLIENT_ID_CONFIG, connectionId);
+        properties.put(ProducerConfig.CLIENT_ID_CONFIG, permissionId);
         properties.put(ProducerConfig.ACKS_CONFIG, "all");
         properties.put(ProducerConfig.LINGER_MS_CONFIG, "1");
         properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "none");
@@ -41,10 +41,10 @@ public class KafkaFactory {
         return new KafkaProducer<>(properties, new StringSerializer(), new StringSerializer());
     }
 
-    public static Consumer<String, String> getKafkaConsumer(KafkaStreamingConfig streamingConfig, String connectionId, Duration terminationRequestPollInterval) {
+    public static Consumer<String, String> getKafkaConsumer(KafkaStreamingConfig streamingConfig, String permissionId, Duration terminationRequestPollInterval) {
         Properties properties = new Properties();
-        properties.put(ConsumerConfig.CLIENT_ID_CONFIG, connectionId);
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, connectionId);
+        properties.put(ConsumerConfig.CLIENT_ID_CONFIG, permissionId);
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG, permissionId);
         properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         properties.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, "5000");

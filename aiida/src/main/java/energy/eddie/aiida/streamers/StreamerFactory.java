@@ -37,8 +37,8 @@ public class StreamerFactory {
             ObjectMapper mapper,
             TaskScheduler scheduler,
             Duration terminationRequestPollInterval) {
-        var producer = KafkaFactory.getKafkaProducer(permission.kafkaStreamingConfig(), permission.connectionId());
-        var consumer = KafkaFactory.getKafkaConsumer(permission.kafkaStreamingConfig(), permission.connectionId(), terminationRequestPollInterval);
+        var producer = KafkaFactory.getKafkaProducer(permission.kafkaStreamingConfig(), permission.permissionId());
+        var consumer = KafkaFactory.getKafkaConsumer(permission.kafkaStreamingConfig(), permission.permissionId(), terminationRequestPollInterval);
 
         return new KafkaStreamer(
                 producer,

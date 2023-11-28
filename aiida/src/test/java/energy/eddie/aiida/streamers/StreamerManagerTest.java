@@ -106,15 +106,19 @@ class StreamerManagerTest {
     @Test
     void givenValidPermissionId_stopStreamer_callsClose() {
         try (MockedStatic<StreamerFactory> mockStatic = mockStatic(StreamerFactory.class)) {
+            // Given
             var mockStreamer = mock(KafkaStreamer.class);
-            mockStatic.when(() -> StreamerFactory.getAiidaStreamer(argThat(i -> i.connectionId().equals(connectionId)),
+            mockStatic.when(() -> StreamerFactory.getAiidaStreamer(any(),
                     any(), any(), any(), any(), any(), any())).thenReturn(mockStreamer);
             when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
 
             // need to create streamer before stopping
             manager.createNewStreamerForPermission(permission);
 
+            // When
             manager.stopStreamer(permission.permissionId());
+
+            // Then
             verify(mockStreamer).close();
         }
     }
@@ -177,7 +181,7 @@ class StreamerManagerTest {
             var streamers = (HashMap<String, StreamerManager.StreamerSinkContainer>) ReflectionTestUtils.getField(manager, "streamers");
             assertNotNull(streamers);
             var kafkaStreamer = ((KafkaStreamer) streamers.get(permission.permissionId()).streamer());
-            ReflectionTestUtils.invokeMethod(kafkaStreamer, "receivedTerminationRequest", permission.connectionId());
+            ReflectionTestUtils.invokeMethod(kafkaStreamer, "receivedTerminationRequest", permission.permissionId());
 
 
             StepVerifier.create(manager.terminationRequestsFlux().log())
@@ -218,7 +222,7 @@ class StreamerManagerTest {
     void verify_close_closesAllStreamers() {
         try (MockedStatic<StreamerFactory> mockStatic = mockStatic(StreamerFactory.class)) {
             var mockStreamer = mock(KafkaStreamer.class);
-            mockStatic.when(() -> StreamerFactory.getAiidaStreamer(argThat(i -> i.connectionId().equals(connectionId)),
+            mockStatic.when(() -> StreamerFactory.getAiidaStreamer(any(),
                     any(), any(), any(), any(), any(), any())).thenReturn(mockStreamer);
             when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
 
