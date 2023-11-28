@@ -132,9 +132,7 @@ class PermissionRequestForm extends LitElement {
           <sl-alert open>
             <sl-icon slot="icon" name="info-circle"></sl-icon>
 
-            <p>
-              The Consent Request ID for this connection is: ${this._requestId}
-            </p>
+            <p>The Consent Request ID for this connection is: ${this._requestId}</p>
             <p>The request status is: ${this._requestStatus}</p>
 
             <p>
