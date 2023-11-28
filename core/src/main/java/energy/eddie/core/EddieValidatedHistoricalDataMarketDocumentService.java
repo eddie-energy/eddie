@@ -2,6 +2,7 @@ package energy.eddie.core;
 
 import com.google.inject.Inject;
 import energy.eddie.api.v0.RegionConnector;
+import energy.eddie.api.v0_82.CimConsumptionRecordProvider;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,9 +28,9 @@ public class EddieValidatedHistoricalDataMarketDocumentService {
     public Flux<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
         List<Flux<EddieValidatedHistoricalDataMarketDocument>> consumptionRecordFluxes = new ArrayList<>(regionConnectors.size());
         for (var connector : regionConnectors) {
-            if (connector instanceof energy.eddie.api.v0_82.RegionConnector rc) {
+            if (connector instanceof CimConsumptionRecordProvider provider) {
                 try {
-                    consumptionRecordFluxes.add(JdkFlowAdapter.flowPublisherToFlux(rc.getEddieValidatedHistoricalDataMarketDocumentStream()));
+                    consumptionRecordFluxes.add(JdkFlowAdapter.flowPublisherToFlux(provider.getEddieValidatedHistoricalDataMarketDocumentStream()));
                 } catch (Exception e) {
                     LOGGER.warn("Got no validated historical data market document stream for connector {}", connector.getMetadata().mdaCode(), e);
                 }

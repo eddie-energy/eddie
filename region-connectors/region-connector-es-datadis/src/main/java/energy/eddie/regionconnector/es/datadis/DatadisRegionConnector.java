@@ -35,7 +35,8 @@ import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConst
 import static energy.eddie.regionconnector.es.datadis.utils.ParameterKeys.PERMISSION_ID_KEY;
 import static java.util.Objects.requireNonNull;
 
-public class DatadisRegionConnector implements RegionConnector, AuthorizationResponseHandler {
+public class DatadisRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider,
+        Mvp1ConsumptionRecordProvider, AuthorizationResponseHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DatadisRegionConnector.class);
 

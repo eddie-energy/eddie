@@ -1,11 +1,9 @@
 package energy.eddie.regionconnector.at.eda;
 
-import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.ConsumptionRecord;
-import energy.eddie.api.v0.HealthState;
-import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.api.v0.*;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.api.v0_82.CimConsumptionRecordProvider;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
@@ -27,10 +25,8 @@ import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
-public class EdaRegionConnector implements
-        energy.eddie.api.v0.RegionConnector,
-        energy.eddie.api.v0_82.RegionConnector {
-
+public class EdaRegionConnector implements RegionConnector, CimConsumptionRecordProvider,
+        Mvp1ConnectionStatusMessageProvider, Mvp1ConsumptionRecordProvider {
     public static final String COUNTRY_CODE = "at";
     public static final String MDA_CODE = COUNTRY_CODE + "-eda";
     public static final String MDA_DISPLAY_NAME = "Austria EDA";

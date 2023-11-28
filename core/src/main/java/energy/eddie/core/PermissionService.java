@@ -2,6 +2,7 @@ package energy.eddie.core;
 
 import com.google.inject.Inject;
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.RegionConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,7 @@ public class PermissionService {
         List<Flux<ConnectionStatusMessage>> connectionStatusFluxes = new ArrayList<>(regionConnectors.size());
         for (var connector : regionConnectors) {
             try {
-                connectionStatusFluxes.add(JdkFlowAdapter.flowPublisherToFlux(connector.getConnectionStatusMessageStream()));
+                connectionStatusFluxes.add(JdkFlowAdapter.flowPublisherToFlux(((Mvp1ConnectionStatusMessageProvider) connector).getConnectionStatusMessageStream()));
             } catch (Exception e) {
                 LOGGER.warn("Got no connection status message stream for connector {}", connector.getMetadata().mdaCode(), e);
             }

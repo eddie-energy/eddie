@@ -12,7 +12,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Flow;
 
-public class SimulationConnector implements RegionConnector {
+public class SimulationConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider,
+        Mvp1ConsumptionRecordProvider {
     public static final String MDA_CODE = "sim";
 
     @Nullable
