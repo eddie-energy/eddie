@@ -24,6 +24,18 @@ public class AiidaKafka {
     private final AiidaPermissionRequestRepository repository;
     private final KafkaTemplate<String, String> kafkaTemplate;
 
+    /**
+     * Listens for {@link ConnectionStatusMessage}s from any AIIDA instances and will change the states of the
+     * associated {@link PermissionRequest} when one is received.
+     * <br>
+     * Subscribes to the {@code terminationRequestFlux} and will publish a termination request on the specific
+     * Kafka termination topic of the associated permission.
+     *
+     * @param mapper                 ObjectMapper used to deserialize any {@link ConnectionStatusMessage} received via Kafka.
+     * @param repository             Repository that used to query and update {@link PermissionRequest}s.
+     * @param terminationRequestFlux Flux that contains termination requests that should be processed.
+     * @param kafkaTemplate          KafkaTemplate used to send the termination requests to the specific Kafka topics.
+     */
     public AiidaKafka(ObjectMapper mapper, AiidaPermissionRequestRepository repository,
                       Flux<TerminationRequest> terminationRequestFlux,
                       KafkaTemplate<String, String> kafkaTemplate) {

@@ -16,6 +16,17 @@ public class AiidaPermissionRequest implements PermissionRequest {
     private final Instant expirationTime;
     private PermissionRequestState state;
 
+    /**
+     * Creates a new AiidaPermissionRequest with the specified parameters.
+     *
+     * @param permissionId     ID of this permission. AIIDA will use the same ID internally.
+     * @param connectionId     connectionId that should be used for this new permission request.
+     * @param dataNeedId       dataNeedId that should be used for this new permission request.
+     * @param terminationTopic Kafka topic, on which a termination request from the EP should be published.
+     * @param startTime        Starting from this UTC timestamp, the permission is valid and data should be shared.
+     * @param expirationTime   Until this UTC timestamp, the permission is valid and data sharing should stop.
+     * @param service          Reference to the service used for e.g. sending connection status messages.
+     */
     public AiidaPermissionRequest(
             String permissionId,
             String connectionId,
