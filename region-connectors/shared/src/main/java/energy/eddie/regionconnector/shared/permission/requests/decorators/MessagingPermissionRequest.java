@@ -109,7 +109,9 @@ public class MessagingPermissionRequest implements PermissionRequest {
                         connectionId(),
                         permissionId(),
                         dataNeedId(),
-                        permissionRequest.state().status()
+                        regionalInformation(),
+                        permissionRequest.state().status(),
+                        ""
                 )
         );
     }
