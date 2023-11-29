@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
+import energy.eddie.api.v0.RegionalInformation;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
@@ -11,6 +12,7 @@ import java.time.ZonedDateTime;
 import static java.util.Objects.requireNonNull;
 
 public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPermissionRequest {
+    private static final EnerginetRegionalInformation regionalInformation = new EnerginetRegionalInformation();
     private final String permissionId;
     private final String connectionId;
     private final ZonedDateTime start;
@@ -63,6 +65,11 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
     @Override
     public PermissionRequestState state() {
         return state;
+    }
+
+    @Override
+    public RegionalInformation regionalInformation() {
+        return regionalInformation;
     }
 
     @Override
