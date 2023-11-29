@@ -1,5 +1,5 @@
 import { html, LitElement } from "lit";
-import { createRef } from "lit/directives/ref.js";
+import { createRef, ref } from "lit/directives/ref.js";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/input/input.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/button/button.js";
@@ -18,7 +18,7 @@ class PermissionRequestForm extends LitElement {
     _aiidaCode: { type: String },
   };
 
-  tooltipRef = createRef();
+  qrCodeRef = createRef();
 
   constructor() {
     super();
@@ -45,6 +45,9 @@ class PermissionRequestForm extends LitElement {
       .then((response) => (this._aiidaCode = response.json()))
       .then((json) => {
         this._aiidaCode = JSON.stringify(json);
+        this.qrCodeRef.value.updateComplete.then(() => {
+          this.qrCodeRef.value.style.visibility = "visible";
+        });
       })
       .catch((error) => console.error(error));
   }
@@ -62,8 +65,10 @@ class PermissionRequestForm extends LitElement {
           </sl-button>`
         : html`
             <sl-qr-code
+              ${ref(this.qrCodeRef)}
               value="${this._aiidaCode}"
               radius="0.5"
+              style="visibility: hidden"
               size="256"
             ></sl-qr-code>
 
