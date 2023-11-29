@@ -143,8 +143,7 @@ class EddieConnectButton extends LitElement {
     this._availableConnectors = await getRegionConnectors();
 
     if (this.isAiida()) {
-      this._selectedCountry = null;
-      this._selectedPermissionAdministrator = { regionConnector: "aiida" };
+      this.selectAiida();
     }
 
     this.dialogRef.value.show();
@@ -192,7 +191,11 @@ class EddieConnectButton extends LitElement {
     this.dataNeedId = event.target.value;
     this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
 
-    this._selectedPermissionAdministrator = null;
+    if (this.isAiida()) {
+      this.selectAiida();
+    } else {
+      this._selectedPermissionAdministrator = null;
+    }
   }
 
   handleCountrySelect(event) {
@@ -232,11 +235,22 @@ class EddieConnectButton extends LitElement {
       formData.get("endDate")
     );
 
+    if (this.isAiida()) {
+      this.selectAiida();
+    } else if (this._selectedPermissionAdministrator?.regionConnector === "aiida") {
+      this._selectedPermissionAdministrator = null;
+    }
+
     this.requestUpdate();
   }
 
   isAiida() {
     return this._dataNeedAttributes?.type === "SMART_METER_P1_DATA";
+  }
+
+  selectAiida() {
+    this._selectedCountry = null;
+    this._selectedPermissionAdministrator = { regionConnector: "aiida" };
   }
 
   render() {
