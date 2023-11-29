@@ -55,8 +55,11 @@ class PermissionRequestForm extends LitElement {
   render() {
     return html`
       <p>
-        Here should be instructions on how to use this form to connect with
-        AIIDA.
+        Click the connect button below to generate a unique QR code that you can
+        scan with the AIIDA app to set up data sharing with this service.
+        <br />
+        If you are not using the app, visit the Web-UI of your AIIDA instance to
+        set up a new permission and enter the token below the QR code.
       </p>
 
       ${!this._aiidaCode
