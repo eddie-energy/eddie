@@ -56,7 +56,6 @@ content = @`
                 class="uk-display-block"
                 connection-id="${nextConnectionId}"
                 data-need-id="FUTURE_NEAR_REALTIME_DATA"
-                allow-data-need-modifications="true"
         ></eddie-connect-button>
     </div>
 `
