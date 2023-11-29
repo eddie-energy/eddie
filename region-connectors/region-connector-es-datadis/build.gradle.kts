@@ -6,6 +6,8 @@ plugins {
     id("java")
     id("energy.eddie.java-conventions")
     id("energy.eddie.pnpm-build")
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
 }
 
 group = "energy.eddie"
@@ -19,11 +21,13 @@ dependencies {
     implementation(project(":api"))
     implementation(project(":region-connectors:shared"))
 
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.validation)
+
+    // TODO cleanup
     implementation(libs.javalin)
     implementation(libs.microprofile.config)
 
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.junit.mockito)
 
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
@@ -43,6 +47,10 @@ dependencies {
     // https://mvnrepository.com/artifact/io.netty/netty-codec-http
     implementation("io.netty:netty-codec-http:4.1.97.Final")
 
+
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.mockito)
+    testImplementation(libs.spring.boot.starter.test)
 }
 
 tasks.test {
