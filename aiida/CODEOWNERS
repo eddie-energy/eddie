@@ -1,0 +1,7 @@
+# This file declares which files are owned by which teams or members of the organisation.
+# It should make it easy to automate PRs and find people responsible for files and projects.
+# For more information see: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# NOTE: Please update the file accordingly if new owners and projects are added.
+#
+# fh-dev team should be requested for PRs by default
+* @eddie-energy/fh-dev
