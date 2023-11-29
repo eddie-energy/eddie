@@ -198,10 +198,10 @@ public class KafkaStreamer extends AiidaStreamer {
         }
     }
 
-    private void receivedTerminationRequest(String connectionId) {
-        if (!permission.connectionId().equals(connectionId)) {
-            LOGGER.warn("Got request from EP to terminate permission {} but they supplied wrong connectionId. Expected {}, but got {}",
-                    permission.permissionId(), permission.connectionId(), connectionId);
+    private void receivedTerminationRequest(String permissionId) {
+        if (!permission.permissionId().equals(permissionId)) {
+            LOGGER.warn("Got request from EP to terminate permission {} but they supplied wrong permissionId {}",
+                    permission.permissionId(), permissionId);
             return;
         }
 

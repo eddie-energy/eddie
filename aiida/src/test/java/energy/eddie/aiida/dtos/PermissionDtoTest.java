@@ -23,6 +23,7 @@ class PermissionDtoTest {
     private Instant start;
     private Instant end;
     private Instant grant;
+    private String permissionId;
     private String name;
     private String connectionId;
     private Set<String> codes;
@@ -39,6 +40,7 @@ class PermissionDtoTest {
         validator = validatorFactory.getValidator();
 
         // valid parameters
+        permissionId = "34c149f5-8e50-487f-ab08-28c0a164f440";
         name = "My Test Service";
         connectionId = "RandomId";
         start = Instant.now();
@@ -63,7 +65,7 @@ class PermissionDtoTest {
     void givenExpirationTimeBeforeStartTime_validation_fails() {
         end = start.minusSeconds(1000);
 
-        var permissionDto = new PermissionDto(name, start, end, grant, connectionId, codes, streamingConfig);
+        var permissionDto = new PermissionDto(permissionId, name, start, end, grant, connectionId, codes, streamingConfig);
 
         var violations = validator.validate(permissionDto);
         System.out.println(violations);
@@ -75,12 +77,12 @@ class PermissionDtoTest {
     @ParameterizedTest
     @ValueSource(strings = {"", "  "})
     void givenEmptyConnectionIdOrServiceName_validation_fails(String str) {
-        var permissionDto = new PermissionDto(str, start, end, grant, connectionId, codes, streamingConfig);
+        var permissionDto = new PermissionDto(permissionId, str, start, end, grant, connectionId, codes, streamingConfig);
 
         var violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
 
-        permissionDto = new PermissionDto(name, start, end, grant, str, codes, streamingConfig);
+        permissionDto = new PermissionDto(permissionId, name, start, end, grant, str, codes, streamingConfig);
 
         violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
@@ -88,22 +90,34 @@ class PermissionDtoTest {
 
     @Test
     void givenNull_validation_fails() {
-        PermissionDto permissionDto = new PermissionDto(null, start, end, grant, connectionId, codes, streamingConfig);
+        PermissionDto permissionDto = new PermissionDto(null, name, start, end, grant, connectionId, codes, streamingConfig);
         var violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         var first = violations.iterator().next();
+        assertEquals("permissionId must not be null.", first.getMessage());
+
+        permissionDto = new PermissionDto(permissionId, null, start, end, grant, connectionId, codes, streamingConfig);
+        violations = validator.validate(permissionDto);
+        assertEquals(1, violations.size());
+        first = violations.iterator().next();
         assertEquals("serviceName must not be null or blank.", first.getMessage());
 
-
-        permissionDto = new PermissionDto(name, null, end, grant, connectionId, codes, streamingConfig);
+        permissionDto = new PermissionDto(permissionId, name, null, end, grant, connectionId, codes, streamingConfig);
         violations = validator.validate(permissionDto);
         assertEquals(2, violations.size());
         var violationMessages = violations.stream().map(ConstraintViolation::getMessage);
         assertThat(violationMessages).hasSameElementsAs(List.of("startTime must not be null.",
                 "startTime and expirationTime must not be null."));
 
+        permissionDto = new PermissionDto(permissionId, name, null, end, grant, connectionId, codes, streamingConfig);
+        violations = validator.validate(permissionDto);
+        assertEquals(2, violations.size());
+        violationMessages = violations.stream().map(ConstraintViolation::getMessage);
+        assertThat(violationMessages).hasSameElementsAs(List.of("startTime must not be null.",
+                "startTime and expirationTime must not be null."));
 
-        permissionDto = new PermissionDto(name, start, null, grant, connectionId, codes, streamingConfig);
+
+        permissionDto = new PermissionDto(permissionId, name, start, null, grant, connectionId, codes, streamingConfig);
         violations = validator.validate(permissionDto);
         assertEquals(2, violations.size());
         violationMessages = violations.stream().map(ConstraintViolation::getMessage);
@@ -111,28 +125,28 @@ class PermissionDtoTest {
                 "startTime and expirationTime must not be null."));
 
 
-        permissionDto = new PermissionDto(name, start, end, null, connectionId, codes, streamingConfig);
+        permissionDto = new PermissionDto(permissionId, name, start, end, null, connectionId, codes, streamingConfig);
         violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         first = violations.iterator().next();
         assertEquals("grantTime must not be null.", first.getMessage());
 
 
-        permissionDto = new PermissionDto(name, start, end, grant, null, codes, streamingConfig);
+        permissionDto = new PermissionDto(permissionId, name, start, end, grant, null, codes, streamingConfig);
         violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         first = violations.iterator().next();
         assertEquals("connectionId must not be null or blank.", first.getMessage());
 
 
-        permissionDto = new PermissionDto(name, start, end, grant, connectionId, null, streamingConfig);
+        permissionDto = new PermissionDto(permissionId, name, start, end, grant, connectionId, null, streamingConfig);
         violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         first = violations.iterator().next();
         assertEquals("At least one OBIS code needs to be requested.", first.getMessage());
 
 
-        permissionDto = new PermissionDto(name, start, end, grant, connectionId, codes, null);
+        permissionDto = new PermissionDto(permissionId, name, start, end, grant, connectionId, codes, null);
         violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         first = violations.iterator().next();
@@ -143,7 +157,7 @@ class PermissionDtoTest {
     void givenInvalidNestedInput_validation_fails() {
         streamingConfig = new KafkaStreamingConfig("", validDataTopic, validStatusTopic, validSubscribeTopic);
 
-        var permissionDto = new PermissionDto(name, start, end, grant, connectionId, codes, streamingConfig);
+        var permissionDto = new PermissionDto(permissionId, name, start, end, grant, connectionId, codes, streamingConfig);
 
         // validator also recursively validates any nested classes
         var violations = validator.validate(permissionDto);
@@ -154,11 +168,12 @@ class PermissionDtoTest {
 
     @Test
     void givenValidInput_asExpected() {
-        var permissionDto = new PermissionDto(name, start, end, grant, connectionId, codes, streamingConfig);
+        var permissionDto = new PermissionDto(permissionId, name, start, end, grant, connectionId, codes, streamingConfig);
 
         var violations = validator.validate(permissionDto);
         assertEquals(0, violations.size());
 
+        assertEquals(permissionId, permissionDto.permissionId());
         assertEquals(name, permissionDto.serviceName());
         assertEquals(start, permissionDto.startTime());
         assertEquals(end, permissionDto.expirationTime());

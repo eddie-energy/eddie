@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.TYPE, ElementType.RECORD_COMPONENT})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {ExpirationTimeAfterStartTimePermissionDtoValidator.class, ExpirationTimeAfterStartTimePermissionValidator.class})
+@Constraint(validatedBy = {ExpirationTimeAfterStartTimePermissionDtoValidator.class})
 public @interface ExpirationTimeAfterStartTime {
     String message() default "expirationTime has to be after startTime.";
 

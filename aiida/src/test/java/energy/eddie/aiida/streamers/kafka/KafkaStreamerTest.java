@@ -83,9 +83,8 @@ class KafkaStreamerTest {
         String validStatusTopic = "ValidStatusTopic";
         String validSubscribeTopic = "ValidSubscribeTopic";
         kafkaConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
-        permission = new Permission("SomeTest Service Name", start, expiration, start, "ConnId",
-                Set.of("1.8.0"), kafkaConfig);
-        ReflectionTestUtils.setField(permission, "permissionId", permissionId);
+        permission = new Permission(permissionId, "SomeTest Service Name", start, expiration,
+                start, "ConnId", Set.of("1.8.0"), kafkaConfig);
 
         var now = Instant.now();
         record1 = AiidaRecordFactory.createRecord("1.8.0", now.plusSeconds(1), 10);
@@ -333,7 +332,7 @@ class KafkaStreamerTest {
                     new ConsumerRecord<>(permission.kafkaStreamingConfig().subscribeTopic(),
                             0,
                             0,
-                            permission.connectionId(), permission.connectionId())));
+                            permission.connectionId(), permission.permissionId())));
 
             streamer.connect();
 
@@ -368,12 +367,12 @@ class KafkaStreamerTest {
             prepareTerminationRequestTestCase(scheduledExecutorService);
             var latch = new CountDownLatch(1);
 
-            final String invalidConnectionId = "This is a wrong connectionId";
+            final String invalidPermissionId = "This is an invalid permissionId";
             mockConsumer.schedulePollTask(() -> mockConsumer.addRecord(
                     new ConsumerRecord<>(permission.kafkaStreamingConfig().subscribeTopic(),
                             0,
                             0,
-                            "fooo", invalidConnectionId)));
+                            "fooo", invalidPermissionId)));
             // after invalid request has been processed, continue with test case
             mockConsumer.schedulePollTask(latch::countDown);
 
@@ -382,8 +381,8 @@ class KafkaStreamerTest {
 
             streamer.close();
 
-            assertThat(logCaptor.getWarnLogs()).contains("Got request from EP to terminate permission %s but they supplied wrong connectionId. Expected %s, but got %s"
-                    .formatted(permission.permissionId(), permission.connectionId(), invalidConnectionId));
+            assertThat(logCaptor.getWarnLogs()).contains("Got request from EP to terminate permission %s but they supplied wrong permissionId %s"
+                    .formatted(permission.permissionId(), invalidPermissionId));
 
             // verify the side effect, that no permissionId is published on the Mono
             StepVerifier.create(terminationRequestSink.asMono())
