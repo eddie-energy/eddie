@@ -28,10 +28,12 @@ public class ConsumptionRecordService {
     public Flux<ConsumptionRecord> getConsumptionRecordStream() {
         List<Flux<ConsumptionRecord>> consumptionRecordFluxes = new ArrayList<>(regionConnectors.size());
         for (var connector : regionConnectors) {
-            try {
-                consumptionRecordFluxes.add(JdkFlowAdapter.flowPublisherToFlux(((Mvp1ConsumptionRecordProvider) connector).getConsumptionRecordStream()));
-            } catch (Exception e) {
-                LOGGER.warn("Got no consumption record stream for connector {}", connector.getMetadata().mdaCode(), e);
+            if (connector instanceof Mvp1ConsumptionRecordProvider provider) {
+                try {
+                    consumptionRecordFluxes.add(JdkFlowAdapter.flowPublisherToFlux(provider.getConsumptionRecordStream()));
+                } catch (Exception e) {
+                    LOGGER.warn("Got no consumption record stream for connector {}", connector.getMetadata().mdaCode(), e);
+                }
             }
         }
         return Flux.merge(consumptionRecordFluxes).share();

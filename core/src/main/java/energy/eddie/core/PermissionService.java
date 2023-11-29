@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Set;
 
 public class PermissionService {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
 
     @Inject
@@ -26,10 +25,12 @@ public class PermissionService {
 
         List<Flux<ConnectionStatusMessage>> connectionStatusFluxes = new ArrayList<>(regionConnectors.size());
         for (var connector : regionConnectors) {
-            try {
-                connectionStatusFluxes.add(JdkFlowAdapter.flowPublisherToFlux(((Mvp1ConnectionStatusMessageProvider) connector).getConnectionStatusMessageStream()));
-            } catch (Exception e) {
-                LOGGER.warn("Got no connection status message stream for connector {}", connector.getMetadata().mdaCode(), e);
+            if (connector instanceof Mvp1ConnectionStatusMessageProvider statusMessageProvider) {
+                try {
+                    connectionStatusFluxes.add(JdkFlowAdapter.flowPublisherToFlux(statusMessageProvider.getConnectionStatusMessageStream()));
+                } catch (Exception e) {
+                    LOGGER.warn("Got no connection status message stream for connector {}", connector.getMetadata().mdaCode(), e);
+                }
             }
         }
         return Flux.merge(connectionStatusFluxes).share();
