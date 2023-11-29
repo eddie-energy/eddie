@@ -76,6 +76,20 @@ class EdaPermissionRequestTest {
     }
 
     @Test
+    void regionalInformation_returnsEdaRegionalInformation() {
+        // Given
+        String dsoId = "dsoId";
+        CCMORequest ccmoRequest = mock(CCMORequest.class);
+        when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
+        when(ccmoRequest.messageId()).thenReturn("messageId");
+        when(ccmoRequest.dsoId()).thenReturn(dsoId);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
+
+        // Then
+        assertEquals(EdaRegionalInformation.class, permissionRequest.regionalInformation().getClass());
+    }
+
+    @Test
     void equalEdaPermissionRequests_returnTrue() {
         // Given
         CCMORequest ccmoRequest = mock(CCMORequest.class);
@@ -361,5 +375,4 @@ class EdaPermissionRequestTest {
         // Then
         assertThrows(IllegalStateException.class, permissionRequest::terminate);
     }
-
 }
