@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.es.datadis;
 
+import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
@@ -8,6 +10,7 @@ import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.permission.request.InMemoryPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
+import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -15,6 +18,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import reactor.core.publisher.Sinks;
 import reactor.netty.http.client.HttpClient;
 
 
@@ -56,6 +60,16 @@ public class SpringConfig {
     }
 
     @Bean
+    public Sinks.Many<ConsumptionRecord> consumptionRecordSink() {
+        return Sinks.many().unicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
     public DatadisTokenProvider datadisTokenProvider(
             DatadisConfig config,
             DatadisEndpoints endpoints) {
@@ -76,10 +90,15 @@ public class SpringConfig {
     }
 
     @Bean
-    public RegionConnector regionConnector(DataApi dataApi,
-                                           AuthorizationApi authorizationApi,
-                                           EsPermissionRequestRepository repository,
+    // TODO why does @Service not create a bean?
+    public PermissionRequestService service(EsPermissionRequestRepository repository) {
+        return new PermissionRequestService(repository);
+    }
+
+    @Bean
+    public RegionConnector regionConnector(Sinks.Many<ConsumptionRecord> consumptionRecordSink,
+                                           Sinks.Many<ConnectionStatusMessage> statusMessageSink,
                                            @Value("${server.port:0}") int port) {
-        return new DatadisRegionConnector(dataApi, authorizationApi, repository);
+        return new DatadisRegionConnector(statusMessageSink, consumptionRecordSink);
     }
 }
