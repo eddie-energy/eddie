@@ -27,17 +27,6 @@ import static java.util.Objects.requireNonNull;
 
 public class EdaRegionConnector implements RegionConnector, CimConsumptionRecordProvider,
         Mvp1ConnectionStatusMessageProvider, Mvp1ConsumptionRecordProvider {
-    public static final String COUNTRY_CODE = "at";
-    public static final String MDA_CODE = COUNTRY_CODE + "-eda";
-    public static final String MDA_DISPLAY_NAME = "Austria EDA";
-    /**
-     * The base path of the region connector. COUNTRY_CODE is enough, as in austria we only need one region connector
-     */
-    public static final String BASE_PATH = "/region-connectors/at-eda/";
-    /**
-     * The number of metering points covered by EDA, i.e. all metering points in Austria
-     */
-    public static final int COVERED_METERING_POINTS = 5977915;
     /**
      * DSOs in Austria are only allowed to store data for the last 36 months
      */
@@ -87,6 +76,7 @@ public class EdaRegionConnector implements RegionConnector, CimConsumptionRecord
 
     private static void transitionPermissionRequest(CMRequestStatus cmRequestStatus, AtPermissionRequest request)
             throws StateTransitionException {
+        request.setStateTransitionMessage(cmRequestStatus.getMessage());
         switch (cmRequestStatus.getStatus()) {
             case ACCEPTED -> {
                 if (request.meteringPointId().isEmpty()) {
@@ -133,7 +123,7 @@ public class EdaRegionConnector implements RegionConnector, CimConsumptionRecord
 
     @Override
     public RegionConnectorMetadata getMetadata() {
-        return new RegionConnectorMetadata(MDA_CODE, MDA_DISPLAY_NAME, COUNTRY_CODE, BASE_PATH, COVERED_METERING_POINTS);
+        return EdaRegionConnectorMetadata.getInstance();
     }
 
     @Override

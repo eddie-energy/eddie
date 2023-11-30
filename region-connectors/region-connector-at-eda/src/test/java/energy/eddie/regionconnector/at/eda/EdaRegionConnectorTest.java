@@ -186,11 +186,7 @@ class EdaRegionConnectorTest {
         var result = connector.getMetadata();
 
         // then
-        assertEquals("at", result.countryCode());
-        assertEquals("at-eda", result.mdaCode());
-        assertEquals("Austria EDA", result.mdaDisplayName());
-        assertEquals(5977915, result.coveredMeteringPoints());
-        assertEquals("/region-connectors/at-eda/", result.urlPath());
+        assertEquals(EdaRegionConnectorMetadata.getInstance(), result);
     }
 
     @Test

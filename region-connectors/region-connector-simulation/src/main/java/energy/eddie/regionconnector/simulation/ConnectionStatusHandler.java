@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.simulation;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.api.v0.RegionalInformation;
 import io.javalin.Javalin;
 import io.javalin.http.HttpStatus;
 import org.slf4j.Logger;
@@ -9,9 +10,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.util.annotation.Nullable;
-
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 public class ConnectionStatusHandler {
 
@@ -36,13 +34,22 @@ public class ConnectionStatusHandler {
 
     void initWebapp(Javalin app) {
         LOGGER.info("Initializing Javalin app");
-        app.get(SimulationConnector.basePath() + "/api/connection-status-values", ctx -> ctx.json(PermissionProcessStatus.values()));
-        app.post(SimulationConnector.basePath() + "/api/connection-status", ctx -> {
+        String basePath = SimulationConnectorMetadata.getInstance().id();
+        app.get(basePath + "/api/connection-status-values", ctx -> ctx.json(PermissionProcessStatus.values()));
+        app.post(basePath + "/api/connection-status", ctx -> {
             var req = ctx.bodyAsClass(SetConnectionStatusRequest.class);
             LOGGER.info("Changing connection status of {} to {}", req.connectionId, req.connectionStatus);
-            var now = ZonedDateTime.now(ZoneId.systemDefault());
             if (req.connectionId != null && req.connectionStatus != null && req.dataNeedId != null) {
-                connectionStatusStreamSink.tryEmitNext(new ConnectionStatusMessage(req.connectionId, req.connectionId, req.dataNeedId, now, req.connectionStatus, req.connectionStatus.toString()));
+                connectionStatusStreamSink.tryEmitNext(
+                        new ConnectionStatusMessage(
+                                req.connectionId,
+                                req.connectionId,
+                                req.dataNeedId,
+                                new SimulationRegionalInformation(),
+                                req.connectionStatus,
+                                req.connectionStatus.toString()
+                        )
+                );
             } else {
                 LOGGER.error("Mandatory attribute missing (connectionId,connectionStatus,dataNeedId) on ConnectionStatusMessage from frontend: {}", ctx.body());
                 ctx.status(HttpStatus.BAD_REQUEST);
@@ -57,5 +64,27 @@ public class ConnectionStatusHandler {
         public String dataNeedId;
         @Nullable
         public PermissionProcessStatus connectionStatus;
+    }
+
+    private static class SimulationRegionalInformation implements RegionalInformation {
+        @Override
+        public String countryCode() {
+            return "sim";
+        }
+
+        @Override
+        public String regionConnectorId() {
+            return "sim";
+        }
+
+        @Override
+        public String permissionAdministratorId() {
+            return "sim";
+        }
+
+        @Override
+        public String meteringDataAdministratorId() {
+            return "sim";
+        }
     }
 }

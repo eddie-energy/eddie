@@ -46,8 +46,12 @@ public class PermissionRequestService {
 
     public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
         return repository.findByPermissionId(permissionId).map(request ->
-                new ConnectionStatusMessage(request.connectionId(), request.permissionId(),
-                        request.dataNeedId(), request.state().status())
+                new ConnectionStatusMessage(
+                        request.connectionId(),
+                        request.permissionId(),
+                        request.dataNeedId(),
+                        request.regionalInformation(),
+                        request.state().status())
         );
     }
 
