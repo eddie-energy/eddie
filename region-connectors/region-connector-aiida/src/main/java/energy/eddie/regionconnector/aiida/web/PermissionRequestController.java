@@ -64,6 +64,7 @@ public class PermissionRequestController {
                 : Objects.requireNonNull(getClass().getResourceAsStream(CE_PRODUCTION_PATH));
     }
 
+    @CrossOrigin
     @PostMapping(value = "/permission-request", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<PermissionDto> createPermissionRequest(

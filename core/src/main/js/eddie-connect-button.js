@@ -4,27 +4,27 @@ import { until } from "lit/directives/until.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 
 // Shoelace
-import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/dialog/dialog.js";
-import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/icon/icon.js";
-import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/alert/alert.js";
-import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/select/select.js";
-import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/option/option.js";
-import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/divider/divider.js";
-import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/spinner/spinner.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/dialog/dialog.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/icon/icon.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/alert/alert.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/select/select.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/option/option.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/divider/divider.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/spinner/spinner.js";
 
 // Only used for DataNeed modification
-import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/input/input.js";
-import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/details/details.js";
-import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/checkbox/checkbox.js";
-import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/components/button/button.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/input/input.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/details/details.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/checkbox/checkbox.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/button/button.js";
 
-import { setBasePath } from "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/utilities/base-path.js";
+import { setBasePath } from "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/utilities/base-path.js";
 import buttonIcon from "../resources/logo.svg?raw";
 import headerImage from "../resources/header.svg?raw";
 
 import PERMISSION_ADMINISTRATORS from "../resources/permission-administrators.json";
 
-setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn");
+setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn");
 
 const COUNTRIES = [
   ...new Set(PERMISSION_ADMINISTRATORS.map((item) => item.country)),
@@ -75,10 +75,7 @@ class EddieConnectButton extends LitElement {
 
     _dataNeedIds: { type: Array },
     _selectedCountry: { type: String },
-    _selectedPermissionAdministrator: {
-      type: Object,
-      name: "selected-permission-administrator",
-    },
+    _selectedPermissionAdministrator: { type: Object },
     _availableConnectors: { type: Object },
     _dataNeedAttributes: { type: Object },
     _dataNeedTypes: { type: Array },
@@ -145,6 +142,10 @@ class EddieConnectButton extends LitElement {
 
     this._availableConnectors = await getRegionConnectors();
 
+    if (this.isAiida()) {
+      this.selectAiida();
+    }
+
     this.dialogRef.value.show();
   }
 
@@ -187,10 +188,14 @@ class EddieConnectButton extends LitElement {
   }
 
   async handleDataNeedSelect(event) {
-    this._selectedPermissionAdministrator = null;
-
     this.dataNeedId = event.target.value;
     this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
+
+    if (this.isAiida()) {
+      this.selectAiida();
+    } else {
+      this._selectedPermissionAdministrator = null;
+    }
   }
 
   handleCountrySelect(event) {
@@ -230,17 +235,29 @@ class EddieConnectButton extends LitElement {
       formData.get("endDate")
     );
 
-    this.requestUpdate(
-      "selected-permission-administrator",
-      this._selectedPermissionAdministrator
-    );
+    if (this.isAiida()) {
+      this.selectAiida();
+    } else if (this._selectedPermissionAdministrator?.regionConnector === "aiida") {
+      this._selectedPermissionAdministrator = null;
+    }
+
+    this.requestUpdate();
+  }
+
+  isAiida() {
+    return this._dataNeedAttributes?.type === "SMART_METER_P1_DATA";
+  }
+
+  selectAiida() {
+    this._selectedCountry = null;
+    this._selectedPermissionAdministrator = { regionConnector: "aiida" };
   }
 
   render() {
     return html`
       <link
         rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.8.0/cdn/themes/light.css"
+        href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/themes/light.css"
       />
 
       <button class="eddie-connect-button" @click="${this.connect}">
@@ -357,26 +374,27 @@ class EddieConnectButton extends LitElement {
               <br />
             `
           : ""}
-
-        <sl-select
-          label="Country"
-          placeholder="Select your country"
-          @sl-change="${this.handleCountrySelect}"
-        >
-          ${COUNTRIES.map(
-            (country) => html`
-              <sl-option value="${country}">
-                ${COUNTRY_NAMES.of(country.toUpperCase())}
-              </sl-option>
+        ${!this.isAiida()
+          ? html`
+              <sl-select
+                label="Country"
+                placeholder="Select your country"
+                @sl-change="${this.handleCountrySelect}"
+              >
+                ${COUNTRIES.map(
+                  (country) => html`
+                    <sl-option value="${country}">
+                      ${COUNTRY_NAMES.of(country.toUpperCase())}
+                    </sl-option>
+                  `
+                )}
+                <sl-divider></sl-divider>
+                <small>Development</small>
+                <sl-option value="sim">Simulation</sl-option>
+              </sl-select>
+              <br />
             `
-          )}
-          <sl-divider></sl-divider>
-          <small>Development</small>
-          <sl-option value="sim">Simulation</sl-option>
-        </sl-select>
-
-        <br />
-
+          : ""}
         ${this._selectedCountry
           ? html`
               <sl-select
@@ -402,10 +420,9 @@ class EddieConnectButton extends LitElement {
                   `
                 )}
               </sl-select>
+              <br />
             `
           : ""}
-
-        <br />
 
         <div>
           ${this._selectedPermissionAdministrator
