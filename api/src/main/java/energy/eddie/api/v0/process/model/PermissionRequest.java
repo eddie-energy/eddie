@@ -1,8 +1,6 @@
 package energy.eddie.api.v0.process.model;
 
 
-import energy.eddie.api.v0.RegionalInformation;
-
 /**
  * A PermissionRequest represents the starting point of requesting the permission for data from an MDA.
  * It can have different states depending on where in the process of a specific Permission Administrator the request currently is.
@@ -41,8 +39,6 @@ public interface PermissionRequest {
      * @return the current state of the permission request.
      */
     PermissionRequestState state();
-
-    RegionalInformation regionalInformation();
 
     /**
      * After a state transition was successful the permission requests state will be updated using this method.

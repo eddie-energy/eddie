@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DsoIdAndMeteringPointTest {
     @Test
-    void dsoIdValidAndMeteringPointNull_returnsDsoId() {
+    void dsoIdValidAndMeteringPointNull_returnsDsoId() throws InvalidDsoIdException {
         // given
         String dsoId = "123456789";
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint(dsoId, null);
@@ -22,15 +22,34 @@ class DsoIdAndMeteringPointTest {
     }
 
     @Test
-    void ctr_dsoIdNull_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> new DsoIdAndMeteringPoint(null, "meteringPoint"));
+    void dsoIdFromMeteringPoint_returnsDsoId() throws InvalidDsoIdException {
+        // given
+        String meteringPoint = "12345678901234567890";
+        String expectedDsoId = "12345678";
+        DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint(null, meteringPoint);
+
+        // when
+        String result = dsoIdAndMeteringPoint.dsoId();
+
+        // then
+        assertEquals(expectedDsoId, result);
+    }
+
+    @Test
+    void meteringPointAndDsoIdNull_throws() {
+        // given
+        DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint(null, null);
+
+        // when
+        // then
+        assertThrows(InvalidDsoIdException.class, dsoIdAndMeteringPoint::dsoId);
     }
 
     @Test
     void meteringPoint_returnsOptionalWithValue() {
         // given
         String meteringPoint = "12345678901234567890";
-        DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("dsoId", meteringPoint);
+        DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint(null, meteringPoint);
 
         // when
         Optional<String> result = dsoIdAndMeteringPoint.meteringPoint();

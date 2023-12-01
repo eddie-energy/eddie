@@ -25,13 +25,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
 public class CCMORequest {
-    public static final int DSO_ID_LENGTH = 8;
 
     private static final MarketParticipantDirectoryBuilder MARKET_PARTICIPANT_DIRECTORY_BUILDER
             = new MarketParticipantDirectoryBuilder()
@@ -110,10 +108,6 @@ public class CCMORequest {
         return dsoIdAndMeteringPoint.meteringPoint();
     }
 
-    public String dsoId() {
-        return dsoIdAndMeteringPoint.dsoId();
-    }
-
     public LocalDate dataFrom() {
         return timeframe.start();
     }
@@ -139,16 +133,9 @@ public class CCMORequest {
                 .withMessageId(messageId)
                 .withConversationId(messageId)
                 .withProcessDate(LocalDate.now(DateTimeConstants.AT_ZONE_ID));
-
-        var optionalMeteringPoint = dsoIdAndMeteringPoint.meteringPoint();
-        if (optionalMeteringPoint.isPresent()) {
-            String meteringPoint = optionalMeteringPoint.get();
-            if (!Objects.equals(dsoIdAndMeteringPoint.dsoId(), meteringPoint.substring(0, DSO_ID_LENGTH))) {
-                throw new InvalidDsoIdException("The dsoId does not match the dsoId of the metering point");
-            }
-
-            processDirectory.withMeteringPoint(meteringPoint);
-        }
+        dsoIdAndMeteringPoint
+                .meteringPoint()
+                .ifPresent(processDirectory::withMeteringPoint);
 
         return new CMRequestBuilder()
                 .withProcessDirectory(processDirectory.build())
@@ -156,7 +143,7 @@ public class CCMORequest {
                 .build();
     }
 
-    private MarketParticipantDirectory makeMarketParticipantDirectory() {
+    private MarketParticipantDirectory makeMarketParticipantDirectory() throws InvalidDsoIdException {
         var routingHeader = new RoutingHeaderBuilder()
                 .withSender(toRoutingAddress(configuration.eligiblePartyId()))
                 .withReceiver(toRoutingAddress(dsoIdAndMeteringPoint.dsoId()))

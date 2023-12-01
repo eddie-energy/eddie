@@ -8,7 +8,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.RegionalInformation;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,8 +39,8 @@ class CustomSerializerTest {
     void testSerialize_StatusMessageData() {
         String topic = "test";
         ZonedDateTime now = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        ConnectionStatusMessage data = new ConnectionStatusMessage("connectionId", "permissionId", "dataNeedId", new TestRegionalInformation("cc", "rc", "pa", "mda"), now, PermissionProcessStatus.ACCEPTED, "Granted");
-        byte[] expected = "{\"connectionId\":\"connectionId\",\"permissionId\":\"permissionId\",\"dataNeedId\":\"dataNeedId\",\"regionalInformation\":{\"countryCode\":\"cc\",\"meteringDataAdministratorId\":\"mda\",\"permissionAdministratorId\":\"pa\",\"regionConnectorId\":\"rc\"},\"timestamp\":1672531200.000000000,\"status\":\"ACCEPTED\",\"message\":\"Granted\"}"
+        ConnectionStatusMessage data = new ConnectionStatusMessage("connectionId", "permissionId", "dataNeedId", now, PermissionProcessStatus.ACCEPTED, "Granted");
+        byte[] expected = ("{\"connectionId\":\"connectionId\",\"permissionId\":\"permissionId\",\"dataNeedId\":\"dataNeedId\",\"timestamp\":1672531200.000000000,\"status\":\"ACCEPTED\",\"message\":\"Granted\"}")
                 .getBytes(StandardCharsets.UTF_8);
 
         byte[] result = customSerializer.serialize(topic, data);
@@ -97,11 +96,5 @@ class CustomSerializerTest {
         byte[] result = customSerializer.serialize(topic, data);
 
         assertArrayEquals(expected, result);
-    }
-
-    private record TestRegionalInformation(String countryCode,
-                                           String regionConnectorId,
-                                           String permissionAdministratorId,
-                                           String meteringDataAdministratorId) implements RegionalInformation {
     }
 }

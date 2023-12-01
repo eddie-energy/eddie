@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
-import energy.eddie.api.v0.RegionalInformation;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
@@ -26,11 +25,6 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     @Override
     public String dataNeedId() {
         return dataNeedId;
-    }
-
-    @Override
-    public RegionalInformation regionalInformation() {
-        return new EnerginetRegionalInformation();
     }
 
     @Override

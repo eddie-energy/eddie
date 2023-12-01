@@ -163,9 +163,7 @@ class InMemoryPermissionRequestRepositoryTest {
         var request = new SimplePermissionRequest(
                 "permissionId", "connectionId1",
                 "dataNeedId",
-                "rid1",
-                "cid1",
-                "dsoId",
+                "rid1", "cid1",
                 Optional.of(meteringPointId),
                 dateFrom,
                 Optional.of(dateTo),
@@ -189,9 +187,7 @@ class InMemoryPermissionRequestRepositoryTest {
         var request = new SimplePermissionRequest(
                 "permissionId", "connectionId1",
                 "dataNeedId",
-                "rid1",
-                "cid1",
-                "dsoId",
+                "rid1", "cid1",
                 Optional.of(meteringPointId),
                 dateFrom,
                 Optional.of(dateTo),
@@ -214,23 +210,17 @@ class InMemoryPermissionRequestRepositoryTest {
         var repository = new InMemoryPermissionRequestRepository();
         String meteringPointId = "meteringPointId";
         var request = new SimplePermissionRequest(
-                "permissionId",
-                "connectionId1",
+                "permissionId", "connectionId1",
                 "dataNeedId",
-                "rid1",
-                "cid1",
-                "dsoId",
+                "rid1", "cid1",
                 Optional.of(meteringPointId),
                 dateFrom,
                 Optional.of(dateTo),
                 null);
         var request2 = new SimplePermissionRequest(
-                "permissionId2",
-                "connectionId2",
+                "permissionId2", "connectionId2",
                 "dataNeedId",
-                "rid2",
-                "cid2",
-                "dsoId",
+                "rid2", "cid2",
                 Optional.of(meteringPointId),
                 dateFrom,
                 Optional.of(dateTo),
@@ -256,23 +246,17 @@ class InMemoryPermissionRequestRepositoryTest {
         var repository = new InMemoryPermissionRequestRepository();
         String meteringPointId = "meteringPointId";
         var request = new SimplePermissionRequest(
-                "permissionId",
-                "connectionId1",
+                "permissionId", "connectionId1",
                 "dataNeedId",
-                "rid1",
-                "cid1",
-                "dsoId",
+                "rid1", "cid1",
                 Optional.of(meteringPointId),
                 dateFrom,
                 Optional.of(dateTo),
                 null);
         var request2 = new SimplePermissionRequest(
-                "permissionId2",
-                "connectionId2",
+                "permissionId2", "connectionId2",
                 "dataNeedId",
-                "rid2",
-                "cid2",
-                "dsoId",
+                "rid2", "cid2",
                 Optional.of("otherMeteringPointId"),
                 dateFrom,
                 Optional.of(dateTo),

@@ -41,7 +41,7 @@ function fetchJson(path) {
 
 function getRegionConnectors() {
   return fetchJson("/api/region-connectors-metadata").then((json) =>
-    Object.fromEntries(json.map((it) => [it.id, it]))
+    Object.fromEntries(json.map((it) => [it.mdaCode, it]))
   );
 }
 
@@ -81,6 +81,10 @@ class EddieConnectButton extends LitElement {
     _dataNeedTypes: { type: Array },
     _dataNeedGranularities: { type: Array },
   };
+
+  dialogRef = createRef();
+  permissionAdministratorSelectRef = createRef();
+
   static styles = css`
     :host {
       color: black;
@@ -104,8 +108,6 @@ class EddieConnectButton extends LitElement {
       cursor: pointer;
     }
   `;
-  dialogRef = createRef();
-  permissionAdministratorSelectRef = createRef();
 
   constructor() {
     super();
@@ -159,9 +161,7 @@ class EddieConnectButton extends LitElement {
     if (!customElements.get(customElementName)) {
       const regionConnector = this._availableConnectors[regionConnectorId];
       // loaded module needs to have the custom element class as its default export
-      const module = await import(
-        `${BASE_URL}/region-connectors/${regionConnector.id}/ce.js`
-      );
+      const module = await import(`${BASE_URL}${regionConnector.urlPath}ce.js`);
       customElements.define(customElementName, module.default);
     }
 
@@ -280,7 +280,7 @@ class EddieConnectButton extends LitElement {
                 help-text="The service allows the selection of a data need. This feature is meant for development purposes only."
               >
                 ${this._dataNeedIds.map(
-                  (id) => html` <sl-option value="${id}">${id}</sl-option> `
+                  (id) => html`<sl-option value="${id}">${id}</sl-option> `
                 )}
               </sl-select>
               <br />
@@ -325,7 +325,7 @@ class EddieConnectButton extends LitElement {
                   >
                     ${this._dataNeedTypes.map(
                       (value) =>
-                        html` <sl-option value="${value}">${value}</sl-option> `
+                        html`<sl-option value="${value}">${value}</sl-option> `
                     )}
                   </sl-select>
                   <br />
@@ -336,7 +336,7 @@ class EddieConnectButton extends LitElement {
                   >
                     ${this._dataNeedGranularities.map(
                       (value) =>
-                        html` <sl-option value="${value}">${value}</sl-option> `
+                        html`<sl-option value="${value}">${value}</sl-option> `
                     )}
                   </sl-select>
                   <br />
@@ -429,7 +429,7 @@ class EddieConnectButton extends LitElement {
             ? html`
                 ${until(
                   this.getRegionConnectorElement(),
-                  html` <sl-spinner></sl-spinner>`
+                  html`<sl-spinner></sl-spinner>`
                 )}
               `
             : html`
