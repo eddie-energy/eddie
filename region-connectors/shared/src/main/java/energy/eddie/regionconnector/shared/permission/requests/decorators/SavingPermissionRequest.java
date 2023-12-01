@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.shared.permission.requests.decorators;
 
-import energy.eddie.api.v0.RegionalInformation;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestRepository;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
@@ -38,12 +37,6 @@ public class SavingPermissionRequest<T extends PermissionRequest> implements Per
     public PermissionRequestState state() {
         return permissionRequest.state();
     }
-
-    @Override
-    public RegionalInformation regionalInformation() {
-        return permissionRequest.regionalInformation();
-    }
-
 
     @Override
     public void changeState(PermissionRequestState state) {

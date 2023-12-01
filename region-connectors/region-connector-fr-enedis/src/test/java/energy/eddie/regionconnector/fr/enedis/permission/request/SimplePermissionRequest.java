@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
-import energy.eddie.api.v0.RegionalInformation;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 
@@ -15,11 +14,6 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
 
     public SimplePermissionRequest(String permissionId, String connectionId, ZonedDateTime start, ZonedDateTime end) {
         this(permissionId, connectionId, null, start, end, null);
-    }
-
-    @Override
-    public RegionalInformation regionalInformation() {
-        return new EnedisRegionalInformation();
     }
 
     @Override

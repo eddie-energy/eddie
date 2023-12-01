@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Flow;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.*;
 import static energy.eddie.regionconnector.es.datadis.utils.ParameterKeys.PERMISSION_ID_KEY;
 import static java.util.Objects.requireNonNull;
 
@@ -78,7 +78,7 @@ public class DatadisRegionConnector implements RegionConnector, Mvp1ConnectionSt
 
     @Override
     public RegionConnectorMetadata getMetadata() {
-        return DatadisRegionConnectorMetadata.getInstance();
+        return new RegionConnectorMetadata(MDA_CODE, MDA_DISPLAY_NAME, COUNTRY_CODE, BASE_PATH, COVERED_METERING_POINTS);
     }
 
     @Override
@@ -109,19 +109,17 @@ public class DatadisRegionConnector implements RegionConnector, Mvp1ConnectionSt
     public int startWebapp(InetSocketAddress address, boolean devMode) {
         JavalinValidation.register(ZonedDateTime.class, value -> value != null && !value.isBlank() ? LocalDate.parse(value, DateTimeFormatter.ISO_DATE).atStartOfDay(ZONE_ID_SPAIN) : null);
         JavalinValidation.register(MeasurementType.class, MeasurementType::valueOf);
-        String basePath = DatadisRegionConnectorMetadata.BASE_PATH;
-        String ceJsPath = basePath + "/ce.js";
 
-        javalin.get(ceJsPath, context -> {
+        javalin.get(BASE_PATH + "/ce.js", context -> {
             context.contentType(ContentType.TEXT_JS);
             if (devMode) {
-                context.result(new FileInputStream("./region-connectors/region-connector-es-datadis/src/main/resources/public" + ceJsPath));
+                context.result(new FileInputStream("./region-connectors/region-connector-es-datadis/src/main/resources/public" + BASE_PATH + "ce.js"));
             } else {
-                context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public" + ceJsPath)));
+                context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public" + BASE_PATH + "ce.js")));
             }
         });
 
-        javalin.get(basePath + "/permission-status", ctx -> {
+        javalin.get(BASE_PATH + "/permission-status", ctx -> {
             var permissionId = ctx.queryParamAsClass(PERMISSION_ID_KEY, String.class).get();
             var connectionStatusMessage = permissionIdToConnectionStatusMessages.get(permissionId);
             if (connectionStatusMessage == null) {
@@ -131,7 +129,7 @@ public class DatadisRegionConnector implements RegionConnector, Mvp1ConnectionSt
             ctx.json(connectionStatusMessage);
         });
 
-        javalin.post(basePath + "/permission-request", ctx -> {
+        javalin.post(BASE_PATH + "/permission-request", ctx -> {
             // Created State as root state
             PermissionRequest permissionRequest = permissionRequestFactory.create(ctx);
             permissionRequest.validate();
@@ -143,7 +141,7 @@ public class DatadisRegionConnector implements RegionConnector, Mvp1ConnectionSt
             }
         });
 
-        javalin.post(basePath + "/permission-request/accepted", ctx -> {
+        javalin.post(BASE_PATH + "/permission-request/accepted", ctx -> {
             var permissionId = ctx.queryParamAsClass(PERMISSION_ID_KEY, String.class).get();
             var request = permissionRequestRepository.findByPermissionId(permissionId);
 
@@ -161,7 +159,7 @@ public class DatadisRegionConnector implements RegionConnector, Mvp1ConnectionSt
         });
 
 
-        javalin.post(basePath + "/permission-request/rejected", ctx -> {
+        javalin.post(BASE_PATH + "/permission-request/rejected", ctx -> {
             var permissionId = ctx.queryParamAsClass(PERMISSION_ID_KEY, String.class).get();
             var permissionRequest = permissionRequestRepository.findByPermissionId(permissionId);
 
@@ -198,6 +196,7 @@ public class DatadisRegionConnector implements RegionConnector, Mvp1ConnectionSt
     public void close() {
         permissionStateMessages.tryEmitComplete();
         consumptionRecords.tryEmitComplete();
+
     }
 
 

@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.es.datadis.permission.request;
 
-import energy.eddie.api.v0.RegionalInformation;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
@@ -273,11 +272,6 @@ class DatadisPermissionRequestAdapterTest {
         @Override
         public PermissionRequestState state() {
             return request.state();
-        }
-
-        @Override
-        public RegionalInformation regionalInformation() {
-            return request.regionalInformation();
         }
 
         @Override

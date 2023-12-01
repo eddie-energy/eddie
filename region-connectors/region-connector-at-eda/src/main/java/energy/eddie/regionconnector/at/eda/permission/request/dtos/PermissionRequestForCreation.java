@@ -5,8 +5,7 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
-import static energy.eddie.regionconnector.at.eda.requests.CCMORequest.DSO_ID_LENGTH;
-
+import static energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint.DSO_ID_LENGTH;
 
 public record PermissionRequestForCreation(
         @NotBlank(message = "ConnectionId must not be empty")

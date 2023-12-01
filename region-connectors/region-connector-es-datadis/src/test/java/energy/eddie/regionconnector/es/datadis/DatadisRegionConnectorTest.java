@@ -4,6 +4,7 @@ import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.permission.request.InMemoryPermissionRequestRepository;
+import energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -78,7 +79,11 @@ class DatadisRegionConnectorTest {
         var result = connector.getMetadata();
 
         // then
-        assertEquals(DatadisRegionConnectorMetadata.getInstance(), result);
+        assertEquals(DatadisSpecificConstants.COUNTRY_CODE, result.countryCode());
+        assertEquals(DatadisSpecificConstants.MDA_CODE, result.mdaCode());
+        assertEquals(DatadisSpecificConstants.MDA_DISPLAY_NAME, result.mdaDisplayName());
+        assertEquals(DatadisSpecificConstants.COVERED_METERING_POINTS, result.coveredMeteringPoints());
+        assertEquals(DatadisSpecificConstants.BASE_PATH, result.urlPath());
     }
 
     @Test

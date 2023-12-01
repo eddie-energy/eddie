@@ -28,13 +28,13 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
-import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.BASE_PATH;
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.BASE_PATH;
 
 
 @RestController
 @RequestMapping(BASE_PATH)
 public class PermissionRequestController {
-    private static final String CE_JS = "/ce.js";
+    private static final String CE_JS = "ce.js";
     /*
     We have to check two different paths depending on if the Region-Connector is run by the core or in standalone.
      */

@@ -108,10 +108,9 @@ class PermissionRequestServiceTest {
                 atPermissionRequest.connectionId(),
                 atPermissionRequest.permissionId(),
                 atPermissionRequest.dataNeedId(),
-                atPermissionRequest.regionalInformation(),
                 result.get().timestamp(),
                 atPermissionRequest.state().status(),
-                null
+                ""
         );
 
         assertEquals(Optional.of(expectedMessage), result);

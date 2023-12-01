@@ -31,6 +31,8 @@ public interface AtPermissionRequest extends PermissionRequest {
      */
     Optional<String> meteringPointId();
 
+    void setMeteringPointId(String meteringPointId);
+
     /**
      * The start date from when data is requested.
      *
@@ -45,26 +47,4 @@ public interface AtPermissionRequest extends PermissionRequest {
      * @return dataTo
      */
     Optional<LocalDate> dataTo();
-
-    /**
-     * Message that describes why the state transition happened.
-     *
-     * @return stateTransitionMessage
-     */
-    String stateTransitionMessage();
-
-    /**
-     * Sets the state transition message.
-     *
-     * @param message Message that describes why the state transition happened.
-     */
-    void setStateTransitionMessage(String message);
-
-    /**
-     * Sets the metering point id.
-     * Needed, when the request is performed with only the dsoId.
-     *
-     * @param meteringPointId The metering point id.
-     */
-    void setMeteringPointId(String meteringPointId);
 }

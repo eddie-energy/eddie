@@ -44,10 +44,9 @@ public class PermissionRequestService {
                                 permissionRequest.connectionId(),
                                 permissionRequest.permissionId(),
                                 permissionRequest.dataNeedId(),
-                                permissionRequest.regionalInformation(),
-                                permissionRequest.state().status(),
-                                permissionRequest.stateTransitionMessage()
+                                permissionRequest.state().status()
                         )
                 );
     }
+
 }

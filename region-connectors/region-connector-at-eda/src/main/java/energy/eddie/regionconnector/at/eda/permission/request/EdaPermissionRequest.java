@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.at.eda.permission.request;
 
-import energy.eddie.api.v0.RegionalInformation;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
@@ -21,12 +20,10 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     private final LocalDate dataFrom;
     @Nullable
     private final LocalDate dataTo;
-    private final String dataNeedId;
-    private final EdaRegionalInformation regionalInformation;
     @Nullable
     private String meteringPointId;
+    private final String dataNeedId;
     private PermissionRequestState state;
-    private String statusTransitionMessage = "";
 
     public EdaPermissionRequest(String connectionId, String dataNeedId, CCMORequest ccmoRequest, EdaAdapter edaAdapter) {
         this(connectionId, UUID.randomUUID().toString(), dataNeedId, ccmoRequest, edaAdapter);
@@ -39,7 +36,6 @@ public class EdaPermissionRequest implements AtPermissionRequest {
         this.cmRequestId = ccmoRequest.cmRequestId();
         this.conversationId = ccmoRequest.messageId();
         this.meteringPointId = ccmoRequest.meteringPointId().orElse(null);
-        this.regionalInformation = new EdaRegionalInformation(ccmoRequest.dsoId());
         this.dataFrom = ccmoRequest.dataFrom();
         this.dataTo = ccmoRequest.dataTo().orElse(null);
         this.state = new AtCreatedPermissionRequestState(this, ccmoRequest, edaAdapter);
@@ -76,7 +72,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     }
 
     @Override
-    public void setMeteringPointId(String meteringPointId) {
+    public void setMeteringPointId(@Nullable String meteringPointId) {
         this.meteringPointId = meteringPointId;
     }
 
@@ -96,21 +92,6 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     }
 
     @Override
-    public RegionalInformation regionalInformation() {
-        return regionalInformation;
-    }
-
-    @Override
-    public String stateTransitionMessage() {
-        return statusTransitionMessage;
-    }
-
-    @Override
-    public void setStateTransitionMessage(String message) {
-        this.statusTransitionMessage = message;
-    }
-
-    @Override
     public void changeState(PermissionRequestState state) {
         this.state = state;
     }
@@ -118,32 +99,25 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof EdaPermissionRequest that)) return false;
-        return Objects.equals(connectionId, that.connectionId) &&
-                Objects.equals(permissionId, that.permissionId) &&
-                Objects.equals(cmRequestId, that.cmRequestId) &&
-                Objects.equals(conversationId, that.conversationId) &&
-                Objects.equals(dataFrom, that.dataFrom) &&
-                Objects.equals(dataTo, that.dataTo) &&
-                Objects.equals(dataNeedId, that.dataNeedId) &&
-                Objects.equals(meteringPointId, that.meteringPointId) &&
-                Objects.equals(state.getClass(), that.state.getClass()) &&
-                Objects.equals(statusTransitionMessage, that.statusTransitionMessage) &&
-                Objects.equals(regionalInformation, that.regionalInformation);
+        if (!(o instanceof AtPermissionRequest that)) return false;
+
+
+        if (!Objects.equals(connectionId, that.connectionId())) return false;
+        if (!Objects.equals(permissionId, that.permissionId())) return false;
+        if (!Objects.equals(dataNeedId, that.dataNeedId())) return false;
+        if (!Objects.equals(cmRequestId, that.cmRequestId())) return false;
+        if (!Objects.equals(conversationId, that.conversationId())) return false;
+        return Objects.equals(state.getClass(), that.state().getClass());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(connectionId,
-                permissionId,
-                cmRequestId,
-                conversationId,
-                dataFrom,
-                dataTo,
-                dataNeedId,
-                meteringPointId,
-                state.getClass().hashCode(),
-                statusTransitionMessage,
-                regionalInformation.hashCode());
+        int result = connectionId != null ? connectionId.hashCode() : 0;
+        result = 31 * result + (permissionId != null ? permissionId.hashCode() : 0);
+        result = 31 * result + (dataNeedId != null ? dataNeedId.hashCode() : 0);
+        result = 31 * result + (cmRequestId != null ? cmRequestId.hashCode() : 0);
+        result = 31 * result + (conversationId != null ? conversationId.hashCode() : 0);
+        result = 31 * result + (state != null ? state.getClass().hashCode() : 0);
+        return result;
     }
 }

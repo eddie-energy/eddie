@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.at.eda.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
-import energy.eddie.regionconnector.at.eda.permission.request.EdaRegionalInformation;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtAcceptedPermissionRequestState;
@@ -81,6 +80,7 @@ class PermissionRequestControllerTest {
                 // Then
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
+
     }
 
     @Test
@@ -93,6 +93,7 @@ class PermissionRequestControllerTest {
                 // Then
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
+
     }
 
     @Test
@@ -100,14 +101,7 @@ class PermissionRequestControllerTest {
         // Given
         var state = new AtAcceptedPermissionRequestState(null);
         when(permissionRequestService.findConnectionStatusMessageById(anyString()))
-                .thenReturn(Optional.of(new ConnectionStatusMessage(
-                        "cid",
-                        "permissionId",
-                        "dnid",
-                        new EdaRegionalInformation("dsoId"),
-                        state.status(),
-                        ""
-                )));
+                .thenReturn(Optional.of(new ConnectionStatusMessage("cid", "permissionId", "dnid", state.status())));
         // When
         mockMvc.perform(
                         MockMvcRequestBuilders.get("/region-connectors/at-eda/permission-status")

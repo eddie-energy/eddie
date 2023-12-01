@@ -44,18 +44,6 @@ class EnerginetRegionConnectorTest {
     }
 
     @Test
-    void getMetadata_returnsExpected() {
-        // Given
-        var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);
-        var rc = new EnerginetRegionConnector(statusSink, recordSink, energinetCustomerApi, new InMemoryPermissionRequestRepository(), 0);
-
-        // When
-        var result = rc.getMetadata();
-
-        assertEquals(EnerginetRegionConnectorMetadata.getInstance(), result);
-    }
-
-    @Test
     void terminatePermission_withNonExistentPermissionId_doesNotThrow() {
         // Given
         var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);

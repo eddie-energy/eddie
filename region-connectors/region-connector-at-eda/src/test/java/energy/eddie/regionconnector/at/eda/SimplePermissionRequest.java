@@ -1,9 +1,7 @@
 package energy.eddie.regionconnector.at.eda;
 
-import energy.eddie.api.v0.RegionalInformation;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
-import energy.eddie.regionconnector.at.eda.permission.request.EdaRegionalInformation;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -13,25 +11,19 @@ public record SimplePermissionRequest(String permissionId,
                                       String dataNeedId,
                                       String cmRequestId,
                                       String conversationId,
-                                      String dsoId,
                                       Optional<String> meteringPointId,
                                       LocalDate dataFrom,
                                       Optional<LocalDate> dataTo,
                                       PermissionRequestState state) implements AtPermissionRequest {
 
     public SimplePermissionRequest(String permissionId, String connectionId) {
-        this(permissionId, connectionId, null, null, null, null, Optional.empty(), null, Optional.empty(), null);
+        this(permissionId, connectionId, null, null, null, Optional.empty(), null, Optional.empty(), null);
     }
 
     public SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId, String cmRequestId, String conversationId, PermissionRequestState state) {
-        this(permissionId, connectionId, dataNeedId, cmRequestId, conversationId, null, Optional.empty(), null, Optional.empty(), state);
+        this(permissionId, connectionId, dataNeedId, cmRequestId, conversationId, Optional.empty(), null, Optional.empty(), state);
     }
 
-
-    @Override
-    public RegionalInformation regionalInformation() {
-        return new EdaRegionalInformation(dsoId);
-    }
 
     @Override
     public void changeState(PermissionRequestState state) {
@@ -74,24 +66,14 @@ public record SimplePermissionRequest(String permissionId,
     }
 
     @Override
+    public void setMeteringPointId(String meteringPointId) {
+
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AtPermissionRequest that)) return false;
         return permissionId.equals(that.permissionId()) && connectionId.equals(that.connectionId()) && cmRequestId.equals(that.cmRequestId()) && conversationId.equals(that.conversationId()) && state == that.state();
-    }
-
-    @Override
-    public String stateTransitionMessage() {
-        return null;
-    }
-
-    @Override
-    public void setStateTransitionMessage(String message) {
-
-    }
-
-    @Override
-    public void setMeteringPointId(String meteringPointId) {
-
     }
 }

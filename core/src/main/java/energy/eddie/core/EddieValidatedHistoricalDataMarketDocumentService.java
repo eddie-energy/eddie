@@ -32,7 +32,7 @@ public class EddieValidatedHistoricalDataMarketDocumentService {
                 try {
                     consumptionRecordFluxes.add(JdkFlowAdapter.flowPublisherToFlux(provider.getEddieValidatedHistoricalDataMarketDocumentStream()));
                 } catch (Exception e) {
-                    LOGGER.warn("Got no validated historical data market document stream for connector {}", connector.getMetadata().id(), e);
+                    LOGGER.warn("Got no validated historical data market document stream for connector {}", connector.getMetadata().mdaCode(), e);
                 }
             }
         }

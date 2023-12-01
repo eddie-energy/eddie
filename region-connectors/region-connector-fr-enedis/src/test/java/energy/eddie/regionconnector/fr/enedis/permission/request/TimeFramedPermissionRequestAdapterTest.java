@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
-import energy.eddie.api.v0.RegionalInformation;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.StateTransitionException;
@@ -238,11 +237,6 @@ class TimeFramedPermissionRequestAdapterTest {
         @Override
         public PermissionRequestState state() {
             return request.state();
-        }
-
-        @Override
-        public RegionalInformation regionalInformation() {
-            return request.regionalInformation();
         }
 
         @Override

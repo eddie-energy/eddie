@@ -18,9 +18,7 @@ public class MessagingExtension implements Extension<AtPermissionRequest> {
                         permissionRequest.connectionId(),
                         permissionRequest.permissionId(),
                         permissionRequest.dataNeedId(),
-                        permissionRequest.regionalInformation(),
-                        permissionRequest.state().status(),
-                        permissionRequest.stateTransitionMessage()
+                        permissionRequest.state().status()
                 )
         );
     }
