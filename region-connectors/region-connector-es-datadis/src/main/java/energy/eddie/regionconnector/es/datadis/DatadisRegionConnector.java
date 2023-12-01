@@ -15,17 +15,17 @@ import java.util.concurrent.Flow;
 
 public class DatadisRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider,
         Mvp1ConsumptionRecordProvider {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DatadisRegionConnector.class);
-
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink;
-
     private final Sinks.Many<ConsumptionRecord> consumptionRecordSink;
     private final PermissionRequestService permissionRequestService;
     private final int port;
 
-    public DatadisRegionConnector(Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink,
-                                  Sinks.Many<ConsumptionRecord> consumptionRecordSink, PermissionRequestService permissionRequestService, int port) {
+    public DatadisRegionConnector(
+            Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink,
+            Sinks.Many<ConsumptionRecord> consumptionRecordSink,
+            PermissionRequestService permissionRequestService,
+            int port) {
         this.connectionStatusMessageSink = connectionStatusMessageSink;
         this.consumptionRecordSink = consumptionRecordSink;
         this.permissionRequestService = permissionRequestService;
@@ -66,7 +66,6 @@ public class DatadisRegionConnector implements RegionConnector, Mvp1ConnectionSt
 
     @Override
     public Map<String, HealthState> health() {
-        // TODO shouldn't we add "rc-es-datadis --> UP"?
         return Map.of("permissionRequestRepository", HealthState.UP);
     }
 

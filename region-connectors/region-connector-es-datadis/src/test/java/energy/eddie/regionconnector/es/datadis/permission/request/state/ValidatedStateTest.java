@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.permission.request.state;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
@@ -16,6 +15,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.ZonedDateTime;
 
+import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,14 +31,14 @@ class ValidatedStateTest {
     private AuthorizationRequest authorizationRequest;
 
     @Test
-    void sendToPermissionAdministrator_changesState_andCallsApi() throws StateTransitionException {
+    void sendToPermissionAdministrator_changesState_andCallsApi() {
         // Given
         var permissionId = "SomeId";
         var connectionId = "bar";
         var dataNeedId = "luu";
         var nif = "muh";
         var meteringPointId = "kuh";
-        var now = ZonedDateTime.now();
+        var now = ZonedDateTime.now(ZONE_ID_SPAIN);
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
 

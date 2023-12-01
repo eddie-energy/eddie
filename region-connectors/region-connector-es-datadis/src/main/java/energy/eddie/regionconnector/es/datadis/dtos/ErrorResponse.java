@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 

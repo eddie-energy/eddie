@@ -24,8 +24,6 @@ dependencies {
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
 
-    // TODO cleanup
-    implementation(libs.javalin)
     implementation(libs.microprofile.config)
 
 

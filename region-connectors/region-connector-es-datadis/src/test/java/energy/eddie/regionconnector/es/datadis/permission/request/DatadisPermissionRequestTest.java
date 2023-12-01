@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
+import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,7 +25,7 @@ class DatadisPermissionRequestTest {
     private final String nif = "123456";
     private final String meteringPointId = "7890";
     private final MeasurementType measurementType = MeasurementType.QUARTER_HOURLY;
-    private final ZonedDateTime now = ZonedDateTime.now();
+    private final ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
     private final ZonedDateTime requestDataFrom = now.minusDays(10);
     private final ZonedDateTime requestDataTo = now.minusDays(5);
     @Mock

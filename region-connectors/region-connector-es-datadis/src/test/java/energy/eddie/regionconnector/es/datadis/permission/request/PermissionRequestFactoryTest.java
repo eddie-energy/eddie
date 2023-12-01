@@ -17,6 +17,7 @@ import reactor.core.publisher.Sinks;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,11 +25,11 @@ class PermissionRequestFactoryTest {
     @Mock
     private AuthorizationResponseHandler responseHandler;
     @Mock
-    private AuthorizationApi authorizationApi;
+    private AuthorizationApi unusedAuthorizationApi;
     @Mock
-    private Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink;
+    private Sinks.Many<ConnectionStatusMessage> unusedConnectionStatusMessageSink;
     @Mock
-    private EsPermissionRequestRepository repository;
+    private EsPermissionRequestRepository unusedRepository;
     @InjectMocks
     private PermissionRequestFactory factory;
 
@@ -40,7 +41,7 @@ class PermissionRequestFactoryTest {
         String dataNeedId = "dataNeed";
         String connectionId = "connId";
         MeasurementType measurementType = MeasurementType.QUARTER_HOURLY;
-        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
         ZonedDateTime requestDataFrom = now.minusDays(10);
         ZonedDateTime requestDataTo = now.minusDays(5);
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif,

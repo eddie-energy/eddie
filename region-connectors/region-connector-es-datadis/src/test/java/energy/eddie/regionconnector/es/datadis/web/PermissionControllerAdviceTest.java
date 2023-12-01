@@ -1,11 +1,9 @@
 package energy.eddie.regionconnector.es.datadis.web;
 
 import energy.eddie.api.v0.process.model.PastStateException;
-import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.RejectedState;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -14,8 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PermissionControllerAdviceTest {
     private final PermissionControllerAdvice advice = new PermissionControllerAdvice();
-    @Mock
-    private PermissionRequestState mockState;
 
     @Test
     void givenPastStateException_returnsInternalServerError() {

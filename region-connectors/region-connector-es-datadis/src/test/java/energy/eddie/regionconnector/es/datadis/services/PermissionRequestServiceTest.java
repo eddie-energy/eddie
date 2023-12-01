@@ -24,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -59,7 +60,7 @@ class PermissionRequestServiceTest {
         var dataNeedId = "luu";
         var nif = "muh";
         var meteringPointId = "kuh";
-        var now = ZonedDateTime.now();
+        var now = ZonedDateTime.now(ZONE_ID_SPAIN);
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
         var permissionRequest = new DatadisPermissionRequest(permissionId, connectionId, dataNeedId,
