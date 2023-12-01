@@ -8,6 +8,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.RegionalInformation;
 import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequestRepository;
+import energy.eddie.regionconnector.aiida.api.AiidaRegionalInformation;
 import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import energy.eddie.regionconnector.aiida.states.AiidaAcceptedPermissionRequestState;
@@ -33,15 +34,17 @@ class AiidaKafkaTest {
     private ObjectMapper mapper;
     @Mock
     private KafkaTemplate<String, String> mockTemplate;
-    @Mock
-    private RegionalInformation mockInformation;
+    private RegionalInformation regionalInformation;
     private TestPublisher<TerminationRequest> publisher;
 
     @BeforeEach
     void setUp() {
         mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        mapper.addMixIn(ConnectionStatusMessage.class, ConnectionStatusMessageMixin.class);
+
         publisher = TestPublisher.create();
         kafka = new AiidaKafka(mapper, mockRepository, publisher.flux(), mockTemplate);
+        regionalInformation = new AiidaRegionalInformation();
     }
 
     @Test
@@ -50,7 +53,7 @@ class AiidaKafkaTest {
 
         // json that is received from AIIDA
         var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(),
-                mockInformation, PermissionProcessStatus.ACCEPTED);
+                regionalInformation, PermissionProcessStatus.ACCEPTED);
         var json = mapper.writeValueAsString(message);
 
         // make sure the request is in a valid state
@@ -68,7 +71,7 @@ class AiidaKafkaTest {
         var request = createTestRequest();
 
         var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(),
-                mockInformation, PermissionProcessStatus.ACCEPTED);
+                regionalInformation, PermissionProcessStatus.TERMINATED);
         var json = mapper.writeValueAsString(message);
 
         request.changeState(new AiidaAcceptedPermissionRequestState(request));
@@ -85,7 +88,7 @@ class AiidaKafkaTest {
         var request = createTestRequest();
 
         var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(),
-                mockInformation, PermissionProcessStatus.ACCEPTED);
+                regionalInformation, PermissionProcessStatus.REVOKED);
         var json = mapper.writeValueAsString(message);
 
         request.changeState(new AiidaAcceptedPermissionRequestState(request));
@@ -102,7 +105,7 @@ class AiidaKafkaTest {
         var request = createTestRequest();
 
         var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(),
-                mockInformation, PermissionProcessStatus.ACCEPTED);
+                regionalInformation, PermissionProcessStatus.TIME_LIMIT);
         var json = mapper.writeValueAsString(message);
 
         request.changeState(new AiidaAcceptedPermissionRequestState(request));

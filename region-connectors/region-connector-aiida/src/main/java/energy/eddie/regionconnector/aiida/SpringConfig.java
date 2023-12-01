@@ -2,10 +2,12 @@ package energy.eddie.regionconnector.aiida;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
+import energy.eddie.regionconnector.aiida.kafka.ConnectionStatusMessageMixin;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,6 +63,7 @@ public class SpringConfig {
     public ObjectMapper objectMapper() {
         var mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
+        mapper.addMixIn(ConnectionStatusMessage.class, ConnectionStatusMessageMixin.class);
         return mapper;
     }
 
