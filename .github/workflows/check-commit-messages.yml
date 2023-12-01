@@ -22,7 +22,7 @@ jobs:
       - name: Check for referenced issue
         uses: gsactions/commit-message-checker@v2
         with:
-          pattern: '^((\#|GH\-|gh\-)[0-9]+|NOISSUE|Merge).+'
+          pattern: '^((\#|GH\-|gh\-)[0-9]+|NOISSUE|Merge|Revert).+'
           flags: 'gm'
           error: 'Commit message must reference an issue at the start, start with NOISSUE, or start with Merge'
           excludeDescription: 'true' # exclude description and title of pull request
