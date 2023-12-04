@@ -3,14 +3,12 @@ package energy.eddie.regionconnector.aiida.web;
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,29 +29,10 @@ class PermissionRequestControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private AiidaRegionConnectorService service;
-    @Autowired
-    private ConfigurableEnvironment environment;
-
-
-    @BeforeEach
-    void setUp() {
-        environment.setActiveProfiles();
-    }
 
     @Test
     void javascriptConnectorElement_returnsOk() throws Exception {
         // Given
-
-        // When
-        mockMvc.perform(get("/region-connectors/aiida/ce.js"))
-                // Then
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void javascriptConnectorElement_returnsOk_withDevProfile() throws Exception {
-        // Given
-        environment.setActiveProfiles("dev");
 
         // When
         mockMvc.perform(get("/region-connectors/aiida/ce.js"))

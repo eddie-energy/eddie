@@ -8,7 +8,6 @@ import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionReq
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtAcceptedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestCreationService;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,7 +17,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -44,8 +42,6 @@ class PermissionRequestControllerTest {
     ObjectMapper objectMapper;
     @Autowired
     private MockMvc mockMvc;
-    @Autowired
-    private ConfigurableEnvironment environment;
     @MockBean
     private PermissionRequestService permissionRequestService;
     @MockBean
@@ -66,27 +62,9 @@ class PermissionRequestControllerTest {
         );
     }
 
-    @BeforeEach
-    void setUp() {
-        environment.setActiveProfiles();
-    }
-
     @Test
     void javascriptConnectorElement_returnsOk() throws Exception {
         // Given
-
-        // When
-        mockMvc.perform(MockMvcRequestBuilders.get("/region-connectors/at-eda/ce.js"))
-                // Then
-                .andExpect(status().isOk())
-                .andReturn().getResponse();
-
-    }
-
-    @Test
-    void javascriptConnectorElement_returnsOk_withDevProfile() throws Exception {
-        // Given
-        environment.setActiveProfiles("dev");
 
         // When
         mockMvc.perform(MockMvcRequestBuilders.get("/region-connectors/at-eda/ce.js"))

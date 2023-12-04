@@ -8,15 +8,14 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 
 import static energy.eddie.regionconnector.aiida.AiidaRegionConnector.BASE_PATH;
 
@@ -24,44 +23,24 @@ import static energy.eddie.regionconnector.aiida.AiidaRegionConnector.BASE_PATH;
 @RequestMapping(BASE_PATH)
 public class PermissionRequestController {
     private static final String CE_JS = "ce.js";
-    /**
-     * We have to check two different paths depending if the Region-Connector is run by the core or in standalone.
-     */
-    private static final String[] CE_DEV_PATHS = new String[]{
-            "./region-connectors/region-connector-aiida/src/main/resources/public" + BASE_PATH + CE_JS,
-            "./src/main/resources/public" + BASE_PATH + CE_JS
-    };
     private static final String CE_PRODUCTION_PATH = "/public" + BASE_PATH + CE_JS;
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final AiidaRegionConnectorService aiidaService;
-    private final Environment environment;
 
     @Autowired
-    public PermissionRequestController(Environment environment, AiidaRegionConnectorService aiidaService) {
-        this.environment = environment;
+    public PermissionRequestController(AiidaRegionConnectorService aiidaService) {
         this.aiidaService = aiidaService;
     }
 
-    private static String findCEDevPath() throws FileNotFoundException {
-        for (String ceDevPath : CE_DEV_PATHS) {
-            if (new File(ceDevPath).exists()) {
-                return ceDevPath;
-            }
-        }
-        throw new FileNotFoundException();
-    }
-
-    @GetMapping(value = "/ce.js", produces = "text/javascript")
+    @GetMapping(value = "/" + CE_JS, produces = "text/javascript")
     public String javascriptConnectorElement() throws IOException {
         try (InputStream in = getCEInputStream()) {
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
     }
 
-    private InputStream getCEInputStream() throws FileNotFoundException {
-        return !environment.matchesProfiles("dev")
-                ? new FileInputStream(findCEDevPath())
-                : Objects.requireNonNull(getClass().getResourceAsStream(CE_PRODUCTION_PATH));
+    private InputStream getCEInputStream() {
+        return getClass().getResourceAsStream(CE_PRODUCTION_PATH);
     }
 
     @CrossOrigin
