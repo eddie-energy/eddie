@@ -2,12 +2,12 @@ package energy.eddie.regionconnector.dk.energinet;
 
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorFactory;
-import energy.eddie.regionconnector.dk.SpringConfig;
+import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
 import org.eclipse.microprofile.config.Config;
 
 public class EnerginetRegionConnectorFactory implements RegionConnectorFactory {
     @Override
     public RegionConnector create(Config config) {
-        return SpringConfig.start();
+        return DkEnerginetSpringConfig.start();
     }
 }

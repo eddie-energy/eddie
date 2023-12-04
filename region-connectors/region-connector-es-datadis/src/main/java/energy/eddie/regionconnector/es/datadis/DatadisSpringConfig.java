@@ -25,13 +25,13 @@ import reactor.netty.http.client.HttpClient;
 
 
 @SpringBootApplication
-public class SpringConfig {
+public class DatadisSpringConfig {
     @Nullable
     private static ConfigurableApplicationContext ctx;
 
     public static synchronized RegionConnector start() {
         if (ctx == null) {
-            var app = new SpringApplicationBuilder(SpringConfig.class)
+            var app = new SpringApplicationBuilder(DatadisSpringConfig.class)
                     .build();
             // These arguments are needed, since this spring instance tries to load the data needs configs of the core configuration.
             ctx = app.run("--spring.config.import=", "--import.config.file=", "--server.port=${region-connector.es.datadis.server.port}");
@@ -41,7 +41,7 @@ public class SpringConfig {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(SpringConfig.class, args);
+        SpringApplication.run(DatadisSpringConfig.class, args);
     }
 
     @Bean

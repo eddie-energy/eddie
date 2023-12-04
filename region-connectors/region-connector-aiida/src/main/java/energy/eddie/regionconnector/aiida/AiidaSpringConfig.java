@@ -12,7 +12,6 @@ import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -26,13 +25,13 @@ import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
 
 @SpringBootApplication
 @EnableKafka
-public class SpringConfig {
+public class AiidaSpringConfig {
     @Nullable
     private static ConfigurableApplicationContext ctx;
 
     public static synchronized RegionConnector start() {
         if (ctx == null) {
-            var app = new SpringApplicationBuilder(SpringConfig.class)
+            var app = new SpringApplicationBuilder(AiidaSpringConfig.class)
                     .build();
             // These arguments are needed, since this spring instance tries to load the data needs configs of the core configuration.
             // Random port for this spring application, subject to change in GH-109
@@ -52,10 +51,6 @@ public class SpringConfig {
     ) {
         return new PlainAiidaConfiguration(kafkaBootstrapServers, kafkaDataTopic,
                 kafkaStatusMessagesTopic, kafkaTerminationTopicPrefix);
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(SpringConfig.class, args);
     }
 
     @Bean

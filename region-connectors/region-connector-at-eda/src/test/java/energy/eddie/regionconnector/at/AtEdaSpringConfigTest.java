@@ -17,12 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class SpringConfigTest {
+class AtEdaSpringConfigTest {
 
     @Test
     void springConfig_createsPontonXPAdapterConfiguration() {
         // Given
-        SpringConfig springConfig = new SpringConfig();
+        AtEdaSpringConfig springConfig = new AtEdaSpringConfig();
 
         // When
         PontonXPAdapterConfiguration xpAdapterConfiguration = springConfig.pontonXPAdapterConfiguration("adapterId", "0.0.0", "localhost", 9200, "/ponton");
@@ -34,7 +34,7 @@ class SpringConfigTest {
     @Test
     void springConfig_createsAtConfiguration() {
         // Given
-        SpringConfig springConfig = new SpringConfig();
+        AtEdaSpringConfig springConfig = new AtEdaSpringConfig();
 
         // When
         AtConfiguration atConfiguration = springConfig.atConfiguration("AT00001");
@@ -46,7 +46,7 @@ class SpringConfigTest {
     @Test
     void springConfig_createsPermissionRequestRepository() {
         // Given
-        SpringConfig springConfig = new SpringConfig();
+        AtEdaSpringConfig springConfig = new AtEdaSpringConfig();
 
         // When
         AtPermissionRequestRepository permissionRequestRepository = springConfig.permissionRequestRepository();
@@ -66,7 +66,7 @@ class SpringConfigTest {
         when(edaAdapter.getConsumptionRecordStream())
                 .thenReturn(Flux.empty());
 
-        SpringConfig springConfig = new SpringConfig();
+        AtEdaSpringConfig springConfig = new AtEdaSpringConfig();
         Sinks.Many<ConnectionStatusMessage> messages = Sinks.many().multicast().onBackpressureBuffer();
 
 
@@ -81,7 +81,7 @@ class SpringConfigTest {
     void springConfig_createsContainerAndReturnsRegionConnector() throws Exception {
         // Given
         // When
-        RegionConnector regionConnector = SpringConfig.start();
+        RegionConnector regionConnector = AtEdaSpringConfig.start();
 
         // Then
         assertNotNull(regionConnector);

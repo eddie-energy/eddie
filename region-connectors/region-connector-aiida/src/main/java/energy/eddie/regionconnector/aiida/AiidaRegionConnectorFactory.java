@@ -7,6 +7,6 @@ import org.eclipse.microprofile.config.Config;
 public class AiidaRegionConnectorFactory implements RegionConnectorFactory {
     @Override
     public RegionConnector create(Config config) {
-        return SpringConfig.start();
+        return AiidaSpringConfig.start();
     }
 }

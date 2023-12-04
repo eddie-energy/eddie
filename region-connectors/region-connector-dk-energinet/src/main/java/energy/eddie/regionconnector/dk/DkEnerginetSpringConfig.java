@@ -14,7 +14,6 @@ import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -25,23 +24,19 @@ import reactor.core.publisher.Sinks;
 import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.ENERGINET_CUSTOMER_BASE_PATH_KEY;
 
 @SpringBootApplication
-public class SpringConfig {
+public class DkEnerginetSpringConfig {
     @Nullable
     private static ConfigurableApplicationContext ctx;
 
     public static synchronized RegionConnector start() {
         if (ctx == null) {
-            var app = new SpringApplicationBuilder(SpringConfig.class)
+            var app = new SpringApplicationBuilder(DkEnerginetSpringConfig.class)
                     .build();
             // These arguments are needed, since this spring instance tries to load the data needs configs of the core configuration.
             ctx = app.run("--spring.config.import=", "--import.config.file=", "--server.port=${region-connector.dk.energinet.server.port}");
         }
         var factory = ctx.getBeanFactory();
         return factory.getBean(RegionConnector.class);
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(SpringConfig.class, args);
     }
 
     @Bean

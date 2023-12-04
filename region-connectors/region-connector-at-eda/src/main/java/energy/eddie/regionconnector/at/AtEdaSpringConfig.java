@@ -34,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
@@ -53,14 +52,14 @@ import static energy.eddie.regionconnector.at.eda.config.AtConfiguration.ELIGIBL
 import static energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration.*;
 
 @SpringBootApplication
-public class SpringConfig {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpringConfig.class);
+public class AtEdaSpringConfig {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AtEdaSpringConfig.class);
     @Nullable
     private static ConfigurableApplicationContext ctx;
 
     public static synchronized RegionConnector start() {
         if (ctx == null) {
-            var app = new SpringApplicationBuilder(SpringConfig.class)
+            var app = new SpringApplicationBuilder(AtEdaSpringConfig.class)
                     .build();
             // These arguments are needed, since this spring instance tries to load the data needs configs of the core configuration.
             // Random port for this spring application, subject to change in GH-109
@@ -68,10 +67,6 @@ public class SpringConfig {
         }
         var factory = ctx.getBeanFactory();
         return factory.getBean(RegionConnector.class);
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(SpringConfig.class, args);
     }
 
     @Bean
