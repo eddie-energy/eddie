@@ -1,5 +1,7 @@
 package energy.eddie.core.dataneeds;
 
+import energy.eddie.api.agnostic.DataNeedsService;
+import energy.eddie.api.agnostic.DataType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,8 +11,8 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.Optional;
 import java.util.Set;
 
-import static energy.eddie.core.dataneeds.DataNeedTest.EXAMPLE_DATA_NEED;
-import static energy.eddie.core.dataneeds.DataNeedTest.EXAMPLE_DATA_NEED_KEY;
+import static energy.eddie.core.dataneeds.DataNeedImplTest.EXAMPLE_DATA_NEED;
+import static energy.eddie.core.dataneeds.DataNeedImplTest.EXAMPLE_DATA_NEED_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;

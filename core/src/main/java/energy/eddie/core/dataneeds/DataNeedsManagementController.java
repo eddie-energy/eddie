@@ -1,8 +1,9 @@
 package energy.eddie.core.dataneeds;
 
-import org.jetbrains.annotations.NotNull;
+import energy.eddie.api.agnostic.DataNeed;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -24,7 +25,7 @@ public class DataNeedsManagementController {
     }
 
     @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
-    public ResponseEntity<String> createDataNeed(@NotNull @RequestBody DataNeed newDataNeed) {
+    public ResponseEntity<String> createDataNeed(@NonNull @RequestBody DataNeedImpl newDataNeed) {
         final var id = newDataNeed.getId();
         if (dataNeedsDbRepository.existsById(id)) {
             return ResponseEntity.badRequest().body("data need with id " + id + " already exists");
@@ -35,7 +36,7 @@ public class DataNeedsManagementController {
 
     @GetMapping()
     public ResponseEntity<Iterable<DataNeed>> getAllDataNeeds() {
-        return ResponseEntity.ok(dataNeedsDbRepository.findAll());
+        return ResponseEntity.ok(dataNeedsDbRepository.findAll().stream().map(DataNeed.class::cast).toList());
     }
 
     @GetMapping("/{id}")
@@ -45,7 +46,7 @@ public class DataNeedsManagementController {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<String> updateDataNeed(@PathVariable String id, @RequestBody DataNeed dataNeed) {
+    public ResponseEntity<String> updateDataNeed(@PathVariable String id, @RequestBody DataNeedImpl dataNeed) {
         if (!dataNeed.getId().equals(id)) {
             return ResponseEntity.badRequest().body("data need id in url does not match data need id in body");
         } else if (!dataNeedsDbRepository.existsById(id)) {

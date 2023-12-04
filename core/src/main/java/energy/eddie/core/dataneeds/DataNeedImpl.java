@@ -1,5 +1,7 @@
 package energy.eddie.core.dataneeds;
 
+import energy.eddie.api.agnostic.DataNeed;
+import energy.eddie.api.agnostic.DataType;
 import energy.eddie.api.v0.ConsumptionRecord;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -10,10 +12,10 @@ import java.util.Objects;
 /**
  * Record defining the attributes of a data need.
  * <p>
- * See <a href="https://eddie-web.projekte.fh-hagenberg.at/docs/requirements/4_data_requirements/1_logical_data_model/">DataNeed in logical data model</a>
+ * See <a href="https://eddie-web.projekte.fh-hagenberg.at/docs/requirements/4_data_requirements/1_logical_data_model/">DataNeedImpl in logical data model</a>
  */
 @Entity
-public class DataNeed {
+public class DataNeedImpl implements DataNeed {
     @Id
     private String id;
     private String description;
@@ -24,10 +26,10 @@ public class DataNeed {
     private @Nullable Integer durationEnd;
 
     @SuppressWarnings("NullAway.Init")
-    protected DataNeed() {
+    protected DataNeedImpl() {
     }
 
-    public DataNeed(String id, String description, DataType type, @Nullable ConsumptionRecord.MeteringInterval granularity, Integer durationStart, Boolean durationOpenEnd, @Nullable Integer durationEnd) {
+    public DataNeedImpl(String id, String description, DataType type, @Nullable ConsumptionRecord.MeteringInterval granularity, Integer durationStart, Boolean durationOpenEnd, @Nullable Integer durationEnd) {
         this.id = id;
         this.description = description;
         this.type = type;
@@ -98,8 +100,7 @@ public class DataNeed {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DataNeed)) return false;
-        DataNeed dataNeed = (DataNeed) o;
+        if (!(o instanceof DataNeedImpl dataNeed)) return false;
         return Objects.equals(id, dataNeed.id) && Objects.equals(description, dataNeed.description) && type == dataNeed.type && granularity == dataNeed.granularity && Objects.equals(durationStart, dataNeed.durationStart) && Objects.equals(durationOpenEnd, dataNeed.durationOpenEnd) && Objects.equals(durationEnd, dataNeed.durationEnd);
     }
 

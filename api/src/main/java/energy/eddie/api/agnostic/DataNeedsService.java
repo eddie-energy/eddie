@@ -1,4 +1,4 @@
-package energy.eddie.core.dataneeds;
+package energy.eddie.api.agnostic;
 
 import java.util.Optional;
 import java.util.Set;

@@ -1,17 +1,18 @@
 package energy.eddie.core.dataneeds;
 
+import energy.eddie.api.agnostic.DataType;
 import energy.eddie.api.v0.ConsumptionRecord;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class DataNeedTest {
+class DataNeedImplTest {
     static final String EXAMPLE_DATA_NEED_KEY = "EXAMPLE_DATA_NEED";
-    static final DataNeed EXAMPLE_DATA_NEED = new DataNeed(EXAMPLE_DATA_NEED_KEY, "description",
+    static final DataNeedImpl EXAMPLE_DATA_NEED = new DataNeedImpl(EXAMPLE_DATA_NEED_KEY, "description",
             DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA, ConsumptionRecord.MeteringInterval.PT_15_M, -90, false, 0);
 
-    static DataNeed copy(DataNeed dataNeed) {
-        return new DataNeed(dataNeed.getId(), dataNeed.getDescription(), dataNeed.getType(), dataNeed.getGranularity(),
+    static DataNeedImpl copy(DataNeedImpl dataNeed) {
+        return new DataNeedImpl(dataNeed.getId(), dataNeed.getDescription(), dataNeed.getType(), dataNeed.getGranularity(),
                 dataNeed.getDurationStart(), dataNeed.getDurationOpenEnd(), dataNeed.getDurationEnd());
     }
 

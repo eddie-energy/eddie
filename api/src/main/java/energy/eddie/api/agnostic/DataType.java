@@ -1,4 +1,4 @@
-package energy.eddie.core.dataneeds;
+package energy.eddie.api.agnostic;
 
 /**
  * Enumeration for all types of data that can be retrieved through EDDIE.

@@ -23,22 +23,22 @@ class DataNeedsDbRepositoryTest {
     @Test
     void testSaveAndDelete() {
         assertThat(repo.count()).isZero();
-        repo.save(DataNeedTest.EXAMPLE_DATA_NEED);
+        repo.save(DataNeedImplTest.EXAMPLE_DATA_NEED);
         assertThat(repo.count()).isEqualTo(1);
-        assertThat(repo.findById(DataNeedTest.EXAMPLE_DATA_NEED_KEY)).hasValue(DataNeedTest.EXAMPLE_DATA_NEED);
-        repo.delete(DataNeedTest.EXAMPLE_DATA_NEED);
+        assertThat(repo.findById(DataNeedImplTest.EXAMPLE_DATA_NEED_KEY)).hasValue(DataNeedImplTest.EXAMPLE_DATA_NEED);
+        repo.delete(DataNeedImplTest.EXAMPLE_DATA_NEED);
         assertThat(repo.count()).isZero();
     }
 
     @Test
     void findAllIds() {
         assertThat(repo.count()).isZero();
-        repo.save(DataNeedTest.EXAMPLE_DATA_NEED);
-        assertThat(repo.findAllIds()).containsOnly(DataNeedTest.EXAMPLE_DATA_NEED_KEY);
+        repo.save(DataNeedImplTest.EXAMPLE_DATA_NEED);
+        assertThat(repo.findAllIds()).containsOnly(DataNeedImplTest.EXAMPLE_DATA_NEED_KEY);
         final var otherId = "OTHER_ID";
-        var other = DataNeedTest.copy(DataNeedTest.EXAMPLE_DATA_NEED);
+        var other = DataNeedImplTest.copy(DataNeedImplTest.EXAMPLE_DATA_NEED);
         other.setId(otherId);
         repo.save(other);
-        assertThat(repo.findAllIds()).containsOnly(DataNeedTest.EXAMPLE_DATA_NEED_KEY, otherId);
+        assertThat(repo.findAllIds()).containsOnly(DataNeedImplTest.EXAMPLE_DATA_NEED_KEY, otherId);
     }
 }

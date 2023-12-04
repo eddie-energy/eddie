@@ -2,6 +2,7 @@ package energy.eddie.core.dataneeds;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.api.agnostic.DataType;
 import energy.eddie.api.v0.ConsumptionRecord;
 import org.json.JSONArray;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ class DataNeedsControllerTest {
 
     @Test
     void testGetDataNeed() throws Exception {
-        final var dataNeed = new DataNeed("dn-id", "description", DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA,
+        final var dataNeed = new DataNeedImpl("dn-id", "description", DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA,
                 ConsumptionRecord.MeteringInterval.P_1_D, -90, false, 0);
         given(this.dataNeedsConfigService.getDataNeed("dn-id"))
                 .willReturn(Optional.of(dataNeed));
