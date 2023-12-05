@@ -108,8 +108,3 @@ tasks.withType<JavaCompile>().configureEach {
         }
     }
 }
-
-application {
-    mainClass.set("energy.eddie.regionconnector.fr.enedis.EnedisCliClient")
-    applicationDefaultJvmArgs = listOf("-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager")
-}
