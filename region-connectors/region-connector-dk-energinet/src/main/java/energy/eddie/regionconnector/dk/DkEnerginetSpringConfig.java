@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.dk;
 
+import energy.eddie.api.agnostic.SpringRegionConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.RegionConnector;
@@ -14,16 +15,21 @@ import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Sinks;
 
 import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.ENERGINET_CUSTOMER_BASE_PATH_KEY;
 
-@SpringBootApplication
+@Configuration
+@ComponentScan
+@EnableWebMvc
+@SpringRegionConnector(name = "region-connector-dk-energinet")
 public class DkEnerginetSpringConfig {
     @Nullable
     private static ConfigurableApplicationContext ctx;

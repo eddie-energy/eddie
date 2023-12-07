@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.aiida;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.api.agnostic.SpringRegionConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
@@ -12,19 +13,24 @@ import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.annotation.EnableKafka;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
 
-@SpringBootApplication
+@SpringBootConfiguration
+@ComponentScan
+@EnableWebMvc
 @EnableKafka
+@SpringRegionConnector(name = "region-connector-aiida")
 public class AiidaSpringConfig {
     @Nullable
     private static ConfigurableApplicationContext ctx;

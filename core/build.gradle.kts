@@ -76,6 +76,20 @@ tasks.register("run-core", JavaExec::class) {
     environment["IMPORT_CONFIG_FILE"] = "file:./core/src/test/resources/data-needs.yml"
 }
 
+tasks.register("run-core-spring", JavaExec::class) {
+    dependsOn(":pnpmBuild")
+    mainClass.set("energy.eddie.EddieSpringApplication")
+    classpath = sourceSets["main"].runtimeClasspath
+    systemProperties.set("developmentMode", "true")
+    workingDir = parent?.projectDir ?: projectDir
+    group = "development"
+    description = "run EDDIE with Spring"
+    environment["JDBC_URL"] = "jdbc:h2:tcp://localhost:9091/./examples/example-app"
+    environment["CORE_PORT"] = 8080
+    environment["IMPORT_CONFIG_FILE"] = "file:./core/src/test/resources/data-needs.yml"
+    environment["spring.jpa.database-platform"] = "org.hibernate.dialect.H2Dialect"
+}
+
 tasks.withType<JavaCompile>().configureEach {
     if (!name.lowercase(Locale.getDefault()).contains("test")) {
         options.errorprone {

@@ -62,7 +62,7 @@ public class Core {
     }
 
     public void run(String[] args) {
-        CoreSpringConfig.main(args);
+//        CoreSpringConfig.main(args);
         LOGGER.info("Starting up EDDIE");
         var connectionStatusMessageStream = JdkFlowAdapter.publisherToFlowPublisher(permissionService.getConnectionStatusMessageStream());
         var consumptionRecordMessageStream = JdkFlowAdapter.publisherToFlowPublisher(consumptionRecordService.getConsumptionRecordStream());

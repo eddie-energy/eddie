@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.at;
 
 import de.ponton.xp.adapter.api.ConnectionException;
+import energy.eddie.api.agnostic.SpringRegionConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
@@ -34,13 +35,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Sinks;
 
 import java.io.IOException;
@@ -51,7 +54,10 @@ import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfigurat
 import static energy.eddie.regionconnector.at.eda.config.AtConfiguration.ELIGIBLE_PARTY_ID_KEY;
 import static energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration.*;
 
-@SpringBootApplication
+@SpringBootConfiguration
+@ComponentScan
+@EnableWebMvc
+@SpringRegionConnector(name = "at-eda")
 public class AtEdaSpringConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(AtEdaSpringConfig.class);
     @Nullable
