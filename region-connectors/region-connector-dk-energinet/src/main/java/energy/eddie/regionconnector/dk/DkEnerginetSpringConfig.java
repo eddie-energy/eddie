@@ -29,7 +29,7 @@ import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfigur
 @Configuration
 @ComponentScan
 @EnableWebMvc
-@SpringRegionConnector(name = "region-connector-dk-energinet")
+@SpringRegionConnector(name = "dk-energinet")
 public class DkEnerginetSpringConfig {
     @Nullable
     private static ConfigurableApplicationContext ctx;

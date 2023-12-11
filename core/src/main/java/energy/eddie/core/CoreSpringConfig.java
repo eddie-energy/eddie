@@ -5,9 +5,13 @@ import energy.eddie.core.spring.RegionConnectorRegistrationBeanPostProcessor;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 
 @SpringBootApplication
 @EnableConfigurationProperties(DataNeedsConfig.class)
+@ComponentScan(basePackages = {"energy.eddie.core"},
+        excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = "energy.eddie.core.spring.*"))
 public class CoreSpringConfig {
     protected CoreSpringConfig() {
     }

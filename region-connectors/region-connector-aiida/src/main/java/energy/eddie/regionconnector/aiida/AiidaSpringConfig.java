@@ -30,7 +30,7 @@ import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
 @ComponentScan
 @EnableWebMvc
 @EnableKafka
-@SpringRegionConnector(name = "region-connector-aiida")
+@SpringRegionConnector(name = "aiida")
 public class AiidaSpringConfig {
     @Nullable
     private static ConfigurableApplicationContext ctx;

@@ -21,6 +21,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 import java.util.Set;
 
 public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, Ordered {
+    public static final String ALL_REGION_CONNECTORS_BASE_URL_PATH = "region-connectors";
     private static final String SCAN_BASE_PACKAGE = "energy.eddie.regionconnector";
     private static final Logger LOGGER = LoggerFactory.getLogger(RegionConnectorRegistrationBeanPostProcessor.class);
 
@@ -36,8 +37,9 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
     @NonNull
     private static AbstractBeanDefinition createBeanDefinition(
             AnnotationConfigWebApplicationContext regionConnectorContext,
-            String regionConnectorName) {
-        String urlMapping = "/%s/*".formatted(regionConnectorName);
+            String regionConnectorName
+    ) {
+        String urlMapping = "/%s/%s/*".formatted(ALL_REGION_CONNECTORS_BASE_URL_PATH, regionConnectorName);
         LOGGER.info("Registering new region connector with URL mapping {}", urlMapping);
         DispatcherServlet dispatcherServlet = new DispatcherServlet(regionConnectorContext);
 
@@ -61,20 +63,26 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
      * @return AnnotationConfigWebApplicationContext for the region connector.
      */
     @NonNull
-    private static AnnotationConfigWebApplicationContext createWebContext(Class<?> regionConnectorConfigClass, String regionConnectorName) {
+    private static AnnotationConfigWebApplicationContext createWebContext(Class<?> regionConnectorConfigClass,
+                                                                          String regionConnectorName) {
         // DispatcherServlet will set the parent automatically and do initialization work like calling refresh
         // see https://web.archive.org/web/20231207072642/https://ccbill.com/blog/spring-boot-and-context-handling
         AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
         applicationContext.register(regionConnectorConfigClass);
-//                applicationContext.register(RegionConnectorServiceBinder.class);
+        applicationContext.register(RegionConnectorBeanPostProcessor.class);
+        applicationContext.register(RegionConnectorConnectorElementProvider.class);
         applicationContext.setId(regionConnectorName);
         return applicationContext;
     }
 
     /**
-     * Scans the {@value SCAN_BASE_PACKAGE} package for any classes that are annotated with {@link SpringRegionConnector} and
-     * creates a separate context and servlet for each found class, which will be registered with the registry passed to this processor.
-     * The servlet has its URL mapping set to {@link SpringRegionConnector#name()}.
+     * Scans the {@value SCAN_BASE_PACKAGE} package for any classes that are annotated with {@link SpringRegionConnector}
+     * and creates a separate context and {@link DispatcherServlet} for each found class,
+     * which will be registered with the registry passed to this processor.
+     * <p>
+     * The DispatcherServlet has its URL mapping set to /{@link #ALL_REGION_CONNECTORS_BASE_URL_PATH}/{RC-NAME}/*
+     * whereas {@code RC-NAME} is specified by {@link SpringRegionConnector#name()}.
+     * </p>
      *
      * @param registry the bean definition registry used by the application context
      */
@@ -107,7 +115,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
     }
 
     /**
-     * Run this processor as last one.
+     * Run this processor as the last one.
      * Spring documentation recommends to implement {@link Ordered} interface for bean post processors.
      *
      * @return Integer.MAX_VALUE
