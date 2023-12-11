@@ -11,19 +11,29 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.Ordered;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
 import java.util.Set;
 
-public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, Ordered {
+public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, Ordered, EnvironmentAware {
     public static final String ALL_REGION_CONNECTORS_BASE_URL_PATH = "region-connectors";
     private static final String SCAN_BASE_PACKAGE = "energy.eddie.regionconnector";
     private static final Logger LOGGER = LoggerFactory.getLogger(RegionConnectorRegistrationBeanPostProcessor.class);
+    @Nullable
+    private Environment environment;
+
+    @Override
+    public void setEnvironment(@NonNull Environment environment) {
+        this.environment = environment;
+    }
 
     /**
      * Creates a {@link DispatcherServlet} for the region connector which will be mapped to {@code regionConnectorName}
@@ -80,6 +90,9 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
      * and creates a separate context and {@link DispatcherServlet} for each found class,
      * which will be registered with the registry passed to this processor.
      * <p>
+     *     <b>Important:</b> Only region connectors that have their property <i>region-connector.RC-NAME.enabled</i> explicitly set to <i>true</i> are loaded.
+     * </p>
+     * <p>
      * The DispatcherServlet has its URL mapping set to /{@link #ALL_REGION_CONNECTORS_BASE_URL_PATH}/{RC-NAME}/*
      * whereas {@code RC-NAME} is specified by {@link SpringRegionConnector#name()}.
      * </p>
@@ -90,6 +103,9 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
     public void postProcessBeanDefinitionRegistry(@NonNull BeanDefinitionRegistry registry) {
         LOGGER.info("Starting scan for classes on the classpath annotated with @RegionConnector");
 
+        if (environment == null)
+            throw new IllegalStateException("environment must not be null");
+
         var scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(SpringRegionConnector.class));
 
@@ -99,10 +115,16 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
                 Class<?> regionConnectorConfigClass = Class.forName(bd.getBeanClassName());
                 String regionConnectorName = regionConnectorConfigClass.getAnnotation(SpringRegionConnector.class).name();
 
-                var applicationContext = createWebContext(regionConnectorConfigClass, regionConnectorName);
-                var beanDefinition = createBeanDefinition(applicationContext, regionConnectorName);
+                var propertyName = "region-connector.%s.enabled".formatted(regionConnectorName.replace('-', '.'));
 
-                registry.registerBeanDefinition(regionConnectorName, beanDefinition);
+                if (Boolean.FALSE.equals(environment.getProperty(propertyName, Boolean.class, false))) {
+                    LOGGER.info("Region connector {} not explicitly enabled by property, will not load it.", regionConnectorName);
+                } else {
+                    var applicationContext = createWebContext(regionConnectorConfigClass, regionConnectorName);
+                    var beanDefinition = createBeanDefinition(applicationContext, regionConnectorName);
+
+                    registry.registerBeanDefinition(regionConnectorName, beanDefinition);
+                }
             } catch (ClassNotFoundException e) {
                 LOGGER.error("Found a region connector bean definition {}, but couldn't get the class for it", bd, e);
             }
