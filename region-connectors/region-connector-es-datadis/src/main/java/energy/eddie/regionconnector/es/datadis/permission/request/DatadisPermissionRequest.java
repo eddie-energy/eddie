@@ -8,20 +8,16 @@ import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.CreatedState;
-import io.javalin.http.Context;
 import jakarta.annotation.Nullable;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
-import java.util.UUID;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
-import static energy.eddie.regionconnector.es.datadis.utils.ParameterKeys.*;
 import static java.util.Objects.requireNonNull;
 
 
 public class DatadisPermissionRequest implements EsPermissionRequest {
-
     private final String connectionId;
     private final String permissionId;
     private final String nif;
@@ -41,33 +37,40 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     @Nullable
     private ZonedDateTime lastPulledMeterReading;
 
-    public DatadisPermissionRequest(String permissionId, String connectionId, String dataNeedId, Context ctx, AuthorizationApi authorizationApi, AuthorizationResponseHandler authorizationResponseHandler) {
+    public DatadisPermissionRequest(
+            String permissionId,
+            String connectionId,
+            String dataNeedId,
+            String nif,
+            String meteringPointId,
+            MeasurementType measurementType,
+            ZonedDateTime requestDataFrom,
+            ZonedDateTime requestDataTo,
+            AuthorizationApi authorizationApi,
+            AuthorizationResponseHandler authorizationResponseHandler) {
         requireNonNull(permissionId);
         requireNonNull(connectionId);
         requireNonNull(dataNeedId);
-        requireNonNull(ctx);
+        requireNonNull(nif);
+        requireNonNull(meteringPointId);
+        requireNonNull(measurementType);
+        requireNonNull(requestDataFrom);
+        requireNonNull(requestDataTo);
         requireNonNull(authorizationApi);
         requireNonNull(authorizationResponseHandler);
 
         this.permissionId = permissionId;
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
-        this.state = new CreatedState(this, ctx, authorizationApi, authorizationResponseHandler);
-        this.nif = ctx.formParam(NIF_KEY);
-        this.meteringPointId = ctx.formParam(METERING_POINT_ID_KEY);
+        this.nif = nif;
+        this.meteringPointId = meteringPointId;
+        this.measurementType = measurementType;
+        this.requestDataFrom = requestDataFrom;
+        this.requestDataTo = requestDataTo;
+
         this.permissionStart = ZonedDateTime.now(ZONE_ID_SPAIN);
-        this.requestDataFrom = ctx.formParamAsClass(REQUEST_DATE_FROM_KEY, ZonedDateTime.class).getOrDefault(null);
-        this.requestDataTo = ctx.formParamAsClass(REQUEST_DATA_TO_KEY, ZonedDateTime.class).getOrDefault(null);
         this.permissionEnd = latest(permissionStart, requestDataTo);
-        this.measurementType = ctx.formParamAsClass(MEASUREMENT_TYPE_KEY, MeasurementType.class).getOrDefault(null);
-    }
-
-    public DatadisPermissionRequest(String connectionId, String dataNeedId, Context ctx, AuthorizationApi authorizationApi, AuthorizationResponseHandler authorizationResponseHandler) {
-        this(UUID.randomUUID().toString(), connectionId, dataNeedId, ctx, authorizationApi, authorizationResponseHandler);
-    }
-
-    public DatadisPermissionRequest(Context ctx, AuthorizationApi authorizationApi, AuthorizationResponseHandler authorizationResponseHandler) {
-        this(ctx.formParam(CONNECTION_ID_KEY), ctx.formParam(DATA_NEED_ID_KEY), ctx, authorizationApi, authorizationResponseHandler);
+        this.state = new CreatedState(this, authorizationApi, authorizationResponseHandler);
     }
 
     /**

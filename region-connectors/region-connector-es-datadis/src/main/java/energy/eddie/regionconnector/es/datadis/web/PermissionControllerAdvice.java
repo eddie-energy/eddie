@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.web;
 
+import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.dtos.ErrorResponse;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.PermissionNotFoundException;
 import org.slf4j.Logger;
@@ -15,7 +16,7 @@ import java.util.List;
 
 @ControllerAdvice
 public class PermissionControllerAdvice {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionControllerAdvice.class);
+    private static final Logger LOGGER_ADVICE = LoggerFactory.getLogger(PermissionControllerAdvice.class);
 
     private static ResponseEntity<Object> createErrorResponse(List<String> errors, HttpStatus status) {
         return new ResponseEntity<>(new ErrorResponse(errors), status);
@@ -40,5 +41,14 @@ public class PermissionControllerAdvice {
 
         // TODO this error response is not uniform --> returned status is different in different RCs
         return createErrorResponse(errors, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = {StateTransitionException.class})
+    protected ResponseEntity<Object> handleStateTransitionException(StateTransitionException stateTransitionException) {
+        LOGGER_ADVICE.info("Error occurred while trying to transition a state", stateTransitionException);
+
+        var errors = List.of("An error occurred while trying to transition a permission request to a new state");
+
+        return createErrorResponse(errors, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

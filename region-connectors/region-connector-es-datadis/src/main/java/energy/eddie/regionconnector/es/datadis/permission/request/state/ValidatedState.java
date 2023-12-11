@@ -7,24 +7,19 @@ import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
-
-import java.util.Map;
 
 public class ValidatedState extends ContextualizedPermissionRequestState<EsPermissionRequest> implements ValidatedPermissionRequestState {
-
     private final AuthorizationRequest authorizationRequest;
     private final AuthorizationApi authorizationApi;
-    private final Context ctx;
     private final AuthorizationResponseHandler callback;
 
-
-    protected ValidatedState(EsPermissionRequest permissionRequest, AuthorizationRequest authorizationRequest, AuthorizationApi authorizationApi, Context ctx, AuthorizationResponseHandler callback) {
+    protected ValidatedState(EsPermissionRequest permissionRequest,
+                             AuthorizationRequest authorizationRequest,
+                             AuthorizationApi authorizationApi,
+                             AuthorizationResponseHandler callback) {
         super(permissionRequest);
         this.authorizationRequest = authorizationRequest;
         this.authorizationApi = authorizationApi;
-        this.ctx = ctx;
         this.callback = callback;
     }
 
@@ -36,11 +31,7 @@ public class ValidatedState extends ContextualizedPermissionRequestState<EsPermi
                 // TODO should be changed via a transition method with #296
                 .doOnError(error -> permissionRequest.changeState(new UnableToSendState(permissionRequest, error)));
 
-        ctx.status(HttpStatus.OK);
-        ctx.json(Map.of(
-                "permissionId", this.permissionRequest.permissionId()
-        ));
-
+        // TODO this will block the controller from sending a response until this returns
         var pendingState = new PendingAcknowledgementState(permissionRequest);
         permissionRequest.changeState(pendingState);
         response.subscribe();

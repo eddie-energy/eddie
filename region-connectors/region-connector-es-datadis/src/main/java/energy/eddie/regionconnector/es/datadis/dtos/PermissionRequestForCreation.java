@@ -15,7 +15,9 @@ public record PermissionRequestForCreation(
         String nif,
         @NotBlank(message = "meteringPointId must not be null or blank")
         String meteringPointId,
+        @NotNull(message = "requestDataFrom must not be null")
         ZonedDateTime requestDataFrom,
+        @NotNull(message = "requestDataTo must not be null")
         ZonedDateTime requestDataTo,
         @NotNull(message = "measurementType must not be null")
         MeasurementType measurementType

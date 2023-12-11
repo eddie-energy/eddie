@@ -7,9 +7,7 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 public class RejectedState
         extends ContextualizedPermissionRequestState<EsPermissionRequest>
         implements RejectedPermissionRequestState {
-
-    protected RejectedState(EsPermissionRequest permissionRequest) {
+    public RejectedState(EsPermissionRequest permissionRequest) {
         super(permissionRequest);
     }
-
 }

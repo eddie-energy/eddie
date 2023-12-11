@@ -9,7 +9,9 @@ import energy.eddie.regionconnector.es.datadis.client.*;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.permission.request.InMemoryPermissionRequestRepository;
+import energy.eddie.regionconnector.es.datadis.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
+import energy.eddie.regionconnector.es.datadis.services.DatadisScheduler;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,6 +61,12 @@ public class SpringConfig {
         return new DatadisEndpoints();
     }
 
+    /**
+     * Creates the Sink which is used to publish {@link ConsumptionRecord}s.
+     * The Flux of this sink allows only one subscriber!
+     *
+     * @return Sink for consumption records.
+     */
     @Bean
     public Sinks.Many<ConsumptionRecord> consumptionRecordSink() {
         return Sinks.many().unicast().onBackpressureBuffer();
@@ -90,15 +98,32 @@ public class SpringConfig {
     }
 
     @Bean
+    public PermissionRequestFactory permissionRequestFactory(
+            AuthorizationApi authorizationApi,
+            Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink,
+            EsPermissionRequestRepository repository) {
+        return new PermissionRequestFactory(authorizationApi, connectionStatusMessageSink, repository);
+    }
+
+    @Bean
+    public DatadisScheduler datadisScheduler(DataApi dataApi, Sinks.Many<ConsumptionRecord> consumptionRecordSink) {
+        return new DatadisScheduler(dataApi, consumptionRecordSink);
+    }
+
+    @Bean
     // TODO why does @Service not create a bean?
-    public PermissionRequestService service(EsPermissionRequestRepository repository) {
-        return new PermissionRequestService(repository);
+    public PermissionRequestService permissionRequestService(
+            EsPermissionRequestRepository repository,
+            PermissionRequestFactory permissionRequestFactory,
+            DatadisScheduler datadisScheduler) {
+        return new PermissionRequestService(repository, permissionRequestFactory, datadisScheduler);
     }
 
     @Bean
     public RegionConnector regionConnector(Sinks.Many<ConsumptionRecord> consumptionRecordSink,
                                            Sinks.Many<ConnectionStatusMessage> statusMessageSink,
+                                           PermissionRequestService permissionRequestService,
                                            @Value("${server.port:0}") int port) {
-        return new DatadisRegionConnector(statusMessageSink, consumptionRecordSink);
+        return new DatadisRegionConnector(statusMessageSink, consumptionRecordSink, permissionRequestService, port);
     }
 }

@@ -4,43 +4,41 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
+import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.permission.requests.decorators.MessagingPermissionRequest;
 import energy.eddie.regionconnector.shared.permission.requests.decorators.SavingPermissionRequest;
-import io.javalin.http.Context;
 import reactor.core.publisher.Sinks;
 
-import static java.util.Objects.requireNonNull;
+import java.util.UUID;
 
 public class PermissionRequestFactory {
-
     private final AuthorizationApi authorizationApi;
-    private final Sinks.Many<ConnectionStatusMessage> permissionStateMessages;
+    private final Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink;
     private final EsPermissionRequestRepository permissionRequestRepository;
 
-    private final AuthorizationResponseHandler authorizationResponseHandler;
-
-
-    public PermissionRequestFactory(AuthorizationApi authorizationApi, Sinks.Many<ConnectionStatusMessage> permissionStateMessages, EsPermissionRequestRepository permissionRequestRepository, AuthorizationResponseHandler authorizationResponseHandler) {
-        requireNonNull(authorizationApi);
-        requireNonNull(permissionStateMessages);
-        requireNonNull(permissionRequestRepository);
-        requireNonNull(authorizationResponseHandler);
-
+    public PermissionRequestFactory(
+            AuthorizationApi authorizationApi,
+            Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink,
+            EsPermissionRequestRepository permissionRequestRepository) {
         this.authorizationApi = authorizationApi;
-        this.permissionStateMessages = permissionStateMessages;
+        this.connectionStatusMessageSink = connectionStatusMessageSink;
         this.permissionRequestRepository = permissionRequestRepository;
-        this.authorizationResponseHandler = authorizationResponseHandler;
     }
 
-    public PermissionRequest create(Context ctx) {
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest(
-                ctx,
-                authorizationApi,
-                authorizationResponseHandler);
-        PermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, permissionStateMessages);
+    public EsPermissionRequest create(PermissionRequestForCreation requestForCreation,
+                                      AuthorizationResponseHandler authorizationResponseHandler) {
+        var permissionId = UUID.randomUUID().toString();
+        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation.connectionId(),
+                requestForCreation.dataNeedId(), requestForCreation.nif(),
+                requestForCreation.meteringPointId(), requestForCreation.measurementType(),
+                requestForCreation.requestDataFrom(), requestForCreation.requestDataTo(),
+                authorizationApi, authorizationResponseHandler);
+
+        PermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, connectionStatusMessageSink);
         PermissionRequest savingPermissionRequest = new SavingPermissionRequest<>(
+                // TODO why is adapter used here?
                 new DatadisPermissionRequestAdapter(permissionRequest, messagingPermissionRequest),
                 permissionRequestRepository
         );
@@ -49,6 +47,4 @@ public class PermissionRequestFactory {
                 savingPermissionRequest
         );
     }
-
-
 }

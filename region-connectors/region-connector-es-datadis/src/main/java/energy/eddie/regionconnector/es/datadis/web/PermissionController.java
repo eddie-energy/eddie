@@ -9,58 +9,61 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriTemplate;
 
-import java.io.*;
+import java.beans.PropertyEditorSupport;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.BASE_PATH;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.BASE_PATH;
 
 @RestController
 @RequestMapping(BASE_PATH)
 public class PermissionController {
-    private static final String CE_JS = "ce.js";
-    private static final String[] CE_DEV_PATHS = new String[]{
-            "./region-connectors/region-connector-es-datadis/src/main/resources/public" + BASE_PATH + CE_JS,
-            "./src/main/resources/public" + BASE_PATH + CE_JS
-    };
+    private static final String CE_JS = "/ce.js";
     private static final String CE_PRODUCTION_PATH = "/public" + BASE_PATH + CE_JS;
     // this path will stay hard-coded
     @SuppressWarnings("java:S1075")
     private static final String PERMISSION_STATUS_PATH = "/permission-status";
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionController.class);
-    private final Environment environment;
     private final PermissionRequestService service;
 
     @Autowired
-    public PermissionController(Environment environment, PermissionRequestService service) {
-        this.environment = environment;
+    public PermissionController(PermissionRequestService service) {
         this.service = service;
     }
 
-    private static String findCEDevPath() throws FileNotFoundException {
-        for (String ceDevPath : CE_DEV_PATHS) {
-            if (new File(ceDevPath).exists()) {
-                return ceDevPath;
+    /**
+     * Registers custom deserializers for {@link PermissionRequestForCreation} fields.
+     */
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(ZonedDateTime.class, new PropertyEditorSupport() {
+            @Override
+            public void setAsText(String text) throws IllegalArgumentException {
+                ZonedDateTime zonedDateTime = LocalDate.parse(text, DateTimeFormatter.ISO_DATE).atStartOfDay(ZoneOffset.UTC);
+                setValue(zonedDateTime);
             }
-        }
-        throw new FileNotFoundException();
+        });
     }
 
-    private InputStream getCEInputStream() throws FileNotFoundException {
-        return !environment.matchesProfiles("dev")
-                ? new FileInputStream(findCEDevPath())
-                : Objects.requireNonNull(getClass().getResourceAsStream(CE_PRODUCTION_PATH));
+    private InputStream getCEInputStream() {
+        return getClass().getResourceAsStream(CE_PRODUCTION_PATH);
     }
 
-    @GetMapping(value = "/ce.js", produces = "text/javascript")
+    @GetMapping(value = CE_JS, produces = "text/javascript")
     public String javascriptConnectorElement() {
         try (InputStream in = getCEInputStream()) {
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
@@ -70,21 +73,23 @@ public class PermissionController {
     }
 
     @GetMapping(value = "/permission-status", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ConnectionStatusMessage> permissionStatus(@RequestParam String permissionId) {
+    public ResponseEntity<ConnectionStatusMessage> permissionStatus(@RequestParam String permissionId) throws PermissionNotFoundException {
         var statusMessage = service.findConnectionStatusMessageById(permissionId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Unable to find permission request"));
-
+                .orElseThrow(() -> new PermissionNotFoundException(permissionId));
         return ResponseEntity.ok(statusMessage);
     }
 
-    @PostMapping(value = "/permission-request", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> requestPermission(@Valid @ModelAttribute PermissionRequestForCreation requestForCreation) {
+    @PostMapping(value = "/permission-request", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, String>> requestPermission(@Valid @ModelAttribute PermissionRequestForCreation requestForCreation) throws StateTransitionException {
         LOGGER.info("request was: {}", requestForCreation);
-        var permissionId = "TODO";
 
+        var permissionRequest = service.createAndSendPermissionRequest(requestForCreation);
+
+        String permissionId = permissionRequest.permissionId();
         var location = new UriTemplate("{statusPath}/{permissionId}")
                 .expand(PERMISSION_STATUS_PATH, permissionId);
-        return ResponseEntity.created(location).body(permissionId);
+
+        return ResponseEntity.created(location).body(Map.of("permissionId", permissionId));
     }
 
     @PostMapping(value = "/permission-request/accepted")
