@@ -6,12 +6,10 @@ import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -31,31 +29,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PermissionRequestControllerTest {
     @Autowired
     private MockMvc mockMvc;
-    @Autowired
-    private ConfigurableEnvironment environment;
     @MockBean
     private PermissionRequestService service;
-
-    @BeforeEach
-    void setUp() {
-        environment.setActiveProfiles();
-    }
 
     @Test
     void javascriptConnectorElement_returnsOk() throws Exception {
         // Given
-
-        // When
-        mockMvc.perform(MockMvcRequestBuilders.get("/region-connectors/dk-energinet/ce.js"))
-                // Then
-                .andExpect(status().isOk())
-                .andReturn().getResponse();
-    }
-
-    @Test
-    void javascriptConnectorElement_returnsOk_withDevProfile() throws Exception {
-        // Given
-        environment.setActiveProfiles("dev");
 
         // When
         mockMvc.perform(MockMvcRequestBuilders.get("/region-connectors/dk-energinet/ce.js"))
