@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.shared.permission.requests.decorators;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.RegionalInformation;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.StateTransitionException;
@@ -35,6 +36,11 @@ public class MessagingPermissionRequest implements PermissionRequest {
     @Override
     public PermissionRequestState state() {
         return permissionRequest.state();
+    }
+
+    @Override
+    public RegionalInformation regionalInformation() {
+        return permissionRequest.regionalInformation();
     }
 
     @Override
@@ -103,7 +109,9 @@ public class MessagingPermissionRequest implements PermissionRequest {
                         connectionId(),
                         permissionId(),
                         dataNeedId(),
-                        permissionRequest.state().status()
+                        regionalInformation(),
+                        permissionRequest.state().status(),
+                        ""
                 )
         );
     }

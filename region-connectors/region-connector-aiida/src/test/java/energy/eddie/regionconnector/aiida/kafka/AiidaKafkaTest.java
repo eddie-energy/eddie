@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.api.v0.RegionalInformation;
 import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequestRepository;
+import energy.eddie.regionconnector.aiida.api.AiidaRegionalInformation;
 import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import energy.eddie.regionconnector.aiida.states.AiidaAcceptedPermissionRequestState;
@@ -32,13 +34,17 @@ class AiidaKafkaTest {
     private ObjectMapper mapper;
     @Mock
     private KafkaTemplate<String, String> mockTemplate;
+    private RegionalInformation regionalInformation;
     private TestPublisher<TerminationRequest> publisher;
 
     @BeforeEach
     void setUp() {
         mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        mapper.addMixIn(ConnectionStatusMessage.class, ConnectionStatusMessageMixin.class);
+
         publisher = TestPublisher.create();
         kafka = new AiidaKafka(mapper, mockRepository, publisher.flux(), mockTemplate);
+        regionalInformation = new AiidaRegionalInformation();
     }
 
     @Test
@@ -46,7 +52,8 @@ class AiidaKafkaTest {
         var request = createTestRequest();
 
         // json that is received from AIIDA
-        var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(), PermissionProcessStatus.ACCEPTED);
+        var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(),
+                regionalInformation, PermissionProcessStatus.ACCEPTED);
         var json = mapper.writeValueAsString(message);
 
         // make sure the request is in a valid state
@@ -63,7 +70,8 @@ class AiidaKafkaTest {
     void givenTerminatedMessage_listenForConnectionStatusMessages_changesStateAndPersists() throws JsonProcessingException {
         var request = createTestRequest();
 
-        var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(), PermissionProcessStatus.TERMINATED);
+        var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(),
+                regionalInformation, PermissionProcessStatus.TERMINATED);
         var json = mapper.writeValueAsString(message);
 
         request.changeState(new AiidaAcceptedPermissionRequestState(request));
@@ -79,7 +87,8 @@ class AiidaKafkaTest {
     void givenRevokedMessage_listenForConnectionStatusMessages_changesStateAndPersists() throws JsonProcessingException {
         var request = createTestRequest();
 
-        var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(), PermissionProcessStatus.REVOKED);
+        var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(),
+                regionalInformation, PermissionProcessStatus.REVOKED);
         var json = mapper.writeValueAsString(message);
 
         request.changeState(new AiidaAcceptedPermissionRequestState(request));
@@ -95,7 +104,8 @@ class AiidaKafkaTest {
     void givenTimeLimitMessage_listenForConnectionStatusMessages_changesStateAndPersists() throws JsonProcessingException {
         var request = createTestRequest();
 
-        var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(), PermissionProcessStatus.TIME_LIMIT);
+        var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(),
+                regionalInformation, PermissionProcessStatus.TIME_LIMIT);
         var json = mapper.writeValueAsString(message);
 
         request.changeState(new AiidaAcceptedPermissionRequestState(request));

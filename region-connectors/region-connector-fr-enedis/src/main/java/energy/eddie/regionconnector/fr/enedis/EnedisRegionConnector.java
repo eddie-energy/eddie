@@ -28,11 +28,6 @@ import static java.util.Objects.requireNonNull;
 
 public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider,
         Mvp1ConsumptionRecordProvider {
-    public static final String COUNTRY_CODE = "fr";
-    public static final String MDA_CODE = COUNTRY_CODE + "-enedis";
-    public static final String BASE_PATH = "/region-connectors/fr-enedis/";
-    public static final String MDA_DISPLAY_NAME = "France ENEDIS";
-    public static final int COVERED_METERING_POINTS = 36951446;
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
     final Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();
     final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
@@ -62,7 +57,7 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
 
     @Override
     public RegionConnectorMetadata getMetadata() {
-        return new RegionConnectorMetadata(MDA_CODE, MDA_DISPLAY_NAME, COUNTRY_CODE, BASE_PATH, COVERED_METERING_POINTS);
+        return EnedisRegionConnectorMetadata.getInstance();
     }
 
     @Override
@@ -91,16 +86,18 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
     @Override
     public int startWebapp(InetSocketAddress address, boolean devMode) {
         ZonedDateTimeConverter.register();
-        javalin.get(BASE_PATH + "/ce.js", context -> {
+        String basePath = EnedisRegionConnectorMetadata.BASE_PATH;
+        String ceJsPath = basePath + "/ce.js";
+        javalin.get(ceJsPath, context -> {
             context.contentType(ContentType.TEXT_JS);
             if (devMode) {
-                context.result(new FileInputStream("./region-connectors/region-connector-fr-enedis/src/main/resources/public" + BASE_PATH + "ce.js"));
+                context.result(new FileInputStream("./region-connectors/region-connector-fr-enedis/src/main/resources/public" + ceJsPath));
             } else {
-                context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public" + BASE_PATH + "ce.js")));
+                context.result(Objects.requireNonNull(getClass().getResourceAsStream("/public" + ceJsPath)));
             }
         });
 
-        javalin.get(BASE_PATH + "/permission-status", ctx -> {
+        javalin.get(basePath + "/permission-status", ctx -> {
             var permissionId = ctx.queryParamAsClass("permissionId", String.class).get();
             var connectionStatusMessage = permissionIdToConnectionStatusMessages.get(permissionId);
             if (connectionStatusMessage == null) {
@@ -110,7 +107,7 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
             ctx.json(connectionStatusMessage);
         });
 
-        javalin.post(BASE_PATH + "/permission-request", ctx -> {
+        javalin.post(basePath + "/permission-request", ctx -> {
             PermissionRequest permissionRequest = permissionRequestFactory.create(ctx);
             permissionRequest.validate();
             try {
@@ -121,7 +118,7 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
             }
         });
 
-        javalin.get(BASE_PATH + "/authorization-callback", ctx -> {
+        javalin.get(basePath + "/authorization-callback", ctx -> {
             // TODO implement non happy path
             var permissionId = ctx.queryParam("state");
             Optional<TimeframedPermissionRequest> optionalPermissionRequest = permissionRequestRepository.findByPermissionId(permissionId);

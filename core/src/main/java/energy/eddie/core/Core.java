@@ -127,7 +127,7 @@ public class Core {
                     .toList();
 
             if (!allConnectors.isEmpty()) {
-                var paNames = allConnectors.stream().map(RegionConnector::getMetadata).map(RegionConnectorMetadata::mdaCode).toArray();
+                var paNames = allConnectors.stream().map(RegionConnector::getMetadata).map(RegionConnectorMetadata::id).toArray();
                 LOGGER.info("Found {} Connectors: {}", allConnectors.size(), paNames);
             } else {
                 LOGGER.error("No Connectors found, cannot receive any data");

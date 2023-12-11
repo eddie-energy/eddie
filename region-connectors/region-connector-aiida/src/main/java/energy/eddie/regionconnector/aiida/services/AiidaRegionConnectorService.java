@@ -93,7 +93,8 @@ public class AiidaRegionConnectorService implements AutoCloseable {
     public void sendToPermissionAdministrator(AiidaPermissionRequest permissionRequest) {
         String connectionId = permissionRequest.connectionId();
         var statusMessage = new ConnectionStatusMessage(connectionId, permissionRequest.permissionId(),
-                permissionRequest.dataNeedId(), PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+                permissionRequest.dataNeedId(), permissionRequest.regionalInformation(),
+                PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
 
         statusMessageSink.tryEmitNext(statusMessage);
     }

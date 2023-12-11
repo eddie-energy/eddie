@@ -11,14 +11,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class AiidaRegionConnectorTest {
     @Mock
     private AiidaRegionConnectorService service;
-    private final String expectedMdaCode = "aiida";
+    private final String expectedRcId = "aiida";
     private AiidaRegionConnector connector;
 
     @BeforeEach
@@ -28,8 +29,7 @@ class AiidaRegionConnectorTest {
 
     @Test
     void getMetadata_MdaCodeIsAiida() {
-        assertEquals(expectedMdaCode, connector.getMetadata().mdaCode());
-        assertEquals("/region-connectors/aiida/", connector.getMetadata().urlPath());
+        assertEquals(expectedRcId, connector.getMetadata().id());
     }
 
     @Test
@@ -54,7 +54,7 @@ class AiidaRegionConnectorTest {
 
     @Test
     void verify_healthStateIsAlwaysHealthy() {
-        HealthState healthState = connector.health().get(expectedMdaCode);
+        HealthState healthState = connector.health().get(expectedRcId);
 
         assertNotNull(healthState);
         assertEquals(HealthState.UP, healthState);

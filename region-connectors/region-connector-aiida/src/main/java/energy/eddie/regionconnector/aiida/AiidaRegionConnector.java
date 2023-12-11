@@ -12,11 +12,6 @@ import java.util.Map;
 import java.util.concurrent.Flow;
 
 public class AiidaRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider {
-    public static final String COUNTRY_CODE = "aiida";
-    public static final String MDA_CODE = "aiida";
-    public static final String MDA_DISPLAY_NAME = "AIIDA";
-    public static final String BASE_PATH = "/region-connectors/aiida/";
-    public static final int COVERED_METERING_POINTS = 1;
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaRegionConnector.class);
     private final int port;
     private final AiidaRegionConnectorService aiidaService;
@@ -28,7 +23,7 @@ public class AiidaRegionConnector implements RegionConnector, Mvp1ConnectionStat
 
     @Override
     public RegionConnectorMetadata getMetadata() {
-        return new RegionConnectorMetadata(MDA_CODE, MDA_DISPLAY_NAME, COUNTRY_CODE, BASE_PATH, COVERED_METERING_POINTS);
+        return AiidaRegionConnectorMetadata.getInstance();
     }
 
     @Override
@@ -53,7 +48,7 @@ public class AiidaRegionConnector implements RegionConnector, Mvp1ConnectionStat
 
     @Override
     public Map<String, HealthState> health() {
-        return Map.of(MDA_CODE, HealthState.UP);
+        return Map.of(getMetadata().id(), HealthState.UP);
     }
 
     @Override
