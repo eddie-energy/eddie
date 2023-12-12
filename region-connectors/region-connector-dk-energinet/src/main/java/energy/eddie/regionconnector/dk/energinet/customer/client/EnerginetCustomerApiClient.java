@@ -13,6 +13,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRe
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
 import energy.eddie.regionconnector.dk.energinet.utils.ConsumptionRecordMapper;
+import org.springframework.stereotype.Component;
 
 import java.time.DateTimeException;
 import java.time.Instant;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+@Component
 public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     private static final String IS_ALIVE_API = "isAliveApi";
     // Request period must not exceed the maximum number of days of 730

@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.dk.energinet.services;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.v0.Mvp1ConsumptionRecordProvider;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.v0.process.model.StateTransitionException;
@@ -17,13 +18,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
+import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Flow;
 
 @Service
-public class PermissionRequestService {
+public class PermissionRequestService implements Mvp1ConsumptionRecordProvider, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestService.class);
     private final DkEnerginetCustomerPermissionRequestRepository repository;
     private final PermissionRequestFactory requestFactory;
@@ -105,5 +108,15 @@ public class PermissionRequestService {
         });
 
         return permissionRequest;
+    }
+
+    @Override
+    public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
+        return JdkFlowAdapter.publisherToFlowPublisher(consumptionRecordSink.asFlux());
+    }
+
+    @Override
+    public void close() {
+        consumptionRecordSink.tryEmitComplete();
     }
 }
