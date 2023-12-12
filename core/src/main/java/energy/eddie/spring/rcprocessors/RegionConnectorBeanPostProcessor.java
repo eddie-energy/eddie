@@ -1,13 +1,15 @@
-package energy.eddie.core.spring;
+package energy.eddie.spring.rcprocessors;
 
 import energy.eddie.api.agnostic.SpringRegionConnector;
+import energy.eddie.spring.RegionConnectorProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.lang.NonNull;
 
-@Configuration
+import static java.util.Objects.requireNonNull;
+
+@RegionConnectorProcessor
 public class RegionConnectorBeanPostProcessor implements BeanPostProcessor {
     public static final String REGION_CONNECTOR_NAME_BEAN_NAME = "regionConnectorName";
     private final DefaultListableBeanFactory beanFactory;
@@ -22,7 +24,7 @@ public class RegionConnectorBeanPostProcessor implements BeanPostProcessor {
      * @param beanFactory BeanFactory used by this context.
      */
     public RegionConnectorBeanPostProcessor(DefaultListableBeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
+        this.beanFactory = requireNonNull(beanFactory);
     }
 
     @Override

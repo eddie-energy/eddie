@@ -1,5 +1,7 @@
-package energy.eddie.core.spring;
+package energy.eddie.spring.rcprocessors;
 
+import energy.eddie.spring.RegionConnectorProcessor;
+import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+@RegionConnectorProcessor
 @RestController
 public class RegionConnectorConnectorElementProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(RegionConnectorConnectorElementProvider.class);
@@ -33,14 +36,11 @@ public class RegionConnectorConnectorElementProvider {
      * @throws FileNotFoundException Thrown if the ce.js file cannot be found on the classpath.
      */
     public RegionConnectorConnectorElementProvider(
-            // Warning suppressed because the bean is programmatically registered
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") @Qualifier(RegionConnectorBeanPostProcessor.REGION_CONNECTOR_NAME_BEAN_NAME) String regionConnectorName
+            @Qualifier(RegionConnectorBeanPostProcessor.REGION_CONNECTOR_NAME_BEAN_NAME) String regionConnectorName
     ) throws FileNotFoundException {
-        LOGGER.info("Got bean with name {}", regionConnectorName);
-
         var cePath = "/public/%s/%s/%s".formatted(RegionConnectorRegistrationBeanPostProcessor.ALL_REGION_CONNECTORS_BASE_URL_PATH, regionConnectorName, CE_FILE_NAME);
 
-        LOGGER.info("cePath is {}", cePath);
+        LOGGER.info("Registering new GET mapping for file classpath:{}", cePath);
         try {
             // fail early if connector element file cannot be found
             ceElementContent = readContentFromClasspath(cePath);
