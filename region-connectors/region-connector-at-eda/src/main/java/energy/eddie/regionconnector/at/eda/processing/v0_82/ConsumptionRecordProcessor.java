@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.at.eda.processing.v0_82;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
+import energy.eddie.api.v0_82.CimConsumptionRecordProvider;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.cim.validated_historical_data.v0_82.ValidatedHistoricalDataMarketDocument;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
@@ -9,15 +10,17 @@ import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.EddieValidatedHi
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
+import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Mono;
+
+import java.util.concurrent.Flow;
 
 import static java.util.Objects.requireNonNull;
 
 /**
  * This class is for processing incoming consumption records by mapping it to ValidatedHistoricalDataMarketDocuments and emitting it for all matching permission requests
  */
-public class ConsumptionRecordProcessor {
+public class ConsumptionRecordProcessor implements CimConsumptionRecordProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumptionRecordProcessor.class);
     private final EdaAdapter edaAdapter;
 
@@ -37,10 +40,12 @@ public class ConsumptionRecordProcessor {
         this.edaAdapter = edaAdapter;
     }
 
-    public Flux<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
-        return edaAdapter.getConsumptionRecordStream()
+
+    @Override
+    public Flow.Publisher<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
+        return JdkFlowAdapter.publisherToFlowPublisher(edaAdapter.getConsumptionRecordStream()
                 .flatMap(this::mapToValidatedHistoricalMarketDocument)
-                .flatMap(publisher::emitForEachPermissionRequest);
+                .flatMap(publisher::emitForEachPermissionRequest));
     }
 
     private Mono<ValidatedHistoricalDataMarketDocument> mapToValidatedHistoricalMarketDocument(ConsumptionRecord consumptionRecord) {

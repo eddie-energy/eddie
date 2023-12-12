@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.EddieValidatedHistoricalDataMarketDocumentPublisher;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import org.junit.jupiter.api.Test;
+import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
@@ -39,7 +40,7 @@ class ConsumptionRecordProcessorTest {
         ConsumptionRecordProcessor consumptionRecordProcessor = new ConsumptionRecordProcessor(director, publisher, edaAdapter);
 
 
-        StepVerifier.create(consumptionRecordProcessor.getEddieValidatedHistoricalDataMarketDocumentStream())
+        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(consumptionRecordProcessor.getEddieValidatedHistoricalDataMarketDocumentStream()))
                 .then(() -> testPublisher.next(consumptionRecord))
                 .expectNextCount(3)
                 .then(testPublisher::complete)
@@ -62,7 +63,7 @@ class ConsumptionRecordProcessorTest {
         ConsumptionRecordProcessor consumptionRecordProcessor = new ConsumptionRecordProcessor(director, publisher, edaAdapter);
 
 
-        StepVerifier.create(consumptionRecordProcessor.getEddieValidatedHistoricalDataMarketDocumentStream())
+        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(consumptionRecordProcessor.getEddieValidatedHistoricalDataMarketDocumentStream()))
                 .then(() -> testPublisher.next(consumptionRecord))
                 .expectNextCount(0)
                 .then(testPublisher::complete)
