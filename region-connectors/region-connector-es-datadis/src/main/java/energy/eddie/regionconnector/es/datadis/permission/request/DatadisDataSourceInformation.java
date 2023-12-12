@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.es.datadis.permission.request;
 
-import energy.eddie.api.v0.RegionalInformation;
+import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata;
 
-public class DatadisRegionalInformation implements RegionalInformation {
+public class DatadisDataSourceInformation implements DataSourceInformation {
     private static final DatadisRegionConnectorMetadata regionConnectorMetadata = DatadisRegionConnectorMetadata.getInstance();
 
     @Override
@@ -22,7 +22,7 @@ public class DatadisRegionalInformation implements RegionalInformation {
     }
 
     @Override
-    public String meteringDataAdministratorId() {
+    public String meteredDataAdministratorId() {
         return "Not available"; // mapping does currently not exist
     }
 }

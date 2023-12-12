@@ -27,7 +27,7 @@ public class EnerginetRegionConnectorMetadata implements RegionConnectorMetadata
 
     @Override
     public String countryCode() {
-        return "dk";
+        return "DK";
     }
 
     @Override

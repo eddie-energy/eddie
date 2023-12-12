@@ -22,7 +22,7 @@ class DatadisRegionConnectorMetadataTest {
 
     @Test
     void countryCode() {
-        assertEquals("es", DatadisRegionConnectorMetadata.getInstance().countryCode());
+        assertEquals("ES", DatadisRegionConnectorMetadata.getInstance().countryCode());
     }
 
     @Test

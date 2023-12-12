@@ -22,7 +22,7 @@ class EdaRegionConnectorMetadataTest {
 
     @Test
     void countryCode() {
-        assertEquals("at", EdaRegionConnectorMetadata.getInstance().countryCode());
+        assertEquals("AT", EdaRegionConnectorMetadata.getInstance().countryCode());
     }
 
     @Test

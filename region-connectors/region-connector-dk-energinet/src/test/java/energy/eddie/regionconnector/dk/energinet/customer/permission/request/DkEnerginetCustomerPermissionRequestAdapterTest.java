@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
-import energy.eddie.api.v0.RegionalInformation;
+import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.StateTransitionException;
@@ -247,8 +247,8 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
         }
 
         @Override
-        public RegionalInformation regionalInformation() {
-            return request.regionalInformation();
+        public DataSourceInformation dataSourceInformation() {
+            return request.dataSourceInformation();
         }
 
         @Override

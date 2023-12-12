@@ -1,13 +1,13 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
-import energy.eddie.api.v0.RegionalInformation;
+import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
 
-public class EnerginetRegionalInformation implements RegionalInformation {
+public class EnerginetDataSourceInformation implements DataSourceInformation {
     private static final EnerginetRegionConnectorMetadata regionConnectorMetadata = EnerginetRegionConnectorMetadata.getInstance();
 
     private static final String ENERGINET = "Energinet";
-    
+
     @Override
     public String countryCode() {
         return regionConnectorMetadata.countryCode();
@@ -24,7 +24,7 @@ public class EnerginetRegionalInformation implements RegionalInformation {
     }
 
     @Override
-    public String meteringDataAdministratorId() {
+    public String meteredDataAdministratorId() {
         return ENERGINET;
     }
 }

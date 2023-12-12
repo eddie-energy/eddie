@@ -22,7 +22,7 @@ class EnerginetRegionConnectorMetadataTest {
 
     @Test
     void countryCode() {
-        assertEquals("dk", EnerginetRegionConnectorMetadata.getInstance().countryCode());
+        assertEquals("DK", EnerginetRegionConnectorMetadata.getInstance().countryCode());
     }
 
     @Test

@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.permission.request;
 
-import energy.eddie.api.v0.RegionalInformation;
+import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.StateTransitionException;
@@ -44,8 +44,8 @@ public final class DatadisPermissionRequestAdapter implements EsPermissionReques
     }
 
     @Override
-    public RegionalInformation regionalInformation() {
-        return esPermissionRequest.regionalInformation();
+    public DataSourceInformation dataSourceInformation() {
+        return esPermissionRequest.dataSourceInformation();
     }
 
     @Override

@@ -50,7 +50,7 @@ public class PermissionRequestService {
                         request.connectionId(),
                         request.permissionId(),
                         request.dataNeedId(),
-                        request.regionalInformation(),
+                        request.dataSourceInformation(),
                         request.state().status())
         );
     }

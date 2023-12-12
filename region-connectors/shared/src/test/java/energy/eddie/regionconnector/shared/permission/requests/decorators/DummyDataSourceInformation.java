@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.shared.permission.requests.decorators;
 
-import energy.eddie.api.v0.RegionalInformation;
+import energy.eddie.api.v0.DataSourceInformation;
 
-public class DummyRegionalInformation implements RegionalInformation {
+public class DummyDataSourceInformation implements DataSourceInformation {
     @Override
     public String countryCode() {
         return null;
@@ -14,7 +14,7 @@ public class DummyRegionalInformation implements RegionalInformation {
     }
 
     @Override
-    public String meteringDataAdministratorId() {
+    public String meteredDataAdministratorId() {
         return null;
     }
 
