@@ -8,6 +8,7 @@ import energy.eddie.api.v0.ApplicationConnector;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorFactory;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.core.services.ConsumptionRecordService;
 import energy.eddie.core.web.JavalinApp;
 import energy.eddie.core.web.JavalinPathHandler;
 import energy.eddie.core.web.PermissionFacade;

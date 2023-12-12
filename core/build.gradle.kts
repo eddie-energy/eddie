@@ -44,6 +44,7 @@ dependencies {
     testImplementation(libs.spring.boot.starter.test)
     testRuntimeOnly(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
+    testImplementation(libs.reactor.test)
 }
 
 configurations.all {
