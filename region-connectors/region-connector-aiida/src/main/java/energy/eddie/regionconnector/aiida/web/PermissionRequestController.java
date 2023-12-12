@@ -8,15 +8,13 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import static energy.eddie.regionconnector.aiida.AiidaRegionConnector.BASE_PATH;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(BASE_PATH)
 public class PermissionRequestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final AiidaRegionConnectorService aiidaService;
@@ -26,13 +24,13 @@ public class PermissionRequestController {
         this.aiidaService = aiidaService;
     }
 
-    @CrossOrigin
     @PostMapping(value = "/permission-request", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.CREATED)
+    // TODO: --> use correct responseEntity as well @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<PermissionDto> createPermissionRequest(
             @Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation)
             throws StateTransitionException {
         LOGGER.info("Got new request for connectionId {}", permissionRequestForCreation.connectionId());
+
         return ResponseEntity.ok(aiidaService.createNewPermission(permissionRequestForCreation));
     }
 }

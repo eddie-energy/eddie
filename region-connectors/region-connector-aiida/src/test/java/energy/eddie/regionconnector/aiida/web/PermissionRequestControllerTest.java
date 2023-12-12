@@ -16,7 +16,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,22 +29,12 @@ class PermissionRequestControllerTest {
     @MockBean
     private AiidaRegionConnectorService service;
 
-    @Test
-    void javascriptConnectorElement_returnsOk() throws Exception {
-        // Given
-
-        // When
-        mockMvc.perform(get("/region-connectors/aiida/ce.js"))
-                // Then
-                .andExpect(status().isOk());
-    }
-
     @Nested
     @DisplayName("Test new permission request")
     class NewPermissionTest {
         @Test
         void givenNoRequestBody_returnsBadRequest() throws Exception {
-            mockMvc.perform(post("/region-connectors/aiida/permission-request"))
+            mockMvc.perform(post("/permission-request"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errors", allOf(
                             iterableWithSize(1),
@@ -57,7 +46,7 @@ class PermissionRequestControllerTest {
         void givenMissingConnectionId_returnsBadRequest() throws Exception {
             var json = "{\"dataNeedId\":\"1\"}";
 
-            mockMvc.perform(post("/region-connectors/aiida/permission-request")
+            mockMvc.perform(post("/permission-request")
                             .content(json)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
@@ -68,26 +57,12 @@ class PermissionRequestControllerTest {
         }
 
         @Test
-        void givenAdditionalNotNeededInformation_returnsBadRequest() throws Exception {
-            var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"11\",\"extra\":\"information\"}";
-
-            mockMvc.perform(post("/region-connectors/aiida/permission-request")
-                            .content(json)
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errors", allOf(
-                            iterableWithSize(1),
-                            hasItem("Failed to read request")
-                    )));
-        }
-
-        @Test
         void givenStateTransitionException_returnsInternalServerError() throws Exception {
             var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\"}";
 
             when(service.createNewPermission(any())).thenThrow(new PastStateException(mock(PermissionRequestState.class)));
 
-            mockMvc.perform(post("/region-connectors/aiida/permission-request")
+            mockMvc.perform(post("/permission-request")
                             .content(json)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isInternalServerError())
@@ -98,10 +73,22 @@ class PermissionRequestControllerTest {
         }
 
         @Test
+        void givenAdditionalNotNeededInformation_isIgnored() throws Exception {
+            var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"11\",\"extra\":\"information\"}";
+
+            mockMvc.perform(post("/permission-request")
+                            .content(json)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk());
+
+            verify(service).createNewPermission(any());
+        }
+
+        @Test
         void givenValidInput_asExpected() throws Exception {
             var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\"}";
 
-            mockMvc.perform(post("/region-connectors/aiida/permission-request")
+            mockMvc.perform(post("/permission-request")
                             .content(json)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk());

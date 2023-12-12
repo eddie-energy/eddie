@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.aiida.services;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.StateTransitionException;
@@ -11,17 +12,18 @@ import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequestRepository;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
-import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 
 import java.util.Optional;
+import java.util.concurrent.Flow;
 
 @Service
-public class AiidaRegionConnectorService implements AutoCloseable {
+public class AiidaRegionConnectorService implements Mvp1ConnectionStatusMessageProvider, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaRegionConnectorService.class);
     private final Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().multicast().onBackpressureBuffer();
     private final AiidaFactory aiidaFactory;
@@ -31,8 +33,9 @@ public class AiidaRegionConnectorService implements AutoCloseable {
     /**
      * Creates a new {@link AiidaRegionConnector} that can be used to request permissions for near real-time data.
      *
-     * @param aiidaFactory Factory used to construct {@link AiidaPermissionRequest}s and {@link PermissionDto}s.
-     * @param repository   Repository to be used for persisting permission requests.
+     * @param aiidaFactory           Factory used to construct {@link AiidaPermissionRequest}s and {@link PermissionDto}s.
+     * @param repository             Repository to be used for persisting permission requests.
+     * @param terminationRequestSink Flux on which any termination requests that should be sent via Kafka to a specific topic are published.
      */
     @Autowired
     public AiidaRegionConnectorService(
@@ -45,12 +48,13 @@ public class AiidaRegionConnectorService implements AutoCloseable {
     }
 
     /**
-     * Returns the Flux where all {@link ConnectionStatusMessage}s will be published.
+     * Returns the Flow where all {@link ConnectionStatusMessage}s will be published.
      *
-     * @return Flux of status messages
+     * @return Flow of status messages.
      */
-    public Publisher<ConnectionStatusMessage> connectionStatusMessageFlux() {
-        return statusMessageSink.asFlux();
+    @Override
+    public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+        return JdkFlowAdapter.publisherToFlowPublisher(statusMessageSink.asFlux());
     }
 
     /**

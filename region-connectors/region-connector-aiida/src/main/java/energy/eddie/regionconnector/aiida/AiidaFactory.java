@@ -7,11 +7,13 @@ import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import org.apache.kafka.common.errors.InvalidTopicException;
 import org.apache.kafka.common.internals.Topic;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
+@Component
 public class AiidaFactory {
     private final AiidaConfiguration configuration;
 

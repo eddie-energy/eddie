@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
@@ -53,7 +54,7 @@ class AiidaRegionConnectorServiceTest {
 
     @Test
     void verify_close_emitsCompleteOnConnectionStatusMessageFlux() {
-        StepVerifier.create(service.connectionStatusMessageFlux())
+        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(service.getConnectionStatusMessageStream()))
                 .then(service::close)
                 .expectComplete()
                 .verify();
@@ -64,7 +65,7 @@ class AiidaRegionConnectorServiceTest {
         String dataNeedId = "1";
         var request = new PermissionRequestForCreation(connectionId, dataNeedId);
 
-        StepVerifier stepVerifier = StepVerifier.create(service.connectionStatusMessageFlux())
+        StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(service.getConnectionStatusMessageStream()))
                 .expectNextMatches(msg -> msg.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
                 .then(service::close)
                 .expectComplete()

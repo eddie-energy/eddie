@@ -24,24 +24,12 @@ class AiidaRegionConnectorTest {
 
     @BeforeEach
     void setUp() {
-        connector = new AiidaRegionConnector(0, service);
+        connector = new AiidaRegionConnector(service);
     }
 
     @Test
     void getMetadata_MdaCodeIsAiida() {
         assertEquals(expectedRcId, connector.getMetadata().id());
-    }
-
-    @Test
-    void verify_getStatusMessageFluxIsFromService() {
-        connector.getConnectionStatusMessageStream();
-        verify(service).connectionStatusMessageFlux();
-    }
-
-    @Test
-    void verify_close_closesService() {
-        connector.close();
-        verify(service).close();
     }
 
     @Test

@@ -8,9 +8,7 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/compone
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/copy-button/copy-button.js";
 
 const BASE_URL = new URL(import.meta.url).href.replace("ce.js", "");
-const BASE_URL_WITH_AIIDA_PORT = new URL(BASE_URL);
-BASE_URL_WITH_AIIDA_PORT.port = "9988";
-const REQUEST_URL = BASE_URL_WITH_AIIDA_PORT + "permission-request";
+const REQUEST_URL = BASE_URL + "permission-request";
 
 class PermissionRequestForm extends LitElement {
   static properties = {
@@ -34,7 +32,6 @@ class PermissionRequestForm extends LitElement {
       connectionId: this.connectionId,
     };
 
-    // CORS doesn't succeed --> use direct URL instead of proxy until Spring migration is done
     fetch(REQUEST_URL, {
       method: "POST",
       headers: {

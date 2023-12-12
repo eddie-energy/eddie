@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 
 public class AiidaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "aiida";
-    public static final String BASE_PATH = "/region-connectors/" + REGION_CONNECTOR_ID;
 
     @Nullable
     private static AiidaRegionConnectorMetadata instance = null;
