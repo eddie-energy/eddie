@@ -29,7 +29,7 @@ import java.io.IOException;
  * <ul>
  *      <li>management.server.port=9090</li>
  *      <li>management.server.urlprefix=management</li>
- *      <li>spring.data.rest.basePath=${management.server.urlprefix}</li>
+ *      <li>spring.data.rest.basepath=${management.server.urlprefix}</li>
  * </ul>
  *
  * @see <a href="https://dmytro-lazarenko.hashnode.dev/spring-boot-2-multiple-ports-for-internal-and-external-rest-apis-jetty">Spring boot 2: multiple ports for Internal and External REST APIs + Jetty</a>

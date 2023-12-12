@@ -13,16 +13,16 @@ This README will guide you through the process of configuring a region connector
 The region connector needs a set of configuration values to be able to function correctly, right now only the URL to the
 API endpoints are needed and already provided. Right now the customer API endpoint is the only one in use.
 
-| Configuration values                                       | Description                             |
-|------------------------------------------------------------|-----------------------------------------|
-| `region-connector.dk.energinet.customer.client.basePath`   | The URL to the customer API endpoint.   |
+| Configuration values                                     | Description                           |
+|----------------------------------------------------------|---------------------------------------|
+| `region-connector.dk.energinet.customer.client.basepath` | The URL to the customer API endpoint. |
 
 ### .properties file
 
 Example configuration for an `application.properties` file:
 
 ```properties
-region-connector.dk.energinet.customer.client.basePath=https://api.eloverblik.dk/customerapi
+region-connector.dk.energinet.customer.client.basepath=https://api.eloverblik.dk/customerapi
 ```
 
 ### Environment variables

@@ -124,12 +124,6 @@ tasks.withType<JavaCompile>().configureEach {
             option("NullAway:AnnotatedPackages", packagePrefix)
             option("NullAway:UnannotatedClasses", "${customerApiPackagePrefix}.model")
             option("NullAway:TreatGeneratedAsUnannotated", true)
-            option("NullawayExcludedClasses=EnerginetCliClient.java")
         }
     }
-}
-
-application {
-    mainClass.set("${customerApiPackagePrefix}.EnerginetCustomerCliClient")
-    applicationDefaultJvmArgs = listOf("-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager")
 }

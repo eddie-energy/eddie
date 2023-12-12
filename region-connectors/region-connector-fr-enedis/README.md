@@ -30,7 +30,7 @@ depends on the way you deploy the region connector.
 
 | Configuration values                       | Description                                                                                                 |
 |--------------------------------------------|-------------------------------------------------------------------------------------------------------------|
-| `region-connector.fr.enedis.basePath`      | Path to the data connect endpoints: https://ext.prod.api.enedis.fr for production.                          |
+| `region-connector.fr.enedis.basepath`      | Path to the data connect endpoints: https://ext.prod.api.enedis.fr for production.                          |
 | `region-connector.fr.enedis.client.id`     | Public key/id of the application you want to switch to production. Can be found under "_Mes applications_". |
 | `region-connector.fr.enedis.client.secret` | Secret key of the application you want to switch to production. Can be found under "_Mes applications_".    |
 
@@ -39,7 +39,7 @@ depends on the way you deploy the region connector.
 Example configuration for an `application.properties` file:
 
 ```properties
-region-connector.fr.enedis.basePath=https://ext.prod.api.enedis.fr
+region-connector.fr.enedis.basepath=https://ext.prod.api.enedis.fr
 region-connector.fr.enedis.client.id=a5d5ce56-2bca-123d-1ccd-46a28f1ac132
 region-connector.fr.enedis.client.secret=11d145d8-25a6-55c1-b6af-04ac332211b1
 ```
