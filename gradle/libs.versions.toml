@@ -5,6 +5,7 @@ spring-dependency-management = "1.1.2"
 spring-retry = "2.0.4"
 spring-aspects = "6.1.1"
 spring-kafka = "3.1.1"
+spring-websocket = "6.1.2"
 junit = "5.9.2"
 mockito-junit = "5.4.0"
 errorprone = "3.0.1"
@@ -110,6 +111,7 @@ spring-boot-starter-validation = { module = "org.springframework.boot:spring-boo
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
 spring-kafka = { module = "org.springframework.kafka:spring-kafka", version.ref = "spring-kafka" }
+spring-websocket = { module = "org.springframework:spring-websocket", version.ref = "spring-websocket" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "spring-retry" }
 spring-aspects = { module = "org.springframework:spring-aspects", version.ref = "spring-aspects" }
 

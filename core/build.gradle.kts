@@ -32,6 +32,7 @@ dependencies {
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.websocket)
     implementation(libs.guice)
     implementation(libs.javalin)
     implementation(libs.jetty.proxy)

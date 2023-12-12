@@ -1,0 +1,29 @@
+package energy.eddie.core.services;
+
+import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Sinks;
+
+import java.util.concurrent.Flow;
+
+@Service
+public class PermissionService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
+    private final Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink = Sinks.many().multicast().onBackpressureBuffer();
+
+    public void registerProvider(Mvp1ConnectionStatusMessageProvider statusMessageProvider) {
+        LOGGER.info("PermissionService: Registering {}", statusMessageProvider.getClass().getName());
+        JdkFlowAdapter.flowPublisherToFlux(statusMessageProvider.getConnectionStatusMessageStream())
+                .doOnNext(connectionStatusMessageSink::tryEmitNext)
+                .doOnError(connectionStatusMessageSink::tryEmitError)
+                .subscribe();
+    }
+
+    public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+        return JdkFlowAdapter.publisherToFlowPublisher(connectionStatusMessageSink.asFlux());
+    }
+}
