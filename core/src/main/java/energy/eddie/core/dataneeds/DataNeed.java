@@ -3,8 +3,14 @@ package energy.eddie.core.dataneeds;
 import energy.eddie.api.v0.ConsumptionRecord;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -15,11 +21,20 @@ import java.util.Objects;
 @Entity
 public class DataNeed {
     @Id
+    @NotEmpty(message = "id is mandatory")
     private String id;
+
+    @NotEmpty(message = "description is mandatory")
     private String description;
+
+    @NotNull(message = "type is mandatory")
     private DataType type;
+
     private @Nullable ConsumptionRecord.MeteringInterval granularity;
+
+    @NotNull(message = "durationStart is mandatory")
     private Integer durationStart;
+
     private Boolean durationOpenEnd;
     private @Nullable Integer durationEnd;
 
@@ -106,5 +121,47 @@ public class DataNeed {
     @Override
     public int hashCode() {
         return Objects.hash(id, description, type, granularity, durationStart, durationOpenEnd, durationEnd);
+    }
+
+    private static final String TYPE_SPECIFIC_VIOLATION = "when type is %s: %s";
+
+    /**
+     * Validates the data and returns a collection of violations. It validates by using the Jakarta Bean Validation API
+     * first. If there are no violations, it validates further a set of custom rules.
+     *
+     * @param validator The JSR380 validator instance to use.
+     * @return A collection of strings representing the violations found during validation.
+     * An empty collection indicates that the data is valid.
+     */
+    public List<String> validate(Validator validator) {
+        var beanValidationViolations = validator.validate(this).stream().map(ConstraintViolation::getMessage).toList();
+        if (!beanValidationViolations.isEmpty()) {
+            return beanValidationViolations;
+        }
+
+        var violations = new ArrayList<String>();
+        if (isOpenEnded() && durationEnd != null) {
+            violations.add("durationOpenEnd and durationEnd are mutually exclusive");
+        }
+        if (!isOpenEnded() && durationEnd != null && durationStart > durationEnd) {
+            violations.add("durationStart must be less than durationEnd");
+        }
+        if (type == DataType.FUTURE_VALIDATED_CONSUMPTION_DATA && durationStart < 0) {
+            violations.add(TYPE_SPECIFIC_VIOLATION.formatted(type, "durationStart must be zero or positive"));
+        }
+        if (type != DataType.ACCOUNTING_POINT_MASTER_DATA && durationEnd == null && !isOpenEnded()) {
+            violations.add(TYPE_SPECIFIC_VIOLATION.formatted(type, "durationEnd must be present or durationOpenEnd must be true"));
+        }
+        if (!(type == DataType.FUTURE_VALIDATED_CONSUMPTION_DATA || type == DataType.SMART_METER_P1_DATA) && durationEnd != null && durationEnd > 0) {
+            violations.add(TYPE_SPECIFIC_VIOLATION.formatted(type, "durationEnd must be zero or negative"));
+        }
+        if (!(type == DataType.FUTURE_VALIDATED_CONSUMPTION_DATA || type == DataType.SMART_METER_P1_DATA) && isOpenEnded()) {
+            violations.add(TYPE_SPECIFIC_VIOLATION.formatted(type, "durationOpenEnd must not be true"));
+        }
+        return violations;
+    }
+
+    private boolean isOpenEnded() {
+        return durationOpenEnd != null && durationOpenEnd;
     }
 }
