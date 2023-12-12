@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
-import energy.eddie.api.v0.RegionalInformation;
+import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata;
 
-public class EnedisRegionalInformation implements RegionalInformation {
+public class EnedisDataSourceInformation implements DataSourceInformation {
     private static final EnedisRegionConnectorMetadata regionConnectorMetadata = EnedisRegionConnectorMetadata.getInstance();
 
     private static final String ENEDIS = "Enedis";
@@ -24,7 +24,7 @@ public class EnedisRegionalInformation implements RegionalInformation {
     }
 
     @Override
-    public String meteringDataAdministratorId() {
+    public String meteredDataAdministratorId() {
         return ENEDIS;
     }
 }

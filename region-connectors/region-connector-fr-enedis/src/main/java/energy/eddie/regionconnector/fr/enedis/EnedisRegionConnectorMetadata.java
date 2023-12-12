@@ -28,7 +28,7 @@ public class EnedisRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public String countryCode() {
-        return "fr";
+        return "FR";
     }
 
     @Override

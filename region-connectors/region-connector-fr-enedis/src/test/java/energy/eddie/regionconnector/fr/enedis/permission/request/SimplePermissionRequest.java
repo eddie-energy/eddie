@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
-import energy.eddie.api.v0.RegionalInformation;
+import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 
@@ -18,8 +18,8 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     }
 
     @Override
-    public RegionalInformation regionalInformation() {
-        return new EnedisRegionalInformation();
+    public DataSourceInformation dataSourceInformation() {
+        return new EnedisDataSourceInformation();
     }
 
     @Override

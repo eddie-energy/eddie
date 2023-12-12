@@ -108,7 +108,7 @@ class PermissionRequestServiceTest {
                 atPermissionRequest.connectionId(),
                 atPermissionRequest.permissionId(),
                 atPermissionRequest.dataNeedId(),
-                atPermissionRequest.regionalInformation(),
+                atPermissionRequest.dataSourceInformation(),
                 result.get().timestamp(),
                 atPermissionRequest.state().status(),
                 null

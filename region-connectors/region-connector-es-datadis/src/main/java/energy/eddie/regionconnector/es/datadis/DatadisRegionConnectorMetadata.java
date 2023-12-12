@@ -27,7 +27,7 @@ public class DatadisRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public String countryCode() {
-        return "es";
+        return "ES";
     }
 
     @Override

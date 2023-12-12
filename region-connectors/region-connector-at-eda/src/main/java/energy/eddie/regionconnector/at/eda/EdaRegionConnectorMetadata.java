@@ -28,7 +28,7 @@ public class EdaRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public String countryCode() {
-        return "at";
+        return "AT";
     }
 
     @Override

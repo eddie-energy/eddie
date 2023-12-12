@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.at.eda;
 
-import energy.eddie.api.v0.RegionalInformation;
+import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
-import energy.eddie.regionconnector.at.eda.permission.request.EdaRegionalInformation;
+import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -29,8 +29,8 @@ public record SimplePermissionRequest(String permissionId,
 
 
     @Override
-    public RegionalInformation regionalInformation() {
-        return new EdaRegionalInformation(dsoId);
+    public DataSourceInformation dataSourceInformation() {
+        return new EdaDataSourceInformation(dsoId);
     }
 
     @Override

@@ -76,7 +76,7 @@ class EdaPermissionRequestTest {
     }
 
     @Test
-    void regionalInformation_returnsEdaRegionalInformation() {
+    void dataSourceInformation_returnsEdadataSourceInformation() {
         // Given
         String dsoId = "dsoId";
         CCMORequest ccmoRequest = mock(CCMORequest.class);
@@ -86,7 +86,7 @@ class EdaPermissionRequestTest {
         var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
 
         // Then
-        assertEquals(EdaRegionalInformation.class, permissionRequest.regionalInformation().getClass());
+        assertEquals(EdaDataSourceInformation.class, permissionRequest.dataSourceInformation().getClass());
     }
 
     @Test

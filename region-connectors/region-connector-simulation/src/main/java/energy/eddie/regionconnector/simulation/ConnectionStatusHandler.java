@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.simulation;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.RegionalInformation;
 import io.javalin.Javalin;
 import io.javalin.http.HttpStatus;
 import org.slf4j.Logger;
@@ -45,7 +45,7 @@ public class ConnectionStatusHandler {
                                 req.connectionId,
                                 req.connectionId,
                                 req.dataNeedId,
-                                new SimulationRegionalInformation(),
+                                new SimulationDataSourceInformation(),
                                 req.connectionStatus,
                                 req.connectionStatus.toString()
                         )
@@ -66,7 +66,7 @@ public class ConnectionStatusHandler {
         public PermissionProcessStatus connectionStatus;
     }
 
-    private static class SimulationRegionalInformation implements RegionalInformation {
+    private static class SimulationDataSourceInformation implements DataSourceInformation {
         @Override
         public String countryCode() {
             return "sim";
@@ -83,7 +83,7 @@ public class ConnectionStatusHandler {
         }
 
         @Override
-        public String meteringDataAdministratorId() {
+        public String meteredDataAdministratorId() {
             return "sim";
         }
     }

@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
-import energy.eddie.api.v0.RegionalInformation;
+import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
@@ -15,7 +15,7 @@ public class EnedisPermissionRequest implements TimeframedPermissionRequest {
     public static final String START_KEY = "start";
     public static final String END_KEY = "end";
     private static final String DATA_NEED_ID = "dataNeedId";
-    private static final EnedisRegionalInformation regionalInformation = new EnedisRegionalInformation();
+    private static final EnedisDataSourceInformation dataSourceInformation = new EnedisDataSourceInformation();
     private final String permissionId;
     private final String connectionId;
     private final ZonedDateTime start;
@@ -61,8 +61,8 @@ public class EnedisPermissionRequest implements TimeframedPermissionRequest {
     }
 
     @Override
-    public RegionalInformation regionalInformation() {
-        return regionalInformation;
+    public DataSourceInformation dataSourceInformation() {
+        return dataSourceInformation;
     }
 
     @Override

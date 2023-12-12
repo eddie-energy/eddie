@@ -4,7 +4,7 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetRegionalInformation;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetDataSourceInformation;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
 import org.junit.jupiter.api.Test;
@@ -65,7 +65,7 @@ class PermissionRequestControllerTest {
                 "foo",
                 permissionId,
                 "bar",
-                new EnerginetRegionalInformation(),
+                new EnerginetDataSourceInformation(),
                 PermissionProcessStatus.ACCEPTED);
         when(service.findConnectionStatusMessageById(permissionId)).thenReturn(Optional.of(statusMessage));
 

@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.aiida.api;
 
-import energy.eddie.api.v0.RegionalInformation;
+import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 
-public class AiidaRegionalInformation implements RegionalInformation {
+public class AiidaDataSourceInformation implements DataSourceInformation {
     private static final AiidaRegionConnectorMetadata regionConnectorMetadata = AiidaRegionConnectorMetadata.getInstance();
 
     @Override
@@ -17,7 +17,7 @@ public class AiidaRegionalInformation implements RegionalInformation {
     }
 
     @Override
-    public String meteringDataAdministratorId() {
+    public String meteredDataAdministratorId() {
         return regionConnectorMetadata.id();
     }
 

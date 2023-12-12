@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.permission.request;
 
-import energy.eddie.api.v0.RegionalInformation;
+import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
@@ -32,7 +32,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     private final ZonedDateTime requestDataTo;
     private final MeasurementType measurementType;
     private final String dataNeedId;
-    private final DatadisRegionalInformation regionalInformation = new DatadisRegionalInformation();
+    private final DatadisDataSourceInformation dataSourceInformation = new DatadisDataSourceInformation();
     private PermissionRequestState state;
     @Nullable
     private String distributorCode;
@@ -126,8 +126,8 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     }
 
     @Override
-    public RegionalInformation regionalInformation() {
-        return regionalInformation;
+    public DataSourceInformation dataSourceInformation() {
+        return dataSourceInformation;
     }
 
 

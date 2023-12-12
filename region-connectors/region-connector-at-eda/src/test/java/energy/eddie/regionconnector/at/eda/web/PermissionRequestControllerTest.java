@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.at.eda.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
-import energy.eddie.regionconnector.at.eda.permission.request.EdaRegionalInformation;
+import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtAcceptedPermissionRequestState;
@@ -83,7 +83,7 @@ class PermissionRequestControllerTest {
                         "cid",
                         "permissionId",
                         "dnid",
-                        new EdaRegionalInformation("dsoId"),
+                        new EdaDataSourceInformation("dsoId"),
                         state.status(),
                         ""
                 )));

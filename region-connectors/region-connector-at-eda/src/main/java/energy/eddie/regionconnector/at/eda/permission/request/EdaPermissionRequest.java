@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda.permission.request;
 
-import energy.eddie.api.v0.RegionalInformation;
+import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
@@ -22,7 +22,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     @Nullable
     private final LocalDate dataTo;
     private final String dataNeedId;
-    private final EdaRegionalInformation regionalInformation;
+    private final EdaDataSourceInformation dataSourceInformation;
     @Nullable
     private String meteringPointId;
     private PermissionRequestState state;
@@ -39,7 +39,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
         this.cmRequestId = ccmoRequest.cmRequestId();
         this.conversationId = ccmoRequest.messageId();
         this.meteringPointId = ccmoRequest.meteringPointId().orElse(null);
-        this.regionalInformation = new EdaRegionalInformation(ccmoRequest.dsoId());
+        this.dataSourceInformation = new EdaDataSourceInformation(ccmoRequest.dsoId());
         this.dataFrom = ccmoRequest.dataFrom();
         this.dataTo = ccmoRequest.dataTo().orElse(null);
         this.state = new AtCreatedPermissionRequestState(this, ccmoRequest, edaAdapter);
@@ -96,8 +96,8 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     }
 
     @Override
-    public RegionalInformation regionalInformation() {
-        return regionalInformation;
+    public DataSourceInformation dataSourceInformation() {
+        return dataSourceInformation;
     }
 
     @Override
@@ -129,7 +129,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
                 Objects.equals(meteringPointId, that.meteringPointId) &&
                 Objects.equals(state.getClass(), that.state.getClass()) &&
                 Objects.equals(statusTransitionMessage, that.statusTransitionMessage) &&
-                Objects.equals(regionalInformation, that.regionalInformation);
+                Objects.equals(dataSourceInformation, that.dataSourceInformation);
     }
 
     @Override
@@ -144,6 +144,6 @@ public class EdaPermissionRequest implements AtPermissionRequest {
                 meteringPointId,
                 state.getClass().hashCode(),
                 statusTransitionMessage,
-                regionalInformation.hashCode());
+                dataSourceInformation.hashCode());
     }
 }

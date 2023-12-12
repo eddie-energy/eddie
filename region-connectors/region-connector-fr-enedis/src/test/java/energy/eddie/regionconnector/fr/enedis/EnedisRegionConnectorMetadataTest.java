@@ -22,7 +22,7 @@ class EnedisRegionConnectorMetadataTest {
 
     @Test
     void countryCode() {
-        assertEquals("fr", EnedisRegionConnectorMetadata.getInstance().countryCode());
+        assertEquals("FR", EnedisRegionConnectorMetadata.getInstance().countryCode());
     }
 
     @Test

@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.aiida.api;
 
-import energy.eddie.api.v0.RegionalInformation;
+import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
@@ -9,7 +9,7 @@ import energy.eddie.regionconnector.aiida.states.AiidaCreatedPermissionRequestSt
 import java.time.Instant;
 
 public class AiidaPermissionRequest implements PermissionRequest {
-    private static final AiidaRegionalInformation regionalInformation = new AiidaRegionalInformation();
+    private static final AiidaDataSourceInformation dataSourceInformation = new AiidaDataSourceInformation();
     private final String permissionId;
     private final String connectionId;
     private final String dataNeedId;
@@ -94,8 +94,8 @@ public class AiidaPermissionRequest implements PermissionRequest {
     }
 
     @Override
-    public RegionalInformation regionalInformation() {
-        return regionalInformation;
+    public DataSourceInformation dataSourceInformation() {
+        return dataSourceInformation;
     }
 
     @Override
