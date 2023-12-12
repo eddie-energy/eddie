@@ -13,10 +13,13 @@ import java.util.Optional;
 
 import static energy.eddie.core.dataneeds.DataNeedTest.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(value = DataNeedsManagementController.class, properties = "eddie.data-needs-config.data-need-source=DATABASE")
 class DataNeedsManagementControllerTest {
@@ -137,6 +140,66 @@ class DataNeedsManagementControllerTest {
         mvc.perform(delete("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andExpect(content().string(""));
         verify(repo).deleteById(EXAMPLE_DATA_NEED_KEY);
+        verifyNoMoreInteractions(repo);
+    }
+
+    @Test
+    @SuppressWarnings("Nullaway")
+    void createDataNeedsWithBeanValidationErrors() throws Exception {
+        var dataNeed = copy(EXAMPLE_DATA_NEED);
+        dataNeed.setDurationStart(null);
+        given(repo.existsById(EXAMPLE_DATA_NEED_KEY)).willReturn(false);
+        mvc.perform(put("/management/data-needs")
+                        .content(objectMapper.writeValueAsString(dataNeed))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[0]", containsString("durationStart")));
+        verifyNoMoreInteractions(repo);
+    }
+
+    @Test
+    void createDataNeedsWithValidationError() throws Exception {
+        var dataNeed = copy(EXAMPLE_DATA_NEED);
+        dataNeed.setDurationStart(0);
+        dataNeed.setDurationEnd(-1);
+        given(repo.existsById(EXAMPLE_DATA_NEED_KEY)).willReturn(false);
+        mvc.perform(put("/management/data-needs")
+                        .content(objectMapper.writeValueAsString(dataNeed))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[0]", allOf(containsString("durationStart"), containsString("durationEnd"))));
+        verifyNoMoreInteractions(repo);
+    }
+
+    @Test
+    @SuppressWarnings("Nullaway")
+    void updateDataNeedsWithBeanValidationErrors() throws Exception {
+        var dataNeed = copy(EXAMPLE_DATA_NEED);
+        dataNeed.setDurationStart(null);
+        given(repo.existsById(EXAMPLE_DATA_NEED_KEY)).willReturn(true);
+        mvc.perform(post("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY)
+                        .content(objectMapper.writeValueAsString(dataNeed))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[0]", containsString("durationStart")));
+        verifyNoMoreInteractions(repo);
+    }
+
+    @Test
+    void updateDataNeedsWithValidationError() throws Exception {
+        var dataNeed = copy(EXAMPLE_DATA_NEED);
+        dataNeed.setDurationStart(0);
+        dataNeed.setDurationEnd(-1);
+        given(repo.existsById(EXAMPLE_DATA_NEED_KEY)).willReturn(true);
+        mvc.perform(post("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY)
+                        .content(objectMapper.writeValueAsString(dataNeed))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[0]", allOf(containsString("durationStart"), containsString("durationEnd"))));
         verifyNoMoreInteractions(repo);
     }
 }
