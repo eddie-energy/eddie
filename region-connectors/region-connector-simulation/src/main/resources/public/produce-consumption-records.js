@@ -10,7 +10,7 @@ const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 class ProduceConsumptionRecordCe extends LitElement {
   static properties = {
     connectionId: { attribute: "connection-id" },
-    dataNeedId: { attribute: "dataneed-id" },
+    dataNeedId: { attribute: "data-need-id" },
     _measurementsPerDay: {},
     _date: {},
   };
