@@ -17,6 +17,7 @@ public interface RegionConnectorMetadata {
 
     /**
      * Country code of the region covered by a {@link RegionConnector}.
+     * Must be uppercase.
      */
     @JsonProperty
     String countryCode();
