@@ -1,6 +1,6 @@
 package energy.eddie.spring;
 
-import energy.eddie.api.agnostic.SpringRegionConnector;
+import energy.eddie.api.agnostic.RegionConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -39,7 +39,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
      * servlet in the root context.
      *
      * @param regionConnectorContext Context of the region connector.
-     * @param regionConnectorName    Unique name of the region connector, as defined in {@link SpringRegionConnector}.
+     * @param regionConnectorName    Unique name of the region connector, as defined in {@link RegionConnector}.
      * @return AbstractBeanDefinition that can be registered in the root context (i.e. the EDDIE core context).
      */
     @NonNull
@@ -67,7 +67,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
      * This context won't explicitly have a parent set, this will be done by the {@link DispatcherServlet}.
      *
      * @param regionConnectorConfigClass      Configuration class containing bean definitions of the region connector.
-     * @param regionConnectorName             Unique name of the region connector, as defined in {@link SpringRegionConnector}.
+     * @param regionConnectorName             Unique name of the region connector, as defined in {@link RegionConnector}.
      * @param regionConnectorProcessorClasses List of classes that should be registered in the newly created WebContext.
      * @return AnnotationConfigWebApplicationContext for the region connector.
      */
@@ -93,7 +93,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
     }
 
     /**
-     * Scans the {@value REGION_CONNECTORS_SCAN_BASE_PACKAGE} package for any classes that are annotated with {@link SpringRegionConnector}
+     * Scans the {@value REGION_CONNECTORS_SCAN_BASE_PACKAGE} package for any classes that are annotated with {@link RegionConnector}
      * and creates a separate context and {@link DispatcherServlet} for each found class,
      * which will be registered with the registry passed to this processor.
      * <p>
@@ -101,7 +101,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
      * </p>
      * <p>
      * The DispatcherServlet has its URL mapping set to "/{@link #ALL_REGION_CONNECTORS_BASE_URL_PATH}/{RC-NAME}/*"
-     * whereas {@code RC-NAME} is specified by {@link SpringRegionConnector#name()}.
+     * whereas {@code RC-NAME} is specified by {@link RegionConnector#name()}.
      * </p>
      *
      * @param registry the bean definition registry used by the application context
@@ -120,7 +120,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         for (BeanDefinition rcDefinition : regionConnectorBeanDefinitions) {
             try {
                 Class<?> regionConnectorConfigClass = Class.forName(rcDefinition.getBeanClassName());
-                String regionConnectorName = regionConnectorConfigClass.getAnnotation(SpringRegionConnector.class).name();
+                String regionConnectorName = regionConnectorConfigClass.getAnnotation(RegionConnector.class).name();
 
                 var propertyName = "region-connector.%s.enabled".formatted(regionConnectorName.replace('-', '.'));
 
@@ -140,7 +140,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
 
     private Set<BeanDefinition> findAllSpringRegionConnectorBeanDefinitions() {
         var scanner = new ClassPathScanningCandidateComponentProvider(false);
-        scanner.addIncludeFilter(new AnnotationTypeFilter(SpringRegionConnector.class));
+        scanner.addIncludeFilter(new AnnotationTypeFilter(RegionConnector.class));
 
         return scanner.findCandidateComponents(REGION_CONNECTORS_SCAN_BASE_PACKAGE);
     }

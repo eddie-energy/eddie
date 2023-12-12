@@ -1,6 +1,6 @@
 package energy.eddie.spring.rcprocessors;
 
-import energy.eddie.api.agnostic.SpringRegionConnector;
+import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.spring.RegionConnectorProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -15,7 +15,7 @@ public class RegionConnectorBeanPostProcessor implements BeanPostProcessor {
     private final DefaultListableBeanFactory beanFactory;
 
     /**
-     * This {@link BeanPostProcessor} extracts the value of {@link SpringRegionConnector#name()}, creates a
+     * This {@link BeanPostProcessor} extracts the value of {@link RegionConnector#name()}, creates a
      * String bean for the value, and registers this bean in the context of the region connector.
      * <p>
      * The bean will be registered with the name {@value REGION_CONNECTOR_NAME_BEAN_NAME}.
@@ -29,7 +29,7 @@ public class RegionConnectorBeanPostProcessor implements BeanPostProcessor {
 
     @Override
     public Object postProcessBeforeInitialization(@NonNull Object bean, @NonNull String unusedBeanName) {
-        SpringRegionConnector annotation = AnnotationUtils.findAnnotation(bean.getClass(), SpringRegionConnector.class);
+        RegionConnector annotation = AnnotationUtils.findAnnotation(bean.getClass(), RegionConnector.class);
         if (annotation != null) {
             String connectorName = annotation.name();
             beanFactory.registerSingleton(REGION_CONNECTOR_NAME_BEAN_NAME, connectorName);
