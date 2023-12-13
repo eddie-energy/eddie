@@ -14,7 +14,8 @@ repositories {
 }
 
 dependencies {
-    implementation(project(mapOf("path" to ":api")))
+    implementation(project(":api"))
+
     implementation(libs.jakarta.annotation.api)
     implementation(libs.kafka.clients)
     implementation(libs.reactor.core)
@@ -22,6 +23,8 @@ dependencies {
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.datatype.jdk8)
     implementation(libs.slf4j.simple)
+
+
     testImplementation(libs.junit.jupiter)
 }
 
