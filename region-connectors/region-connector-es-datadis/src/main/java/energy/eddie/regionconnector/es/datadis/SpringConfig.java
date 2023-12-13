@@ -69,7 +69,7 @@ public class SpringConfig {
      */
     @Bean
     public Sinks.Many<ConsumptionRecord> consumptionRecordSink() {
-        return Sinks.many().unicast().onBackpressureBuffer();
+        return Sinks.many().multicast().onBackpressureBuffer();
     }
 
     @Bean
@@ -111,7 +111,6 @@ public class SpringConfig {
     }
 
     @Bean
-    // TODO why does @Service not create a bean?
     public PermissionRequestService permissionRequestService(
             EsPermissionRequestRepository repository,
             PermissionRequestFactory permissionRequestFactory,

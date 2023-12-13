@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
+import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,9 +43,10 @@ class ValidatedStateTest {
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
 
-        var permissionRequest = new DatadisPermissionRequest(permissionId, connectionId, dataNeedId,
-                nif, meteringPointId, MeasurementType.QUARTER_HOURLY, requestDataFrom, requestDataTo,
-                mock(AuthorizationApi.class), mock(AuthorizationResponseHandler.class));
+        var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
+                requestDataFrom, requestDataTo, MeasurementType.QUARTER_HOURLY);
+        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation,
+                authorizationApi, authorizationResponseHandler);
         var validatedState = new ValidatedState(permissionRequest, authorizationRequest, authorizationApi, authorizationResponseHandler);
         permissionRequest.changeState(validatedState);
 

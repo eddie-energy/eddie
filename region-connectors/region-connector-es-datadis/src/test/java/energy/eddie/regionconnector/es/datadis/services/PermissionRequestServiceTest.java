@@ -63,8 +63,10 @@ class PermissionRequestServiceTest {
         var now = ZonedDateTime.now(ZONE_ID_SPAIN);
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
-        var permissionRequest = new DatadisPermissionRequest(permissionId, connectionId, dataNeedId,
-                nif, meteringPointId, MeasurementType.QUARTER_HOURLY, requestDataFrom, requestDataTo,
+        var measurementType = MeasurementType.QUARTER_HOURLY;
+        var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
+                requestDataFrom, requestDataTo, measurementType);
+        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation,
                 mock(AuthorizationApi.class), mock(AuthorizationResponseHandler.class));
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
 

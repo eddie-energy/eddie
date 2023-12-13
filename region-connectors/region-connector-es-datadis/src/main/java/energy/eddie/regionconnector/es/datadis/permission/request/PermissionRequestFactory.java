@@ -30,15 +30,11 @@ public class PermissionRequestFactory {
     public EsPermissionRequest create(PermissionRequestForCreation requestForCreation,
                                       AuthorizationResponseHandler authorizationResponseHandler) {
         var permissionId = UUID.randomUUID().toString();
-        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation.connectionId(),
-                requestForCreation.dataNeedId(), requestForCreation.nif(),
-                requestForCreation.meteringPointId(), requestForCreation.measurementType(),
-                requestForCreation.requestDataFrom(), requestForCreation.requestDataTo(),
+        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation,
                 authorizationApi, authorizationResponseHandler);
 
         PermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, connectionStatusMessageSink);
         PermissionRequest savingPermissionRequest = new SavingPermissionRequest<>(
-                // TODO why is adapter used here?
                 new DatadisPermissionRequestAdapter(permissionRequest, messagingPermissionRequest),
                 permissionRequestRepository
         );

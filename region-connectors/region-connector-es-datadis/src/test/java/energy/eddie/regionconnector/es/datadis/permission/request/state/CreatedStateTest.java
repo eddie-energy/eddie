@@ -4,6 +4,7 @@ import energy.eddie.api.v0.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
+import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -47,8 +48,9 @@ class CreatedStateTest {
         var dataNeedId = "luu";
         var nif = "muh";
         var meteringPointId = "kuh";
-        DatadisPermissionRequest permissionRequest = new DatadisPermissionRequest(permissionId, connectionId, dataNeedId,
-                nif, meteringPointId, MeasurementType.QUARTER_HOURLY, requestDataFrom, requestDataTo,
+        var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
+                requestDataFrom, requestDataTo, MeasurementType.QUARTER_HOURLY);
+        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation,
                 authorizationApi, authorizationResponseHandler);
 
         CreatedState createdState = new CreatedState(permissionRequest, authorizationApi, authorizationResponseHandler);
@@ -72,8 +74,10 @@ class CreatedStateTest {
         var now = ZonedDateTime.now(ZONE_ID_SPAIN);
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
-        DatadisPermissionRequest permissionRequest = new DatadisPermissionRequest(permissionId, connectionId, dataNeedId,
-                nif, meteringPointId, MeasurementType.QUARTER_HOURLY, requestDataFrom, requestDataTo,
+
+        var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
+                requestDataFrom, requestDataTo, MeasurementType.QUARTER_HOURLY);
+        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation,
                 authorizationApi, authorizationResponseHandler);
         CreatedState createdState = new CreatedState(permissionRequest, authorizationApi, authorizationResponseHandler);
 

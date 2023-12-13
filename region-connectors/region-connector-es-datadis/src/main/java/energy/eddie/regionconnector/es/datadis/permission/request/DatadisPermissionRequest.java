@@ -6,6 +6,7 @@ import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
+import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.CreatedState;
 import jakarta.annotation.Nullable;
@@ -39,34 +40,22 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
 
     public DatadisPermissionRequest(
             String permissionId,
-            String connectionId,
-            String dataNeedId,
-            String nif,
-            String meteringPointId,
-            MeasurementType measurementType,
-            ZonedDateTime requestDataFrom,
-            ZonedDateTime requestDataTo,
+            PermissionRequestForCreation requestForCreation,
             AuthorizationApi authorizationApi,
             AuthorizationResponseHandler authorizationResponseHandler) {
         requireNonNull(permissionId);
-        requireNonNull(connectionId);
-        requireNonNull(dataNeedId);
-        requireNonNull(nif);
-        requireNonNull(meteringPointId);
-        requireNonNull(measurementType);
-        requireNonNull(requestDataFrom);
-        requireNonNull(requestDataTo);
+        requireNonNull(requestForCreation);
         requireNonNull(authorizationApi);
         requireNonNull(authorizationResponseHandler);
 
         this.permissionId = permissionId;
-        this.connectionId = connectionId;
-        this.dataNeedId = dataNeedId;
-        this.nif = nif;
-        this.meteringPointId = meteringPointId;
-        this.measurementType = measurementType;
-        this.requestDataFrom = requestDataFrom;
-        this.requestDataTo = requestDataTo;
+        this.connectionId = requestForCreation.connectionId();
+        this.dataNeedId = requestForCreation.dataNeedId();
+        this.nif = requestForCreation.nif();
+        this.meteringPointId = requestForCreation.meteringPointId();
+        this.measurementType = requestForCreation.measurementType();
+        this.requestDataFrom = requestForCreation.requestDataFrom();
+        this.requestDataTo = requestForCreation.requestDataTo();
 
         this.permissionStart = ZonedDateTime.now(ZONE_ID_SPAIN);
         this.permissionEnd = latest(permissionStart, requestDataTo);
