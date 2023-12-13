@@ -2,10 +2,10 @@ package energy.eddie.regionconnector.es.datadis.web;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.regionconnector.es.datadis.dtos.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisRegionalInformation;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.AcceptedState;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

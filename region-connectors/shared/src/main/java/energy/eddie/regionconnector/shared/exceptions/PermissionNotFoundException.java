@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.es.datadis.dtos.exceptions;
+package energy.eddie.regionconnector.shared.exceptions;
 
 public class PermissionNotFoundException extends Exception {
     public PermissionNotFoundException(String permissionId) {

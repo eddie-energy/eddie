@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.es.datadis.web;
 
 import energy.eddie.api.v0.process.model.PastStateException;
-import energy.eddie.regionconnector.es.datadis.dtos.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.RejectedState;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

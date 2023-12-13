@@ -2,8 +2,8 @@ package energy.eddie.regionconnector.es.datadis;
 
 import energy.eddie.api.v0.*;
 import energy.eddie.api.v0.process.model.StateTransitionException;
-import energy.eddie.regionconnector.es.datadis.dtos.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;

@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.es.datadis.web;
 
 import energy.eddie.api.v0.process.model.StateTransitionException;
-import energy.eddie.regionconnector.es.datadis.dtos.ErrorResponse;
-import energy.eddie.regionconnector.es.datadis.dtos.exceptions.PermissionNotFoundException;
+import energy.eddie.regionconnector.shared.dtos.ErrorResponse;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -39,7 +39,6 @@ public class PermissionControllerAdvice {
     public ResponseEntity<Object> handlePermissionNotFoundException(PermissionNotFoundException exception) {
         var errors = List.of(exception.getMessage());
 
-        // TODO this error response is not uniform --> returned status is different in different RCs
         return createErrorResponse(errors, HttpStatus.NOT_FOUND);
     }
 

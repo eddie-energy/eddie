@@ -4,8 +4,8 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.process.model.StateTransitionException;
-import energy.eddie.regionconnector.es.datadis.dtos.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Sinks;
 
