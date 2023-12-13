@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.es.datadis.permission.request;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
@@ -16,27 +15,25 @@ import java.util.UUID;
 public class PermissionRequestFactory {
     private final AuthorizationApi authorizationApi;
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink;
-    private final EsPermissionRequestRepository permissionRequestRepository;
+    private final EsPermissionRequestRepository repository;
 
     public PermissionRequestFactory(
             AuthorizationApi authorizationApi,
             Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink,
-            EsPermissionRequestRepository permissionRequestRepository) {
+            EsPermissionRequestRepository repository) {
         this.authorizationApi = authorizationApi;
         this.connectionStatusMessageSink = connectionStatusMessageSink;
-        this.permissionRequestRepository = permissionRequestRepository;
+        this.repository = repository;
     }
 
-    public EsPermissionRequest create(PermissionRequestForCreation requestForCreation,
-                                      AuthorizationResponseHandler authorizationResponseHandler) {
+    public EsPermissionRequest create(PermissionRequestForCreation requestForCreation) {
         var permissionId = UUID.randomUUID().toString();
-        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation,
-                authorizationApi, authorizationResponseHandler);
+        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi, repository);
 
         PermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, connectionStatusMessageSink);
         PermissionRequest savingPermissionRequest = new SavingPermissionRequest<>(
                 new DatadisPermissionRequestAdapter(permissionRequest, messagingPermissionRequest),
-                permissionRequestRepository
+                repository
         );
         return new DatadisPermissionRequestAdapter(
                 permissionRequest,

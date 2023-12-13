@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.es.datadis.permission.request;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
@@ -22,8 +21,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestFactoryTest {
-    @Mock
-    private AuthorizationResponseHandler responseHandler;
     @Mock
     private AuthorizationApi unusedAuthorizationApi;
     @Mock
@@ -48,7 +45,7 @@ class PermissionRequestFactoryTest {
                 meteringPointId, requestDataFrom, requestDataTo, measurementType);
 
         // When
-        EsPermissionRequest createdRequest = factory.create(requestForCreation, responseHandler);
+        EsPermissionRequest createdRequest = factory.create(requestForCreation);
 
         // Then
         assertDoesNotThrow(() -> UUID.fromString(createdRequest.permissionId()));

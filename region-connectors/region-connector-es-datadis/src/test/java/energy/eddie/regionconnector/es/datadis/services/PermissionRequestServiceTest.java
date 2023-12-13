@@ -4,9 +4,7 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
-import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
@@ -15,8 +13,6 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -67,7 +63,7 @@ class PermissionRequestServiceTest {
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 requestDataFrom, requestDataTo, measurementType);
         var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation,
-                mock(AuthorizationApi.class), mock(AuthorizationResponseHandler.class));
+                mock(AuthorizationApi.class), mock(EsPermissionRequestRepository.class));
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
 
         // When
@@ -140,7 +136,7 @@ class PermissionRequestServiceTest {
         // Given
         var mockCreationRequest = mock(PermissionRequestForCreation.class);
         var mockPermissionRequest = mock(EsPermissionRequest.class);
-        when(factory.create(any(), any())).thenReturn(mockPermissionRequest);
+        when(factory.create(any())).thenReturn(mockPermissionRequest);
 
         // When
         service.createAndSendPermissionRequest(mockCreationRequest);
@@ -174,45 +170,6 @@ class PermissionRequestServiceTest {
         // Then
         verify(permissionRequest).terminate();
         verifyNoMoreInteractions(permissionRequest);
-    }
-
-    @ParameterizedTest
-    @EnumSource(
-            value = AuthorizationRequestResponse.class,
-            names = {"OK"},
-            mode = EnumSource.Mode.EXCLUDE)
-    void handleAuthorizationRequestResponse_nonOkResponse_changesStateToInvalid(AuthorizationRequestResponse response)
-            throws StateTransitionException {
-        // Given
-        var permissionId = "SomePermissionId";
-        var mockPermissionRequest = mock(EsPermissionRequest.class);
-        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(mockPermissionRequest));
-
-        // When
-        service.handleAuthorizationRequestResponse(permissionId, response);
-
-        // Then
-        verify(repository).findByPermissionId(permissionId);
-        verify(mockPermissionRequest).receivedPermissionAdministratorResponse();
-        verify(mockPermissionRequest).invalid();
-        verifyNoMoreInteractions(mockPermissionRequest);
-    }
-
-    @Test
-    void handleAuthorizationRequestResponse_okResponse_changesStateToPermissionAdministratorResponse() throws StateTransitionException {
-        // Given
-        var permissionId = "SomePermissionId";
-        var mockPermissionRequest = mock(EsPermissionRequest.class);
-        var response = AuthorizationRequestResponse.OK;
-        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(mockPermissionRequest));
-
-        // When
-        service.handleAuthorizationRequestResponse(permissionId, response);
-
-        // Then
-        verify(repository).findByPermissionId(permissionId);
-        verify(mockPermissionRequest).receivedPermissionAdministratorResponse();
-        verifyNoMoreInteractions(mockPermissionRequest);
     }
 }
 

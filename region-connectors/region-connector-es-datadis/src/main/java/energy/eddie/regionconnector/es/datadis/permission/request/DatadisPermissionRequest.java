@@ -4,10 +4,10 @@ import energy.eddie.api.v0.RegionalInformation;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.CreatedState;
 import jakarta.annotation.Nullable;
 
@@ -42,11 +42,11 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
             String permissionId,
             PermissionRequestForCreation requestForCreation,
             AuthorizationApi authorizationApi,
-            AuthorizationResponseHandler authorizationResponseHandler) {
+            EsPermissionRequestRepository repository) {
         requireNonNull(permissionId);
         requireNonNull(requestForCreation);
         requireNonNull(authorizationApi);
-        requireNonNull(authorizationResponseHandler);
+        requireNonNull(repository);
 
         this.permissionId = permissionId;
         this.connectionId = requestForCreation.connectionId();
@@ -59,7 +59,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
 
         this.permissionStart = ZonedDateTime.now(ZONE_ID_SPAIN);
         this.permissionEnd = latest(permissionStart, requestDataTo);
-        this.state = new CreatedState(this, authorizationApi, authorizationResponseHandler);
+        this.state = new CreatedState(this, authorizationApi, repository);
     }
 
     /**

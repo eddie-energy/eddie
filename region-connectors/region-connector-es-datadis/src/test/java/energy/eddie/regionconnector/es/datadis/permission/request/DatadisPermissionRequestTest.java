@@ -2,9 +2,9 @@ package energy.eddie.regionconnector.es.datadis.permission.request;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -33,7 +33,7 @@ class DatadisPermissionRequestTest {
     @Mock
     private AuthorizationApi authorizationApi;
     @Mock
-    private AuthorizationResponseHandler authorizationResponseHandler;
+    private EsPermissionRequestRepository repository;
     private PermissionRequestForCreation requestForCreation;
 
     @BeforeEach
@@ -45,7 +45,7 @@ class DatadisPermissionRequestTest {
     @Test
     void givenValidInput_constructor_requestIsInCreatedState() {
         DatadisPermissionRequest request = new DatadisPermissionRequest(permissionId, requestForCreation,
-                authorizationApi, authorizationResponseHandler);
+                authorizationApi, repository);
 
         assertEquals(PermissionProcessStatus.CREATED, request.state().status());
     }
@@ -53,13 +53,13 @@ class DatadisPermissionRequestTest {
     @Test
     void givenNull_constructor_throws() {
         assertThrows(NullPointerException.class, () -> new DatadisPermissionRequest(null, requestForCreation,
-                authorizationApi, authorizationResponseHandler));
+                authorizationApi, repository));
 
         assertThrows(NullPointerException.class, () -> new DatadisPermissionRequest(permissionId, null,
-                authorizationApi, authorizationResponseHandler));
+                authorizationApi, repository));
 
         assertThrows(NullPointerException.class, () -> new DatadisPermissionRequest(permissionId, requestForCreation,
-                null, authorizationResponseHandler));
+                null, repository));
 
         assertThrows(NullPointerException.class, () -> new DatadisPermissionRequest(permissionId, requestForCreation,
                 authorizationApi, null));
@@ -72,8 +72,7 @@ class DatadisPermissionRequestTest {
         requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 requestDataFrom, futureDate, measurementType);
 
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation,
-                authorizationApi, authorizationResponseHandler);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi, repository);
         assertEquals(request.requestDataTo(), request.permissionEnd());
     }
 
@@ -83,31 +82,27 @@ class DatadisPermissionRequestTest {
         requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 requestDataFrom, pastDate, measurementType);
 
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation,
-                authorizationApi, authorizationResponseHandler);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi, repository);
 
         assertEquals(request.permissionStart(), request.permissionEnd());
     }
 
     @Test
     void lastPulledMeterReading_whenConstructed_isEmpty() {
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation,
-                authorizationApi, authorizationResponseHandler);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi, repository);
         assertTrue(request.lastPulledMeterReading().isEmpty());
     }
 
     @Test
     void distributorCode_whenConstructed_isEmpty() {
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation,
-                authorizationApi, authorizationResponseHandler);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi, repository);
 
         assertTrue(request.distributorCode().isEmpty());
     }
 
     @Test
     void pointType_whenConstructed_IsEmpty() {
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation,
-                authorizationApi, authorizationResponseHandler);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi, repository);
 
         assertTrue(request.pointType().isEmpty());
     }
@@ -115,8 +110,7 @@ class DatadisPermissionRequestTest {
     @Test
     void setLastPulledMeterReading_worksAsExpected() {
         // Given
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation,
-                authorizationApi, authorizationResponseHandler);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi, repository);
         ZonedDateTime expected = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
@@ -130,8 +124,7 @@ class DatadisPermissionRequestTest {
     @Test
     void setDistributorCode_worksAsExpected() {
         // Given
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation,
-                authorizationApi, authorizationResponseHandler);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi, repository);
         var expected = "distributorCode";
 
         // When
@@ -145,8 +138,7 @@ class DatadisPermissionRequestTest {
     @Test
     void setPointType_worksAsExpected() {
         // Given
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation,
-                authorizationApi, authorizationResponseHandler);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi, repository);
         var expected = 1;
 
         // When

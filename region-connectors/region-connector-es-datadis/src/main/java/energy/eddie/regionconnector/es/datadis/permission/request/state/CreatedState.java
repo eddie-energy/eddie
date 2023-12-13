@@ -7,9 +7,9 @@ import energy.eddie.api.v0.process.model.validation.AttributeError;
 import energy.eddie.api.v0.process.model.validation.ValidationException;
 import energy.eddie.api.v0.process.model.validation.Validator;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.permission.request.validation.InPastValidator;
 import energy.eddie.regionconnector.es.datadis.permission.request.validation.NotOlderThanValidator;
 import energy.eddie.regionconnector.es.datadis.permission.request.validation.StartIsBeforeEndValidator;
@@ -26,14 +26,13 @@ public class CreatedState extends ContextualizedPermissionRequestState<EsPermiss
             new InPastValidator()
     );
     private final AuthorizationApi authorizationApi;
-    private final AuthorizationResponseHandler authorizationResponseHandler;
+    private final EsPermissionRequestRepository repository;
 
-    public CreatedState(EsPermissionRequest permissionRequest, AuthorizationApi authorizationApi, AuthorizationResponseHandler authorizationResponseHandler) {
+    public CreatedState(EsPermissionRequest permissionRequest, AuthorizationApi authorizationApi, EsPermissionRequestRepository repository) {
         super(permissionRequest);
         this.authorizationApi = authorizationApi;
-        this.authorizationResponseHandler = authorizationResponseHandler;
+        this.repository = repository;
     }
-
 
     @Override
     public void validate() throws ValidationException {
@@ -47,7 +46,7 @@ public class CreatedState extends ContextualizedPermissionRequestState<EsPermiss
         );
 
         permissionRequest.changeState(new ValidatedState(permissionRequest, authorizationRequest,
-                authorizationApi, authorizationResponseHandler));
+                authorizationApi, repository));
     }
 
     private void validateAttributes() throws ValidationException {

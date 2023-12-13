@@ -3,8 +3,6 @@ package energy.eddie.regionconnector.es.datadis.services;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.StateTransitionException;
-import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
-import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.es.datadis.permission.request.PermissionRequestFactory;
@@ -16,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
-public class PermissionRequestService implements AuthorizationResponseHandler {
+public class PermissionRequestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestService.class);
     private final EsPermissionRequestRepository repository;
     private final PermissionRequestFactory permissionRequestFactory;
@@ -50,7 +48,6 @@ public class PermissionRequestService implements AuthorizationResponseHandler {
         var permissionRequest = getPermissionRequestById(permissionId);
         permissionRequest.accept();
 
-        // TODO is this a blocking request that will prevent the controller from returning?
         datadisScheduler.pullAvailableHistoricalData(permissionRequest);
     }
 
@@ -68,7 +65,7 @@ public class PermissionRequestService implements AuthorizationResponseHandler {
     public PermissionRequest createAndSendPermissionRequest(PermissionRequestForCreation requestForCreation) throws StateTransitionException {
         LOGGER.info("Got request to create a new permission, request was: {}", requestForCreation);
 
-        var request = permissionRequestFactory.create(requestForCreation, this);
+        var request = permissionRequestFactory.create(requestForCreation);
         request.validate();
         request.sendToPermissionAdministrator();
         return request;
@@ -78,24 +75,5 @@ public class PermissionRequestService implements AuthorizationResponseHandler {
         var permissionRequest = getPermissionRequestById(permissionId);
 
         permissionRequest.terminate();
-    }
-
-    @Override
-    public void handleAuthorizationRequestResponse(String permissionId, AuthorizationRequestResponse response) {
-        var optional = repository.findByPermissionId(permissionId);
-        if (optional.isEmpty()) {
-            LOGGER.error("Received authorization response {} for unknown permission request {}", response, permissionId);
-            return;
-        }
-
-        var permissionRequest = optional.get();
-        try {
-            permissionRequest.receivedPermissionAdministratorResponse();
-            if (response == AuthorizationRequestResponse.NO_SUPPLIES || response == AuthorizationRequestResponse.NO_NIF) {
-                permissionRequest.invalid();
-            }
-        } catch (StateTransitionException e) {
-            LOGGER.error("Error changing state of permission request {}", permissionRequest, e);
-        }
     }
 }

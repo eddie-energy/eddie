@@ -2,10 +2,10 @@ package energy.eddie.regionconnector.es.datadis.permission.request.state;
 
 import energy.eddie.api.v0.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.api.AuthorizationResponseHandler;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -22,8 +22,8 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
 
 class CreatedStateTest {
-    AuthorizationApi authorizationApi = mock(AuthorizationApi.class);
-    AuthorizationResponseHandler authorizationResponseHandler = mock(AuthorizationResponseHandler.class);
+    private final AuthorizationApi authorizationApi = mock(AuthorizationApi.class);
+    private final EsPermissionRequestRepository repository = mock(EsPermissionRequestRepository.class);
 
     private static Stream<Arguments> invalidParameterProvider() {
         ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
@@ -51,9 +51,9 @@ class CreatedStateTest {
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 requestDataFrom, requestDataTo, MeasurementType.QUARTER_HOURLY);
         var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation,
-                authorizationApi, authorizationResponseHandler);
+                authorizationApi, repository);
 
-        CreatedState createdState = new CreatedState(permissionRequest, authorizationApi, authorizationResponseHandler);
+        CreatedState createdState = new CreatedState(permissionRequest, authorizationApi, repository);
 
         // When
         var thrown = assertThrows(ValidationException.class, createdState::validate);
@@ -78,8 +78,8 @@ class CreatedStateTest {
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 requestDataFrom, requestDataTo, MeasurementType.QUARTER_HOURLY);
         var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation,
-                authorizationApi, authorizationResponseHandler);
-        CreatedState createdState = new CreatedState(permissionRequest, authorizationApi, authorizationResponseHandler);
+                authorizationApi, repository);
+        CreatedState createdState = new CreatedState(permissionRequest, authorizationApi, repository);
 
         // When
         assertDoesNotThrow(createdState::validate);
