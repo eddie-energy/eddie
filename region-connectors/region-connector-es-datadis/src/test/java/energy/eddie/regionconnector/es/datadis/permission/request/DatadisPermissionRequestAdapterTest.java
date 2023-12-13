@@ -61,7 +61,7 @@ class DatadisPermissionRequestAdapterTest {
     }
 
     @Test
-    void adapter_returnsRequestDataTo() {
+    void adapter_returnsRequestDateTo() {
         // Given
         ZonedDateTime end = ZonedDateTime.now(ZoneId.systemDefault());
         EsPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", null, end);
@@ -74,7 +74,7 @@ class DatadisPermissionRequestAdapterTest {
     }
 
     @Test
-    void adapter_returnsRequestDataFrom() {
+    void adapter_returnsRequestDateFrom() {
         ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
         EsPermissionRequest request = new SimplePermissionRequest("permissionId", "connectionId1", start, null);
         PermissionRequest decorator = new ThrowingPermissionRequest(request);

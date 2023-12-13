@@ -14,12 +14,10 @@ import java.util.List;
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 
 public class ConsumptionRecordMapper {
-    private ConsumptionRecordMapper() {
-    }
 
     public static final int CONVERSION_FACTOR = 1000;
 
-    public static ConsumptionRecord mapToCIM(List<MeteringData> meteringData, @Nullable String permissionId, @Nullable String connectionId, MeasurementType measurementType, @Nullable String dataNeedId) throws InvalidMappingException {
+    public ConsumptionRecord mapToCIM(List<MeteringData> meteringData, @Nullable String permissionId, @Nullable String connectionId, MeasurementType measurementType, @Nullable String dataNeedId) throws InvalidMappingException {
         ConsumptionRecord consumptionRecord = new ConsumptionRecord();
         consumptionRecord.setPermissionId(permissionId);
         consumptionRecord.setConnectionId(connectionId);
@@ -53,7 +51,7 @@ public class ConsumptionRecordMapper {
         return consumptionRecord;
     }
 
-    private static LocalDateTime readingToDateTime(MeteringData reading) throws InvalidMappingException {
+    private LocalDateTime readingToDateTime(MeteringData reading) throws InvalidMappingException {
         LocalDate date = reading.date();
         LocalTime time = reading.time();
 

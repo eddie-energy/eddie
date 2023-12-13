@@ -1,8 +1,6 @@
-package energy.eddie.regionconnector.es.datadis.services;
+package energy.eddie.regionconnector.es.datadis;
 
 import energy.eddie.api.v0.ConsumptionRecord;
-import energy.eddie.regionconnector.es.datadis.ConsumptionRecordMapper;
-import energy.eddie.regionconnector.es.datadis.InvalidMappingException;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.api.UnauthorizedException;
@@ -13,7 +11,6 @@ import energy.eddie.regionconnector.es.datadis.dtos.exceptions.InvalidPointAndMe
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSuppliesException;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSupplyForMeteringPointException;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.util.retry.Retry;
@@ -32,11 +29,12 @@ import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConst
 public class DatadisScheduler {
     private final DataApi dataApi;
     private final Sinks.Many<ConsumptionRecord> consumptionRecords;
+    private final ConsumptionRecordMapper consumptionRecordMapper;
 
-    @Autowired
-    public DatadisScheduler(DataApi dataApi, Sinks.Many<ConsumptionRecord> consumptionRecords) {
+    public DatadisScheduler(DataApi dataApi, Sinks.Many<ConsumptionRecord> consumptionRecords, ConsumptionRecordMapper consumptionRecordMapper) {
         this.dataApi = dataApi;
         this.consumptionRecords = consumptionRecords;
+        this.consumptionRecordMapper = consumptionRecordMapper;
     }
 
     private static Predicate<MeteringData> notInRequestedRange(LocalDate from, LocalDate to) {
@@ -45,7 +43,7 @@ public class DatadisScheduler {
 
     // Suppress the warning of multiple identical paths, should be removed when implementing issue #296
     @SuppressWarnings("java:S1871")
-    public void pullAvailableHistoricalData(EsPermissionRequest permissionRequest) {
+    void pullAvailableHistoricalData(EsPermissionRequest permissionRequest) {
         var now = ZonedDateTime.now(ZONE_ID_SPAIN).toLocalDate();
         if (permissionRequest.permissionStart().toLocalDate().isAfter(now)) {
             // the start of the permission is in the future, so we can't pull any data yet.
@@ -58,7 +56,7 @@ public class DatadisScheduler {
                 .flatMap(supplies -> prepareMeteringDataRequest(permissionRequest, supplies))
                 .flatMap(dataApi::getConsumptionKwh)
                 .flatMap(meteringData -> processMeteringData(
-                        meteringData, permissionRequest, consumptionRecords))
+                        meteringData, permissionRequest, consumptionRecords, consumptionRecordMapper))
                 .doOnError(e -> {
                     Throwable cause = e;
                     while (cause.getCause() != null) { // do match the exception we need to get the cause
@@ -134,7 +132,8 @@ public class DatadisScheduler {
     private Mono<Void> processMeteringData(
             List<MeteringData> meteringData,
             EsPermissionRequest permissionRequest,
-            Sinks.Many<ConsumptionRecord> consumptionRecordSink) {
+            Sinks.Many<ConsumptionRecord> consumptionRecordSink,
+            ConsumptionRecordMapper consumptionRecordMapper) {
 
         var from = permissionRequest.requestDataFrom().toLocalDate();
         var to = permissionRequest.requestDataTo().toLocalDate();
@@ -144,7 +143,7 @@ public class DatadisScheduler {
         permissionRequest.setLastPulledMeterReading(Objects.requireNonNull(meteringData.get(meteringData.size() - 1).date()).atStartOfDay(ZoneOffset.UTC));
 
         try {
-            ConsumptionRecord consumptionRecord = ConsumptionRecordMapper.mapToCIM(
+            ConsumptionRecord consumptionRecord = consumptionRecordMapper.mapToCIM(
                     meteringData,
                     permissionRequest.permissionId(),
                     permissionRequest.connectionId(),

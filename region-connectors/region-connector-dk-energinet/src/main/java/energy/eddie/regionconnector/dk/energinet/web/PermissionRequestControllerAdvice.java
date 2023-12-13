@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.web;
 import energy.eddie.api.v0.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.api.v0.process.model.validation.ValidationException;
-import energy.eddie.regionconnector.shared.dtos.ErrorResponse;
+import energy.eddie.regionconnector.dk.energinet.dtos.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.aiida.web;
 
 import energy.eddie.api.v0.process.model.StateTransitionException;
-import energy.eddie.regionconnector.shared.dtos.ErrorResponse;
+import energy.eddie.regionconnector.aiida.dtos.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
