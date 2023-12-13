@@ -1,95 +1,69 @@
 package energy.eddie.regionconnector.es.datadis;
 
+import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.HealthState;
-import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.api.DataApi;
-import energy.eddie.regionconnector.es.datadis.permission.request.InMemoryPermissionRequestRepository;
+import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Sinks;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class DatadisRegionConnectorTest {
     @Test
-    void connectorThrows_ifDataApiNull() {
-        var repo = new InMemoryPermissionRequestRepository();
-        var authorizationApi = mock(AuthorizationApi.class);
+    void terminatePermission_callsService() throws PermissionNotFoundException, StateTransitionException {
+        // Given
+        Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().multicast().onBackpressureBuffer();
+        Sinks.Many<ConsumptionRecord> recordsSink = Sinks.many().unicast().onBackpressureBuffer();
+        var mockService = mock(PermissionRequestService.class);
+        var permissionId = "SomeId";
 
-        assertThrows(NullPointerException.class, () -> new DatadisRegionConnector(null, authorizationApi, repo));
+        try (var connector = new DatadisRegionConnector(statusMessageSink, recordsSink, mockService, 0)) {
+
+            // When
+            assertDoesNotThrow(() -> connector.terminatePermission(permissionId));
+
+            // Then
+            verify(mockService).terminatePermission(permissionId);
+        }
     }
 
-    @Test
-    void connectorThrows_ifAuthorizationApiNull() {
-        var repo = new InMemoryPermissionRequestRepository();
-        var dataApi = mock(DataApi.class);
-
-        assertThrows(NullPointerException.class, () -> new DatadisRegionConnector(dataApi, null, repo));
-    }
-
-    @Test
-    void connectorThrows_ifPermissionRequestRepoNull() {
-        var dataApi = mock(DataApi.class);
-        var authorizationApi = mock(AuthorizationApi.class);
-
-        assertThrows(NullPointerException.class, () -> new DatadisRegionConnector(dataApi, authorizationApi, null));
-    }
-
-    @Test
-    void connectorConstructs() {
-        var dataApi = mock(DataApi.class);
-        var authorizationApi = mock(AuthorizationApi.class);
-        var repo = new InMemoryPermissionRequestRepository();
-
-        assertDoesNotThrow(() -> new DatadisRegionConnector(dataApi, authorizationApi, repo));
-    }
-
-    @Test
-    void subscribeToConsumptionRecordPublisher_doesNotThrow() {
-
-        var dataApi = mock(DataApi.class);
-        var authorizationApi = mock(AuthorizationApi.class);
-        var repo = new InMemoryPermissionRequestRepository();
-        var connector = new DatadisRegionConnector(dataApi, authorizationApi, repo);
-
-        assertDoesNotThrow(connector::getConsumptionRecordStream);
-    }
-
-    @Test
-    void terminateNonExistingPermission_throwsIllegalStateException() {
-        var dataApi = mock(DataApi.class);
-        var authorizationApi = mock(AuthorizationApi.class);
-        var repo = new InMemoryPermissionRequestRepository();
-        var connector = new DatadisRegionConnector(dataApi, authorizationApi, repo);
-
-        assertThrows(IllegalStateException.class, () -> connector.terminatePermission("permissionId"));
-    }
 
     @Test
     void getMetadata_returnExpectedMetadata() {
-        // given
-        var dataApi = mock(DataApi.class);
-        var authorizationApi = mock(AuthorizationApi.class);
-        var repo = new InMemoryPermissionRequestRepository();
-        var connector = new DatadisRegionConnector(dataApi, authorizationApi, repo);
+        // Given
+        Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().multicast().onBackpressureBuffer();
+        Sinks.Many<ConsumptionRecord> recordsSink = Sinks.many().unicast().onBackpressureBuffer();
+        var mockService = mock(PermissionRequestService.class);
 
-        // when
-        var result = connector.getMetadata();
+        try (var connector = new DatadisRegionConnector(statusMessageSink, recordsSink, mockService, 0)) {
 
-        // then
-        assertEquals(DatadisRegionConnectorMetadata.getInstance(), result);
+            // When
+            var result = connector.getMetadata();
+
+            // then
+            assertEquals(DatadisRegionConnectorMetadata.getInstance(), result);
+        }
     }
 
     @Test
     void health_returnsHealthChecks() {
-        var dataApi = mock(DataApi.class);
-        var authorizationApi = mock(AuthorizationApi.class);
-        var repo = new InMemoryPermissionRequestRepository();
-        var connector = new DatadisRegionConnector(dataApi, authorizationApi, repo);
+        // Given
+        Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().multicast().onBackpressureBuffer();
+        Sinks.Many<ConsumptionRecord> recordsSink = Sinks.many().unicast().onBackpressureBuffer();
+        var mockService = mock(PermissionRequestService.class);
 
-        var res = connector.health();
+        try (var connector = new DatadisRegionConnector(statusMessageSink, recordsSink, mockService, 0)) {
+            var res = connector.health();
 
-        assertEquals(Map.of("permissionRequestRepository", HealthState.UP), res);
+            assertEquals(Map.of("permissionRequestRepository", HealthState.UP), res);
+        }
     }
 }

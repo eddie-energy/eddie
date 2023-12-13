@@ -20,6 +20,9 @@ dependencies {
     implementation(libs.javalin)
     implementation(libs.jakarta.annotation.api)
 
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.datatype.jsr310)
+
     testImplementation(libs.reactor.test)
     testImplementation(libs.junit.jupiter)
 }
