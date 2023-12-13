@@ -2,6 +2,9 @@ package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
+import energy.eddie.api.v0.Mvp1ConsumptionRecordOutboundConnector;
+import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -15,8 +18,9 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Flow;
 
-public class KafkaConnector implements energy.eddie.api.v0.ApplicationConnector, energy.eddie.api.v0_82.ApplicationConnector, Closeable {
-    private final Logger logger = LoggerFactory.getLogger(KafkaConnector.class);
+public class KafkaConnector implements Mvp1ConnectionStatusMessageOutboundConnector,
+        Mvp1ConsumptionRecordOutboundConnector, EddieValidatedHistoricalDataMarketDocumentOutboundConnector, Closeable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaProducer<String, Object> kafkaProducer;
 
     public KafkaConnector(Properties kafkaProperties) {
@@ -45,11 +49,6 @@ public class KafkaConnector implements energy.eddie.api.v0.ApplicationConnector,
     }
 
     @Override
-    public void init() {
-        // Kafka producer has already started
-    }
-
-    @Override
     public void close() {
         kafkaProducer.close();
     }
@@ -59,9 +58,9 @@ public class KafkaConnector implements energy.eddie.api.v0.ApplicationConnector,
             kafkaProducer
                     .send(new ProducerRecord<>("status-messages", statusMessage))
                     .get();
-            logger.info("Produced connection status message");
+            LOGGER.info("Produced connection status message");
         } catch (RuntimeException | ExecutionException e) {
-            logger.warn("Could not produce connection status message", e);
+            LOGGER.warn("Could not produce connection status message", e);
         } catch (InterruptedException e) {
             reinterrupt(e);
         }
@@ -72,9 +71,9 @@ public class KafkaConnector implements energy.eddie.api.v0.ApplicationConnector,
             kafkaProducer
                     .send(new ProducerRecord<>("consumption-records", consumptionRecord.getConnectionId(), consumptionRecord))
                     .get();
-            logger.info("Produced consumption record message");
+            LOGGER.info("Produced consumption record message");
         } catch (RuntimeException | ExecutionException e) {
-            logger.warn("Could not produce consumption record message", e);
+            LOGGER.warn("Could not produce consumption record message", e);
         } catch (InterruptedException e) {
             reinterrupt(e);
         }
@@ -85,16 +84,16 @@ public class KafkaConnector implements energy.eddie.api.v0.ApplicationConnector,
             kafkaProducer
                     .send(new ProducerRecord<>("validated-historical-data", marketDocument.connectionId().orElse(null), marketDocument))
                     .get();
-            logger.info("Produced validated historical data market document message");
+            LOGGER.info("Produced validated historical data market document message");
         } catch (RuntimeException | ExecutionException e) {
-            logger.warn("Could not produce validated historical data market document message", e);
+            LOGGER.warn("Could not produce validated historical data market document message", e);
         } catch (InterruptedException e) {
             reinterrupt(e);
         }
     }
 
     private void reinterrupt(InterruptedException e) {
-        logger.warn("Thread was interrupted", e);
+        LOGGER.warn("Thread was interrupted", e);
         Thread.currentThread().interrupt();
     }
 }
