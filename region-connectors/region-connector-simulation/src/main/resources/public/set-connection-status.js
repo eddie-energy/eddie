@@ -3,7 +3,7 @@ import { css, html, LitElement } from "https://esm.sh/lit";
 class SetConnectionStatusCe extends LitElement {
   static properties = {
     connectionId: { attribute: "connection-id" },
-    dataNeedId: { attribute: "dataneed-id" },
+    dataNeedId: { attribute: "data-need-id" },
     _statusValues: {},
   };
   static styles = css``;

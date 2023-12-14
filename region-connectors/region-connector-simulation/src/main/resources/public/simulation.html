@@ -13,14 +13,14 @@
       const urlParameters = Object.fromEntries(entries);
       const connectionId = decodeURIComponent(urlParameters.connectionId);
       const dataNeedId = decodeURIComponent(urlParameters.dataNeedId);
-      document.querySelectorAll("[data-set-connectionid]").forEach(it => it.setAttribute("connection-id", connectionId));
-      document.querySelectorAll("[data-set-dataneedid]").forEach(it => it.setAttribute("dataneed-id", dataNeedId));
+      document.querySelectorAll("[data-set--connection-id]").forEach(it => it.setAttribute("connection-id", connectionId));
+      document.querySelectorAll("[data-set--data-need-id]").forEach(it => it.setAttribute("data-need-id", dataNeedId));
     });
   </script>
 </head>
 <body class="container">
 <h1>EDDIE Connector Simulation</h1>
-<set-connection-status data-set-connectionid data-set-dataneedid></set-connection-status>
-<produce-consumption-records data-set-connectionid data-set-dataneedid></produce-consumption-records>
+<set-connection-status data-set--connection-id data-set--data-need-id></set-connection-status>
+<produce-consumption-records data-set--connection-id data-set--data-need-id></produce-consumption-records>
 </body>
 </html>
