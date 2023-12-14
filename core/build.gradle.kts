@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     implementation(project(":api"))
-    implementation(project(mapOf("path" to ":outbound-kafka")))
+    implementation(project(":outbound-kafka"))
     implementation(project(":region-connectors:region-connector-aiida"))
     implementation(project(":region-connectors:region-connector-at-eda"))
     implementation(project(":region-connectors:region-connector-dk-energinet"))
@@ -27,69 +27,48 @@ dependencies {
     implementation(project(":region-connectors:region-connector-es-datadis"))
     implementation(project(":region-connectors:region-connector-simulation"))
 
-    implementation(libs.microprofile.config)
-    implementation("io.smallrye.config:smallrye-config:3.3.0")
-
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.websocket)
-    implementation(libs.guice)
-    implementation(libs.javalin)
-    implementation(libs.jetty.proxy)
-    implementation(libs.jackson.databind)
-    implementation(libs.jackson.datatype.jsr310)
-    implementation(libs.jdbi3.core)
     implementation(libs.reactor.core)
+
+
     runtimeOnly(libs.h2database)
+
+
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.spring.boot.starter.test)
-    testRuntimeOnly(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.reactor.test)
 }
 
 configurations.all {
-    // the aop package is already contained in spring-aop
-    exclude(group = "aopalliance", module = "aopalliance")
     exclude(group = "commons-logging", module = "commons-logging") // TODO check
     exclude(group = "org.slf4j", module = "slf4j-simple") // TODO this shoudn't be necessary
     exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j2-impl") // TODO this neither
 }
 
 application {
-    mainClass.set("energy.eddie.core.Core")
+    mainClass.set("energy.eddie.EddieSpringApplication")
 }
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
 }
 
-tasks.register("run-core", JavaExec::class) {
-    dependsOn(":pnpmBuild")
-    mainClass.set("energy.eddie.core.Core")
-    classpath = sourceSets["main"].runtimeClasspath
-    systemProperties.set("developmentMode", "true")
-    workingDir = parent?.projectDir ?: projectDir
-    group = "development"
-    description = "run EDDIE"
-    environment["JDBC_URL"] = "jdbc:h2:tcp://localhost:9091/./examples/example-app"
-    environment["PUBLIC_CONTEXT_PATH"] = ""
-    environment["CORE_PORT"] = 8080
-    environment["IMPORT_CONFIG_FILE"] = "file:./core/src/test/resources/data-needs.yml"
-}
-
 tasks.register("run-core-spring", JavaExec::class) {
     dependsOn(":pnpmBuild")
     mainClass.set("energy.eddie.EddieSpringApplication")
     classpath = sourceSets["main"].runtimeClasspath
-    systemProperties.set("developmentMode", "true")
+    systemProperties["developmentMode"] = "true"
     workingDir = parent?.projectDir ?: projectDir
     group = "development"
     description = "run EDDIE with Spring"
+
     environment["JDBC_URL"] = "jdbc:h2:tcp://localhost:9091/./examples/example-app"
     environment["CORE_PORT"] = 8080
     environment["IMPORT_CONFIG_FILE"] = "file:./core/src/test/resources/data-needs.yml"
-    environment["spring.jpa.database-platform"] = "org.hibernate.dialect.H2Dialect"
+    environment["SPRING_JPA_DATABASE_PLATFORM"] = "org.hibernate.dialect.H2Dialect"
 }
 
 tasks.withType<JavaCompile>().configureEach {
@@ -97,7 +76,6 @@ tasks.withType<JavaCompile>().configureEach {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
             option("NullAway:AnnotatedPackages", "energy.eddie")
-            option("NullAway:ExcludedFieldAnnotations", "com.google.inject.Inject")
         }
     }
 }
