@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Record defining the attributes of a data need.
+ * Entity class representing a data need with all it's attributes and constraints.
  * <p>
  * See <a href="https://eddie-web.projekte.fh-hagenberg.at/docs/requirements/4_data_requirements/1_logical_data_model/">DataNeed in logical data model</a>
  */
