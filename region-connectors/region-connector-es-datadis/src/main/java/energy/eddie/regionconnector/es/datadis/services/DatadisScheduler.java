@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.v0.Mvp1ConsumptionRecordProvider;
 import energy.eddie.regionconnector.es.datadis.ConsumptionRecordMapper;
 import energy.eddie.regionconnector.es.datadis.InvalidMappingException;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
@@ -14,6 +15,7 @@ import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSuppliesExcepti
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSupplyForMeteringPointException;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.util.retry.Retry;
@@ -25,11 +27,12 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.Flow;
 import java.util.function.Predicate;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 
-public class DatadisScheduler {
+public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoCloseable {
     private final DataApi dataApi;
     private final Sinks.Many<ConsumptionRecord> consumptionRecords;
 
@@ -168,5 +171,15 @@ public class DatadisScheduler {
         return measurementType == MeasurementType.HOURLY ||
                 (pointType == 1 && measurementType == MeasurementType.QUARTER_HOURLY) ||
                 (pointType == 2 && measurementType == MeasurementType.QUARTER_HOURLY);
+    }
+
+    @Override
+    public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
+        return JdkFlowAdapter.publisherToFlowPublisher(consumptionRecords.asFlux());
+    }
+
+    @Override
+    public void close() {
+        consumptionRecords.tryEmitComplete();
     }
 }

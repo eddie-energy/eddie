@@ -9,31 +9,21 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriTemplate;
 
 import java.beans.PropertyEditorSupport;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
-import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.BASE_PATH;
-
 @RestController
-@RequestMapping(BASE_PATH)
 public class PermissionController {
-    private static final String CE_JS = "/ce.js";
-    private static final String CE_PRODUCTION_PATH = "/public" + BASE_PATH + CE_JS;
     // this path will stay hard-coded
     @SuppressWarnings("java:S1075")
     private static final String PERMISSION_STATUS_PATH = "/permission-status";
@@ -57,19 +47,6 @@ public class PermissionController {
                 setValue(zonedDateTime);
             }
         });
-    }
-
-    private InputStream getCEInputStream() {
-        return getClass().getResourceAsStream(CE_PRODUCTION_PATH);
-    }
-
-    @GetMapping(value = CE_JS, produces = "text/javascript")
-    public String javascriptConnectorElement() {
-        try (InputStream in = getCEInputStream()) {
-            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
     }
 
     @GetMapping(PERMISSION_STATUS_PATH + "/{permissionId}")
