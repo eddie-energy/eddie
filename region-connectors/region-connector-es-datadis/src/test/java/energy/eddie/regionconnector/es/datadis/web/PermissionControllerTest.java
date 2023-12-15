@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.es.datadis.web;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.regionconnector.es.datadis.permission.request.DatadisRegionalInformation;
+import energy.eddie.regionconnector.es.datadis.permission.request.DatadisDataSourceInformation;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.AcceptedState;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -48,8 +48,8 @@ class PermissionControllerTest {
     void permissionStatus_permissionExists_returnsOk() throws Exception {
         // Given
         var state = new AcceptedState(null);
-        var regionalInformation = new DatadisRegionalInformation();
-        var statusMessage = new ConnectionStatusMessage("cid", "ValidId", "dnid", regionalInformation, state.status());
+        var datadisDataSourceInformation = new DatadisDataSourceInformation();
+        var statusMessage = new ConnectionStatusMessage("cid", "ValidId", "dnid", datadisDataSourceInformation, state.status());
         when(mockService.findConnectionStatusMessageById(anyString())).thenReturn(Optional.of(statusMessage));
 
         // When
