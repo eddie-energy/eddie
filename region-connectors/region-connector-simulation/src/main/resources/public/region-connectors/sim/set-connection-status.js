@@ -27,9 +27,14 @@ class SetConnectionStatusCe extends LitElement {
       dataNeedId: this.dataNeedId,
       connectionStatus,
     });
-    fetch("api/connection-status", { method: "POST", body }).catch(
-      console.error
-    );
+    fetch("api/connection-status", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body,
+    }).catch(console.error);
   }
 
   render() {
