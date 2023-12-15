@@ -105,7 +105,8 @@ class PermissionRequestForm extends LitElement {
             currentStatus === "ACCEPTED" ||
             currentStatus === "REJECTED" ||
             currentStatus === "INVALID" ||
-            currentStatus === "TERMINATED"
+            currentStatus === "TERMINATED" ||
+            currentStatus === "UNABLE_TO_SEND"
           ) {
             clearInterval(this.intervalId);
           }
