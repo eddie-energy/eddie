@@ -25,6 +25,20 @@ Philosophy: A developer should be able to clone this repository and be able to b
   Components.
 - [Bootstrap Docs](https://getbootstrap.com/docs/) - CSS Framework
 
-## Writing a region connector
+## How to add a new region connector
 
-TBD.
+- Annotate its Spring Configuration class with
+  - `@EnableWebMvc`
+  - `@SpringBootApplication`
+  - `@RegionConnector(name = "foo")`
+- it will then be started automatically, provided there is a property *region-connector.__foo__.enabled=true*
+- The name that is passed to the annotation determines the path under which the connector element JavaScript file will
+  be served, e.g. */region-connectors/__foo__/ce.js*
+  - This JS must not be manually served by the RC but is done via a common *region connector processor*
+- There are several interface a region connector can implement and thereby make data available. E.g. if the region
+  connector implements the `Mvp1ConnectionStatusMessageProvider` interface, it has to provide a stream
+  of `ConsumptionRecords`. When implementing such an interface from the `api` package, the region connector is
+  automatically registered for the correct service by a *region connector processor*, and e.g. the consumption records
+  are then streamed via Kafka to the EP.
+
+See the existing region connectors as reference.
