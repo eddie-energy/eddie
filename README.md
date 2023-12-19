@@ -37,7 +37,7 @@ Or you can use the following links:
 There are three tasks in the **development** group that have to run at the same time, e.g. in different windows:
 
 - `./gradlew run-db-server`
-- `./gradlew run-core`
+- `./gradlew run-core-spring`
 - `./gradlew run-example-app`
 
 The three processes are:

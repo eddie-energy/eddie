@@ -40,6 +40,11 @@ services:
 - `IMPORT_CONFIG_FILE` follows the same syntax and semantics as `spring.config.import`, see
   [Spring Boot Reference](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config.files.optional-prefix)
 
+As the configuration of region connectors is quite complex and there are many properties, the environment is
+configured in the accompanying `.env` file (see [EDDIE /env](https://github.com/eddie-energy/eddie/tree/main/env)
+directory for a reference).
+The example `.env` file contains all configuration options.
+
 ## Update
 
 TBD.
@@ -118,6 +123,18 @@ the data needs in the framework's database.
 | eddie.data-needs-config.data-need-source | CONFIG / DATABASE | Specifies the location where data needs are read from |
 
 If this is set to `DATABASE` no data needs are allowed in the configuration.
+
+**Data needs when using database**
+
+When using the database as source for data needs, the data need config file needs to contain *only* the following
+config:  
+`config/data-needs.yml`
+
+```yaml
+eddie:
+  data-needs-config:
+    data-need-source=DATABASE
+```
 
 **Data needs in configuration**
 
