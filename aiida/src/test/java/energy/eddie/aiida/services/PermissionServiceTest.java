@@ -64,6 +64,7 @@ class PermissionServiceTest {
     private Instant grant;
     private String serviceName;
     private String connectionId;
+    private String dataNeedId;
     private Set<String> codes;
     private KafkaStreamingConfig streamingConfig;
     private Instant terminationTime;
@@ -77,6 +78,7 @@ class PermissionServiceTest {
         expiration = start.plusSeconds(800_000);
         serviceName = "My NewAIIDA Test Service";
         connectionId = "NewAiidaRandomConnectionId";
+        dataNeedId = "dataNeedId";
         codes = Set.of("1.8.0", "2.8.0");
 
         var bootstrapServers = "localhost:9092";
@@ -85,7 +87,7 @@ class PermissionServiceTest {
         var validSubscribeTopic = "ValidSubscribeTopic";
         streamingConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
 
-        permission = new Permission(permissionId, serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
+        permission = new Permission(permissionId, serviceName, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
 
         testPublisher = TestPublisher.create();
         terminationTime = start.plusSeconds(200_000);
@@ -116,7 +118,7 @@ class PermissionServiceTest {
 
     @Test
     void givenValidInput_setupPermission_asExpected() throws ConnectionStatusMessageSendFailedException {
-        var permissionDto = new PermissionDto(permissionId, serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
+        var permissionDto = new PermissionDto(permissionId, serviceName, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
 
         when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
         Mockito.doReturn(mockScheduledFuture).when(scheduler).schedule(Mockito.any(), Mockito.any(Instant.class));
@@ -129,6 +131,7 @@ class PermissionServiceTest {
         assertEquals(expiration, newPermission.expirationTime());
         assertEquals(grant, newPermission.grantTime());
         assertEquals(connectionId, newPermission.connectionId());
+        assertEquals(dataNeedId, newPermission.dataNeedId());
         assertThat(codes).hasSameElementsAs(newPermission.requestedCodes());
         assertEquals(streamingConfig.bootstrapServers(), newPermission.kafkaStreamingConfig().bootstrapServers());
         assertEquals(streamingConfig.dataTopic(), newPermission.kafkaStreamingConfig().dataTopic());
@@ -153,8 +156,8 @@ class PermissionServiceTest {
         // Given
         start = Instant.now();
         expiration = start.plusMillis(500);
-        var permissionDto = new PermissionDto(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
-        permission = new Permission(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+        var permissionDto = new PermissionDto(permissionId, serviceName, dataNeedId, start, expiration, start, connectionId, codes, streamingConfig);
+        permission = new Permission(permissionId, serviceName, dataNeedId, start, expiration, start, connectionId, codes, streamingConfig);
 
         when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(repository.findById(permissionId)).thenReturn(Optional.of(permission));
@@ -185,7 +188,7 @@ class PermissionServiceTest {
         var permissionId = "ba1c641e-df74-4bdf-8cd4-2ae2785c05a9";
         start = Instant.now();
         expiration = start.plusMillis(500);
-        var permissionDto = new PermissionDto(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+        var permissionDto = new PermissionDto(permissionId, serviceName, dataNeedId, start, expiration, start, connectionId, codes, streamingConfig);
 
         when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(repository.findById(permissionId)).thenReturn(Optional.empty());
@@ -212,8 +215,8 @@ class PermissionServiceTest {
         var permissionId = "ba1c641e-df74-4bdf-8cd4-2ae2785c05a9";
         start = Instant.now();
         expiration = start.plusMillis(500);
-        var permissionDto = new PermissionDto(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
-        permission = new Permission(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+        var permissionDto = new PermissionDto(permissionId, serviceName, dataNeedId, start, expiration, start, connectionId, codes, streamingConfig);
+        permission = new Permission(permissionId, serviceName, dataNeedId, start, expiration, start, connectionId, codes, streamingConfig);
         permission.updateStatus(PermissionStatus.REVOKED);
 
         when(repository.save(any(Permission.class))).thenReturn(permission);
@@ -235,8 +238,8 @@ class PermissionServiceTest {
         var permissionId = "ba1c641e-df74-4bdf-8cd4-2ae2785c05a9";
         start = Instant.now();
         expiration = start.plusMillis(500);
-        var permissionDto = new PermissionDto(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
-        permission = new Permission(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+        var permissionDto = new PermissionDto(permissionId, serviceName, dataNeedId, start, expiration, start, connectionId, codes, streamingConfig);
+        permission = new Permission(permissionId, serviceName, dataNeedId, start, expiration, start, connectionId, codes, streamingConfig);
         permission.updateStatus(PermissionStatus.STREAMING_DATA);
 
         when(repository.save(any(Permission.class))).thenReturn(permission);
@@ -371,8 +374,8 @@ class PermissionServiceTest {
 
             start = Instant.now();
             expiration = start.plusMillis(500);
-            var permissionDto = new PermissionDto(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
-            permission = new Permission(permissionId, serviceName, start, expiration, start, connectionId, codes, streamingConfig);
+            var permissionDto = new PermissionDto(permissionId, serviceName, dataNeedId, start, expiration, start, connectionId, codes, streamingConfig);
+            permission = new Permission(permissionId, serviceName, dataNeedId, start, expiration, start, connectionId, codes, streamingConfig);
 
             when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
             when(clock.instant()).thenReturn(Instant.now());
@@ -467,14 +470,14 @@ class PermissionServiceTest {
             var expiration = Instant.parse("2023-12-24T00:00:00.000Z");
             String shouldStreamPermissionId = "25ee5365-5d71-4b01-b21f-9c61f76a5cc9";
             var acceptedShouldBeStreamingData = new Permission(shouldStreamPermissionId,
-                    "Should be STREAMING_DATA after test completes", start,
+                    "Should be STREAMING_DATA after test completes", "SomeDataNeedId", start,
                     expiration, start, "SomeConnectionId", codes, streamingConfig);
 
             start = Instant.parse("2023-09-01T00:00:00.000Z");
             expiration = Instant.parse("2023-09-19T00:00:00.000Z");
             String timeLimit1 = "9609a9b3-0718-4082-935d-6a98c0f8c5a2";
             var waitingForStartShouldBeTimeLimit = new Permission(timeLimit1,
-                    "Was WAITING_FOR_START and should be TIME_LIMIT after test completes", start,
+                    "Was WAITING_FOR_START and should be TIME_LIMIT after test completes", "SomeDataNeedId", start,
                     expiration, start, "SomeConnectionId", codes, streamingConfig);
             waitingForStartShouldBeTimeLimit.updateStatus(PermissionStatus.WAITING_FOR_START);
 
@@ -482,7 +485,7 @@ class PermissionServiceTest {
             expiration = Instant.parse("2023-09-30T00:00:00.000Z");
             String timeLimit2 = "0b3b6f6d-d878-49dd-9dfd-62156b5cdc37";
             var streamingDataShouldBeTimeLimit = new Permission(timeLimit2,
-                    "Was STREAMING_DATA and should be TIME_LIMIT after test completes", start,
+                    "Was STREAMING_DATA and should be TIME_LIMIT after test completes", "SomeDataNeedId", start,
                     expiration, start, "SomeConnectionId", codes, streamingConfig);
             streamingDataShouldBeTimeLimit.updateStatus(PermissionStatus.STREAMING_DATA);
 
@@ -490,7 +493,7 @@ class PermissionServiceTest {
             expiration = Instant.parse("2023-10-31T00:00:00.000Z");
             String streamingDataId = "f53aa9e2-1969-4d86-a5e0-d76b2fd72863";
             var streamingDataShouldBeStreamingData = new Permission(streamingDataId,
-                    "Was STREAMING_DATA and should be STREAMING_DATA after test completes", start,
+                    "Was STREAMING_DATA and should be STREAMING_DATA after test completes", "SomeDataNeedId", start,
                     expiration, start, "SomeConnectionId", codes, streamingConfig);
             streamingDataShouldBeStreamingData.updateStatus(PermissionStatus.STREAMING_DATA);
 

@@ -83,8 +83,8 @@ class KafkaStreamerTest {
         String validStatusTopic = "ValidStatusTopic";
         String validSubscribeTopic = "ValidSubscribeTopic";
         kafkaConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
-        permission = new Permission(permissionId, "SomeTest Service Name", start, expiration,
-                start, "ConnId", Set.of("1.8.0"), kafkaConfig);
+        permission = new Permission(permissionId, "SomeTest Service Name", "dataNeed",
+                start, expiration, start, "ConnId", Set.of("1.8.0"), kafkaConfig);
 
         var now = Instant.now();
         record1 = AiidaRecordFactory.createRecord("1.8.0", now.plusSeconds(1), 10);
@@ -219,7 +219,8 @@ class KafkaStreamerTest {
     @Test
     void verify_sendExceptions_areHandledInCallback() {
         var connectionId = "FooBarIdRandom";
-        var statusMessage1 = new ConnectionStatusMessage(connectionId, Instant.now(), PermissionStatus.ACCEPTED);
+        var dataNeed = "dataNeed";
+        var statusMessage1 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.ACCEPTED);
 
         mockProducer = new MockProducer<>(false, new StringSerializer(), new StringSerializer());
         streamer = new KafkaStreamer(mockProducer, mockConsumer, recordPublisher.flux(), statusMessagePublisher.flux(),
@@ -251,7 +252,8 @@ class KafkaStreamerTest {
     @Test
     void verify_closedProducerThrowsIllegalStateException_isHandledByTryCatch() {
         var connectionId = "FooBarIdRandom";
-        var statusMessage1 = new ConnectionStatusMessage(connectionId, Instant.now(), PermissionStatus.ACCEPTED);
+        var dataNeed = "dataNeed";
+        var statusMessage1 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.ACCEPTED);
 
         mockProducer = new MockProducer<>(false, new StringSerializer(), new StringSerializer());
         streamer = new KafkaStreamer(mockProducer, mockConsumer, recordPublisher.flux(), statusMessagePublisher.flux(),
@@ -290,8 +292,9 @@ class KafkaStreamerTest {
     @Test
     void verify_statusMessage_areSentByKafkaProducer() {
         var connectionId = "MyStatusTestConnectionId";
-        var statusMessage1 = new ConnectionStatusMessage(connectionId, Instant.now(), PermissionStatus.ACCEPTED);
-        var statusMessage2 = new ConnectionStatusMessage(connectionId, Instant.now(), PermissionStatus.REVOKED);
+        var dataNeed = "dataNeed";
+        var statusMessage1 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.ACCEPTED);
+        var statusMessage2 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.REVOKED);
 
         recordPublisher.assertNoSubscribers();
         statusMessagePublisher.assertNoSubscribers();

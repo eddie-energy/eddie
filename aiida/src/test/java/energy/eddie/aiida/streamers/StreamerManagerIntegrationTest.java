@@ -59,10 +59,10 @@ class StreamerManagerIntegrationTest {
         KafkaConsumer<String, String> consumer = getKafkaConsumer(testInfo, kafka);
 
         var acceptedMessageTimestamp = Instant.parse("2023-09-11T22:00:00.00Z");
-        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED);
-        String acceptedMessageJson = "{\"connectionId\":\"NewAiidaRandomConnectionId\",\"timestamp\":1694469600.000000000,\"status\":\"ACCEPTED\"}";
-        var revokedMessage = new ConnectionStatusMessage(permission.connectionId(), acceptedMessageTimestamp.plusSeconds(100), PermissionStatus.REVOKED);
-        String revokedMessageJson = "{\"connectionId\":\"NewAiidaRandomConnectionId\",\"timestamp\":1694469700.000000000,\"status\":\"REVOKED\"}";
+        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED);
+        String acceptedMessageJson = "{\"connectionId\":\"NewAiidaRandomConnectionId\",\"dataNeedId\":\"SomeDataNeed\",\"timestamp\":1694469600.000000000,\"status\":\"ACCEPTED\"}";
+        var revokedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), acceptedMessageTimestamp.plusSeconds(100), PermissionStatus.REVOKED);
+        String revokedMessageJson = "{\"connectionId\":\"NewAiidaRandomConnectionId\",\"dataNeedId\":\"SomeDataNeed\",\"timestamp\":1694469700.000000000,\"status\":\"REVOKED\"}";
 
         streamerManager.createNewStreamerForPermission(permission);
 
@@ -94,10 +94,11 @@ class StreamerManagerIntegrationTest {
         var time = Instant.parse("2023-08-01T10:00:00.00Z");
         var expiration = time.plusSeconds(800_000);
         var serviceName = "My NewAIIDA Test Service";
+        var dataNeedId = "SomeDataNeed";
         var connectionId = "NewAiidaRandomConnectionId";
         var codes = Set.of("1.8.0", "2.8.0");
 
         var streamingConfig = getKafkaConfig(testInfo, kafka);
-        return new Permission(permissionId, serviceName, time, expiration, time, connectionId, codes, streamingConfig);
+        return new Permission(permissionId, serviceName, dataNeedId, time, expiration, time, connectionId, codes, streamingConfig);
     }
 }

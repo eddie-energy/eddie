@@ -51,8 +51,9 @@ class PermissionRepositoryIntegrationTest {
 
         String name = "My NewAIIDA Test Service";
         String connectionId = "NewAiidaRandomConnectionId";
+        String dataNeedId = "dataNeedId";
         Instant grant = Instant.now();
-        Permission permission = new Permission(permissionId, name, start, end,
+        Permission permission = new Permission(permissionId, name, dataNeedId, start, end,
                 grant, connectionId, codes, streamingConfig);
 
         var savedPermission = permissionRepository.save(permission);
@@ -63,6 +64,7 @@ class PermissionRepositoryIntegrationTest {
         assertEquals(end, savedPermission.expirationTime());
         assertEquals(grant, savedPermission.grantTime());
         assertEquals(connectionId, savedPermission.connectionId());
+        assertEquals(dataNeedId, savedPermission.dataNeedId());
         assertNull(savedPermission.revokeTime());
         assertEquals(PermissionStatus.ACCEPTED, savedPermission.status());
 
@@ -88,10 +90,11 @@ class PermissionRepositoryIntegrationTest {
 
         String name = "My NewAIIDA Test Service";
         String connectionId = "NewAiidaRandomConnectionId";
+        String dataNeedId = "dataNeedId";
         Instant grant = Instant.now();
         Instant revokeTime = grant.plusSeconds(1000);
 
-        Permission permission = new Permission(permissionId, name, start, end, grant,
+        Permission permission = new Permission(permissionId, name, dataNeedId, start, end, grant,
                 connectionId, codes, streamingConfig);
 
         assertEquals(PermissionStatus.ACCEPTED, permission.status());
@@ -107,6 +110,7 @@ class PermissionRepositoryIntegrationTest {
         assertEquals(end, savedPermission.expirationTime());
         assertEquals(grant, savedPermission.grantTime());
         assertEquals(connectionId, savedPermission.connectionId());
+        assertEquals(dataNeedId, savedPermission.dataNeedId());
         assertEquals(revokeTime, savedPermission.revokeTime());
         assertEquals(PermissionStatus.REVOKED, savedPermission.status());
 

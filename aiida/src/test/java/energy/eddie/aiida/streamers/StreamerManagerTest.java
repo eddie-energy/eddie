@@ -55,6 +55,7 @@ class StreamerManagerTest {
         manager = new StreamerManager(mapper, scheduler, Duration.ofSeconds(10), aggregatorMock);
 
         var permissionId = "72831e2c-a01c-41b8-9db6-3f51670df7a5";
+        var dataNeedId = "dataNeedId";
         var grant = Instant.parse("2023-08-01T10:00:00.00Z");
         var start = grant.plusSeconds(100_000);
         var expiration = start.plusSeconds(800_000);
@@ -68,7 +69,7 @@ class StreamerManagerTest {
         var validSubscribeTopic = "ValidSubscribeTopic";
 
         var streamingConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
-        permission = new Permission(permissionId, serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
+        permission = new Permission(permissionId, serviceName, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
     }
 
     @Test
@@ -138,8 +139,8 @@ class StreamerManagerTest {
     @Test
     void givenValidPermissionId_sendNewConnectionStatusMessageForPermission_callsSendMessage() throws ConnectionStatusMessageSendFailedException {
         var acceptedMessageTimestamp = Instant.parse("2023-09-11T22:00:00.00Z");
-        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED);
-        String acceptedMessageJson = "{\"connectionId\":\"NewAiidaRandomConnectionId\",\"timestamp\":1694469600.000000000,\"status\":\"ACCEPTED\"}";
+        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED);
+        String acceptedMessageJson = "{\"connectionId\":\"NewAiidaRandomConnectionId\",\"dataNeedId\":\"dataNeedId\",\"timestamp\":1694469600.000000000,\"status\":\"ACCEPTED\"}";
 
         try (MockedStatic<KafkaFactory> mockKafkaFactory = mockStatic(KafkaFactory.class)) {
             var mockProducer = new MockProducer<>(false, new StringSerializer(), new StringSerializer());
@@ -197,7 +198,7 @@ class StreamerManagerTest {
     @Test
     void givenConnectionStatusMessage_afterStreamerHasBeenClosed_sendNewConnectionStatusMessageForPermission_throws() {
         var acceptedMessageTimestamp = Instant.parse("2023-09-11T22:00:00.00Z");
-        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED);
+        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED);
 
         try (MockedStatic<StreamerFactory> mockStatic = mockStatic(StreamerFactory.class)) {
             var streamerMock = mock(KafkaStreamer.class);

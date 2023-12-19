@@ -37,6 +37,10 @@ public record PermissionDto(
         @NotBlank(message = "serviceName must not be null or blank.")
         @JsonProperty(required = true)
         String serviceName,
+        @Schema(description = "ID of the data need for which this permission was created.", example = "MY_DATA_NEED_23")
+        @NotBlank(message = "dataNeedId must not be null or blank.")
+        @JsonProperty(required = true)
+        String dataNeedId,
         @Schema(description = "ISO8601 timestamp when the data sharing should start.", example = "2023-10-01T08:00:00.000Z")
         @NotNull(message = "startTime must not be null.")
         @JsonProperty(required = true)
