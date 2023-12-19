@@ -15,14 +15,13 @@ services:
       context: ../core
     env_file:
       - .env
-    environment:
-      JDBC_URL: "jdbc:h2:tcp://h2/demo-db"
-      JDBC_USER: "test"
-      JDBC_PASSWORD: "test"
-      PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
+      # environment:
+      # See the accompanying .env file
     volumes:
       - ./ponton:/ponton # mount a folder to store ponton files
       - ./data-needs.yml:/opt/core/config/data-needs.yml
+    depends_on:
+      - kafka
 
   eddie-example-app:
     image: ghcr.io/eddie-energy/eddie-example-app:latest
@@ -51,8 +50,6 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
-    profiles:
-      - "kafka"
 
   caddy:
     image: caddy:alpine
