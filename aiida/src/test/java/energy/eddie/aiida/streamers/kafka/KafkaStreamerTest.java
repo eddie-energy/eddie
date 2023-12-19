@@ -89,7 +89,7 @@ class KafkaStreamerTest {
         var now = Instant.now();
         record1 = AiidaRecordFactory.createRecord("1.8.0", now.plusSeconds(1), 10);
         record2 = AiidaRecordFactory.createRecord("1.8.0", now.plusSeconds(2), 20);
-        record3 = AiidaRecordFactory.createRecord("1.8.0", now.plusSeconds(3), 30);
+        record3 = AiidaRecordFactory.createRecord("C.1.0", now.plusSeconds(3), "SomeString");
 
         mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         recordPublisher = TestPublisher.create();
@@ -316,6 +316,44 @@ class KafkaStreamerTest {
         streamer.close();
         recordPublisher.assertNoSubscribers();
         statusMessagePublisher.assertNoSubscribers();
+    }
+
+    @Test
+    void givenIntegerAiidaRecord_convertsToDtoAndSends() {
+        // Given
+        streamer.connect();
+
+        // When
+        recordPublisher.emit(record1);
+
+        // Then
+        assertEquals(1, mockProducer.history().size());
+
+        String value = mockProducer.history().get(0).value();
+
+        assertThat(value)
+                .contains("\"value\":10")
+                .contains("\"dataNeedId\":\"dataNeed\"")
+                .contains("\"connectionId\":\"ConnId\"");
+    }
+
+    @Test
+    void givenStringAiidaRecord_convertsToDtoAndSends() {
+        // Given
+        streamer.connect();
+
+        // When
+        recordPublisher.emit(record3);
+
+        // Then
+        assertEquals(1, mockProducer.history().size());
+
+        String value = mockProducer.history().get(0).value();
+
+        assertThat(value)
+                .contains("\"value\":\"SomeString\"")
+                .contains("\"dataNeedId\":\"dataNeed\"")
+                .contains("\"connectionId\":\"ConnId\"");
     }
 
     /**
