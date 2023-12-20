@@ -11,6 +11,7 @@ import reactor.core.publisher.Sinks;
 
 import java.time.ZonedDateTime;
 
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.DK_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 
@@ -18,7 +19,7 @@ class PermissionRequestFactoryTest {
     @Test
     void testCreatePermissionRequest() {
         // Given
-        var start = ZonedDateTime.now().minusDays(10);
+        var start = ZonedDateTime.now(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
         var requestForCreation = new PermissionRequestForCreation("foo", start, end, "token",
                 PeriodResolutionEnum.PT1H, "bar", "poo");
