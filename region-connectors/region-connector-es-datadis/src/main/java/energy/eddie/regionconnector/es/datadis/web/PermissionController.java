@@ -72,8 +72,8 @@ public class PermissionController {
         }
     }
 
-    @GetMapping(value = PERMISSION_STATUS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ConnectionStatusMessage> permissionStatus(@RequestParam String permissionId) throws PermissionNotFoundException {
+    @GetMapping(PERMISSION_STATUS_PATH + "/{permissionId}")
+    public ResponseEntity<ConnectionStatusMessage> permissionStatus(@PathVariable String permissionId) throws PermissionNotFoundException {
         var statusMessage = service.findConnectionStatusMessageById(permissionId)
                 .orElseThrow(() -> new PermissionNotFoundException(permissionId));
         return ResponseEntity.ok(statusMessage);

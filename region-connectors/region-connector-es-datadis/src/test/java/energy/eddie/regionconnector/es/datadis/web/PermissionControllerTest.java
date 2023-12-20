@@ -49,15 +49,16 @@ class PermissionControllerTest {
         // Given
         var state = new AcceptedState(null);
         var datadisDataSourceInformation = new DatadisDataSourceInformation();
-        var statusMessage = new ConnectionStatusMessage("cid", "ValidId", "dnid", datadisDataSourceInformation, state.status());
+        String permissionId = "ValidId";
+        var statusMessage = new ConnectionStatusMessage("cid", permissionId, "dnid", datadisDataSourceInformation, state.status());
         when(mockService.findConnectionStatusMessageById(anyString())).thenReturn(Optional.of(statusMessage));
 
         // When
-        mockMvc.perform(MockMvcRequestBuilders.get("/region-connectors/es-datadis/permission-status")
-                        .param("permissionId", "ValidId")
+        mockMvc.perform(MockMvcRequestBuilders.get("/region-connectors/es-datadis/permission-status/{permissionId}", permissionId)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.permissionId", is(permissionId)));
     }
 
     @Test
@@ -65,11 +66,14 @@ class PermissionControllerTest {
         // Given
 
         // When
-        mockMvc.perform(MockMvcRequestBuilders.get("/region-connectors/es-datadis/permission-status")
-                        .param("permissionId", "123")
+        mockMvc.perform(MockMvcRequestBuilders.get("/region-connectors/es-datadis/permission-status/{permissionId}", "123")
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errors", allOf(
+                        iterableWithSize(1),
+                        hasItem("No permission with ID 123 found")
+                )));
     }
 
     @Test
