@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -21,8 +20,6 @@ class EnedisApiServiceTest {
     private EnedisApi mockEnedisApi;
     @Autowired
     private EnedisApiService enedisApiService;
-    @MockBean
-    private ServletWebServerApplicationContext unused;
 
     @Test
     void testGetDailyConsumption_withRetry() throws ApiException {

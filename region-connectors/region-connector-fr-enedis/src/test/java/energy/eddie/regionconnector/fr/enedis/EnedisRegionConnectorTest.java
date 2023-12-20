@@ -15,7 +15,6 @@ import java.time.Clock;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -30,8 +29,7 @@ class EnedisRegionConnectorTest {
         when(enedisApi.health()).thenReturn(Map.of("service", HealthState.UP));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
         Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
-        Supplier<Integer> portSupplier = () -> 0;
-        try (var rc = new EnedisRegionConnector(enedisApi, mock(PermissionRequestService.class), sink, consumptionRecordSink, portSupplier)) {
+        try (var rc = new EnedisRegionConnector(enedisApi, mock(PermissionRequestService.class), sink, consumptionRecordSink)) {
 
             // When
             var res = rc.health();
@@ -48,7 +46,7 @@ class EnedisRegionConnectorTest {
         var permissionRequestService = mock(PermissionRequestService.class);
         Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();
         Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
-        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, connectionStatusSink, consumptionRecordSink, () -> 0)) {
+        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, connectionStatusSink, consumptionRecordSink)) {
 
             // When
             var res = rc.getMetadata();
@@ -67,8 +65,7 @@ class EnedisRegionConnectorTest {
         when(permissionRequestService.findPermissionRequestByPermissionId(anyString())).thenReturn(Optional.empty());
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
         Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
-        Supplier<Integer> portSupplier = () -> 0;
-        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink, portSupplier)) {
+        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink)) {
 
             // When
             // Then
@@ -94,8 +91,7 @@ class EnedisRegionConnectorTest {
                 .thenReturn(Optional.of(request));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
         Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
-        Supplier<Integer> portSupplier = () -> 0;
-        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink, portSupplier)) {
+        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink)) {
 
             // When
             // Then
@@ -120,8 +116,7 @@ class EnedisRegionConnectorTest {
         when(permissionRequestService.findPermissionRequestByPermissionId(anyString())).thenReturn(Optional.of(request));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
         Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
-        Supplier<Integer> portSupplier = () -> 0;
-        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink, portSupplier)) {
+        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink)) {
 
             // When
             // Then

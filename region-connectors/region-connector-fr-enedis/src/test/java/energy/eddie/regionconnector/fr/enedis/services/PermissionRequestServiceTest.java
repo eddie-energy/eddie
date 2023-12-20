@@ -12,12 +12,10 @@ import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundExceptio
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,10 +25,6 @@ class PermissionRequestServiceTest {
     private PermissionRequestService permissionRequestService;
     @Autowired
     private PermissionRequestRepository<TimeframedPermissionRequest> repository;
-    @MockBean
-    private Supplier<Integer> unused;
-    @MockBean
-    private PollingService unusedPollingService;
 
     @Test
     void testCreatePermissionRequest_createsPermissionRequest() throws StateTransitionException {
@@ -154,6 +148,4 @@ class PermissionRequestServiceTest {
         // Then
         assertTrue(res.isEmpty());
     }
-
-
 }

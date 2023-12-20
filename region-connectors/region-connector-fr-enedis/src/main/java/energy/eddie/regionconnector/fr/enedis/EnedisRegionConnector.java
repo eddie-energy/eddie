@@ -9,32 +9,27 @@ import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 
-import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.Flow;
-import java.util.function.Supplier;
 
 public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider,
-        Mvp1ConsumptionRecordProvider {
+        Mvp1ConsumptionRecordProvider, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
     private final Sinks.Many<ConsumptionRecord> consumptionRecordSink;
     private final EnedisApi enedisApi;
     private final PermissionRequestService permissionRequestService;
-    private final Supplier<Integer> portSupplier;
 
     public EnedisRegionConnector(
             EnedisApi enedisApi,
             PermissionRequestService permissionRequestService,
             Sinks.Many<ConnectionStatusMessage> connectionStatusSink,
-            Sinks.Many<ConsumptionRecord> consumptionRecordSink,
-            Supplier<Integer> portSupplier
+            Sinks.Many<ConsumptionRecord> consumptionRecordSink
     ) {
         this.enedisApi = enedisApi;
         this.permissionRequestService = permissionRequestService;
         this.connectionStatusSink = connectionStatusSink;
         this.consumptionRecordSink = consumptionRecordSink;
-        this.portSupplier = portSupplier;
     }
 
     @Override
@@ -63,11 +58,6 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
         } catch (StateTransitionException e) {
             LOGGER.error("PermissionRequest with permissionID {} cannot be revoked", permissionId, e);
         }
-    }
-
-    @Override
-    public int startWebapp(InetSocketAddress address, boolean devMode) {
-        return portSupplier.get();
     }
 
     @Override
