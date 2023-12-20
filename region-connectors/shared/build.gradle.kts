@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.spring.boot).apply(false)
     alias(libs.plugins.spring.dependency.management)
 }
-
 dependencyManagement {
     imports {
         mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
@@ -28,8 +27,10 @@ dependencies {
     implementation(project(mapOf("path" to ":api")))
     implementation(libs.jakarta.annotation.api)
     implementation(libs.spring.boot.starter.web)
+    testImplementation(libs.spring.boot.starter.test)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.hibernate.validator)
+    implementation(libs.jakarta.validation.api)
 
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
