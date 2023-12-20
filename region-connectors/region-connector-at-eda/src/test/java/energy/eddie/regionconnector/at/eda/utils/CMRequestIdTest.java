@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CMRequestIdTest {
+class CMRequestIdTest {
     /**
      * The test values are taken from the CMRequest schema document found
      * on <a href="https://www.ebutilities.at/schemas/149">ebutilities</a> in the documents section.

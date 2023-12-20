@@ -9,17 +9,18 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class DateTimeConverterTest {
+class DateTimeConverterTest {
     @Test
-    public void testDateTimeConverter() {
+    void testDateTimeConverter() {
         // Correct test
-        DateTimeConverter.dateToXml(LocalDate.now(ZoneId.of("Europe/Vienna")));
-        DateTimeConverter.dateTimeToXml(LocalDateTime.now(ZoneId.of("Europe/Vienna")));
+        assertNotNull(DateTimeConverter.dateToXml(LocalDate.now(ZoneId.of("Europe/Vienna"))));
+        assertNotNull(DateTimeConverter.dateTimeToXml(LocalDateTime.now(ZoneId.of("Europe/Vienna"))));
     }
 
     @Test
-    public void testIllegalStateException() throws Throwable {
+    void testIllegalStateException() throws Throwable {
         // Create Object of Utility class
         try {
             Constructor<DateTimeConverter> constructor = DateTimeConverter.class.getDeclaredConstructor();

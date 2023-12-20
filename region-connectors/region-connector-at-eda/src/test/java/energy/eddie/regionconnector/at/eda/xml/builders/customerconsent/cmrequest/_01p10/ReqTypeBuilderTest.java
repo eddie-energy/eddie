@@ -7,24 +7,24 @@ import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.Month;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ReqTypeBuilderTest {
+class ReqTypeBuilderTest {
 
     @Test
-    public void testReqTypeBuilder() {
+    void testReqTypeBuilder() {
         // Example of a correct implementation
-        ReqTypeBuilder reqTypeBuilder = new ReqTypeBuilder();
-        reqTypeBuilder
+        ReqTypeBuilder reqTypeBuilder = new ReqTypeBuilder()
                 .withReqDatType("EnergyCommunityRegistration")
                 .withDateFrom(LocalDate.of(2022, Month.DECEMBER, 18))
                 .withEcId("AT99999900000RC000000000012345678")
-                .withEnergyDirection(EnergyDirection.CONSUMPTION)
-                .build();
+                .withEnergyDirection(EnergyDirection.CONSUMPTION);
+        assertDoesNotThrow(reqTypeBuilder::build);
     }
 
     @Test
-    public void testStringMaxLengthExceeded() {
+    void testStringMaxLengthExceeded() {
         // Assign string which exceeds the maximum string length
         ReqTypeBuilder reqTypeBuilder = new ReqTypeBuilder();
 
@@ -37,7 +37,7 @@ public class ReqTypeBuilderTest {
     }
 
     @Test
-    public void testEmptyString() {
+    void testEmptyString() {
         // Assign empty string to required attribute
         ReqTypeBuilder reqTypeBuilder = new ReqTypeBuilder();
         assertThrows(IllegalArgumentException.class, () -> reqTypeBuilder
@@ -45,30 +45,30 @@ public class ReqTypeBuilderTest {
     }
 
     @Test
-    public void testNullPointerException() {
+    void testNullPointerException() {
         // Assign no attributes
         ReqTypeBuilder reqTypeBuilder1 = new ReqTypeBuilder();
         assertThrows(NullPointerException.class, reqTypeBuilder1::build);
 
         // Assign only one required attribute
-        assertThrows(NullPointerException.class, () -> reqTypeBuilder1
+        assertThrows(NullPointerException.class, reqTypeBuilder1
                 .withReqDatType("EnergyCommunityRegistration")
-                .build());
+                ::build);
         ReqTypeBuilder reqTypeBuilder2 = new ReqTypeBuilder();
-        assertThrows(NullPointerException.class, () -> reqTypeBuilder2
+        assertThrows(NullPointerException.class, reqTypeBuilder2
                 .withDateFrom(LocalDate.of(2023, Month.FEBRUARY, 6))
-                .build());
+                ::build);
     }
 
     @Test
-    public void testDateFromAfterDateTo() {
+    void testDateFromAfterDateTo() {
         ReqTypeBuilder reqTypeBuilder1 = new ReqTypeBuilder();
 
         // Assign toDate which is before fromDate
-        assertThrows(DateTimeException.class, () -> reqTypeBuilder1
+        assertThrows(DateTimeException.class, reqTypeBuilder1
                 .withReqDatType("EnergyCommunityRegistration")
                 .withDateFrom(LocalDate.of(2023, Month.MARCH, 6))
                 .withDateTo(LocalDate.of(2023, Month.FEBRUARY, 6))
-                .build());
+                ::build);
     }
 }

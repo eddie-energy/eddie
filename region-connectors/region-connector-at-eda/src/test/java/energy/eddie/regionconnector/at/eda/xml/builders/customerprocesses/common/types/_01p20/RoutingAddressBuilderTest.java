@@ -3,22 +3,21 @@ package energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.commo
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.AddressType;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class RoutingAddressBuilderTest {
+class RoutingAddressBuilderTest {
     @Test
-    public void testRoutingAddressBuilder() {
+    void testRoutingAddressBuilder() {
         // Example of a correct implementation
-        RoutingAddressBuilder routingAddressBuilder = new RoutingAddressBuilder();
-
-        routingAddressBuilder
+        RoutingAddressBuilder routingAddressBuilder = new RoutingAddressBuilder()
                 .withMessageAddress("AT999999")
-                .withAddressType(AddressType.EC_NUMBER)
-                .build();
+                .withAddressType(AddressType.EC_NUMBER);
+        assertDoesNotThrow(routingAddressBuilder::build);
     }
 
     @Test
-    public void testStringMaxLengthExceeded() {
+    void testStringMaxLengthExceeded() {
         // Assign string which exceeds the maximum string length
         RoutingAddressBuilder routingAddressBuilder = new RoutingAddressBuilder();
 
@@ -28,7 +27,7 @@ public class RoutingAddressBuilderTest {
     }
 
     @Test
-    public void testStringWrongCharacters() {
+    void testStringWrongCharacters() {
         // Assign string which contains not allowed characters and wrong character order
         RoutingAddressBuilder routingAddressBuilder = new RoutingAddressBuilder();
 
@@ -44,18 +43,18 @@ public class RoutingAddressBuilderTest {
     }
 
     @Test
-    public void testNullPointerException() {
+    void testNullPointerException() {
         RoutingAddressBuilder routingAddressBuilder = new RoutingAddressBuilder();
 
         // Assign no required attributes
         assertThrows(NullPointerException.class, routingAddressBuilder::build);
 
         // Assign only one required attribute
-        assertThrows(NullPointerException.class, () -> routingAddressBuilder.withMessageAddress("AT999999").build());
+        assertThrows(NullPointerException.class, routingAddressBuilder.withMessageAddress("AT999999")::build);
     }
 
     @Test
-    public void testEmptyString() {
+    void testEmptyString() {
         RoutingAddressBuilder routingAddressBuilder = new RoutingAddressBuilder();
 
         assertThrows(IllegalArgumentException.class, () -> routingAddressBuilder.withMessageAddress(""));

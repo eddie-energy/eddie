@@ -13,11 +13,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class CMRequestBuilderTest {
+class CMRequestBuilderTest {
     @Test
-    public void testCMRequestBuilder() {
+    void testCMRequestBuilder() {
         // Example of a correct implementation
         CMRequestBuilder cmRequestBuilder = new CMRequestBuilder();
         MarketParticipantDirectoryBuilder mpDirBuilder = new MarketParticipantDirectoryBuilder();
@@ -26,7 +27,7 @@ public class CMRequestBuilderTest {
         ProcessDirectoryBuilder processDirBuilder = new ProcessDirectoryBuilder();
         ReqTypeBuilder reqTypeBuilder = new ReqTypeBuilder();
 
-        cmRequestBuilder
+        var res = cmRequestBuilder
                 .withMarketParticipantDirectory(
                         mpDirBuilder
                                 .withRoutingHeader(
@@ -63,10 +64,12 @@ public class CMRequestBuilderTest {
                                                 .build()
                                 ).build()
                 ).build();
+
+        assertNotNull(res);
     }
 
     @Test
-    public void testNullPointerException() {
+    void testNullPointerException() {
         ObjectFactory objectFactory = new ObjectFactory();
         CMRequestBuilder cmRequestBuilder1 = new CMRequestBuilder();
         CMRequestBuilder cmRequestBuilder2 = new CMRequestBuilder();
@@ -75,11 +78,10 @@ public class CMRequestBuilderTest {
         assertThrows(NullPointerException.class, cmRequestBuilder1::build);
 
         // Assign only one required attribute
-        assertThrows(NullPointerException.class, () -> cmRequestBuilder1
+        assertThrows(NullPointerException.class, cmRequestBuilder1
                 .withMarketParticipantDirectory(objectFactory.createMarketParticipantDirectory())
-                .build());
-        assertThrows(NullPointerException.class, () -> cmRequestBuilder2
-                .withProcessDirectory(objectFactory.createProcessDirectory())
-                .build());
+                ::build);
+        assertThrows(NullPointerException.class, cmRequestBuilder2
+                .withProcessDirectory(objectFactory.createProcessDirectory())::build);
     }
 }

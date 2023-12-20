@@ -2,21 +2,21 @@ package energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.commo
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ProcessDirectorySBuilderTest {
+class ProcessDirectorySBuilderTest {
     @Test
-    public void testProcessDirectoryBuilder() {
+    void testProcessDirectoryBuilder() {
         // Example of a correct implementation
-        ProcessDirectorySBuilder processDirSBuilder = new ProcessDirectorySBuilder();
-        processDirSBuilder
+        ProcessDirectorySBuilder processDirSBuilder = new ProcessDirectorySBuilder()
                 .withMessageId("GC100007201912170930001230001234567")
-                .withConversationId("GC100007201912170930001230012345678")
-                .build();
+                .withConversationId("GC100007201912170930001230012345678");
+        assertDoesNotThrow(processDirSBuilder::build);
     }
 
     @Test
-    public void testStringMaxLengthExceeded() {
+    void testStringMaxLengthExceeded() {
         // Assign string which exceeds the maximum string length
         ProcessDirectorySBuilder processDirSBuilder = new ProcessDirectorySBuilder();
 
@@ -28,7 +28,7 @@ public class ProcessDirectorySBuilderTest {
     }
 
     @Test
-    public void testEmptyString() {
+    void testEmptyString() {
         // Assign empty string to required attributes
         ProcessDirectorySBuilder processDirSBuilder = new ProcessDirectorySBuilder();
 
@@ -39,15 +39,15 @@ public class ProcessDirectorySBuilderTest {
     }
 
     @Test
-    public void testNullPointerException() {
+    void testNullPointerException() {
         ProcessDirectorySBuilder processDirSBuilder = new ProcessDirectorySBuilder();
 
         // Assign no attributes
         assertThrows(NullPointerException.class, processDirSBuilder::build);
 
         // Assign only one required attribute
-        assertThrows(NullPointerException.class, () -> processDirSBuilder
+        assertThrows(NullPointerException.class, processDirSBuilder
                 .withMessageId("Test")
-                .build());
+                ::build);
     }
 }

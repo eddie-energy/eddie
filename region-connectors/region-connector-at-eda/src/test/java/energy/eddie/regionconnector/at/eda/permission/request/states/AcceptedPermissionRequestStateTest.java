@@ -74,6 +74,6 @@ class AcceptedPermissionRequestStateTest {
 
         // When
         // Then
-        assertThrows(IllegalStateException.class, state::terminate);
+        assertThrows(UnsupportedOperationException.class, state::terminate);
     }
 }

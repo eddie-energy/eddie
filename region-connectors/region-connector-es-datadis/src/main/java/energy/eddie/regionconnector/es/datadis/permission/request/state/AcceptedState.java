@@ -18,7 +18,7 @@ public class AcceptedState
 
     @Override
     public void terminate() {
-        throw new IllegalStateException("Not implemented yet");
+        throw new UnsupportedOperationException();
     }
 
     @Override

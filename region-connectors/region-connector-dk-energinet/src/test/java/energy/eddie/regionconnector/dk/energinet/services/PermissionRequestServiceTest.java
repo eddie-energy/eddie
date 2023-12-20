@@ -20,6 +20,7 @@ import org.springframework.core.task.TaskExecutor;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.DK_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -76,7 +77,7 @@ class PermissionRequestServiceTest {
     @Test
     void createAndSendPermissionRequest_calls() throws StateTransitionException {
         // Given
-        var start = ZonedDateTime.now().minusDays(10);
+        var start = ZonedDateTime.now(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
         String connectionId = "connId";
         String dataNeedId = "dataNeedId";

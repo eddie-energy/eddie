@@ -36,18 +36,21 @@ public class PontonXPAdapter implements EdaAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(PontonXPAdapter.class);
     private static final String PONTON_HOST = "pontonHost";
     private static final int PING_TIMEOUT = 2000;
+    private static final String CM_NOTIFICATION_PROCESSED = "CMNotification processed";
     private final Sinks.Many<CMRequestStatus> requestStatusSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<CMRevoke> cmRevokeSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<MasterData> masterDataSink = Sinks.many().multicast().onBackpressureBuffer();
     private final MessengerConnection messengerConnection;
-    private final JAXBContext context = JAXBContext.newInstance(CMRequest.class, ConsumptionRecord.class, CMNotification.class, CMRevoke.class, MasterData.class, CMRevoke.class);
-    private final Marshaller marshaller = context.createMarshaller();
-    private final Unmarshaller unmarshaller = context.createUnmarshaller();
+    private final Marshaller marshaller;
+    private final Unmarshaller unmarshaller;
     private final PontonXPAdapterConfiguration config;
 
     public PontonXPAdapter(PontonXPAdapterConfiguration config) throws IOException, ConnectionException, JAXBException {
         this.config = config;
+        JAXBContext context = JAXBContext.newInstance(CMRequest.class, ConsumptionRecord.class, CMNotification.class, CMRevoke.class, MasterData.class, CMRevoke.class);
+        marshaller = context.createMarshaller();
+        unmarshaller = context.createUnmarshaller();
         final String adapterId = config.adapterId();
         final String adapterVersion = config.adapterVersion();
         final String hostname = config.hostname();
@@ -153,7 +156,7 @@ public class PontonXPAdapter implements EdaAdapter {
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
                     .setStatus(InboundStatusEnum.SUCCESS)
-                    .setStatusText("CMNotification processed")
+                    .setStatusText(CM_NOTIFICATION_PROCESSED)
                     .build();
         }
     }
@@ -176,7 +179,7 @@ public class PontonXPAdapter implements EdaAdapter {
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
                     .setStatus(InboundStatusEnum.SUCCESS)
-                    .setStatusText("CMNotification processed")
+                    .setStatusText(CM_NOTIFICATION_PROCESSED)
                     .build();
         }
     }
@@ -212,7 +215,7 @@ public class PontonXPAdapter implements EdaAdapter {
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
                     .setStatus(InboundStatusEnum.SUCCESS)
-                    .setStatusText("CMNotification processed")
+                    .setStatusText(CM_NOTIFICATION_PROCESSED)
                     .build();
         }
     }
@@ -293,7 +296,6 @@ public class PontonXPAdapter implements EdaAdapter {
             LOGGER.info("Sending CCMO request to DSO '{}' with RequestID '{}'", request.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress(), request.getProcessDirectory().getCMRequestId());
             messengerConnection.sendMessage(outboundMessage);
         } catch (de.ponton.xp.adapter.api.TransmissionException e) {
-            LOGGER.error("Error sending CCMO request to DSO '{}'", request.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress(), e);
             throw new TransmissionException(e);
         }
 
@@ -327,7 +329,6 @@ public class PontonXPAdapter implements EdaAdapter {
             LOGGER.info("Sending CMRevoke to DSO '{}' with ConsentId '{}'", revoke.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress(), revoke.getProcessDirectory().getConsentId());
             messengerConnection.sendMessage(outboundMessage);
         } catch (de.ponton.xp.adapter.api.TransmissionException e) {
-            LOGGER.error("Error sending CMRevoke to DSO '{}'", revoke.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress(), e);
             throw new TransmissionException(e);
         }
     }

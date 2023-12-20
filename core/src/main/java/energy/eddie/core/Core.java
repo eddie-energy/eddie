@@ -13,7 +13,6 @@ import energy.eddie.core.web.JavalinPathHandler;
 import energy.eddie.core.web.PermissionFacade;
 import energy.eddie.outbound.kafka.KafkaConnector;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorFactory;
-import energy.eddie.regionconnector.aiida.AiidaRegionConnectorFactory;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnectorFactory;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorFactory;
 import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorFactory;

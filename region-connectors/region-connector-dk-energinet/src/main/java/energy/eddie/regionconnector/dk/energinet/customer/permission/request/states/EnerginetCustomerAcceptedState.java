@@ -12,7 +12,7 @@ public class EnerginetCustomerAcceptedState extends ContextualizedPermissionRequ
 
     @Override
     public void terminate() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new UnsupportedOperationException();
     }
 
     @Override

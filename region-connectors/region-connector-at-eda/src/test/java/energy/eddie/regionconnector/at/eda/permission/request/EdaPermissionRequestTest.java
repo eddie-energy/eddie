@@ -373,6 +373,6 @@ class EdaPermissionRequestTest {
 
         // When
         // Then
-        assertThrows(IllegalStateException.class, permissionRequest::terminate);
+        assertThrows(UnsupportedOperationException.class, permissionRequest::terminate);
     }
 }

@@ -11,17 +11,16 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.time.Month;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class MarketParticipantDirectoryBuilderTest {
+class MarketParticipantDirectoryBuilderTest {
     @Test
-    public void testMarketParticipantDirectoryBuilder() {
+    void testMarketParticipantDirectoryBuilder() {
         // Example of a correct implementation
-        MarketParticipantDirectoryBuilder mpDirBuilder = new MarketParticipantDirectoryBuilder();
         RoutingHeaderBuilder routingHeaderBuilder = new RoutingHeaderBuilder();
         RoutingAddressBuilder routingAddressBuilder = new RoutingAddressBuilder();
-
-        mpDirBuilder
+        MarketParticipantDirectoryBuilder mpDirBuilder = new MarketParticipantDirectoryBuilder()
                 .withRoutingHeader(
                         routingHeaderBuilder
                                 .withSender(
@@ -36,19 +35,19 @@ public class MarketParticipantDirectoryBuilderTest {
                 .withDocumentMode(DocumentMode.PROD)
                 .withDuplicate(true)
                 .withSchemaVersion("01.10")
-                .withMessageCode("ANFORDERUNG_CMQF")
-                .build();
+                .withMessageCode("ANFORDERUNG_CMQF");
+        assertDoesNotThrow(mpDirBuilder::build);
     }
 
     @Test
-    public void testEmptyString() {
+    void testEmptyString() {
         MarketParticipantDirectoryBuilder marketParticipantDirectoryBuilder = new MarketParticipantDirectoryBuilder();
         assertThrows(IllegalArgumentException.class, () -> marketParticipantDirectoryBuilder.withMessageCode(""));
         assertThrows(IllegalArgumentException.class, () -> marketParticipantDirectoryBuilder.withSchemaVersion(""));
     }
 
     @Test
-    public void testStringMaxLengthExceeded() {
+    void testStringMaxLengthExceeded() {
         // Assign string which exceeds the maximum string length
         MarketParticipantDirectoryBuilder marketParticipantDirectoryBuilder = new MarketParticipantDirectoryBuilder();
 
@@ -58,7 +57,7 @@ public class MarketParticipantDirectoryBuilderTest {
     }
 
     @Test
-    public void testNullPointerException() {
+    void testNullPointerException() {
         ObjectFactory objectFactory = new ObjectFactory();
         MarketParticipantDirectoryBuilder mpDirBuilder = new MarketParticipantDirectoryBuilder();
 
@@ -66,28 +65,28 @@ public class MarketParticipantDirectoryBuilderTest {
         assertThrows(NullPointerException.class, mpDirBuilder::build);
 
         // Assign only one required argument
-        assertThrows(NullPointerException.class, () -> mpDirBuilder
+        assertThrows(NullPointerException.class, mpDirBuilder
                 .withRoutingHeader(objectFactory.createRoutingHeader())
-                .build());
+                ::build);
 
         // Assign only two required argument
-        assertThrows(NullPointerException.class, () -> mpDirBuilder
+        assertThrows(NullPointerException.class, mpDirBuilder
                 .withSector(Sector.ELECTRICITY)
-                .build());
+                ::build);
 
         // Assign only three required argument
-        assertThrows(NullPointerException.class, () -> mpDirBuilder
+        assertThrows(NullPointerException.class, mpDirBuilder
                 .withDocumentMode(DocumentMode.SIMU)
-                .build());
+                ::build);
 
         // Assign only four required argument
-        assertThrows(NullPointerException.class, () -> mpDirBuilder
+        assertThrows(NullPointerException.class, mpDirBuilder
                 .withDuplicate(false)
-                .build());
+                ::build);
 
         // Assign only five required argument
-        assertThrows(NullPointerException.class, () -> mpDirBuilder
+        assertThrows(NullPointerException.class, mpDirBuilder
                 .withSchemaVersion("01.10")
-                .build());
+                ::build);
     }
 }

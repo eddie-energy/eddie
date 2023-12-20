@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.DK_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,7 +25,7 @@ class NotOlderThanValidatorTest {
 
     @Test
     void givenOlderStart_returnsError() {
-        var now = ZonedDateTime.now();
+        var now = ZonedDateTime.now(DK_ZONE_ID);
         var start = now.minusMonths(30);
         var end = now.minusDays(10);
 
@@ -36,7 +37,7 @@ class NotOlderThanValidatorTest {
     @Test
     @Disabled("Will always fail, because the validator creates a ZonedDateTime.now(), which will always be newer than the passed now value")
     void givenStartEqualToLimit_passes() {
-        var now = ZonedDateTime.now();
+        var now = ZonedDateTime.now(DK_ZONE_ID);
         var start = now.minusMonths(24);
         var end = now.minusDays(10);
 
@@ -47,7 +48,7 @@ class NotOlderThanValidatorTest {
 
     @Test
     void givenStartBelowLimit_passes() {
-        var now = ZonedDateTime.now();
+        var now = ZonedDateTime.now(DK_ZONE_ID);
         var start = now.minusMonths(10);
         var end = now.minusDays(10);
 
