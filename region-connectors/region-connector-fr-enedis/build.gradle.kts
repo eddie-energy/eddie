@@ -7,6 +7,8 @@ plugins {
     id("energy.eddie.pnpm-build")
     application
     id("org.openapi.generator") version "7.1.0"
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
 }
 
 
@@ -18,9 +20,13 @@ repositories {
 }
 
 dependencies {
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.junit.mockito)
+
     implementation(libs.dotenv)
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.validation)
+    implementation(libs.hibernate.validator)
+    implementation(libs.spring.retry)
+    implementation(libs.spring.aspects)
 
     // Required for openapi generator
     implementation(libs.jackson.databind)
@@ -30,19 +36,16 @@ dependencies {
     implementation(libs.apache.http.client)
     implementation(libs.apache.http.mime)
 
-    // sl4j
-    implementation(libs.slf4j.api)
-    implementation(libs.log4j.sl4j2.impl)
-    runtimeOnly(libs.log4j.jul)
-
     implementation(libs.reactor.core)
-    testImplementation(libs.reactor.test)
-    implementation(libs.javalin)
-
 
     implementation(project(mapOf("path" to ":api")))
     implementation(project(":region-connectors:shared"))
     implementation(libs.microprofile.config)
+
+    testImplementation(libs.reactor.test)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.mockito)
+    testImplementation(libs.spring.boot.starter.test)
 }
 
 tasks.getByName<Test>("test") {

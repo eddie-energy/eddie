@@ -12,7 +12,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.permission.request.Ene
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.validation.NotAfterNowValidator;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.validation.NotOlderThanValidator;
-import energy.eddie.regionconnector.dk.energinet.customer.permission.request.validation.StartIsBeforeOrEqualEndValidator;
+import energy.eddie.regionconnector.shared.permission.requests.validation.StartIsBeforeOrEqualEndValidator;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -24,7 +24,7 @@ public class EnerginetCustomerCreatedState
     private static final Set<Validator<DkEnerginetCustomerPermissionRequest>> VALIDATORS = Set.of(
             new NotOlderThanValidator(ChronoUnit.MONTHS, EnerginetRegionConnector.MAXIMUM_MONTHS_IN_THE_PAST),
             new NotAfterNowValidator(),
-            new StartIsBeforeOrEqualEndValidator()
+            new StartIsBeforeOrEqualEndValidator<>()
     );
     private final EnerginetConfiguration configuration;
 

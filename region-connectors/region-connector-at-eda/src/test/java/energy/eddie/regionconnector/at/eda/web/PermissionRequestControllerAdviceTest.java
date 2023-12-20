@@ -90,10 +90,9 @@ class PermissionRequestControllerAdviceTest {
 
     @ParameterizedTest
     @MethodSource("validationErrors")
-    void handleValidationExceptionsReturnsMapOfErrors() {
+    void handleValidationExceptionsReturnsMapOfErrors(MethodArgumentNotValidException exception) {
         // Given
         PermissionRequestControllerAdvice permissionRequestControllerAdvice = new PermissionRequestControllerAdvice();
-        MethodArgumentNotValidException exception = createMockExceptionWithErrorFields();
 
         // When
         Map<String, String> errors = permissionRequestControllerAdvice.handleValidationExceptions(exception);

@@ -1,21 +1,24 @@
 package energy.eddie.regionconnector.fr.enedis;
 
+import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.HealthState;
-import energy.eddie.api.v0.process.model.PermissionRequestRepository;
-import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
-import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
-import energy.eddie.regionconnector.fr.enedis.permission.request.InMemoryPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.permission.request.SimplePermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisAcceptedState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisInvalidState;
+import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Sinks;
 
 import java.time.Clock;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,13 +26,12 @@ class EnedisRegionConnectorTest {
     @Test
     void health_returnsHealthChecks() {
         // Given
-        var config = mock(EnedisConfiguration.class);
-        when(config.clientId()).thenReturn("id");
-        when(config.clientSecret()).thenReturn("secret");
-        when(config.basePath()).thenReturn("path");
         var enedisApi = mock(EnedisApi.class);
         when(enedisApi.health()).thenReturn(Map.of("service", HealthState.UP));
-        try (var rc = new EnedisRegionConnector(config, enedisApi, new InMemoryPermissionRequestRepository())) {
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
+        Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
+        Supplier<Integer> portSupplier = () -> 0;
+        try (var rc = new EnedisRegionConnector(enedisApi, mock(PermissionRequestService.class), sink, consumptionRecordSink, portSupplier)) {
 
             // When
             var res = rc.health();
@@ -42,12 +44,11 @@ class EnedisRegionConnectorTest {
     @Test
     void getMetadata_returnsExpected() {
         // Given
-        var config = mock(EnedisConfiguration.class);
-        when(config.clientId()).thenReturn("id");
-        when(config.clientSecret()).thenReturn("secret");
-        when(config.basePath()).thenReturn("path");
         var enedisApi = mock(EnedisApi.class);
-        try (var rc = new EnedisRegionConnector(config, enedisApi, new InMemoryPermissionRequestRepository())) {
+        var permissionRequestService = mock(PermissionRequestService.class);
+        Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();
+        Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
+        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, connectionStatusSink, consumptionRecordSink, () -> 0)) {
 
             // When
             var res = rc.getMetadata();
@@ -60,14 +61,14 @@ class EnedisRegionConnectorTest {
     @Test
     void terminatePermission_withNonExistentPermissionId_doesNotThrow() {
         // Given
-        var config = mock(EnedisConfiguration.class);
-        when(config.clientId()).thenReturn("id");
-        when(config.clientSecret()).thenReturn("secret");
-        when(config.basePath()).thenReturn("path");
         var enedisApi = mock(EnedisApi.class);
         when(enedisApi.health()).thenReturn(Map.of("service", HealthState.UP));
-        PermissionRequestRepository<TimeframedPermissionRequest> permissionRequestRepository = new InMemoryPermissionRequestRepository();
-        try (var rc = new EnedisRegionConnector(config, enedisApi, permissionRequestRepository)) {
+        PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
+        when(permissionRequestService.findPermissionRequestByPermissionId(anyString())).thenReturn(Optional.empty());
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
+        Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
+        Supplier<Integer> portSupplier = () -> 0;
+        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink, portSupplier)) {
 
             // When
             // Then
@@ -78,13 +79,9 @@ class EnedisRegionConnectorTest {
     @Test
     void terminatePermission_withExistingPermissionId_throws() {
         // Given
-        var config = mock(EnedisConfiguration.class);
-        when(config.clientId()).thenReturn("id");
-        when(config.clientSecret()).thenReturn("secret");
-        when(config.basePath()).thenReturn("path");
         var enedisApi = mock(EnedisApi.class);
         when(enedisApi.health()).thenReturn(Map.of("service", HealthState.UP));
-        PermissionRequestRepository<TimeframedPermissionRequest> permissionRequestRepository = new InMemoryPermissionRequestRepository();
+        PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
         SimplePermissionRequest request = new SimplePermissionRequest(
                 "pid",
                 "cid",
@@ -93,8 +90,12 @@ class EnedisRegionConnectorTest {
                 ZonedDateTime.now(Clock.systemUTC()),
                 new FrEnedisAcceptedState(null)
         );
-        permissionRequestRepository.save(request);
-        try (var rc = new EnedisRegionConnector(config, enedisApi, permissionRequestRepository)) {
+        when(permissionRequestService.findPermissionRequestByPermissionId(anyString()))
+                .thenReturn(Optional.of(request));
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
+        Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
+        Supplier<Integer> portSupplier = () -> 0;
+        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink, portSupplier)) {
 
             // When
             // Then
@@ -105,13 +106,9 @@ class EnedisRegionConnectorTest {
     @Test
     void terminatePermission_withWrongState_doesNotThrow() {
         // Given
-        var config = mock(EnedisConfiguration.class);
-        when(config.clientId()).thenReturn("id");
-        when(config.clientSecret()).thenReturn("secret");
-        when(config.basePath()).thenReturn("path");
         var enedisApi = mock(EnedisApi.class);
         when(enedisApi.health()).thenReturn(Map.of("service", HealthState.UP));
-        PermissionRequestRepository<TimeframedPermissionRequest> permissionRequestRepository = new InMemoryPermissionRequestRepository();
+        PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
         SimplePermissionRequest request = new SimplePermissionRequest(
                 "pid",
                 "cid",
@@ -120,8 +117,11 @@ class EnedisRegionConnectorTest {
                 ZonedDateTime.now(Clock.systemUTC()),
                 new FrEnedisInvalidState(null)
         );
-        permissionRequestRepository.save(request);
-        try (var rc = new EnedisRegionConnector(config, enedisApi, permissionRequestRepository)) {
+        when(permissionRequestService.findPermissionRequestByPermissionId(anyString())).thenReturn(Optional.of(request));
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
+        Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
+        Supplier<Integer> portSupplier = () -> 0;
+        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink, portSupplier)) {
 
             // When
             // Then

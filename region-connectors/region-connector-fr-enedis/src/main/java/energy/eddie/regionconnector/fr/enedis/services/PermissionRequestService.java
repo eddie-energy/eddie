@@ -1,0 +1,83 @@
+package energy.eddie.regionconnector.fr.enedis.services;
+
+import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.process.model.PermissionRequestRepository;
+import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
+import energy.eddie.regionconnector.fr.enedis.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.fr.enedis.utils.EnedisDuration;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import org.apache.http.client.utils.URIBuilder;
+import org.springframework.stereotype.Service;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Optional;
+
+@Service
+public class PermissionRequestService {
+    private final PermissionRequestRepository<TimeframedPermissionRequest> repository;
+    private final PermissionRequestFactory factory;
+    private final EnedisConfiguration configuration;
+    private final PollingService pollingService;
+
+    public PermissionRequestService(PermissionRequestRepository<TimeframedPermissionRequest> repository, PermissionRequestFactory factory, EnedisConfiguration configuration, PollingService pollingService) {
+        this.repository = repository;
+        this.factory = factory;
+        this.configuration = configuration;
+        this.pollingService = pollingService;
+    }
+
+    public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation permissionRequestForCreation) throws StateTransitionException {
+        TimeframedPermissionRequest permissionRequest = factory.create(permissionRequestForCreation);
+        permissionRequest.validate();
+        URI redirectUri = buildRedirectUri(permissionRequest);
+        permissionRequest.sendToPermissionAdministrator();
+        return new CreatedPermissionRequest(permissionRequest.permissionId(), redirectUri);
+    }
+
+    public void authorizePermissionRequest(String permissionId, String usagePointId) throws StateTransitionException, PermissionNotFoundException {
+        Optional<TimeframedPermissionRequest> optionalPermissionRequest = repository.findByPermissionId(permissionId);
+        if (optionalPermissionRequest.isEmpty()) {
+            // unknown state / permissionId => not coming / initiated by our frontend
+            throw new PermissionNotFoundException(permissionId);
+        }
+
+        TimeframedPermissionRequest permissionRequest = optionalPermissionRequest.get();
+        permissionRequest.receivedPermissionAdministratorResponse();
+        if (usagePointId == null) { // probably when request was denied
+            permissionRequest.reject();
+        } else {
+            permissionRequest.accept();
+            pollingService.requestData(permissionRequest, usagePointId);
+        }
+    }
+
+    private URI buildRedirectUri(TimeframedPermissionRequest permissionRequest) {
+        try {
+            return new URIBuilder()
+                    .setScheme("https")
+                    .setHost("mon-compte-particulier.enedis.fr")
+                    .setPath("/dataconnect/v1/oauth2/authorize")
+                    .addParameter("client_id", configuration.clientId())
+                    .addParameter("response_type", "code")
+                    .addParameter("state", permissionRequest.permissionId())
+                    .addParameter("duration", new EnedisDuration(permissionRequest).toString())
+                    .build();
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Unable to create redirect URI");
+        }
+    }
+
+    public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
+        return repository.findByPermissionId(permissionId).map(request -> new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(), null, request.state().status()));
+    }
+
+    public Optional<TimeframedPermissionRequest> findPermissionRequestByPermissionId(String permissionId) {
+        return repository.findByPermissionId(permissionId)
+                .map(factory::create);
+    }
+}

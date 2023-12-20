@@ -15,9 +15,6 @@ import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.InMemoryPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.permission.request.PermissionRequestFactory;
-import energy.eddie.regionconnector.at.eda.permission.request.extensions.Extension;
-import energy.eddie.regionconnector.at.eda.permission.request.extensions.MessagingExtension;
-import energy.eddie.regionconnector.at.eda.permission.request.extensions.SavingExtension;
 import energy.eddie.regionconnector.at.eda.ponton.NoOpEdaAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
@@ -28,6 +25,9 @@ import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistori
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestCreationService;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
 import jakarta.annotation.Nullable;
 import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
@@ -124,8 +124,8 @@ public class SpringConfig {
     public Set<Extension<AtPermissionRequest>> permissionRequestExtensions(AtPermissionRequestRepository repository,
                                                                            Sinks.Many<ConnectionStatusMessage> messages) {
         return Set.of(
-                new SavingExtension(repository),
-                new MessagingExtension(messages)
+                new SavingExtension<>(repository),
+                new MessagingExtension<>(messages)
         );
     }
 

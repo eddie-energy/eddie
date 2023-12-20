@@ -2,8 +2,9 @@ package energy.eddie.regionconnector.at.eda.permission.request;
 
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
-import energy.eddie.regionconnector.at.eda.permission.request.extensions.Extension;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import energy.eddie.regionconnector.shared.permission.requests.PermissionRequestProxy;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;

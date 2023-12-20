@@ -1,38 +1,42 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
-import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.api.v0.process.model.PermissionRequestRepository;
 import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
-import io.javalin.http.Context;
-import io.javalin.validation.Validator;
+import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Sinks;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Set;
 
-import static energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest.START_KEY;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class PermissionRequestFactoryTest {
     @Test
     void testCreatePermissionRequest() {
         // Given
-        Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
-        PermissionRequestRepository<TimeframedPermissionRequest> permissionRequestRepository = new InMemoryPermissionRequestRepository();
-        EnedisConfiguration conf = mock(EnedisConfiguration.class);
-        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(permissionRequestRepository, permissionStateMessages, conf);
-        Context ctx = mock(Context.class);
-        when(ctx.formParamAsClass(any(), eq(ZonedDateTime.class)))
-                .thenReturn(new Validator<>(null, ZonedDateTime.class, START_KEY));
+        ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
+        ZonedDateTime end = start.plusDays(1);
+        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(Set.of());
+        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "dnid", start, end);
 
         // When
-        PermissionRequest permissionRequest = permissionRequestFactory.create(ctx);
+        PermissionRequest permissionRequest = permissionRequestFactory.create(permissionRequestForCreation);
+
+        // Then
+        assertNotNull(permissionRequest);
+    }
+
+    @Test
+    void testCreatePermissionRequest_withExistingPermissionRequest() {
+        // Given
+        ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
+        ZonedDateTime end = start.plusDays(1);
+        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(Set.of());
+        TimeframedPermissionRequest original = new EnedisPermissionRequest("cid", "dnid", start, end);
+
+        // When
+        PermissionRequest permissionRequest = permissionRequestFactory.create(original);
 
         // Then
         assertNotNull(permissionRequest);

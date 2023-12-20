@@ -1,38 +1,55 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
-import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.api.v0.process.model.PermissionRequestRepository;
 import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
-import energy.eddie.regionconnector.shared.permission.requests.decorators.MessagingPermissionRequest;
-import energy.eddie.regionconnector.shared.permission.requests.decorators.SavingPermissionRequest;
-import io.javalin.http.Context;
-import reactor.core.publisher.Sinks;
+import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.shared.permission.requests.PermissionRequestProxy;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
+
+import java.util.Set;
 
 public class PermissionRequestFactory {
-    private final PermissionRequestRepository<TimeframedPermissionRequest> permissionRequestRepository;
-    private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
-    private final EnedisConfiguration configuration;
+    private final Set<Extension<TimeframedPermissionRequest>> extensions;
 
-    public PermissionRequestFactory(PermissionRequestRepository<TimeframedPermissionRequest> permissionRequestRepository,
-                                    Sinks.Many<ConnectionStatusMessage> connectionStatusSink,
-                                    EnedisConfiguration configuration) {
-        this.permissionRequestRepository = permissionRequestRepository;
-        this.connectionStatusSink = connectionStatusSink;
-        this.configuration = configuration;
+    public PermissionRequestFactory(
+            Set<Extension<TimeframedPermissionRequest>> extensions
+    ) {
+        this.extensions = extensions;
     }
 
-    public TimeframedPermissionRequest create(Context ctx) {
-        TimeframedPermissionRequest permissionRequest = new EnedisPermissionRequest(ctx, configuration);
-        PermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, connectionStatusSink);
-        PermissionRequest savingPermissionRequest = new SavingPermissionRequest<>(
-                new TimeFramedPermissionRequestAdapter(permissionRequest, messagingPermissionRequest),
-                permissionRequestRepository
+    /**
+     * Creates a new PermissionReques, using a Proxy to handle persistence and ConnectionStatusMessages when changed.
+     *
+     * @param permissionRequestForCreation the DTO that is used for creating the PermissionRequest
+     * @return new PermissionRequest
+     */
+    public TimeframedPermissionRequest create(PermissionRequestForCreation permissionRequestForCreation) {
+        TimeframedPermissionRequest permissionRequest = new EnedisPermissionRequest(
+                permissionRequestForCreation.connectionId(),
+                permissionRequestForCreation.dataNeedId(),
+                permissionRequestForCreation.start(),
+                permissionRequestForCreation.end()
         );
-        return new TimeFramedPermissionRequestAdapter(
+        return PermissionRequestProxy.createProxy(
                 permissionRequest,
-                savingPermissionRequest
+                extensions,
+                TimeframedPermissionRequest.class,
+                PermissionRequestProxy.CreationInfo.NEWLY_CREATED
+        );
+    }
+
+    /**
+     * Recreates a PermissionRequest.
+     * The PermissionRequest is wrapped with a proxy to handle persistence and ConnectionStatusMessages when changed.
+     *
+     * @param permissionRequest PermissionRequest to be wrapped and recreated
+     * @return recreated PermissionRequest
+     */
+    public TimeframedPermissionRequest create(TimeframedPermissionRequest permissionRequest) {
+        return PermissionRequestProxy.createProxy(
+                permissionRequest,
+                extensions,
+                TimeframedPermissionRequest.class,
+                PermissionRequestProxy.CreationInfo.RECREATED
         );
     }
 }
