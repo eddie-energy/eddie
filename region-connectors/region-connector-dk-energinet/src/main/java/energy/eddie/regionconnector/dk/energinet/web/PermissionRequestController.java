@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,10 +83,9 @@ public class PermissionRequestController {
     }
 
     @GetMapping(PERMISSION_STATUS_PATH + "/{permissionId}")
-    public ResponseEntity<ConnectionStatusMessage> permissionStatus(@PathVariable String permissionId) {
+    public ResponseEntity<ConnectionStatusMessage> permissionStatus(@PathVariable String permissionId) throws PermissionNotFoundException {
         var statusMessage = service.findConnectionStatusMessageById(permissionId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Unable to find permission request"));
-
+                .orElseThrow(() -> new PermissionNotFoundException(permissionId));
         return ResponseEntity.ok(statusMessage);
     }
 
