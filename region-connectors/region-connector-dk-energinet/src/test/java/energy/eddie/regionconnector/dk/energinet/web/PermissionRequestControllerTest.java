@@ -140,6 +140,25 @@ class PermissionRequestControllerTest {
     }
 
     @Test
+    void givenUnsupportedGranularity_returnsBadRequest() throws Exception {
+        mockMvc.perform(post("/permission-request")
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .param("connectionId", "214")
+                        .param("meteringPoint", "92345")
+                        .param("granularity", "PT5M")
+                        .param("refreshToken", "HelloRefreshToken")
+                        .param("dataNeedId", "Need")
+                        .param("start", "2023-10-10")
+                        .param("end", "2023-12-12"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors", allOf(
+                        iterableWithSize(1),
+                        hasItem(startsWith("Unsupported granularity: 'PT5M'."))
+                )));
+    }
+
+
+    @Test
     void givenAdditionalFields_areIgnored() throws Exception {
         var permissionId = UUID.randomUUID().toString();
 
