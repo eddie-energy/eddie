@@ -3,7 +3,7 @@ package energy.eddie.core.dataneeds;
 import energy.eddie.api.agnostic.DataNeed;
 import energy.eddie.api.agnostic.DataNeedsService;
 import energy.eddie.api.agnostic.DataType;
-import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.agnostic.Granularity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,7 +47,7 @@ public class DataNeedsController {
     }
 
     @GetMapping("/granularities")
-    public ResponseEntity<ConsumptionRecord.MeteringInterval[]> getDataGranularities() {
-        return ResponseEntity.ok(ConsumptionRecord.MeteringInterval.values());
+    public ResponseEntity<Granularity[]> getDataGranularities() {
+        return ResponseEntity.ok(Granularity.values());
     }
 }

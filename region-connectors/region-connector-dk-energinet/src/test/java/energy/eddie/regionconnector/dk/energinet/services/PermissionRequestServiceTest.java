@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.PermissionProcessStatus;
@@ -10,7 +11,6 @@ import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerAcceptedState;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -92,7 +92,7 @@ class PermissionRequestServiceTest {
         String refreshToken = "token";
         String meteringPoint = "meteringPoint";
         PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId, start, end,
-                refreshToken, PeriodResolutionEnum.PT1H, meteringPoint, dataNeedId);
+                refreshToken, Granularity.PT1H, meteringPoint, dataNeedId);
 
         DkEnerginetCustomerPermissionRequest mockRequest = mock(DkEnerginetCustomerPermissionRequest.class);
         when(requestFactory.create(requestForCreation)).thenReturn(mockRequest);

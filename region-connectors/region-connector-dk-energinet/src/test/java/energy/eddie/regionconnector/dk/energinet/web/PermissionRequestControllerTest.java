@@ -99,7 +99,7 @@ class PermissionRequestControllerTest {
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .param("connectionId", "23")
                         .param("meteringPoint", "92345")
-                        .param("periodResolution", "PT1H"))
+                        .param("granularity", "PT1H"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", allOf(
                         iterableWithSize(4),
@@ -115,9 +115,9 @@ class PermissionRequestControllerTest {
         mockMvc.perform(post("/permission-request")
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .param("connectionId", "23")
-                        .param("periodResolution", "PT4h"))
+                        .param("granularity", "PT4h"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0]", containsString("Invalid PeriodResolutionEnum")));
+                .andExpect(jsonPath("$.errors[0]", not(emptyString())));
     }
 
     @Test
@@ -126,7 +126,7 @@ class PermissionRequestControllerTest {
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .param("connectionId", "")
                         .param("meteringPoint", "92345")
-                        .param("periodResolution", "PT1H")
+                        .param("granularity", "PT1H")
                         .param("refreshToken", "      "))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", allOf(
@@ -155,7 +155,7 @@ class PermissionRequestControllerTest {
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .param("connectionId", "214")
                         .param("meteringPoint", "92345")
-                        .param("periodResolution", "PT1H")
+                        .param("granularity", "PT1H")
                         .param("refreshToken", "HelloRefreshToken")
                         .param("dataNeedId", "Need")
                         .param("additionalField", "Useless")
@@ -181,7 +181,7 @@ class PermissionRequestControllerTest {
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .param("connectionId", "214")
                         .param("meteringPoint", "92345")
-                        .param("periodResolution", "PT1H")
+                        .param("granularity", "PT1H")
                         .param("refreshToken", "HelloRefreshToken")
                         .param("dataNeedId", "Need")
                         .param("additionalField", "Useless")

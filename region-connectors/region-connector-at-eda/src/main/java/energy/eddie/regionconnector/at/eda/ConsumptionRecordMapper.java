@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.at.eda;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
@@ -40,8 +41,8 @@ public class ConsumptionRecordMapper {
         consumptionRecord.setMeteringPoint(externalConsumptionRecord.getProcessDirectory().getMeteringPoint());
         consumptionRecord.setStartDateTime(toZonedDateTime(crEnergy.getMeteringPeriodStart()));
         consumptionRecord.setMeteringInterval(switch (crEnergy.getMeteringIntervall()) {
-            case D -> energy.eddie.api.v0.ConsumptionRecord.MeteringInterval.P_1_D;
-            case QH -> energy.eddie.api.v0.ConsumptionRecord.MeteringInterval.PT_15_M;
+            case D -> Granularity.P1D.name();
+            case QH -> Granularity.PT15M.name();
             default ->
                     throw new IllegalStateException("Unexpected value: " + crEnergy.getMeteringIntervall()); // according to the schema documentation, EnergyData can only ever have D or QH as MeteringInterval https://www.ebutilities.at/schemas/149 look for the `datantypen.pdf
         });

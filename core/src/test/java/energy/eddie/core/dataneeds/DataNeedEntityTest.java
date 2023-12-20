@@ -1,7 +1,7 @@
 package energy.eddie.core.dataneeds;
 
 import energy.eddie.api.agnostic.DataType;
-import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.agnostic.Granularity;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DataNeedEntityTest {
     static final String EXAMPLE_DATA_NEED_KEY = "EXAMPLE_DATA_NEED";
     static final DataNeedEntity EXAMPLE_DATA_NEED = new DataNeedEntity(EXAMPLE_DATA_NEED_KEY, "description",
-            DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA, ConsumptionRecord.MeteringInterval.PT_15_M, -90, false, 0);
+            DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA, Granularity.PT15M, -90, false, 0);
 
     static DataNeedEntity copy(DataNeedEntity dataNeed) {
         return new DataNeedEntity(dataNeed.id(), dataNeed.description(), dataNeed.type(), dataNeed.granularity(),

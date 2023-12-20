@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.validation;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,7 +59,7 @@ class NotOlderThanValidatorTest {
     }
 
     private EnerginetCustomerPermissionRequest createTestRequest(ZonedDateTime start, ZonedDateTime end) {
-        var forCreation = new PermissionRequestForCreation("bar", start, end, "too", PeriodResolutionEnum.PT1H, "laa", "luu");
+        var forCreation = new PermissionRequestForCreation("bar", start, end, "too", Granularity.PT1H, "laa", "luu");
         return new EnerginetCustomerPermissionRequest("foo", forCreation, mockConfig);
     }
 }

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.utils;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.dk.energinet.customer.model.*;
-import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import energy.eddie.regionconnector.dk.energinet.enums.PointQualityEnum;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +27,7 @@ class ConsumptionRecordMapperTest {
         when(myEnergyMarketDocument.getTimeSeries()).thenReturn(List.of(timeSeries));
         when(periodtimeInterval.getStart()).thenReturn("2022-03-31T22:00:00Z");
         when(timeSeries.getPeriod()).thenReturn(List.of(period));
-        when(period.getResolution()).thenReturn(PeriodResolutionEnum.PT1D.name());
+        when(period.getResolution()).thenReturn(Granularity.P1D.name());
         when(period.getPoint()).thenReturn(List.of(point));
         when(point.getOutQuantityQuality()).thenReturn(PointQualityEnum.A04.name());
         when(point.getOutQuantityQuantity()).thenReturn("5.42");
@@ -54,7 +54,7 @@ class ConsumptionRecordMapperTest {
         when(myEnergyMarketDocument.getTimeSeries()).thenReturn(List.of(timeSeries));
         when(periodtimeInterval.getStart()).thenReturn("2022-03-31T22:00:00Z");
         when(timeSeries.getPeriod()).thenReturn(List.of(period));
-        when(period.getResolution()).thenReturn(PeriodResolutionEnum.PT1D.name());
+        when(period.getResolution()).thenReturn(Granularity.P1D.name());
         when(period.getPoint()).thenReturn(List.of(point));
         when(point.getOutQuantityQuality()).thenReturn(illegalPointQualityEnum.name());
         when(point.getOutQuantityQuantity()).thenReturn("5.42");

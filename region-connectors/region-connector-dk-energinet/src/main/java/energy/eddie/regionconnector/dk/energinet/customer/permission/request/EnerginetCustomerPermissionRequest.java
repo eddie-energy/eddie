@@ -1,12 +1,12 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerCreatedState;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 
 import java.time.ZonedDateTime;
 
@@ -21,7 +21,7 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
     private final String refreshToken;
     private final String meteringPoint;
     private final String dataNeedId;
-    private final PeriodResolutionEnum periodResolution;
+    private final Granularity granularity;
     private PermissionRequestState state;
 
     public EnerginetCustomerPermissionRequest(
@@ -39,7 +39,7 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
         this.refreshToken = requireNonNull(request.refreshToken());
         this.meteringPoint = requireNonNull(request.meteringPoint());
         this.dataNeedId = requireNonNull(request.dataNeedId());
-        this.periodResolution = requireNonNull(request.periodResolution());
+        this.granularity = requireNonNull(request.granularity());
 
         this.state = new EnerginetCustomerCreatedState(this, configuration);
     }
@@ -90,8 +90,8 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
     }
 
     @Override
-    public PeriodResolutionEnum periodResolution() {
-        return periodResolution;
+    public Granularity granularity() {
+        return granularity;
     }
 
     @Override

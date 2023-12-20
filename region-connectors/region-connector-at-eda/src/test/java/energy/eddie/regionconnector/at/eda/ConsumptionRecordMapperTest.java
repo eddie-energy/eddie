@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.at.eda;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
@@ -42,8 +43,8 @@ class ConsumptionRecordMapperTest {
             default -> throw new IllegalArgumentException("Unexpected value: " + unit);
         };
         var expectedMeteringInterval = switch (meteringInterval) {
-            case QH -> energy.eddie.api.v0.ConsumptionRecord.MeteringInterval.PT_15_M;
-            case D -> energy.eddie.api.v0.ConsumptionRecord.MeteringInterval.P_1_D;
+            case QH -> Granularity.PT15M;
+            case D -> Granularity.P1D;
             default -> throw new IllegalArgumentException("Unexpected value: " + meteringInterval);
         };
         var expectedWh = consumptionValue * conversionFactor.getFactor();
@@ -56,7 +57,7 @@ class ConsumptionRecordMapperTest {
 
         assertEquals(meteringPoint, cimCR.getMeteringPoint());
         assertNotNull(cimCR.getConsumptionPoints());
-        assertEquals(expectedMeteringInterval, cimCR.getMeteringInterval());
+        assertEquals(expectedMeteringInterval.name(), cimCR.getMeteringInterval());
         assertEquals(1, cimCR.getConsumptionPoints().size());
         assertEquals(expectedMeteringType, cimCR.getConsumptionPoints().get(0).getMeteringType());
         assertEquals(expectedWh, cimCR.getConsumptionPoints().get(0).getConsumption());

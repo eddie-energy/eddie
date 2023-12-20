@@ -1,10 +1,9 @@
 package energy.eddie.regionconnector.dk.energinet.enums;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.dk.energinet.customer.api.MeterDataApi;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
 
-import java.util.Locale;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -21,49 +20,21 @@ public enum TimeSeriesAggregationEnum {
     MONTH("Month"),
     YEAR("Year");
 
-    private static final int MIN_LEN = 3;
-    private static final String EXCEPTION_MESSAGE = "Invalid TimeSeriesAggregationEnum value: ";
     private final String aggregation;
 
     TimeSeriesAggregationEnum(String aggregation) {
         this.aggregation = aggregation;
     }
 
-    public static TimeSeriesAggregationEnum fromString(String aggregation) {
-        if (!Objects.requireNonNull(aggregation).isBlank()) {
-            var sanitisedAggregation = sanitizeAggregationInput(aggregation);
-
-            for (var aggregationEnum : values()) {
-                if (aggregationEnum.toString().equals(sanitisedAggregation)) {
-                    return aggregationEnum;
-                }
-            }
-        }
-
-        throw new IllegalArgumentException(EXCEPTION_MESSAGE + aggregation);
-    }
-
-    public static TimeSeriesAggregationEnum fromPointQualityEnum(PeriodResolutionEnum periodResolutionEnum) {
-        return switch (periodResolutionEnum) {
+    public static TimeSeriesAggregationEnum fromGranularity(Granularity granularity) {
+        return switch (granularity) {
             case PT15M -> QUARTER;
             case PT1H -> HOUR;
-            case PT1D -> DAY;
+            case P1D -> DAY;
             case P1M -> MONTH;
             case P1Y -> YEAR;
+            default -> throw new IllegalArgumentException("Unsupported granularity: " + granularity);
         };
-    }
-
-    private static String sanitizeAggregationInput(String aggregation) {
-        var trimmedAggregation = aggregation.trim();
-
-        if (trimmedAggregation.length() < MIN_LEN) {
-            throw new IllegalArgumentException(EXCEPTION_MESSAGE + aggregation);
-        }
-
-        String firstLetter = trimmedAggregation.substring(0, 1).toUpperCase(Locale.ROOT);
-        String restOfString = trimmedAggregation.substring(1).toLowerCase(Locale.ROOT);
-
-        return firstLetter + restOfString;
     }
 
     @Override

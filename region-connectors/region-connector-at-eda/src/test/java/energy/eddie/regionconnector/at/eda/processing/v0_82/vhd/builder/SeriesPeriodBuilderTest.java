@@ -122,7 +122,7 @@ class SeriesPeriodBuilderTest {
     }
 
     @Test
-    void withEnergy_withHourlyMeteringInterval_throwsInvalidMappingException() {
+    void withEnergy_withHourlyMeteringInterval_setsResolutionAsExpected() throws InvalidMappingException {
         // following this document https://www.ebutilities.at/documents/20220309103941_datentypen.pdf
         LocalDateTime start = LocalDateTime.of(2021, 1, 1, 0, 0, 0);
         Energy energy = new Energy()
@@ -130,7 +130,10 @@ class SeriesPeriodBuilderTest {
                 .withMeteringPeriodStart(DateTimeConverter.dateTimeToXml(start))
                 .withMeteringPeriodEnd(DateTimeConverter.dateTimeToXml(start.plusDays(1)));
 
-        assertThrows(InvalidMappingException.class, () -> new SeriesPeriodBuilder().withEnergy(energy));
+        SeriesPeriodBuilder uut = new SeriesPeriodBuilder().withEnergy(energy);
+
+        Duration resolution = Duration.parse(uut.build().getResolution());
+        assertEquals(Duration.ofHours(1), resolution);
     }
 
     @Test
