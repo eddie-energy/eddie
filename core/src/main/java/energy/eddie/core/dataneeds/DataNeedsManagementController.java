@@ -1,11 +1,7 @@
 package energy.eddie.core.dataneeds;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Validator;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,55 +19,24 @@ import java.util.List;
 public class DataNeedsManagementController {
     public static final String URL_PREFIX = "/management/data-needs";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataNeedsManagementController.class);
-
     private final DataNeedsDbRepository dataNeedsDbRepository;
 
     private final Validator validator;
-    private final ObjectMapper jsonMapper;
 
-    public DataNeedsManagementController(DataNeedsDbRepository dataNeedsDbRepository, Validator validator, ObjectMapper jsonMapper) {
+    public DataNeedsManagementController(DataNeedsDbRepository dataNeedsDbRepository, Validator validator) {
         this.dataNeedsDbRepository = dataNeedsDbRepository;
         this.validator = validator;
-        this.jsonMapper = jsonMapper;
     }
-
-    private class DataNeedValidator {
-        private final List<String> violations;
-
-        public DataNeedValidator(DataNeed dataNeed) {
-            this.violations = dataNeed.validate(validator);
-        }
-
-        public boolean isValid() {
-            return violations.isEmpty();
-        }
-
-        public ResponseEntity<String> getErrorResponse() {
-            if (isValid()) {
-                throw new IllegalStateException("data need is valid");
-            } else {
-                String json = null;
-                try {
-                    json = jsonMapper.writeValueAsString(violations);
-                } catch (JsonProcessingException e) {
-                    LOGGER.error("failed to serialize validation errors", e);
-                }
-                return ResponseEntity.badRequest().body(json);
-            }
-        }
-    }
-
 
     @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
-    public ResponseEntity<String> createDataNeed(@NotNull @RequestBody DataNeed newDataNeed) {
+    public ResponseEntity<List<String>> createDataNeed(@NotNull @RequestBody DataNeed newDataNeed) {
         final var id = newDataNeed.getId();
-        final var dataNeedValidator = new DataNeedValidator(newDataNeed);
-        if (!dataNeedValidator.isValid()) {
-            return dataNeedValidator.getErrorResponse();
+        final var violations = newDataNeed.validate(validator);
+        if (!violations.isEmpty()) {
+            return ResponseEntity.badRequest().body(violations);
         }
         if (dataNeedsDbRepository.existsById(id)) {
-            return ResponseEntity.badRequest().body("data need with id " + id + " already exists");
+            return ResponseEntity.badRequest().body(List.of("data need with id " + id + " already exists"));
         }
         dataNeedsDbRepository.save(newDataNeed);
         return ResponseEntity.created(URI.create(URL_PREFIX + "/" + id)).build();
@@ -89,13 +54,13 @@ public class DataNeedsManagementController {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<String> updateDataNeed(@PathVariable String id, @RequestBody DataNeed dataNeed) {
-        final var dataNeedValidator = new DataNeedValidator(dataNeed);
-        if (!dataNeedValidator.isValid()) {
-            return dataNeedValidator.getErrorResponse();
+    public ResponseEntity<List<String>> updateDataNeed(@PathVariable String id, @RequestBody DataNeed dataNeed) {
+        final var violations = dataNeed.validate(validator);
+        if (!violations.isEmpty()) {
+            return ResponseEntity.badRequest().body(violations);
         }
         if (!dataNeed.getId().equals(id)) {
-            return ResponseEntity.badRequest().body("data need id in url does not match data need id in body");
+            return ResponseEntity.badRequest().body(List.of("data need id in url does not match data need id in body"));
         } else if (!dataNeedsDbRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         } else {

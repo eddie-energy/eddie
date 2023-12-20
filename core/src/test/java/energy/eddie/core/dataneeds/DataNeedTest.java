@@ -43,7 +43,6 @@ class DataNeedTest {
     }
 
     @Test
-    @SuppressWarnings("NullAway")
     void testMandatoryFieldsArePresent() {
         var mandatoryFields = new String[]{"id", "description", "type", "durationStart"};
         var dataNeed = new DataNeed("", "", null, null, null, null, null);
@@ -59,7 +58,7 @@ class DataNeedTest {
 
 
     @Test
-    void testDurationStartPreceedsDurationEnd() {
+    void testDurationStartPrecedsDurationEnd() {
         var violations = new DataNeed(EXAMPLE_DATA_NEED_KEY, "description",
                 DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA, ConsumptionRecord.MeteringInterval.PT_15_M, 0, false, -1).validate(validator);
         assertThat(violations).hasSize(1).first(as(STRING)).contains("durationEnd").contains("durationStart");
