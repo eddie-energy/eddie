@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
@@ -76,7 +77,7 @@ class PermissionRequestControllerTest {
     }
 
     @Test
-    void createPermissionRequest_returnsCreated() throws Exception {
+    void createPermissionRequestWithJSONBody_returnsCreated() throws Exception {
         // Given
         when(permissionRequestService.createPermissionRequest(any()))
                 .thenReturn(new CreatedPermissionRequest("pid", URI.create("https://redirect.com")));
@@ -94,7 +95,34 @@ class PermissionRequestControllerTest {
                                 .content(mapper.writeValueAsString(pr))
                 )
                 // Then
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(header().exists("Location"));
+    }
+
+    @Test
+    void createPermissionRequestUrlEncoded_returnsCreated() throws Exception {
+        // Given
+        when(permissionRequestService.createPermissionRequest(any()))
+                .thenReturn(new CreatedPermissionRequest("pid", URI.create("https://redirect.com")));
+        PermissionRequestForCreation pr = new PermissionRequestForCreation(
+                "cid",
+                "dnid",
+                ZonedDateTime.now(ZoneOffset.UTC),
+                ZonedDateTime.now(ZoneOffset.UTC).plusDays(10)
+        );
+
+        // When
+        mockMvc.perform(
+                        MockMvcRequestBuilders.post("/region-connectors/fr-enedis/permission-request")
+                                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                                .param("connectionId", pr.connectionId())
+                                .param("dataNeedId", pr.dataNeedId())
+                                .param("start", pr.start().toLocalDate().toString())
+                                .param("end", pr.end().toLocalDate().toString())
+                )
+                // Then
+                .andExpect(status().isCreated())
+                .andExpect(header().exists("Location"));
     }
 
     @Test

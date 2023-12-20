@@ -11,14 +11,20 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriTemplate;
 
+import java.beans.PropertyEditorSupport;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.BASE_PATH;
@@ -41,6 +47,17 @@ public class PermissionRequestController {
         this.permissionRequestService = permissionRequestService;
     }
 
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(ZonedDateTime.class, new PropertyEditorSupport() {
+            @Override
+            public void setAsText(String text) throws IllegalArgumentException {
+                ZonedDateTime zonedDateTime = LocalDate.parse(text, DateTimeFormatter.ISO_DATE).atStartOfDay(ZoneOffset.UTC);
+                setValue(zonedDateTime);
+            }
+        });
+    }
+
     @GetMapping(value = "/ce.js", produces = "text/javascript")
     public String javascriptConnectorElement() {
         var cePath = new CustomElementPath(getClass(), CE_DEV_PATHS, CE_PRODUCTION_PATH);
@@ -61,13 +78,35 @@ public class PermissionRequestController {
         return connectionStatusMessage.get();
     }
 
-    @PostMapping(value = "/permission-request", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(
+            value = "/permission-request",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<CreatedPermissionRequest> createPermissionRequest(
+    public ResponseEntity<CreatedPermissionRequest> createPermissionRequestJsonBody(
             @RequestBody
             @Valid
             PermissionRequestForCreation permissionRequest
     ) throws StateTransitionException {
+        return createPermissionRequest(permissionRequest);
+    }
+
+    @PostMapping(
+            value = "/permission-request",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<CreatedPermissionRequest> createPermissionRequestUrlEncoded(
+            @ModelAttribute
+            @Valid
+            PermissionRequestForCreation permissionRequest
+    ) throws StateTransitionException {
+        return createPermissionRequest(permissionRequest);
+    }
+
+    private ResponseEntity<CreatedPermissionRequest> createPermissionRequest(PermissionRequestForCreation permissionRequest) throws StateTransitionException {
         CreatedPermissionRequest createdPermissionRequest = permissionRequestService.createPermissionRequest(permissionRequest);
         URI location = new UriTemplate("{statusPath}/{permissionId}")
                 .expand(PERMISSION_STATUS_PATH, createdPermissionRequest.permissionId());
@@ -78,8 +117,9 @@ public class PermissionRequestController {
 
     @GetMapping(value = "/authorization-callback")
     @ResponseStatus(HttpStatus.OK)
-    public void callback(@RequestParam("state") String stateString, @RequestParam("usage_point_id") String usagePointId)
+    public ResponseEntity<String> callback(@RequestParam("state") String stateString, @RequestParam("usage_point_id") String usagePointId)
             throws StateTransitionException, PermissionNotFoundException {
         permissionRequestService.authorizePermissionRequest(stateString, usagePointId);
+        return ResponseEntity.ok("Access Granted. You can close this tab now.");
     }
 }
