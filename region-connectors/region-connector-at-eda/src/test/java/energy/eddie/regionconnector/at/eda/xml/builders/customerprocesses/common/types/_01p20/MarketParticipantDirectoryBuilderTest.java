@@ -9,17 +9,16 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.time.Month;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class MarketParticipantDirectoryBuilderTest {
+class MarketParticipantDirectoryBuilderTest {
     @Test
-    public void testMarketParticipantDirectoryBuilder() {
+    void testMarketParticipantDirectoryBuilder() {
         // Example of a correct implementation
-        MarketParticipantDirectoryBuilder mpDirBuilder = new MarketParticipantDirectoryBuilder();
         RoutingHeaderBuilder routingHeaderBuilder = new RoutingHeaderBuilder();
         RoutingAddressBuilder routingAddressBuilder = new RoutingAddressBuilder();
-
-        mpDirBuilder
+        MarketParticipantDirectoryBuilder mpDirBuilder = new MarketParticipantDirectoryBuilder()
                 .withRoutingHeader(
                         routingHeaderBuilder
                                 .withSender(
@@ -32,12 +31,12 @@ public class MarketParticipantDirectoryBuilderTest {
                 )
                 .withSector(Sector.ELECTRICITY)
                 .withDocumentMode(DocumentMode.PROD)
-                .withDuplicate(true)
-                .build();
+                .withDuplicate(true);
+        assertDoesNotThrow(mpDirBuilder::build);
     }
 
     @Test
-    public void testNullPointerException() {
+    void testNullPointerException() {
         ObjectFactory objectFactory = new ObjectFactory();
         MarketParticipantDirectoryBuilder mpDirBuilder = new MarketParticipantDirectoryBuilder();
 
@@ -45,18 +44,18 @@ public class MarketParticipantDirectoryBuilderTest {
         assertThrows(NullPointerException.class, mpDirBuilder::build);
 
         // Assign only one required argument
-        assertThrows(NullPointerException.class, () -> mpDirBuilder
+        assertThrows(NullPointerException.class, mpDirBuilder
                 .withRoutingHeader(objectFactory.createRoutingHeader())
-                .build());
+                ::build);
 
         // Assign only two required argument
-        assertThrows(NullPointerException.class, () -> mpDirBuilder
+        assertThrows(NullPointerException.class, mpDirBuilder
                 .withSector(Sector.ELECTRICITY)
-                .build());
+                ::build);
 
         // Assign only three required argument
-        assertThrows(NullPointerException.class, () -> mpDirBuilder
+        assertThrows(NullPointerException.class, mpDirBuilder
                 .withDocumentMode(DocumentMode.SIMU)
-                .build());
+                ::build);
     }
 }

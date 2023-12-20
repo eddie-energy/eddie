@@ -40,7 +40,7 @@ public class PermissionRequestService {
     }
 
     public void authorizePermissionRequest(String permissionId, String usagePointId) throws StateTransitionException, PermissionNotFoundException {
-        Optional<TimeframedPermissionRequest> optionalPermissionRequest = repository.findByPermissionId(permissionId);
+        Optional<TimeframedPermissionRequest> optionalPermissionRequest = findPermissionRequestByPermissionId(permissionId);
         if (optionalPermissionRequest.isEmpty()) {
             // unknown state / permissionId => not coming / initiated by our frontend
             throw new PermissionNotFoundException(permissionId);
