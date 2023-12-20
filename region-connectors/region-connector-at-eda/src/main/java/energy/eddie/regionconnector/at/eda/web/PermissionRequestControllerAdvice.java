@@ -4,6 +4,7 @@ import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.api.v0.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.shared.web.StateValidationErrors;
 import energy.eddie.regionconnector.shared.web.ValidationErrors;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -35,5 +36,11 @@ public class PermissionRequestControllerAdvice {
     @ExceptionHandler(ValidationException.class)
     public Map<String, String> handleStateValidationExceptions(ValidationException ex) {
         return new StateValidationErrors(ex).asMap();
+    }
+
+    @ExceptionHandler(PermissionNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handlePermissionNotFoundException(PermissionNotFoundException exception) {
+        return Map.of("permissionId", exception.getMessage());
     }
 }

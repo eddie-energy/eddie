@@ -7,18 +7,19 @@ import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermis
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestCreationService;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.BASE_PATH;
 
@@ -37,13 +38,11 @@ public class PermissionRequestController {
         this.creationService = creationService;
     }
 
-    @GetMapping(value = "/permission-status")
-    public ConnectionStatusMessage permissionStatus(@RequestParam String permissionId) {
-        Optional<ConnectionStatusMessage> connectionStatusMessage = permissionRequestService.findConnectionStatusMessageById(permissionId);
-        if (connectionStatusMessage.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unable to find permission request");
-        }
-        return connectionStatusMessage.get();
+    @GetMapping("/permission-status/{permissionId}")
+    public ResponseEntity<ConnectionStatusMessage> permissionStatus(@PathVariable String permissionId) throws PermissionNotFoundException {
+        var statusMessage = permissionRequestService.findConnectionStatusMessageById(permissionId)
+                .orElseThrow(() -> new PermissionNotFoundException(permissionId));
+        return ResponseEntity.ok(statusMessage);
     }
 
     @GetMapping(value = CE_JS, produces = "text/javascript")
