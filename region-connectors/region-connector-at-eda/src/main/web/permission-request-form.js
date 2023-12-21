@@ -124,9 +124,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   }
 
   async requestPermissionStatus(permissionId, maxRetries) {
-    let response = await fetch(
-      BASE_URL + "permission-status/" + permissionId
-    );
+    let response = await fetch(BASE_URL + "permission-status/" + permissionId);
 
     if (response.status === 404) {
       // No permission request was created
@@ -158,25 +156,32 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     const currentStatus = result["status"];
     this._requestStatus = currentStatus;
 
+    const title = "Finished!";
+    let message = "";
     // Finished long poll
-    if (
-      currentStatus === "ACCEPTED" ||
-      currentStatus === "REJECTED" ||
-      currentStatus === "INVALID" ||
-      currentStatus === "TERMINATED" ||
-      result["status"] === "FULFILLED"
-    ) {
-      const successTitle = "Finished!";
-      const successMessage = "Your consumption record has been received.";
-      this.notify(
-        successTitle,
-        successMessage,
-        "success",
-        "check2-circle",
-        "5000"
-      );
-
-      return;
+    switch (currentStatus) {
+      case "ACCEPTED":
+        message = "Your data has been received.";
+        this.notify(title, message, "success", "check2-circle", "5000");
+        return;
+      case "REJECTED":
+        message = "The permission request has been rejected.";
+        this.notify(title, message);
+        return;
+      case "INVALID":
+        // TODO: Give user a reason why
+        message = "The permission request was invalid.";
+        this.notify(title, message, "warning", "exclamation-triangle");
+        return;
+      case "TERMINATED":
+        // TODO: Give user a reason why
+        message = "The permission request was terminated.";
+        this.notify(title, message, "warning", "exclamation-triangle");
+        return;
+      case "FULFILLED":
+        message = "The permission request was fulfilled.";
+        this.notify(title, message, "success", "check2-circle", "5000");
+        return;
     }
 
     // Wait for status update

@@ -179,34 +179,35 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     const result = await response.json();
     const currentStatus = result["status"];
     this._requestStatus = currentStatus;
-
+    
+    const title = "Finished!";
+    let message = "";
     // Finished long poll
-    if (
-      currentStatus === "ACCEPTED" ||
-      currentStatus === "REJECTED" ||
-      currentStatus === "INVALID" ||
-      currentStatus === "TERMINATED"
-    ) {
-      this._isSubmitDisabled = false;
-      const successTitle = "Finished!";
-      const successMessage = "Your consumption record has been received.";
-      this.notify(
-        successTitle,
-        successMessage,
-        "success",
-        "check2-circle",
-        "5000"
-      );
-
-      return;
-    }
-
-    // Disable Submit
-    if (
-      currentStatus === "SENT_TO_PERMISSION_ADMINISTRATOR" ||
-      currentStatus === "RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE"
-    ) {
-      this._isSubmitDisabled = true;
+    switch (currentStatus) {
+      case "SENT_TO_PERMISSION_ADMINISTRATOR":
+        this._isSubmitDisabled = true;
+        break;
+      case "RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE":
+        this._isSubmitDisabled = true;
+        break;
+      case "ACCEPTED":
+        message = "Your data has been received.";
+        this.notify(title, message, "success", "check2-circle", "5000");
+        return;
+      case "REJECTED":
+        message = "The permission request has been rejected.";
+        this.notify(title, message);
+        return;
+      case "INVALID":
+        // TODO: Give user a reason why
+        message = "The permission request was invalid.";
+        this.notify(title, message, "warning", "exclamation-triangle");
+        return;
+      case "TERMINATED":
+        // TODO: Give user a reason why
+        message = "The permission request was terminated.";
+        this.notify(title, message, "warning", "exclamation-triangle");
+        return;
     }
 
     // Wait for status update
