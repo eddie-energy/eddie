@@ -13,6 +13,7 @@ import reactor.test.publisher.TestPublisher;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -219,6 +220,45 @@ class EdaRegionConnectorTest {
 
         // Then
         assertEquals(Map.of("service", HealthState.UP), res);
+    }
+
+    @Test
+    void close_emitsCompleteOnPublisherForConnectionStatusMessages() throws Exception {
+        // Given
+        var edaAdapter = mock(EdaAdapter.class);
+        when(edaAdapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
+        var requestService = mock(PermissionRequestService.class);
+        var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+        var rc = new EdaRegionConnector(edaAdapter, requestService, consumptionRecordProcessor);
+        StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(rc.getConnectionStatusMessageStream()))
+                .expectComplete()
+                .verifyLater();
+
+        // When
+        rc.close();
+
+        // Then
+        stepVerifier.verify(Duration.ofSeconds(2));
+    }
+
+    @Test
+    void close_emitsCompleteOnPublisherForConsumptionRecords() throws Exception {
+        // Given
+        var edaAdapter = mock(EdaAdapter.class);
+        when(edaAdapter.getConsumptionRecordStream()).thenReturn(Flux.empty());
+        when(edaAdapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
+        var requestService = mock(PermissionRequestService.class);
+        var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+        var rc = new EdaRegionConnector(edaAdapter, requestService, consumptionRecordProcessor);
+        StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(rc.getConsumptionRecordStream()))
+                .expectComplete()
+                .verifyLater();
+
+        // When
+        rc.close();
+
+        // Then
+        stepVerifier.verify(Duration.ofSeconds(2));
     }
 
     private ConsumptionRecord createConsumptionRecord() {

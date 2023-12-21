@@ -11,6 +11,7 @@ import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.Flow;
 
 import static org.mockito.Mockito.mock;
 
@@ -21,14 +22,14 @@ class EddieValidatedHistoricalDataMarketDocumentServiceTest {
     }
 
     @Test
-    void givenMultipleStreams_combinesAndEmitsAllValuesFromAllStreams() {
+    void givenMultipleStreams_combinesAndEmitsAllValuesFromAllStreams() throws Exception {
         // Given
         var service = new EddieValidatedHistoricalDataMarketDocumentService();
         Sinks.Many<EddieValidatedHistoricalDataMarketDocument> sink1 = Sinks.many().unicast().onBackpressureBuffer();
         Sinks.Many<EddieValidatedHistoricalDataMarketDocument> sink2 = Sinks.many().unicast().onBackpressureBuffer();
 
-        CimConsumptionRecordProvider provider1 = () -> JdkFlowAdapter.publisherToFlowPublisher(sink1.asFlux());
-        CimConsumptionRecordProvider provider2 = () -> JdkFlowAdapter.publisherToFlowPublisher(sink2.asFlux());
+        CimConsumptionRecordProvider provider1 = createProvider(sink1);
+        CimConsumptionRecordProvider provider2 = createProvider(sink2);
 
         var one = new EddieValidatedHistoricalDataMarketDocument(Optional.of("one"), Optional.empty(), Optional.empty(), mock(ValidatedHistoricalDataMarketDocument.class));
         var two = new EddieValidatedHistoricalDataMarketDocument(Optional.of("two"), Optional.empty(), Optional.empty(), mock(ValidatedHistoricalDataMarketDocument.class));
@@ -48,5 +49,22 @@ class EddieValidatedHistoricalDataMarketDocumentServiceTest {
                 .expectNextCount(3)
                 .thenCancel()
                 .verify();
+
+        provider1.close();
+        provider2.close();
+    }
+
+    private static CimConsumptionRecordProvider createProvider(Sinks.Many<EddieValidatedHistoricalDataMarketDocument> sink) {
+        return new CimConsumptionRecordProvider() {
+            @Override
+            public Flow.Publisher<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
+                return JdkFlowAdapter.publisherToFlowPublisher(sink.asFlux());
+            }
+
+            @Override
+            public void close() {
+                sink.tryEmitComplete();
+            }
+        };
     }
 }

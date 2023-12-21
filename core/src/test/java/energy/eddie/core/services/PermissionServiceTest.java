@@ -11,6 +11,7 @@ import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
+import java.util.concurrent.Flow;
 
 import static org.mockito.Mockito.mock;
 
@@ -28,8 +29,8 @@ class PermissionServiceTest {
         Sinks.Many<ConnectionStatusMessage> sink1 = Sinks.many().unicast().onBackpressureBuffer();
         Sinks.Many<ConnectionStatusMessage> sink2 = Sinks.many().unicast().onBackpressureBuffer();
 
-        Mvp1ConnectionStatusMessageProvider provider1 = () -> JdkFlowAdapter.publisherToFlowPublisher(sink1.asFlux());
-        Mvp1ConnectionStatusMessageProvider provider2 = () -> JdkFlowAdapter.publisherToFlowPublisher(sink2.asFlux());
+        Mvp1ConnectionStatusMessageProvider provider1 = createProvider(sink1);
+        Mvp1ConnectionStatusMessageProvider provider2 = createProvider(sink2);
 
         // When
         var flux = JdkFlowAdapter.flowPublisherToFlux(service.getConnectionStatusMessageStream());
@@ -53,5 +54,19 @@ class PermissionServiceTest {
                 // Then
                 .thenCancel()
                 .verify();
+    }
+
+    private static Mvp1ConnectionStatusMessageProvider createProvider(Sinks.Many<ConnectionStatusMessage> sink) {
+        return new Mvp1ConnectionStatusMessageProvider() {
+            @Override
+            public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+                return JdkFlowAdapter.publisherToFlowPublisher(sink.asFlux());
+            }
+
+            @Override
+            public void close() throws Exception {
+                sink.tryEmitComplete();
+            }
+        };
     }
 }

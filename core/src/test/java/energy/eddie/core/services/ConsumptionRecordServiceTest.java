@@ -9,6 +9,7 @@ import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
+import java.util.concurrent.Flow;
 
 class ConsumptionRecordServiceTest {
     @BeforeAll
@@ -17,14 +18,14 @@ class ConsumptionRecordServiceTest {
     }
 
     @Test
-    void givenMultipleStreams_combinesAndEmitsAllValuesFromAllStreams() {
+    void givenMultipleStreams_combinesAndEmitsAllValuesFromAllStreams() throws Exception {
         // Given
         ConsumptionRecordService consumptionRecordService = new ConsumptionRecordService();
         Sinks.Many<ConsumptionRecord> sink1 = Sinks.many().unicast().onBackpressureBuffer();
         Sinks.Many<ConsumptionRecord> sink2 = Sinks.many().unicast().onBackpressureBuffer();
 
-        Mvp1ConsumptionRecordProvider provider1 = () -> JdkFlowAdapter.publisherToFlowPublisher(sink1.asFlux());
-        Mvp1ConsumptionRecordProvider provider2 = () -> JdkFlowAdapter.publisherToFlowPublisher(sink2.asFlux());
+        Mvp1ConsumptionRecordProvider provider1 = createProvider(sink1);
+        Mvp1ConsumptionRecordProvider provider2 = createProvider(sink2);
 
         // When
         var flux = JdkFlowAdapter.flowPublisherToFlux(consumptionRecordService.getConsumptionRecordStream());
@@ -46,5 +47,22 @@ class ConsumptionRecordServiceTest {
                 .expectNextCount(2)
                 .thenCancel()
                 .verify();
+
+        provider1.close();
+        provider2.close();
+    }
+
+    private static Mvp1ConsumptionRecordProvider createProvider(Sinks.Many<ConsumptionRecord> sink) {
+        return new Mvp1ConsumptionRecordProvider() {
+            @Override
+            public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
+                return JdkFlowAdapter.publisherToFlowPublisher(sink.asFlux());
+            }
+
+            @Override
+            public void close() {
+                sink.tryEmitComplete();
+            }
+        };
     }
 }

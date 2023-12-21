@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.concurrent.Flow;
 
 @Service
-public class AiidaRegionConnectorService implements Mvp1ConnectionStatusMessageProvider, AutoCloseable {
+public class AiidaRegionConnectorService implements Mvp1ConnectionStatusMessageProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaRegionConnectorService.class);
     private final Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().multicast().onBackpressureBuffer();
     private final AiidaFactory aiidaFactory;

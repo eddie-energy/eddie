@@ -18,7 +18,7 @@ import reactor.core.publisher.Sinks;
 import java.util.concurrent.Flow;
 
 @RestController
-public class ConnectionStatusController implements Mvp1ConnectionStatusMessageProvider, AutoCloseable {
+public class ConnectionStatusController implements Mvp1ConnectionStatusMessageProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusController.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusStreamSink = Sinks.many().multicast().onBackpressureBuffer();
 

@@ -54,8 +54,11 @@ class AiidaRegionConnectorServiceTest {
 
     @Test
     void verify_close_emitsCompleteOnConnectionStatusMessageFlux() {
+        // Given
         StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(service.getConnectionStatusMessageStream()))
+                // When
                 .then(service::close)
+                // Then
                 .expectComplete()
                 .verify();
     }
@@ -126,5 +129,16 @@ class AiidaRegionConnectorServiceTest {
 
         verify(mockRepository).findByPermissionId(permissionId);
         verifyNoMoreInteractions(mockRepository);
+    }
+
+    @Test
+    void close_emitsCompleteOnPublisher() {
+        // Given
+        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(service.getConnectionStatusMessageStream()))
+                // When
+                .then(service::close)
+                // Then
+                .expectComplete()
+                .verify(Duration.ofSeconds(2));
     }
 }

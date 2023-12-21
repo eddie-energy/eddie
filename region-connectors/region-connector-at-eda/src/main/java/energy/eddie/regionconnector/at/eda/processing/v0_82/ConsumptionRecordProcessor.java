@@ -48,6 +48,14 @@ public class ConsumptionRecordProcessor implements CimConsumptionRecordProvider 
                 .flatMap(publisher::emitForEachPermissionRequest));
     }
 
+    /**
+     * Emit a complete signal on the Flow in this method.
+     */
+    @Override
+    public void close() throws Exception {
+        edaAdapter.close();
+    }
+
     private Mono<ValidatedHistoricalDataMarketDocument> mapToValidatedHistoricalMarketDocument(ConsumptionRecord consumptionRecord) {
         try {
             return Mono.just(director.createValidatedHistoricalDataMarketDocument(consumptionRecord));

@@ -7,8 +7,11 @@ import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import org.junit.jupiter.api.Test;
+import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
+import reactor.test.StepVerifier;
 
+import java.time.Duration;
 import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.DK_ZONE_ID;
@@ -34,5 +37,24 @@ class PermissionRequestFactoryTest {
 
         // Then
         assertNotNull(permissionRequest);
+    }
+
+    @Test
+    void close_emitsCompleteOnPublisher() {
+        // Given
+        Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
+        DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository = new InMemoryPermissionRequestRepository();
+        EnerginetConfiguration conf = mock(EnerginetConfiguration.class);
+        PermissionRequestFactory factory = new PermissionRequestFactory(permissionRequestRepository, permissionStateMessages, conf);
+
+        StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(factory.getConnectionStatusMessageStream()))
+                .expectComplete()
+                .verifyLater();
+
+        // When
+        factory.close();
+
+        // Then
+        stepVerifier.verify(Duration.ofSeconds(2));
     }
 }

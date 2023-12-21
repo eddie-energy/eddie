@@ -17,7 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.Flow;
 
 @Component
-public class PermissionRequestFactory implements Mvp1ConnectionStatusMessageProvider, AutoCloseable {
+public class PermissionRequestFactory implements Mvp1ConnectionStatusMessageProvider {
     private final DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository;
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
     private final EnerginetConfiguration configuration;

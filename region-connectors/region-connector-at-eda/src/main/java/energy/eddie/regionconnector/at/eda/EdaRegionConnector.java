@@ -25,7 +25,7 @@ import static java.util.Objects.requireNonNull;
 
 @Component
 public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider,
-        Mvp1ConsumptionRecordProvider, AutoCloseable {
+        Mvp1ConsumptionRecordProvider {
     /**
      * DSOs in Austria are only allowed to store data for the last 36 months
      */

@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.concurrent.Flow;
 
 public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider,
-        Mvp1ConsumptionRecordProvider, AutoCloseable {
+        Mvp1ConsumptionRecordProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
     private final Sinks.Many<ConsumptionRecord> consumptionRecordSink;

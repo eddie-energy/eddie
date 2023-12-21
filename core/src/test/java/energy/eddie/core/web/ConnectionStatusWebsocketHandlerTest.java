@@ -2,6 +2,7 @@ package energy.eddie.core.web;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.core.services.PermissionService;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 
 import java.io.IOException;
+import java.util.concurrent.Flow;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -20,7 +22,17 @@ class ConnectionStatusWebsocketHandlerTest {
     void givenConnectionStatusMessage_isSentToAllSubscribedWebSocketSessions() throws IOException {
         Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().unicast().onBackpressureBuffer();
         PermissionService permissionService = new PermissionService();
-        permissionService.registerProvider(() -> JdkFlowAdapter.publisherToFlowPublisher(statusMessageSink.asFlux()));
+        permissionService.registerProvider(new Mvp1ConnectionStatusMessageProvider() {
+            @Override
+            public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+                return JdkFlowAdapter.publisherToFlowPublisher(statusMessageSink.asFlux());
+            }
+
+            @Override
+            public void close() {
+                statusMessageSink.tryEmitComplete();
+            }
+        });
         var mockSession1 = mock(WebSocketSession.class);
         var mockSession2 = mock(WebSocketSession.class);
 

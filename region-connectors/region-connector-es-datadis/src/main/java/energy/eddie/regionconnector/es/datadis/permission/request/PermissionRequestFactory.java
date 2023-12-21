@@ -17,7 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.Flow;
 
 @Component
-public class PermissionRequestFactory implements Mvp1ConnectionStatusMessageProvider, AutoCloseable {
+public class PermissionRequestFactory implements Mvp1ConnectionStatusMessageProvider {
     private final AuthorizationApi authorizationApi;
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink;
     private final EsPermissionRequestRepository repository;

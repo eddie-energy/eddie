@@ -9,9 +9,12 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedis
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisInvalidState;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
 import org.junit.jupiter.api.Test;
+import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
+import reactor.test.StepVerifier;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -122,5 +125,45 @@ class EnedisRegionConnectorTest {
             // Then
             assertDoesNotThrow(() -> rc.terminatePermission("pid"));
         }
+    }
+
+    @Test
+    void close_emitsCompleteOnPublisherForConnectionStatusMessages() {
+        // Given
+        var enedisApi = mock(EnedisApi.class);
+        var permissionRequestService = mock(PermissionRequestService.class);
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
+        Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
+        var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink);
+
+        StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(rc.getConnectionStatusMessageStream()))
+                .expectComplete()
+                .verifyLater();
+
+        // When
+        rc.close();
+
+        // Then
+        stepVerifier.verify(Duration.ofSeconds(2));
+    }
+
+    @Test
+    void close_emitsCompleteOnPublisherForConsumptionRecords() {
+        // Given
+        var enedisApi = mock(EnedisApi.class);
+        var permissionRequestService = mock(PermissionRequestService.class);
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
+        Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
+        var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink);
+
+        StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(rc.getConsumptionRecordStream()))
+                .expectComplete()
+                .verifyLater();
+
+        // When
+        rc.close();
+
+        // Then
+        stepVerifier.verify(Duration.ofSeconds(2));
     }
 }
