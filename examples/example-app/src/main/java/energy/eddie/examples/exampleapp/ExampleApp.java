@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.List;
+import java.util.stream.Stream;
 
 public class ExampleApp {
 
@@ -27,6 +27,10 @@ public class ExampleApp {
     }
 
     public static void main(String[] args) {
+        var injector = Guice.createInjector(new Module());
+        JdbcAdapter jdbcAdapter = injector.getInstance(JdbcAdapter.class);
+        jdbcAdapter.initializeDatabase();
+
         if (inDevelopmentMode()) {
             LOGGER.info("Executing JteTemplates in development mode");
             var resolver = new DirectoryCodeResolver(Path.of(SRC_MAIN_PREFIX, "jte"));
@@ -55,9 +59,8 @@ public class ExampleApp {
             });
 
             app.get("/", ctx -> ctx.redirect("login"));
-            var injector = Guice.createInjector(new Module());
 
-            List.of(LoginHandler.class, ShowConnectionListHandler.class, ShowConnectionHandler.class).stream()
+            Stream.of(LoginHandler.class, ShowConnectionListHandler.class, ShowConnectionHandler.class)
                     .map(injector::getInstance)
                     .forEach(handler -> handler.register(app));
             app.start(8081);
