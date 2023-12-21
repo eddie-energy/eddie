@@ -17,17 +17,18 @@ import org.springframework.web.util.UriTemplate;
 import java.net.URI;
 import java.util.Optional;
 
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
+
 @RestController
 public class PermissionRequestController {
-    @SuppressWarnings("java:S1075") // Is used to build the location header
-    private static final String PERMISSION_STATUS_PATH = "/permission-status";
     private final PermissionRequestService permissionRequestService;
 
     public PermissionRequestController(PermissionRequestService permissionRequestService) {
         this.permissionRequestService = permissionRequestService;
     }
 
-    @GetMapping(value = PERMISSION_STATUS_PATH + "/{permissionId}")
+    @GetMapping(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
     public ConnectionStatusMessage permissionStatus(@PathVariable String permissionId) {
         Optional<ConnectionStatusMessage> connectionStatusMessage =
                 permissionRequestService.findConnectionStatusMessageById(permissionId);
@@ -38,7 +39,7 @@ public class PermissionRequestController {
     }
 
     @PostMapping(
-            value = "/permission-request",
+            value = PATH_PERMISSION_REQUEST,
             produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
@@ -49,8 +50,8 @@ public class PermissionRequestController {
             PermissionRequestForCreation permissionRequest
     ) throws StateTransitionException {
         CreatedPermissionRequest createdPermissionRequest = permissionRequestService.createPermissionRequest(permissionRequest);
-        URI location = new UriTemplate("{statusPath}/{permissionId}")
-                .expand(PERMISSION_STATUS_PATH, createdPermissionRequest.permissionId());
+        URI location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
+                .expand(createdPermissionRequest.permissionId());
         return ResponseEntity
                 .created(location)
                 .body(createdPermissionRequest);

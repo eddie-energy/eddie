@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+
 @RestController
 public class PermissionRequestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
@@ -24,8 +26,8 @@ public class PermissionRequestController {
         this.aiidaService = aiidaService;
     }
 
-    @PostMapping(value = "/permission-request", produces = MediaType.APPLICATION_JSON_VALUE)
-    // TODO: --> use correct responseEntity as well @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(value = PATH_PERMISSION_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
+    // TODO: --> use correct responseEntity as well @ResponseStatus(HttpStatus.CREATED) --> issue #535
     public ResponseEntity<PermissionDto> createPermissionRequest(
             @Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation)
             throws StateTransitionException {

@@ -14,9 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Optional;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 
 @RestController
 public class PermissionRequestController {
@@ -29,14 +29,14 @@ public class PermissionRequestController {
         this.creationService = creationService;
     }
 
-    @GetMapping("/permission-status/{permissionId}")
+    @GetMapping(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
     public ResponseEntity<ConnectionStatusMessage> permissionStatus(@PathVariable String permissionId) throws PermissionNotFoundException {
         var statusMessage = permissionRequestService.findConnectionStatusMessageById(permissionId)
                 .orElseThrow(() -> new PermissionNotFoundException(permissionId));
         return ResponseEntity.ok(statusMessage);
     }
 
-    @PostMapping(value = "/permission-request", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = PATH_PERMISSION_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public CreatedPermissionRequest createPermissionRequest(
             @ModelAttribute @Valid PermissionRequestForCreation permissionRequestForCreation

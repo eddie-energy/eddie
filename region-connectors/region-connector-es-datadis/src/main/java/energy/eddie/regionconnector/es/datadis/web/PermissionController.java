@@ -22,11 +22,11 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
+
 @RestController
 public class PermissionController {
-    // this path will stay hard-coded
-    @SuppressWarnings("java:S1075")
-    private static final String PERMISSION_STATUS_PATH = "/permission-status";
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionController.class);
     private final PermissionRequestService service;
 
@@ -49,22 +49,22 @@ public class PermissionController {
         });
     }
 
-    @GetMapping(PERMISSION_STATUS_PATH + "/{permissionId}")
+    @GetMapping(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
     public ResponseEntity<ConnectionStatusMessage> permissionStatus(@PathVariable String permissionId) throws PermissionNotFoundException {
         var statusMessage = service.findConnectionStatusMessageById(permissionId)
                 .orElseThrow(() -> new PermissionNotFoundException(permissionId));
         return ResponseEntity.ok(statusMessage);
     }
 
-    @PostMapping(value = "/permission-request", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = PATH_PERMISSION_REQUEST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, String>> requestPermission(@Valid @ModelAttribute PermissionRequestForCreation requestForCreation) throws StateTransitionException {
         LOGGER.info("request was: {}", requestForCreation);
 
         var permissionRequest = service.createAndSendPermissionRequest(requestForCreation);
 
         String permissionId = permissionRequest.permissionId();
-        var location = new UriTemplate("{statusPath}/{permissionId}")
-                .expand(PERMISSION_STATUS_PATH, permissionId);
+        var location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
+                .expand(permissionId);
 
         return ResponseEntity.created(location).body(Map.of("permissionId", permissionId));
     }
