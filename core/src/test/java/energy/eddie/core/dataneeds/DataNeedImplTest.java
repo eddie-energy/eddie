@@ -12,8 +12,8 @@ class DataNeedImplTest {
             DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA, ConsumptionRecord.MeteringInterval.PT_15_M, -90, false, 0);
 
     static DataNeedImpl copy(DataNeedImpl dataNeed) {
-        return new DataNeedImpl(dataNeed.getId(), dataNeed.getDescription(), dataNeed.getType(), dataNeed.getGranularity(),
-                dataNeed.getDurationStart(), dataNeed.getDurationOpenEnd(), dataNeed.getDurationEnd());
+        return new DataNeedImpl(dataNeed.id(), dataNeed.description(), dataNeed.type(), dataNeed.granularity(),
+                dataNeed.durationStart(), dataNeed.durationOpenEnd(), dataNeed.durationEnd());
     }
 
     @Test
@@ -21,7 +21,7 @@ class DataNeedImplTest {
         var equalDataNeed = copy(EXAMPLE_DATA_NEED);
         assertThat(EXAMPLE_DATA_NEED).isEqualTo(equalDataNeed).hasSameHashCodeAs(equalDataNeed).isNotSameAs(equalDataNeed);
         var differentKeyDataNeed = copy(EXAMPLE_DATA_NEED);
-        differentKeyDataNeed.setId(EXAMPLE_DATA_NEED.getId() + "_changed");
+        differentKeyDataNeed.setId(EXAMPLE_DATA_NEED.id() + "_changed");
         assertThat(EXAMPLE_DATA_NEED).isNotEqualTo(differentKeyDataNeed).doesNotHaveSameHashCodeAs(differentKeyDataNeed);
         var differentTypeDataNeed = copy(EXAMPLE_DATA_NEED);
         differentTypeDataNeed.setType(DataType.FUTURE_VALIDATED_CONSUMPTION_DATA);

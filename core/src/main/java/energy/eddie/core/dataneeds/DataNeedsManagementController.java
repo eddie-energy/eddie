@@ -26,7 +26,7 @@ public class DataNeedsManagementController {
 
     @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
     public ResponseEntity<String> createDataNeed(@NonNull @RequestBody DataNeedImpl newDataNeed) {
-        final var id = newDataNeed.getId();
+        final var id = newDataNeed.id();
         if (dataNeedsDbRepository.existsById(id)) {
             return ResponseEntity.badRequest().body("data need with id " + id + " already exists");
         }
@@ -47,7 +47,7 @@ public class DataNeedsManagementController {
 
     @PostMapping("/{id}")
     public ResponseEntity<String> updateDataNeed(@PathVariable String id, @RequestBody DataNeedImpl dataNeed) {
-        if (!dataNeed.getId().equals(id)) {
+        if (!dataNeed.id().equals(id)) {
             return ResponseEntity.badRequest().body("data need id in url does not match data need id in body");
         } else if (!dataNeedsDbRepository.existsById(id)) {
             return ResponseEntity.notFound().build();

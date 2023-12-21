@@ -10,19 +10,19 @@ import javax.annotation.Nullable;
  * See <a href="https://eddie-web.projekte.fh-hagenberg.at/docs/requirements/4_data_requirements/1_logical_data_model/">DataNeedImpl in logical data model</a>
  */
 public interface DataNeed {
-    String getId();
+    String id();
 
-    String getDescription();
+    String description();
 
-    DataType getType();
-
-    @Nullable
-    ConsumptionRecord.MeteringInterval getGranularity();
-
-    Integer getDurationStart();
-
-    Boolean getDurationOpenEnd();
+    DataType type();
 
     @Nullable
-    Integer getDurationEnd();
+    ConsumptionRecord.MeteringInterval granularity();
+
+    Integer durationStart();
+
+    Boolean durationOpenEnd();
+
+    @Nullable
+    Integer durationEnd();
 }

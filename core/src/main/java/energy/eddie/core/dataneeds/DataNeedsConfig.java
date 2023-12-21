@@ -24,7 +24,7 @@ public class DataNeedsConfig {
         if (null != dataNeeds) {
             this.dataNeedForId = HashMap.newHashMap(dataNeeds.size());
             for (DataNeedImpl dataNeed : dataNeeds) {
-                String dataNeedId = dataNeed.getId();
+                String dataNeedId = dataNeed.id();
                 if (dataNeedForId.containsKey(dataNeedId)) {
                     LOGGER.error("Duplicate data need id read from spring config, id: {}", dataNeedId);
                 }

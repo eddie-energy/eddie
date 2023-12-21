@@ -1,5 +1,6 @@
 package energy.eddie.core.dataneeds;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.agnostic.DataNeed;
 import energy.eddie.api.agnostic.DataType;
 import energy.eddie.api.v0.ConsumptionRecord;
@@ -17,12 +18,19 @@ import java.util.Objects;
 @Entity
 public class DataNeedImpl implements DataNeed {
     @Id
+    @JsonProperty
     private String id;
+    @JsonProperty
     private String description;
+    @JsonProperty
     private DataType type;
+    @JsonProperty
     private @Nullable ConsumptionRecord.MeteringInterval granularity;
+    @JsonProperty
     private Integer durationStart;
+    @JsonProperty
     private Boolean durationOpenEnd;
+    @JsonProperty
     private @Nullable Integer durationEnd;
 
     @SuppressWarnings("NullAway.Init")
@@ -39,7 +47,8 @@ public class DataNeedImpl implements DataNeed {
         this.durationEnd = durationEnd;
     }
 
-    public String getId() {
+    @Override
+    public String id() {
         return id;
     }
 
@@ -47,7 +56,8 @@ public class DataNeedImpl implements DataNeed {
         this.id = id;
     }
 
-    public String getDescription() {
+    @Override
+    public String description() {
         return description;
     }
 
@@ -55,7 +65,8 @@ public class DataNeedImpl implements DataNeed {
         this.description = description;
     }
 
-    public DataType getType() {
+    @Override
+    public DataType type() {
         return type;
     }
 
@@ -63,8 +74,9 @@ public class DataNeedImpl implements DataNeed {
         this.type = type;
     }
 
+    @Override
     @Nullable
-    public ConsumptionRecord.MeteringInterval getGranularity() {
+    public ConsumptionRecord.MeteringInterval granularity() {
         return granularity;
     }
 
@@ -72,7 +84,8 @@ public class DataNeedImpl implements DataNeed {
         this.granularity = granularity;
     }
 
-    public Integer getDurationStart() {
+    @Override
+    public Integer durationStart() {
         return durationStart;
     }
 
@@ -80,7 +93,8 @@ public class DataNeedImpl implements DataNeed {
         this.durationStart = durationStart;
     }
 
-    public Boolean getDurationOpenEnd() {
+    @Override
+    public Boolean durationOpenEnd() {
         return durationOpenEnd;
     }
 
@@ -88,8 +102,9 @@ public class DataNeedImpl implements DataNeed {
         this.durationOpenEnd = durationOpenEnd;
     }
 
+    @Override
     @Nullable
-    public Integer getDurationEnd() {
+    public Integer durationEnd() {
         return durationEnd;
     }
 
