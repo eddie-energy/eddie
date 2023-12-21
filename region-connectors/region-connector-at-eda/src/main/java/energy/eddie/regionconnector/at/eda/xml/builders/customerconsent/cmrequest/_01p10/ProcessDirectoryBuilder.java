@@ -21,6 +21,7 @@ public class ProcessDirectoryBuilder extends ProcessDirectorySBuilder {
     private static final int LEN_METERING_POINT = 33;
     private static final int LEN_CM_REQ_ID = 35;
     private static final int LEN_CONSENT_ID = 35;
+    private static final String CHARACTERS = " characters.";
     @Nullable
     private LocalDate processDate;
     @Nullable
@@ -83,7 +84,7 @@ public class ProcessDirectoryBuilder extends ProcessDirectorySBuilder {
         }
 
         if (meteringPoint.length() > LEN_METERING_POINT) {
-            throw new IllegalArgumentException("`meteringPoint` length cannot exceed " + LEN_METERING_POINT + " characters.");
+            throw new IllegalArgumentException("`meteringPoint` length cannot exceed " + LEN_METERING_POINT + CHARACTERS);
         }
 
         for (int i = 0; i < meteringPoint.length(); i++) {
@@ -106,7 +107,7 @@ public class ProcessDirectoryBuilder extends ProcessDirectorySBuilder {
      */
     public ProcessDirectoryBuilder withCMRequestId(String cmRequestId) {
         if (cmRequestId != null && cmRequestId.length() > LEN_CM_REQ_ID) {
-            throw new IllegalArgumentException("`cmRequestId` length cannot exceed " + LEN_CM_REQ_ID + " characters.");
+            throw new IllegalArgumentException("`cmRequestId` length cannot exceed " + LEN_CM_REQ_ID + CHARACTERS);
         }
 
         this.cmRequestId = cmRequestId;
@@ -126,7 +127,7 @@ public class ProcessDirectoryBuilder extends ProcessDirectorySBuilder {
         }
 
         if (consentId.length() > LEN_CONSENT_ID) {
-            throw new IllegalArgumentException("`consentId` length cannot exceed " + LEN_CONSENT_ID + " characters.");
+            throw new IllegalArgumentException("`consentId` length cannot exceed " + LEN_CONSENT_ID + CHARACTERS);
         }
 
         this.consentId = consentId;

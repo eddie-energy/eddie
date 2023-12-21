@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CRCTest {
+class CRCTest {
     /**
      * The test values are taken from the CMRequest schema document found
      * on <a href="https://www.ebutilities.at/schemas/149">ebutilities</a> in the documents section.
@@ -35,7 +35,7 @@ public class CRCTest {
     }
 
     @Test
-    public void testIllegalStateException() throws Throwable {
+    void testIllegalStateException() throws Throwable {
         // Create Object of Utility class
         try {
             Constructor<CRCTest> constructor = CRCTest.class.getDeclaredConstructor();

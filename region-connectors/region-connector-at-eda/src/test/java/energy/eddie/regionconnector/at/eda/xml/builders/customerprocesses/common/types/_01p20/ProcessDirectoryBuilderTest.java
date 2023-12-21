@@ -6,23 +6,23 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.time.Month;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ProcessDirectoryBuilderTest {
+class ProcessDirectoryBuilderTest {
     @Test
-    public void testProcessDirectoryBuilder() {
+    void testProcessDirectoryBuilder() {
         // Example of a correct implementation
-        energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.common.types._01p20.ProcessDirectoryBuilder processDirBuilder = new energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.common.types._01p20.ProcessDirectoryBuilder();
-        processDirBuilder
+        energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.common.types._01p20.ProcessDirectoryBuilder processDirBuilder = new energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.common.types._01p20.ProcessDirectoryBuilder()
                 .withMessageId("GC100007201912170930001230001234567")
                 .withConversationId("GC100007201912170930001230012345678")
                 .withProcessDate(LocalDate.of(2019, Month.DECEMBER, 17))
-                .withMeteringPoint("AT9999990699900000000000206868100")
-                .build();
+                .withMeteringPoint("AT9999990699900000000000206868100");
+        assertDoesNotThrow(processDirBuilder::build);
     }
 
     @Test
-    public void testStringMaxLengthExceeded() {
+    void testStringMaxLengthExceeded() {
         // Assign string which exceeds the maximum string length
         ProcessDirectoryBuilder processDirBuilder = new ProcessDirectoryBuilder();
 
@@ -42,7 +42,7 @@ public class ProcessDirectoryBuilderTest {
     }
 
     @Test
-    public void testStringWrongCharacters() {
+    void testStringWrongCharacters() {
         // Assign string which contains not allowed characters
         energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.common.types._01p20.ProcessDirectoryBuilder processDirBuilder = new energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.common.types._01p20.ProcessDirectoryBuilder();
 
@@ -53,7 +53,7 @@ public class ProcessDirectoryBuilderTest {
     }
 
     @Test
-    public void testEmptyString() {
+    void testEmptyString() {
         // Assign empty string to required attributes
         energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.common.types._01p20.ProcessDirectoryBuilder processDirBuilder = new energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.common.types._01p20.ProcessDirectoryBuilder();
 
@@ -66,20 +66,20 @@ public class ProcessDirectoryBuilderTest {
     }
 
     @Test
-    public void testNullPointerException() {
+    void testNullPointerException() {
         energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.common.types._01p20.ProcessDirectoryBuilder processDirBuilder = new energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.common.types._01p20.ProcessDirectoryBuilder();
 
         // Assign no attributes
         assertThrows(NullPointerException.class, processDirBuilder::build);
 
         // Assign only one required attribute
-        assertThrows(NullPointerException.class, () -> processDirBuilder
+        assertThrows(NullPointerException.class, processDirBuilder
                 .withMessageId("GC100007201912170930001230001234567")
-                .build());
+                ::build);
 
         // Assign only two required attribute
-        assertThrows(NullPointerException.class, () -> processDirBuilder
+        assertThrows(NullPointerException.class, processDirBuilder
                 .withMeteringPoint("AT9999990699900000000000206868100")
-                .build());
+                ::build);
     }
 }

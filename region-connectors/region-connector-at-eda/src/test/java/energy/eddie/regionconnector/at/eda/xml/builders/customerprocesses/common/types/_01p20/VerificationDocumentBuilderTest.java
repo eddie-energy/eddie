@@ -2,21 +2,20 @@ package energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.commo
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class VerificationDocumentBuilderTest {
+class VerificationDocumentBuilderTest {
     @Test
-    public void testVerificationDocumentBuilder() {
+    void testVerificationDocumentBuilder() {
         // Example of a correct implementation
-        VerificationDocumentBuilder verificationDocumentBuilder = new VerificationDocumentBuilder();
-
-        verificationDocumentBuilder
-                .withDocNumber("Test")
-                .build();
+        VerificationDocumentBuilder verificationDocumentBuilder = new VerificationDocumentBuilder()
+                .withDocNumber("Test");
+        assertDoesNotThrow(verificationDocumentBuilder::build);
     }
 
     @Test
-    public void testStringWrongCharacters() {
+    void testStringWrongCharacters() {
         // Assign string which contains not allowed characters
         VerificationDocumentBuilder verificationDocumentBuilder = new VerificationDocumentBuilder();
 
@@ -27,7 +26,7 @@ public class VerificationDocumentBuilderTest {
     }
 
     @Test
-    public void testStringMaxLengthExceeded() {
+    void testStringMaxLengthExceeded() {
         // Assign string which exceeds the maximum string length
         VerificationDocumentBuilder verificationDocumentBuilder = new VerificationDocumentBuilder();
 
@@ -37,7 +36,7 @@ public class VerificationDocumentBuilderTest {
     }
 
     @Test
-    public void testNullPointerException() {
+    void testNullPointerException() {
         VerificationDocumentBuilder verificationDocumentBuilder = new VerificationDocumentBuilder();
 
         // Assign no required attributes
@@ -45,7 +44,7 @@ public class VerificationDocumentBuilderTest {
     }
 
     @Test
-    public void testEmptyString() {
+    void testEmptyString() {
         VerificationDocumentBuilder verificationDocumentBuilder = new VerificationDocumentBuilder();
 
         assertThrows(IllegalArgumentException.class, () -> verificationDocumentBuilder.withDocNumber(""));

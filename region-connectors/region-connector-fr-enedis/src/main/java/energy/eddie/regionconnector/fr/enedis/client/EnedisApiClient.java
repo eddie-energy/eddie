@@ -16,6 +16,8 @@ import java.time.*;
 import java.util.Objects;
 
 public class EnedisApiClient extends ApiClient implements EnedisApi {
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String USER_AGENT = "eddie";
     private final AuthorizationApi authApi;
     private final MeteringDataApi meterApi;
     private final EnedisConfiguration configuration;
@@ -43,7 +45,7 @@ public class EnedisApiClient extends ApiClient implements EnedisApi {
         String authorization = "No auth";
 
         TokenGenerationResponse tokenGenerationResponse = authApi
-                .oauth2V3TokenPost(contentType, authorization, grantType, "eddie", clientId, clientSecret);
+                .oauth2V3TokenPost(contentType, authorization, grantType, USER_AGENT, clientId, clientSecret);
 
         bearerToken = Objects.requireNonNull(tokenGenerationResponse.getAccessToken());
     }
@@ -61,12 +63,11 @@ public class EnedisApiClient extends ApiClient implements EnedisApi {
         // The end date is not in the response when requesting data, increment +1 day to prevent confusion
         end = end.plusDays(1);
 
-        String accept = "application/json";
         ConsumptionRecord dcRecord;
 
         String authorization = "Bearer " + bearerToken;
 
-        DailyConsumptionResponse dcResponse = meterApi.meteringDataDcV5DailyConsumptionGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, "application/json", "eddie", null);
+        DailyConsumptionResponse dcResponse = meterApi.meteringDataDcV5DailyConsumptionGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), APPLICATION_JSON, APPLICATION_JSON, USER_AGENT, null);
         dcRecord = ConsumptionRecordMapper.dcReadingToCIM(dcResponse.getMeterReading());
 
         return dcRecord;
@@ -85,11 +86,10 @@ public class EnedisApiClient extends ApiClient implements EnedisApi {
         // The end date is not in the response when requesting data, increment +1 day to prevent confusion
         end = end.plusDays(1);
 
-        String accept = "application/json";
         ConsumptionRecord clcRecord;
 
         String authorization = "Bearer " + bearerToken;
-        ConsumptionLoadCurveResponse clcResponse = meterApi.meteringDataClcV5ConsumptionLoadCurveGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), accept, "application/json", "eddie", null);
+        ConsumptionLoadCurveResponse clcResponse = meterApi.meteringDataClcV5ConsumptionLoadCurveGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), APPLICATION_JSON, APPLICATION_JSON, USER_AGENT, null);
         clcRecord = ConsumptionRecordMapper.clcReadingToCIM(clcResponse.getMeterReading());
 
         return clcRecord;

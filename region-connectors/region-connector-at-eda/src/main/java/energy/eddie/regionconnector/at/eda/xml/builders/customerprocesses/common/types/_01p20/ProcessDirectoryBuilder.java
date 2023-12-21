@@ -18,6 +18,7 @@ public class ProcessDirectoryBuilder {
     private static final int LEN_MESSAGE_ID = 35;
     private static final int LEN_CONVERSATION_ID = 35;
     private static final int LEN_METERING_POINT = 33;
+    private static final String CHARACTERS = " characters.";
     @Nullable
     private String messageId;
     @Nullable
@@ -40,7 +41,7 @@ public class ProcessDirectoryBuilder {
         }
 
         if (messageId.length() > LEN_MESSAGE_ID) {
-            throw new IllegalArgumentException("`messageId` length cannot exceed " + LEN_MESSAGE_ID + " characters.");
+            throw new IllegalArgumentException("`messageId` length cannot exceed " + LEN_MESSAGE_ID + CHARACTERS);
         }
 
         this.messageId = messageId;
@@ -60,7 +61,7 @@ public class ProcessDirectoryBuilder {
         }
 
         if (conversationId.length() > LEN_CONVERSATION_ID) {
-            throw new IllegalArgumentException("`conversationId` length cannot exceed " + LEN_CONVERSATION_ID + " characters.");
+            throw new IllegalArgumentException("`conversationId` length cannot exceed " + LEN_CONVERSATION_ID + CHARACTERS);
         }
 
         this.conversationId = conversationId;
@@ -92,7 +93,7 @@ public class ProcessDirectoryBuilder {
         }
 
         if (meteringPoint.length() > LEN_METERING_POINT) {
-            throw new IllegalArgumentException("`meteringPoint` length cannot exceed " + LEN_METERING_POINT + " characters.");
+            throw new IllegalArgumentException("`meteringPoint` length cannot exceed " + LEN_METERING_POINT + CHARACTERS);
         }
 
         for (int i = 0; i < meteringPoint.length(); i++) {

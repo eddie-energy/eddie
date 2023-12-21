@@ -7,8 +7,11 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import jakarta.xml.bind.JAXBException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AtValidatedPermissionRequestState extends ContextualizedPermissionRequestState<AtPermissionRequest> implements ValidatedPermissionRequestState {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AtValidatedPermissionRequestState.class);
     private final EdaAdapter edaAdapter;
     private final CMRequest cmRequest;
 
@@ -25,8 +28,8 @@ public class AtValidatedPermissionRequestState extends ContextualizedPermissionR
             edaAdapter.sendCMRequest(cmRequest);
             permissionRequest.changeState(new AtPendingAcknowledgmentPermissionRequestState(permissionRequest));
         } catch (TransmissionException | JAXBException e) {
+            LOGGER.error("Error sending CCMO request to DSO '{}'", permissionRequest.cmRequestId(), e);
             permissionRequest.changeState(new AtUnableToSendPermissionRequestState(permissionRequest, e));
         }
     }
-
 }

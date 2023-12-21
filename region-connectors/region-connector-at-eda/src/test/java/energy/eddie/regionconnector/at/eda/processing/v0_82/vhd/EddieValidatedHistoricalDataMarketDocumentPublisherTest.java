@@ -62,9 +62,6 @@ class EddieValidatedHistoricalDataMarketDocumentPublisherTest {
         var xmlCalendar = DatatypeFactory.newDefaultInstance().newXMLGregorianCalendar(2023, 1, 1, 0, 0, 0, 0, 0);
         LocalDate date = xmlCalendar.toGregorianCalendar().toZonedDateTime().toLocalDate();
 
-        AtPermissionRequest permissionRequest = mock(AtPermissionRequest.class);
-        when(permissionRequest.meteringPointId()).thenReturn(Optional.of(meteringPointId));
-
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
         when(permissionRequestService.findByMeteringPointIdAndDate(meteringPointId, date))
                 .thenReturn(List.of());

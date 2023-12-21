@@ -7,27 +7,27 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.time.Month;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class RoutingHeaderBuilderTest {
+class RoutingHeaderBuilderTest {
     @Test
-    public void testRoutingHeaderBuilder() {
+    void testRoutingHeaderBuilder() {
         // Example of a correct implementation
         RoutingAddressBuilder routingAddressBuilder = new RoutingAddressBuilder();
-        RoutingHeaderBuilder routingHeaderBuilder = new RoutingHeaderBuilder();
-
-        routingHeaderBuilder
+        RoutingHeaderBuilder routingHeaderBuilder = new RoutingHeaderBuilder()
                 .withSender(
                         routingAddressBuilder.withMessageAddress("AT999999").withAddressType(AddressType.EC_NUMBER).build()
                 ).withReceiver(
                         routingAddressBuilder.withMessageAddress("GC100007").withAddressType(AddressType.OTHER).build()
                 ).withDocCreationDateTime(
                         LocalDateTime.of(2020, Month.DECEMBER, 17, 9, 30, 47)
-                ).build();
+                );
+        assertDoesNotThrow(routingHeaderBuilder::build);
     }
 
     @Test
-    public void testNullPointerException() {
+    void testNullPointerException() {
         ObjectFactory objectFactory = new ObjectFactory();
         RoutingHeaderBuilder routingHeaderBuilder = new RoutingHeaderBuilder();
 
@@ -35,13 +35,13 @@ public class RoutingHeaderBuilderTest {
         assertThrows(NullPointerException.class, routingHeaderBuilder::build);
 
         // Assign only one required attribute
-        assertThrows(NullPointerException.class, () -> routingHeaderBuilder
+        assertThrows(NullPointerException.class, routingHeaderBuilder
                 .withSender(objectFactory.createRoutingAddress())
-                .build());
+                ::build);
 
         // Assign only one required attribute
-        assertThrows(NullPointerException.class, () -> routingHeaderBuilder
+        assertThrows(NullPointerException.class, routingHeaderBuilder
                 .withReceiver(objectFactory.createRoutingAddress())
-                .build());
+                ::build);
     }
 }

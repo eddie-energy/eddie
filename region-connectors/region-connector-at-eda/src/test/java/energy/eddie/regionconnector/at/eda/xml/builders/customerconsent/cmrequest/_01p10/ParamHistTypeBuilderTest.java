@@ -3,20 +3,21 @@ package energy.eddie.regionconnector.at.eda.xml.builders.customerconsent.cmreque
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.MeteringIntervallType;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ParamHistTypeBuilderTest {
+class ParamHistTypeBuilderTest {
     @Test
-    public void testParamCycTypeBuilder() {
+    void testParamCycTypeBuilder() {
         // Example of a correct implementation
-        ParamHistTypeBuilder paramHistTypeBuilder = new ParamHistTypeBuilder();
-        paramHistTypeBuilder
-                .withMeteringIntervall(MeteringIntervallType.D)
-                .build();
+        ParamHistTypeBuilder paramHistTypeBuilder = new ParamHistTypeBuilder()
+                .withMeteringIntervall(MeteringIntervallType.D);
+
+        assertDoesNotThrow(paramHistTypeBuilder::build);
     }
 
     @Test
-    public void testNullPointerException() {
+    void testNullPointerException() {
         // Assign no attributes
         ParamHistTypeBuilder paramHistTypeBuilder = new ParamHistTypeBuilder();
         assertThrows(NullPointerException.class, paramHistTypeBuilder::build);

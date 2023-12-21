@@ -4,28 +4,28 @@ import at.ebutilities.schemata.customerconsent.cmrequest._01p10.MeteringInterval
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.TransmissionCycle;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ParamCycTypeBuilderTest {
+class ParamCycTypeBuilderTest {
     @Test
-    public void testParamCycTypeBuilder() {
+    void testParamCycTypeBuilder() {
         // Example of a correct implementation
-        ParamCycTypeBuilder paramCycTypeBuilder = new ParamCycTypeBuilder();
-        paramCycTypeBuilder
+        ParamCycTypeBuilder paramCycTypeBuilder = new ParamCycTypeBuilder()
                 .withMeteringIntervall(MeteringIntervallType.QH)
-                .withTransmissionCycle(TransmissionCycle.M)
-                .build();
+                .withTransmissionCycle(TransmissionCycle.M);
+        assertDoesNotThrow(paramCycTypeBuilder::build);
     }
 
     @Test
-    public void testNullPointerException() {
+    void testNullPointerException() {
         // Assign no attributes
         ParamCycTypeBuilder paramCycTypeBuilder1 = new ParamCycTypeBuilder();
         ParamCycTypeBuilder paramCycTypeBuilder2 = new ParamCycTypeBuilder();
         assertThrows(NullPointerException.class, paramCycTypeBuilder1::build);
 
         // Only one attribute assigned
-        assertThrows(NullPointerException.class, () -> paramCycTypeBuilder1.withMeteringIntervall(MeteringIntervallType.QH).build());
-        assertThrows(NullPointerException.class, () -> paramCycTypeBuilder2.withTransmissionCycle(TransmissionCycle.M).build());
+        assertThrows(NullPointerException.class, paramCycTypeBuilder1.withMeteringIntervall(MeteringIntervallType.QH)::build);
+        assertThrows(NullPointerException.class, paramCycTypeBuilder2.withTransmissionCycle(TransmissionCycle.M)::build);
     }
 }

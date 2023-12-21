@@ -2,22 +2,25 @@ package energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.commo
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class AdditionalDataBuilderTest {
+class AdditionalDataBuilderTest {
     @Test
-    public void testAdditionalDataBuilder() {
+    void testAdditionalDataBuilder() {
         // Example of a correct implementation
         AdditionalDataBuilder additionalDataBuilder = new AdditionalDataBuilder();
 
-        additionalDataBuilder
+        assertDoesNotThrow(
+                additionalDataBuilder
                 .withValue("Test")
                 .withName("Test")
-                .build();
+                        ::build
+        );
     }
 
     @Test
-    public void testStringMaxLengthExceeded() {
+    void testStringMaxLengthExceeded() {
         // Assign string which exceeds the maximum string length
         AdditionalDataBuilder additionalDataBuilder = new AdditionalDataBuilder();
 
@@ -33,7 +36,7 @@ public class AdditionalDataBuilderTest {
     }
 
     @Test
-    public void testEmptyString() {
+    void testEmptyString() {
         AdditionalDataBuilder additionalDataBuilder = new AdditionalDataBuilder();
 
         assertThrows(IllegalArgumentException.class, () -> additionalDataBuilder.withName(""));
@@ -41,13 +44,13 @@ public class AdditionalDataBuilderTest {
     }
 
     @Test
-    public void testNullPointerException() {
+    void testNullPointerException() {
         AdditionalDataBuilder additionalDataBuilder = new AdditionalDataBuilder();
 
         // Assign no required attributes
         assertThrows(NullPointerException.class, additionalDataBuilder::build);
 
         // Assign only one required attribute
-        assertThrows(NullPointerException.class, () -> additionalDataBuilder.withValue("Test").build());
+        assertThrows(NullPointerException.class, additionalDataBuilder.withValue("Test")::build);
     }
 }

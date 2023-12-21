@@ -7,11 +7,12 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.time.Month;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ProcessDirectoryBuilderTest {
+class ProcessDirectoryBuilderTest {
     @Test
-    public void testProcessDirectoryBuilder() {
+    void testProcessDirectoryBuilder() {
         // Example of a correct implementation
         ProcessDirectoryBuilder processDirBuilder = new ProcessDirectoryBuilder();
         ReqTypeBuilder reqTypeBuilder = new ReqTypeBuilder();
@@ -33,9 +34,7 @@ public class ProcessDirectoryBuilderTest {
                 )
                 .build();
 
-        ProcessDirectoryBuilder processDirBuilderWithDefaults = new ProcessDirectoryBuilder();
-
-        processDirBuilderWithDefaults
+        ProcessDirectoryBuilder processDirBuilderWithDefaults = new ProcessDirectoryBuilder()
                 .withMessageId("GC100007201912170930001230001234567")
                 .withConversationId("GC100007201912170930001230012345678")
                 .withMeteringPoint("AT9999990699900000000000206868100")
@@ -46,12 +45,12 @@ public class ProcessDirectoryBuilderTest {
                                 .withEcId("AT99999900000RC000000000012345678")
                                 .withEnergyDirection(EnergyDirection.CONSUMPTION)
                                 .build()
-                )
-                .build();
+                );
+        assertDoesNotThrow(processDirBuilderWithDefaults::build);
     }
 
     @Test
-    public void testStringMaxLengthExceeded() {
+    void testStringMaxLengthExceeded() {
         // Assign string which exceeds the maximum string length
         ProcessDirectoryBuilder processDirBuilder = new ProcessDirectoryBuilder();
 
@@ -71,7 +70,7 @@ public class ProcessDirectoryBuilderTest {
     }
 
     @Test
-    public void testStringWrongCharacters() {
+    void testStringWrongCharacters() {
         // Assign string which contains not allowed characters
         ProcessDirectoryBuilder processDirBuilder = new ProcessDirectoryBuilder();
 
@@ -82,7 +81,7 @@ public class ProcessDirectoryBuilderTest {
     }
 
     @Test
-    public void testEmptyString() {
+    void testEmptyString() {
         // Assign empty string to required attributes
         ProcessDirectoryBuilder processDirBuilder = new ProcessDirectoryBuilder();
 
@@ -97,16 +96,16 @@ public class ProcessDirectoryBuilderTest {
     }
 
     @Test
-    public void testNullPointerException() {
+    void testNullPointerException() {
         ProcessDirectoryBuilder processDirBuilder = new ProcessDirectoryBuilder();
 
         // Assign no attributes
         assertThrows(NullPointerException.class, processDirBuilder::build);
 
         // Assign only one required attribute
-        assertThrows(NullPointerException.class, () -> processDirBuilder
+        assertThrows(NullPointerException.class, processDirBuilder
                 .withMessageId("GC100007201912170930001230001234567")
-                .build());
+                ::build);
 
     }
 }
