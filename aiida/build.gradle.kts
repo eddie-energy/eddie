@@ -15,7 +15,9 @@ group = "energy.eddie.aiida"
 version = "0.0.1-SNAPSHOT"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
 }
 
 repositories {
@@ -30,7 +32,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
 
     // errorprone & nullAway
-    annotationProcessor("com.uber.nullaway:nullaway:0.10.11")
+    annotationProcessor("com.uber.nullaway:nullaway:0.10.18")
     // Optional, some source of nullability annotations.
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
     errorprone("com.google.errorprone:error_prone_core:2.18.0")
@@ -143,7 +145,7 @@ tasks.withType<JacocoReport> {
 
 jib {
     from {
-        image = "eclipse-temurin:19"
+        image = "eclipse-temurin:21"
     }
     to {
         image = System.getProperty("jib.to.image")
