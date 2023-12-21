@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.Optional;
 
-import static energy.eddie.core.dataneeds.DataNeedImplTest.*;
+import static energy.eddie.core.dataneeds.DataNeedEntityTest.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -76,7 +76,7 @@ class DataNeedsManagementControllerTest {
         given(repo.findAll()).willReturn(List.of(EXAMPLE_DATA_NEED, dataNeed1, dataNeed2));
         var jsonString = mvc.perform(get("/management/data-needs").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        var result = objectMapper.readValue(jsonString, DataNeedImpl[].class);
+        var result = objectMapper.readValue(jsonString, DataNeedEntity[].class);
         assertThat(result).hasSize(3).containsExactly(EXAMPLE_DATA_NEED, dataNeed1, dataNeed2);
         verify(repo).findAll();
         verifyNoMoreInteractions(repo);
@@ -86,7 +86,7 @@ class DataNeedsManagementControllerTest {
         given(repo.findAll()).willReturn(List.of());
         jsonString = mvc.perform(get("/management/data-needs").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        result = objectMapper.readValue(jsonString, DataNeedImpl[].class);
+        result = objectMapper.readValue(jsonString, DataNeedEntity[].class);
         assertThat(result).isEmpty();
         verify(repo).findAll();
         verifyNoMoreInteractions(repo);
@@ -98,7 +98,7 @@ class DataNeedsManagementControllerTest {
         given(repo.findById(EXAMPLE_DATA_NEED_KEY)).willReturn(Optional.of(EXAMPLE_DATA_NEED));
         var jsonString = mvc.perform(get("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        var result = objectMapper.readValue(jsonString, DataNeedImpl.class);
+        var result = objectMapper.readValue(jsonString, DataNeedEntity.class);
         assertThat(result).isEqualTo(EXAMPLE_DATA_NEED);
 
         // try to fetch non-existing data need

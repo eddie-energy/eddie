@@ -40,18 +40,6 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
      */
     private final Sinks.Many<ConnectionStatusMessage> permissionStateMessages;
 
-    // TODO this constructor is only used by tests --> can we remove it?
-    public EdaRegionConnector(EdaAdapter edaAdapter, PermissionRequestService permissionRequestService, ConsumptionRecordProcessor consumptionRecordProcessor) throws TransmissionException {
-        this(
-                edaAdapter,
-                permissionRequestService,
-                consumptionRecordProcessor,
-                Sinks.many()
-                        .multicast()
-                        .onBackpressureBuffer()
-        );
-    }
-
     @Autowired
     public EdaRegionConnector(EdaAdapter edaAdapter, PermissionRequestService permissionRequestService, ConsumptionRecordProcessor consumptionRecordProcessor, Sinks.Many<ConnectionStatusMessage> permissionStateMessages) throws TransmissionException {
         requireNonNull(edaAdapter);

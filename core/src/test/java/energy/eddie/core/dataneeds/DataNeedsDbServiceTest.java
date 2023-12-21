@@ -11,8 +11,8 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.Optional;
 import java.util.Set;
 
-import static energy.eddie.core.dataneeds.DataNeedImplTest.EXAMPLE_DATA_NEED;
-import static energy.eddie.core.dataneeds.DataNeedImplTest.EXAMPLE_DATA_NEED_KEY;
+import static energy.eddie.core.dataneeds.DataNeedEntityTest.EXAMPLE_DATA_NEED;
+import static energy.eddie.core.dataneeds.DataNeedEntityTest.EXAMPLE_DATA_NEED_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;

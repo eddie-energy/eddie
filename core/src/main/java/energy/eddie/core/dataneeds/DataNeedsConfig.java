@@ -17,13 +17,13 @@ public class DataNeedsConfig {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DataNeedsConfig.class);
     private final Map<String, DataNeed> dataNeedForId;
 
-    public DataNeedsConfig(List<DataNeedImpl> dataNeeds, DataNeedSource dataNeedSource) {
+    public DataNeedsConfig(List<DataNeedEntity> dataNeeds, DataNeedSource dataNeedSource) {
         if (dataNeedSource == DataNeedSource.DATABASE && (null != dataNeeds && !dataNeeds.isEmpty())) {
             throw new IllegalConfigurationException("There must not be any data needs in the config when using dataNeedSource: " + DataNeedSource.DATABASE);
         }
         if (null != dataNeeds) {
             this.dataNeedForId = HashMap.newHashMap(dataNeeds.size());
-            for (DataNeedImpl dataNeed : dataNeeds) {
+            for (DataNeedEntity dataNeed : dataNeeds) {
                 String dataNeedId = dataNeed.id();
                 if (dataNeedForId.containsKey(dataNeedId)) {
                     LOGGER.error("Duplicate data need id read from spring config, id: {}", dataNeedId);

@@ -7,13 +7,13 @@ import org.springframework.data.repository.ListCrudRepository;
 import java.util.Set;
 
 /**
- * Db repository for {@link DataNeedImpl}s.
+ * Db repository for {@link DataNeedEntity}s.
  */
 @ConditionalOnProperty(value = "eddie.data-needs-config.data-need-source", havingValue = "DATABASE")
-public interface DataNeedsDbRepository extends ListCrudRepository<DataNeedImpl, String> {
+public interface DataNeedsDbRepository extends ListCrudRepository<DataNeedEntity, String> {
 
     /**
-     * Get the ids of all {@link DataNeedImpl}s.
+     * Get the ids of all {@link DataNeedEntity}s.
      *
      * @return set containing all (distinct) ids
      */

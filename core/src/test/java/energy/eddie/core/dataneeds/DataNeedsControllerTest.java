@@ -37,7 +37,7 @@ class DataNeedsControllerTest {
 
     @Test
     void testGetDataNeed() throws Exception {
-        final var dataNeed = new DataNeedImpl("dn-id", "description", DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA,
+        final var dataNeed = new DataNeedEntity("dn-id", "description", DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA,
                 ConsumptionRecord.MeteringInterval.P_1_D, -90, false, 0);
         given(this.dataNeedsConfigService.getDataNeed("dn-id"))
                 .willReturn(Optional.of(dataNeed));

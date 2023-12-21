@@ -89,12 +89,13 @@ class EdaRegionConnectorIntegrationTest {
 
     @Test
     void subscribeToConnectionStatusMessagePublisher_doesNotReturnUnmappedMessages() throws TransmissionException {
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
         TestPublisher<CMRequestStatus> testPublisher = TestPublisher.create();
         when(adapter.getCMRequestStatusStream()).thenReturn(testPublisher.flux());
 
         repository.save(new SimplePermissionRequest("permissionId", "connectionId", "dataNeedId", "test", "test", null));
 
-        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor);
+        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, sink);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
 

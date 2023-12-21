@@ -13,10 +13,10 @@ import java.util.Objects;
 /**
  * Record defining the attributes of a data need.
  * <p>
- * See <a href="https://eddie-web.projekte.fh-hagenberg.at/docs/requirements/4_data_requirements/1_logical_data_model/">DataNeedImpl in logical data model</a>
+ * See <a href="https://eddie-web.projekte.fh-hagenberg.at/docs/requirements/4_data_requirements/1_logical_data_model/">DataNeedEntity in logical data model</a>
  */
 @Entity
-public class DataNeedImpl implements DataNeed {
+public class DataNeedEntity implements DataNeed {
     @Id
     @JsonProperty
     private String id;
@@ -34,10 +34,10 @@ public class DataNeedImpl implements DataNeed {
     private @Nullable Integer durationEnd;
 
     @SuppressWarnings("NullAway.Init")
-    protected DataNeedImpl() {
+    protected DataNeedEntity() {
     }
 
-    public DataNeedImpl(String id, String description, DataType type, @Nullable ConsumptionRecord.MeteringInterval granularity, Integer durationStart, Boolean durationOpenEnd, @Nullable Integer durationEnd) {
+    public DataNeedEntity(String id, String description, DataType type, @Nullable ConsumptionRecord.MeteringInterval granularity, Integer durationStart, Boolean durationOpenEnd, @Nullable Integer durationEnd) {
         this.id = id;
         this.description = description;
         this.type = type;
@@ -115,7 +115,7 @@ public class DataNeedImpl implements DataNeed {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DataNeedImpl dataNeed)) return false;
+        if (!(o instanceof DataNeedEntity dataNeed)) return false;
         return Objects.equals(id, dataNeed.id) && Objects.equals(description, dataNeed.description) && type == dataNeed.type && granularity == dataNeed.granularity && Objects.equals(durationStart, dataNeed.durationStart) && Objects.equals(durationOpenEnd, dataNeed.durationOpenEnd) && Objects.equals(durationEnd, dataNeed.durationEnd);
     }
 

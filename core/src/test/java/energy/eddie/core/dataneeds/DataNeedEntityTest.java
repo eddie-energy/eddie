@@ -6,13 +6,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class DataNeedImplTest {
+class DataNeedEntityTest {
     static final String EXAMPLE_DATA_NEED_KEY = "EXAMPLE_DATA_NEED";
-    static final DataNeedImpl EXAMPLE_DATA_NEED = new DataNeedImpl(EXAMPLE_DATA_NEED_KEY, "description",
+    static final DataNeedEntity EXAMPLE_DATA_NEED = new DataNeedEntity(EXAMPLE_DATA_NEED_KEY, "description",
             DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA, ConsumptionRecord.MeteringInterval.PT_15_M, -90, false, 0);
 
-    static DataNeedImpl copy(DataNeedImpl dataNeed) {
-        return new DataNeedImpl(dataNeed.id(), dataNeed.description(), dataNeed.type(), dataNeed.granularity(),
+    static DataNeedEntity copy(DataNeedEntity dataNeed) {
+        return new DataNeedEntity(dataNeed.id(), dataNeed.description(), dataNeed.type(), dataNeed.granularity(),
                 dataNeed.durationStart(), dataNeed.durationOpenEnd(), dataNeed.durationEnd());
     }
 
