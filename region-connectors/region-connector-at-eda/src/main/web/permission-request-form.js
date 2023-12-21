@@ -1,4 +1,5 @@
-import { html, LitElement } from "lit";
+import { html } from "lit";
+import PermissionRequestFormBase from "../../../../../core/src/main/js/permission-request-form-base.js";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/input/input.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/button/button.js";
@@ -7,7 +8,7 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/compone
 const BASE_URL = new URL(import.meta.url).href.replace("ce.js", "");
 const REQUEST_URL = BASE_URL + "permission-request";
 
-class PermissionRequestForm extends LitElement {
+class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
@@ -16,8 +17,6 @@ class PermissionRequestForm extends LitElement {
     _requestId: { type: String },
     _requestStatus: { type: String },
   };
-
-  intervalId = null;
 
   constructor() {
     super();
@@ -42,7 +41,7 @@ class PermissionRequestForm extends LitElement {
       startDate.getDate() + this.dataNeedAttributes.durationStart
     );
 
-    let endDate = new Date();
+    const endDate = new Date();
     if (this.dataNeedAttributes.durationEnd === 0) {
       endDate.setDate(endDate.getDate() - 1); // subtract one day by default
     } else {
@@ -56,61 +55,132 @@ class PermissionRequestForm extends LitElement {
     jsonData.dataNeedId = this.dataNeedAttributes.id;
     jsonData.granularity = this.dataNeedAttributes.granularity;
 
-    fetch(REQUEST_URL, {
-      body: JSON.stringify(jsonData),
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("HTTP status " + response.status);
-        }
-
-        return response.json();
-      })
-      .then((result) => {
-        this._requestId = result["cmRequestId"];
-        const permissionId = result["permissionId"];
-
-        this._requestStatus = "Request sent.";
-
-        this.requestPermissionStatus(permissionId);
-        // poll permission-status until the status is either "GRANTED" or "REJECTED"
-        this.intervalId = setInterval(
-          this.requestPermissionStatus(permissionId),
-          5000
-        );
-      })
-      .catch((error) => console.error(error));
+    this.createPermissionRequest(jsonData)
+      .then()
+      .catch((error) =>
+        this.notify(this.ERROR_TITLE, error, "danger", "exclamation-octagon")
+      );
   }
 
-  requestPermissionStatus(permissionId) {
-    return () => {
-      fetch(`${BASE_URL}permission-status/${permissionId}`)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("HTTP status " + response.status);
-          }
+  async createPermissionRequest(formData) {
+    try {
+      const response = await fetch(REQUEST_URL, {
+        body: JSON.stringify(formData),
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+      const result = await response.json();
 
-          return response.json();
-        })
-        .then((result) => {
-          if (
-            result["status"] === "ACCEPTED" ||
-            result["status"] === "REJECTED" ||
-            result["status"] === "INVALID" ||
-            result["status"] === "TERMINATED" ||
-            result["status"] === "FULFILLED"
-          ) {
-            clearInterval(this.intervalId);
-          }
+      if (response.status === 201) {
+        const successTitle = "Permission request created!";
+        const successMessage =
+          "Your permission request was created successfully.";
+        this.notify(
+          successTitle,
+          successMessage,
+          "success",
+          "check2-circle",
+          "5000"
+        );
+      } else if (response.status === 400) {
+        // An error on the client side happened, and it should be displayed as alert in the form
+        let errorMessage;
 
-          this._requestStatus = result["status"];
-        })
-        .catch((error) => console.error(error));
-    };
+        if (result["errors"] == null || result["errors"].length === 0) {
+          errorMessage =
+            "Something went wrong when creating the permission request, please try again later.";
+        } else {
+          errorMessage = result["errors"].join("<br>");
+        }
+        this.notify(
+          this.ERROR_TITLE,
+          errorMessage,
+          "danger",
+          "exclamation-octagon"
+        );
+
+        return;
+      } else {
+        const errorMessage =
+          "Something went wrong when creating the permission request, please try again later.";
+        this.notify(
+          this.ERROR_TITLE,
+          errorMessage,
+          "danger",
+          "exclamation-octagon"
+        );
+
+        return;
+      }
+
+      this._requestId = result["cmRequestId"];
+      this.permissionId = result["permissionId"];
+      this.startOrRestartAutomaticPermissionStatusPolling();
+    } catch (e) {
+      this.notify(this.ERROR_TITLE, e, "danger", "exclamation-octagon");
+    }
+  }
+
+  async requestPermissionStatus(permissionId, maxRetries) {
+    let response = await fetch(
+      BASE_URL + "permission-status/" + permissionId
+    );
+
+    if (response.status === 404) {
+      // No permission request was created
+      this.notify(
+        this.ERROR_TITLE,
+        "Your permission request could not be created.",
+        "danger",
+        "exclamation-octagon"
+      );
+      return;
+    }
+    if (response.status !== 200) {
+      // An unexpected status code was sent, try again in 10 seconds
+      const millisecondsToWait = 10000;
+      this.notify(
+        this.ERROR_TITLE,
+        "An unexpected error happened, trying again in " +
+          millisecondsToWait / 1000 +
+          " seconds",
+        "danger",
+        "exclamation-octagon",
+        millisecondsToWait.toString()
+      );
+      await this.awaitRetry(millisecondsToWait, maxRetries);
+      return;
+    }
+
+    const result = await response.json();
+    const currentStatus = result["status"];
+    this._requestStatus = currentStatus;
+
+    // Finished long poll
+    if (
+      currentStatus === "ACCEPTED" ||
+      currentStatus === "REJECTED" ||
+      currentStatus === "INVALID" ||
+      currentStatus === "TERMINATED" ||
+      result["status"] === "FULFILLED"
+    ) {
+      const successTitle = "Finished!";
+      const successMessage = "Your consumption record has been received.";
+      this.notify(
+        successTitle,
+        successMessage,
+        "success",
+        "check2-circle",
+        "5000"
+      );
+
+      return;
+    }
+
+    // Wait for status update
+    await this.awaitRetry(5000, maxRetries);
   }
 
   render() {
@@ -158,6 +228,8 @@ class PermissionRequestForm extends LitElement {
               : ""}
           </sl-alert>`}
       </div>
+
+      <div id="${this.USER_NOTIFICATION_CONTAINER_ID}"></div>
     `;
   }
 }
