@@ -56,7 +56,7 @@ tasks.getByName<Test>("test") {
     useJUnitPlatform()
 }
 
-tasks.register("run-core-spring", JavaExec::class) {
+tasks.register("run-core", JavaExec::class) {
     dependsOn(":pnpmBuild")
     mainClass.set("energy.eddie.EddieSpringApplication")
     classpath = sourceSets["main"].runtimeClasspath
