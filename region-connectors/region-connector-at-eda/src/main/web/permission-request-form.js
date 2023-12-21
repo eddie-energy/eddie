@@ -82,7 +82,7 @@ class PermissionRequestForm extends LitElement {
 
   requestPermissionStatus(permissionId) {
     return () => {
-      fetch(`${BASE_URL}permission-status?permissionId=${permissionId}`)
+      fetch(`${BASE_URL}permission-status/${permissionId}`)
         .then((response) => {
           if (!response.ok) {
             throw new Error("HTTP status " + response.status);

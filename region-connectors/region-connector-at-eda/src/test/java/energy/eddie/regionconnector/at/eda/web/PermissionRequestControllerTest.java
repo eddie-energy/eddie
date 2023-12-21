@@ -29,11 +29,10 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = {PermissionRequestController.class})
 @Import(PermissionRequestController.class)
@@ -78,10 +77,11 @@ class PermissionRequestControllerTest {
     void permissionStatus_permissionExists_returnsOk() throws Exception {
         // Given
         var state = new AtAcceptedPermissionRequestState(null);
-        when(permissionRequestService.findConnectionStatusMessageById(anyString()))
+        String permissionId = "permissionId";
+        when(permissionRequestService.findConnectionStatusMessageById(permissionId))
                 .thenReturn(Optional.of(new ConnectionStatusMessage(
                         "cid",
-                        "permissionId",
+                        permissionId,
                         "dnid",
                         new EdaDataSourceInformation("dsoId"),
                         state.status(),
@@ -89,26 +89,27 @@ class PermissionRequestControllerTest {
                 )));
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/region-connectors/at-eda/permission-status")
-                                .param("permissionId", "cid")
+                        MockMvcRequestBuilders.get("/region-connectors/at-eda/permission-status/{permissionId}", permissionId)
                                 .accept(MediaType.APPLICATION_JSON))
                 // Then
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.permissionId", is(permissionId)))
+                .andExpect(jsonPath("$.connectionId", is("cid")));
     }
 
     @Test
-    void permissionStatus_permissionDoesNotExist_returnsNoFound() throws Exception {
+    void permissionStatus_permissionDoesNotExist_returnsNotFound() throws Exception {
         // Given
         var state = new AtAcceptedPermissionRequestState(null);
         when(permissionRequestService.findByPermissionId("pid"))
                 .thenReturn(Optional.of(new SimplePermissionRequest("pid", "cid", "dnid", "cmId", "conid", state)));
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/region-connectors/at-eda/permission-status")
-                                .param("permissionId", "123")
+                        MockMvcRequestBuilders.get("/region-connectors/at-eda/permission-status/{permissionId}", "123")
                                 .accept(MediaType.APPLICATION_JSON))
                 // Then
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.permissionId", is("No permission with ID 123 found")));
     }
 
     @Test

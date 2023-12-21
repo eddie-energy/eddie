@@ -4,6 +4,7 @@ import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtAcceptedPermissionRequestState;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -105,6 +106,22 @@ class PermissionRequestControllerAdviceTest {
                 () -> assertEquals("Error message 1", errors.get("field1")),
                 () -> assertEquals("Error message 2", errors.get("field2"))
         );
+    }
 
+    @Test
+    void givenPermissionNotFoundException_returnsNotFound() {
+        // Given
+        PermissionRequestControllerAdvice advice = new PermissionRequestControllerAdvice();
+        var exception = new PermissionNotFoundException("testId");
+
+        // When
+        var errors = advice.handlePermissionNotFoundException(exception);
+
+        // Then
+        assertAll(
+                () -> assertEquals(1, errors.size()),
+                () -> assertTrue(errors.containsKey("permissionId")),
+                () -> assertEquals("No permission with ID testId found", errors.get("permissionId"))
+        );
     }
 }

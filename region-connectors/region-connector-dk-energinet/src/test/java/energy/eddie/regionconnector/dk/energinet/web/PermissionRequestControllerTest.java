@@ -45,7 +45,7 @@ class PermissionRequestControllerTest {
     }
 
     @Test
-    void givenNoPermissionId_returnsBadRequest() throws Exception {
+    void givenNoPermissionId_returnsNotFound() throws Exception {
         mockMvc.perform(get("/region-connectors/dk-energinet/permission-status"))
                 .andExpect(status().isNotFound());
     }
@@ -55,7 +55,9 @@ class PermissionRequestControllerTest {
         String permissionId = "NonExistingId";
         mockMvc.perform(get("/region-connectors/dk-energinet/permission-status/{permissionId}", permissionId))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.detail", is("Unable to find permission request")));
+                .andExpect(jsonPath("$.errors", allOf(
+                        iterableWithSize(1),
+                        hasItem("No permission with ID NonExistingId found"))));
     }
 
     @Test

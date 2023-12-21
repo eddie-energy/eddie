@@ -4,6 +4,7 @@ import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.v0.process.model.validation.ValidationException;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -65,5 +66,18 @@ class PermissionRequestControllerAdviceTest {
         // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertThat(response.toString()).contains("field", "error");
+    }
+
+    @Test
+    void givenPermissionNotFoundException_returnsNotFound() {
+        // Given
+        var exception = new PermissionNotFoundException("testId");
+
+        // When
+        ResponseEntity<Object> response = advice.handlePermissionNotFoundException(exception);
+
+        // Then
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertThat(response.toString()).contains("No permission with ID testId found");
     }
 }
