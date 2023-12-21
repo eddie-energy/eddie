@@ -1,4 +1,5 @@
-import { html, LitElement } from "lit";
+import { html } from "lit";
+import PermissionRequestFormBase from "../../../../../core/src/main/js/permission-request-form-base.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 
 import logo from "../resources/datadis-logo.svg?raw";
@@ -12,7 +13,7 @@ const BASE_URL = new URL(import.meta.url).href
   .slice(0, -1);
 const REQUEST_URL = BASE_URL + "/permission-request";
 
-class PermissionRequestForm extends LitElement {
+class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
@@ -22,9 +23,6 @@ class PermissionRequestForm extends LitElement {
     _isSubmitHidden: { type: Boolean },
     _areResponseButtonsDisabled: { type: Boolean },
   };
-
-  intervalId = null;
-  permissionId = null;
 
   constructor() {
     super();
@@ -54,7 +52,7 @@ class PermissionRequestForm extends LitElement {
       startDate.getDate() + this.dataNeedAttributes.durationStart
     );
 
-    let endDate = new Date();
+    const endDate = new Date();
     if (this.dataNeedAttributes.durationEnd === 0) {
       endDate.setDate(endDate.getDate() - 1); // subtract one day by default
     } else {
@@ -70,67 +68,149 @@ class PermissionRequestForm extends LitElement {
     jsonData.requestDataTo = endDate.toISOString().substring(0, 10);
     jsonData.dataNeedId = this.dataNeedAttributes.id;
 
-    fetch(REQUEST_URL, {
-      body: JSON.stringify(jsonData),
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => {
-        const locationHeader = "Location";
-        if (response.headers.has(locationHeader)) {
-          const location = BASE_URL + response.headers.get(locationHeader);
-          this.requestPermissionStatus(location);
-          this.intervalId = setInterval(
-            this.requestPermissionStatus(location),
-            5000
-          );
-        }
-        return response.json();
-      })
-      .then((result) => {
-        this.permissionId = result["permissionId"];
-      })
-      .catch((error) => {
-        this._isSubmitDisabled = false;
-        console.error(error);
-      });
-    this.requestUpdate();
+    this.createPermissionRequest(formData)
+      .then()
+      .catch((error) =>
+        this.notify(this.ERROR_TITLE, error, "danger", "exclamation-octagon")
+      );
   }
 
-  requestPermissionStatus(location) {
-    return () => {
-      fetch(location)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("HTTP status " + response.status);
-          }
+  async createPermissionRequest(formData) {
+    try {
+      const response = await fetch(REQUEST_URL, {
+        body: JSON.stringify(formData),
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      const locationHeader = "Location";
+      if (response.headers.has(locationHeader)) {
+          
+      } else {
+        throw new Error("Header 'Location' is missing")
+      }
+      
+      const result = await response.json();
 
-          return response.json();
-        })
-        .then((result) => {
-          let currentStatus = result["status"];
-          if (
-            currentStatus === "ACCEPTED" ||
-            currentStatus === "REJECTED" ||
-            currentStatus === "INVALID" ||
-            currentStatus === "TERMINATED" ||
-            currentStatus === "UNABLE_TO_SEND"
-          ) {
-            clearInterval(this.intervalId);
-          }
-          if (
-            currentStatus === "SENT_TO_PERMISSION_ADMINISTRATOR" ||
-            currentStatus === "RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE"
-          ) {
-            this._isSubmitHidden = true;
-          }
+      if (response.status === 201) {
+        const successTitle = "Permission request created!";
+        const successMessage =
+          "Your permission request was created successfully.";
+        this.notify(
+          successTitle,
+          successMessage,
+          "success",
+          "check2-circle",
+          "5000"
+        );
+      } else if (response.status === 400) {
+        // An error on the client side happened, and it should be displayed as alert in the form
+        let errorMessage;
 
-          this._requestStatus = currentStatus;
-        })
-        .catch((error) => console.error(error));
-    };
+        if (result["errors"] == null || result["errors"].length === 0) {
+          errorMessage =
+            "Something went wrong when creating the permission request, please try again later.";
+        } else {
+          errorMessage = result["errors"].join("<br>");
+        }
+
+        this.notify(
+          this.ERROR_TITLE,
+          errorMessage,
+          "danger",
+          "exclamation-octagon"
+        );
+        this._isSubmitDisabled = false;
+
+        return;
+      } else {
+        const errorMessage =
+          "Something went wrong when creating the permission request, please try again later.";
+        this.notify(
+          this.ERROR_TITLE,
+          errorMessage,
+          "danger",
+          "exclamation-octagon"
+        );
+
+        return;
+      }
+
+      this.permissionId = result["permissionId"];
+      this.startOrRestartAutomaticPermissionStatusPolling();
+    } catch (e) {
+      this.notify(this.ERROR_TITLE, e, "danger", "exclamation-octagon");
+    }
+  }
+
+  async requestPermissionStatus(permissionId, maxRetries) {
+    const response = await fetch(
+      BASE_URL + "permission-status/" + permissionId
+    );
+
+    if (response.status === 404) {
+      // No permission request was created
+      this.notify(
+        this.ERROR_TITLE,
+        "Your permission request could not be created.",
+        "danger",
+        "exclamation-octagon"
+      );
+      return;
+    }
+    if (response.status !== 200) {
+      // An unexpected status code was sent, try again in 10 seconds
+      const millisecondsToWait = 10000;
+      this.notify(
+        this.ERROR_TITLE,
+        "An unexpected error happened, trying again in " +
+          millisecondsToWait / 1000 +
+          " seconds",
+        "danger",
+        "exclamation-octagon",
+        millisecondsToWait.toString()
+      );
+      await this.awaitRetry(millisecondsToWait, maxRetries);
+      return;
+    }
+
+    const result = await response.json();
+    const currentStatus = result["status"];
+    this._requestStatus = currentStatus;
+
+    // Finished long poll
+    if (
+      currentStatus === "ACCEPTED" ||
+      currentStatus === "REJECTED" ||
+      currentStatus === "INVALID" ||
+      currentStatus === "TERMINATED"
+    ) {
+      this._isSubmitDisabled = false;
+      const successTitle = "Finished!";
+      const successMessage = "Your consumption record has been received.";
+      this.notify(
+        successTitle,
+        successMessage,
+        "success",
+        "check2-circle",
+        "5000"
+      );
+
+      return;
+    }
+
+    // Disable Submit
+    if (
+      currentStatus === "SENT_TO_PERMISSION_ADMINISTRATOR" ||
+      currentStatus === "RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE"
+    ) {
+      this._isSubmitDisabled = true;
+    }
+
+    // Wait for status update
+    await this.awaitRetry(5000, maxRetries);
   }
 
   accepted() {
@@ -140,7 +220,9 @@ class PermissionRequestForm extends LitElement {
       .then(() => {
         this._areResponseButtonsDisabled = true;
       })
-      .catch((error) => console.error(error));
+      .catch((error) =>
+        this.notify(this.ERROR_TITLE, error, "danger", "exclamation-octagon")
+      );
   }
 
   rejected() {
@@ -150,7 +232,9 @@ class PermissionRequestForm extends LitElement {
       .then(() => {
         this._areResponseButtonsDisabled = true;
       })
-      .catch((error) => console.error(error));
+      .catch((error) =>
+        this.notify(this.ERROR_TITLE, error, "danger", "exclamation-octagon")
+      );
   }
 
   render() {
@@ -220,10 +304,11 @@ class PermissionRequestForm extends LitElement {
 
         <br />
 
+        <div id="${this.USER_NOTIFICATION_CONTAINER_ID}"></div>
+
         ${this._requestStatus &&
         html` <sl-alert open>
           <sl-icon slot="icon" name="info-circle"></sl-icon>
-
           <p>The request status is: ${this._requestStatus}</p>
         </sl-alert>`}
       </div>
