@@ -17,6 +17,7 @@ class PermissionTest {
     private String permissionId;
     private String name;
     private String connectionId;
+    private String dataNeedId;
     private Set<String> codes;
     private String bootstrapServers;
     private String validDataTopic;
@@ -30,6 +31,7 @@ class PermissionTest {
         permissionId = "f69f9bc2-e16c-4de4-8c3e-00d219dcd819";
         name = "My Test Service";
         connectionId = "RandomId";
+        dataNeedId = "DataNeed";
         start = Instant.now();
         expiration = start.plusSeconds(5000);
 
@@ -45,19 +47,19 @@ class PermissionTest {
 
     @Test
     void givenNull_updateStatus_throws() {
-        var permission = new Permission(permissionId, name, start, expiration, grant, connectionId, codes, streamingConfig);
+        var permission = new Permission(permissionId, name, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
         assertThrows(NullPointerException.class, () -> permission.updateStatus(null));
     }
 
     @Test
     void givenNull_revokeTime_throws() {
-        var permission = new Permission(permissionId, name, start, expiration, grant, connectionId, codes, streamingConfig);
+        var permission = new Permission(permissionId, name, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
         assertThrows(NullPointerException.class, () -> permission.revokeTime(null));
     }
 
     @Test
     void givenRevocationTimeBeforeGrantTime_revokeTime_throws() {
-        var permission = new Permission(permissionId, name, start, expiration, grant, connectionId, codes, streamingConfig);
+        var permission = new Permission(permissionId, name, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
         var revokeTime = start.minusSeconds(1000);
 
         assertThrows(IllegalArgumentException.class, () -> permission.revokeTime(revokeTime));
@@ -66,7 +68,7 @@ class PermissionTest {
     @Test
     void givenValidRevocationTime_asExpected() {
         // Given
-        var permission = new Permission(permissionId, name, start, expiration, grant, connectionId, codes, streamingConfig);
+        var permission = new Permission(permissionId, name, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
         var revocationTime = start.plusSeconds(1000);
 
         // When

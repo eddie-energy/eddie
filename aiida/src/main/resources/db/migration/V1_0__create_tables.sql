@@ -13,6 +13,7 @@ CREATE TABLE permission
 (
     permission_id             CHAR(36)                    NOT NULL PRIMARY KEY,
     connection_id             VARCHAR(255)                NOT NULL,
+    data_need_id VARCHAR(255) NOT NULL,
     expiration_time           TIMESTAMP(6) WITH TIME ZONE NOT NULL,
     grant_time                TIMESTAMP(6) WITH TIME ZONE NOT NULL,
     revoke_time               TIMESTAMP(6) WITH TIME ZONE,

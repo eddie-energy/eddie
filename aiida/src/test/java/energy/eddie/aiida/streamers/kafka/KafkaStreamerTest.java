@@ -83,13 +83,13 @@ class KafkaStreamerTest {
         String validStatusTopic = "ValidStatusTopic";
         String validSubscribeTopic = "ValidSubscribeTopic";
         kafkaConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
-        permission = new Permission(permissionId, "SomeTest Service Name", start, expiration,
-                start, "ConnId", Set.of("1.8.0"), kafkaConfig);
+        permission = new Permission(permissionId, "SomeTest Service Name", "dataNeed",
+                start, expiration, start, "ConnId", Set.of("1.8.0"), kafkaConfig);
 
         var now = Instant.now();
         record1 = AiidaRecordFactory.createRecord("1.8.0", now.plusSeconds(1), 10);
         record2 = AiidaRecordFactory.createRecord("1.8.0", now.plusSeconds(2), 20);
-        record3 = AiidaRecordFactory.createRecord("1.8.0", now.plusSeconds(3), 30);
+        record3 = AiidaRecordFactory.createRecord("C.1.0", now.plusSeconds(3), "SomeString");
 
         mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         recordPublisher = TestPublisher.create();
@@ -219,7 +219,8 @@ class KafkaStreamerTest {
     @Test
     void verify_sendExceptions_areHandledInCallback() {
         var connectionId = "FooBarIdRandom";
-        var statusMessage1 = new ConnectionStatusMessage(connectionId, Instant.now(), PermissionStatus.ACCEPTED);
+        var dataNeed = "dataNeed";
+        var statusMessage1 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.ACCEPTED);
 
         mockProducer = new MockProducer<>(false, new StringSerializer(), new StringSerializer());
         streamer = new KafkaStreamer(mockProducer, mockConsumer, recordPublisher.flux(), statusMessagePublisher.flux(),
@@ -251,7 +252,8 @@ class KafkaStreamerTest {
     @Test
     void verify_closedProducerThrowsIllegalStateException_isHandledByTryCatch() {
         var connectionId = "FooBarIdRandom";
-        var statusMessage1 = new ConnectionStatusMessage(connectionId, Instant.now(), PermissionStatus.ACCEPTED);
+        var dataNeed = "dataNeed";
+        var statusMessage1 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.ACCEPTED);
 
         mockProducer = new MockProducer<>(false, new StringSerializer(), new StringSerializer());
         streamer = new KafkaStreamer(mockProducer, mockConsumer, recordPublisher.flux(), statusMessagePublisher.flux(),
@@ -290,8 +292,9 @@ class KafkaStreamerTest {
     @Test
     void verify_statusMessage_areSentByKafkaProducer() {
         var connectionId = "MyStatusTestConnectionId";
-        var statusMessage1 = new ConnectionStatusMessage(connectionId, Instant.now(), PermissionStatus.ACCEPTED);
-        var statusMessage2 = new ConnectionStatusMessage(connectionId, Instant.now(), PermissionStatus.REVOKED);
+        var dataNeed = "dataNeed";
+        var statusMessage1 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.ACCEPTED);
+        var statusMessage2 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.REVOKED);
 
         recordPublisher.assertNoSubscribers();
         statusMessagePublisher.assertNoSubscribers();
@@ -313,6 +316,44 @@ class KafkaStreamerTest {
         streamer.close();
         recordPublisher.assertNoSubscribers();
         statusMessagePublisher.assertNoSubscribers();
+    }
+
+    @Test
+    void givenIntegerAiidaRecord_convertsToDtoAndSends() {
+        // Given
+        streamer.connect();
+
+        // When
+        recordPublisher.emit(record1);
+
+        // Then
+        assertEquals(1, mockProducer.history().size());
+
+        String value = mockProducer.history().get(0).value();
+
+        assertThat(value)
+                .contains("\"value\":10")
+                .contains("\"dataNeedId\":\"dataNeed\"")
+                .contains("\"connectionId\":\"ConnId\"");
+    }
+
+    @Test
+    void givenStringAiidaRecord_convertsToDtoAndSends() {
+        // Given
+        streamer.connect();
+
+        // When
+        recordPublisher.emit(record3);
+
+        // Then
+        assertEquals(1, mockProducer.history().size());
+
+        String value = mockProducer.history().get(0).value();
+
+        assertThat(value)
+                .contains("\"value\":\"SomeString\"")
+                .contains("\"dataNeedId\":\"dataNeed\"")
+                .contains("\"connectionId\":\"ConnId\"");
     }
 
     /**

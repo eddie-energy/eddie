@@ -35,7 +35,7 @@ import java.util.List;
 public class PermissionController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionController.class);
     private final PermissionService permissionService;
-    private static final String REVOKE_PERMISSION_EXAMPLE_RETURN_JSON = "{\"permissionId\":\"a4dc1bad-b9fe-47ae-9336-690cfb4aada9\",\"status\":\"REVOKED\",\"serviceName\":\"My Energy Visualization Service\",\"startTime\":\"2023-10-01T08:00:00Z\",\"expirationTime\":\"2023-10-31T20:00:00Z\",\"grantTime\":\"2023-10-01T08:00:00Z\",\"revokeTime\":\"2023-10-20T08:00:00Z\",\"connectionId\":\"SomeRandomString\",\"requestedCodes\":\"[\\\"1-0:1.8.0\\\",\\\"1-0:1.7.0\\\"]\",\"kafkaStreamingConfig\":{\"bootstrapServers\":\"localhost:9092\",\"dataTopic\":\"SomeDataTopic\",\"statusTopic\":\"SomeStatusTopic\",\"subscribeTopic\":\"SomeSubscribeTopic\"}}";
+    private static final String REVOKE_PERMISSION_EXAMPLE_RETURN_JSON = "{\"permissionId\":\"a4dc1bad-b9fe-47ae-9336-690cfb4aada9\",\"status\":\"REVOKED\",\"serviceName\":\"My Energy Visualization Service\",\"dataNeedId\":\"DATA_NEED_ID\",\"startTime\":\"2023-10-01T08:00:00Z\",\"expirationTime\":\"2023-10-31T20:00:00Z\",\"grantTime\":\"2023-10-01T08:00:00Z\",\"revokeTime\":\"2023-10-20T08:00:00Z\",\"connectionId\":\"SomeRandomString\",\"requestedCodes\":\"[\\\"1-0:1.8.0\\\",\\\"1-0:1.7.0\\\"]\",\"kafkaStreamingConfig\":{\"bootstrapServers\":\"localhost:9092\",\"dataTopic\":\"SomeDataTopic\",\"statusTopic\":\"SomeStatusTopic\",\"subscribeTopic\":\"SomeSubscribeTopic\"}}";
 
     @Autowired
     public PermissionController(PermissionService permissionService) {

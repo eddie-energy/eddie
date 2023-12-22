@@ -45,6 +45,7 @@ class PermissionControllerTest {
     private String serviceName;
     private String permissionId;
     private String connectionId;
+    private String dataNeedId;
     private Set<String> codes;
     private String bootstrapServers;
     private String validDataTopic;
@@ -64,6 +65,7 @@ class PermissionControllerTest {
         grant = Instant.now();
         serviceName = "My NewAIIDA Test Service";
         connectionId = "NewAiidaRandomConnectionId";
+        dataNeedId = "SomeDataNeedId";
         codes = Set.of("1.8.0", "2.8.0");
 
         bootstrapServers = "localhost:9092";
@@ -72,7 +74,7 @@ class PermissionControllerTest {
         validSubscribeTopic = "ValidSubscribeTopic";
         streamingConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
 
-        permissionDto = new PermissionDto(permissionId, serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
+        permissionDto = new PermissionDto(permissionId, serviceName, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
 
         mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     }
@@ -98,7 +100,7 @@ class PermissionControllerTest {
     void givenValidInput_asExpected() throws Exception {
         when(permissionService.setupNewPermission(ArgumentMatchers.any(PermissionDto.class))).thenAnswer(i -> {
             PermissionDto dto = (PermissionDto) i.getArguments()[0];
-            return new Permission(dto.permissionId(), dto.serviceName(), dto.startTime(), dto.expirationTime(),
+            return new Permission(dto.permissionId(), dto.serviceName(), dto.dataNeedId(), dto.startTime(), dto.expirationTime(),
                     dto.grantTime(), dto.connectionId(), dto.requestedCodes(), dto.kafkaStreamingConfig());
         });
 
@@ -123,6 +125,7 @@ class PermissionControllerTest {
         assertEquals(expiration, response.expirationTime());
         assertEquals(grant, response.grantTime());
         assertEquals(connectionId, response.connectionId());
+        assertEquals(dataNeedId, response.dataNeedId());
         assertNull(response.revokeTime());
         assertThat(codes).hasSameElementsAs(response.requestedCodes());
 
@@ -200,8 +203,8 @@ class PermissionControllerTest {
 
         @Test
         void givenNullField_permissionRequest_returnsBadRequest() throws Exception {
-            var invalidDto = new PermissionDto(permissionId, serviceName, null, null, grant,
-                    connectionId, codes, streamingConfig);
+            var invalidDto = new PermissionDto(permissionId, serviceName, dataNeedId, null, null,
+                    grant, connectionId, codes, streamingConfig);
 
             mockMvc.perform(
                             post("/permissions")
@@ -219,7 +222,7 @@ class PermissionControllerTest {
         @Test
         void givenInvalidStreamingConfig_permissionRequest_returnsBadRequest() throws Exception {
             var invalidConfig = new KafkaStreamingConfig(bootstrapServers, null, " ", "");
-            var invalidDto = new PermissionDto(permissionId, serviceName, start, expiration, grant, connectionId,
+            var invalidDto = new PermissionDto(permissionId, serviceName, dataNeedId, start, expiration, grant, connectionId,
                     codes, invalidConfig);
 
 
@@ -240,7 +243,7 @@ class PermissionControllerTest {
         void givenExpirationTimeBeforeStartTime_permissionRequest_returnsBadRequest() throws Exception {
             expiration = start.minusSeconds(1000);
 
-            permissionDto = new PermissionDto(permissionId, serviceName, start, expiration, grant,
+            permissionDto = new PermissionDto(permissionId, serviceName, dataNeedId, start, expiration, grant,
                     connectionId, codes, streamingConfig);
 
             var json = mapper.writeValueAsString(permissionDto);
@@ -258,7 +261,7 @@ class PermissionControllerTest {
 
         @Test
         void givenNoPermissionId_permissionRequest_returnsBadRequest() throws Exception {
-            permissionDto = new PermissionDto(null, serviceName, start, expiration, grant,
+            permissionDto = new PermissionDto(null, serviceName, dataNeedId, start, expiration, grant,
                     connectionId, codes, streamingConfig);
 
             var json = mapper.writeValueAsString(permissionDto);
@@ -276,7 +279,7 @@ class PermissionControllerTest {
 
         @Test
         void givenBlankPermissionId_permissionRequest_returnsBadRequest() throws Exception {
-            permissionDto = new PermissionDto("   ", serviceName, start, expiration, grant,
+            permissionDto = new PermissionDto("   ", serviceName, dataNeedId, start, expiration, grant,
                     connectionId, codes, streamingConfig);
 
             var json = mapper.writeValueAsString(permissionDto);
@@ -295,7 +298,7 @@ class PermissionControllerTest {
         @Test
         void givenTooLongPermissionId_permissionRequest_returnsBadRequest() throws Exception {
             permissionId = "aaabbbbccccddddeeeeefffffgggghhhhiii";
-            permissionDto = new PermissionDto(permissionId, serviceName, start, expiration, grant,
+            permissionDto = new PermissionDto(permissionId, serviceName, dataNeedId, start, expiration, grant,
                     connectionId, codes, streamingConfig);
 
             var json = mapper.writeValueAsString(permissionDto);
@@ -359,6 +362,7 @@ class PermissionControllerTest {
             var expiration = start.plusSeconds(800_000);
             var grant = Instant.now();
             var connectionId = "NewAiidaRandomConnectionId";
+            var dataNeedId = "dataNeedId";
             var codes = Set.of("1.8.0", "2.8.0");
             var bootstrapServers = "localhost:9092";
             var validDataTopic = "ValidPublishTopic";
@@ -367,15 +371,15 @@ class PermissionControllerTest {
             var streamingConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
 
             var name = "Service1";
-            var permission1 = new Permission(UUID.randomUUID().toString(), name, start, expiration, grant, connectionId, codes, streamingConfig);
+            var permission1 = new Permission(UUID.randomUUID().toString(), name, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
 
             name = "Service2";
             grant = grant.plusSeconds(1000);
-            var permission2 = new Permission(UUID.randomUUID().toString(), name, start, expiration, grant, connectionId, codes, streamingConfig);
+            var permission2 = new Permission(UUID.randomUUID().toString(), name, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
 
             name = "Service3";
             grant = grant.plusSeconds(5000);
-            var permission3 = new Permission(UUID.randomUUID().toString(), name, start, expiration, grant, connectionId, codes, streamingConfig);
+            var permission3 = new Permission(UUID.randomUUID().toString(), name, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
 
             // grant time order is permission3, permission2, permission1
             return List.of(permission3, permission2, permission1);
@@ -471,7 +475,7 @@ class PermissionControllerTest {
 
         @Test
         void givenValidPermission_revokePermission_returnsAsExpected() throws Exception {
-            var permission = new Permission(permissionId, serviceName, start, expiration, grant, connectionId, codes, streamingConfig);
+            var permission = new Permission(permissionId, serviceName, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
             var revokeTime = Instant.now();
 
             when(permissionService.revokePermission(permissionId)).then(i -> {

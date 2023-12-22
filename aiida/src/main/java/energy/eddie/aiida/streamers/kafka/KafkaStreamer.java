@@ -2,11 +2,13 @@ package energy.eddie.aiida.streamers.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.dtos.AiidaRecordStreamingDto;
 import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.streamers.AiidaStreamer;
 import energy.eddie.aiida.streamers.ConnectionStatusMessage;
+import energy.eddie.aiida.utils.AiidaRecordConverter;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -134,8 +136,8 @@ public class KafkaStreamer extends AiidaStreamer {
     }
 
     /**
-     * Converts the passed {@code aiidaRecord} to JSON and produces it to the {@code dataTopic} specified by
-     * the {@code kafkaConfig}.
+     * Converts the passed {@code aiidaRecord} to JSON, adds metadata (like dataNeedId) and produces it
+     * to the {@code dataTopic} specified by the {@code kafkaConfig}.
      * Any errors that occur while sending are logged, but the aiidaRecord is not marked as <i>failed to send</i> but just dropped.
      *
      * @param aiidaRecord {@link AiidaRecord} to send to the Kafka cluster.
@@ -145,8 +147,11 @@ public class KafkaStreamer extends AiidaStreamer {
             LOGGER.debug("Got new aiidaRecord but won't send it as a termination request has been received.");
             return;
         }
-        LOGGER.trace("Sending new aiidaRecord: {}", aiidaRecord);
-        produceRecord(permission.kafkaStreamingConfig().dataTopic(), aiidaRecord);
+
+        AiidaRecordStreamingDto dto = AiidaRecordConverter.recordToStreamingDto(aiidaRecord, permission);
+
+        LOGGER.trace("Sending new aiidaRecord: {}", dto);
+        produceRecord(permission.kafkaStreamingConfig().dataTopic(), dto);
     }
 
     /**
