@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
 import energy.eddie.cim.validated_historical_data.v0_82.*;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
-import energy.eddie.regionconnector.at.eda.xml.builders.helper.DateTimeConverter;
+import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.datatype.XMLGregorianCalendar;

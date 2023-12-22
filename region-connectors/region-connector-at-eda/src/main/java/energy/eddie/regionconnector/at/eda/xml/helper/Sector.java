@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.at.eda.xml.builders.helper;
+package energy.eddie.regionconnector.at.eda.xml.helper;
 
 public enum Sector {
     ELECTRICITY("01"),

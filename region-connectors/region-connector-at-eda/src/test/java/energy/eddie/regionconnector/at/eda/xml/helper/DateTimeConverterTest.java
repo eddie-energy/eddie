@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.at.eda.xml.builders.helper;
+package energy.eddie.regionconnector.at.eda.xml.helper;
 
 import org.junit.jupiter.api.Test;
 
