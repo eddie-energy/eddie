@@ -14,6 +14,7 @@ import java.time.Instant;
  */
 public record ConnectionStatusMessage(
         @JsonProperty String connectionId,
+        @JsonProperty String dataNeedId,
         @JsonProperty Instant timestamp,
         @JsonProperty PermissionStatus status) {
 }

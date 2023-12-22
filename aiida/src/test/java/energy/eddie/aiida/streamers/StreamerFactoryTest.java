@@ -18,7 +18,7 @@ import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,7 +43,7 @@ class StreamerFactoryTest {
                 mock(TaskScheduler.class),
                 Duration.ofSeconds(10));
 
-        assertTrue(streamer instanceof KafkaStreamer);
+        assertInstanceOf(KafkaStreamer.class, streamer);
     }
 
     private Permission getTestPermission(Instant start) {
@@ -55,7 +55,7 @@ class StreamerFactoryTest {
         var validStatusTopic = "ValidStatusTopic";
         var validSubscribeTopic = "ValidSubscribeTopic";
         var streamingConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
-        return new Permission(permissionId, "SomeServiceName", start, expiration,
+        return new Permission(permissionId, "SomeServiceName", "SomeDataNeedId", start, expiration,
                 start, connectionId, Set.of("1.8.0"), streamingConfig);
     }
 }

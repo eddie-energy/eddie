@@ -67,10 +67,11 @@ class PermissionControllerIntegrationTest {
         var name = "My NewAIIDA Test Service";
         var grant = Instant.now();
         var connectionId = "NewAiidaRandomConnectionId";
+        var dataNeedId = "dataNeedId";
         var codes = Set.of("1.8.0", "2.8.0");
         var streamingConfig = getKafkaConfig(testInfo, kafka);
 
-        return new PermissionDto(permissionId, name, start, expiration, grant, connectionId, codes, streamingConfig);
+        return new PermissionDto(permissionId, name, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
     }
 
     // Truncate DB script doesn't work with @Sql annotation, so execute it manually to ensure clean DB for each test

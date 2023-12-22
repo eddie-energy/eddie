@@ -3,13 +3,17 @@ VALUES (5, 'localhost:9092', 'ValidPublishTopic', 'ValidStatusTopic', 'ValidSubs
        (6, 'localhost:9092', 'ValidPublishTopic', 'ValidStatusTopic', 'ValidSubscribeTopic'),
        (7, 'localhost:9092', 'ValidPublishTopic', 'ValidStatusTopic', 'ValidSubscribeTopic');
 
-INSERT INTO public.permission (permission_id, connection_id, expiration_time, grant_time, revoke_time, service_name,
+INSERT INTO public.permission (permission_id, connection_id, data_need_id, expiration_time, grant_time, revoke_time,
+                               service_name,
                                start_time, status, kafka_streaming_config_id)
-VALUES ('6ad75c0c-b622-4f4a-b195-3e8cf1f09676', 'NewAiidaRandomConnectionId', '2023-09-23 18:20:18.396911 +00:00',
+VALUES ('6ad75c0c-b622-4f4a-b195-3e8cf1f09676', 'NewAiidaRandomConnectionId', 'DataNeedId',
+        '2023-09-23 18:20:18.396911 +00:00',
         '2023-09-13 12:00:00.000000 +00:00', NULL, 'Service3', '2023-09-14 12:06:58.396911 +00:00', 'ACCEPTED', 5),
-       ('d8dcfee0-2a3c-4974-866f-fefaead06345', 'NewAiidaRandomConnectionId', '2023-09-23 18:20:18.396911 +00:00',
+       ('d8dcfee0-2a3c-4974-866f-fefaead06345', 'NewAiidaRandomConnectionId', 'DataNeedId',
+        '2023-09-23 18:20:18.396911 +00:00',
         '2023-09-13 08:00:00.000000 +00:00', NULL, 'Service2', '2023-09-14 12:06:58.396911 +00:00', 'ACCEPTED', 6),
-       ('4fff4b2e-2211-45c5-aff5-b504c24f20d1', 'NewAiidaRandomConnectionId', '2023-09-23 18:20:18.396911 +00:00',
+       ('4fff4b2e-2211-45c5-aff5-b504c24f20d1', 'NewAiidaRandomConnectionId', 'DataNeedId',
+        '2023-09-23 18:20:18.396911 +00:00',
         '2023-09-13 10:00:00.000000 +00:00', NULL, 'Service1', '2023-09-14 12:06:58.396911 +00:00', 'ACCEPTED', 7);
 
 
