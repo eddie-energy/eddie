@@ -1,25 +1,24 @@
-package energy.eddie.spring.rcprocessors;
+package energy.eddie.spring.regionconnector.extensions;
 
 import energy.eddie.api.agnostic.RegionConnector;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
-import static energy.eddie.spring.rcprocessors.RegionConnectorBeanPostProcessor.REGION_CONNECTOR_NAME_BEAN_NAME;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-class RegionConnectorBeanPostProcessorTest {
+class RegionConnectorNameExtensionTest {
     @Test
     void givenNull_constructor_throws() {
         // Given, When, Then
-        assertThrows(NullPointerException.class, () -> new RegionConnectorBeanPostProcessor(null));
+        assertThrows(NullPointerException.class, () -> new RegionConnectorNameExtension(null));
     }
 
     @Test
     void givenBeanWithoutAnnotation_doesNothing() {
         // Given
         var mockFactory = mock(DefaultListableBeanFactory.class);
-        var processor = new RegionConnectorBeanPostProcessor(mockFactory);
+        var processor = new RegionConnectorNameExtension(mockFactory);
         var bean = new NotAnnotatedClass();
 
         // When
@@ -33,14 +32,14 @@ class RegionConnectorBeanPostProcessorTest {
     void givenBeanWithAnnotation_extractsName_andCreatesBeanForName() {
         // Given
         var mockFactory = mock(DefaultListableBeanFactory.class);
-        var processor = new RegionConnectorBeanPostProcessor(mockFactory);
+        var processor = new RegionConnectorNameExtension(mockFactory);
         var bean = new AnnotatedClass();
 
         // When
         processor.postProcessBeforeInitialization(bean, "foo");
 
         // Then
-        verify(mockFactory).registerSingleton(REGION_CONNECTOR_NAME_BEAN_NAME, "TestName");
+        verify(mockFactory).registerSingleton(RegionConnectorNameExtension.REGION_CONNECTOR_NAME_BEAN_NAME, "TestName");
     }
 
     private static class NotAnnotatedClass {

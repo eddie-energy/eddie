@@ -1,4 +1,4 @@
-package energy.eddie.spring.rcprocessors;
+package energy.eddie.spring.regionconnector.extensions;
 
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.core.services.PermissionService;

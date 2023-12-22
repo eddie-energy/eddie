@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, Ordered, EnvironmentAware {
     public static final String ALL_REGION_CONNECTORS_BASE_URL_PATH = "region-connectors";
     private static final String REGION_CONNECTORS_SCAN_BASE_PACKAGE = "energy.eddie.regionconnector";
-    private static final String REGION_CONNECTOR_PROCESSORS_SCAN_BASE_PACKAGE = "energy.eddie.spring.rcprocessors";
+    private static final String REGION_CONNECTOR_PROCESSORS_SCAN_BASE_PACKAGE = "energy.eddie.spring.regionconnector.extensions";
     private static final Logger LOGGER = LoggerFactory.getLogger(RegionConnectorRegistrationBeanPostProcessor.class);
     @Nullable
     private Environment environment;
@@ -155,7 +155,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
     @SuppressWarnings("java:S6204")
     private List<Class<?>> findAllRegionConnectorProcessorClasses() throws InitializationException {
         var scanner = new ClassPathScanningCandidateComponentProvider(false);
-        scanner.addIncludeFilter(new AnnotationTypeFilter(RegionConnectorProcessor.class));
+        scanner.addIncludeFilter(new AnnotationTypeFilter(RegionConnectorExtension.class));
 
         var beanDefinitions = scanner.findCandidateComponents(REGION_CONNECTOR_PROCESSORS_SCAN_BASE_PACKAGE);
 
@@ -168,7 +168,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
             try {
                 return Class.forName(beanDefinition.getBeanClassName());
             } catch (ClassNotFoundException e) {
-                throw new InitializationException("Couldn't find class for RegionConnectorProcessor. %s".formatted(e.getMessage()));
+                throw new InitializationException("Couldn't find class for RegionConnectorExtension. %s".formatted(e.getMessage()));
             }
         }).collect(Collectors.toList());
     }

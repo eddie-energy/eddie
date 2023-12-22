@@ -1,6 +1,6 @@
-package energy.eddie.spring.rcprocessors;
+package energy.eddie.spring.regionconnector.extensions;
 
-import energy.eddie.spring.RegionConnectorProcessor;
+import energy.eddie.spring.RegionConnectorExtension;
 import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-@RegionConnectorProcessor
+/**
+ * The {@code RegionConnectorConnectorElementProvider} creates an HTTP GET mapping for the connector element javascript
+ * file for each individual region connector.
+ */
+@RegionConnectorExtension
 @RestController
 public class RegionConnectorConnectorElementProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(RegionConnectorConnectorElementProvider.class);
@@ -22,7 +26,7 @@ public class RegionConnectorConnectorElementProvider {
 
     /**
      * {@link RestController} that serves the connector element javascript file.
-     * It requires a bean named {@link RegionConnectorBeanPostProcessor#REGION_CONNECTOR_NAME_BEAN_NAME} and determines
+     * It requires a bean named {@link RegionConnectorNameExtension#REGION_CONNECTOR_NAME_BEAN_NAME} and determines
      * the path of the connector element using this name.
      * <p>
      * The connector element is expected to be at the classpath under the following path: /public/{RC-COMMON-PATH}/{regionConnectorName}/ce.js
@@ -36,7 +40,7 @@ public class RegionConnectorConnectorElementProvider {
      * @throws FileNotFoundException Thrown if the ce.js file cannot be found on the classpath.
      */
     public RegionConnectorConnectorElementProvider(
-            @Qualifier(RegionConnectorBeanPostProcessor.REGION_CONNECTOR_NAME_BEAN_NAME) String regionConnectorName
+            @Qualifier(RegionConnectorNameExtension.REGION_CONNECTOR_NAME_BEAN_NAME) String regionConnectorName
     ) throws FileNotFoundException {
         var cePath = "/public/%s/%s/%s".formatted(RegionConnectorRegistrationBeanPostProcessor.ALL_REGION_CONNECTORS_BASE_URL_PATH, regionConnectorName, CE_FILE_NAME);
 

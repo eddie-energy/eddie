@@ -1,4 +1,4 @@
-package energy.eddie.spring.rcprocessors;
+package energy.eddie.spring.regionconnector.extensions;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,7 @@ class RegionConnectorConnectorElementProviderTest {
     @TestConfiguration
     protected static class RegionConnectorConnectorElementProviderTestTestConfig {
         @Bean
-        @Qualifier(RegionConnectorBeanPostProcessor.REGION_CONNECTOR_NAME_BEAN_NAME)
+        @Qualifier(RegionConnectorNameExtension.REGION_CONNECTOR_NAME_BEAN_NAME)
         String regionConnectorName() {
             return "TestRegionConnector";
         }
