@@ -4,6 +4,7 @@ import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerRejectedState;
+import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import org.junit.jupiter.api.Test;
 
@@ -25,10 +26,10 @@ class EnerginetCustomerPermissionRequestTest {
         String meteringPoint = "meteringPoint";
         PeriodResolutionEnum resolution = PeriodResolutionEnum.PT1H;
         EnerginetConfiguration config = mock(EnerginetConfiguration.class);
+        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, resolution, meteringPoint, dataNeedId);
 
         // When
-        var request = new EnerginetCustomerPermissionRequest(permissionId, connectionId, start, end,
-                refreshToken, meteringPoint, dataNeedId, resolution, config);
+        var request = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
 
         // Then
         assertEquals(permissionId, request.permissionId());
@@ -53,10 +54,10 @@ class EnerginetCustomerPermissionRequestTest {
         String meteringPoint = "meteringPoint";
         PeriodResolutionEnum resolution = PeriodResolutionEnum.PT1H;
         EnerginetConfiguration config = mock(EnerginetConfiguration.class);
+        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, resolution, meteringPoint, dataNeedId);
 
         // When
-        var request = new EnerginetCustomerPermissionRequest(permissionId, connectionId, start, end,
-                refreshToken, meteringPoint, dataNeedId, resolution, config);
+        var request = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
         PermissionRequestState newState = new EnerginetCustomerRejectedState(request);
 
         // When

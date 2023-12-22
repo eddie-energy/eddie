@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import feign.FeignException;
 import feign.Request;
@@ -57,9 +58,9 @@ class EnerginetCustomerValidatedStateTest {
         String dataNeedId = "dataNeedId";
         EnerginetConfiguration config = mock(EnerginetConfiguration.class);
         EnerginetCustomerApiClient apiClient = mock(EnerginetCustomerApiClient.class);
+        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, resolution, meteringPoint, dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, connectionId, start, end,
-                refreshToken, meteringPoint, dataNeedId, resolution, config);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
         var state = new EnerginetCustomerValidatedState(permissionRequest, apiClient);
         permissionRequest.changeState(state);
 
@@ -137,9 +138,9 @@ class EnerginetCustomerValidatedStateTest {
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
         EnerginetConfiguration config = mock(EnerginetConfiguration.class);
+        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, resolution, meteringPoint, dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, connectionId, start, end,
-                refreshToken, meteringPoint, dataNeedId, resolution, config);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
         var state = new EnerginetCustomerValidatedState(permissionRequest, mockApiClient);
         permissionRequest.changeState(state);
         return permissionRequest;

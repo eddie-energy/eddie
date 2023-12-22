@@ -5,6 +5,7 @@ import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerCreatedState;
+import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 
 import java.time.ZonedDateTime;
@@ -25,24 +26,20 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
 
     public EnerginetCustomerPermissionRequest(
             String permissionId,
-            String connectionId,
-            ZonedDateTime start,
-            ZonedDateTime end,
-            String refreshToken,
-            String meteringPoint,
-            String dataNeedId,
-            PeriodResolutionEnum periodResolution,
+            PermissionRequestForCreation request,
             EnerginetConfiguration configuration) {
+        requireNonNull(permissionId);
+        requireNonNull(request);
         requireNonNull(configuration);
 
         this.permissionId = requireNonNull(permissionId);
-        this.connectionId = requireNonNull(connectionId);
-        this.start = requireNonNull(start);
-        this.end = requireNonNull(end);
-        this.refreshToken = requireNonNull(refreshToken);
-        this.meteringPoint = requireNonNull(meteringPoint);
-        this.dataNeedId = requireNonNull(dataNeedId);
-        this.periodResolution = requireNonNull(periodResolution);
+        this.connectionId = requireNonNull(request.connectionId());
+        this.start = requireNonNull(request.start());
+        this.end = requireNonNull(request.end());
+        this.refreshToken = requireNonNull(request.refreshToken());
+        this.meteringPoint = requireNonNull(request.meteringPoint());
+        this.dataNeedId = requireNonNull(request.dataNeedId());
+        this.periodResolution = requireNonNull(request.periodResolution());
 
         this.state = new EnerginetCustomerCreatedState(this, configuration);
     }
