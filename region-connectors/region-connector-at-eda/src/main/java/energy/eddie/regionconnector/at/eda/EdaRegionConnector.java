@@ -74,7 +74,14 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
                 }
                 request.accept();
             }
-            case ERROR -> request.invalid();
+            case ERROR -> {
+                // If the DSO does not exist EDA will respond with an error without sending a received-message.
+                // In that case the error message is an implicit received-message.
+                if (request.state().status() == PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT) {
+                    request.receivedPermissionAdministratorResponse();
+                }
+                request.invalid();
+            }
             case REJECTED -> request.reject();
             case RECEIVED -> request.receivedPermissionAdministratorResponse();
             default -> {
