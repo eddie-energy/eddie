@@ -153,6 +153,46 @@ class EdaRegionConnectorIntegrationTest {
     }
 
     @Test
+    void subscribeToConnectionStatusMessagePublisher_returnsInvalid_onErrorWithNoAcknowledgment() throws TransmissionException {
+        TestPublisher<CMRequestStatus> testPublisher = TestPublisher.create();
+        when(adapter.getCMRequestStatusStream()).thenReturn(testPublisher.flux());
+
+        CCMORequest ccmoRequest = mock(CCMORequest.class);
+        when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
+        when(ccmoRequest.messageId()).thenReturn("messageId");
+        var request = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
+        request.changeState(new AtPendingAcknowledgmentPermissionRequestState(request));
+        repository.save(request);
+
+        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, messages, portSupplier);
+
+        var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
+        var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ERROR, "", "messageId");
+
+        StepVerifier.create(source)
+                .then(() -> {
+                    testPublisher.emit(cmRequestStatus);
+                    try {
+                        uut.close();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .assertNext(csm -> {
+                    assertEquals("connectionId", csm.connectionId());
+                    assertEquals("permissionId", csm.permissionId());
+                    assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, csm.status());
+                })
+                .assertNext(csm -> {
+                    assertEquals("connectionId", csm.connectionId());
+                    assertEquals("permissionId", csm.permissionId());
+                    assertEquals(PermissionProcessStatus.INVALID, csm.status());
+                })
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
     void subscribeToConnectionStatusMessagePublisher_returnsRejected_onRejected() throws TransmissionException {
         TestPublisher<CMRequestStatus> testPublisher = TestPublisher.create();
         when(adapter.getCMRequestStatusStream()).thenReturn(testPublisher.flux());
