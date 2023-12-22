@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.aiida.web;
 
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
+import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,13 +13,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.util.UriTemplate;
 
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @WebMvcTest(PermissionRequestController.class)
@@ -74,24 +76,43 @@ class PermissionRequestControllerTest {
 
         @Test
         void givenAdditionalNotNeededInformation_isIgnored() throws Exception {
-            var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"11\",\"extra\":\"information\"}";
+            // Given
+            var permissionId = "SomeId";
+            var mockDto = mock(PermissionDto.class);
+            when(service.createNewPermission(any())).thenReturn(mockDto);
+            when(mockDto.permissionId()).thenReturn(permissionId);
+            var requestJson = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"11\",\"extra\":\"information\"}";
+            var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId).toString();
 
+            // When
             mockMvc.perform(post("/permission-request")
-                            .content(json)
+                            .content(requestJson)
                             .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk());
-
+                    // Then
+                    .andExpect(status().isCreated())
+                    .andExpect(header().string("Location", is(expectedLocationHeader)))
+                    .andExpect(jsonPath("$.permissionId", is(permissionId)));
             verify(service).createNewPermission(any());
         }
 
         @Test
         void givenValidInput_asExpected() throws Exception {
+            // Given
+            var permissionId = "SecondSomeId";
+            var mockDto = mock(PermissionDto.class);
+            when(service.createNewPermission(any())).thenReturn(mockDto);
+            when(mockDto.permissionId()).thenReturn(permissionId);
             var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\"}";
+            var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId).toString();
 
+            // When
             mockMvc.perform(post("/permission-request")
                             .content(json)
                             .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk());
+                    // Then
+                    .andExpect(status().isCreated())
+                    .andExpect(header().string("Location", is(expectedLocationHeader)))
+                    .andExpect(jsonPath("$.permissionId", is(permissionId)));
 
             verify(service).createNewPermission(any());
         }
