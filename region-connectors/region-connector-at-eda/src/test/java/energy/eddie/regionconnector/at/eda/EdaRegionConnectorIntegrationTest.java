@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
@@ -43,11 +42,6 @@ class EdaRegionConnectorIntegrationTest {
     private Sinks.Many<ConnectionStatusMessage> messages;
     @MockBean
     private EdaAdapter adapter;
-
-
-    // Stop Spring from trying to construct these beans
-    @MockBean
-    private ServletWebServerApplicationContext ignored;
     @MockBean
     private RegionConnector alsoIgnored;
 
@@ -162,7 +156,7 @@ class EdaRegionConnectorIntegrationTest {
         request.changeState(new AtPendingAcknowledgmentPermissionRequestState(request));
         repository.save(request);
 
-        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, messages, portSupplier);
+        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, messages);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ERROR, "", "messageId");
