@@ -1,25 +1,20 @@
 package energy.eddie.regionconnector.at.eda.requests;
 
-import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
-import at.ebutilities.schemata.customerconsent.cmrequest._01p10.MarketParticipantDirectory;
-import at.ebutilities.schemata.customerconsent.cmrequest._01p10.MeteringIntervallType;
-import at.ebutilities.schemata.customerconsent.cmrequest._01p10.TransmissionCycle;
+import at.ebutilities.schemata.customerconsent.cmrequest._01p10.*;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.AddressType;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMode;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingAddress;
+import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
 import energy.eddie.regionconnector.at.eda.EdaSchemaVersion;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import energy.eddie.regionconnector.at.eda.utils.CMRequestId;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
-import energy.eddie.regionconnector.at.eda.xml.builders.customerconsent.cmrequest._01p10.CMRequestBuilder;
-import energy.eddie.regionconnector.at.eda.xml.builders.customerconsent.cmrequest._01p10.MarketParticipantDirectoryBuilder;
-import energy.eddie.regionconnector.at.eda.xml.builders.customerconsent.cmrequest._01p10.ProcessDirectoryBuilder;
-import energy.eddie.regionconnector.at.eda.xml.builders.customerconsent.cmrequest._01p10.ReqTypeBuilder;
-import energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.common.types._01p20.RoutingAddressBuilder;
-import energy.eddie.regionconnector.at.eda.xml.builders.customerprocesses.common.types._01p20.RoutingHeaderBuilder;
-import energy.eddie.regionconnector.at.eda.xml.builders.helper.Sector;
+import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
+import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
+import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,13 +28,6 @@ import static java.util.Objects.requireNonNull;
 public class CCMORequest {
     public static final int DSO_ID_LENGTH = 8;
 
-    private static final MarketParticipantDirectoryBuilder MARKET_PARTICIPANT_DIRECTORY_BUILDER
-            = new MarketParticipantDirectoryBuilder()
-            .withMessageCode("ANFORDERUNG_CCMO")
-            .withSector(Sector.ELECTRICITY)
-            .withDocumentMode(DocumentMode.PROD)
-            .withDuplicate(false)
-            .withSchemaVersion(EdaSchemaVersion.CM_REQUEST_01_10.value());
     private final DsoIdAndMeteringPoint dsoIdAndMeteringPoint;
     private final CCMOTimeFrame timeframe;
     private final RequestDataType requestDataType;
@@ -87,10 +75,9 @@ public class CCMORequest {
         if (address.isBlank()) {
             throw new IllegalArgumentException("Address must not be null");
         }
-        return new RoutingAddressBuilder()
+        return new RoutingAddress()
                 .withAddressType(AddressType.EC_NUMBER)
-                .withMessageAddress(address)
-                .build();
+                .withMessageAddress(address);
     }
 
     /**
@@ -123,48 +110,61 @@ public class CCMORequest {
     }
 
     public CMRequest toCMRequest() throws InvalidDsoIdException {
-        var marketParticipant = makeMarketParticipantDirectory();
-        var processDirectory = new ProcessDirectoryBuilder();
-        var messageId = messageId();
-
-        var requestType = new ReqTypeBuilder()
-                .withDateFrom(timeframe.start())
-                .withReqDatType(requestDataType.toString(timeframe))
-                .withMeteringIntervall(this.meteringIntervalType)
-                .withTransmissionCycle(this.transmissionCycle);
-        timeframe.end().ifPresent(requestType::withDateTo);
-        processDirectory
-                .withCMRequest(requestType.build())
-                .withCMRequestId(cmRequestId())
-                .withMessageId(messageId)
-                .withConversationId(messageId)
-                .withProcessDate(LocalDate.now(DateTimeConstants.AT_ZONE_ID));
-
-        var optionalMeteringPoint = dsoIdAndMeteringPoint.meteringPoint();
-        if (optionalMeteringPoint.isPresent()) {
-            String meteringPoint = optionalMeteringPoint.get();
-            if (!Objects.equals(dsoIdAndMeteringPoint.dsoId(), meteringPoint.substring(0, DSO_ID_LENGTH))) {
-                throw new InvalidDsoIdException("The dsoId does not match the dsoId of the metering point");
-            }
-
-            processDirectory.withMeteringPoint(meteringPoint);
-        }
-
-        return new CMRequestBuilder()
-                .withProcessDirectory(processDirectory.build())
-                .withMarketParticipantDirectory(marketParticipant)
-                .build();
+        return new CMRequest()
+                .withMarketParticipantDirectory(makeMarketParticipantDirectory())
+                .withProcessDirectory(makeProcessDirectory());
     }
 
     private MarketParticipantDirectory makeMarketParticipantDirectory() {
-        var routingHeader = new RoutingHeaderBuilder()
-                .withSender(toRoutingAddress(configuration.eligiblePartyId()))
-                .withReceiver(toRoutingAddress(dsoIdAndMeteringPoint.dsoId()))
-                .withDocCreationDateTime(LocalDateTime.now(DateTimeConstants.AT_ZONE_ID))
-                .build();
+        return new MarketParticipantDirectory()
+                .withMessageCode(MessageCodes.Request.CODE)
+                .withSector(Sector.ELECTRICITY.value())
+                .withDocumentMode(DocumentMode.PROD)
+                .withDuplicate(false)
+                .withSchemaVersion(EdaSchemaVersion.CM_REQUEST_01_10.value())
+                .withRoutingHeader(new RoutingHeader()
+                        .withSender(toRoutingAddress(configuration.eligiblePartyId()))
+                        .withReceiver(toRoutingAddress(dsoIdAndMeteringPoint.dsoId()))
+                        .withDocumentCreationDateTime(
+                                DateTimeConverter.dateTimeToXml(LocalDateTime.now(DateTimeConstants.AT_ZONE_ID))
+                        )
+                );
+    }
 
-        return MARKET_PARTICIPANT_DIRECTORY_BUILDER
-                .withRoutingHeader(routingHeader)
-                .build();
+    private ProcessDirectory makeProcessDirectory() throws InvalidDsoIdException {
+        var messageId = messageId();
+        return new ProcessDirectory()
+                .withCMRequest(makeReqType())
+                .withCMRequestId(cmRequestId())
+                .withMessageId(messageId)
+                .withConversationId(messageId)
+                .withProcessDate(DateTimeConverter.dateToXml(LocalDate.now(DateTimeConstants.AT_ZONE_ID)))
+                .withMeteringPoint(meteringPointOrThrow());
+    }
+
+    @Nullable
+    private String meteringPointOrThrow() throws InvalidDsoIdException {
+        var meteringPointOptional = dsoIdAndMeteringPoint.meteringPoint();
+
+        if (meteringPointOptional.isEmpty()) {
+            return null;
+        }
+
+        return dsoIdAndMeteringPoint.meteringPoint()
+                .filter(meteringPoint ->
+                        Objects.equals(dsoIdAndMeteringPoint.dsoId(), meteringPoint.substring(0, DSO_ID_LENGTH)))
+                .orElseThrow(() -> new InvalidDsoIdException("The dsoId does not match the dsoId of the metering point"));
+    }
+
+    private ReqType makeReqType() {
+        return new ReqType()
+                .withReqDatType(requestDataType.toString(timeframe))
+                .withMeteringIntervall(this.meteringIntervalType)
+                .withTransmissionCycle(this.transmissionCycle)
+                .withDateFrom(DateTimeConverter.dateToXml(timeframe.start()))
+                .withDateTo(timeframe.end()
+                        .map(DateTimeConverter::dateToXml)
+                        .orElse(null)
+                );
     }
 }

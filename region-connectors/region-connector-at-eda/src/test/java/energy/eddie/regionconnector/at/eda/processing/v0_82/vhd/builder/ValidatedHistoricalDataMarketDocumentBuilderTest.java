@@ -5,7 +5,7 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHead
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
 import energy.eddie.cim.validated_historical_data.v0_82.*;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
-import energy.eddie.regionconnector.at.eda.xml.builders.helper.DateTimeConverter;
+import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;

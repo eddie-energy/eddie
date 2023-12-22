@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.at.eda.xml.builders.helper;
+package energy.eddie.regionconnector.at.eda.xml.helper;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;

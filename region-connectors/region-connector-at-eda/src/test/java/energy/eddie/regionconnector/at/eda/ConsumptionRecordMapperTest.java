@@ -4,7 +4,7 @@ import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
-import energy.eddie.regionconnector.at.eda.xml.builders.helper.DateTimeConverter;
+import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
