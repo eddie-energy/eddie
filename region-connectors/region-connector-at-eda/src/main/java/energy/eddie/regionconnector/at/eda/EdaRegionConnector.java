@@ -3,8 +3,6 @@ package energy.eddie.regionconnector.at.eda;
 import energy.eddie.api.v0.*;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.StateTransitionException;
-import energy.eddie.api.v0_82.CimConsumptionRecordProvider;
-import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.ConsumptionRecordProcessor;
@@ -12,21 +10,22 @@ import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Flow;
-import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
-public class EdaRegionConnector implements RegionConnector, CimConsumptionRecordProvider,
-        Mvp1ConnectionStatusMessageProvider, Mvp1ConsumptionRecordProvider {
+@Component
+public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider,
+        Mvp1ConsumptionRecordProvider {
     /**
      * DSOs in Austria are only allowed to store data for the last 36 months
      */
@@ -34,28 +33,15 @@ public class EdaRegionConnector implements RegionConnector, CimConsumptionRecord
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
     private final EdaAdapter edaAdapter;
     private final ConsumptionRecordMapper consumptionRecordMapper;
-    private final ConsumptionRecordProcessor consumptionRecordProcessor;
     private final PermissionRequestService permissionRequestService;
 
     /**
      * Used to send permission state messages.
      */
     private final Sinks.Many<ConnectionStatusMessage> permissionStateMessages;
-    private final Supplier<Integer> port;
 
-    public EdaRegionConnector(EdaAdapter edaAdapter, PermissionRequestService permissionRequestService, ConsumptionRecordProcessor consumptionRecordProcessor) throws TransmissionException {
-        this(
-                edaAdapter,
-                permissionRequestService,
-                consumptionRecordProcessor,
-                Sinks.many()
-                        .multicast()
-                        .onBackpressureBuffer(),
-                () -> 0
-        );
-    }
-
-    public EdaRegionConnector(EdaAdapter edaAdapter, PermissionRequestService permissionRequestService, ConsumptionRecordProcessor consumptionRecordProcessor, Sinks.Many<ConnectionStatusMessage> permissionStateMessages, Supplier<Integer> port) throws TransmissionException {
+    @Autowired
+    public EdaRegionConnector(EdaAdapter edaAdapter, PermissionRequestService permissionRequestService, ConsumptionRecordProcessor consumptionRecordProcessor, Sinks.Many<ConnectionStatusMessage> permissionStateMessages) throws TransmissionException {
         requireNonNull(edaAdapter);
         requireNonNull(permissionRequestService);
         requireNonNull(consumptionRecordProcessor);
@@ -64,14 +50,12 @@ public class EdaRegionConnector implements RegionConnector, CimConsumptionRecord
         this.edaAdapter = edaAdapter;
         this.consumptionRecordMapper = new ConsumptionRecordMapper();
         this.permissionRequestService = permissionRequestService;
-        this.consumptionRecordProcessor = consumptionRecordProcessor;
         this.permissionStateMessages = permissionStateMessages;
 
         edaAdapter.getCMRequestStatusStream()
                 .subscribe(this::processIncomingCmStatusMessages);
 
         edaAdapter.start();
-        this.port = port;
     }
 
     private static void transitionPermissionRequest(CMRequestStatus cmRequestStatus, AtPermissionRequest request)
@@ -115,20 +99,8 @@ public class EdaRegionConnector implements RegionConnector, CimConsumptionRecord
     }
 
     @Override
-    public Flow.Publisher<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(
-                consumptionRecordProcessor.getEddieValidatedHistoricalDataMarketDocumentStream()
-        );
-    }
-
-    @Override
     public RegionConnectorMetadata getMetadata() {
         return EdaRegionConnectorMetadata.getInstance();
-    }
-
-    @Override
-    public int startWebapp(InetSocketAddress address, boolean devMode) {
-        return port.get();
     }
 
     @Override

@@ -12,7 +12,9 @@ import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
 import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PermissionRequestCreationService {
 
     private final PermissionRequestFactory permissionRequestFactory;

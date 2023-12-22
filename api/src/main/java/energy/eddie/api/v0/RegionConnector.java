@@ -1,6 +1,5 @@
 package energy.eddie.api.v0;
 
-import java.net.InetSocketAddress;
 import java.util.Map;
 
 /**
@@ -11,7 +10,6 @@ import java.util.Map;
  *     <li>metadata describing the region connector and the supported MDAs</li>
  *     <li>a web-UI component for the consent process</li>
  *     <li>methods for managing permissions</li>
- *     <li>methods to perform administrative tasks like closing a connection</li>
  * </ul>
  * <p>
  * The interfaces in the see also section extend the functionality of the region connector.
@@ -21,7 +19,7 @@ import java.util.Map;
  * @see energy.eddie.api.v0.Mvp1ConsumptionRecordProvider
  * @see energy.eddie.api.v0_82.CimConsumptionRecordProvider
  */
-public interface RegionConnector extends AutoCloseable {
+public interface RegionConnector {
     /**
      * Get metadata describing this region connector.
      *
@@ -35,21 +33,6 @@ public interface RegionConnector extends AutoCloseable {
      * @param permissionId unique id of the permission
      */
     void terminatePermission(String permissionId);
-
-    /**
-     * Starts the web-application handling the PA specifics of the consent workflow.
-     *
-     * @param address address the web server should be reachable. A specific port can be specified or any available port
-     *                can be used. (pass 0 as a port then) If a specific port is given, it must be used.
-     *                It also specifies the network interface which may be all
-     *                interfaces or e.g. just the local loopback "localhost".
-     * @param devMode if set to true, the region connector may put it's web server in development mode. e.g. serving
-     *                static assets directly from the file system, disable caching and so on.
-     * @return port the web-application is listening to (only relevant if port 0 is given in the address
-     * @throws RuntimeException if the webserver cannot be started, e.g. if a specific port was given and this cannot
-     *                          be used
-     */
-    int startWebapp(InetSocketAddress address, boolean devMode);
 
     /**
      * Returns the health of the region connectors and its services.

@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.at.eda;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
+import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.ConsumptionRecordProcessor;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
@@ -8,11 +9,13 @@ import energy.eddie.regionconnector.at.eda.xml.builders.helper.DateTimeConverter
 import org.junit.jupiter.api.Test;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -28,10 +31,11 @@ class EdaRegionConnectorTest {
         // given
         var requestService = mock(PermissionRequestService.class);
         var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
 
         // when
         // then
-        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(null, requestService, consumptionRecordProcessor));
+        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(null, requestService, consumptionRecordProcessor, sink));
     }
 
     @Test
@@ -39,10 +43,11 @@ class EdaRegionConnectorTest {
         // given
         var adapter = mock(EdaAdapter.class);
         var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
 
         // when
         // then
-        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(adapter, null, consumptionRecordProcessor));
+        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(adapter, null, consumptionRecordProcessor, sink));
     }
 
     @Test
@@ -50,10 +55,23 @@ class EdaRegionConnectorTest {
         // given
         var adapter = mock(EdaAdapter.class);
         var requestService = mock(PermissionRequestService.class);
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
 
         // when
         // then
-        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(adapter, requestService, null));
+        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(adapter, requestService, null, sink));
+    }
+
+    @Test
+    void connectorThrows_ifConnectionStatusMessageSinkNull() {
+        // given
+        var adapter = mock(EdaAdapter.class);
+        var requestService = mock(PermissionRequestService.class);
+        var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+
+        // when
+        // then
+        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, null));
     }
 
     @Test
@@ -63,10 +81,11 @@ class EdaRegionConnectorTest {
         when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         var requestService = mock(PermissionRequestService.class);
         var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
 
         // when
         // then
-        assertDoesNotThrow(() -> new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor));
+        assertDoesNotThrow(() -> new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, sink));
     }
 
     @Test
@@ -77,7 +96,8 @@ class EdaRegionConnectorTest {
         when(adapter.getConsumptionRecordStream()).thenReturn(Flux.empty());
         var requestService = mock(PermissionRequestService.class);
         var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
-        var connector = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor);
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
+        var connector = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, sink);
 
         // when
         // then
@@ -94,6 +114,7 @@ class EdaRegionConnectorTest {
         TestPublisher<ConsumptionRecord> testPublisher = TestPublisher.create();
         when(adapter.getConsumptionRecordStream()).thenReturn(testPublisher.flux());
         var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
 
         var requestService = mock(PermissionRequestService.class);
         when(requestService.findByMeteringPointIdAndDate(anyString(), any()))
@@ -103,7 +124,7 @@ class EdaRegionConnectorTest {
                         new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2", null))
                 );
 
-        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor);
+        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, sink);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConsumptionRecordStream());
 
@@ -134,6 +155,7 @@ class EdaRegionConnectorTest {
         TestPublisher<ConsumptionRecord> testPublisher = TestPublisher.create();
         when(adapter.getConsumptionRecordStream()).thenReturn(testPublisher.flux());
         var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
 
         var requestService = mock(PermissionRequestService.class);
         when(requestService.findByMeteringPointIdAndDate(anyString(), any()))
@@ -142,7 +164,7 @@ class EdaRegionConnectorTest {
                         new SimplePermissionRequest("pmId2", "connId2", "dataNeedId", "test2", "any2", null))
                 );
 
-        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor);
+        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, sink);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConsumptionRecordStream());
 
@@ -166,7 +188,8 @@ class EdaRegionConnectorTest {
         when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         var requestService = mock(PermissionRequestService.class);
         var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
-        var connector = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor);
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
+        var connector = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, sink);
 
         // when
         // then
@@ -180,7 +203,8 @@ class EdaRegionConnectorTest {
         when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         var requestService = mock(PermissionRequestService.class);
         var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
-        var connector = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor);
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
+        var connector = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, sink);
 
         // when
         var result = connector.getMetadata();
@@ -195,8 +219,9 @@ class EdaRegionConnectorTest {
         when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         var requestService = mock(PermissionRequestService.class);
         var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
 
-        var connector = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor);
+        var connector = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, sink);
 
         connector.close();
 
@@ -211,14 +236,56 @@ class EdaRegionConnectorTest {
         when(edaAdapter.health()).thenReturn(Map.of("service", HealthState.UP));
         when(edaAdapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
 
-        var rc = new EdaRegionConnector(edaAdapter, requestService, consumptionRecordProcessor);
+        var rc = new EdaRegionConnector(edaAdapter, requestService, consumptionRecordProcessor, sink);
 
         // When
         var res = rc.health();
 
         // Then
         assertEquals(Map.of("service", HealthState.UP), res);
+    }
+
+    @Test
+    void close_emitsCompleteOnPublisherForConnectionStatusMessages() throws Exception {
+        // Given
+        var edaAdapter = mock(EdaAdapter.class);
+        when(edaAdapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
+        var requestService = mock(PermissionRequestService.class);
+        var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
+        var rc = new EdaRegionConnector(edaAdapter, requestService, consumptionRecordProcessor, sink);
+        StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(rc.getConnectionStatusMessageStream()))
+                .expectComplete()
+                .verifyLater();
+
+        // When
+        rc.close();
+
+        // Then
+        stepVerifier.verify(Duration.ofSeconds(2));
+    }
+
+    @Test
+    void close_emitsCompleteOnPublisherForConsumptionRecords() throws Exception {
+        // Given
+        var edaAdapter = mock(EdaAdapter.class);
+        when(edaAdapter.getConsumptionRecordStream()).thenReturn(Flux.empty());
+        when(edaAdapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
+        var requestService = mock(PermissionRequestService.class);
+        var consumptionRecordProcessor = mock(ConsumptionRecordProcessor.class);
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
+        var rc = new EdaRegionConnector(edaAdapter, requestService, consumptionRecordProcessor, sink);
+        StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(rc.getConsumptionRecordStream()))
+                .expectComplete()
+                .verifyLater();
+
+        // When
+        rc.close();
+
+        // Then
+        stepVerifier.verify(Duration.ofSeconds(2));
     }
 
     private ConsumptionRecord createConsumptionRecord() {

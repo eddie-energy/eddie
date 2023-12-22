@@ -1,5 +1,6 @@
 package energy.eddie.core.dataneeds;
 
+import energy.eddie.api.agnostic.DataType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,5 +1,6 @@
 package energy.eddie.core.dataneeds;
 
+import energy.eddie.api.agnostic.DataNeed;
 import org.slf4j.Logger;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -16,17 +17,18 @@ public class DataNeedsConfig {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DataNeedsConfig.class);
     private final Map<String, DataNeed> dataNeedForId;
 
-    public DataNeedsConfig(List<DataNeed> dataNeeds, DataNeedSource dataNeedSource) {
+    public DataNeedsConfig(List<DataNeedEntity> dataNeeds, DataNeedSource dataNeedSource) {
         if (dataNeedSource == DataNeedSource.DATABASE && (null != dataNeeds && !dataNeeds.isEmpty())) {
             throw new IllegalConfigurationException("There must not be any data needs in the config when using dataNeedSource: " + DataNeedSource.DATABASE);
         }
         if (null != dataNeeds) {
             this.dataNeedForId = HashMap.newHashMap(dataNeeds.size());
-            for (DataNeed dataNeed : dataNeeds) {
-                if (dataNeedForId.containsKey(dataNeed.getId())) {
-                    LOGGER.error("Duplicate data need id read from spring config, id: {}", dataNeed.getId());
+            for (DataNeedEntity dataNeed : dataNeeds) {
+                String dataNeedId = dataNeed.id();
+                if (dataNeedForId.containsKey(dataNeedId)) {
+                    LOGGER.error("Duplicate data need id read from spring config, id: {}", dataNeedId);
                 }
-                dataNeedForId.put(dataNeed.getId(), dataNeed);
+                dataNeedForId.put(dataNeedId, dataNeed);
             }
         } else {
             this.dataNeedForId = new HashMap<>();

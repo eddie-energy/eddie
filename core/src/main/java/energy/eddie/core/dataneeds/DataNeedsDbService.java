@@ -1,5 +1,7 @@
 package energy.eddie.core.dataneeds;
 
+import energy.eddie.api.agnostic.DataNeed;
+import energy.eddie.api.agnostic.DataNeedsService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +23,7 @@ public class DataNeedsDbService implements DataNeedsService {
 
     @Override
     public Optional<DataNeed> getDataNeed(String id) {
-        return repository.findById(id);
+        return repository.findById(id).map(dn -> dn);
     }
 
     @Override

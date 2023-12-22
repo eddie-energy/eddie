@@ -1,5 +1,6 @@
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 import java.util.*
 
 plugins {
@@ -11,7 +12,7 @@ plugins {
 }
 
 group = "energy.eddie"
-version = "0.0.0"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -25,7 +26,6 @@ dependencies {
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.kafka)
 
-    implementation(libs.microprofile.config)
     implementation(libs.reactor.core)
 
 
@@ -46,4 +46,13 @@ tasks.withType<JavaCompile>().configureEach {
             option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.aiida")
         }
     }
+}
+
+// disable bootJar task as it needs a main class and region connectors do not have one
+tasks.getByName<BootJar>("bootJar") {
+    enabled = false
+}
+
+tasks.getByName<Jar>("jar") {
+    enabled = true
 }

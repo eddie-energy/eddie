@@ -1,26 +1,28 @@
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 import java.util.*
 
 plugins {
     id("energy.eddie.java-conventions")
     id("energy.eddie.pnpm-build")
-    application
+
+    // TODO: move to common versions.toml file
     id("org.openapi.generator") version "6.6.0"
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
 
 group = "energy.eddie"
-version = "0.0.0"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation(project(mapOf("path" to ":api")))
-    implementation(project(mapOf("path" to ":region-connectors:shared")))
+    implementation(project(":api"))
+    implementation(project(":region-connectors:shared"))
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
 
@@ -37,28 +39,13 @@ dependencies {
     implementation(libs.feign.slf4j)
     implementation(libs.feign.form)
 
-    // sl4j
-    implementation(libs.slf4j.api)
-    implementation(libs.log4j.sl4j2.impl)
-    runtimeOnly(libs.log4j.jul)
-
-
     implementation(libs.reactor.core)
 
-    implementation(libs.microprofile.config)
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.reactor.test)
     testImplementation(libs.spring.boot.starter.test)
-}
-
-configurations.all {
-    // the aop package is already contained in spring-aop
-    exclude(group = "aopalliance", module = "aopalliance")
-    exclude(group = "commons-logging", module = "commons-logging") // TODO check
-    exclude(group = "org.slf4j", module = "slf4j-simple") // TODO this shoudn't be necessary
-    exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j2-impl") // TODO this neither
 }
 
 tasks.test {
@@ -126,4 +113,13 @@ tasks.withType<JavaCompile>().configureEach {
             option("NullAway:TreatGeneratedAsUnannotated", true)
         }
     }
+}
+
+// disable bootJar task as it needs a main class and region connectors do not have one
+tasks.getByName<BootJar>("bootJar") {
+    enabled = false
+}
+
+tasks.getByName<Jar>("jar") {
+    enabled = true
 }

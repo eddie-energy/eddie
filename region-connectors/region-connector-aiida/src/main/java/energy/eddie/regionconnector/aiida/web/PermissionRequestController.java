@@ -8,22 +8,16 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-
-import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.BASE_PATH;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
 
 @RestController
-@RequestMapping(BASE_PATH)
 public class PermissionRequestController {
-    private static final String CE_JS = "/ce.js";
-    private static final String CE_PRODUCTION_PATH = "/public" + BASE_PATH + CE_JS;
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final AiidaRegionConnectorService aiidaService;
 
@@ -32,24 +26,13 @@ public class PermissionRequestController {
         this.aiidaService = aiidaService;
     }
 
-    @GetMapping(value = CE_JS, produces = "text/javascript")
-    public String javascriptConnectorElement() throws IOException {
-        try (InputStream in = getCEInputStream()) {
-            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        }
-    }
-
-    private InputStream getCEInputStream() {
-        return getClass().getResourceAsStream(CE_PRODUCTION_PATH);
-    }
-
-    @CrossOrigin
-    @PostMapping(value = "/permission-request", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(value = PATH_PERMISSION_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
+    // TODO: --> use correct responseEntity as well @ResponseStatus(HttpStatus.CREATED) --> issue #535
     public ResponseEntity<PermissionDto> createPermissionRequest(
             @Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation)
             throws StateTransitionException {
         LOGGER.info("Got new request for connectionId {}", permissionRequestForCreation.connectionId());
+
         return ResponseEntity.ok(aiidaService.createNewPermission(permissionRequestForCreation));
     }
 }

@@ -7,8 +7,6 @@ import energy.eddie.api.v0.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
@@ -24,9 +22,6 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class PermissionRequestControllerAdviceTest {
-    @MockBean
-    private ServletWebServerApplicationContext unused;
-
     @Test
     void onTransitionException_returnsBadRequest() {
         // Given

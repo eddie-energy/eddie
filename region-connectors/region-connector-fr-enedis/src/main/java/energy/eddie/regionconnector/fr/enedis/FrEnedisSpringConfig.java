@@ -1,0 +1,95 @@
+package energy.eddie.regionconnector.fr.enedis;
+
+import energy.eddie.api.agnostic.RegionConnector;
+import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.v0.process.model.PermissionRequestRepository;
+import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
+import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
+import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClientDecorator;
+import energy.eddie.regionconnector.fr.enedis.client.HealthCheckedEnedisApi;
+import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
+import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
+import energy.eddie.regionconnector.fr.enedis.permission.request.InMemoryPermissionRequestRepository;
+import energy.eddie.regionconnector.fr.enedis.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import reactor.core.publisher.Sinks;
+
+import java.util.Set;
+
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID;
+import static energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration.*;
+
+@EnableWebMvc
+@SpringBootApplication
+@RegionConnector(name = REGION_CONNECTOR_ID)
+@EnableAsync
+@EnableRetry
+public class FrEnedisSpringConfig {
+    @Bean
+    public EnedisConfiguration enedisConfiguration(
+            @Value("${" + ENEDIS_CLIENT_ID_KEY + "}") String clientId,
+            @Value("${" + ENEDIS_CLIENT_SECRET_KEY + "}") String clientSecret,
+            @Value("${" + ENEDIS_BASE_PATH_KEY + "}") String basePath
+    ) {
+        return new PlainEnedisConfiguration(clientId, clientSecret, basePath);
+    }
+
+    @Bean
+    public EnedisApi enedisApi(EnedisConfiguration enedisConfiguration) {
+        return new HealthCheckedEnedisApi(
+                new EnedisApiClientDecorator(
+                        new EnedisApiClient(enedisConfiguration)
+                )
+        );
+    }
+
+    @Bean
+    public PermissionRequestRepository<TimeframedPermissionRequest> permissionRequestRepository() {
+        return new InMemoryPermissionRequestRepository();
+    }
+
+    @Bean
+    public Sinks.Many<ConnectionStatusMessage> messages() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public Sinks.Many<ConsumptionRecord> consumptionRecords() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public Set<Extension<TimeframedPermissionRequest>> extensions(PermissionRequestRepository<TimeframedPermissionRequest> repository,
+                                                                  Sinks.Many<ConnectionStatusMessage> messages) {
+        return Set.of(
+                new SavingExtension<>(repository),
+                new MessagingExtension<>(messages)
+        );
+    }
+
+    @Bean
+    public PermissionRequestFactory factory(Set<Extension<TimeframedPermissionRequest>> extensions) {
+        return new PermissionRequestFactory(extensions);
+    }
+
+    @Bean
+    public energy.eddie.api.v0.RegionConnector regionConnector(
+            EnedisApi enedisApi,
+            PermissionRequestService permissionRequestService,
+            Sinks.Many<ConnectionStatusMessage> messages,
+            Sinks.Many<ConsumptionRecord> consumptionRecordSink
+    ) {
+        return new EnedisRegionConnector(enedisApi, permissionRequestService, messages, consumptionRecordSink);
+    }
+}

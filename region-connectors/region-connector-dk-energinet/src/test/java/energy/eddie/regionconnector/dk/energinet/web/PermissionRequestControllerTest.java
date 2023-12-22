@@ -13,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -34,26 +33,15 @@ class PermissionRequestControllerTest {
     private PermissionRequestService service;
 
     @Test
-    void javascriptConnectorElement_returnsOk() throws Exception {
-        // Given
-
-        // When
-        mockMvc.perform(MockMvcRequestBuilders.get("/region-connectors/dk-energinet/ce.js"))
-                // Then
-                .andExpect(status().isOk())
-                .andReturn().getResponse();
-    }
-
-    @Test
     void givenNoPermissionId_returnsNotFound() throws Exception {
-        mockMvc.perform(get("/region-connectors/dk-energinet/permission-status"))
+        mockMvc.perform(get("/permission-status"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void givenNonExistingPermissionId_returnsNotFound() throws Exception {
         String permissionId = "NonExistingId";
-        mockMvc.perform(get("/region-connectors/dk-energinet/permission-status/{permissionId}", permissionId))
+        mockMvc.perform(get("/permission-status/{permissionId}", permissionId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.errors", allOf(
                         iterableWithSize(1),
@@ -71,7 +59,7 @@ class PermissionRequestControllerTest {
                 PermissionProcessStatus.ACCEPTED);
         when(service.findConnectionStatusMessageById(permissionId)).thenReturn(Optional.of(statusMessage));
 
-        mockMvc.perform(get("/region-connectors/dk-energinet/permission-status/{permissionId}", permissionId))
+        mockMvc.perform(get("/permission-status/{permissionId}", permissionId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("ACCEPTED")))
                 .andExpect(jsonPath("$.connectionId", is("foo")))
@@ -81,7 +69,7 @@ class PermissionRequestControllerTest {
 
     @Test
     void givenJson_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
+        mockMvc.perform(post("/permission-request")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"foo\": \"bar\"}"))
                 .andExpect(status().isUnsupportedMediaType());
@@ -89,14 +77,14 @@ class PermissionRequestControllerTest {
 
     @Test
     void givenFormUrlEncoded_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
+        mockMvc.perform(post("/permission-request")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(status().isUnsupportedMediaType());
     }
 
     @Test
     void givenNoRequestBody_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
+        mockMvc.perform(post("/permission-request")
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", allOf(
@@ -107,7 +95,7 @@ class PermissionRequestControllerTest {
 
     @Test
     void givenSomeMissingFields_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
+        mockMvc.perform(post("/permission-request")
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .param("connectionId", "23")
                         .param("meteringPoint", "92345")
@@ -124,7 +112,7 @@ class PermissionRequestControllerTest {
 
     @Test
     void givenInvalidPeriodResolution_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
+        mockMvc.perform(post("/permission-request")
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .param("connectionId", "23")
                         .param("periodResolution", "PT4h"))
@@ -134,7 +122,7 @@ class PermissionRequestControllerTest {
 
     @Test
     void givenBlankFields_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
+        mockMvc.perform(post("/permission-request")
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .param("connectionId", "")
                         .param("meteringPoint", "92345")
@@ -165,7 +153,7 @@ class PermissionRequestControllerTest {
         });
 
 
-        mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
+        mockMvc.perform(post("/permission-request")
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .param("connectionId", "214")
                         .param("meteringPoint", "92345")
@@ -193,7 +181,7 @@ class PermissionRequestControllerTest {
             );
         });
 
-        mockMvc.perform(post("/region-connectors/dk-energinet/permission-request")
+        mockMvc.perform(post("/permission-request")
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .param("connectionId", "214")
                         .param("meteringPoint", "92345")

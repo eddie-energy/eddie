@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.permission.request;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
@@ -8,11 +9,15 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.permission.requests.decorators.MessagingPermissionRequest;
 import energy.eddie.regionconnector.shared.permission.requests.decorators.SavingPermissionRequest;
+import org.springframework.stereotype.Component;
+import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 
 import java.util.UUID;
+import java.util.concurrent.Flow;
 
-public class PermissionRequestFactory {
+@Component
+public class PermissionRequestFactory implements Mvp1ConnectionStatusMessageProvider {
     private final AuthorizationApi authorizationApi;
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink;
     private final EsPermissionRequestRepository repository;
@@ -39,5 +44,15 @@ public class PermissionRequestFactory {
                 permissionRequest,
                 savingPermissionRequest
         );
+    }
+
+    @Override
+    public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+        return JdkFlowAdapter.publisherToFlowPublisher(connectionStatusMessageSink.asFlux());
+    }
+
+    @Override
+    public void close() {
+        connectionStatusMessageSink.tryEmitComplete();
     }
 }

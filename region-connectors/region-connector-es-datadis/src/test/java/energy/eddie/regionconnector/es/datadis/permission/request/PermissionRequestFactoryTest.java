@@ -11,8 +11,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
+import reactor.test.StepVerifier;
 
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -22,11 +25,11 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestFactoryTest {
     @Mock
-    private AuthorizationApi unusedAuthorizationApi;
+    private AuthorizationApi authorizationApi;
     @Mock
     private Sinks.Many<ConnectionStatusMessage> unusedConnectionStatusMessageSink;
     @Mock
-    private EsPermissionRequestRepository unusedRepository;
+    private EsPermissionRequestRepository repository;
     @InjectMocks
     private PermissionRequestFactory factory;
 
@@ -59,5 +62,20 @@ class PermissionRequestFactoryTest {
         assertTrue(createdRequest.distributorCode().isEmpty());
         assertTrue(createdRequest.lastPulledMeterReading().isEmpty());
         assertTrue(createdRequest.pointType().isEmpty());
+    }
+
+    @Test
+    void close_emitsCompleteOnPublisher() {
+        // Given
+        var factory = new PermissionRequestFactory(authorizationApi, Sinks.many().multicast().onBackpressureBuffer(), repository);
+        StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(factory.getConnectionStatusMessageStream()))
+                .expectComplete()
+                .verifyLater();
+
+        // When
+        factory.close();
+
+        // Then
+        stepVerifier.verify(Duration.ofSeconds(2));
     }
 }

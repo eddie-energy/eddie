@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.at.eda.web;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.process.model.StateTransitionException;
-import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestCreationService;
@@ -15,20 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-
-import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.BASE_PATH;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 
 @RestController
-@RequestMapping(EdaRegionConnectorMetadata.BASE_PATH)
 public class PermissionRequestController {
-
-    private static final String CE_JS = "/ce.js";
-    private static final String CE_PRODUCTION_PATH = "/public" + BASE_PATH + CE_JS;
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final PermissionRequestService permissionRequestService;
     private final PermissionRequestCreationService creationService;
@@ -38,32 +29,19 @@ public class PermissionRequestController {
         this.creationService = creationService;
     }
 
-    @GetMapping("/permission-status/{permissionId}")
+    @GetMapping(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
     public ResponseEntity<ConnectionStatusMessage> permissionStatus(@PathVariable String permissionId) throws PermissionNotFoundException {
         var statusMessage = permissionRequestService.findConnectionStatusMessageById(permissionId)
                 .orElseThrow(() -> new PermissionNotFoundException(permissionId));
         return ResponseEntity.ok(statusMessage);
     }
 
-    @GetMapping(value = CE_JS, produces = "text/javascript")
-    public String javascriptConnectorElement() {
-        try (InputStream in = getCEInputStream()) {
-            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @PostMapping(value = "/permission-request", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = PATH_PERMISSION_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public CreatedPermissionRequest createPermissionRequest(
             @ModelAttribute @Valid PermissionRequestForCreation permissionRequestForCreation
     ) throws StateTransitionException {
         LOGGER.info("Creating new permission request");
         return creationService.createAndSendPermissionRequest(permissionRequestForCreation);
-    }
-
-    private InputStream getCEInputStream() {
-        return getClass().getResourceAsStream(CE_PRODUCTION_PATH);
     }
 }

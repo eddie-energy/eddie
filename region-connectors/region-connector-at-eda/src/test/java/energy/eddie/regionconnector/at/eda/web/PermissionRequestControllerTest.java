@@ -63,17 +63,6 @@ class PermissionRequestControllerTest {
     }
 
     @Test
-    void javascriptConnectorElement_returnsOk() throws Exception {
-        // Given
-
-        // When
-        mockMvc.perform(MockMvcRequestBuilders.get("/region-connectors/at-eda/ce.js"))
-                // Then
-                .andExpect(status().isOk())
-                .andReturn().getResponse();
-    }
-
-    @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {
         // Given
         var state = new AtAcceptedPermissionRequestState(null);
@@ -89,7 +78,7 @@ class PermissionRequestControllerTest {
                 )));
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/region-connectors/at-eda/permission-status/{permissionId}", permissionId)
+                        MockMvcRequestBuilders.get("/permission-status/{permissionId}", permissionId)
                                 .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isOk())
@@ -105,7 +94,7 @@ class PermissionRequestControllerTest {
                 .thenReturn(Optional.of(new SimplePermissionRequest("pid", "cid", "dnid", "cmId", "conid", state)));
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/region-connectors/at-eda/permission-status/{permissionId}", "123")
+                        MockMvcRequestBuilders.get("/permission-status/{permissionId}", "123")
                                 .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isNotFound())
@@ -124,7 +113,7 @@ class PermissionRequestControllerTest {
 
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/region-connectors/at-eda/permission-request")
+                        MockMvcRequestBuilders.post("/permission-request")
                                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                                 .param("connectionId", permissionRequestForCreation.connectionId())
                                 .param("start", permissionRequestForCreation.start().format(DateTimeFormatter.ISO_DATE))
@@ -148,7 +137,7 @@ class PermissionRequestControllerTest {
 
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/region-connectors/at-eda/permission-request")
+                        MockMvcRequestBuilders.post("/permission-request")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(content)
                 )
@@ -165,7 +154,7 @@ class PermissionRequestControllerTest {
 
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/region-connectors/at-eda/permission-request")
+                        MockMvcRequestBuilders.post("/permission-request")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(content)
                 )
@@ -182,7 +171,7 @@ class PermissionRequestControllerTest {
 
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/region-connectors/at-eda/permission-request")
+                        MockMvcRequestBuilders.post("/permission-request")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(content)
                 )
@@ -201,7 +190,7 @@ class PermissionRequestControllerTest {
 
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/region-connectors/at-eda/permission-request")
+                        MockMvcRequestBuilders.post("/permission-request")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(content)
                 )

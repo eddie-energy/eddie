@@ -1,17 +1,18 @@
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 import java.util.*
 
 plugins {
-    id("java")
     id("energy.eddie.java-conventions")
     id("energy.eddie.pnpm-build")
+
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
 
 group = "energy.eddie"
-version = "0.0.0"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -24,8 +25,6 @@ dependencies {
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
 
-    implementation(libs.microprofile.config)
-
 
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
@@ -37,9 +36,8 @@ dependencies {
     implementation(libs.reactor.core)
     testImplementation(libs.reactor.test)
 
-    implementation(libs.slf4j.api)
 
-    implementation(libs.jakarta.annotation.api)
+    // TODO: move to common versions.toml file
     // https://mvnrepository.com/artifact/io.projectreactor.netty/reactor-netty
     implementation("io.projectreactor.netty:reactor-netty:1.1.10")
     // https://mvnrepository.com/artifact/io.netty/netty-codec-http
@@ -59,7 +57,16 @@ tasks.withType<JavaCompile>().configureEach {
     if (!name.lowercase(Locale.getDefault()).contains("test")) {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
-            option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.es")
+            option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.es.datadis")
         }
     }
+}
+
+// disable bootJar task as it needs a main class and region connectors do not have one
+tasks.getByName<BootJar>("bootJar") {
+    enabled = false
+}
+
+tasks.getByName<Jar>("jar") {
+    enabled = true
 }

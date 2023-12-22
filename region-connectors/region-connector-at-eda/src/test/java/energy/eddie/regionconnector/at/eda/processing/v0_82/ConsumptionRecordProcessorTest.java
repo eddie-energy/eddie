@@ -8,9 +8,12 @@ import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.EddieValidatedHistoricalDataMarketDocumentPublisher;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import org.junit.jupiter.api.Test;
+import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
+
+import java.time.Duration;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -39,7 +42,7 @@ class ConsumptionRecordProcessorTest {
         ConsumptionRecordProcessor consumptionRecordProcessor = new ConsumptionRecordProcessor(director, publisher, edaAdapter);
 
 
-        StepVerifier.create(consumptionRecordProcessor.getEddieValidatedHistoricalDataMarketDocumentStream())
+        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(consumptionRecordProcessor.getEddieValidatedHistoricalDataMarketDocumentStream()))
                 .then(() -> testPublisher.next(consumptionRecord))
                 .expectNextCount(3)
                 .then(testPublisher::complete)
@@ -62,10 +65,30 @@ class ConsumptionRecordProcessorTest {
         ConsumptionRecordProcessor consumptionRecordProcessor = new ConsumptionRecordProcessor(director, publisher, edaAdapter);
 
 
-        StepVerifier.create(consumptionRecordProcessor.getEddieValidatedHistoricalDataMarketDocumentStream())
+        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(consumptionRecordProcessor.getEddieValidatedHistoricalDataMarketDocumentStream()))
                 .then(() -> testPublisher.next(consumptionRecord))
                 .expectNextCount(0)
                 .then(testPublisher::complete)
                 .verifyComplete();
+    }
+
+    @Test
+    void close_emitsCompleteOnPublisher() throws Exception {
+        // Given
+        ValidatedHistoricalDataMarketDocumentDirector director = mock(ValidatedHistoricalDataMarketDocumentDirector.class);
+        EddieValidatedHistoricalDataMarketDocumentPublisher publisher = mock(EddieValidatedHistoricalDataMarketDocumentPublisher.class);
+        EdaAdapter edaAdapter = mock(EdaAdapter.class);
+        when(edaAdapter.getConsumptionRecordStream()).thenReturn(Flux.empty());
+        ConsumptionRecordProcessor processor = new ConsumptionRecordProcessor(director, publisher, edaAdapter);
+
+        StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(processor.getEddieValidatedHistoricalDataMarketDocumentStream()))
+                .expectComplete()
+                .verifyLater();
+
+        // When
+        processor.close();
+
+        // Then
+        stepVerifier.verify(Duration.ofSeconds(2));
     }
 }

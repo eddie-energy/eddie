@@ -1,5 +1,6 @@
 package energy.eddie.core.dataneeds;
 
+import energy.eddie.api.agnostic.DataNeedsService;
 import energy.eddie.core.CoreSpringConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;

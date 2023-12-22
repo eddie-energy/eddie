@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
@@ -16,7 +17,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.task.TaskExecutor;
+import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
+import reactor.test.StepVerifier;
 
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -32,6 +38,8 @@ class PermissionRequestServiceTest {
     private TaskExecutor executor;
     @Mock
     private PermissionRequestFactory requestFactory;
+    @Mock
+    private Sinks.Many<ConsumptionRecord> consumptionRecordSink;
     @InjectMocks
     private PermissionRequestService service;
 
@@ -99,5 +107,18 @@ class PermissionRequestServiceTest {
         verify(mockRequest).sendToPermissionAdministrator();
         verify(mockRequest).receivedPermissionAdministratorResponse();
         verify(executor).execute(any());
+    }
+
+    @Test
+    void close_emitsCompleteOnPublisher() {
+        when(consumptionRecordSink.asFlux()).thenReturn(Flux.empty());
+
+        // Given
+        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(service.getConsumptionRecordStream()))
+                // When
+                .then(service::close)
+                // Then
+                .expectComplete()
+                .verify(Duration.ofSeconds(2));
     }
 }

@@ -1,0 +1,25 @@
+package energy.eddie.regionconnector.simulation;
+
+import energy.eddie.api.v0.DataSourceInformation;
+
+public class SimulationDataSourceInformation implements DataSourceInformation {
+    @Override
+    public String countryCode() {
+        return "sim";
+    }
+
+    @Override
+    public String regionConnectorId() {
+        return "sim";
+    }
+
+    @Override
+    public String meteredDataAdministratorId() {
+        return "sim";
+    }
+
+    @Override
+    public String permissionAdministratorId() {
+        return "sim";
+    }
+}

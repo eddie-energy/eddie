@@ -1,5 +1,8 @@
 package energy.eddie.core.dataneeds;
 
+import energy.eddie.api.agnostic.DataNeed;
+import energy.eddie.api.agnostic.DataNeedsService;
+import energy.eddie.api.agnostic.DataType;
 import energy.eddie.api.v0.ConsumptionRecord;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

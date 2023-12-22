@@ -1,13 +1,10 @@
 package energy.eddie.regionconnector.es.datadis;
 
-import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Sinks;
 
 import java.util.Map;
 
@@ -20,50 +17,41 @@ class DatadisRegionConnectorTest {
     @Test
     void terminatePermission_callsService() throws PermissionNotFoundException, StateTransitionException {
         // Given
-        Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().multicast().onBackpressureBuffer();
-        Sinks.Many<ConsumptionRecord> recordsSink = Sinks.many().unicast().onBackpressureBuffer();
         var mockService = mock(PermissionRequestService.class);
         var permissionId = "SomeId";
 
-        try (var connector = new DatadisRegionConnector(statusMessageSink, recordsSink, mockService, 0)) {
+        var connector = new DatadisRegionConnector(mockService);
 
-            // When
-            assertDoesNotThrow(() -> connector.terminatePermission(permissionId));
+        // When
+        assertDoesNotThrow(() -> connector.terminatePermission(permissionId));
 
-            // Then
-            verify(mockService).terminatePermission(permissionId);
-        }
+        // Then
+        verify(mockService).terminatePermission(permissionId);
     }
 
 
     @Test
     void getMetadata_returnExpectedMetadata() {
         // Given
-        Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().multicast().onBackpressureBuffer();
-        Sinks.Many<ConsumptionRecord> recordsSink = Sinks.many().unicast().onBackpressureBuffer();
         var mockService = mock(PermissionRequestService.class);
 
-        try (var connector = new DatadisRegionConnector(statusMessageSink, recordsSink, mockService, 0)) {
+        var connector = new DatadisRegionConnector(mockService);
 
-            // When
-            var result = connector.getMetadata();
+        // When
+        var result = connector.getMetadata();
 
-            // then
-            assertEquals(DatadisRegionConnectorMetadata.getInstance(), result);
-        }
+        // then
+        assertEquals(DatadisRegionConnectorMetadata.getInstance(), result);
     }
 
     @Test
     void health_returnsHealthChecks() {
         // Given
-        Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().multicast().onBackpressureBuffer();
-        Sinks.Many<ConsumptionRecord> recordsSink = Sinks.many().unicast().onBackpressureBuffer();
         var mockService = mock(PermissionRequestService.class);
 
-        try (var connector = new DatadisRegionConnector(statusMessageSink, recordsSink, mockService, 0)) {
-            var res = connector.health();
+        var connector = new DatadisRegionConnector(mockService);
+        var res = connector.health();
 
-            assertEquals(Map.of("permissionRequestRepository", HealthState.UP), res);
-        }
+        assertEquals(Map.of("permissionRequestRepository", HealthState.UP), res);
     }
 }

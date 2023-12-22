@@ -1,0 +1,30 @@
+package energy.eddie.core.dataneeds;
+
+import energy.eddie.api.agnostic.DataType;
+import energy.eddie.api.v0.ConsumptionRecord;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class DataNeedEntityTest {
+    static final String EXAMPLE_DATA_NEED_KEY = "EXAMPLE_DATA_NEED";
+    static final DataNeedEntity EXAMPLE_DATA_NEED = new DataNeedEntity(EXAMPLE_DATA_NEED_KEY, "description",
+            DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA, ConsumptionRecord.MeteringInterval.PT_15_M, -90, false, 0);
+
+    static DataNeedEntity copy(DataNeedEntity dataNeed) {
+        return new DataNeedEntity(dataNeed.id(), dataNeed.description(), dataNeed.type(), dataNeed.granularity(),
+                dataNeed.durationStart(), dataNeed.durationOpenEnd(), dataNeed.durationEnd());
+    }
+
+    @Test
+    void testEqualsAndHashcode() {
+        var equalDataNeed = copy(EXAMPLE_DATA_NEED);
+        assertThat(EXAMPLE_DATA_NEED).isEqualTo(equalDataNeed).hasSameHashCodeAs(equalDataNeed).isNotSameAs(equalDataNeed);
+        var differentKeyDataNeed = copy(EXAMPLE_DATA_NEED);
+        differentKeyDataNeed.setId(EXAMPLE_DATA_NEED.id() + "_changed");
+        assertThat(EXAMPLE_DATA_NEED).isNotEqualTo(differentKeyDataNeed).doesNotHaveSameHashCodeAs(differentKeyDataNeed);
+        var differentTypeDataNeed = copy(EXAMPLE_DATA_NEED);
+        differentTypeDataNeed.setType(DataType.FUTURE_VALIDATED_CONSUMPTION_DATA);
+        assertThat(EXAMPLE_DATA_NEED).isNotEqualTo(differentTypeDataNeed).doesNotHaveSameHashCodeAs(differentTypeDataNeed);
+    }
+}

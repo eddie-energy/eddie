@@ -1,11 +1,12 @@
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 import java.util.*
 
 plugins {
     id("energy.eddie.java-conventions")
     id("energy.eddie.pnpm-build")
-    application
+
     id("org.openapi.generator") version "7.1.0"
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
@@ -13,15 +14,16 @@ plugins {
 
 
 group = "energy.eddie"
-version = "0.0.0"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    implementation(project(":api"))
+    implementation(project(":region-connectors:shared"))
 
-    implementation(libs.dotenv)
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.hibernate.validator)
@@ -37,10 +39,6 @@ dependencies {
     implementation(libs.apache.http.mime)
 
     implementation(libs.reactor.core)
-
-    implementation(project(mapOf("path" to ":api")))
-    implementation(project(":region-connectors:shared"))
-    implementation(libs.microprofile.config)
 
     testImplementation(libs.reactor.test)
     testImplementation(libs.junit.jupiter)
@@ -110,4 +108,13 @@ tasks.withType<JavaCompile>().configureEach {
             option("NullawayExcludedClasses=EnedisApiClient.java")
         }
     }
+}
+
+// disable bootJar task as it needs a main class and region connectors do not have one
+tasks.getByName<BootJar>("bootJar") {
+    enabled = false
+}
+
+tasks.getByName<Jar>("jar") {
+    enabled = true
 }

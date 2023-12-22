@@ -34,17 +34,6 @@ class PermissionControllerTest {
     private PermissionRequestService mockService;
 
     @Test
-    void javascriptConnectorElement_returnsOk() throws Exception {
-        // Given
-
-        // When
-        mockMvc.perform(MockMvcRequestBuilders.get("/region-connectors/es-datadis/ce.js"))
-                // Then
-                .andExpect(status().isOk())
-                .andReturn().getResponse();
-    }
-
-    @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {
         // Given
         var state = new AcceptedState(null);
@@ -54,7 +43,7 @@ class PermissionControllerTest {
         when(mockService.findConnectionStatusMessageById(anyString())).thenReturn(Optional.of(statusMessage));
 
         // When
-        mockMvc.perform(MockMvcRequestBuilders.get("/region-connectors/es-datadis/permission-status/{permissionId}", permissionId)
+        mockMvc.perform(MockMvcRequestBuilders.get("/permission-status/{permissionId}", permissionId)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isOk())
@@ -66,7 +55,7 @@ class PermissionControllerTest {
         // Given
 
         // When
-        mockMvc.perform(MockMvcRequestBuilders.get("/region-connectors/es-datadis/permission-status/{permissionId}", "123")
+        mockMvc.perform(MockMvcRequestBuilders.get("/permission-status/{permissionId}", "123")
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isNotFound())
@@ -82,7 +71,7 @@ class PermissionControllerTest {
         String permissionId = "ValidId";
 
         // When
-        mockMvc.perform(post("/region-connectors/es-datadis/permission-request/accepted")
+        mockMvc.perform(post("/permission-request/accepted")
                         .param("permissionId", permissionId)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
@@ -99,7 +88,7 @@ class PermissionControllerTest {
         doThrow(ex).when(mockService).acceptPermission(anyString());
 
         // When
-        mockMvc.perform(post("/region-connectors/es-datadis/permission-request/accepted")
+        mockMvc.perform(post("/permission-request/accepted")
                         .param("permissionId", nonExistingId)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
@@ -115,7 +104,7 @@ class PermissionControllerTest {
         String permissionId = "ValidId";
 
         // When
-        mockMvc.perform(post("/region-connectors/es-datadis/permission-request/rejected")
+        mockMvc.perform(post("/permission-request/rejected")
                         .param("permissionId", permissionId)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
@@ -132,7 +121,7 @@ class PermissionControllerTest {
         doThrow(ex).when(mockService).rejectPermission(anyString());
 
         // When
-        mockMvc.perform(post("/region-connectors/es-datadis/permission-request/rejected")
+        mockMvc.perform(post("/permission-request/rejected")
                         .param("permissionId", nonExistingId)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
@@ -144,7 +133,7 @@ class PermissionControllerTest {
 
     @Test
     void requestPermission_missingAllRequiredFields_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/region-connectors/es-datadis/permission-request")
+        mockMvc.perform(post("/permission-request")
                         .param("useless", "value")
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .accept(MediaType.APPLICATION_JSON))
@@ -164,7 +153,7 @@ class PermissionControllerTest {
 
     @Test
     void requestPermission_missingMeasurementType_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/region-connectors/es-datadis/permission-request")
+        mockMvc.perform(post("/permission-request")
                         .param("connectionId", "foo")
                         .param("meteringPointId", "bar")
                         .param("dataNeedId", "du")
@@ -183,7 +172,7 @@ class PermissionControllerTest {
 
     @Test
     void requestPermission_invalidMeasurementType_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/region-connectors/es-datadis/permission-request")
+        mockMvc.perform(post("/permission-request")
                         .param("connectionId", "foo")
                         .param("meteringPointId", "bar")
                         .param("dataNeedId", "du")
@@ -200,7 +189,7 @@ class PermissionControllerTest {
 
     @Test
     void requestPermission_noBody_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/region-connectors/es-datadis/permission-request")
+        mockMvc.perform(post("/permission-request")
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
@@ -209,7 +198,7 @@ class PermissionControllerTest {
 
     @Test
     void requestPermission_wrongContentType_returnsUnsupportedMediaType() throws Exception {
-        mockMvc.perform(post("/region-connectors/es-datadis/permission-request")
+        mockMvc.perform(post("/permission-request")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
@@ -218,7 +207,7 @@ class PermissionControllerTest {
 
     @Test
     void requestPermission_blankOrEmptyFields_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/region-connectors/es-datadis/permission-request")
+        mockMvc.perform(post("/permission-request")
                         .param("connectionId", "   ")
                         .param("meteringPointId", "   ")
                         .param("dataNeedId", "")
@@ -248,7 +237,7 @@ class PermissionControllerTest {
         when(mockService.createAndSendPermissionRequest(any())).thenReturn(mockPermissionRequest);
 
         // When
-        MockHttpServletResponse response = mockMvc.perform(post("/region-connectors/es-datadis/permission-request")
+        MockHttpServletResponse response = mockMvc.perform(post("/permission-request")
                         .param("connectionId", "ConnId")
                         .param("meteringPointId", "SomeId")
                         .param("dataNeedId", "BLA_BLU_BLE")
