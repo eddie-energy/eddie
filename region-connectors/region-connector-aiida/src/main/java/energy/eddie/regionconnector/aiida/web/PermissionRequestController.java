@@ -5,20 +5,19 @@ import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriTemplate;
 
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 
 @RestController
 public class PermissionRequestController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final AiidaRegionConnectorService aiidaService;
 
     @Autowired
@@ -27,12 +26,15 @@ public class PermissionRequestController {
     }
 
     @PostMapping(value = PATH_PERMISSION_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
-    // TODO: --> use correct responseEntity as well @ResponseStatus(HttpStatus.CREATED) --> issue #535
     public ResponseEntity<PermissionDto> createPermissionRequest(
             @Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation)
             throws StateTransitionException {
-        LOGGER.info("Got new request for connectionId {}", permissionRequestForCreation.connectionId());
+        var permissionDto = aiidaService.createNewPermission(permissionRequestForCreation);
+        var permissionId = permissionDto.permissionId();
 
-        return ResponseEntity.ok(aiidaService.createNewPermission(permissionRequestForCreation));
+        var location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
+                .expand(permissionId);
+
+        return ResponseEntity.created(location).body(permissionDto);
     }
 }
