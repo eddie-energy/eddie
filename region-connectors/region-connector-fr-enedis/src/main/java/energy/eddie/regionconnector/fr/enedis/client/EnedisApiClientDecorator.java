@@ -1,8 +1,9 @@
 package energy.eddie.regionconnector.fr.enedis.client;
 
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
+import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
+import energy.eddie.regionconnector.fr.enedis.model.DailyConsumptionMeterReading;
 
 import java.net.HttpURLConnection;
 import java.time.ZonedDateTime;
@@ -20,7 +21,7 @@ public class EnedisApiClientDecorator implements EnedisApi {
     }
 
     @Override
-    public ConsumptionRecord getDailyConsumption(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
+    public DailyConsumptionMeterReading getDailyConsumption(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
         try {
             return enedisApi.getDailyConsumption(usagePointId, start, end);
         } catch (ApiException e) {
@@ -34,7 +35,7 @@ public class EnedisApiClientDecorator implements EnedisApi {
     }
 
     @Override
-    public ConsumptionRecord getConsumptionLoadCurve(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
+    public ConsumptionLoadCurveMeterReading getConsumptionLoadCurve(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
         try {
             return enedisApi.getConsumptionLoadCurve(usagePointId, start, end);
         } catch (ApiException e) {

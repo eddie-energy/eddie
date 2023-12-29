@@ -6,7 +6,7 @@ import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.cim.validated_historical_data.v0_82.*;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.processing.utils.XmlGregorianCalenderUtils;
-import energy.eddie.regionconnector.shared.utils.EsmpDateTimeUtils;
+import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 
 import java.util.UUID;
 
@@ -34,8 +34,9 @@ public class ValidatedHistoricalDataMarketDocumentBuilder {
 
 
     public ValidatedHistoricalDataMarketDocumentBuilder withRoutingHeaderData(RoutingHeader routingHeader, CodingSchemeTypeList receiverCodingScheme) {
+        EsmpDateTime esmpDateTime = new EsmpDateTime(XmlGregorianCalenderUtils.toUtcZonedDateTime(routingHeader.getDocumentCreationDateTime()));
         validatedHistoricalDataMarketDocument
-                .withCreatedDateTime(EsmpDateTimeUtils.zonedDateTimeToESMPDateTimeString(XmlGregorianCalenderUtils.toUtcZonedDateTime(routingHeader.getDocumentCreationDateTime())))
+                .withCreatedDateTime(esmpDateTime.toString())
                 .withSenderMarketParticipantMRID(
                         new PartyIDStringComplexType()
                                 .withCodingScheme(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
@@ -66,8 +67,8 @@ public class ValidatedHistoricalDataMarketDocumentBuilder {
                 .withSeriesPeriod(seriesPeriod)
                 .build();
 
-        var periodStart = XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodStart());
-        var periodEnd = XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodEnd());
+        var periodStart = new EsmpDateTime(XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodStart()));
+        var periodEnd = new EsmpDateTime(XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodEnd()));
 
         validatedHistoricalDataMarketDocument
                 .withTimeSeriesList(
@@ -76,8 +77,8 @@ public class ValidatedHistoricalDataMarketDocumentBuilder {
                 )
                 .withPeriodTimeInterval(
                         new ESMPDateTimeIntervalComplexType()
-                                .withStart(EsmpDateTimeUtils.zonedDateTimeToESMPDateTimeString(periodStart))
-                                .withEnd(EsmpDateTimeUtils.zonedDateTimeToESMPDateTimeString(periodEnd))
+                                .withStart(periodStart.toString())
+                                .withEnd(periodEnd.toString())
                 );
 
         return this;

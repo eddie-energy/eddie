@@ -14,7 +14,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static energy.eddie.regionconnector.shared.utils.EsmpDateTimeUtils.ESMP_DATE_TIME_FORMATTER;
+import static energy.eddie.regionconnector.shared.utils.EsmpDateTime.ESMP_DATE_TIME_FORMATTER;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SeriesPeriodBuilderTest {

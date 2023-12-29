@@ -1,16 +1,12 @@
 package energy.eddie.regionconnector.fr.enedis.client;
 
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.fr.enedis.api.AuthorizationApi;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.api.MeteringDataApi;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiClient;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
-import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveResponse;
-import energy.eddie.regionconnector.fr.enedis.model.DailyConsumptionResponse;
-import energy.eddie.regionconnector.fr.enedis.model.TokenGenerationResponse;
-import energy.eddie.regionconnector.fr.enedis.utils.ConsumptionRecordMapper;
+import energy.eddie.regionconnector.fr.enedis.model.*;
 
 import java.time.*;
 import java.util.Objects;
@@ -58,19 +54,13 @@ public class EnedisApiClient extends ApiClient implements EnedisApi {
      * @throws ApiException Something went wrong while retrieving data from the API
      */
     @Override
-    public ConsumptionRecord getDailyConsumption(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
+    public DailyConsumptionMeterReading getDailyConsumption(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
         throwIfInvalidTimeframe(start, end);
         // The end date is not in the response when requesting data, increment +1 day to prevent confusion
         end = end.plusDays(1);
-
-        ConsumptionRecord dcRecord;
-
         String authorization = "Bearer " + bearerToken;
-
-        DailyConsumptionResponse dcResponse = meterApi.meteringDataDcV5DailyConsumptionGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), APPLICATION_JSON, APPLICATION_JSON, USER_AGENT, null);
-        dcRecord = ConsumptionRecordMapper.dcReadingToCIM(dcResponse.getMeterReading());
-
-        return dcRecord;
+        DailyConsumptionResponse dcResponse = meterApi.meteringDataDcV5DailyConsumptionGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), APPLICATION_JSON, APPLICATION_JSON, USER_AGENT, "");
+        return dcResponse.getMeterReading();
     }
 
     /**
@@ -81,18 +71,24 @@ public class EnedisApiClient extends ApiClient implements EnedisApi {
      * @throws ApiException Something went wrong while retrieving data from the API
      */
     @Override
-    public ConsumptionRecord getConsumptionLoadCurve(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
+    public ConsumptionLoadCurveMeterReading getConsumptionLoadCurve(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
         throwIfInvalidTimeframe(start, end);
         // The end date is not in the response when requesting data, increment +1 day to prevent confusion
         end = end.plusDays(1);
 
-        ConsumptionRecord clcRecord;
-
         String authorization = "Bearer " + bearerToken;
-        ConsumptionLoadCurveResponse clcResponse = meterApi.meteringDataClcV5ConsumptionLoadCurveGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), APPLICATION_JSON, APPLICATION_JSON, USER_AGENT, null);
-        clcRecord = ConsumptionRecordMapper.clcReadingToCIM(clcResponse.getMeterReading());
+        ConsumptionLoadCurveResponse clcResponse = meterApi.meteringDataClcV5ConsumptionLoadCurveGet(
+                authorization,
+                usagePointId,
+                start.toLocalDate().toString(),
+                end.toLocalDate().toString(),
+                APPLICATION_JSON,
+                APPLICATION_JSON,
+                USER_AGENT,
+                ""
+        );
 
-        return clcRecord;
+        return clcResponse.getMeterReading();
     }
 
     private void throwIfInvalidTimeframe(ZonedDateTime start, ZonedDateTime end) throws DateTimeException {

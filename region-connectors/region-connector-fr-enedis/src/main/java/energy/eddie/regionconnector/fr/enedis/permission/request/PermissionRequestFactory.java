@@ -4,9 +4,11 @@ import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.shared.permission.requests.PermissionRequestProxy;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
+import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
+@Component
 public class PermissionRequestFactory {
     private final Set<Extension<TimeframedPermissionRequest>> extensions;
 

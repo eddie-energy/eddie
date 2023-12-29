@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.permission.request.SimplePermissionRequest;
@@ -9,12 +8,9 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedis
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisInvalidState;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
-import reactor.test.StepVerifier;
 
 import java.time.Clock;
-import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -31,8 +27,7 @@ class EnedisRegionConnectorTest {
         var enedisApi = mock(EnedisApi.class);
         when(enedisApi.health()).thenReturn(Map.of("service", HealthState.UP));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
-        try (var rc = new EnedisRegionConnector(enedisApi, mock(PermissionRequestService.class), sink, consumptionRecordSink)) {
+        try (var rc = new EnedisRegionConnector(enedisApi, mock(PermissionRequestService.class), sink)) {
 
             // When
             var res = rc.health();
@@ -48,8 +43,7 @@ class EnedisRegionConnectorTest {
         var enedisApi = mock(EnedisApi.class);
         var permissionRequestService = mock(PermissionRequestService.class);
         Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();
-        Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
-        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, connectionStatusSink, consumptionRecordSink)) {
+        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, connectionStatusSink)) {
 
             // When
             var res = rc.getMetadata();
@@ -67,8 +61,7 @@ class EnedisRegionConnectorTest {
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
         when(permissionRequestService.findPermissionRequestByPermissionId(anyString())).thenReturn(Optional.empty());
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
-        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink)) {
+        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink)) {
 
             // When
             // Then
@@ -93,8 +86,7 @@ class EnedisRegionConnectorTest {
         when(permissionRequestService.findPermissionRequestByPermissionId(anyString()))
                 .thenReturn(Optional.of(request));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
-        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink)) {
+        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink)) {
 
             // When
             // Then
@@ -118,52 +110,11 @@ class EnedisRegionConnectorTest {
         );
         when(permissionRequestService.findPermissionRequestByPermissionId(anyString())).thenReturn(Optional.of(request));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
-        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink)) {
+        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink)) {
 
             // When
             // Then
             assertDoesNotThrow(() -> rc.terminatePermission("pid"));
         }
-    }
-
-    @Test
-    void close_emitsCompleteOnPublisherForConnectionStatusMessages() {
-        // Given
-        var enedisApi = mock(EnedisApi.class);
-        var permissionRequestService = mock(PermissionRequestService.class);
-        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
-        var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink);
-
-        StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(rc.getConnectionStatusMessageStream()))
-                .expectComplete()
-                .verifyLater();
-
-        // When
-        rc.close();
-
-        // Then
-        stepVerifier.verify(Duration.ofSeconds(2));
-    }
-
-    @Test
-    void close_emitsCompleteOnPublisherForConsumptionRecords() {
-        // Given
-        var enedisApi = mock(EnedisApi.class);
-        var permissionRequestService = mock(PermissionRequestService.class);
-        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
-        var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, consumptionRecordSink);
-
-        StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(rc.getConsumptionRecordStream()))
-                .expectComplete()
-                .verifyLater();
-
-        // When
-        rc.close();
-
-        // Then
-        stepVerifier.verify(Duration.ofSeconds(2));
     }
 }

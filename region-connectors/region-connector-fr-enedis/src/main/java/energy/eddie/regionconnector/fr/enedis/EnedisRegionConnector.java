@@ -14,24 +14,20 @@ import java.util.Map;
 import java.util.concurrent.Flow;
 
 @Component
-public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider,
-        Mvp1ConsumptionRecordProvider {
+public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
-    private final Sinks.Many<ConsumptionRecord> consumptionRecordSink;
     private final EnedisApi enedisApi;
     private final PermissionRequestService permissionRequestService;
 
     public EnedisRegionConnector(
             EnedisApi enedisApi,
             PermissionRequestService permissionRequestService,
-            Sinks.Many<ConnectionStatusMessage> connectionStatusSink,
-            Sinks.Many<ConsumptionRecord> consumptionRecordSink
+            Sinks.Many<ConnectionStatusMessage> connectionStatusSink
     ) {
         this.enedisApi = enedisApi;
         this.permissionRequestService = permissionRequestService;
         this.connectionStatusSink = connectionStatusSink;
-        this.consumptionRecordSink = consumptionRecordSink;
     }
 
     @Override
@@ -42,11 +38,6 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
     @Override
     public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
         return JdkFlowAdapter.publisherToFlowPublisher(connectionStatusSink.asFlux());
-    }
-
-    @Override
-    public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(consumptionRecordSink.asFlux());
     }
 
     @Override
@@ -70,6 +61,5 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
     @Override
     public void close() {
         connectionStatusSink.tryEmitComplete();
-        consumptionRecordSink.tryEmitComplete();
     }
 }
