@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerMalformedState;
+import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import org.junit.jupiter.api.Test;
 
@@ -105,9 +106,9 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
         EnerginetConfiguration config = mock(EnerginetConfiguration.class);
+        var forCreation = new PermissionRequestForCreation(connectionId, start, start.plusDays(1), refreshToken, resolution, meteringPoint, dataNeedId);
 
-        var request = new EnerginetCustomerPermissionRequest(permissionId, connectionId, start, start.plusDays(1),
-                refreshToken, meteringPoint, dataNeedId, resolution, config);
+        var request = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
 
         EnerginetCustomerMalformedState state = new EnerginetCustomerMalformedState(null, null);
         PermissionRequest decorator = new ChangingPermissionRequest(request);

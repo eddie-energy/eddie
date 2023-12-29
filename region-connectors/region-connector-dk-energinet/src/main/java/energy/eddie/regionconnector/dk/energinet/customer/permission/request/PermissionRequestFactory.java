@@ -34,13 +34,7 @@ public class PermissionRequestFactory implements Mvp1ConnectionStatusMessageProv
         var permissionId = UUID.randomUUID().toString();
         var permissionRequest = new EnerginetCustomerPermissionRequest(
                 permissionId,
-                request.connectionId(),
-                request.start(),
-                request.end(),
-                request.refreshToken(),
-                request.meteringPoint(),
-                request.dataNeedId(),
-                request.periodResolution(),
+                request,
                 configuration
         );
 

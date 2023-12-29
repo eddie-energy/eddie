@@ -146,9 +146,7 @@ class PermissionRequestControllerTest {
         when(service.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
             PermissionRequestForCreation request = invocation.getArgument(0);
             return new EnerginetCustomerPermissionRequest(
-                    permissionId, request.connectionId(), request.start(), request.end(),
-                    request.refreshToken(), request.meteringPoint(), request.dataNeedId(),
-                    request.periodResolution(), mock(EnerginetConfiguration.class)
+                    permissionId, request, mock(EnerginetConfiguration.class)
             );
         });
 
@@ -175,9 +173,7 @@ class PermissionRequestControllerTest {
         when(service.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
             PermissionRequestForCreation request = invocation.getArgument(0);
             return new EnerginetCustomerPermissionRequest(
-                    permissionId, request.connectionId(), request.start(), request.end(),
-                    request.refreshToken(), request.meteringPoint(), request.dataNeedId(),
-                    request.periodResolution(), mock(EnerginetConfiguration.class)
+                    permissionId, request, mock(EnerginetConfiguration.class)
             );
         });
 
