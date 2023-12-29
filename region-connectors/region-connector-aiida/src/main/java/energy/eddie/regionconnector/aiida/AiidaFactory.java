@@ -62,7 +62,7 @@ public class AiidaFactory {
         // TODO use dataNeed for service name and requested codes
         return new PermissionDto(
                 UUID.randomUUID().toString(),
-                "My super cool test service",
+                "My super cool test service with \uD83D\uDDF2 ✅ Unicode ⬔ characters \uD83D\uDDF2",
                 aiidaRequest.dataNeedId(),
                 aiidaRequest.startTime(),
                 aiidaRequest.expirationTime(),

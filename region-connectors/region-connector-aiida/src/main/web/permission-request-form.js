@@ -26,7 +26,7 @@ class PermissionRequestForm extends LitElement {
     this._aiidaCode = null;
   }
 
-  requestPermission(event) {
+  requestPermission(_event) {
     let body = {
       dataNeedId: this.dataNeedAttributes.id,
       connectionId: this.connectionId,
@@ -47,6 +47,13 @@ class PermissionRequestForm extends LitElement {
         });
       })
       .catch((error) => console.error(error));
+  }
+
+  convertToBase64(content) {
+    // convert to UTF8 to ensure proper encoding of Unicode characters
+    let bytes = new TextEncoder().encode(content);
+    let binString = String.fromCodePoint(...bytes);
+    return btoa(binString);
   }
 
   render() {
@@ -77,13 +84,13 @@ class PermissionRequestForm extends LitElement {
 
             <sl-input
               label="AIIDA code"
-              value="${window.btoa(this._aiidaCode)}"
+              value="${this.convertToBase64(this._aiidaCode)}"
               help-text="Enter this code on the website of your AIIDA device"
               size="medium"
               readonly
             >
               <sl-copy-button
-                value="${window.btoa(this._aiidaCode)}"
+                value="${this.convertToBase64(this._aiidaCode)}"
                 slot="suffix"
               ></sl-copy-button>
             </sl-input>
