@@ -66,7 +66,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
      * Calculate the date furthest in the future.
      */
     private ZonedDateTime latest(ZonedDateTime first, ZonedDateTime second) {
-        if (first.isAfter(second)) {
+        if (!first.isBefore(second)) {
             return first.plusDays(1); // if all the data is in the past we only need access for 1 day
         }
 
