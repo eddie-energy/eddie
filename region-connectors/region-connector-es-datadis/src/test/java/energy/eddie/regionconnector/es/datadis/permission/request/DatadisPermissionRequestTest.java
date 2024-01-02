@@ -88,6 +88,17 @@ class DatadisPermissionRequestTest {
     }
 
     @Test
+    void permissionEnd_whenRequestingTodaysData_isOneDayGraterThanPermissionStart() {
+        var today = ZonedDateTime.now(ZoneOffset.UTC);
+        requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
+                today, today, measurementType);
+
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi, repository);
+
+        assertEquals(request.permissionStart().plusDays(1), request.permissionEnd());
+    }
+
+    @Test
     void lastPulledMeterReading_whenConstructed_isEmpty() {
         var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi, repository);
         assertTrue(request.lastPulledMeterReading().isEmpty());
