@@ -94,7 +94,7 @@ public class PermissionRequestService implements Mvp1ConsumptionRecordProvider, 
                 var consumptionRecord = energinetCustomerApi.getTimeSeries(
                         permissionRequest.start(),
                         permissionRequest.end(),
-                        permissionRequest.periodResolution(),
+                        permissionRequest.granularity(),
                         meteringPointsRequest
                 );
 

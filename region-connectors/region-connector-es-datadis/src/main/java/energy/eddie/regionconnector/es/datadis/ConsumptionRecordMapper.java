@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.es.datadis;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
@@ -14,10 +15,10 @@ import java.util.List;
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 
 public class ConsumptionRecordMapper {
+    public static final int CONVERSION_FACTOR = 1000;
+
     private ConsumptionRecordMapper() {
     }
-
-    public static final int CONVERSION_FACTOR = 1000;
 
     public static ConsumptionRecord mapToCIM(List<MeteringData> meteringData, @Nullable String permissionId, @Nullable String connectionId, MeasurementType measurementType, @Nullable String dataNeedId) throws InvalidMappingException {
         ConsumptionRecord consumptionRecord = new ConsumptionRecord();
@@ -49,7 +50,7 @@ public class ConsumptionRecordMapper {
         }).toList();
         consumptionRecord.setConsumptionPoints(consumptionPoints);
 
-        consumptionRecord.setMeteringInterval(measurementType == MeasurementType.HOURLY ? ConsumptionRecord.MeteringInterval.PT_1_H : ConsumptionRecord.MeteringInterval.PT_15_M);
+        consumptionRecord.setMeteringInterval(measurementType == MeasurementType.HOURLY ? Granularity.PT1H.name() : Granularity.PT15M.name());
         return consumptionRecord;
     }
 
@@ -63,5 +64,4 @@ public class ConsumptionRecordMapper {
 
         return LocalDateTime.of(date, time);
     }
-
 }

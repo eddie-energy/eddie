@@ -3,7 +3,7 @@ package energy.eddie.core.dataneeds;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.agnostic.DataNeed;
 import energy.eddie.api.agnostic.DataType;
-import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.agnostic.Granularity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
@@ -25,7 +25,7 @@ public class DataNeedEntity implements DataNeed {
     @JsonProperty
     private DataType type;
     @JsonProperty
-    private @Nullable ConsumptionRecord.MeteringInterval granularity;
+    private @Nullable Granularity granularity;
     @JsonProperty
     private Integer durationStart;
     @JsonProperty
@@ -37,7 +37,7 @@ public class DataNeedEntity implements DataNeed {
     protected DataNeedEntity() {
     }
 
-    public DataNeedEntity(String id, String description, DataType type, @Nullable ConsumptionRecord.MeteringInterval granularity, Integer durationStart, Boolean durationOpenEnd, @Nullable Integer durationEnd) {
+    public DataNeedEntity(String id, String description, DataType type, @Nullable Granularity granularity, Integer durationStart, Boolean durationOpenEnd, @Nullable Integer durationEnd) {
         this.id = id;
         this.description = description;
         this.type = type;
@@ -76,11 +76,11 @@ public class DataNeedEntity implements DataNeed {
 
     @Override
     @Nullable
-    public ConsumptionRecord.MeteringInterval granularity() {
+    public Granularity granularity() {
         return granularity;
     }
 
-    public void setGranularity(@Nullable ConsumptionRecord.MeteringInterval granularity) {
+    public void setGranularity(@Nullable Granularity granularity) {
         this.granularity = granularity;
     }
 

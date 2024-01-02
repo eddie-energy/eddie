@@ -16,6 +16,7 @@ jaxb = "4.0.2"
 jaxb-plugins = "4.0.0"
 jakarta-xml-bind = "4.0.0"
 jakarta-annotation = "2.1.0"
+jakarta-validation = "3.0.2"
 sonar = "4.0.0.2929"
 commons-codec = "1.15"
 jsonschema2pojo = "1.2.1"
@@ -67,6 +68,7 @@ jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations
 
 jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakarta-xml-bind" }
 jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakarta-annotation" }
+jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakarta-validation" }
 
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-datatype-jdk8 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jdk8", version.ref = "jackson" }

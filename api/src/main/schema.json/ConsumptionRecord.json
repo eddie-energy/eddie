@@ -25,16 +25,6 @@
     },
     "meteringInterval": {
       "type": "string",
-      "enum": [
-        "PT5M",
-        "PT10M",
-        "PT15M",
-        "PT30M",
-        "PT1H",
-        "P1D",
-        "P1M",
-        "P1Y"
-      ],
       "description": "Interval of the readings. Use ISO-8601 duration notation."
     },
     "consumptionPoints": {

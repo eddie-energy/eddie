@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.dk.energinet.customer.api;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
-import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -27,13 +27,13 @@ public interface EnerginetCustomerApi {
     /**
      * Returns ConsumptionRecord out of a time series for each metering point in list.
      *
-     * @param dateFrom              Date from filter in format: &#39;YYYY-MM-DD&#39; (required)
-     * @param dateTo                Date to filter in format: &#39;YYYY-MM-DD&#39; (required)
-     * @param periodResolution      Period Resolution. Possible values are: &#39;PT15M&#39;, &#39;PT1H&#39;, &#39;PT1D&#39;, &#39;P1M&#39;, &#39;P1Y&#39; (required)
+     * @param dateFrom              Date from filter in format: 'YYYY-MM-DD' (required)
+     * @param dateTo                Date to filter in format: 'YYYY-MM-DD' (required)
+     * @param granularity           Granularity. Supported values are: 'PT15M', 'PT1H', 'PT1D', 'P1M', 'P1Y' (required)
      * @param meteringPointsRequest List of metering point ids. (optional)
      * @return MyEnergyDataMarketDocumentResponseListApiResponse
      */
-    ConsumptionRecord getTimeSeries(ZonedDateTime dateFrom, ZonedDateTime dateTo, PeriodResolutionEnum periodResolution, MeteringPointsRequest meteringPointsRequest);
+    ConsumptionRecord getTimeSeries(ZonedDateTime dateFrom, ZonedDateTime dateTo, Granularity granularity, MeteringPointsRequest meteringPointsRequest);
 
     void setUserCorrelationId(UUID userCorrelationId);
 

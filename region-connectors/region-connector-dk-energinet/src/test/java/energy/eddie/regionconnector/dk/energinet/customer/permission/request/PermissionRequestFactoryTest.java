@@ -1,11 +1,11 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import org.junit.jupiter.api.Test;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
@@ -25,7 +25,7 @@ class PermissionRequestFactoryTest {
         var start = ZonedDateTime.now(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
         var requestForCreation = new PermissionRequestForCreation("foo", start, end, "token",
-                PeriodResolutionEnum.PT1H, "bar", "poo");
+                Granularity.PT1H, "bar", "poo");
 
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
         DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository = new InMemoryPermissionRequestRepository();

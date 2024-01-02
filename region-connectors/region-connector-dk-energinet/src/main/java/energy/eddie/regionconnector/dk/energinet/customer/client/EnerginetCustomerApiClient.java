@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.customer.client;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
@@ -10,7 +11,6 @@ import energy.eddie.regionconnector.dk.energinet.customer.api.MeterDataApi;
 import energy.eddie.regionconnector.dk.energinet.customer.api.TokenApi;
 import energy.eddie.regionconnector.dk.energinet.customer.invoker.ApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
-import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
 import energy.eddie.regionconnector.dk.energinet.utils.ConsumptionRecordMapper;
 import org.springframework.stereotype.Component;
@@ -79,10 +79,10 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     @Override
     public ConsumptionRecord getTimeSeries(ZonedDateTime dateFrom,
                                            ZonedDateTime dateTo,
-                                           PeriodResolutionEnum periodResolutionEnum,
+                                           Granularity granularity,
                                            MeteringPointsRequest meteringPointsRequest) {
         throwIfInvalidTimeframe(dateFrom, dateTo);
-        TimeSeriesAggregationEnum aggregation = TimeSeriesAggregationEnum.fromPointQualityEnum(periodResolutionEnum);
+        TimeSeriesAggregationEnum aggregation = TimeSeriesAggregationEnum.fromGranularity(granularity);
 
         if (accessToken.isBlank()) {
             apiToken();

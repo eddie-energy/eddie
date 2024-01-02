@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.dk.energinet.utils;
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.dk.energinet.customer.model.*;
-import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import energy.eddie.regionconnector.dk.energinet.enums.PointQualityEnum;
 
 import java.util.ArrayList;
@@ -33,13 +32,9 @@ public class ConsumptionRecordMapper {
         List<ConsumptionPoint> consumptionPoints = new ArrayList<>();
         for (TimeSeries timeSeries : Objects.requireNonNull(energyDataMarketDocument.getTimeSeries())) {
             for (Period period : Objects.requireNonNull(timeSeries.getPeriod())) {
-                consumptionRecord.setMeteringInterval(switch (PeriodResolutionEnum.fromString(period.getResolution())) {
-                    case PT15M -> ConsumptionRecord.MeteringInterval.PT_15_M;
-                    case PT1H -> ConsumptionRecord.MeteringInterval.PT_1_H;
-                    case PT1D -> ConsumptionRecord.MeteringInterval.P_1_D;
-                    case P1M -> ConsumptionRecord.MeteringInterval.P_1_M;
-                    case P1Y -> ConsumptionRecord.MeteringInterval.P_1_Y;
-                });
+
+                consumptionRecord.setMeteringInterval(period.getResolution());
+
                 for (Point point : Objects.requireNonNull(period.getPoint())) {
                     var consumptionPoint = new ConsumptionPoint().withMeteringType(switch (PointQualityEnum.fromString(point.getOutQuantityQuality())) {
                         case A01 ->
@@ -65,4 +60,3 @@ public class ConsumptionRecordMapper {
         return "Illegal Quality: " + pointQualityEnum;
     }
 }
-

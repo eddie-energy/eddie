@@ -1,11 +1,11 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 
 import java.time.ZonedDateTime;
 
@@ -64,8 +64,8 @@ public class DkEnerginetCustomerPermissionRequestAdapter implements DkEnerginetC
     }
 
     @Override
-    public PeriodResolutionEnum periodResolution() {
-        return permissionRequest.periodResolution();
+    public Granularity granularity() {
+        return permissionRequest.granularity();
     }
 
     @Override

@@ -1,7 +1,5 @@
 package energy.eddie.api.agnostic;
 
-import energy.eddie.api.v0.ConsumptionRecord;
-
 import javax.annotation.Nullable;
 
 /**
@@ -17,7 +15,7 @@ public interface DataNeed {
     DataType type();
 
     @Nullable
-    ConsumptionRecord.MeteringInterval granularity();
+    Granularity granularity();
 
     Integer durationStart();
 

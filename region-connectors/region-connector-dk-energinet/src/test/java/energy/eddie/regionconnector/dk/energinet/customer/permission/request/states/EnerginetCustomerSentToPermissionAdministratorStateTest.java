@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.states;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
@@ -7,7 +8,6 @@ import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
@@ -35,11 +35,11 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
         String meteringPoint = "meteringPoint";
-        PeriodResolutionEnum resolution = PeriodResolutionEnum.PT1H;
+        Granularity granularity = Granularity.PT1H;
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
         EnerginetConfiguration config = mock(EnerginetConfiguration.class);
-        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, resolution, meteringPoint, dataNeedId);
+        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
 
         var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
         var state = new EnerginetCustomerSentToPermissionAdministratorState(permissionRequest);
@@ -60,11 +60,11 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
         String meteringPoint = "meteringPoint";
-        PeriodResolutionEnum resolution = PeriodResolutionEnum.PT1H;
+        Granularity granularity = Granularity.PT1H;
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
         EnerginetConfiguration config = mock(EnerginetConfiguration.class);
-        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, resolution, meteringPoint, dataNeedId);
+        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
 
         var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
         var state = new EnerginetCustomerSentToPermissionAdministratorState(permissionRequest);
@@ -85,11 +85,11 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
         String meteringPoint = "meteringPoint";
-        PeriodResolutionEnum resolution = PeriodResolutionEnum.PT1H;
+        Granularity granularity = Granularity.PT1H;
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
         EnerginetConfiguration config = mock(EnerginetConfiguration.class);
-        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, resolution, meteringPoint, dataNeedId);
+        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
 
         var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
         var state = new EnerginetCustomerSentToPermissionAdministratorState(permissionRequest);

@@ -4,7 +4,6 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import jakarta.validation.Valid;
@@ -47,14 +46,6 @@ public class PermissionRequestController {
             public void setAsText(String text) throws IllegalArgumentException {
                 ZonedDateTime zonedDateTime = LocalDate.parse(text, DateTimeFormatter.ISO_DATE).atStartOfDay(ZoneOffset.UTC);
                 setValue(zonedDateTime);
-            }
-        });
-
-        binder.registerCustomEditor(PeriodResolutionEnum.class, new PropertyEditorSupport() {
-            @Override
-            public void setAsText(String text) throws IllegalArgumentException {
-                PeriodResolutionEnum period = PeriodResolutionEnum.fromString(text);
-                setValue(period);
             }
         });
     }

@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.dk.energinet.customer.client;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
-import energy.eddie.regionconnector.dk.energinet.enums.PeriodResolutionEnum;
 import org.junit.jupiter.api.Test;
 
 import java.time.DateTimeException;
@@ -74,7 +74,6 @@ class EnerginetCustomerApiClientTest {
         // Given
         var start = ZonedDateTime.of(LocalDate.of(2023, 1, 1).atStartOfDay(), DK_ZONE_ID);
         var end = ZonedDateTime.of(LocalDate.of(2023, 2, 1).atStartOfDay(), DK_ZONE_ID);
-        var periodResolution = mock(PeriodResolutionEnum.class);
         var meteringPointsRequest = mock(MeteringPointsRequest.class);
         var config = mock(EnerginetConfiguration.class);
         when(config.customerBasePath()).thenReturn("path");
@@ -83,7 +82,7 @@ class EnerginetCustomerApiClientTest {
 
         // When
         // Then
-        assertThrows(IllegalStateException.class, () -> client.getTimeSeries(start, end, periodResolution, meteringPointsRequest));
+        assertThrows(IllegalStateException.class, () -> client.getTimeSeries(start, end, Granularity.PT15M, meteringPointsRequest));
     }
 
     @Test
@@ -93,7 +92,7 @@ class EnerginetCustomerApiClientTest {
         var today = ZonedDateTime.of(LocalDate.now(ZoneId.systemDefault()).atStartOfDay(), DK_ZONE_ID);
         var start = ZonedDateTime.of(LocalDate.of(2023, 2, 1).atStartOfDay(), DK_ZONE_ID);
 
-        var periodResolution = mock(PeriodResolutionEnum.class);
+        Granularity granularity = mock(Granularity.class);
         var meteringPointsRequest = mock(MeteringPointsRequest.class);
         var config = mock(EnerginetConfiguration.class);
         when(config.customerBasePath()).thenReturn("path");
@@ -102,10 +101,10 @@ class EnerginetCustomerApiClientTest {
 
         // When
         // Then
-        assertThrows(DateTimeException.class, () -> client.getTimeSeries(start, endBeforeStart, periodResolution, meteringPointsRequest));
-        assertThrows(DateTimeException.class, () -> client.getTimeSeries(start, today, periodResolution, meteringPointsRequest));
-        assertThrows(DateTimeException.class, () -> client.getTimeSeries(today, today, periodResolution, meteringPointsRequest));
-        assertThrows(DateTimeException.class, () -> client.getTimeSeries(start, start, periodResolution, meteringPointsRequest));
+        assertThrows(DateTimeException.class, () -> client.getTimeSeries(start, endBeforeStart, granularity, meteringPointsRequest));
+        assertThrows(DateTimeException.class, () -> client.getTimeSeries(start, today, granularity, meteringPointsRequest));
+        assertThrows(DateTimeException.class, () -> client.getTimeSeries(today, today, granularity, meteringPointsRequest));
+        assertThrows(DateTimeException.class, () -> client.getTimeSeries(start, start, granularity, meteringPointsRequest));
     }
 
     @Test
@@ -113,7 +112,7 @@ class EnerginetCustomerApiClientTest {
         // Given
         var end = ZonedDateTime.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1).atStartOfDay(), DK_ZONE_ID);
         var startExceedsMaxPeriod = end.minusDays(MAX_PERIOD + 1);
-        var periodResolution = mock(PeriodResolutionEnum.class);
+        Granularity granularity = mock(Granularity.class);
         var meteringPointsRequest = mock(MeteringPointsRequest.class);
         var config = mock(EnerginetConfiguration.class);
         when(config.customerBasePath()).thenReturn("path");
@@ -122,6 +121,6 @@ class EnerginetCustomerApiClientTest {
 
         // When
         // Then
-        assertThrows(DateTimeException.class, () -> client.getTimeSeries(startExceedsMaxPeriod, end, periodResolution, meteringPointsRequest));
+        assertThrows(DateTimeException.class, () -> client.getTimeSeries(startExceedsMaxPeriod, end, granularity, meteringPointsRequest));
     }
 }

@@ -26,15 +26,7 @@ public class ConsumptionRecordMapper {
             clcRecord.setStartDateTime(DateTimeConverter.isoDateToZonedDateTime(clcMeterReading.getStart()));
 
             ConsumptionLoadCurveIntervalReading intervalReading = clcMeterReading.getIntervalReading().get(0);
-            clcRecord.setMeteringInterval(switch (intervalReading.getIntervalLength()) {
-                case PT5M -> ConsumptionRecord.MeteringInterval.PT_5_M;
-                case PT10M -> ConsumptionRecord.MeteringInterval.PT_10_M;
-                case PT15M -> ConsumptionRecord.MeteringInterval.PT_15_M;
-                case PT30M -> ConsumptionRecord.MeteringInterval.PT_30_M;
-                case PT60M -> ConsumptionRecord.MeteringInterval.PT_1_H;
-                default -> throw new IllegalStateException("Unexpected value: " + intervalReading.getIntervalLength());
-            });
-
+            clcRecord.setMeteringInterval(intervalReading.getIntervalLength().getValue());
             List<ConsumptionPoint> consumptionPoints = new ArrayList<>();
             for (ConsumptionLoadCurveIntervalReading clcInterval : clcMeterReading.getIntervalReading()) {
                 ConsumptionPoint consumptionPoint = new ConsumptionPoint();
@@ -60,11 +52,7 @@ public class ConsumptionRecordMapper {
 
             dcRecord.setMeteringPoint(dcMeterReading.getUsagePointId());
             dcRecord.setStartDateTime(DateTimeConverter.isoDateToZonedDateTime(dcMeterReading.getStart()));
-            dcRecord.setMeteringInterval(switch (dcMeterReading.getReadingType().getMeasuringPeriod()) {
-                case P1D -> ConsumptionRecord.MeteringInterval.P_1_D;
-                default ->
-                        throw new IllegalStateException("Unexpected value: " + dcMeterReading.getReadingType().getMeasuringPeriod());
-            });
+            dcRecord.setMeteringInterval(dcMeterReading.getReadingType().getMeasuringPeriod().getValue());
 
             ConsumptionPoint.MeteringType meteringType = switch (dcMeterReading.getQuality()) {
                 case BRUT -> ConsumptionPoint.MeteringType.MEASURED_VALUE;
@@ -85,4 +73,3 @@ public class ConsumptionRecordMapper {
         }
     }
 }
-
