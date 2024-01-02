@@ -77,14 +77,14 @@ class DatadisPermissionRequestTest {
     }
 
     @Test
-    void permissionEnd_whenRequestingPastData_isTheSameAsPermissionStart() {
+    void permissionEnd_whenRequestingPastData_isOneDayGraterThanPermissionStart() {
         var pastDate = ZonedDateTime.now(ZoneOffset.UTC).minusMonths(1);
         requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 requestDataFrom, pastDate, measurementType);
 
         var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi, repository);
 
-        assertEquals(request.permissionStart(), request.permissionEnd());
+        assertEquals(request.permissionStart().plusDays(1), request.permissionEnd());
     }
 
     @Test
