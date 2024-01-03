@@ -11,8 +11,6 @@ import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.netty.ByteBufMono;
 import reactor.netty.http.client.HttpClient;
@@ -20,7 +18,6 @@ import reactor.netty.http.client.HttpClient;
 import static java.util.Objects.requireNonNull;
 
 public class NettyAuthorizationApiClient implements AuthorizationApi {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NettyAuthorizationApiClient.class);
     private final HttpClient httpClient;
 
     private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
@@ -42,7 +39,6 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
 
         try {
             body = mapper.writeValueAsString(authorizationRequest);
-            LOGGER.debug("Authorization request body: {}", body);
         } catch (JsonProcessingException e) {
             return Mono.error(new DatadisApiException(e));
         }

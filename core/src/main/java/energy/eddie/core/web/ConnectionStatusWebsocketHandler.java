@@ -25,7 +25,7 @@ public class ConnectionStatusWebsocketHandler extends TextWebSocketHandler {
                 try {
                     session.sendMessage(new TextMessage(message.toString()));
                 } catch (IOException e) {
-                    LOGGER.error("Error while sending connection status message to WebSocketSession {}", session, e);
+                    LOGGER.error("Error while sending connection status message to WebSocketSession {}", session.getId(), e);
                 }
             });
         });
@@ -34,7 +34,7 @@ public class ConnectionStatusWebsocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(@NonNull WebSocketSession session) {
-        LOGGER.debug("Got new WebSocketSession {}", session);
+        LOGGER.debug("Got new WebSocketSession {}", session.getId());
         webSocketSessions.add(session);
     }
 }

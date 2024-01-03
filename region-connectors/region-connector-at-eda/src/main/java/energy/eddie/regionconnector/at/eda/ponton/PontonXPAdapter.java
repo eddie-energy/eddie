@@ -226,7 +226,7 @@ public class PontonXPAdapter implements EdaAdapter {
             var masterData = (MasterData) unmarshaller.unmarshal(inputStream);
             masterDataSink.tryEmitNext(masterData);
 
-            LOGGER.info("Received master data for MeteringPoint '{}' with ConversationId '{}'", masterData.getProcessDirectory().getMeteringPoint(), masterData.getProcessDirectory().getConversationId());
+            LOGGER.info("Received master data with ConversationId '{}'", masterData.getProcessDirectory().getConversationId());
 
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
@@ -242,7 +242,7 @@ public class PontonXPAdapter implements EdaAdapter {
             // the process is documented here https://www.ebutilities.at/prozesse/230
             // we might have to create a ABLEHNUNG_CRMSG (CPNotification) if the message was not valid, see https://www.ebutilities.at/prozesse/230/marktnachrichten/615
             consumptionRecordSink.tryEmitNext(consumptionRecord);
-            LOGGER.info("Received consumption record for MeteringPoint '{}' with ConversationId '{}'", consumptionRecord.getProcessDirectory().getMeteringPoint(), consumptionRecord.getProcessDirectory().getConversationId());
+            LOGGER.info("Received consumption record with ConversationId '{}'", consumptionRecord.getProcessDirectory().getConversationId());
 
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)
@@ -258,7 +258,8 @@ public class PontonXPAdapter implements EdaAdapter {
             var cmRevoke = (CMRevoke) unmarshaller.unmarshal(inputStream);
 
             cmRevokeSink.tryEmitNext(cmRevoke);
-            LOGGER.info("Received revoke message for MeteringPoint '{}' of ConsentId '{}' with ConversationId '{}'", cmRevoke.getProcessDirectory().getConsentId(), cmRevoke.getProcessDirectory().getMeteringPoint(), cmRevoke.getProcessDirectory().getConversationId());
+            LOGGER.info("Received revoke message for ConsentId '{}' with ConversationId '{}'",
+                    cmRevoke.getProcessDirectory().getMeteringPoint(), cmRevoke.getProcessDirectory().getConversationId());
 
             return InboundMessageStatusUpdate.newBuilder()
                     .setInboundMessage(inboundMessage)

@@ -17,7 +17,9 @@ public class InMemoryPermissionRequestRepository implements EsPermissionRequestR
 
     @Override
     public void save(EsPermissionRequest request) {
-        LOGGER.info("Saving permission request {}", request);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Saving permission request {}", request.permissionId());
+        }
         requests.put(request.permissionId(), request);
     }
 

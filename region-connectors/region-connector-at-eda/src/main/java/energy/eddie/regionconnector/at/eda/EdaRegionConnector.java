@@ -148,7 +148,8 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
         if (optionalPermissionRequest.isEmpty()) {
             // should not happen if a persistent mapping is used
             // TODO inform the administrative console if it happens
-            LOGGER.warn("Received CMRequestStatus for unknown conversationId or requestId: {}", cmRequestStatus);
+            LOGGER.warn("Received CMRequestStatus for unknown conversationId {} or requestId {}",
+                    cmRequestStatus.getConversationId(), cmRequestStatus.getCMRequestId());
             return;
         }
         try {
@@ -194,7 +195,7 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
         );
 
         if (permissionRequests.isEmpty()) {
-            LOGGER.warn("No permission requests found for consumption record {}", consumptionRecord);
+            LOGGER.warn("No permission requests found for consumption record {}", consumptionRecord.getPermissionId());
             return Flux.empty(); // Return an empty Flux if no permission requests are found
         }
 

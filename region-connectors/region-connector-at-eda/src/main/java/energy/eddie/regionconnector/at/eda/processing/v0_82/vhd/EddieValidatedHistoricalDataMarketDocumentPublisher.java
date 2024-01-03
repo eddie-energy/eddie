@@ -45,7 +45,7 @@ public class EddieValidatedHistoricalDataMarketDocumentPublisher {
         var permissionRequests = permissionRequestService.findByMeteringPointIdAndDate(meteringPointId, date);
 
         if (permissionRequests.isEmpty()) {
-            LOGGER.warn("No permission requests found for meteringPointId {} and date {}", meteringPointId, date);
+            LOGGER.warn("Got ValidatedHistoricalMarketDocument with unknown MeteringPointId for date {}", date);
             return Flux.empty(); // Return an empty Flux if no permission requests are found
         }
 
