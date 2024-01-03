@@ -14,7 +14,6 @@ public interface DataNeed {
 
     DataType type();
 
-    @Nullable
     Granularity granularity();
 
     Integer durationStart();

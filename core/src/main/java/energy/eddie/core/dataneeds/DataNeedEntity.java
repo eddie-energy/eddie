@@ -25,7 +25,7 @@ public class DataNeedEntity implements DataNeed {
     @JsonProperty
     private DataType type;
     @JsonProperty
-    private @Nullable Granularity granularity;
+    private Granularity granularity;
     @JsonProperty
     private Integer durationStart;
     @JsonProperty
@@ -37,7 +37,7 @@ public class DataNeedEntity implements DataNeed {
     protected DataNeedEntity() {
     }
 
-    public DataNeedEntity(String id, String description, DataType type, @Nullable Granularity granularity, Integer durationStart, Boolean durationOpenEnd, @Nullable Integer durationEnd) {
+    public DataNeedEntity(String id, String description, DataType type, Granularity granularity, Integer durationStart, Boolean durationOpenEnd, @Nullable Integer durationEnd) {
         this.id = id;
         this.description = description;
         this.type = type;
@@ -75,12 +75,11 @@ public class DataNeedEntity implements DataNeed {
     }
 
     @Override
-    @Nullable
     public Granularity granularity() {
         return granularity;
     }
 
-    public void setGranularity(@Nullable Granularity granularity) {
+    public void setGranularity(Granularity granularity) {
         this.granularity = granularity;
     }
 
