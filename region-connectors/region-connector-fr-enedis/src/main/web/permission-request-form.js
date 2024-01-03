@@ -63,6 +63,7 @@ class PermissionRequestForm extends LitElement {
             5000
           );
         }
+        return response;
       })
       .then((response) => response.json())
       .then((result) => {
