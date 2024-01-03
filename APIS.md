@@ -52,7 +52,7 @@ could result in:
     },
     {
         "id": "XYZ", "description": "Realtime data",
-        "type": "SMART_METER_P1_DATA", "granularity": "PT5M",
+        "type": "AIIDA_NEAR_REALTIME_DATA", "granularity": "PT5M",
         "durationStart": 0, "durationOpenEnd": true
     },
 ]

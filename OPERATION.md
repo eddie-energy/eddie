@@ -154,7 +154,7 @@ eddie:
         duration-end: 0
       - id: FUTURE_NEAR_REALTIME_DATA
         description: Near realtime consumption data from the smart meter
-        type: SMART_METER_P1_DATA
+        type: AIIDA_NEAR_REALTIME_DATA
         granularity: PT5M
         duration-start: 0
         duration-open-end: true
@@ -189,7 +189,7 @@ eddie:
 |-----------------------------------------|------------------------------------------------------------------------------------------------------------|
 | `HISTORICAL_VALIDATED_CONSUMPTION_DATA` | consumption records will contain historical validated consumption data from  the past                      |
 | `FUTURE_VALIDATED_CONSUMPTION_DATA`     | consumption records will contain historical validated consumption data but it's requested for future times |
-| `SMART_METER_P1_DATA`                   | consumption records will be unvalidated near-realtime data directly from a P1 meter                        |
+| `AIIDA_NEAR_REALTIME_DATA`              | consumption records will be unvalidated near-realtime data directly from a P1 meter                        |
 | `ACCOUNTING_POINT_MASTER_DATA`          | master data for the accounting point                                                                       |
 
 - A request to `HISTORICAL_VALIDATED_CONSUMPTION_DATA` and `FUTURE_VALIDATED_CONSUMPTION_DATA` leads to the same data

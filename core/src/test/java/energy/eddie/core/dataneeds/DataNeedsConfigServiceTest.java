@@ -37,7 +37,7 @@ class DataNeedsConfigServiceTest {
         assertThat(dataNeedsConfigService.getDataNeed(HISTORICAL_DATA_NEED_KEY)).isPresent().get()
                 .extracting("type").isEqualTo(DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA);
         assertThat(dataNeedsConfigService.getDataNeed(REALTIME_DATA_NEED_KEY)).isPresent().get()
-                .extracting("type").isEqualTo(DataType.SMART_METER_P1_DATA);
+                .extracting("type").isEqualTo(DataType.AIIDA_NEAR_REALTIME_DATA);
         assertThat(dataNeedsConfigService.getDataNeed(NONEXISTENT_DATA_NEED_ID)).isEmpty();
     }
 }
