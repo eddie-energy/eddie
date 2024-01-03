@@ -167,21 +167,22 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     // Finished long poll
     switch (currentStatus) {
       case "ACCEPTED":
-        message = "Your data has been received.";
+        message = "Your permission request was accepted.";
         this.notify(title, message, "success", "check2-circle", "5000");
         return;
       case "REJECTED":
-        message = "The permission request has been rejected.";
+        message =
+          "The permission request has been rejected. (Reason: " +
+          result["message"] +
+          ")";
         this.notify(title, message);
         return;
       case "INVALID":
-        // TODO: Give user a reason why
-        message = "The permission request was invalid.";
+        message = "The permission request was invalid. (Reason: " + result["message"] + ")";
         this.notify(title, message, "warning", "exclamation-triangle");
         return;
       case "TERMINATED":
-        // TODO: Give user a reason why
-        message = "The permission request was terminated.";
+        message = "The permission request was terminated. (Reason: " + result["message"] + ")";
         this.notify(title, message, "warning", "exclamation-triangle");
         return;
     }
