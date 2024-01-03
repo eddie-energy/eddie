@@ -59,7 +59,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     
     try {
       const response = await fetch(REQUEST_URL, {
-        body: payload,
+        body: JSON.stringify(payload),
         method: "POST",
         headers: {
           "Content-Type": "application/json",
