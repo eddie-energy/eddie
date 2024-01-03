@@ -43,18 +43,20 @@ public class PermissionRequestService {
     }
 
     public void acceptPermission(String permissionId) throws StateTransitionException, PermissionNotFoundException {
-        LOGGER.info("Got request to accept permission {}", permissionId);
-
         var permissionRequest = getPermissionRequestById(permissionId);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Got request to accept permission {}", permissionRequest.permissionId());
+        }
         permissionRequest.accept();
 
         datadisScheduler.pullAvailableHistoricalData(permissionRequest);
     }
 
     public void rejectPermission(String permissionId) throws PermissionNotFoundException, StateTransitionException {
-        LOGGER.info("Got request to reject permission {}", permissionId);
-
         var permissionRequest = getPermissionRequestById(permissionId);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Got request to reject permission {}", permissionRequest.permissionId());
+        }
         permissionRequest.reject();
     }
 
