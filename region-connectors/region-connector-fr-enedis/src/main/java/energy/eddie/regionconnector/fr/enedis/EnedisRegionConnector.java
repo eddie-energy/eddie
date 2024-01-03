@@ -6,12 +6,14 @@ import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 
 import java.util.Map;
 import java.util.concurrent.Flow;
 
+@Component
 public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider,
         Mvp1ConsumptionRecordProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);

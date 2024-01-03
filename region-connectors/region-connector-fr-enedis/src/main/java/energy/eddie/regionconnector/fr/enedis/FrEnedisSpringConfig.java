@@ -13,7 +13,6 @@ import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.request.InMemoryPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.permission.request.PermissionRequestFactory;
-import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
@@ -81,15 +80,5 @@ public class FrEnedisSpringConfig {
     @Bean
     public PermissionRequestFactory factory(Set<Extension<TimeframedPermissionRequest>> extensions) {
         return new PermissionRequestFactory(extensions);
-    }
-
-    @Bean
-    public energy.eddie.api.v0.RegionConnector regionConnector(
-            EnedisApi enedisApi,
-            PermissionRequestService permissionRequestService,
-            Sinks.Many<ConnectionStatusMessage> messages,
-            Sinks.Many<ConsumptionRecord> consumptionRecordSink
-    ) {
-        return new EnedisRegionConnector(enedisApi, permissionRequestService, messages, consumptionRecordSink);
     }
 }
