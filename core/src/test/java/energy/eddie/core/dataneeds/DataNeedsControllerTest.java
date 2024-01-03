@@ -77,4 +77,20 @@ class DataNeedsControllerTest {
                 .isNotNull()
                 .hasSize(Granularity.values().length);
     }
+
+    @Test
+    void testGetNearRealTimeDataNeed() throws Exception {
+        // Given
+        final var dataNeed = new DataNeedEntity("dn-id", "description", DataType.AIIDA_NEAR_REALTIME_DATA,
+                Granularity.P1D, -90, false, 0, 10, Set.of("1-0:1.8.0", "1-0:1.7.0"), "MyTestService");
+        String expectedJson = "{\"id\":\"dn-id\",\"description\":\"description\",\"type\":\"AIIDA_NEAR_REALTIME_DATA\",\"granularity\":\"P1D\",\"durationStart\":-90,\"durationOpenEnd\":false,\"durationEnd\":0,\"transmissionInterval\":10,\"sharedDataIds\":[\"1-0:1.7.0\",\"1-0:1.8.0\"],\"serviceName\":\"MyTestService\"}";
+        given(this.dataNeedsConfigService.getDataNeed("dn-id"))
+                .willReturn(Optional.of(dataNeed));
+
+        // When
+        mvc.perform(get("/api/data-needs/dn-id").accept(MediaType.APPLICATION_JSON))
+                // Then
+                .andExpect(status().isOk())
+                .andExpect(content().json(expectedJson));
+    }
 }

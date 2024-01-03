@@ -14,5 +14,10 @@ eddie:
         type: AIIDA_NEAR_REALTIME_DATA
         granularity: PT5M
         duration-start: 0
-        duration-open-end: true
-        duration-end:
+        duration-open-end: false
+        duration-end: 10
+        transmission-interval: 5
+        shared-data-ids:
+          - "1-0:1.7.0"
+          - "1-0:1.8.0"
+        service-name: "My awesome energy service"
