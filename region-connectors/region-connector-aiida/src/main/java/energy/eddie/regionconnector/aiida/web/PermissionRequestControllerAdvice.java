@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.aiida.web;
 
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.shared.dtos.ErrorResponse;
+import energy.eddie.regionconnector.shared.exceptions.DataNeedNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -62,5 +63,10 @@ public class PermissionRequestControllerAdvice extends ResponseEntityExceptionHa
         var errors = List.of("An error occurred while trying to transition a permission request to a new state");
 
         return createErrorResponse(errors, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(DataNeedNotFoundException.class)
+    public ResponseEntity<Object> handleDataNeedNotFoundException(DataNeedNotFoundException exception) {
+        return createErrorResponse(List.of(exception.getMessage()), HttpStatus.BAD_REQUEST);
     }
 }

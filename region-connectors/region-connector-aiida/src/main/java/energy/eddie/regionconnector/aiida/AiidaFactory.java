@@ -1,46 +1,101 @@
 package energy.eddie.regionconnector.aiida;
 
+import energy.eddie.api.agnostic.DataNeed;
+import energy.eddie.api.agnostic.DataNeedsService;
 import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.KafkaStreamingConfig;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
+import energy.eddie.regionconnector.shared.exceptions.DataNeedNotFoundException;
 import org.apache.kafka.common.errors.InvalidTopicException;
 import org.apache.kafka.common.internals.Topic;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.Set;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
 public class AiidaFactory {
     private final AiidaConfiguration configuration;
+    private final DataNeedsService dataNeedsService;
 
-    public AiidaFactory(AiidaConfiguration configuration) {
+    // DataNeedsService is provided by core, that's why autodiscovery in IntelliJ fails
+    public AiidaFactory(AiidaConfiguration configuration, @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService) {
         this.configuration = configuration;
+        this.dataNeedsService = dataNeedsService;
     }
 
     /**
      * Creates and populates a new permission request.
-     * TODO: The dataNeed API is queried for the required information (e.g. start, expiration time).
      *
      * @param connectionId connectionId that should be used for this new permission request.
      * @param dataNeedId   dataNeedId that should be used for this new permission request.
      * @param service      Reference to the service that allows the request to transition states.
      * @return Populated permission request.
+     * @throws DataNeedNotFoundException Thrown if the dataNeedsService from the parent doesn't contain a dataNeed with the specified ID.
      */
     public AiidaPermissionRequest createPermissionRequest(
             String connectionId,
             String dataNeedId,
-            AiidaRegionConnectorService service) {
-        // TODO get start and expiration from dataNeed API --> follow-up issue: #431
-        var startTime = Instant.now();
-        var expirationTime = startTime.plusSeconds(864000); // roughly 10 days
+            AiidaRegionConnectorService service) throws DataNeedNotFoundException {
+
+        var dataNeed = getDataNeed(dataNeedId);
+        // DataNeeds have relative time but AIIDA needs absolute timestamps
+        var startTime = calculateStartInstant(dataNeed);
+        var expirationTime = calculateEndInstant(dataNeed);
 
         var permissionId = UUID.randomUUID().toString();
         var terminationTopic = terminationTopicForPermissionId(permissionId);
         return new AiidaPermissionRequest(permissionId, connectionId, dataNeedId, terminationTopic, startTime, expirationTime, service);
+    }
+
+    /**
+     * Wrapper that gets the DataNeed from the DataNeedsService.
+     *
+     * @param dataNeedId ID of the dataNeed to get.
+     * @return DataNeed
+     * @throws DataNeedNotFoundException If there is no DataNeed with the specified ID in the service.
+     */
+    private DataNeed getDataNeed(String dataNeedId) throws DataNeedNotFoundException {
+        Optional<DataNeed> optionalDataNeed = dataNeedsService.getDataNeed(dataNeedId);
+
+        if (optionalDataNeed.isEmpty())
+            throw new DataNeedNotFoundException(dataNeedId);
+
+        return optionalDataNeed.get();
+    }
+
+    /**
+     * Converts the relative start date from the DataNeed to an absolute UTC Instant as required by AIIDA.
+     *
+     * @param dataNeed DataNeed that specifies the start date.
+     * @return Instant representing the start date.
+     */
+    private Instant calculateStartInstant(DataNeed dataNeed) {
+        var now = ZonedDateTime.now(ZoneId.of("UTC"));
+
+        return now.plusDays(dataNeed.durationStart()).toInstant();
+    }
+
+    /**
+     * Converts the relative end date from the DataNeed to an absolute UTC Instant as required by AIIDA.
+     *
+     * @param dataNeed DataNeed that specifies the end date.
+     * @return Instant representing the end date.
+     */
+    private Instant calculateEndInstant(DataNeed dataNeed) {
+        var now = ZonedDateTime.now(ZoneId.of("UTC"));
+
+        if (Boolean.TRUE.equals(dataNeed.durationOpenEnd()))
+            // AIIDA needs fixed end date therefore just use a really long time
+            return now.plusYears(1000).toInstant();
+
+        return now.plusDays(Objects.requireNonNull(dataNeed.durationEnd())).toInstant();
     }
 
     /**
@@ -51,7 +106,7 @@ public class AiidaFactory {
      * @throws InvalidTopicException If topic name for the termination topic is invalid. This indicates that either the
      *                               permissionId is not a valid UUID-4, or the prefix from the configuration is invalid.
      */
-    public PermissionDto createPermissionDto(AiidaPermissionRequest aiidaRequest) throws InvalidTopicException {
+    public PermissionDto createPermissionDto(AiidaPermissionRequest aiidaRequest) throws InvalidTopicException, DataNeedNotFoundException {
         var kafkaConfig = new KafkaStreamingConfig(
                 configuration.kafkaBoostrapServers(),
                 configuration.kafkaDataTopic(),
@@ -59,15 +114,16 @@ public class AiidaFactory {
                 aiidaRequest.terminationTopic()
         );
 
-        // TODO use dataNeed for service name and requested codes
+        var dataNeed = getDataNeed(aiidaRequest.dataNeedId());
+
         return new PermissionDto(
-                UUID.randomUUID().toString(),
-                "My super cool test service with \uD83D\uDDF2 ✅ Unicode ⬔ characters \uD83D\uDDF2",
+                aiidaRequest.permissionId(),
+                dataNeed.serviceName(),
                 aiidaRequest.dataNeedId(),
                 aiidaRequest.startTime(),
                 aiidaRequest.expirationTime(),
                 aiidaRequest.connectionId(),
-                Set.of("1-0:1.7.0", "1-0:2.7.0"),
+                dataNeed.sharedDataIds(),
                 kafkaConfig
         );
     }

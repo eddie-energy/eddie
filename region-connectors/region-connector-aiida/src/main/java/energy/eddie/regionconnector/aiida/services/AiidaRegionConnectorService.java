@@ -12,6 +12,7 @@ import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequestRepository;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
+import energy.eddie.regionconnector.shared.exceptions.DataNeedNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +75,7 @@ public class AiidaRegionConnectorService implements Mvp1ConnectionStatusMessageP
      * @param creationRequest Request containing necessary information for creating a new permission.
      * @return Necessary data that should be displayed to the customer.
      */
-    public PermissionDto createNewPermission(PermissionRequestForCreation creationRequest) throws StateTransitionException {
+    public PermissionDto createNewPermission(PermissionRequestForCreation creationRequest) throws StateTransitionException, DataNeedNotFoundException {
         var permissionRequest = aiidaFactory.createPermissionRequest(creationRequest.connectionId(),
                 creationRequest.dataNeedId(), this);
 

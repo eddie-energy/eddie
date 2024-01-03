@@ -1,5 +1,9 @@
 package energy.eddie.regionconnector.aiida.services;
 
+import energy.eddie.api.agnostic.DataNeed;
+import energy.eddie.api.agnostic.DataNeedsService;
+import energy.eddie.api.agnostic.DataType;
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.aiida.AiidaFactory;
@@ -10,6 +14,7 @@ import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
 import energy.eddie.regionconnector.aiida.states.AiidaAcceptedPermissionRequestState;
+import energy.eddie.regionconnector.shared.exceptions.DataNeedNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +28,7 @@ import reactor.test.StepVerifier;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,6 +45,8 @@ class AiidaRegionConnectorServiceTest {
     private final String connectionId = "TestConnectionId";
     @Mock
     private AiidaPermissionRequestRepository mockRepository;
+    @Mock
+    private DataNeedsService dataNeedsService;
     private Sinks.Many<TerminationRequest> terminationSink;
     private AiidaRegionConnectorService service;
 
@@ -47,7 +55,7 @@ class AiidaRegionConnectorServiceTest {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(2));
 
         var configuration = new PlainAiidaConfiguration(bootstrapServers, dataTopic, statusTopic, terminationPrefix);
-        var factory = new AiidaFactory(configuration);
+        var factory = new AiidaFactory(configuration, dataNeedsService);
         terminationSink = Sinks.many().unicast().onBackpressureBuffer();
         service = new AiidaRegionConnectorService(factory, mockRepository, terminationSink);
     }
@@ -60,13 +68,15 @@ class AiidaRegionConnectorServiceTest {
                 .then(service::close)
                 // Then
                 .expectComplete()
-                .verify();
+                .verify(Duration.ofSeconds(2));
     }
 
     @Test
-    void verify_createNewPermission_persistsAndPublishesConnectionStatusMessage() throws StateTransitionException {
+    void verify_createNewPermission_persistsAndPublishesConnectionStatusMessage() throws StateTransitionException, DataNeedNotFoundException {
+        // Given
         String dataNeedId = "1";
         var request = new PermissionRequestForCreation(connectionId, dataNeedId);
+        when(dataNeedsService.getDataNeed(dataNeedId)).thenReturn(Optional.of(new TestDataNeed(dataNeedId)));
 
         StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(service.getConnectionStatusMessageStream()))
                 .expectNextMatches(msg -> msg.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
@@ -75,10 +85,14 @@ class AiidaRegionConnectorServiceTest {
                 .verifyLater();
 
 
+        // When
         PermissionDto newPermission = service.createNewPermission(request);
 
+        // Then
         assertEquals(connectionId, newPermission.connectionId());
         assertEquals(dataNeedId, newPermission.dataNeedId());
+        assertThat(newPermission.requestedCodes()).hasSameElementsAs(Set.of("1-0:1.8.0", "1-0:1.7.0"));
+        assertEquals("Test service name", newPermission.serviceName());
         assertEquals(bootstrapServers, newPermission.kafkaStreamingConfig().bootstrapServers());
         assertEquals(statusTopic, newPermission.kafkaStreamingConfig().statusTopic());
         assertEquals(dataTopic, newPermission.kafkaStreamingConfig().dataTopic());
@@ -131,14 +145,55 @@ class AiidaRegionConnectorServiceTest {
         verifyNoMoreInteractions(mockRepository);
     }
 
-    @Test
-    void close_emitsCompleteOnPublisher() {
-        // Given
-        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(service.getConnectionStatusMessageStream()))
-                // When
-                .then(service::close)
-                // Then
-                .expectComplete()
-                .verify(Duration.ofSeconds(2));
+    private record TestDataNeed(String dataNeedId) implements DataNeed {
+        @Override
+        public String id() {
+            return dataNeedId;
+        }
+
+        @Override
+        public String description() {
+            return "Test description";
+        }
+
+        @Override
+        public DataType type() {
+            return DataType.AIIDA_NEAR_REALTIME_DATA;
+        }
+
+        @Override
+        public Granularity granularity() {
+            return Granularity.P1M;
+        }
+
+        @Override
+        public Integer durationStart() {
+            return 0;
+        }
+
+        @Override
+        public Boolean durationOpenEnd() {
+            return false;
+        }
+
+        @Override
+        public Integer durationEnd() {
+            return 5;
+        }
+
+        @Override
+        public Integer transmissionInterval() {
+            return 12;
+        }
+
+        @Override
+        public Set<String> sharedDataIds() {
+            return Set.of("1-0:1.8.0", "1-0:1.7.0");
+        }
+
+        @Override
+        public String serviceName() {
+            return "Test service name";
+        }
     }
 }
