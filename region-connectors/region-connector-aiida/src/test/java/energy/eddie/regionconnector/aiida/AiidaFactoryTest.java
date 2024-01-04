@@ -12,7 +12,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -32,7 +34,8 @@ class AiidaFactoryTest {
     @BeforeEach
     void setUp() {
         PlainAiidaConfiguration config = new PlainAiidaConfiguration("localhost:1234", "testData", "testStatus", "testTerminationPrefix");
-        aiidaFactory = new AiidaFactory(config, mockDataNeedsService);
+        var fixedClock = Clock.fixed(Instant.parse("2023-10-15T15:00:00Z"), ZoneId.of("UTC"));
+        aiidaFactory = new AiidaFactory(config, mockDataNeedsService, fixedClock);
     }
 
     @Test
@@ -53,10 +56,13 @@ class AiidaFactoryTest {
         var connectionId = "testConnId";
         var dataNeedId = "testDataNeedId";
         var mockDataNeed = mock(DataNeed.class);
-        when(mockDataNeed.durationStart()).thenReturn(0);
+        when(mockDataNeed.durationStart()).thenReturn(-5);
         when(mockDataNeed.durationOpenEnd()).thenReturn(false);
         when(mockDataNeed.durationEnd()).thenReturn(10);
         when(mockDataNeedsService.getDataNeed(dataNeedId)).thenReturn(Optional.of(mockDataNeed));
+
+        var expectedStart = Instant.parse("2023-10-10T00:00:00Z");
+        var expectedExpiration = Instant.parse("2023-10-25T23:59:59Z");
 
 
         // When
@@ -66,6 +72,8 @@ class AiidaFactoryTest {
         assertDoesNotThrow(() -> UUID.fromString(request.permissionId()));
         assertEquals(connectionId, request.connectionId());
         assertEquals(dataNeedId, request.dataNeedId());
+        assertEquals(expectedStart, request.startTime());
+        assertEquals(expectedExpiration, request.expirationTime());
         verify(mockDataNeedsService).getDataNeed(dataNeedId);
     }
 
@@ -81,12 +89,21 @@ class AiidaFactoryTest {
         when(mockDataNeed.sharedDataIds()).thenReturn(Set.of("1-0:1.8.0", "1-0:1.7.0"));
         when(mockDataNeedsService.getDataNeed(dataNeedId)).thenReturn(Optional.of(mockDataNeed));
 
+        var expectedStart = Instant.parse("2023-10-18T00:00:00Z");
+        // when open end, 1000 years get added to now()
+        var expectedExpiration = Instant.parse("3023-10-15T23:59:59Z");
+
         AiidaPermissionRequest request = aiidaFactory.createPermissionRequest(connectionId, dataNeedId, mockService);
+
 
         // When
         var dto = aiidaFactory.createPermissionDto(request);
 
+
         // Then
+        assertEquals(expectedStart, request.startTime());
+        assertEquals(expectedExpiration, request.expirationTime());
+
         assertDoesNotThrow(() -> UUID.fromString(dto.permissionId()));
         assertEquals(request.permissionId(), dto.permissionId());
         assertEquals(connectionId, dto.connectionId());
@@ -94,7 +111,7 @@ class AiidaFactoryTest {
         assertEquals("Test Service", dto.serviceName());
         assertThat(dto.requestedCodes()).hasSameElementsAs(Set.of("1-0:1.8.0", "1-0:1.7.0"));
         assertNotNull(dto.kafkaStreamingConfig());
-        assertThat(dto.startTime()).isAfter(Instant.now());
-        assertThat(dto.expirationTime()).isAfter(Instant.now());
+        assertEquals(expectedStart, dto.startTime());
+        assertEquals(expectedExpiration, dto.expirationTime());
     }
 }

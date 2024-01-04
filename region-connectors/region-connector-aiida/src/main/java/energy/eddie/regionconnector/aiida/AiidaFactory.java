@@ -12,9 +12,10 @@ import org.apache.kafka.common.errors.InvalidTopicException;
 import org.apache.kafka.common.internals.Topic;
 import org.springframework.stereotype.Component;
 
+import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,11 +24,16 @@ import java.util.UUID;
 public class AiidaFactory {
     private final AiidaConfiguration configuration;
     private final DataNeedsService dataNeedsService;
+    private final Clock clock;
 
     // DataNeedsService is provided by core, that's why autodiscovery in IntelliJ fails
-    public AiidaFactory(AiidaConfiguration configuration, @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService) {
+    public AiidaFactory(
+            AiidaConfiguration configuration,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
+            Clock clock) {
         this.configuration = configuration;
         this.dataNeedsService = dataNeedsService;
+        this.clock = clock;
     }
 
     /**
@@ -77,9 +83,10 @@ public class AiidaFactory {
      * @return Instant representing the start date.
      */
     private Instant calculateStartInstant(DataNeed dataNeed) {
-        var now = ZonedDateTime.now(ZoneId.of("UTC"));
+        var todayAtStartOfDay = LocalDate.now(clock).atStartOfDay();
+        var startDate = todayAtStartOfDay.plusDays(dataNeed.durationStart());
 
-        return now.plusDays(dataNeed.durationStart()).toInstant();
+        return startDate.toInstant(ZoneOffset.UTC);
     }
 
     /**
@@ -89,13 +96,17 @@ public class AiidaFactory {
      * @return Instant representing the end date.
      */
     private Instant calculateEndInstant(DataNeed dataNeed) {
-        var now = ZonedDateTime.now(ZoneId.of("UTC"));
+        var todayAtEndOfDay = LocalDate.now(clock).atStartOfDay().plusDays(1).minusSeconds(1);
 
         if (Boolean.TRUE.equals(dataNeed.durationOpenEnd()))
             // AIIDA needs fixed end date therefore just use a really long time
-            return now.plusYears(1000).toInstant();
+            return todayAtEndOfDay.plusYears(1000).toInstant(ZoneOffset.UTC);
 
-        return now.plusDays(Objects.requireNonNull(dataNeed.durationEnd())).toInstant();
+        // dataNeed validation ensures that this is never null if durationOpenEnd is false
+        Integer durationEnd = Objects.requireNonNull(dataNeed.durationEnd());
+
+        var endDate = todayAtEndOfDay.plusDays(durationEnd);
+        return endDate.toInstant(ZoneOffset.UTC);
     }
 
     /**

@@ -25,6 +25,7 @@ import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -55,7 +56,7 @@ class AiidaRegionConnectorServiceTest {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(2));
 
         var configuration = new PlainAiidaConfiguration(bootstrapServers, dataTopic, statusTopic, terminationPrefix);
-        var factory = new AiidaFactory(configuration, dataNeedsService);
+        var factory = new AiidaFactory(configuration, dataNeedsService, Clock.systemUTC());
         terminationSink = Sinks.many().unicast().onBackpressureBuffer();
         service = new AiidaRegionConnectorService(factory, mockRepository, terminationSink);
     }
