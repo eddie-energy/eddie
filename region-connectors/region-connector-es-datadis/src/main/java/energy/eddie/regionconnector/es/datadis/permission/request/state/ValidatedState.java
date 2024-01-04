@@ -63,7 +63,7 @@ public class ValidatedState extends ContextualizedPermissionRequestState<EsPermi
                 permissionRequest.invalid();
             }
         } catch (StateTransitionException e) {
-            LOGGER.error("Error changing state of permission request {}", permissionRequest, e);
+            LOGGER.error("Error changing state of permission request {}", permissionRequest.permissionId(), e);
         }
     }
 }

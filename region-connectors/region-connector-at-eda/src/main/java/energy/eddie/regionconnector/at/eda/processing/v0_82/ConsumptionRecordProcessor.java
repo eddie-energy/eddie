@@ -60,7 +60,7 @@ public class ConsumptionRecordProcessor implements CimConsumptionRecordProvider 
         try {
             return Mono.just(director.createValidatedHistoricalDataMarketDocument(consumptionRecord));
         } catch (InvalidMappingException e) {
-            LOGGER.error("Error while trying to create ValidatedHistoricalDataMarketDocument from consumption record: {}", consumptionRecord, e);
+            LOGGER.error("Error while trying to create ValidatedHistoricalDataMarketDocument from consumption record", e);
             return Mono.empty();
         }
     }

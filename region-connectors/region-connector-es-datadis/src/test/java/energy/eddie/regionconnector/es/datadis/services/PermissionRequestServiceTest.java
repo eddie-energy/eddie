@@ -128,7 +128,6 @@ class PermissionRequestServiceTest {
         // Then
         verify(permissionRequest).reject();
         verifyNoInteractions(scheduler);
-        verifyNoMoreInteractions(permissionRequest);
     }
 
     @Test
