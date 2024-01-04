@@ -1,12 +1,18 @@
 package energy.eddie.core.dataneeds;
 
+import energy.eddie.api.agnostic.DataNeed;
 import energy.eddie.api.agnostic.DataType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Optional;
+import java.util.Set;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @ActiveProfiles("dataneeds-from-config")
@@ -37,7 +43,20 @@ class DataNeedsConfigServiceTest {
         assertThat(dataNeedsConfigService.getDataNeed(HISTORICAL_DATA_NEED_KEY)).isPresent().get()
                 .extracting("type").isEqualTo(DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA);
         assertThat(dataNeedsConfigService.getDataNeed(REALTIME_DATA_NEED_KEY)).isPresent().get()
-                .extracting("type").isEqualTo(DataType.SMART_METER_P1_DATA);
+                .extracting("type").isEqualTo(DataType.AIIDA_NEAR_REALTIME_DATA);
         assertThat(dataNeedsConfigService.getDataNeed(NONEXISTENT_DATA_NEED_ID)).isEmpty();
+    }
+
+
+    @Test
+    void testNearRealTimeDataNeedHasTransmissionIntervalAndSharedDataIdsAndServiceName() {
+        // When
+        Optional<DataNeed> optional = dataNeedsConfigService.getDataNeed("FUTURE_NEAR_REALTIME_DATA");
+
+        // Then
+        assertTrue(optional.isPresent());
+        assertEquals(10, optional.get().transmissionInterval());
+        assertThat(optional.get().sharedDataIds()).hasSameElementsAs(Set.of("1-0:1.8.0", "1-0:1.7.0"));
+        assertEquals("Test Service", optional.get().serviceName());
     }
 }

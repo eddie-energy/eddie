@@ -154,22 +154,30 @@ eddie:
         duration-end: 0
       - id: FUTURE_NEAR_REALTIME_DATA
         description: Near realtime consumption data from the smart meter
-        type: SMART_METER_P1_DATA
+        type: AIIDA_NEAR_REALTIME_DATA
         granularity: PT5M
         duration-start: 0
-        duration-open-end: true
-        duration-end: null
+        duration-open-end: false
+        duration-end: 10
+        transmission-interval: 5
+        shared-data-ids:
+          - "1-0:1.7.0"
+          - "1-0:1.8.0"
+        service-name: "My awesome energy service"
 ```
 
-| Attribute         | Type                        | Description                                                                                  |
-|-------------------|-----------------------------|----------------------------------------------------------------------------------------------|
-| id                | String                      | Unique id that can be used to reference this DataNeed                                        |
-| description       | String                      | Multiline string that describes this DataNeed in a human readable form to be shown in the UI |
-| type              | DataType                    |                                                                                              |
-| granularity       | MeteringInterval (optional) | Describing the measurements per 24h only relevant for validated consumption data             |
-| duration-start    | Integer (signed)            | Beginning of the metering data in days after the current date                                |
-| duration-end      | Integer (signed, optional)  | End of the metering data in days after the current date                                      |
-| duration-open-end | Boolean (optional)          | If true, the value of `durationEnd` is ignored and the time interval is open ended           |
+| Attribute             | Type                        | Description                                                                                                                                   |
+|-----------------------|-----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| id                    | String                      | Unique id that can be used to reference this DataNeed                                                                                         |
+| description           | String                      | Multiline string that describes this DataNeed in a human readable form to be shown in the UI                                                  |
+| type                  | DataType                    |                                                                                                                                               |
+| granularity           | MeteringInterval (optional) | Describing the measurements per 24h only relevant for validated consumption data                                                              |
+| duration-start        | Integer (signed)            | Beginning of the metering data in days after the current date                                                                                 |
+| duration-end          | Integer (signed, optional)  | End of the metering data in days after the current date                                                                                       |
+| duration-open-end     | Boolean (optional)          | If true, the value of `durationEnd` is ignored and the time interval is open ended                                                            |
+| transmission-interval | Integer                     | Interval in seconds between two data transmissions from AIIDA to the EP. Only required if the DataType is `AIIDA_NEAR_REALTIME_DATA`          |
+| shared-data-ids       | Set of Strings              | Set of Strings that describe the data that should be shared by an AIIDA instance. Only required if the DataType is `AIIDA_NEAR_REALTIME_DATA` |
+| service-name          | String                      | Name of the service that this DataNeed was created for. Only required if the DataType is `AIIDA_NEAR_REALTIME_DATA`                           |
 
 - A DataNeed is mandatory for each _Connect with EDDIE_ Button.
 - `durationStart` and `durationEnd` are relative to the time when a Connection is actually created by the User on the UI
@@ -189,7 +197,7 @@ eddie:
 |-----------------------------------------|------------------------------------------------------------------------------------------------------------|
 | `HISTORICAL_VALIDATED_CONSUMPTION_DATA` | consumption records will contain historical validated consumption data from  the past                      |
 | `FUTURE_VALIDATED_CONSUMPTION_DATA`     | consumption records will contain historical validated consumption data but it's requested for future times |
-| `SMART_METER_P1_DATA`                   | consumption records will be unvalidated near-realtime data directly from a P1 meter                        |
+| `AIIDA_NEAR_REALTIME_DATA`              | consumption records will be unvalidated near-realtime data directly from a P1 meter                        |
 | `ACCOUNTING_POINT_MASTER_DATA`          | master data for the accounting point                                                                       |
 
 - A request to `HISTORICAL_VALIDATED_CONSUMPTION_DATA` and `FUTURE_VALIDATED_CONSUMPTION_DATA` leads to the same data

@@ -245,7 +245,7 @@ class EddieConnectButton extends LitElement {
   }
 
   isAiida() {
-    return this._dataNeedAttributes?.type === "SMART_METER_P1_DATA";
+    return this._dataNeedAttributes?.type === "AIIDA_NEAR_REALTIME_DATA";
   }
 
   selectAiida() {

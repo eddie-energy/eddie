@@ -11,8 +11,13 @@ eddie:
         duration-end: 0
       - id: FUTURE_NEAR_REALTIME_DATA
         description: Near realtime consumption data from the smart meter
-        type: SMART_METER_P1_DATA
-        granularity: PT_5_M
+        type: AIIDA_NEAR_REALTIME_DATA
+        granularity: PT5M
         duration-start: 0
-        duration-open-end: true
-        duration-end: null
+        duration-open-end: false
+        duration-end: 10
+        transmission-interval: 5
+        shared-data-ids:
+          - "1-0:1.7.0"
+          - "1-0:1.8.0"
+        service-name: "My awesome energy service"

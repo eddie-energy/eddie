@@ -1,6 +1,8 @@
 package energy.eddie.core.dataneeds;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.api.agnostic.DataType;
+import energy.eddie.api.agnostic.Granularity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -10,6 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static energy.eddie.core.dataneeds.DataNeedEntityTest.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,6 +66,24 @@ class DataNeedsManagementControllerTest {
                 .andExpect(status().isBadRequest());
         verify(repo).existsById(EXAMPLE_DATA_NEED_KEY);
         verifyNoMoreInteractions(repo);
+    }
+
+    @Test
+    void createNewRealTimeDataNeed() throws Exception {
+        String dataNeedId = "dn-id";
+        var dataNeed = new DataNeedEntity(dataNeedId, "description", DataType.AIIDA_NEAR_REALTIME_DATA,
+                Granularity.P1D, -90, false, 0, 10, Set.of("1-0:1.8.0", "1-0:1.7.0"), "MyTestService");
+        // create new data need via POST
+        given(repo.existsById(dataNeedId)).willReturn(false);
+        mvc.perform(post("/management/data-needs")
+                        .content(objectMapper.writeValueAsString(dataNeed))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+        verify(repo).existsById(dataNeedId);
+        verify(repo).save(dataNeed);
+        verifyNoMoreInteractions(repo);
+        reset(repo);
     }
 
     @Test
