@@ -32,12 +32,6 @@ dependencies {
     implementation(libs.jackson.databind.nullable)
     implementation(libs.jakarta.annotation.api)
 
-    // Required for the generated API client
-    implementation(libs.feign.core)
-    implementation(libs.feign.okhttp)
-    implementation(libs.feign.jackson)
-    implementation(libs.feign.slf4j)
-    implementation(libs.feign.form)
 
     implementation(libs.reactor.core)
 
@@ -92,7 +86,7 @@ openApiGenerate {
             "dateLibrary" to "java8",
     ))
 
-    library.set("feign")
+    library.set("resttemplate")
     cleanupOutput.set(true)
 }
 

@@ -33,8 +33,6 @@ log4j = "2.20.0"
 kafka-clients = "3.4.0"
 microprofile-config = "3.0.3"
 hibernate-validator = "8.0.1.Final"
-openfeign-feign = "12.5"
-openfeign-feign-form = "3.8.0"
 
 swagger-codegen-version = "3.0.45"
 apache-httpcomponents-version = "4.5.14"
@@ -118,13 +116,6 @@ spring-retry = { module = "org.springframework.retry:spring-retry", version.ref 
 spring-aspects = { module = "org.springframework:spring-aspects", version.ref = "spring-aspects" }
 
 hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", version.ref = "hibernate-validator" }
-
-# dependencies required by region-connector-dk-energinet
-feign-core = { module = "io.github.openfeign:feign-core", version.ref = "openfeign-feign" }
-feign-okhttp = { module = "io.github.openfeign:feign-okhttp", version.ref = "openfeign-feign" }
-feign-jackson = { module = "io.github.openfeign:feign-jackson", version.ref = "openfeign-feign" }
-feign-slf4j = { module = "io.github.openfeign:feign-slf4j", version.ref = "openfeign-feign" }
-feign-form = { module = "io.github.openfeign.form:feign-form", version.ref = "openfeign-feign-form" }
 
 [bundles]
 

@@ -20,7 +20,10 @@ public interface EnerginetCustomerApi {
 
     /**
      * Returns a data access token.
-     * In order to get an access token you will need  a valid refresh token. This token can be fetched from the portal.  The token is a JWT token. There are tools that can read the content eg: https://jwt.io/  The token must be submittet in the request header like \&quot;Authorization: Bearer eyJhbGciOi...\&quot;
+     * In order to get an access token you will need  a valid refresh token.
+     * This token can be fetched from the portal.
+     * The token is a JWT token. There are tools that can read the content eg: <a href="https://jwt.io/">jwt.io</a>
+     * The token must be submitted in the request header like \&quot;Authorization: Bearer eyJhbGciOi...\&quot;
      */
     void apiToken();
 

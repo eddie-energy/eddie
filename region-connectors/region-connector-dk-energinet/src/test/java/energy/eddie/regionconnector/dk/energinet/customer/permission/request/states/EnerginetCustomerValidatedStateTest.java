@@ -7,13 +7,15 @@ import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.SendToPermissionAdministratorException;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
-import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
+import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import feign.FeignException;
-import feign.Request;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
@@ -56,11 +58,10 @@ class EnerginetCustomerValidatedStateTest {
         Granularity granularity = Granularity.PT1H;
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
-        EnerginetConfiguration config = mock(EnerginetConfiguration.class);
-        EnerginetCustomerApiClient apiClient = mock(EnerginetCustomerApiClient.class);
+        EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient);
         var state = new EnerginetCustomerValidatedState(permissionRequest, apiClient);
         permissionRequest.changeState(state);
 
@@ -77,7 +78,8 @@ class EnerginetCustomerValidatedStateTest {
         EnerginetCustomerApiClient mockApiClient = mock(EnerginetCustomerApiClient.class);
         var permissionRequest = createPermissionRequestInValidatedState(mockApiClient);
 
-        FeignException.Unauthorized exception = new FeignException.Unauthorized("Foo", mock(Request.class), "foo".getBytes(StandardCharsets.UTF_8), null);
+
+        RestClientException exception = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "Foo", HttpHeaders.EMPTY, "foo".getBytes(StandardCharsets.UTF_8), null);
         doThrow(exception).when(mockApiClient).apiToken();
 
 
@@ -96,7 +98,7 @@ class EnerginetCustomerValidatedStateTest {
         EnerginetCustomerApiClient mockApiClient = mock(EnerginetCustomerApiClient.class);
         var permissionRequest = createPermissionRequestInValidatedState(mockApiClient);
 
-        FeignException.TooManyRequests exception = new FeignException.TooManyRequests("Foo", mock(Request.class), "foo".getBytes(StandardCharsets.UTF_8), null);
+        RestClientException exception = HttpClientErrorException.create(HttpStatus.TOO_MANY_REQUESTS, "Foo", HttpHeaders.EMPTY, "foo".getBytes(StandardCharsets.UTF_8), null);
         doThrow(exception).when(mockApiClient).apiToken();
 
 
@@ -115,7 +117,7 @@ class EnerginetCustomerValidatedStateTest {
         EnerginetCustomerApiClient mockApiClient = mock(EnerginetCustomerApiClient.class);
         var permissionRequest = createPermissionRequestInValidatedState(mockApiClient);
 
-        FeignException.BadGateway exception = new FeignException.BadGateway("Foo", mock(Request.class), "foo".getBytes(StandardCharsets.UTF_8), null);
+        RestClientException exception = HttpClientErrorException.create(HttpStatus.BAD_GATEWAY, "Foo", HttpHeaders.EMPTY, "foo".getBytes(StandardCharsets.UTF_8), null);
         doThrow(exception).when(mockApiClient).apiToken();
 
 
@@ -125,7 +127,7 @@ class EnerginetCustomerValidatedStateTest {
         // Then
         assertEquals(EnerginetCustomerUnableToSendState.class, permissionRequest.state().getClass());
         assertFalse(thrown.userFault());
-        assertThat(thrown.getMessage()).contains("An error occurred, response status from Energinet: ");
+        assertThat(thrown.getMessage()).contains("An error occurred, with exception ");
     }
 
     private PermissionRequest createPermissionRequestInValidatedState(EnerginetCustomerApiClient mockApiClient) {
@@ -137,10 +139,10 @@ class EnerginetCustomerValidatedStateTest {
         Granularity granularity = Granularity.PT1H;
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
-        EnerginetConfiguration config = mock(EnerginetConfiguration.class);
+        EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient);
         var state = new EnerginetCustomerValidatedState(permissionRequest, mockApiClient);
         permissionRequest.changeState(state);
         return permissionRequest;

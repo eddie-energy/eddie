@@ -5,8 +5,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
-import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
-import energy.eddie.regionconnector.dk.energinet.config.PlainEnerginetConfiguration;
+import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import org.junit.jupiter.api.Test;
@@ -29,10 +28,10 @@ class EnerginetCustomerCreatedStateTest {
         Granularity granularity = Granularity.PT1H;
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
-        EnerginetConfiguration config = new PlainEnerginetConfiguration("foo:bar");
+        EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         var forCreation = new PermissionRequestForCreation(connectionId, start, start.plusDays(5), refreshToken, granularity, meteringPoint, dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient);
 
         // When
         assertDoesNotThrow(permissionRequest::validate);
@@ -52,10 +51,10 @@ class EnerginetCustomerCreatedStateTest {
         String meteringPoint = "meteringPoint";
         Granularity granularity = Granularity.PT1H;
         String dataNeedId = "dataNeedId";
-        EnerginetConfiguration config = mock(EnerginetConfiguration.class);
+        EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient);
 
         // When
         var thrown = assertThrows(ValidationException.class, permissionRequest::validate);
@@ -76,10 +75,10 @@ class EnerginetCustomerCreatedStateTest {
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
         String meteringPoint = "meteringPoint";
-        EnerginetConfiguration config = mock(EnerginetConfiguration.class);
+        EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient);
 
         // When
         var thrown = assertThrows(ValidationException.class, permissionRequest::validate);
@@ -101,10 +100,10 @@ class EnerginetCustomerCreatedStateTest {
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
         String meteringPoint = "meteringPoint";
-        EnerginetConfiguration config = mock(EnerginetConfiguration.class);
+        EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient);
 
         // When
         var thrown = assertThrows(ValidationException.class, permissionRequest::validate);

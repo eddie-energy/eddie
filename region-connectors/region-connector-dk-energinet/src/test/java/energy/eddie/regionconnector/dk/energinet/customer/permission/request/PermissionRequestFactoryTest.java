@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
+import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import org.junit.jupiter.api.Test;
@@ -29,14 +29,17 @@ class PermissionRequestFactoryTest {
 
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
         DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository = new InMemoryPermissionRequestRepository();
-        EnerginetConfiguration conf = mock(EnerginetConfiguration.class);
-        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(permissionRequestRepository, permissionStateMessages, conf);
+        EnerginetCustomerApi customerApi = mock(EnerginetCustomerApi.class);
+        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(permissionRequestRepository, permissionStateMessages, customerApi);
 
         // When
         PermissionRequest permissionRequest = permissionRequestFactory.create(requestForCreation);
 
         // Then
         assertNotNull(permissionRequest);
+
+        // Clean-Up
+        permissionRequestFactory.close();
     }
 
     @Test
@@ -44,8 +47,8 @@ class PermissionRequestFactoryTest {
         // Given
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
         DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository = new InMemoryPermissionRequestRepository();
-        EnerginetConfiguration conf = mock(EnerginetConfiguration.class);
-        PermissionRequestFactory factory = new PermissionRequestFactory(permissionRequestRepository, permissionStateMessages, conf);
+        EnerginetCustomerApi customerApi = mock(EnerginetCustomerApi.class);
+        PermissionRequestFactory factory = new PermissionRequestFactory(permissionRequestRepository, permissionStateMessages, customerApi);
 
         StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(factory.getConnectionStatusMessageStream()))
                 .expectComplete()

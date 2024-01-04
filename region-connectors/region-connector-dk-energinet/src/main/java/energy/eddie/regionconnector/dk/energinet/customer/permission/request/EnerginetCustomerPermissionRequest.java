@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
-import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
+import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerCreatedState;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
@@ -27,10 +27,10 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
     public EnerginetCustomerPermissionRequest(
             String permissionId,
             PermissionRequestForCreation request,
-            EnerginetConfiguration configuration) {
+            EnerginetCustomerApi apiClient) {
         requireNonNull(permissionId);
         requireNonNull(request);
-        requireNonNull(configuration);
+        requireNonNull(apiClient);
 
         this.permissionId = requireNonNull(permissionId);
         this.connectionId = requireNonNull(request.connectionId());
@@ -41,7 +41,7 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
         this.dataNeedId = requireNonNull(request.dataNeedId());
         this.granularity = requireNonNull(request.granularity());
 
-        this.state = new EnerginetCustomerCreatedState(this, configuration);
+        this.state = new EnerginetCustomerCreatedState(this, apiClient);
     }
 
     @Override

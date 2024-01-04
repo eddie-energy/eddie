@@ -13,11 +13,11 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRe
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 
@@ -84,7 +84,7 @@ public class PermissionRequestService implements Mvp1ConsumptionRecordProvider, 
             try {
                 permissionRequest.accept();
                 energinetCustomerApi.apiToken();
-            } catch (FeignException e) {
+            } catch (RestClientException e) {
                 LOGGER.error("Something went wrong while fetching token from Energinet:", e);
             } catch (StateTransitionException e) {
                 LOGGER.error("Error while transitioning a state", e);
@@ -102,7 +102,7 @@ public class PermissionRequestService implements Mvp1ConsumptionRecordProvider, 
                 consumptionRecord.setPermissionId(permissionRequest.permissionId());
                 consumptionRecord.setDataNeedId(permissionRequest.dataNeedId());
                 consumptionRecordSink.tryEmitNext(consumptionRecord);
-            } catch (FeignException e) {
+            } catch (RestClientException e) {
                 LOGGER.error("Something went wrong while fetching data from Energinet:", e);
             }
         });

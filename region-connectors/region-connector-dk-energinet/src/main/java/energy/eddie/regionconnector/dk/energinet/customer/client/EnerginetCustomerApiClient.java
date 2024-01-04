@@ -39,12 +39,11 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     private String accessToken = "";
 
     public EnerginetCustomerApiClient(EnerginetConfiguration configuration) {
-        apiClient = new ApiClient("Bearer");
-        apiClient.setBasePath(configuration.customerBasePath());
-
-        tokenApi = apiClient.buildClient(TokenApi.class);
-        meterDataApi = apiClient.buildClient(MeterDataApi.class);
-        isAliveApi = apiClient.buildClient(IsAliveApi.class);
+        apiClient = new ApiClient()
+                .setBasePath(configuration.customerBasePath());
+        tokenApi = new TokenApi(apiClient);
+        meterDataApi = new MeterDataApi(apiClient);
+        isAliveApi = new IsAliveApi(apiClient);
     }
 
     private void throwIfInvalidTimeframe(ZonedDateTime start, ZonedDateTime end) throws DateTimeException {
