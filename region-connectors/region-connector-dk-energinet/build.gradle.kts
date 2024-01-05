@@ -7,8 +7,7 @@ plugins {
     id("energy.eddie.java-conventions")
     id("energy.eddie.pnpm-build")
 
-    // TODO: move to common versions.toml file
-    id("org.openapi.generator") version "6.6.0"
+    alias(libs.plugins.openapi.generator)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
@@ -32,9 +31,7 @@ dependencies {
     implementation(libs.jackson.databind.nullable)
     implementation(libs.jakarta.annotation.api)
 
-
     implementation(libs.reactor.core)
-
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)

@@ -7,7 +7,7 @@ plugins {
     id("energy.eddie.java-conventions")
     id("energy.eddie.pnpm-build")
 
-    id("org.openapi.generator") version "7.1.0"
+    alias(libs.plugins.openapi.generator)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }

@@ -35,6 +35,7 @@ microprofile-config = "3.0.3"
 hibernate-validator = "8.0.1.Final"
 
 swagger-codegen-version = "3.0.45"
+openapi-generator = "7.1.0"
 apache-httpcomponents-version = "4.5.14"
 apache-httpcomponents-client-version = "5.2.1"
 jackson-databind-nullable-version = "0.2.6"
@@ -127,3 +128,4 @@ jsonschema2pojo = { id = "org.jsonschema2pojo", version.ref = "jsonschema2pojo" 
 jte-gradle = { id = "gg.jte.gradle", version.ref = "jte" }
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
+openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
