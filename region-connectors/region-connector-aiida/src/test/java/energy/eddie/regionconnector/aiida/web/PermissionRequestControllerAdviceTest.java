@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.aiida.web;
 
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
+import energy.eddie.regionconnector.shared.exceptions.DataNeedNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -87,5 +88,21 @@ class PermissionRequestControllerAdviceTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         String body = response.getBody().toString();
         assertThat(body).contains("Failed to read request");
+    }
+
+    @Test
+    void givenDataNeedNotFoundException_returnsBadRequest() {
+        // Given
+        String dataNeedId = "dataNeedId";
+        DataNeedNotFoundException notFoundException = new DataNeedNotFoundException(dataNeedId);
+
+        // When
+        ResponseEntity<Object> response = advice.handleDataNeedNotFoundException(notFoundException);
+
+        // Then
+        assertNotNull(response);
+        assertNotNull(response.getBody());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertThat(response.getBody().toString()).contains("No dataNeed with ID %s found".formatted(dataNeedId));
     }
 }
