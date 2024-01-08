@@ -36,7 +36,6 @@ class EnerginetCustomerPermissionRequestTest {
         assertEquals(connectionId, request.connectionId());
         assertEquals(start, request.start());
         assertEquals(end, request.end());
-        assertEquals(refreshToken, request.refreshToken());
         assertEquals(meteringPoint, request.meteringPoint());
         assertEquals(dataNeedId, request.dataNeedId());
         assertEquals(granularity, request.granularity());

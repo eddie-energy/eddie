@@ -7,6 +7,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerA
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerCreatedState;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
+import reactor.core.publisher.Mono;
 
 import java.time.ZonedDateTime;
 
@@ -18,7 +19,7 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
     private final String connectionId;
     private final ZonedDateTime start;
     private final ZonedDateTime end;
-    private final String refreshToken;
+    private final ApiCredentials credentials;
     private final String meteringPoint;
     private final String dataNeedId;
     private final Granularity granularity;
@@ -36,12 +37,12 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
         this.connectionId = requireNonNull(request.connectionId());
         this.start = requireNonNull(request.start());
         this.end = requireNonNull(request.end());
-        this.refreshToken = requireNonNull(request.refreshToken());
+        this.credentials = new ApiCredentials(apiClient, requireNonNull(request.refreshToken()));
         this.meteringPoint = requireNonNull(request.meteringPoint());
         this.dataNeedId = requireNonNull(request.dataNeedId());
         this.granularity = requireNonNull(request.granularity());
 
-        this.state = new EnerginetCustomerCreatedState(this, apiClient);
+        this.state = new EnerginetCustomerCreatedState(this);
     }
 
     @Override
@@ -85,8 +86,8 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
     }
 
     @Override
-    public String refreshToken() {
-        return refreshToken;
+    public Mono<String> accessToken() {
+        return credentials.accessToken();
     }
 
     @Override

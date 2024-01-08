@@ -4,7 +4,9 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
@@ -16,15 +18,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.task.TaskExecutor;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.DK_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,7 +38,7 @@ class PermissionRequestServiceTest {
     @Mock
     private DkEnerginetCustomerPermissionRequestRepository repository;
     @Mock
-    private TaskExecutor executor;
+    private EnerginetCustomerApi customerApi;
     @Mock
     private PermissionRequestFactory requestFactory;
     @Mock
@@ -83,7 +86,39 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void createAndSendPermissionRequest_calls() throws StateTransitionException {
+    void createAndSendPermissionRequest_callsApi() throws StateTransitionException {
+        // Given
+        var start = ZonedDateTime.now(DK_ZONE_ID).minusDays(10);
+        var end = start.plusDays(5);
+        String connectionId = "connId";
+        String dataNeedId = "dataNeedId";
+        String refreshToken = "token";
+        String meteringPoint = "meteringPoint";
+        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId, start, end,
+                refreshToken, Granularity.PT1H, meteringPoint, dataNeedId);
+
+        DkEnerginetCustomerPermissionRequest mockRequest = mock(DkEnerginetCustomerPermissionRequest.class);
+        when(mockRequest.permissionId()).thenReturn(UUID.randomUUID().toString());
+        when(mockRequest.accessToken()).thenReturn(Mono.just("accessToken"));
+        when(requestFactory.create(requestForCreation)).thenReturn(mockRequest);
+        when(customerApi.getTimeSeries(any(), any(), any(), any(), anyString(), any()))
+                .thenReturn(Mono.just(new ConsumptionRecord()));
+
+        // When
+        service.createAndSendPermissionRequest(requestForCreation);
+
+
+        // Then
+        verify(requestFactory).create(requestForCreation);
+        verify(mockRequest).validate();
+        verify(mockRequest).sendToPermissionAdministrator();
+        verify(mockRequest).receivedPermissionAdministratorResponse();
+        verify(mockRequest).accessToken();
+        verify(customerApi).getTimeSeries(any(), any(), any(), any(), anyString(), any());
+    }
+
+    @Test
+    void createAndSendPermissionRequest_doesNotCallApiOnDeniedPermissionRequest() throws StateTransitionException {
         // Given
         var start = ZonedDateTime.now(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
@@ -96,17 +131,18 @@ class PermissionRequestServiceTest {
 
         DkEnerginetCustomerPermissionRequest mockRequest = mock(DkEnerginetCustomerPermissionRequest.class);
         when(requestFactory.create(requestForCreation)).thenReturn(mockRequest);
+        doThrow(PastStateException.class).when(mockRequest).accept();
 
         // When
         service.createAndSendPermissionRequest(requestForCreation);
-
 
         // Then
         verify(requestFactory).create(requestForCreation);
         verify(mockRequest).validate();
         verify(mockRequest).sendToPermissionAdministrator();
         verify(mockRequest).receivedPermissionAdministratorResponse();
-        verify(executor).execute(any());
+        verify(mockRequest, never()).accessToken();
+        verify(customerApi, never()).getTimeSeries(any(), any(), any(), any(), anyString(), any());
     }
 
     @Test

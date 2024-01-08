@@ -6,6 +6,7 @@ import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
+import reactor.core.publisher.Mono;
 
 import java.time.ZonedDateTime;
 
@@ -59,8 +60,8 @@ public class DkEnerginetCustomerPermissionRequestAdapter implements DkEnerginetC
     }
 
     @Override
-    public String refreshToken() {
-        return permissionRequest.refreshToken();
+    public Mono<String> accessToken() {
+        return permissionRequest.accessToken();
     }
 
     @Override

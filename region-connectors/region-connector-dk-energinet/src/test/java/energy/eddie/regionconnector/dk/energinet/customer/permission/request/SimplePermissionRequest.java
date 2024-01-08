@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
+import reactor.core.publisher.Mono;
 
 import java.time.ZonedDateTime;
 
@@ -39,8 +40,8 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     }
 
     @Override
-    public String refreshToken() {
-        return "refreshToken";
+    public Mono<String> accessToken() {
+        return Mono.empty();
     }
 
     @Override

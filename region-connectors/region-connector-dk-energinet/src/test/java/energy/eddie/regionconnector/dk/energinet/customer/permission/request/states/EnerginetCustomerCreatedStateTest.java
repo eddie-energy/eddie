@@ -116,7 +116,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void status_returnsCreated() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
 
         // When
         // Then
@@ -126,7 +126,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void sendToPermissionAdministrator_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
 
         // When
         // Then
@@ -136,7 +136,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void receivedPermissionAdministratorResponse_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
 
         // When
         // Then
@@ -146,7 +146,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void accept_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
 
         // When
         // Then
@@ -156,7 +156,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void invalid_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
 
         // When
         // Then
@@ -166,7 +166,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void reject_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
 
         // When
         // Then
@@ -176,7 +176,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void terminate_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
 
         // When
         // Then
@@ -186,7 +186,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void revoke_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
 
         // When
         // Then
@@ -196,7 +196,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void timeLimit_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
 
         // When
         // Then
@@ -206,7 +206,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void timeOut_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
 
         // When
         // Then

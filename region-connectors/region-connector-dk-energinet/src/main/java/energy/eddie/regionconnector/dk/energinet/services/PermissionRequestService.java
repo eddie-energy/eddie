@@ -11,13 +11,12 @@ import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerA
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPoints;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 
@@ -31,19 +30,17 @@ public class PermissionRequestService implements Mvp1ConsumptionRecordProvider, 
     private final DkEnerginetCustomerPermissionRequestRepository repository;
     private final PermissionRequestFactory requestFactory;
     private final EnerginetCustomerApi energinetCustomerApi;
-    private final TaskExecutor fetchRecordsExecutor;
     private final Sinks.Many<ConsumptionRecord> consumptionRecordSink;
 
     public PermissionRequestService(
             DkEnerginetCustomerPermissionRequestRepository repository,
             PermissionRequestFactory requestFactory,
             EnerginetCustomerApi energinetCustomerApi,
-            TaskExecutor fetchRecordsExecutor,
-            Sinks.Many<ConsumptionRecord> consumptionRecordSink) {
+            Sinks.Many<ConsumptionRecord> consumptionRecordSink
+    ) {
         this.repository = repository;
         this.requestFactory = requestFactory;
         this.energinetCustomerApi = energinetCustomerApi;
-        this.fetchRecordsExecutor = fetchRecordsExecutor;
         this.consumptionRecordSink = consumptionRecordSink;
     }
 
@@ -68,46 +65,43 @@ public class PermissionRequestService implements Mvp1ConsumptionRecordProvider, 
      *                                                If {@link SendToPermissionAdministratorException#userFault()} is true, the customer provided an invalid refresh token.
      */
     public PermissionRequest createAndSendPermissionRequest(PermissionRequestForCreation requestForCreation) throws StateTransitionException {
-        var permissionRequest = requestFactory.create(requestForCreation);
+        DkEnerginetCustomerPermissionRequest permissionRequest = requestFactory.create(requestForCreation);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
         // if sendToPA doesn't fail, we have a valid refreshToken and can start polling the records in the background
         permissionRequest.receivedPermissionAdministratorResponse();
+        fetchConsumptionRecords(permissionRequest);
+        return permissionRequest;
+    }
 
-        fetchRecordsExecutor.execute(() -> {
-            // TODO refactor this and use non-blocking api client
-            energinetCustomerApi.setRefreshToken(permissionRequest.refreshToken());
-            energinetCustomerApi.setUserCorrelationId(UUID.fromString(permissionRequest.permissionId()));
-            MeteringPoints meteringPoints = new MeteringPoints();
-            meteringPoints.addMeteringPointItem(permissionRequest.meteringPoint());
-            MeteringPointsRequest meteringPointsRequest = new MeteringPointsRequest().meteringPoints(meteringPoints);
-            try {
-                permissionRequest.accept();
-                energinetCustomerApi.apiToken();
-            } catch (RestClientException e) {
-                LOGGER.error("Something went wrong while fetching token from Energinet:", e);
-            } catch (StateTransitionException e) {
-                LOGGER.error("Error while transitioning a state", e);
-            }
+    private void fetchConsumptionRecords(DkEnerginetCustomerPermissionRequest permissionRequest) {
+        MeteringPoints meteringPoints = new MeteringPoints();
+        meteringPoints.addMeteringPointItem(permissionRequest.meteringPoint());
+        MeteringPointsRequest meteringPointsRequest = new MeteringPointsRequest().meteringPoints(meteringPoints);
+        try {
+            permissionRequest.accept();
+        } catch (StateTransitionException e) {
+            LOGGER.error("Error while transitioning a state", e);
+            return;
+        }
 
-            try {
-                var consumptionRecord = energinetCustomerApi.getTimeSeries(
+        permissionRequest.accessToken()
+                .flatMap(accessToken -> energinetCustomerApi.getTimeSeries(
                         permissionRequest.start(),
                         permissionRequest.end(),
                         permissionRequest.granularity(),
-                        meteringPointsRequest
-                );
-
-                consumptionRecord.setConnectionId(permissionRequest.connectionId());
-                consumptionRecord.setPermissionId(permissionRequest.permissionId());
-                consumptionRecord.setDataNeedId(permissionRequest.dataNeedId());
-                consumptionRecordSink.tryEmitNext(consumptionRecord);
-            } catch (RestClientException e) {
-                LOGGER.error("Something went wrong while fetching data from Energinet:", e);
-            }
-        });
-
-        return permissionRequest;
+                        meteringPointsRequest,
+                        accessToken,
+                        UUID.fromString(permissionRequest.permissionId())
+                ))
+                .map(consumptionRecord -> {
+                    consumptionRecord.setConnectionId(permissionRequest.connectionId());
+                    consumptionRecord.setPermissionId(permissionRequest.permissionId());
+                    consumptionRecord.setDataNeedId(permissionRequest.dataNeedId());
+                    return consumptionRecord;
+                })
+                .doOnError(error -> LOGGER.error("Something went wrong while fetching data from Energinet:", error))
+                .subscribe(consumptionRecordSink::tryEmitNext);
     }
 
     @Override

@@ -11,17 +11,19 @@ import energy.eddie.regionconnector.dk.energinet.customer.api.MeterDataApi;
 import energy.eddie.regionconnector.dk.energinet.customer.api.TokenApi;
 import energy.eddie.regionconnector.dk.energinet.customer.invoker.ApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
+import energy.eddie.regionconnector.dk.energinet.customer.model.StringApiResponse;
 import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
 import energy.eddie.regionconnector.dk.energinet.utils.ConsumptionRecordMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 @Component
@@ -33,17 +35,21 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     private final TokenApi tokenApi;
     private final MeterDataApi meterDataApi;
     private final IsAliveApi isAliveApi;
-    private final Map<String, HealthState> healthChecks = new HashMap<>();
-    private UUID userCorrelationId = UUID.randomUUID();
-    private String refreshToken = "";
-    private String accessToken = "";
 
+    @Autowired
     public EnerginetCustomerApiClient(EnerginetConfiguration configuration) {
         apiClient = new ApiClient()
                 .setBasePath(configuration.customerBasePath());
         tokenApi = new TokenApi(apiClient);
         meterDataApi = new MeterDataApi(apiClient);
         isAliveApi = new IsAliveApi(apiClient);
+    }
+
+    public EnerginetCustomerApiClient(ApiClient apiClient, TokenApi tokenApi, MeterDataApi meterDataApi, IsAliveApi isAliveApi) {
+        this.apiClient = apiClient;
+        this.tokenApi = tokenApi;
+        this.meterDataApi = meterDataApi;
+        this.isAliveApi = isAliveApi;
     }
 
     private void throwIfInvalidTimeframe(ZonedDateTime start, ZonedDateTime end) throws DateTimeException {
@@ -61,55 +67,45 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     }
 
     @Override
-    public Boolean isAlive() {
-        return isAliveApi.apiIsaliveGet();
-    }
-
-    @Override
-    public void apiToken() {
-        if (refreshToken.isBlank()) {
-            throw new IllegalStateException("Refresh Token was not set");
+    public Mono<Boolean> isAlive() {
+        synchronized (apiClient) {
+            return isAliveApi.apiIsaliveGet();
         }
-
-        setApiKey(refreshToken);
-        accessToken = tokenApi.apiTokenGet().getResult();
     }
 
     @Override
-    public ConsumptionRecord getTimeSeries(ZonedDateTime dateFrom,
-                                           ZonedDateTime dateTo,
-                                           Granularity granularity,
-                                           MeteringPointsRequest meteringPointsRequest) {
+    public Mono<String> accessToken(String refreshToken) {
+        synchronized (apiClient) {
+            setApiKey(refreshToken);
+            return tokenApi.apiTokenGet()
+                    .mapNotNull(StringApiResponse::getResult);
+        }
+    }
+
+    @Override
+    public Mono<ConsumptionRecord> getTimeSeries(
+            ZonedDateTime dateFrom,
+            ZonedDateTime dateTo,
+            Granularity granularity,
+            MeteringPointsRequest meteringPointsRequest,
+            String accessToken,
+            UUID userCorrelationId
+    ) {
         throwIfInvalidTimeframe(dateFrom, dateTo);
         TimeSeriesAggregationEnum aggregation = TimeSeriesAggregationEnum.fromGranularity(granularity);
-
-        if (accessToken.isBlank()) {
-            apiToken();
+        synchronized (apiClient) {
+            setApiKey(accessToken);
+            return
+                    meterDataApi.apiMeterdataGettimeseriesDateFromDateToAggregationPost(
+                                    dateFrom.toLocalDate().toString(),
+                                    dateTo.toLocalDate().toString(),
+                                    aggregation.toString(),
+                                    userCorrelationId,
+                                    meteringPointsRequest
+                            )
+                            .mapNotNull(MyEnergyDataMarketDocumentResponseListApiResponse::getResult)
+                            .map(ConsumptionRecordMapper::timeSeriesToCIM);
         }
-
-        setApiKey(accessToken);
-
-        return ConsumptionRecordMapper.timeSeriesToCIM(
-                Objects.requireNonNull(
-                        meterDataApi.apiMeterdataGettimeseriesDateFromDateToAggregationPost(
-                                dateFrom.toLocalDate().toString(),
-                                dateTo.toLocalDate().toString(),
-                                aggregation.toString(),
-                                userCorrelationId,
-                                meteringPointsRequest
-                        ).getResult()
-                )
-        );
-    }
-
-    @Override
-    public void setUserCorrelationId(UUID userCorrelationId) {
-        this.userCorrelationId = userCorrelationId;
-    }
-
-    @Override
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = Objects.requireNonNull(refreshToken);
     }
 
     private void setApiKey(String token) {
@@ -117,12 +113,14 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     }
 
     @Override
-    public Map<String, HealthState> health() {
-        if (Boolean.TRUE.equals(isAlive())) {
-            healthChecks.put(IS_ALIVE_API, HealthState.UP);
-        } else {
-            healthChecks.put(IS_ALIVE_API, HealthState.DOWN);
-        }
-        return healthChecks;
+    public Mono<Map<String, HealthState>> health() {
+        return isAlive()
+                .map(isAlive -> Map.of(
+                                IS_ALIVE_API,
+                                Boolean.TRUE.equals(isAlive)
+                                        ? HealthState.UP
+                                        : HealthState.DOWN
+                        )
+                );
     }
 }

@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
+import reactor.core.publisher.Mono;
 
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -16,16 +17,9 @@ public interface EnerginetCustomerApi {
      *
      * @return Boolean
      */
-    Boolean isAlive();
+    Mono<Boolean> isAlive();
 
-    /**
-     * Returns a data access token.
-     * In order to get an access token you will need  a valid refresh token.
-     * This token can be fetched from the portal.
-     * The token is a JWT token. There are tools that can read the content eg: <a href="https://jwt.io/">jwt.io</a>
-     * The token must be submitted in the request header like \&quot;Authorization: Bearer eyJhbGciOi...\&quot;
-     */
-    void apiToken();
+    Mono<String> accessToken(String refreshToken);
 
     /**
      * Returns ConsumptionRecord out of a time series for each metering point in list.
@@ -36,11 +30,7 @@ public interface EnerginetCustomerApi {
      * @param meteringPointsRequest List of metering point ids. (optional)
      * @return MyEnergyDataMarketDocumentResponseListApiResponse
      */
-    ConsumptionRecord getTimeSeries(ZonedDateTime dateFrom, ZonedDateTime dateTo, Granularity granularity, MeteringPointsRequest meteringPointsRequest);
+    Mono<ConsumptionRecord> getTimeSeries(ZonedDateTime dateFrom, ZonedDateTime dateTo, Granularity granularity, MeteringPointsRequest meteringPointsRequest, String accessToken, UUID correlationId);
 
-    void setUserCorrelationId(UUID userCorrelationId);
-
-    void setRefreshToken(String refreshToken);
-
-    Map<String, HealthState> health();
+    Mono<Map<String, HealthState>> health();
 }
