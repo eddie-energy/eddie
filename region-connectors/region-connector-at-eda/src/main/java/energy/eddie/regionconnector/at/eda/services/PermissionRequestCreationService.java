@@ -10,7 +10,6 @@ import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
 import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
 import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
-import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import org.springframework.stereotype.Component;
 
@@ -50,7 +49,7 @@ public class PermissionRequestCreationService {
                 new CCMOTimeFrame(permissionRequestForCreation.start(), permissionRequestForCreation.end()),
                 this.configuration,
                 RequestDataType.METERING_DATA, // for now only allow metering data
-                AllowedMeteringIntervalType.QH,
+                permissionRequestForCreation.granularity(),
                 AllowedTransmissionCycle.D
         );
     }

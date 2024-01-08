@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.at.eda.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
@@ -24,12 +25,11 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -109,18 +109,15 @@ class PermissionRequestControllerTest {
                 .thenReturn(expected);
         LocalDate end = LocalDate.now(Clock.systemUTC()).minusDays(1);
         LocalDate start = end.minusDays(1);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "0".repeat(33), "dnid", "0".repeat(8), start, end);
+        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "0".repeat(33), "dnid", "0".repeat(8), start, end, Granularity.PT15M);
+
+        String content = objectMapper.writeValueAsString(permissionRequestForCreation);
 
         // When
         mockMvc.perform(
                         MockMvcRequestBuilders.post("/permission-request")
-                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                                .param("connectionId", permissionRequestForCreation.connectionId())
-                                .param("start", permissionRequestForCreation.start().format(DateTimeFormatter.ISO_DATE))
-                                .param("end", permissionRequestForCreation.end().format(DateTimeFormatter.ISO_DATE))
-                                .param("dataNeedId", permissionRequestForCreation.dataNeedId())
-                                .param("meteringPointId", permissionRequestForCreation.meteringPointId())
-                                .param("dsoId", permissionRequestForCreation.dsoId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(content)
                 )
                 // Then
                 .andExpect(status().isCreated())
@@ -128,13 +125,15 @@ class PermissionRequestControllerTest {
     }
 
     @Test
-    void createPermissionRequest_400WhenStartAfterEndDate() throws Exception {
+    void createPermissionRequest_givenUnsupportedGranularity_returnsBadRequest() throws Exception {
         // Given
+        CreatedPermissionRequest expected = new CreatedPermissionRequest("pid", "cmRequestId");
+        when(permissionRequestCreationService.createAndSendPermissionRequest(any()))
+                .thenReturn(expected);
         LocalDate end = LocalDate.now(Clock.systemUTC()).minusDays(1);
-        LocalDate start = end.plusDays(1);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "0".repeat(33), "dnid", "0".repeat(8), start, end);
+        LocalDate start = end.minusDays(1);
+        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "0".repeat(33), "dnid", "0".repeat(8), start, end, Granularity.P1M);
         String content = objectMapper.writeValueAsString(permissionRequestForCreation);
-
         // When
         mockMvc.perform(
                         MockMvcRequestBuilders.post("/permission-request")
@@ -142,31 +141,15 @@ class PermissionRequestControllerTest {
                                 .content(content)
                 )
                 // Then
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.granularity", startsWith("Unsupported granularity: 'P1M'.")));
     }
 
     @Test
-    void createPermissionRequest_400WhenStartDateNull() throws Exception {
-        // Given
-        LocalDate end = LocalDate.now(Clock.systemUTC()).minusDays(1);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "0".repeat(33), "dnid", "0".repeat(8), null, end);
-        String content = objectMapper.writeValueAsString(permissionRequestForCreation);
-
-        // When
-        mockMvc.perform(
-                        MockMvcRequestBuilders.post("/permission-request")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(content)
-                )
-                // Then
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void createPermissionRequest_400WhenEndDateNull() throws Exception {
+    void createPermissionRequest_201WhenEndDateNull() throws Exception {
         // Given
         LocalDate start = LocalDate.now(Clock.systemUTC()).minusDays(1);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "0".repeat(33), "dnid", "0".repeat(8), start, null);
+        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "0".repeat(33), "dnid", "0".repeat(8), start, null, Granularity.PT15M);
         String content = objectMapper.writeValueAsString(permissionRequestForCreation);
 
         // When
@@ -176,7 +159,7 @@ class PermissionRequestControllerTest {
                                 .content(content)
                 )
                 // Then
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isCreated());
     }
 
     @ParameterizedTest
@@ -185,7 +168,7 @@ class PermissionRequestControllerTest {
         // Given
         LocalDate end = LocalDate.now(Clock.systemUTC()).minusDays(1);
         LocalDate start = end.minusDays(1);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(connectionId, meteringPoint, dataNeedsId, dsoId, start, end);
+        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(connectionId, meteringPoint, dataNeedsId, dsoId, start, end, Granularity.PT15M);
         String content = objectMapper.writeValueAsString(permissionRequestForCreation);
 
         // When
@@ -195,6 +178,13 @@ class PermissionRequestControllerTest {
                                 .content(content)
                 )
                 // Then
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(
+                        anyOf(
+                                containsString("must not be empty"),
+                                containsString("MeteringPoint needs to be exactly 33 characters long"),
+                                containsString("dsoId must be 8 characters long")
+                        ))
+                );
     }
 }

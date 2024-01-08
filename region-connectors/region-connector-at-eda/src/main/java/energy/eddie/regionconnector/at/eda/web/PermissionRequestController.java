@@ -39,7 +39,7 @@ public class PermissionRequestController {
     @PostMapping(value = PATH_PERMISSION_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public CreatedPermissionRequest createPermissionRequest(
-            @ModelAttribute @Valid PermissionRequestForCreation permissionRequestForCreation
+            @RequestBody @Valid PermissionRequestForCreation permissionRequestForCreation
     ) throws StateTransitionException {
         LOGGER.info("Creating new permission request");
         return creationService.createAndSendPermissionRequest(permissionRequestForCreation);
