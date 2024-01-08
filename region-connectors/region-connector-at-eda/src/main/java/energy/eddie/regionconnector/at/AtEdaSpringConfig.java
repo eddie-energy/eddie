@@ -24,6 +24,7 @@ import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
+import jakarta.annotation.Nullable;
 import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,7 @@ import java.util.Set;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.REGION_CONNECTOR_ID;
+import static energy.eddie.regionconnector.at.eda.config.AtConfiguration.CONVERSATION_ID_PREFIX;
 import static energy.eddie.regionconnector.at.eda.config.AtConfiguration.ELIGIBLE_PARTY_ID_KEY;
 import static energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration.*;
 
@@ -63,8 +65,11 @@ public class AtEdaSpringConfig {
     }
 
     @Bean
-    public AtConfiguration atConfiguration(@Value("${" + ELIGIBLE_PARTY_ID_KEY + "}") String eligiblePartyId) {
-        return new PlainAtConfiguration(eligiblePartyId);
+    public AtConfiguration atConfiguration(
+            @Value("${" + ELIGIBLE_PARTY_ID_KEY + "}") String eligiblePartyId,
+            @Value("${" + CONVERSATION_ID_PREFIX + ":#{null}}") @Nullable String conversationIdPrefix
+    ) {
+        return new PlainAtConfiguration(eligiblePartyId, conversationIdPrefix);
     }
 
     @Bean

@@ -133,11 +133,14 @@ public class CCMORequest {
 
     private ProcessDirectory makeProcessDirectory() throws InvalidDsoIdException {
         var messageId = messageId();
+        String prefixedConversationId = configuration.conversationIdPrefix()
+                .map(prefix -> prefix + messageId)
+                .orElse(messageId);
         return new ProcessDirectory()
                 .withCMRequest(makeReqType())
                 .withCMRequestId(cmRequestId())
                 .withMessageId(messageId)
-                .withConversationId(messageId)
+                .withConversationId(prefixedConversationId)
                 .withProcessDate(DateTimeConverter.dateToXml(LocalDate.now(DateTimeConstants.AT_ZONE_ID)))
                 .withMeteringPoint(meteringPointOrThrow());
     }
