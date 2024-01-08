@@ -12,19 +12,20 @@ this REST-ful API. Data needs are described in the
 
 ### URLs and methods
 
-| URL                        | method   | description                                                                |
-|----------------------------|----------|----------------------------------------------------------------------------|
-| /management/data-need      | GET      | returns a list of all data needs                                           |
-| /management/data-need      | POST/PUT | creates new data need from payload                                         |
-| /management/data-need/{id} | GET      | returns a single data need                                                 |
-| /management/data-need/{id} | POST     | updates the data need, the URL id has to match the id property in the body |
-| /management/data-need/{id} | DELETE   | deletes the data need if present, always returns 200 (ok)                  |
+| URL                         | method | description                                                                                              |
+|-----------------------------|--------|----------------------------------------------------------------------------------------------------------|
+| /management/data-needs      | GET    | returns a list of all data needs                                                                         |
+| /management/data-needs      | POST   | creates new data need from payload                                                                       |
+| /management/data-needs/{id} | GET    | returns a single data need                                                                               |
+| /management/data-needs/{id} | PUT    | updates the data need, the URL id has to match the id property in the body                               |
+| /management/data-needs/{id} | DELETE | deletes the data need if present, returns 204 if data need got deleted and 404 if no data need was found |
 
 ### Payload structure
 
 **A single data need is structured like this:**
 
-A request like `GET http://localhost:9090/management/data-need/4711` can deliver a `Content-Type: application/json` with
+A request like `GET http://localhost:9090/management/data-needs/4711` can deliver a `Content-Type: application/json`
+with
 this payload:
 
 ```
@@ -35,12 +36,15 @@ this payload:
     "granularity": "PT1H",
     "durationStart": -33,
     "durationOpenEnd": false,
-    "durationEnd": 0
+    "durationEnd": 0,
+    "transmissionInterval": null,
+    "sharedDataIds": [],
+    "serviceName": null
 }
 ```
 
 **When querying all data needs**
-A JSON array is returned containing the individual data needs. E.g. `GET http://localhost:9090/management/data-need`
+A JSON array is returned containing the individual data needs. E.g. `GET http://localhost:9090/management/data-needs`
 could result in:
 
 ```
@@ -48,12 +52,22 @@ could result in:
     {
         "id": "4711", "description": "Some arbitrary data need",
         "type": "HISTORICAL_VALIDATED_CONSUMPTION_DATA", "granularity": "PT1H",
-        "durationStart": -33, "durationOpenEnd": false, "durationEnd": 0
+        "durationStart": -33, "durationOpenEnd": false, "durationEnd": 0,
+        "transmissionInterval": null, "sharedDataIds": [], "serviceName": null
     },
     {
         "id": "XYZ", "description": "Realtime data",
         "type": "AIIDA_NEAR_REALTIME_DATA", "granularity": "PT5M",
-        "durationStart": 0, "durationOpenEnd": true
-    },
+        "durationStart": 0, "durationOpenEnd": true,
+        "transmissionInterval": null, "sharedDataIds": [], "serviceName": null
+    }
 ]
 ```
+
+## OpenAPI specification
+
+The API documentation is also available as an [OpenAPI](https://swagger.io/specification/) specification. It can be
+found under [openapi/management-data-needs.yaml](openapi/management-data-needs.yaml)
+
+View it in an IDE or copy the contents of the file and paste it into the [Swagger Editor](https://editor.swagger.io/) to
+view the API specification.

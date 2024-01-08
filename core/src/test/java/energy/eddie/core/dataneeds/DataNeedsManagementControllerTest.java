@@ -32,38 +32,29 @@ class DataNeedsManagementControllerTest {
     private DataNeedsDbRepository repo;
 
     @Test
-    void createDataNeed() throws Exception {
-        // create new data need via PUT
-        given(repo.existsById(EXAMPLE_DATA_NEED_KEY)).willReturn(false);
-        mvc.perform(put("/management/data-needs")
-                        .content(objectMapper.writeValueAsString(EXAMPLE_DATA_NEED))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated());
-        verify(repo).existsById(EXAMPLE_DATA_NEED_KEY);
-        verify(repo).save(EXAMPLE_DATA_NEED);
-        verifyNoMoreInteractions(repo);
-        reset(repo);
-
+    void createDataNeed_returnsCreated() throws Exception {
         // create new data need via POST
         given(repo.existsById(EXAMPLE_DATA_NEED_KEY)).willReturn(false);
         mvc.perform(post("/management/data-needs")
                         .content(objectMapper.writeValueAsString(EXAMPLE_DATA_NEED))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.TEXT_PLAIN_VALUE))
                 .andExpect(status().isCreated());
         verify(repo).existsById(EXAMPLE_DATA_NEED_KEY);
         verify(repo).save(EXAMPLE_DATA_NEED);
         verifyNoMoreInteractions(repo);
-        reset(repo);
+    }
 
+    @Test
+    void createDataNeed_alreadyExists_returnsBadRequest() throws Exception {
         // try to create existing data need
         given(repo.existsById(EXAMPLE_DATA_NEED_KEY)).willReturn(true);
-        mvc.perform(put("/management/data-needs")
+        mvc.perform(post("/management/data-needs")
                         .content(objectMapper.writeValueAsString(EXAMPLE_DATA_NEED))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                        .accept(MediaType.TEXT_PLAIN_VALUE))
+                .andExpect(status().isConflict())
+                .andExpect(content().string("data need with id " + EXAMPLE_DATA_NEED_KEY + " already exists"));
         verify(repo).existsById(EXAMPLE_DATA_NEED_KEY);
         verifyNoMoreInteractions(repo);
     }
@@ -78,7 +69,7 @@ class DataNeedsManagementControllerTest {
         mvc.perform(post("/management/data-needs")
                         .content(objectMapper.writeValueAsString(dataNeed))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.TEXT_PLAIN_VALUE))
                 .andExpect(status().isCreated());
         verify(repo).existsById(dataNeedId);
         verify(repo).save(dataNeed);
@@ -129,35 +120,50 @@ class DataNeedsManagementControllerTest {
     }
 
     @Test
-    void updateDataNeed() throws Exception {
+    void updateDataNeed_withExistingDataNeed_returnsOk() throws Exception {
         // successfull update
         given(repo.existsById(EXAMPLE_DATA_NEED_KEY)).willReturn(true);
-        mvc.perform(post("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY)
+        mvc.perform(put("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY)
                         .content(objectMapper.writeValueAsString(EXAMPLE_DATA_NEED))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.TEXT_PLAIN_VALUE))
                 .andExpect(status().isOk()).andExpect(content().string(""));
         verify(repo).existsById(EXAMPLE_DATA_NEED_KEY);
         verify(repo).save(EXAMPLE_DATA_NEED);
         verifyNoMoreInteractions(repo);
         reset(repo);
+    }
 
+    @Test
+    void updateDataNeed_idsDontMatch_returnsBadRequest() throws Exception {
         // updates with wrong key should not be processed
-        mvc.perform(post("/management/data-needs/" + "wrong-key")
+        mvc.perform(put("/management/data-needs/" + "wrong-key")
                         .content(objectMapper.writeValueAsString(EXAMPLE_DATA_NEED))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.TEXT_PLAIN_VALUE))
                 .andExpect(status().isBadRequest());
         verify(repo, never()).save(any());
         verifyNoMoreInteractions(repo);
     }
 
     @Test
-    void deleteDataNeed() throws Exception {
+    void delete_existingDataNeed_returnsNoContent() throws Exception {
         // all delete requests should be processed
+        given(repo.existsById(EXAMPLE_DATA_NEED_KEY)).willReturn(true);
         mvc.perform(delete("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andExpect(content().string(""));
+                .andExpect(status().isNoContent());
+        verify(repo).existsById(EXAMPLE_DATA_NEED_KEY);
         verify(repo).deleteById(EXAMPLE_DATA_NEED_KEY);
+        verifyNoMoreInteractions(repo);
+    }
+
+    @Test
+    void delete_nonExistingDataNeed_returnsNotFound() throws Exception {
+        // all delete requests should be processed
+        given(repo.existsById(EXAMPLE_DATA_NEED_KEY)).willReturn(false);
+        mvc.perform(delete("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+        verify(repo).existsById(EXAMPLE_DATA_NEED_KEY);
         verifyNoMoreInteractions(repo);
     }
 }
