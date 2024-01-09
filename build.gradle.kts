@@ -1,8 +1,14 @@
+
 import com.github.gradle.node.pnpm.task.PnpmTask
+import com.github.jk1.license.filter.DependencyFilter
+import com.github.jk1.license.filter.LicenseBundleNormalizer
+import com.github.jk1.license.render.InventoryHtmlReportRenderer
+import com.github.jk1.license.render.ReportRenderer
 
 plugins {
     id("java")
     id("com.github.node-gradle.node") version "5.0.0"
+    id("com.github.jk1.dependency-license-report") version "2.5"
 }
 
 repositories {
@@ -20,6 +26,11 @@ node {
     version.set("18.14.0")
     pnpmVersion.set("8.5.0")
     download.set(true)
+}
+
+licenseReport {
+    renderers = arrayOf<ReportRenderer>(InventoryHtmlReportRenderer("report.html", "EDDIE Framework"))
+    filters = arrayOf<DependencyFilter>(LicenseBundleNormalizer())
 }
 
 tasks.register("run-db-server-create-db", JavaExec::class) {
