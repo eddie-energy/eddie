@@ -29,6 +29,7 @@ depends on the way you deploy the region connector.
 | `region-connector.at.eda.ponton.messenger.hostname`        | URL or IP address of your PontonXP Messenger.                                                                                                                                                                                                                                                                                                                                                          |
 | `region-connector.at.eda.ponton.messenger.port`            | The port that is used for connecting to the messenger. If you did not change this in the `server.xml` file of the messenger it should be `2600`.                                                                                                                                                                                                                                                       |
 | `region-connector.at.eda.ponton.messenger.folder`          | Folder that is used to store information that the adapter needs for operating. This folder stores the `id.dat` file that is generated when the region connector first connects to the PontonXP Messenger. This file is used by the messenger to authenticate the adapter, i.e. all subsequent instances of the same adapter (same adapter id) need this file if they want to connect to the messenger. |
+| `region-connector.at.eda.conversation.id.prefix`           | A prefix for the generated conversation id, to enable routing between different ponton xp adapters from one xp messenger. Can be omitted if not needed.                                                                                                                                                                                                                                                |                                                                                                                                                                                                                                                                              |
 
 ### .properties file
 
@@ -41,6 +42,7 @@ region-connector.at.eda.ponton.messenger.adapter.version=1.0.0
 region-connector.at.eda.ponton.messenger.hostname=pontonxp.messenger.com
 region-connector.at.eda.ponton.messenger.port=2600
 region-connector.at.eda.ponton.messenger.folder=/opt/pontonxp
+region-connector.at.eda.conversation.id.prefix=test-instance-
 ```
 
 ### Environment variables
