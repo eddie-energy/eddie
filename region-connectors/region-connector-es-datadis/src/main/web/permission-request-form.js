@@ -7,8 +7,10 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/compone
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/button/button.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/alert/alert.js";
 
-const BASE_URL = new URL(import.meta.url).href.replace("ce.js", "");
-const REQUEST_URL = BASE_URL + "permission-request";
+const BASE_URL = new URL(import.meta.url).href
+  .replace("ce.js", "")
+  .slice(0, -1);
+const REQUEST_URL = BASE_URL + "/permission-request";
 
 class PermissionRequestForm extends LitElement {
   static properties = {
@@ -73,15 +75,20 @@ class PermissionRequestForm extends LitElement {
       body: formData,
       method: "POST",
     })
-      .then((response) => response.json())
+      .then((response) => {
+        const locationHeader = "Location";
+        if (response.headers.has(locationHeader)) {
+          const location = BASE_URL + response.headers.get(locationHeader);
+          this.requestPermissionStatus(location);
+          this.intervalId = setInterval(
+            this.requestPermissionStatus(location),
+            5000
+          );
+        }
+        return response.json();
+      })
       .then((result) => {
         this.permissionId = result["permissionId"];
-
-        this.requestPermissionStatus(this.permissionId);
-        this.intervalId = setInterval(
-          this.requestPermissionStatus(this.permissionId),
-          5000
-        );
       })
       .catch((error) => {
         this._isSubmitDisabled = false;
@@ -89,9 +96,9 @@ class PermissionRequestForm extends LitElement {
       });
   }
 
-  requestPermissionStatus(permissionId) {
+  requestPermissionStatus(location) {
     return () => {
-      fetch(BASE_URL + "permission-status/" + permissionId)
+      fetch(location)
         .then((response) => {
           if (!response.ok) {
             throw new Error("HTTP status " + response.status);
@@ -124,20 +131,20 @@ class PermissionRequestForm extends LitElement {
   }
 
   accepted() {
-    fetch(REQUEST_URL + "/accepted?permissionId=" + this.permissionId, {
-      method: "POST",
+    fetch(REQUEST_URL + `/${this.permissionId}/accepted`, {
+      method: "PATCH",
     })
-      .then((response) => {
+      .then(() => {
         this._areResponseButtonsDisabled = true;
       })
       .catch((error) => console.error(error));
   }
 
   rejected() {
-    fetch(REQUEST_URL + "/rejected?permissionId=" + this.permissionId, {
-      method: "POST",
+    fetch(REQUEST_URL + `/${this.permissionId}/rejected`, {
+      method: "PATCH",
     })
-      .then((response) => {
+      .then(() => {
         this._areResponseButtonsDisabled = true;
       })
       .catch((error) => console.error(error));

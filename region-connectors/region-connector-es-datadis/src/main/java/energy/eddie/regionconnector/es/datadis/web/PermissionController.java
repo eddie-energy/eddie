@@ -68,14 +68,14 @@ public class PermissionController {
         return ResponseEntity.created(location).body(Map.of("permissionId", permissionId));
     }
 
-    @PostMapping(value = "/permission-request/accepted")
-    public ResponseEntity<String> acceptPermission(@RequestParam String permissionId) throws PermissionNotFoundException, StateTransitionException {
+    @PatchMapping(value = "/permission-request/{permissionId}/accepted")
+    public ResponseEntity<String> acceptPermission(@PathVariable String permissionId) throws PermissionNotFoundException, StateTransitionException {
         service.acceptPermission(permissionId);
         return ResponseEntity.ok(permissionId);
     }
 
-    @PostMapping(value = "/permission-request/rejected")
-    public ResponseEntity<String> rejectPermission(@RequestParam String permissionId) throws PermissionNotFoundException, StateTransitionException {
+    @PatchMapping(value = "/permission-request/{permissionId}/rejected")
+    public ResponseEntity<String> rejectPermission(@PathVariable String permissionId) throws PermissionNotFoundException, StateTransitionException {
         service.rejectPermission(permissionId);
         return ResponseEntity.ok(permissionId);
     }
