@@ -1,4 +1,4 @@
-FROM eclipse-temurin:20-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 COPY ./build/install/ /opt/
 WORKDIR /opt/core
 CMD ["sh", "./bin/core"]

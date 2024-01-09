@@ -23,7 +23,6 @@ class EnerginetCustomerCreatedStateTest {
     void validate_changesToValidatedState_whenValid() {
         // Given
         ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
-        ZonedDateTime end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
         String meteringPoint = "meteringPoint";

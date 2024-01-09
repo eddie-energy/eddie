@@ -51,7 +51,7 @@ tasks.getByName<Test>("test") {
 }
 
 // Directory for generated java files
-val generatedSwaggerJavaDir = "${buildDir}/generated/sources/swagger/main/java"
+val generatedSwaggerJavaDir = "${project.layout.buildDirectory.asFile.get()}/generated/sources/swagger/main/java"
 
 // Add generated sources to the main source set
 sourceSets {

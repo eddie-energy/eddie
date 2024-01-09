@@ -45,7 +45,7 @@ tasks.getByName<Test>("test") {
 jsonSchema2Pojo {
     // https://github.com/joelittlejohn/jsonschema2pojo/tree/master/jsonschema2pojo-gradle-plugin
     sourceFiles = listOf(projectDir.resolve("src/main/schema.json"))
-    targetDirectory = buildDir.resolve("generated-sources")
+    targetDirectory = project.layout.buildDirectory.asFile.get().resolve("generated-sources")
     targetPackage = "energy.eddie.api.v0"
     setAnnotationStyle("jackson2")
     dateTimeType = "java.time.ZonedDateTime"
@@ -78,7 +78,7 @@ tasks.withType<JavaCompile>().configureEach {
 
 
 // Directory for generated java files
-val generatedXJCJavaDir = "${buildDir.absolutePath}/generated/sources/xjc/main/java"
+val generatedXJCJavaDir = "${project.layout.buildDirectory.asFile.get()}/generated/sources/xjc/main/java"
 
 // Add generated sources to the main source set
 sourceSets {

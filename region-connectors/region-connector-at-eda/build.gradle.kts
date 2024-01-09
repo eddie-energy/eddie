@@ -57,7 +57,7 @@ tasks.getByName<Test>("test") {
 }
 
 // Directory for generated java files
-val generatedXJCJavaDir = "${buildDir.absolutePath}/generated/sources/xjc/main/java"
+val generatedXJCJavaDir = "${project.layout.buildDirectory.asFile.get().absolutePath}/generated/sources/xjc/main/java"
 
 // Add generated sources to the main source set
 sourceSets {
