@@ -52,6 +52,7 @@ class PermissionRequestForm extends LitElement {
     formData.append("start", startDate.toISOString().substring(0, 10));
     formData.append("end", endDate.toISOString().substring(0, 10));
     formData.append("dataNeedId", this.dataNeedAttributes.id);
+    formData.append("granularity", this.dataNeedAttributes.granularity);
 
     fetch(REQUEST_URL, {
       body: formData,
@@ -132,7 +133,9 @@ class PermissionRequestForm extends LitElement {
           <sl-alert open>
             <sl-icon slot="icon" name="info-circle"></sl-icon>
 
-            <p>The Consent Request ID for this connection is: ${this._requestId}</p>
+            <p>
+              The Consent Request ID for this connection is: ${this._requestId}
+            </p>
             <p>The request status is: ${this._requestStatus}</p>
 
             <p>

@@ -17,6 +17,7 @@ class PermissionRequestForm extends LitElement {
   };
 
   intervalId = null;
+  permissionId = null;
 
   constructor() {
     super();
@@ -24,8 +25,6 @@ class PermissionRequestForm extends LitElement {
     this._requestStatus = "";
     this._isSubmitDisabled = false;
   }
-
-  permissionId = null;
 
   isFormFilled(formData) {
     return !!(formData.get("refreshToken") && formData.get("meteringPoint"));
@@ -42,7 +41,6 @@ class PermissionRequestForm extends LitElement {
     }
 
     formData.append("connectionId", this.connectionId);
-    formData.append("periodResolution", this.dataNeedAttributes.granularity);
 
     const startDate = new Date();
     startDate.setDate(
@@ -59,6 +57,7 @@ class PermissionRequestForm extends LitElement {
     formData.append("start", startDate.toISOString().substring(0, 10));
     formData.append("end", endDate.toISOString().substring(0, 10));
     formData.append("dataNeedId", this.dataNeedAttributes.id);
+    formData.append("granularity", this.dataNeedAttributes.granularity);
 
     fetch(REQUEST_URL, {
       body: formData,

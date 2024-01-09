@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.at.eda.services;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
@@ -26,7 +27,7 @@ class PermissionRequestCreationServiceTest {
 
         LocalDate start = LocalDate.now(Clock.systemUTC()).minusDays(10);
         LocalDate end = start.plusDays(5);
-        PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100", "dnid", "AT000000", start, end);
+        PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100", "dnid", "AT000000", start, end, Granularity.PT15M);
         PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(edaAdapter, Set.of());
         PermissionRequestCreationService creationService = new PermissionRequestCreationService(permissionRequestFactory, config);
 

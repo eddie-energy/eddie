@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.at.eda.permission.request.dtos;
 
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.regionconnector.shared.validation.SupportedGranularities;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -26,6 +28,8 @@ public record PermissionRequestForCreation(
         )
         String dsoId,
         LocalDate start,
-        LocalDate end
+        LocalDate end,
+        @SupportedGranularities({Granularity.PT15M, Granularity.PT1H, Granularity.P1D})
+        Granularity granularity
 ) {
 }

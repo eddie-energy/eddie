@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.at.eda.requests;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
@@ -27,7 +28,7 @@ class CCMORequestTest {
         // then
         assertDoesNotThrow(() ->
                 new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
-                        RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D)
+                        RequestDataType.METERING_DATA, Granularity.P1D, AllowedTransmissionCycle.D)
         );
     }
 
@@ -43,7 +44,7 @@ class CCMORequestTest {
         // then
         assertThrows(NullPointerException.class, () ->
                 new CCMORequest(null, timeFrame, atConfiguration,
-                        RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D)
+                        RequestDataType.METERING_DATA, Granularity.P1D, AllowedTransmissionCycle.D)
         );
     }
 
@@ -57,7 +58,7 @@ class CCMORequestTest {
         // then
         assertThrows(NullPointerException.class, () ->
                 new CCMORequest(dsoIdAndMeteringPoint, null, atConfiguration,
-                        RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D)
+                        RequestDataType.METERING_DATA, Granularity.P1D, AllowedTransmissionCycle.D)
         );
     }
 
@@ -73,7 +74,7 @@ class CCMORequestTest {
         // then
         assertThrows(NullPointerException.class, () ->
                 new CCMORequest(dsoIdAndMeteringPoint, timeFrame, null,
-                        RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D)
+                        RequestDataType.METERING_DATA, Granularity.P1D, AllowedTransmissionCycle.D)
         );
     }
 
@@ -90,7 +91,7 @@ class CCMORequestTest {
         // then
         assertThrows(NullPointerException.class, () ->
                 new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
-                        null, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D)
+                        null, Granularity.P1D, AllowedTransmissionCycle.D)
         );
     }
 
@@ -124,7 +125,7 @@ class CCMORequestTest {
         // then
         assertThrows(NullPointerException.class, () ->
                 new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
-                        RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, null)
+                        RequestDataType.METERING_DATA, Granularity.P1D, null)
         );
     }
 
@@ -137,7 +138,7 @@ class CCMORequestTest {
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("", null);
         CCMORequest ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
-                RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D);
+                RequestDataType.METERING_DATA, Granularity.P1D, AllowedTransmissionCycle.D);
 
         // when
         // then
@@ -153,7 +154,7 @@ class CCMORequestTest {
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
         CCMORequest ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
-                RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D);
+                RequestDataType.METERING_DATA, Granularity.P1D, AllowedTransmissionCycle.D);
 
         // when
         // then
@@ -170,12 +171,28 @@ class CCMORequestTest {
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", "prefix-");
         CCMORequest ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
-                RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D);
+                RequestDataType.METERING_DATA, Granularity.P1D, AllowedTransmissionCycle.D);
 
         // when
         // then
         var res = assertDoesNotThrow(ccmoRequest::toCMRequest);
         assertTrue(res.getProcessDirectory().getConversationId().startsWith("prefix-"));
+    }
+
+    @Test
+    void toCmRequest_throwsIfUnsupportedGranularity() {
+        // given
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
+        LocalDate end = start.plusMonths(1);
+        CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
+        DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
+        AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
+        CCMORequest ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
+                RequestDataType.METERING_DATA, Granularity.P1M, AllowedTransmissionCycle.D);
+
+        // when
+        // then
+        assertThrows(IllegalArgumentException.class, ccmoRequest::toCMRequest);
     }
 
     @Test
@@ -187,7 +204,7 @@ class CCMORequestTest {
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT000000", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
         CCMORequest ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
-                RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D);
+                RequestDataType.METERING_DATA, Granularity.P1D, AllowedTransmissionCycle.D);
 
         // when
         // then
@@ -204,7 +221,7 @@ class CCMORequestTest {
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
         ZonedDateTime dt = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
         CCMORequest ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
-                RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D, dt);
+                RequestDataType.METERING_DATA, Granularity.P1D, AllowedTransmissionCycle.D, dt);
 
         // when
         String messageId = ccmoRequest.messageId();
@@ -223,7 +240,7 @@ class CCMORequestTest {
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
         ZonedDateTime dt = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
         CCMORequest ccmoRequest = new CCMORequest(dsoIdAndMeteringPoint, timeFrame, atConfiguration,
-                RequestDataType.METERING_DATA, AllowedMeteringIntervalType.D, AllowedTransmissionCycle.D, dt);
+                RequestDataType.METERING_DATA, Granularity.P1D, AllowedTransmissionCycle.D, dt);
 
         // when
         String cmRequestId = ccmoRequest.cmRequestId();

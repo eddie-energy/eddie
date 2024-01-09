@@ -5,10 +5,10 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.AddressType
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMode;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingAddress;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.at.eda.EdaSchemaVersion;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
-import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import energy.eddie.regionconnector.at.eda.utils.CMRequestId;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
@@ -31,7 +31,7 @@ public class CCMORequest {
     private final DsoIdAndMeteringPoint dsoIdAndMeteringPoint;
     private final CCMOTimeFrame timeframe;
     private final RequestDataType requestDataType;
-    private final MeteringIntervallType meteringIntervalType;
+    private final Granularity granularity;
     private final TransmissionCycle transmissionCycle;
     private final AtConfiguration configuration;
     private final ZonedDateTime timestamp;
@@ -40,14 +40,14 @@ public class CCMORequest {
                        CCMOTimeFrame timeframe,
                        AtConfiguration atConfiguration,
                        RequestDataType requestDataType,
-                       AllowedMeteringIntervalType meteringIntervalType,
+                       Granularity granularity,
                        AllowedTransmissionCycle transmissionCycle,
                        ZonedDateTime timestamp) {
         requireNonNull(dsoIdAndMeteringPoint);
         requireNonNull(timeframe);
         requireNonNull(atConfiguration);
         requireNonNull(requestDataType);
-        requireNonNull(meteringIntervalType);
+        requireNonNull(granularity);
         requireNonNull(transmissionCycle);
         requireNonNull(timestamp);
 
@@ -55,7 +55,7 @@ public class CCMORequest {
         this.timeframe = timeframe;
         this.configuration = atConfiguration;
         this.requestDataType = requestDataType;
-        this.meteringIntervalType = meteringIntervalType.value();
+        this.granularity = granularity;
         this.transmissionCycle = transmissionCycle.value();
         this.timestamp = timestamp;
     }
@@ -64,10 +64,10 @@ public class CCMORequest {
                        CCMOTimeFrame timeframe,
                        AtConfiguration atConfiguration,
                        RequestDataType requestDataType,
-                       AllowedMeteringIntervalType meteringIntervalType,
+                       Granularity granularity,
                        AllowedTransmissionCycle transmissionCycle) {
         this(dsoIdAndMeteringPoint, timeframe, atConfiguration,
-                requestDataType, meteringIntervalType, transmissionCycle, ZonedDateTime.now(ZoneOffset.UTC));
+                requestDataType, granularity, transmissionCycle, ZonedDateTime.now(ZoneOffset.UTC));
     }
 
     private static RoutingAddress toRoutingAddress(String address) {
@@ -162,12 +162,21 @@ public class CCMORequest {
     private ReqType makeReqType() {
         return new ReqType()
                 .withReqDatType(requestDataType.toString(timeframe))
-                .withMeteringIntervall(this.meteringIntervalType)
+                .withMeteringIntervall(meteringIntervall())
                 .withTransmissionCycle(this.transmissionCycle)
                 .withDateFrom(DateTimeConverter.dateToXml(timeframe.start()))
                 .withDateTo(timeframe.end()
                         .map(DateTimeConverter::dateToXml)
                         .orElse(null)
                 );
+    }
+
+    private MeteringIntervallType meteringIntervall() {
+        return switch (granularity) {
+            case PT15M -> MeteringIntervallType.QH;
+            case PT1H -> MeteringIntervallType.H;
+            case P1D -> MeteringIntervallType.D;
+            default -> throw new IllegalArgumentException("Granularity not supported: " + granularity);
+        };
     }
 }
