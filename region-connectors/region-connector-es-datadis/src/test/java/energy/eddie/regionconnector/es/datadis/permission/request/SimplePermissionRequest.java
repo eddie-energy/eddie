@@ -99,7 +99,7 @@ public class SimplePermissionRequest implements EsPermissionRequest {
 
     @Override
     public DataSourceInformation dataSourceInformation() {
-        return new DatadisDataSourceInformation();
+        return new DatadisDataSourceInformation(this);
     }
 
     @Override

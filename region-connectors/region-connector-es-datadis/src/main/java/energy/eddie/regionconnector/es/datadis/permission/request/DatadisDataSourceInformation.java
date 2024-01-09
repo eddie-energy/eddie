@@ -2,9 +2,15 @@ package energy.eddie.regionconnector.es.datadis.permission.request;
 
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata;
+import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 
 public class DatadisDataSourceInformation implements DataSourceInformation {
     private static final DatadisRegionConnectorMetadata regionConnectorMetadata = DatadisRegionConnectorMetadata.getInstance();
+    private final EsPermissionRequest permissionRequest;
+
+    public DatadisDataSourceInformation(EsPermissionRequest permissionRequest) {
+        this.permissionRequest = permissionRequest;
+    }
 
     @Override
     public String countryCode() {
@@ -23,6 +29,8 @@ public class DatadisDataSourceInformation implements DataSourceInformation {
 
     @Override
     public String meteredDataAdministratorId() {
-        return "Not available"; // mapping does currently not exist
+        return permissionRequest.distributorCode()
+                .map(DistributorCode::toString)
+                .orElse("Not available");
     }
 }

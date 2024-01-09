@@ -29,7 +29,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     private final ZonedDateTime requestDataTo;
     private final MeasurementType measurementType;
     private final String dataNeedId;
-    private final DatadisDataSourceInformation dataSourceInformation = new DatadisDataSourceInformation();
+    private final DatadisDataSourceInformation dataSourceInformation = new DatadisDataSourceInformation(this);
     private PermissionRequestState state;
     @Nullable
     private DistributorCode distributorCode;
