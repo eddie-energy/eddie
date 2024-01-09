@@ -100,12 +100,12 @@ public final class DatadisPermissionRequestAdapter implements EsPermissionReques
     }
 
     @Override
-    public Optional<String> distributorCode() {
+    public Optional<DistributorCode> distributorCode() {
         return esPermissionRequest.distributorCode();
     }
 
     @Override
-    public void setDistributorCode(String distributorCode) {
+    public void setDistributorCode(DistributorCode distributorCode) {
         esPermissionRequest.setDistributorCode(distributorCode);
     }
 

@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.es.datadis.permission.request.api;
 
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
+import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -22,9 +23,9 @@ public interface EsPermissionRequest extends PermissionRequest {
     /**
      * The distributor code of the distributor that is responsible for the metering point associated with this permission request.
      */
-    Optional<String> distributorCode();
+    Optional<DistributorCode> distributorCode();
 
-    void setDistributorCode(String distributorCode);
+    void setDistributorCode(DistributorCode distributorCode);
 
     /**
      * This number describes what kind of metering point is associated with this permission request.

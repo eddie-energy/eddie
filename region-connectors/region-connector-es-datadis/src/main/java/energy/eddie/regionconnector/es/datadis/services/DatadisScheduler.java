@@ -13,6 +13,7 @@ import energy.eddie.regionconnector.es.datadis.dtos.Supply;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.InvalidPointAndMeasurementTypeCombinationException;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSuppliesException;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSupplyForMeteringPointException;
+import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.adapter.JdkFlowAdapter;
@@ -100,8 +101,7 @@ public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoClos
         }
 
         Supply supply = optionalSupply.get();
-        permissionRequest.setDistributorCode(supply.distributorCode());
-        permissionRequest.setPointType(supply.pointType());
+        updatePermissionRequest(permissionRequest, supply);
 
         if (!pointTypeSupportsMeasurementType(supply.pointType(), permissionRequest.measurementType()))
             return Mono.error(new InvalidPointAndMeasurementTypeCombinationException(supply.pointType(), permissionRequest.measurementType()));
@@ -126,6 +126,11 @@ public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoClos
                 permissionRequest.measurementType(),
                 String.valueOf(supply.pointType())
         ));
+    }
+
+    private void updatePermissionRequest(EsPermissionRequest permissionRequest, Supply supply) {
+        permissionRequest.setDistributorCode(DistributorCode.fromCode(supply.distributorCode()));
+        permissionRequest.setPointType(supply.pointType());
     }
 
     private Optional<Supply> findSupplyWithCorrectMeteringPoint(List<Supply> supplies, EsPermissionRequest permissionRequest) {

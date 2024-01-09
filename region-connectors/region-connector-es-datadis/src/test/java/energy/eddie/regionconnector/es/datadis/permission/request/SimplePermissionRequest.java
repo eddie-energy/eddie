@@ -118,12 +118,12 @@ public class SimplePermissionRequest implements EsPermissionRequest {
     }
 
     @Override
-    public Optional<String> distributorCode() {
+    public Optional<DistributorCode> distributorCode() {
         return Optional.empty();
     }
 
     @Override
-    public void setDistributorCode(String distributorCode) {
+    public void setDistributorCode(DistributorCode distributorCode) {
 
     }
 

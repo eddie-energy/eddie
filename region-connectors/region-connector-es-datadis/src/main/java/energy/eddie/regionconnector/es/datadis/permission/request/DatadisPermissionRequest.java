@@ -32,7 +32,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     private final DatadisDataSourceInformation dataSourceInformation = new DatadisDataSourceInformation();
     private PermissionRequestState state;
     @Nullable
-    private String distributorCode;
+    private DistributorCode distributorCode;
     @Nullable
     private Integer pointType;
     @Nullable
@@ -74,7 +74,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     }
 
     @Override
-    public void setDistributorCode(String distributorCode) {
+    public void setDistributorCode(DistributorCode distributorCode) {
         this.distributorCode = distributorCode;
     }
 
@@ -170,7 +170,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     }
 
     @Override
-    public Optional<String> distributorCode() {
+    public Optional<DistributorCode> distributorCode() {
         return Optional.ofNullable(distributorCode);
     }
 

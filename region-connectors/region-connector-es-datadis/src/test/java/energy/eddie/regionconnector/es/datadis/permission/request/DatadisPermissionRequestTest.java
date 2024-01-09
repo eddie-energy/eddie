@@ -136,7 +136,7 @@ class DatadisPermissionRequestTest {
     void setDistributorCode_worksAsExpected() {
         // Given
         var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi, repository);
-        var expected = "distributorCode";
+        DistributorCode expected = DistributorCode.VIESGO;
 
         // When
         request.setDistributorCode(expected);
