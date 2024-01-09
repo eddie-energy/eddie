@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -71,8 +72,7 @@ class PermissionControllerTest {
         String permissionId = "ValidId";
 
         // When
-        mockMvc.perform(post("/permission-request/accepted")
-                        .param("permissionId", permissionId)
+        mockMvc.perform(patch("/permission-request/{permissionId}/accepted", permissionId)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isOk());
@@ -88,8 +88,7 @@ class PermissionControllerTest {
         doThrow(ex).when(mockService).acceptPermission(anyString());
 
         // When
-        mockMvc.perform(post("/permission-request/accepted")
-                        .param("permissionId", nonExistingId)
+        mockMvc.perform(patch("/permission-request/{permissionId}/accepted", nonExistingId)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isNotFound())
@@ -104,8 +103,7 @@ class PermissionControllerTest {
         String permissionId = "ValidId";
 
         // When
-        mockMvc.perform(post("/permission-request/rejected")
-                        .param("permissionId", permissionId)
+        mockMvc.perform(patch("/permission-request/{permissionId}/rejected", permissionId)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isOk());
@@ -121,8 +119,7 @@ class PermissionControllerTest {
         doThrow(ex).when(mockService).rejectPermission(anyString());
 
         // When
-        mockMvc.perform(post("/permission-request/rejected")
-                        .param("permissionId", nonExistingId)
+        mockMvc.perform(patch("/permission-request/{permissionId}/rejected", nonExistingId)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isNotFound())

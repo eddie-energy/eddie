@@ -42,7 +42,7 @@ public class CoreSpringConfig implements WebMvcConfigurer {
                 .allowedOriginPatterns(allowedCorsOrigins)
                 // Location header is not a "simple header", therefore needs to be explicitly exposed, otherwise JS on frontend cannot access it
                 .exposedHeaders("Location")
-                .allowedMethods("GET", "POST");
+                .allowedMethods("GET", "POST", "PATCH");
     }
 
     /**
