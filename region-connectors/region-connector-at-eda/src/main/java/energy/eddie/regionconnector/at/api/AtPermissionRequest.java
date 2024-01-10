@@ -32,6 +32,14 @@ public interface AtPermissionRequest extends PermissionRequest {
     Optional<String> meteringPointId();
 
     /**
+     * EDA will generate a consentId for a permission request after it was accepted.
+     * So this ID is only available after accepting the permission request.
+     *
+     * @return consentId
+     */
+    Optional<String> consentId();
+
+    /**
      * The start date from when data is requested.
      *
      * @return dataFrom
@@ -67,4 +75,11 @@ public interface AtPermissionRequest extends PermissionRequest {
      * @param meteringPointId The metering point id.
      */
     void setMeteringPointId(String meteringPointId);
+
+    /**
+     * Method to set the consentId once it is available.
+     *
+     * @param consentId The consentId of the accepted request.
+     */
+    void setConsentId(String consentId);
 }

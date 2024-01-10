@@ -50,4 +50,9 @@ public class PermissionRequestService {
                         )
                 );
     }
+
+    public Optional<AtPermissionRequest> findByConsentId(String consentId) {
+        return permissionRequestRepository.findByConsentId(consentId)
+                .map(permissionRequestFactory::create);
+    }
 }
