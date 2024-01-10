@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordProvider;
+import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.ConsumptionRecordMapper;
 import energy.eddie.regionconnector.es.datadis.InvalidMappingException;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
@@ -14,6 +15,8 @@ import energy.eddie.regionconnector.es.datadis.dtos.exceptions.InvalidPointAndMe
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSuppliesException;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSupplyForMeteringPointException;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Mono;
@@ -33,6 +36,7 @@ import java.util.function.Predicate;
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 
 public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoCloseable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DatadisScheduler.class);
     private final DataApi dataApi;
     private final Sinks.Many<ConsumptionRecord> consumptionRecords;
 
@@ -46,6 +50,35 @@ public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoClos
         return m -> m.date() == null || m.date().isBefore(from) || m.date().isAfter(to);
     }
 
+    private static void onError(EsPermissionRequest permissionRequest, Throwable e) {
+        Throwable cause = e;
+        while (cause.getCause() != null) { // do match the exception we need to get the cause
+            cause = cause.getCause();
+        }
+        switch (cause) {
+            case NoSuppliesException ignored:
+                // this could mean that the user has no metering point associated with his account,
+                // or that the supplier responsible for the account is currently not reachable
+                // we should think of a new state for this
+                // calling changeState is also bad here, because it will not be persisted or propagated
+                // fix with #296
+                break;
+            case InvalidPointAndMeasurementTypeCombinationException ignored:
+                // we should think of a new state for this
+                // fix with #296
+                break;
+            case UnauthorizedException ignored:
+                try {
+                    permissionRequest.revoke();
+                } catch (StateTransitionException ex) {
+                    LOGGER.warn("Error revoking permission request", ex);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
     // Suppress the warning of multiple identical paths, should be removed when implementing issue #296
     @SuppressWarnings("java:S1871")
     public void pullAvailableHistoricalData(EsPermissionRequest permissionRequest) {
@@ -56,33 +89,15 @@ public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoClos
         }
 
         dataApi.getSupplies(permissionRequest.nif(), null)
+                .doOnError(e -> {
+                    onError(permissionRequest, e);
+                })
                 .flatMap(this::validateSupplies)
                 .retryWhen(Retry.fixedDelay(10, Duration.ofMinutes(1))) // after the user has accepted the permission, the data might not be available immediately
                 .flatMap(supplies -> prepareMeteringDataRequest(permissionRequest, supplies))
                 .flatMap(dataApi::getConsumptionKwh)
                 .flatMap(meteringData -> processMeteringData(
                         meteringData, permissionRequest, consumptionRecords))
-                .doOnError(e -> {
-                    Throwable cause = e;
-                    while (cause.getCause() != null) { // do match the exception we need to get the cause
-                        cause = cause.getCause();
-                    }
-                    if (cause instanceof NoSuppliesException) {
-                        // this could mean that the user has no metering point associated with his account,
-                        // or that the supplier responsible for the account is currently not reachable
-                        // we should think of a new state for this
-                        // calling changeState is also bad here, because it will not be persisted or propagated
-                        // fix with #296
-                    } else if (cause instanceof InvalidPointAndMeasurementTypeCombinationException) {
-                        // we should think of a new state for this
-                        // fix with #296
-                    } else if (cause instanceof UnauthorizedException) {
-                        // The authorization has not actually been granted or was revoked change to revoked state
-                        // fix with #296
-                    }
-                    // In the case of a NoSupplyForMeteringPointException, we can assume that the distributor is
-                    // currently not reachable and we should retry later
-                })
                 .subscribe();
     }
 
