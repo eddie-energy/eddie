@@ -1,6 +1,7 @@
 package energy.eddie.core.dataneeds;
 
 import energy.eddie.api.agnostic.DataNeed;
+import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -43,18 +44,18 @@ public class DataNeedsManagementController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<DataNeed> getDataNeed(@PathVariable String id) {
+    public ResponseEntity<DataNeed> getDataNeed(@PathVariable String id) throws DataNeedNotFoundException {
         return dataNeedsDbRepository.findById(id)
                 .<ResponseEntity<DataNeed>>map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseThrow(() -> new DataNeedNotFoundException(id));
     }
 
     @PutMapping(path = "/{id}", produces = MediaType.TEXT_PLAIN_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> updateDataNeed(@PathVariable String id, @RequestBody DataNeedEntity dataNeed) {
+    public ResponseEntity<String> updateDataNeed(@PathVariable String id, @RequestBody DataNeedEntity dataNeed) throws DataNeedNotFoundException {
         if (!dataNeed.id().equals(id)) {
             return ResponseEntity.badRequest().body("data need id in url does not match data need id in body");
         } else if (!dataNeedsDbRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+            throw new DataNeedNotFoundException(id);
         } else {
             dataNeedsDbRepository.save(dataNeed);
             return ResponseEntity.ok().build();
@@ -62,9 +63,9 @@ public class DataNeedsManagementController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDataNeed(@PathVariable String id) {
+    public ResponseEntity<String> deleteDataNeed(@PathVariable String id) throws DataNeedNotFoundException {
         if (!dataNeedsDbRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+            throw new DataNeedNotFoundException(id);
         }
         dataNeedsDbRepository.deleteById(id);
         return ResponseEntity.noContent().build();
