@@ -6,12 +6,18 @@ import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.config.PlainEnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.InMemoryPermissionRequestRepository;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Sinks;
+
+import java.util.Set;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID;
 import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.ENERGINET_CUSTOMER_BASE_PATH_KEY;
@@ -34,6 +40,17 @@ public class DkEnerginetSpringConfig {
     @Bean
     public Sinks.Many<ConsumptionRecord> consumptionRecordSink() {
         return Sinks.many().unicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public Set<Extension<DkEnerginetCustomerPermissionRequest>> extensions(
+            DkEnerginetCustomerPermissionRequestRepository repository,
+            Sinks.Many<ConnectionStatusMessage> sink
+    ) {
+        return Set.of(
+                new SavingExtension<>(repository),
+                new MessagingExtension<>(sink)
+        );
     }
 
     @Bean

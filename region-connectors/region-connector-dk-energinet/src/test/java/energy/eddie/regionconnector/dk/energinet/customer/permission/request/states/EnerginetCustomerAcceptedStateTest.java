@@ -1,11 +1,19 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.states;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.PastStateException;
+import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
+import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import org.junit.jupiter.api.Test;
+
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 class EnerginetCustomerAcceptedStateTest {
     @Test
@@ -29,13 +37,20 @@ class EnerginetCustomerAcceptedStateTest {
     }
 
     @Test
-    void revoke_notImplemented() {
+    void revoke_changesToRevokeState() {
         // Given
-        EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(null);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
+        ZonedDateTime end = start.plusDays(10);
+        var creation = new PermissionRequestForCreation("cid", start, end, "token", Granularity.PT15M, "mpid", "dnid");
+        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", creation, mock(EnerginetCustomerApi.class));
+        EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(permissionRequest);
+        permissionRequest.changeState(state);
 
         // When
+        state.revoke();
+
         // Then
-        assertThrows(UnsupportedOperationException.class, state::revoke);
+        assertEquals(PermissionProcessStatus.REVOKED, permissionRequest.state().status());
     }
 
     @Test

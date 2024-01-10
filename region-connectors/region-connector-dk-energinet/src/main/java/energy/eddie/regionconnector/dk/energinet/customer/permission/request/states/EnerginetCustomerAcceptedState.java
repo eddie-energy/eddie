@@ -17,7 +17,7 @@ public class EnerginetCustomerAcceptedState extends ContextualizedPermissionRequ
 
     @Override
     public void revoke() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        permissionRequest.changeState(new EnerginetCustomerRevokedSate(permissionRequest));
     }
 
     @Override

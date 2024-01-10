@@ -17,6 +17,7 @@ import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreati
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 
@@ -44,6 +45,22 @@ public class PermissionRequestService implements Mvp1ConsumptionRecordProvider, 
         this.consumptionRecordSink = consumptionRecordSink;
     }
 
+    private static void revokePermissionRequest(DkEnerginetCustomerPermissionRequest permissionRequest,
+                                                Throwable error) {
+        if (!(error instanceof HttpClientErrorException.Unauthorized)) {
+            LOGGER.warn("Got error while request access token", error);
+            return;
+        }
+        try {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("Revoking permission request with permission id {}", permissionRequest.permissionId());
+            }
+            permissionRequest.revoke();
+        } catch (StateTransitionException e) {
+            LOGGER.warn("Could not revoke permission request", e);
+        }
+    }
+
     public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
         return repository.findByPermissionId(permissionId).map(request ->
                 new ConnectionStatusMessage(
@@ -53,6 +70,12 @@ public class PermissionRequestService implements Mvp1ConsumptionRecordProvider, 
                         request.dataSourceInformation(),
                         request.state().status())
         );
+    }
+
+    public Optional<DkEnerginetCustomerPermissionRequest> findByPermissionId(String permissionId) {
+        var permissionRequest = repository.findByPermissionId(permissionId);
+        return permissionRequest
+                .map(requestFactory::create);
     }
 
     /**
@@ -70,6 +93,7 @@ public class PermissionRequestService implements Mvp1ConsumptionRecordProvider, 
         permissionRequest.sendToPermissionAdministrator();
         // if sendToPA doesn't fail, we have a valid refreshToken and can start polling the records in the background
         permissionRequest.receivedPermissionAdministratorResponse();
+        permissionRequest.accept();
         fetchConsumptionRecords(permissionRequest);
         return permissionRequest;
     }
@@ -78,14 +102,9 @@ public class PermissionRequestService implements Mvp1ConsumptionRecordProvider, 
         MeteringPoints meteringPoints = new MeteringPoints();
         meteringPoints.addMeteringPointItem(permissionRequest.meteringPoint());
         MeteringPointsRequest meteringPointsRequest = new MeteringPointsRequest().meteringPoints(meteringPoints);
-        try {
-            permissionRequest.accept();
-        } catch (StateTransitionException e) {
-            LOGGER.error("Error while transitioning a state", e);
-            return;
-        }
-
         permissionRequest.accessToken()
+                // If we get an 401 Unauthorized error, the refresh token was revoked and the permission request with that
+                .doOnError(error -> revokePermissionRequest(permissionRequest, error))
                 .flatMap(accessToken -> energinetCustomerApi.getTimeSeries(
                         permissionRequest.start(),
                         permissionRequest.end(),
