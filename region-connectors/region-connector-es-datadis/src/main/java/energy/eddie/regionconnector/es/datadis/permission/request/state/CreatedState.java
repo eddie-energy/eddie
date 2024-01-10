@@ -9,7 +9,6 @@ import energy.eddie.api.v0.process.model.validation.Validator;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.permission.request.validation.InPastValidator;
 import energy.eddie.regionconnector.es.datadis.permission.request.validation.NotOlderThanValidator;
 import energy.eddie.regionconnector.es.datadis.permission.request.validation.StartIsBeforeEndValidator;
@@ -26,12 +25,10 @@ public class CreatedState extends ContextualizedPermissionRequestState<EsPermiss
             new InPastValidator()
     );
     private final AuthorizationApi authorizationApi;
-    private final EsPermissionRequestRepository repository;
 
-    public CreatedState(EsPermissionRequest permissionRequest, AuthorizationApi authorizationApi, EsPermissionRequestRepository repository) {
+    public CreatedState(EsPermissionRequest permissionRequest, AuthorizationApi authorizationApi) {
         super(permissionRequest);
         this.authorizationApi = authorizationApi;
-        this.repository = repository;
     }
 
     @Override
@@ -45,8 +42,7 @@ public class CreatedState extends ContextualizedPermissionRequestState<EsPermiss
                 List.of(permissionRequest.meteringPointId())
         );
 
-        permissionRequest.changeState(new ValidatedState(permissionRequest, authorizationRequest,
-                authorizationApi, repository));
+        permissionRequest.changeState(new ValidatedState(permissionRequest, authorizationRequest, authorizationApi));
     }
 
     private void validateAttributes() throws ValidationException {

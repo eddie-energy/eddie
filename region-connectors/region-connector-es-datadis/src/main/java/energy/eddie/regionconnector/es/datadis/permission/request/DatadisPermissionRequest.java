@@ -7,7 +7,6 @@ import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.CreatedState;
 import jakarta.annotation.Nullable;
 
@@ -41,12 +40,10 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     public DatadisPermissionRequest(
             String permissionId,
             PermissionRequestForCreation requestForCreation,
-            AuthorizationApi authorizationApi,
-            EsPermissionRequestRepository repository) {
+            AuthorizationApi authorizationApi) {
         requireNonNull(permissionId);
         requireNonNull(requestForCreation);
         requireNonNull(authorizationApi);
-        requireNonNull(repository);
 
         this.permissionId = permissionId;
         this.connectionId = requestForCreation.connectionId();
@@ -59,7 +56,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
 
         this.permissionStart = ZonedDateTime.now(ZONE_ID_SPAIN);
         this.permissionEnd = latest(permissionStart, requestDataTo);
-        this.state = new CreatedState(this, authorizationApi, repository);
+        this.state = new CreatedState(this, authorizationApi);
     }
 
     /**

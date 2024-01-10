@@ -2,12 +2,19 @@ package energy.eddie.regionconnector.es.datadis.permission.request.state;
 
 import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
 import energy.eddie.api.v0.process.model.states.SentToPermissionAdministratorPermissionRequestState;
+import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 
 public class SentToPermissionAdministratorState extends ContextualizedPermissionRequestState<EsPermissionRequest> implements SentToPermissionAdministratorPermissionRequestState {
 
-    protected SentToPermissionAdministratorState(EsPermissionRequest permissionRequest) {
+    protected SentToPermissionAdministratorState(EsPermissionRequest permissionRequest, AuthorizationRequestResponse response) {
         super(permissionRequest);
+
+        if (response == AuthorizationRequestResponse.NO_NIF) {
+            permissionRequest.changeState(new InvalidState(permissionRequest, new Throwable("Given NIF does not exist")));
+        } else if (response == AuthorizationRequestResponse.NO_SUPPLIES) {
+            permissionRequest.changeState(new InvalidState(permissionRequest, new Throwable("The given NIF has no associated supplies")));
+        }
     }
 
     @Override
