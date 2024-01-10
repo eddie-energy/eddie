@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.at.eda.services;
 
 import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
@@ -47,14 +46,6 @@ public class RevocationService {
     }
 
     private void revoke(AtPermissionRequest permissionRequest) {
-        PermissionProcessStatus currentState = permissionRequest.state().status();
-        if (currentState != PermissionProcessStatus.ACCEPTED) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Could not revoke permission for permission id {}, because it was not accepted yet. Still in state {}.",
-                        permissionRequest.permissionId(), currentState);
-            }
-            return;
-        }
         try {
             permissionRequest.revoke();
             if (LOGGER.isInfoEnabled()) {

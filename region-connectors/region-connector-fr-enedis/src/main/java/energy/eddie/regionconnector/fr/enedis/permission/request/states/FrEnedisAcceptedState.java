@@ -21,11 +21,11 @@ public class FrEnedisAcceptedState
 
     @Override
     public void revoke() {
-        throw new IllegalStateException(NOT_IMPLEMENTED_YET);
+        permissionRequest.changeState(new FrEnedisRevokedState(permissionRequest));
     }
 
     @Override
     public void timeLimit() {
-        throw new IllegalStateException(NOT_IMPLEMENTED_YET);
+        throw new UnsupportedOperationException(NOT_IMPLEMENTED_YET);
     }
 }

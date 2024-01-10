@@ -17,7 +17,7 @@ public class EnerginetCustomerAcceptedState extends ContextualizedPermissionRequ
 
     @Override
     public void revoke() {
-        permissionRequest.changeState(new EnerginetCustomerRevokedSate(permissionRequest));
+        permissionRequest.changeState(new EnerginetCustomerRevokedState(permissionRequest));
     }
 
     @Override

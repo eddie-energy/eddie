@@ -48,7 +48,7 @@ public class PermissionRequestService implements Mvp1ConsumptionRecordProvider, 
     private static void revokePermissionRequest(DkEnerginetCustomerPermissionRequest permissionRequest,
                                                 Throwable error) {
         if (!(error instanceof HttpClientErrorException.Unauthorized)) {
-            LOGGER.warn("Got error while request access token", error);
+            LOGGER.warn("Got error while requesting access token", error);
             return;
         }
         try {
