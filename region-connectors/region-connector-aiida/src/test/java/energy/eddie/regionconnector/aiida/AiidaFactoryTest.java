@@ -2,10 +2,10 @@ package energy.eddie.regionconnector.aiida;
 
 import energy.eddie.api.agnostic.DataNeed;
 import energy.eddie.api.agnostic.DataNeedsService;
+import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
 import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
-import energy.eddie.regionconnector.shared.exceptions.DataNeedNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
