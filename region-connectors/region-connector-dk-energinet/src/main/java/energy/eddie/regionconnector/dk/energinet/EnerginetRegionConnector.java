@@ -50,6 +50,6 @@ public class EnerginetRegionConnector implements RegionConnector {
 
     @Override
     public Map<String, HealthState> health() {
-        return energinetCustomerApi.health();
+        return energinetCustomerApi.health().block();
     }
 }

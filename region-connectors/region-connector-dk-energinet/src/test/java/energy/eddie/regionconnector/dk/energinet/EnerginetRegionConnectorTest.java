@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerAcceptedState;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerInvalidState;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
 
 import java.time.Clock;
 import java.time.ZonedDateTime;
@@ -22,7 +23,7 @@ class EnerginetRegionConnectorTest {
     void health_returnsHealthChecks() {
         // Given
         var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);
-        when(energinetCustomerApi.health()).thenReturn(Map.of("service", HealthState.UP));
+        when(energinetCustomerApi.health()).thenReturn(Mono.just(Map.of("service", HealthState.UP)));
         var rc = new EnerginetRegionConnector(energinetCustomerApi, new InMemoryPermissionRequestRepository());
 
         // When
@@ -46,7 +47,7 @@ class EnerginetRegionConnectorTest {
     void terminatePermission_withNonExistentPermissionId_doesNotThrow() {
         // Given
         var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);
-        when(energinetCustomerApi.health()).thenReturn(Map.of("service", HealthState.UP));
+        when(energinetCustomerApi.health()).thenReturn(Mono.just(Map.of("service", HealthState.UP)));
         DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository = new InMemoryPermissionRequestRepository();
         var rc = new EnerginetRegionConnector(energinetCustomerApi, permissionRequestRepository);
 
@@ -59,7 +60,7 @@ class EnerginetRegionConnectorTest {
     void terminatePermission_withExistingPermissionId_throws() {
         // Given
         var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);
-        when(energinetCustomerApi.health()).thenReturn(Map.of("service", HealthState.UP));
+        when(energinetCustomerApi.health()).thenReturn(Mono.just(Map.of("service", HealthState.UP)));
         DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository = new InMemoryPermissionRequestRepository();
         SimplePermissionRequest request = new SimplePermissionRequest(
                 "pid",
@@ -81,7 +82,7 @@ class EnerginetRegionConnectorTest {
     void terminatePermission_withWrongState_doesNotThrow() {
         // Given
         var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);
-        when(energinetCustomerApi.health()).thenReturn(Map.of("service", HealthState.UP));
+        when(energinetCustomerApi.health()).thenReturn(Mono.just(Map.of("service", HealthState.UP)));
         DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository = new InMemoryPermissionRequestRepository();
         SimplePermissionRequest request = new SimplePermissionRequest(
                 "pid",

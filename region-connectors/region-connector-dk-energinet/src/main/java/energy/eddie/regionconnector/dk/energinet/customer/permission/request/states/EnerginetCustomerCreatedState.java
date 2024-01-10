@@ -6,8 +6,6 @@ import energy.eddie.api.v0.process.model.validation.AttributeError;
 import energy.eddie.api.v0.process.model.validation.ValidationException;
 import energy.eddie.api.v0.process.model.validation.Validator;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
-import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
-import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.validation.NotAfterNowValidator;
@@ -26,19 +24,15 @@ public class EnerginetCustomerCreatedState
             new NotAfterNowValidator(),
             new StartIsBeforeOrEqualEndValidator<>()
     );
-    private final EnerginetConfiguration configuration;
 
-    public EnerginetCustomerCreatedState(EnerginetCustomerPermissionRequest request, EnerginetConfiguration configuration) {
+    public EnerginetCustomerCreatedState(EnerginetCustomerPermissionRequest request) {
         super(request);
-        this.configuration = configuration;
     }
 
     @Override
     public void validate() throws ValidationException {
         validateAttributes();
-
-        var apiClient = new EnerginetCustomerApiClient(configuration);
-        permissionRequest.changeState(new EnerginetCustomerValidatedState(permissionRequest, apiClient));
+        permissionRequest.changeState(new EnerginetCustomerValidatedState(permissionRequest));
     }
 
     private void validateAttributes() throws ValidationException {

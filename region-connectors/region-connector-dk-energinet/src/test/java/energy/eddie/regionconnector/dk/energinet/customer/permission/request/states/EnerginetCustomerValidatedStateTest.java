@@ -7,13 +7,16 @@ import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.SendToPermissionAdministratorException;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
-import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
+import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import feign.FeignException;
-import feign.Request;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
+import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
@@ -21,14 +24,15 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 class EnerginetCustomerValidatedStateTest {
     @Test
     void status_returnsValidated() {
         // Given
-        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null, null);
+        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null);
 
         // When
         // Then
@@ -38,7 +42,7 @@ class EnerginetCustomerValidatedStateTest {
     @Test
     void validate_throws() {
         // Given
-        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null, null);
+        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null);
 
         // When
         // Then
@@ -56,12 +60,12 @@ class EnerginetCustomerValidatedStateTest {
         Granularity granularity = Granularity.PT1H;
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
-        EnerginetConfiguration config = mock(EnerginetConfiguration.class);
-        EnerginetCustomerApiClient apiClient = mock(EnerginetCustomerApiClient.class);
+        EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
+        doReturn(Mono.just("token")).when(apiClient).accessToken(anyString());
         var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
-        var state = new EnerginetCustomerValidatedState(permissionRequest, apiClient);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient);
+        var state = new EnerginetCustomerValidatedState(permissionRequest);
         permissionRequest.changeState(state);
 
         // When
@@ -77,8 +81,9 @@ class EnerginetCustomerValidatedStateTest {
         EnerginetCustomerApiClient mockApiClient = mock(EnerginetCustomerApiClient.class);
         var permissionRequest = createPermissionRequestInValidatedState(mockApiClient);
 
-        FeignException.Unauthorized exception = new FeignException.Unauthorized("Foo", mock(Request.class), "foo".getBytes(StandardCharsets.UTF_8), null);
-        doThrow(exception).when(mockApiClient).apiToken();
+
+        RestClientException exception = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "Foo", HttpHeaders.EMPTY, "foo".getBytes(StandardCharsets.UTF_8), null);
+        doReturn(Mono.error(exception)).when(mockApiClient).accessToken(anyString());
 
 
         // When
@@ -93,12 +98,10 @@ class EnerginetCustomerValidatedStateTest {
     @Test
     void givenRateLimit_sendToPermissionAdministrator_changesToSentToUnableToSend_andThrows() {
         // Given
+        RestClientException exception = HttpClientErrorException.create(HttpStatus.TOO_MANY_REQUESTS, "Foo", HttpHeaders.EMPTY, "foo".getBytes(StandardCharsets.UTF_8), null);
         EnerginetCustomerApiClient mockApiClient = mock(EnerginetCustomerApiClient.class);
+        doReturn(Mono.error(exception)).when(mockApiClient).accessToken(anyString());
         var permissionRequest = createPermissionRequestInValidatedState(mockApiClient);
-
-        FeignException.TooManyRequests exception = new FeignException.TooManyRequests("Foo", mock(Request.class), "foo".getBytes(StandardCharsets.UTF_8), null);
-        doThrow(exception).when(mockApiClient).apiToken();
-
 
         // When
         SendToPermissionAdministratorException thrown = assertThrows(SendToPermissionAdministratorException.class, permissionRequest::sendToPermissionAdministrator);
@@ -115,8 +118,8 @@ class EnerginetCustomerValidatedStateTest {
         EnerginetCustomerApiClient mockApiClient = mock(EnerginetCustomerApiClient.class);
         var permissionRequest = createPermissionRequestInValidatedState(mockApiClient);
 
-        FeignException.BadGateway exception = new FeignException.BadGateway("Foo", mock(Request.class), "foo".getBytes(StandardCharsets.UTF_8), null);
-        doThrow(exception).when(mockApiClient).apiToken();
+        RestClientException exception = HttpClientErrorException.create(HttpStatus.BAD_GATEWAY, "Foo", HttpHeaders.EMPTY, "foo".getBytes(StandardCharsets.UTF_8), null);
+        doReturn(Mono.error(exception)).when(mockApiClient).accessToken(anyString());
 
 
         // When
@@ -125,10 +128,10 @@ class EnerginetCustomerValidatedStateTest {
         // Then
         assertEquals(EnerginetCustomerUnableToSendState.class, permissionRequest.state().getClass());
         assertFalse(thrown.userFault());
-        assertThat(thrown.getMessage()).contains("An error occurred, response status from Energinet: ");
+        assertThat(thrown.getMessage()).contains("An error occurred, with exception ");
     }
 
-    private PermissionRequest createPermissionRequestInValidatedState(EnerginetCustomerApiClient mockApiClient) {
+    private PermissionRequest createPermissionRequestInValidatedState(EnerginetCustomerApi apiClient) {
         ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
         ZonedDateTime end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
@@ -137,11 +140,10 @@ class EnerginetCustomerValidatedStateTest {
         Granularity granularity = Granularity.PT1H;
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
-        EnerginetConfiguration config = mock(EnerginetConfiguration.class);
         var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
-        var state = new EnerginetCustomerValidatedState(permissionRequest, mockApiClient);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient);
+        var state = new EnerginetCustomerValidatedState(permissionRequest);
         permissionRequest.changeState(state);
         return permissionRequest;
     }
@@ -149,7 +151,7 @@ class EnerginetCustomerValidatedStateTest {
     @Test
     void receivedPermissionAdministratorResponse_throws() {
         // Given
-        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null, null);
+        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null);
 
         // When
         // Then
@@ -159,7 +161,7 @@ class EnerginetCustomerValidatedStateTest {
     @Test
     void accept_throws() {
         // Given
-        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null, null);
+        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null);
 
         // When
         // Then
@@ -169,7 +171,7 @@ class EnerginetCustomerValidatedStateTest {
     @Test
     void invalid_throws() {
         // Given
-        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null, null);
+        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null);
 
         // When
         // Then
@@ -179,7 +181,7 @@ class EnerginetCustomerValidatedStateTest {
     @Test
     void reject_throws() {
         // Given
-        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null, null);
+        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null);
 
         // When
         // Then
@@ -189,7 +191,7 @@ class EnerginetCustomerValidatedStateTest {
     @Test
     void terminate_throws() {
         // Given
-        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null, null);
+        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null);
 
         // When
         // Then
@@ -199,7 +201,7 @@ class EnerginetCustomerValidatedStateTest {
     @Test
     void revoke_throws() {
         // Given
-        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null, null);
+        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null);
 
         // When
         // Then
@@ -209,7 +211,7 @@ class EnerginetCustomerValidatedStateTest {
     @Test
     void timeLimit_throws() {
         // Given
-        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null, null);
+        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null);
 
         // When
         // Then
@@ -219,7 +221,7 @@ class EnerginetCustomerValidatedStateTest {
     @Test
     void timeOut_throws() {
         // Given
-        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null, null);
+        EnerginetCustomerValidatedState state = new EnerginetCustomerValidatedState(null);
 
         // When
         // Then

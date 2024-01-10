@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
+import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
@@ -20,14 +20,14 @@ import java.util.concurrent.Flow;
 public class PermissionRequestFactory implements Mvp1ConnectionStatusMessageProvider {
     private final DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository;
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
-    private final EnerginetConfiguration configuration;
+    private final EnerginetCustomerApi customerApi;
 
     public PermissionRequestFactory(DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository,
                                     Sinks.Many<ConnectionStatusMessage> connectionStatusSink,
-                                    EnerginetConfiguration configuration) {
+                                    EnerginetCustomerApi customerApi) {
         this.permissionRequestRepository = permissionRequestRepository;
         this.connectionStatusSink = connectionStatusSink;
-        this.configuration = configuration;
+        this.customerApi = customerApi;
     }
 
     public DkEnerginetCustomerPermissionRequest create(PermissionRequestForCreation request) {
@@ -35,7 +35,7 @@ public class PermissionRequestFactory implements Mvp1ConnectionStatusMessageProv
         var permissionRequest = new EnerginetCustomerPermissionRequest(
                 permissionId,
                 request,
-                configuration
+                customerApi
         );
 
         PermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, connectionStatusSink);

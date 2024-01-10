@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.dk.energinet.web;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
+import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetDataSourceInformation;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
@@ -165,7 +165,7 @@ class PermissionRequestControllerTest {
         when(service.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
             PermissionRequestForCreation request = invocation.getArgument(0);
             return new EnerginetCustomerPermissionRequest(
-                    permissionId, request, mock(EnerginetConfiguration.class)
+                    permissionId, request, mock(EnerginetCustomerApi.class)
             );
         });
 
@@ -192,7 +192,7 @@ class PermissionRequestControllerTest {
         when(service.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
             PermissionRequestForCreation request = invocation.getArgument(0);
             return new EnerginetCustomerPermissionRequest(
-                    permissionId, request, mock(EnerginetConfiguration.class)
+                    permissionId, request, mock(EnerginetCustomerApi.class)
             );
         });
 

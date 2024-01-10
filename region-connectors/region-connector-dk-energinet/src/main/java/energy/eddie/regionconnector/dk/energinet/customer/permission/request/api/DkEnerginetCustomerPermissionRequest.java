@@ -2,9 +2,10 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request.ap
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
+import reactor.core.publisher.Mono;
 
 public interface DkEnerginetCustomerPermissionRequest extends TimeframedPermissionRequest {
-    String refreshToken();
+    Mono<String> accessToken();
 
     Granularity granularity();
 

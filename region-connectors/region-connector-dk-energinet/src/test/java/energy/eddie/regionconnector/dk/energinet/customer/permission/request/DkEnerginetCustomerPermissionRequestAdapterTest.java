@@ -6,7 +6,7 @@ import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
-import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
+import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerMalformedState;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
@@ -105,10 +105,10 @@ class DkEnerginetCustomerPermissionRequestAdapterTest {
         Granularity granularity = Granularity.PT1H;
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
-        EnerginetConfiguration config = mock(EnerginetConfiguration.class);
+        EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         var forCreation = new PermissionRequestForCreation(connectionId, start, start.plusDays(1), refreshToken, granularity, meteringPoint, dataNeedId);
 
-        var request = new EnerginetCustomerPermissionRequest(permissionId, forCreation, config);
+        var request = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient);
 
         EnerginetCustomerMalformedState state = new EnerginetCustomerMalformedState(null, null);
         PermissionRequest decorator = new ChangingPermissionRequest(request);

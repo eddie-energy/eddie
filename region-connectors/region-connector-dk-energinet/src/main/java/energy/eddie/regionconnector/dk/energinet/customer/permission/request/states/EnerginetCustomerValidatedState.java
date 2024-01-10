@@ -3,40 +3,47 @@ package energy.eddie.regionconnector.dk.energinet.customer.permission.request.st
 import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
 import energy.eddie.api.v0.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.v0.process.model.states.ValidatedPermissionRequestState;
-import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
-import feign.FeignException;
-import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 public class EnerginetCustomerValidatedState extends ContextualizedPermissionRequestState<DkEnerginetCustomerPermissionRequest>
         implements ValidatedPermissionRequestState {
-    private final EnerginetCustomerApiClient apiClient;
 
     public EnerginetCustomerValidatedState(
-            DkEnerginetCustomerPermissionRequest permissionRequest,
-            EnerginetCustomerApiClient apiClient) {
+            DkEnerginetCustomerPermissionRequest permissionRequest
+    ) {
         super(permissionRequest);
-        this.apiClient = apiClient;
     }
 
     @Override
     public void sendToPermissionAdministrator() throws SendToPermissionAdministratorException {
-        apiClient.setRefreshToken(permissionRequest.refreshToken());
-
         try {
-            apiClient.apiToken();
+            requestAccessToken();
             permissionRequest.changeState(new EnerginetCustomerPendingAcknowledgmentState(permissionRequest));
-        } catch (FeignException e) {
-            var errorStatus = HttpStatus.resolve(e.status());
-
+        } catch (HttpClientErrorException.Unauthorized e) {
             permissionRequest.changeState(new EnerginetCustomerUnableToSendState(permissionRequest, e));
+            throw new SendToPermissionAdministratorException(this, "The given refresh token is not valid", true);
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            permissionRequest.changeState(new EnerginetCustomerUnableToSendState(permissionRequest, e));
+            throw new SendToPermissionAdministratorException(this, "Energinet is refusing to process the request at the moment, please try again later", false);
+        } catch (Throwable e) {
+            permissionRequest.changeState(new EnerginetCustomerUnableToSendState(permissionRequest, e));
+            throw new SendToPermissionAdministratorException(this, "An error occurred, with exception " + e, false);
+        }
+    }
 
-            if (errorStatus == HttpStatus.UNAUTHORIZED) {
-                throw new SendToPermissionAdministratorException(this, "The given refresh token is not valid", true);
-            } else if (errorStatus == HttpStatus.TOO_MANY_REQUESTS) {
-                throw new SendToPermissionAdministratorException(this, "Energinet is refusing to process the request at the moment, please try again later", false);
+    // We don't know the concrete exception here
+    @SuppressWarnings("java:S112")
+    private void requestAccessToken() throws Throwable {
+        try {
+            this.permissionRequest.accessToken().block();
+        } catch (RuntimeException e) {
+            // Unwrap any thrown checked exceptions
+            if (e.getClass().equals(RuntimeException.class)) {
+                throw e.getCause();
             } else {
-                throw new SendToPermissionAdministratorException(this, "An error occurred, response status from Energinet: " + errorStatus, false);
+                // Throw the original exception, since it is not wrapped in a runtime exception
+                throw e;
             }
         }
     }

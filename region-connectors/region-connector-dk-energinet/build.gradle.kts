@@ -7,8 +7,7 @@ plugins {
     id("energy.eddie.java-conventions")
     id("energy.eddie.pnpm-build")
 
-    // TODO: move to common versions.toml file
-    id("org.openapi.generator") version "6.6.0"
+    alias(libs.plugins.openapi.generator)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
@@ -25,6 +24,7 @@ dependencies {
     implementation(project(":region-connectors:shared"))
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
 
     // Required for openapi generator
     implementation(libs.jackson.databind)
@@ -32,15 +32,7 @@ dependencies {
     implementation(libs.jackson.databind.nullable)
     implementation(libs.jakarta.annotation.api)
 
-    // Required for the generated API client
-    implementation(libs.feign.core)
-    implementation(libs.feign.okhttp)
-    implementation(libs.feign.jackson)
-    implementation(libs.feign.slf4j)
-    implementation(libs.feign.form)
-
     implementation(libs.reactor.core)
-
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
@@ -92,7 +84,7 @@ openApiGenerate {
             "dateLibrary" to "java8",
     ))
 
-    library.set("feign")
+    library.set("webclient")
     cleanupOutput.set(true)
 }
 
