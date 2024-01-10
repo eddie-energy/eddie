@@ -123,29 +123,19 @@ class DatadisPermissionRequestTest {
     }
 
     @Test
-    void setDistributorCode_worksAsExpected() {
+    void setDistributorCodeAndPointType_worksAsExpected() {
         // Given
         var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
+        DistributorCode expectedDistributorCode = DistributorCode.VIESGO;
+        var expectedPointType = 1;
+
 
         // When
-        request.setDistributorCode(expected);
+        request.setDistributorCodeAndPointType(expectedDistributorCode, expectedPointType);
 
         // Then
         assertTrue(request.distributorCode().isPresent());
-        assertEquals(expected, request.distributorCode().get());
-    }
-
-    @Test
-    void setPointType_worksAsExpected() {
-        // Given
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
-        var expected = 1;
-
-        // When
-        request.setPointType(expected);
-
-        // Then
+        assertEquals(expectedDistributorCode, request.distributorCode().get());
         assertTrue(request.pointType().isPresent());
-        assertEquals(expected, request.pointType().get());
     }
 }

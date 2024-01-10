@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.es.datadis.permission.request.api;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
+import energy.eddie.regionconnector.shared.permission.requests.annotations.InvokeExtensions;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -25,8 +26,6 @@ public interface EsPermissionRequest extends PermissionRequest {
      */
     Optional<DistributorCode> distributorCode();
 
-    void setDistributorCode(DistributorCode distributorCode);
-
     /**
      * This number describes what kind of metering point is associated with this permission request.
      * The values range from 1 to 5 and decide what MeasurementType is used supported.
@@ -35,14 +34,15 @@ public interface EsPermissionRequest extends PermissionRequest {
      */
     Optional<Integer> pointType();
 
+    @InvokeExtensions
+    void setDistributorCodeAndPointType(DistributorCode distributorCode, Integer pointType);
+
     /**
      * Decide what kind of metering data is requested.
      * Either @{@link MeasurementType#HOURLY} or @{@link MeasurementType#QUARTER_HOURLY}.
      * Look at @{@link #pointType()} to see what is supported.
      */
     MeasurementType measurementType();
-
-    void setPointType(Integer pointType);
 
     /**
      * The date the permission starts.

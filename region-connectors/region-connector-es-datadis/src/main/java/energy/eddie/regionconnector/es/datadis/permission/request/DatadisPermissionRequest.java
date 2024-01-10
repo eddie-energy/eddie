@@ -71,8 +71,9 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     }
 
     @Override
-    public void setDistributorCode(DistributorCode distributorCode) {
+    public void setDistributorCodeAndPointType(DistributorCode distributorCode, Integer pointType) {
         this.distributorCode = distributorCode;
+        this.pointType = pointType;
     }
 
     @Override
@@ -83,11 +84,6 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     @Override
     public MeasurementType measurementType() {
         return this.measurementType;
-    }
-
-    @Override
-    public void setPointType(Integer pointType) {
-        this.pointType = pointType;
     }
 
     @Override

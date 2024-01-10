@@ -103,7 +103,7 @@ public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoClos
         }
 
         Supply supply = optionalSupply.get();
-        updatePermissionRequest(permissionRequest, supply);
+        permissionRequest.setDistributorCodeAndPointType(DistributorCode.fromCode(supply.distributorCode()), supply.pointType());
 
         if (!pointTypeSupportsMeasurementType(supply.pointType(), permissionRequest.measurementType()))
             return Mono.error(new InvalidPointAndMeasurementTypeCombinationException(supply.pointType(), permissionRequest.measurementType()));
@@ -128,11 +128,6 @@ public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoClos
                 permissionRequest.measurementType(),
                 String.valueOf(supply.pointType())
         ));
-    }
-
-    private void updatePermissionRequest(EsPermissionRequest permissionRequest, Supply supply) {
-        permissionRequest.setDistributorCode(DistributorCode.fromCode(supply.distributorCode()));
-        permissionRequest.setPointType(supply.pointType());
     }
 
     private Optional<Supply> findSupplyWithCorrectMeteringPoint(List<Supply> supplies, EsPermissionRequest permissionRequest) {
