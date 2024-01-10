@@ -16,6 +16,7 @@ import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSupplyForMeteri
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
@@ -33,6 +34,7 @@ import java.util.function.Predicate;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 
+@Component
 public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoCloseable {
     private final DataApi dataApi;
     private final Sinks.Many<ConsumptionRecord> consumptionRecords;

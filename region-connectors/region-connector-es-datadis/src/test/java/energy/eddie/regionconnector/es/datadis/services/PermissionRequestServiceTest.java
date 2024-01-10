@@ -62,8 +62,7 @@ class PermissionRequestServiceTest {
         var measurementType = MeasurementType.QUARTER_HOURLY;
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 requestDataFrom, requestDataTo, measurementType);
-        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation,
-                mock(AuthorizationApi.class), mock(EsPermissionRequestRepository.class));
+        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, mock(AuthorizationApi.class));
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
 
         // When
@@ -95,6 +94,7 @@ class PermissionRequestServiceTest {
         var permissionRequest = mock(DatadisPermissionRequest.class);
         when(permissionRequest.permissionId()).thenReturn(permissionId);
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
+        when(factory.create(permissionRequest)).thenReturn(permissionRequest);
 
         // When
         assertDoesNotThrow(() -> service.acceptPermission(permissionId));
@@ -121,6 +121,7 @@ class PermissionRequestServiceTest {
         var permissionId = "Existing";
         var permissionRequest = mock(DatadisPermissionRequest.class);
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
+        when(factory.create(permissionRequest)).thenReturn(permissionRequest);
 
         // When
         assertDoesNotThrow(() -> service.rejectPermission(permissionId));
@@ -131,11 +132,11 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void createAndSendPermissionRequest_callsValidateAndSendToPa() throws StateTransitionException {
+    void createAndSendPermissionRequest_callsValidateAndSendToPaAndReceivedPaResponse() throws StateTransitionException {
         // Given
         var mockCreationRequest = mock(PermissionRequestForCreation.class);
         var mockPermissionRequest = mock(EsPermissionRequest.class);
-        when(factory.create(any())).thenReturn(mockPermissionRequest);
+        when(factory.create(any(PermissionRequestForCreation.class))).thenReturn(mockPermissionRequest);
 
         // When
         service.createAndSendPermissionRequest(mockCreationRequest);
@@ -143,6 +144,7 @@ class PermissionRequestServiceTest {
         // Then
         verify(mockPermissionRequest).validate();
         verify(mockPermissionRequest).sendToPermissionAdministrator();
+        verify(mockPermissionRequest).receivedPermissionAdministratorResponse();
         verifyNoMoreInteractions(mockPermissionRequest);
     }
 
@@ -162,6 +164,7 @@ class PermissionRequestServiceTest {
         var permissionId = "Existing";
         var permissionRequest = mock(DatadisPermissionRequest.class);
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
+        when(factory.create(permissionRequest)).thenReturn(permissionRequest);
 
         // When
         assertDoesNotThrow(() -> service.terminatePermission(permissionId));
@@ -171,15 +174,3 @@ class PermissionRequestServiceTest {
         verifyNoMoreInteractions(permissionRequest);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-

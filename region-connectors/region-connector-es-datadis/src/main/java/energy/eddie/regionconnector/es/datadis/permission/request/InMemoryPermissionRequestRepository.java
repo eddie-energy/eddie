@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.es.datadis.permission.request;
 
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
-import energy.eddie.regionconnector.shared.permission.requests.decorators.SavingPermissionRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,10 +24,7 @@ public class InMemoryPermissionRequestRepository implements EsPermissionRequestR
 
     @Override
     public Optional<EsPermissionRequest> findByPermissionId(String permissionId) {
-        // wrap the request with a SavingPermissionRequest so changes will be persisted
-        // TODO this is a temporary workaround
-        return Optional.ofNullable(requests.get(permissionId))
-                .map(request -> new DatadisPermissionRequestAdapter(request, new SavingPermissionRequest<>(request, this)));
+        return Optional.ofNullable(requests.get(permissionId));
     }
 
     @Override

@@ -61,7 +61,9 @@ public class PermissionRequestService {
     }
 
     private EsPermissionRequest getPermissionRequestById(String permissionId) throws PermissionNotFoundException {
-        return repository.findByPermissionId(permissionId).orElseThrow(() -> new PermissionNotFoundException(permissionId));
+        return repository.findByPermissionId(permissionId)
+                .map(permissionRequestFactory::create)
+                .orElseThrow(() -> new PermissionNotFoundException(permissionId));
     }
 
     public PermissionRequest createAndSendPermissionRequest(PermissionRequestForCreation requestForCreation) throws StateTransitionException {
@@ -70,6 +72,7 @@ public class PermissionRequestService {
         var request = permissionRequestFactory.create(requestForCreation);
         request.validate();
         request.sendToPermissionAdministrator();
+        request.receivedPermissionAdministratorResponse();
         return request;
     }
 
