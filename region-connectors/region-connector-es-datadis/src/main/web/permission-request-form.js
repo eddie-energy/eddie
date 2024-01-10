@@ -94,6 +94,7 @@ class PermissionRequestForm extends LitElement {
         this._isSubmitDisabled = false;
         console.error(error);
       });
+    this.requestUpdate();
   }
 
   requestPermissionStatus(location) {
