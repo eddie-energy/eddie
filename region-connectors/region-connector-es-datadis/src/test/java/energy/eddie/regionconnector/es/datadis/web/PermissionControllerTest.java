@@ -9,10 +9,13 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import energy.eddie.regionconnector.es.datadis.permission.request.state.AcceptedState;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
@@ -20,6 +23,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Optional;
 
+import static energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice.ERRORS_JSON_PATH;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -37,6 +41,19 @@ class PermissionControllerTest {
     @MockBean
     private PermissionRequestService mockService;
     private final ObjectMapper mapper = new ObjectMapper();
+
+    /**
+     * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
+     * whole core is started. To be able to properly test the controller's error responses, manually add the advice
+     * to this test class.
+     */
+    @TestConfiguration
+    static class ControllerTestConfiguration {
+        @Bean
+        public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
+            return new RegionConnectorsCommonControllerAdvice();
+        }
+    }
 
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {
@@ -64,10 +81,8 @@ class PermissionControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.errors", allOf(
-                        iterableWithSize(1),
-                        hasItem("No permission with ID 123 found")
-                )));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("No permission with ID '123' found.")));
     }
 
     @Test
@@ -96,9 +111,8 @@ class PermissionControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.errors", allOf(
-                        iterableWithSize(1),
-                        hasItem("No permission with ID 123 found"))));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("No permission with ID '123' found.")));
     }
 
     @Test
@@ -127,9 +141,8 @@ class PermissionControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.errors", allOf(
-                        iterableWithSize(1),
-                        hasItem("No permission with ID 123 found"))));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("No permission with ID '123' found.")));
     }
 
     @Test
@@ -140,14 +153,14 @@ class PermissionControllerTest {
                         .content("{\"connectionId\": \"Hello World\"}"))
                 // Then
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors", allOf(
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", allOf(
                         iterableWithSize(6),
-                        hasItem("nif must not be null or blank"),
-                        hasItem("meteringPointId must not be null or blank"),
-                        hasItem("dataNeedId must not be null or blank"),
-                        hasItem("measurementType must not be null"),
-                        hasItem("requestDataFrom must not be null"),
-                        hasItem("requestDataTo must not be null")
+                        hasItem("nif: must not be null or blank"),
+                        hasItem("meteringPointId: must not be null or blank"),
+                        hasItem("dataNeedId: must not be null or blank"),
+                        hasItem("measurementType: must not be null"),
+                        hasItem("requestDataFrom: must not be null"),
+                        hasItem("requestDataTo: must not be null")
                 )));
     }
 
@@ -166,10 +179,8 @@ class PermissionControllerTest {
                         .content(mapper.writeValueAsString(jsonNode)))
                 // Then
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors", allOf(
-                        iterableWithSize(1),
-                        hasItem("measurementType must not be null")
-                )));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("measurementType: must not be null")));
     }
 
     @Test
@@ -190,9 +201,8 @@ class PermissionControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors", allOf(
-                        iterableWithSize(1),
-                        hasItem(org.hamcrest.Matchers.startsWith("Invalid enum value: 'INVALID' for the field 'measurementType'. The value must ")))));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", org.hamcrest.Matchers.startsWith("measurementType: Invalid enum value: 'INVALID'. Valid values: [")));
     }
 
     @Test
@@ -202,9 +212,8 @@ class PermissionControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors", allOf(
-                        iterableWithSize(1),
-                        hasItem("Invalid request body"))));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
     }
 
     @Test
@@ -231,14 +240,14 @@ class PermissionControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors", allOf(
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", allOf(
                         iterableWithSize(6),
-                        hasItem("connectionId must not be null or blank"),
-                        hasItem("nif must not be null or blank"),
-                        hasItem("meteringPointId must not be null or blank"),
-                        hasItem("dataNeedId must not be null or blank"),
-                        hasItem("requestDataFrom must not be null"),
-                        hasItem("requestDataTo must not be null")
+                        hasItem("connectionId: must not be null or blank"),
+                        hasItem("nif: must not be null or blank"),
+                        hasItem("meteringPointId: must not be null or blank"),
+                        hasItem("dataNeedId: must not be null or blank"),
+                        hasItem("requestDataFrom: must not be null"),
+                        hasItem("requestDataTo: must not be null")
                 )));
     }
 
