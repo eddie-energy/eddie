@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.shared.web;
 
+import energy.eddie.api.agnostic.EddieApiError;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -11,10 +12,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -54,21 +56,19 @@ class ValidationErrorsTest {
 
     @ParameterizedTest
     @MethodSource("validationErrors")
-    void handleValidationExceptionsReturnsMapOfErrors(MethodArgumentNotValidException exception) {
+    void givenMethodArgumentNotValidException_returnsMapOfList(MethodArgumentNotValidException exception) {
         // Given
         ValidationErrors validationErrors = new ValidationErrors(exception);
 
         // When
-        Map<String, String> errors = validationErrors.asMap();
+        List<EddieApiError> errors = validationErrors.asErrorsList();
 
         // Then
         assertAll(
                 () -> assertEquals(2, errors.size()),
-                () -> assertTrue(errors.containsKey("field1")),
-                () -> assertTrue(errors.containsKey("field2")),
-                () -> assertEquals("Error message 1", errors.get("field1")),
-                () -> assertEquals("Error message 2", errors.get("field2"))
+                () -> assertThat(errors).hasSameElementsAs(List.of(
+                        new EddieApiError("field1: Error message 1"),
+                        new EddieApiError("field2: Error message 2")))
         );
-
     }
 }
