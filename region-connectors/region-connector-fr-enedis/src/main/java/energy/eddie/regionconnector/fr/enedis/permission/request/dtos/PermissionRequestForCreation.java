@@ -6,13 +6,13 @@ import jakarta.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
 
 public record PermissionRequestForCreation(
-        @NotBlank(message = "connectionId must not be blank")
+        @NotBlank(message = "must not be blank")
         String connectionId,
-        @NotBlank(message = "dataNeedId must not be blank")
+        @NotBlank(message = "must not be blank")
         String dataNeedId,
-        @NotNull
+        @NotNull(message = "must not be null")
         ZonedDateTime start,
-        @NotNull
+        @NotNull(message = "must not be null")
         ZonedDateTime end
 ) {
 }

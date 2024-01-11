@@ -6,10 +6,13 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
+import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -19,12 +22,14 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice.ERRORS_JSON_PATH;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest
 class PermissionRequestControllerTest {
@@ -34,6 +39,19 @@ class PermissionRequestControllerTest {
     private ObjectMapper mapper;
     @MockBean
     private PermissionRequestService permissionRequestService;
+
+    /**
+     * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
+     * whole core is started. To be able to properly test the controller's error responses, manually add the advice
+     * to this test class.
+     */
+    @TestConfiguration
+    static class ControllerTestConfiguration {
+        @Bean
+        public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
+            return new RegionConnectorsCommonControllerAdvice();
+        }
+    }
 
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {
@@ -101,4 +119,39 @@ class PermissionRequestControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void givenNonJsonBody_returnsUnsupportedMediaType() throws Exception {
+        // Given
+        mockMvc.perform(
+                        MockMvcRequestBuilders.post("/permission-request")
+                                .contentType(MediaType.MULTIPART_FORM_DATA)
+                                .param("connectionId", "someValue")
+                )
+                // Then
+                .andExpect(status().isUnsupportedMediaType());
+    }
+
+    @Test
+    void givenNoRequestBody_returnsBadRequest() throws Exception {
+        mockMvc.perform(post("/permission-request")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
+    }
+
+    @Test
+    void givenAllMissingFields_returnsBadRequest() throws Exception {
+        mockMvc.perform(post("/permission-request")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", allOf(
+                        iterableWithSize(4),
+                        hasItem("connectionId: must not be blank"),
+                        hasItem("dataNeedId: must not be blank"),
+                        hasItem("start: must not be null"),
+                        hasItem("end: must not be null")
+                )));
+    }
 }
