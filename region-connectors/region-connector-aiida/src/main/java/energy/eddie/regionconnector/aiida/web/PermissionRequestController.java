@@ -26,7 +26,9 @@ public class PermissionRequestController {
         this.aiidaService = aiidaService;
     }
 
-    @PostMapping(value = PATH_PERMISSION_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = PATH_PERMISSION_REQUEST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PermissionDto> createPermissionRequest(
             @Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation)
             throws StateTransitionException, DataNeedNotFoundException {
