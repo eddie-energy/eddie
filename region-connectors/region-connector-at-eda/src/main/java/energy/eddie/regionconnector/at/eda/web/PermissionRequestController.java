@@ -36,7 +36,9 @@ public class PermissionRequestController {
         return ResponseEntity.ok(statusMessage);
     }
 
-    @PostMapping(value = PATH_PERMISSION_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = PATH_PERMISSION_REQUEST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public CreatedPermissionRequest createPermissionRequest(
             @RequestBody @Valid PermissionRequestForCreation permissionRequestForCreation
