@@ -49,9 +49,6 @@ class PermissionRequestForm extends LitElement {
       return;
     }
 
-    formData.append("connectionId", this.connectionId);
-    formData.append("measurementType", "HOURLY");
-
     const startDate = new Date();
     startDate.setDate(
       startDate.getDate() + this.dataNeedAttributes.durationStart
@@ -64,16 +61,21 @@ class PermissionRequestForm extends LitElement {
       endDate.setDate(endDate.getDate() + this.dataNeedAttributes.durationEnd);
     }
 
-    formData.append(
-      "requestDataFrom",
-      startDate.toISOString().substring(0, 10)
-    );
-    formData.append("requestDataTo", endDate.toISOString().substring(0, 10));
-    formData.append("dataNeedId", this.dataNeedAttributes.id);
+    let jsonData = {};
+    jsonData.connectionId = this.connectionId;
+    jsonData.measurementType = "HOURLY";
+    jsonData.meteringPointId = formData.get("meteringPointId");
+    jsonData.nif = formData.get("nif");
+    jsonData.requestDataFrom = startDate.toISOString().substring(0, 10);
+    jsonData.requestDataTo = endDate.toISOString().substring(0, 10);
+    jsonData.dataNeedId = this.dataNeedAttributes.id;
 
     fetch(REQUEST_URL, {
-      body: formData,
+      body: JSON.stringify(jsonData),
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
       .then((response) => {
         const locationHeader = "Location";
