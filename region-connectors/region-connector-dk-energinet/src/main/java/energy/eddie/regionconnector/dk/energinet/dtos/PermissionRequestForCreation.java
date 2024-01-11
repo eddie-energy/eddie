@@ -10,15 +10,15 @@ import jakarta.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
 
 public record PermissionRequestForCreation(
-        @NotBlank(message = "connectionId must not be blank")
+        @NotBlank(message = "must not be blank")
         String connectionId,
         @JsonDeserialize(using = StartOfDayZonedDateTimeDeserializer.class)
-        @NotNull(message = "start must not be null")
+        @NotNull(message = "must not be null")
         ZonedDateTime start,
         @JsonDeserialize(using = StartOfDayZonedDateTimeDeserializer.class)
-        @NotNull(message = "end must not be null")
+        @NotNull(message = "must not be null")
         ZonedDateTime end,
-        @NotBlank(message = "refreshToken must not be blank")
+        @NotBlank(message = "must not be blank")
         String refreshToken,
         @SupportedGranularities({
                 Granularity.PT15M,
@@ -27,11 +27,11 @@ public record PermissionRequestForCreation(
                 Granularity.P1M,
                 Granularity.P1Y
         })
-        @NotNull(message = "granularity must not be null")
+        @NotNull(message = "must not be null")
         Granularity granularity,
-        @NotBlank(message = "meteringPoint must not be blank")
+        @NotBlank(message = "must not be blank")
         String meteringPoint,
-        @NotBlank(message = "dataNeedId must not be blank")
+        @NotBlank(message = "must not be blank")
         String dataNeedId
 ) {
 }

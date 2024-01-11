@@ -9,19 +9,24 @@ import energy.eddie.regionconnector.dk.energinet.customer.permission.request.Ene
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetDataSourceInformation;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
+import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.util.UriTemplate;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
+import static energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice.ERRORS_JSON_PATH;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -39,6 +44,19 @@ class PermissionRequestControllerTest {
     @Autowired
     private ObjectMapper mapper;
 
+    /**
+     * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
+     * whole core is started. To be able to properly test the controller's error responses, manually add the advice
+     * to this test class.
+     */
+    @TestConfiguration
+    static class ControllerTestConfiguration {
+        @Bean
+        public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
+            return new RegionConnectorsCommonControllerAdvice();
+        }
+    }
+
     @Test
     void givenNoPermissionId_returnsNotFound() throws Exception {
         mockMvc.perform(get("/permission-status"))
@@ -50,9 +68,8 @@ class PermissionRequestControllerTest {
         String permissionId = "NonExistingId";
         mockMvc.perform(get("/permission-status/{permissionId}", permissionId))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.errors", allOf(
-                        iterableWithSize(1),
-                        hasItem("No permission with ID NonExistingId found"))));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", startsWith("No permission with ID 'NonExistingId' found.")));
     }
 
     @Test
@@ -91,28 +108,25 @@ class PermissionRequestControllerTest {
         mockMvc.perform(post("/permission-request")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors", allOf(
-                        iterableWithSize(1),
-                        hasItem("Failed to read request"))));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
     }
 
     @Test
-    void givenSomeMissingFields_returnsBadRequest() throws Exception {
-        ObjectNode jsonNode = mapper.createObjectNode()
-                .put("connectionId", "23")
-                .put("meteringPoint", "92345")
-                .put("granularity", "PT1H");
-
+    void givenAllMissingFields_returnsBadRequest() throws Exception {
         mockMvc.perform(post("/permission-request")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(jsonNode)))
+                        .content("{}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors", allOf(
-                        iterableWithSize(4),
-                        hasItem("start must not be null"),
-                        hasItem("end must not be null"),
-                        hasItem("refreshToken must not be blank"),
-                        hasItem("dataNeedId must not be blank")
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", allOf(
+                        iterableWithSize(7),
+                        hasItem("connectionId: must not be blank"),
+                        hasItem("start: must not be null"),
+                        hasItem("end: must not be null"),
+                        hasItem("refreshToken: must not be blank"),
+                        hasItem("granularity: must not be null"),
+                        hasItem("meteringPoint: must not be blank"),
+                        hasItem("dataNeedId: must not be blank")
                 )));
     }
 
@@ -126,9 +140,9 @@ class PermissionRequestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(jsonNode)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors", allOf(
-                        iterableWithSize(1),
-                        hasItem("Failed to read request"))));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", startsWith("granularity: Invalid enum value: 'PT4h'. Valid values: [")));
     }
 
     @Test
@@ -143,13 +157,13 @@ class PermissionRequestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(jsonNode)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors", allOf(
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", allOf(
                         iterableWithSize(5),
-                        hasItem("start must not be null"),
-                        hasItem("end must not be null"),
-                        hasItem("dataNeedId must not be blank"),
-                        hasItem("refreshToken must not be blank"),
-                        hasItem("connectionId must not be blank")
+                        hasItem("start: must not be null"),
+                        hasItem("end: must not be null"),
+                        hasItem("dataNeedId: must not be blank"),
+                        hasItem("refreshToken: must not be blank"),
+                        hasItem("connectionId: must not be blank")
                 )));
     }
 
@@ -168,10 +182,8 @@ class PermissionRequestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(jsonNode)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors", allOf(
-                        iterableWithSize(1),
-                        hasItem(startsWith("Unsupported granularity: 'PT5M'."))
-                )));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", startsWith("granularity: Unsupported granularity: 'PT5M'.")));
     }
 
 
