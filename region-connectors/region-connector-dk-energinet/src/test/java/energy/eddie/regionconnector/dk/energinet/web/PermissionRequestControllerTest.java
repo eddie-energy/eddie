@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
@@ -13,10 +15,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.util.UriTemplate;
 
 import java.util.Optional;
 import java.util.UUID;
 
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -31,6 +36,8 @@ class PermissionRequestControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private PermissionRequestService service;
+    @Autowired
+    private ObjectMapper mapper;
 
     @Test
     void givenNoPermissionId_returnsNotFound() throws Exception {
@@ -68,38 +75,37 @@ class PermissionRequestControllerTest {
     }
 
     @Test
-    void givenJson_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/permission-request")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"foo\": \"bar\"}"))
-                .andExpect(status().isUnsupportedMediaType());
-    }
-
-    @Test
-    void givenFormUrlEncoded_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/permission-request")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+    void givenNonJsonBody_returnsUnsupportedMediaType() throws Exception {
+        // Given
+        mockMvc.perform(
+                        MockMvcRequestBuilders.post("/permission-request")
+                                .contentType(MediaType.MULTIPART_FORM_DATA)
+                                .param("connectionId", "someValue")
+                )
+                // Then
                 .andExpect(status().isUnsupportedMediaType());
     }
 
     @Test
     void givenNoRequestBody_returnsBadRequest() throws Exception {
         mockMvc.perform(post("/permission-request")
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", allOf(
-                        iterableWithSize(7),
-                        hasItem("dataNeedId must not be blank")
-                )));
+                        iterableWithSize(1),
+                        hasItem("Failed to read request"))));
     }
 
     @Test
     void givenSomeMissingFields_returnsBadRequest() throws Exception {
+        ObjectNode jsonNode = mapper.createObjectNode()
+                .put("connectionId", "23")
+                .put("meteringPoint", "92345")
+                .put("granularity", "PT1H");
+
         mockMvc.perform(post("/permission-request")
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .param("connectionId", "23")
-                        .param("meteringPoint", "92345")
-                        .param("granularity", "PT1H"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(jsonNode)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", allOf(
                         iterableWithSize(4),
@@ -111,23 +117,31 @@ class PermissionRequestControllerTest {
     }
 
     @Test
-    void givenInvalidPeriodResolution_returnsBadRequest() throws Exception {
+    void givenInvalidGranularity_returnsBadRequest() throws Exception {
+        ObjectNode jsonNode = mapper.createObjectNode()
+                .put("connectionId", "23")
+                .put("granularity", "PT4h");
+
         mockMvc.perform(post("/permission-request")
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .param("connectionId", "23")
-                        .param("granularity", "PT4h"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(jsonNode)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0]", not(emptyString())));
+                .andExpect(jsonPath("$.errors", allOf(
+                        iterableWithSize(1),
+                        hasItem("Failed to read request"))));
     }
 
     @Test
     void givenBlankFields_returnsBadRequest() throws Exception {
+        ObjectNode jsonNode = mapper.createObjectNode()
+                .put("connectionId", "")
+                .put("meteringPoint", "92345")
+                .put("granularity", "PT1H")
+                .put("refreshToken", "      ");
+
         mockMvc.perform(post("/permission-request")
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .param("connectionId", "")
-                        .param("meteringPoint", "92345")
-                        .param("granularity", "PT1H")
-                        .param("refreshToken", "      "))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(jsonNode)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", allOf(
                         iterableWithSize(5),
@@ -141,15 +155,18 @@ class PermissionRequestControllerTest {
 
     @Test
     void givenUnsupportedGranularity_returnsBadRequest() throws Exception {
+        ObjectNode jsonNode = mapper.createObjectNode()
+                .put("connectionId", "214")
+                .put("meteringPoint", "92345")
+                .put("granularity", "PT5M")
+                .put("refreshToken", "HelloRefreshToken")
+                .put("dataNeedId", "Need")
+                .put("start", "2023-10-10")
+                .put("end", "2023-12-12");
+
         mockMvc.perform(post("/permission-request")
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .param("connectionId", "214")
-                        .param("meteringPoint", "92345")
-                        .param("granularity", "PT5M")
-                        .param("refreshToken", "HelloRefreshToken")
-                        .param("dataNeedId", "Need")
-                        .param("start", "2023-10-10")
-                        .param("end", "2023-12-12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(jsonNode)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", allOf(
                         iterableWithSize(1),
@@ -161,6 +178,7 @@ class PermissionRequestControllerTest {
     @Test
     void givenAdditionalFields_areIgnored() throws Exception {
         var permissionId = UUID.randomUUID().toString();
+        var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId).toString();
 
         when(service.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
             PermissionRequestForCreation request = invocation.getArgument(0);
@@ -169,25 +187,28 @@ class PermissionRequestControllerTest {
             );
         });
 
+        ObjectNode jsonNode = mapper.createObjectNode()
+                .put("connectionId", "214")
+                .put("meteringPoint", "92345")
+                .put("granularity", "PT1H")
+                .put("refreshToken", "HelloRefreshToken")
+                .put("dataNeedId", "Need")
+                .put("additionalField", "Useless")
+                .put("start", "2023-10-10")
+                .put("end", "2023-12-12");
 
         mockMvc.perform(post("/permission-request")
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .param("connectionId", "214")
-                        .param("meteringPoint", "92345")
-                        .param("granularity", "PT1H")
-                        .param("refreshToken", "HelloRefreshToken")
-                        .param("dataNeedId", "Need")
-                        .param("additionalField", "Useless")
-                        .param("start", "2023-10-10")
-                        .param("end", "2023-12-12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(jsonNode)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.permissionId", is(permissionId)))
-                .andExpect(header().string("Location", is("/permission-status/" + permissionId)));
+                .andExpect(header().string("Location", is(expectedLocationHeader)));
     }
 
     @Test
-    void givenValidInput_returnsLocationAndPermissionRequest() throws Exception {
+    void givenValidInput_returnsLocationAndPermissionRequestId() throws Exception {
         var permissionId = UUID.randomUUID().toString();
+        var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId).toString();
 
         when(service.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
             PermissionRequestForCreation request = invocation.getArgument(0);
@@ -196,18 +217,22 @@ class PermissionRequestControllerTest {
             );
         });
 
+        ObjectNode jsonNode = mapper.createObjectNode()
+                .put("connectionId", "214")
+                .put("meteringPoint", "92345")
+                .put("granularity", "PT1H")
+                .put("refreshToken", "HelloRefreshToken")
+                .put("dataNeedId", "Need")
+                .put("additionalField", "Useless")
+                .put("start", "2023-10-10")
+                .put("end", "2023-11-11");
+
         mockMvc.perform(post("/permission-request")
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .param("connectionId", "214")
-                        .param("meteringPoint", "92345")
-                        .param("granularity", "PT1H")
-                        .param("refreshToken", "HelloRefreshToken")
-                        .param("dataNeedId", "Need")
-                        .param("additionalField", "Useless")
-                        .param("start", "2023-10-10")
-                        .param("end", "2023-11-11"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(jsonNode)))
                 .andExpect(status().isCreated())
+                .andExpect(header().string("content-type", MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$.permissionId", is(permissionId)))
-                .andExpect(header().string("Location", is("/permission-status/" + permissionId)));
+                .andExpect(header().string("Location", is(expectedLocationHeader)));
     }
 }

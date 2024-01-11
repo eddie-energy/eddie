@@ -9,11 +9,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.context.request.WebRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestControllerAdviceTest {
@@ -79,5 +85,19 @@ class PermissionRequestControllerAdviceTest {
         // Then
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertThat(response.toString()).contains("No permission with ID testId found");
+    }
+
+    @Test
+    void givenHttpMessageNotReadableException_returnsBadRequest() {
+        // Given
+        var exception = new HttpMessageNotReadableException("", mock(HttpInputMessage.class));
+
+        // When
+        var response = advice.handleHttpMessageNotReadable(exception, mock(HttpHeaders.class), HttpStatus.I_AM_A_TEAPOT, mock(WebRequest.class));
+
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertThat(response.toString()).contains("Failed to read request");
     }
 }

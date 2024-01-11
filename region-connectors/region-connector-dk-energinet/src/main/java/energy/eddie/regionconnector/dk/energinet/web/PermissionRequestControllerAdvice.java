@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -77,5 +78,17 @@ public class PermissionRequestControllerAdvice extends ResponseEntityExceptionHa
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<Object> handlePermissionNotFoundException(PermissionNotFoundException exception) {
         return createErrorResponse(List.of(exception.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(
+            @NonNull HttpMessageNotReadableException ex,
+            @NonNull HttpHeaders headers,
+            @NonNull HttpStatusCode status,
+            @NonNull WebRequest request
+    ) {
+        var errors = List.of("Failed to read request");
+
+        return createErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 }

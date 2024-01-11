@@ -57,8 +57,10 @@ public class PermissionRequestController {
         return ResponseEntity.ok(statusMessage);
     }
 
-    @PostMapping(value = PATH_PERMISSION_REQUEST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedPermissionRequest> permissionRequest(@Valid @ModelAttribute PermissionRequestForCreation requestForCreation)
+    @PostMapping(value = PATH_PERMISSION_REQUEST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedPermissionRequest> permissionRequest(@Valid @RequestBody PermissionRequestForCreation requestForCreation)
             throws StateTransitionException {
         var permissionId = service.createAndSendPermissionRequest(requestForCreation).permissionId();
         LOGGER.info("New Permission Request with PermissionId: {}", permissionId);
