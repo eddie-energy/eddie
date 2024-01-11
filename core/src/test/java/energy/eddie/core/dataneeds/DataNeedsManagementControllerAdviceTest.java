@@ -25,6 +25,6 @@ class DataNeedsManagementControllerAdviceTest {
         assertNotNull(response);
         assertNotNull(response.getBody());
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertThat(response.getBody()).contains("No dataNeed with ID %s found".formatted(dataNeedId));
+        assertThat(response.getBody()).contains("No dataNeed with ID '%s' found".formatted(dataNeedId));
     }
 }

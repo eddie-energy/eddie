@@ -40,5 +40,19 @@ Philosophy: A developer should be able to clone this repository and be able to b
   of `ConsumptionRecords`. When implementing such an interface from the `api` package, the region connector is
   automatically registered for the correct service by a *region connector processor*, and e.g. the consumption records
   are then streamed via Kafka to the EP.
+- A default ControllerAdvice called `RegionConnectorsCommonControllerAdvice`, which handles commonly occurring
+  exceptions in a unified way, is automatically registered for all region connectors. Therefore, only exceptions that
+  are not handled by this advice need to be explicitly handled in the region connector. If you want to test the error
+  responses with your custom controller, you can either add a @TestConfiguration to your test class:
+  - ```
+      @TestConfiguration
+      static class ControllerTestConfiguration {
+        @Bean
+        public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
+          return new RegionConnectorsCommonControllerAdvice();
+        }
+      }
+      ```
+  - or add a bean of type `RegionConnectorsCommonControllerAdvice` to your region connector Spring config.
 
 See the existing region connectors as reference.
