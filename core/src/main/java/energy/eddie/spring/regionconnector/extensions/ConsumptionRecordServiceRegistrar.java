@@ -1,8 +1,8 @@
 package energy.eddie.spring.regionconnector.extensions;
 
+import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordProvider;
 import energy.eddie.core.services.ConsumptionRecordService;
-import energy.eddie.spring.RegionConnectorExtension;
 
 import java.util.Optional;
 

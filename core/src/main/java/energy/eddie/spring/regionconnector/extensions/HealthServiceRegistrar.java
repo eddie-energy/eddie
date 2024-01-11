@@ -1,8 +1,8 @@
 package energy.eddie.spring.regionconnector.extensions;
 
+import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.core.services.HealthService;
-import energy.eddie.spring.RegionConnectorExtension;
 
 import static java.util.Objects.requireNonNull;
 

@@ -1,7 +1,7 @@
 package energy.eddie.spring.regionconnector.extensions;
 
 import energy.eddie.api.agnostic.RegionConnector;
-import energy.eddie.spring.RegionConnectorExtension;
+import energy.eddie.api.agnostic.RegionConnectorExtension;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.annotation.AnnotationUtils;
