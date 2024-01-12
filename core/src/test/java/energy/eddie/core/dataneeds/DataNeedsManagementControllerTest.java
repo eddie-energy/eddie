@@ -3,8 +3,6 @@ package energy.eddie.core.dataneeds;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.DataType;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
-import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -18,7 +16,6 @@ import java.util.Set;
 
 import static energy.eddie.core.dataneeds.DataNeedEntityTest.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -118,11 +115,9 @@ class DataNeedsManagementControllerTest {
 
         // try to fetch non-existing data need
         given(repo.findById(EXAMPLE_DATA_NEED_KEY)).willReturn(Optional.empty());
-        try {
-            mvc.perform(get("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY).accept(MediaType.APPLICATION_JSON));
-        } catch (ServletException e) {
-            assertInstanceOf(DataNeedNotFoundException.class, e.getCause());
-        }
+        mvc.perform(get("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("No dataNeed with ID " + EXAMPLE_DATA_NEED_KEY + " found"));
     }
 
     @Test
@@ -167,11 +162,9 @@ class DataNeedsManagementControllerTest {
     void delete_nonExistingDataNeed_returnsNotFound() throws Exception {
         // all delete requests should be processed
         given(repo.existsById(EXAMPLE_DATA_NEED_KEY)).willReturn(false);
-        try {
-            mvc.perform(delete("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY).accept(MediaType.APPLICATION_JSON));
-        } catch (ServletException e) {
-            assertInstanceOf(DataNeedNotFoundException.class, e.getCause());
-        }
+        mvc.perform(delete("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("No dataNeed with ID " + EXAMPLE_DATA_NEED_KEY + " found"));
 
         verify(repo).existsById(EXAMPLE_DATA_NEED_KEY);
         verifyNoMoreInteractions(repo);
