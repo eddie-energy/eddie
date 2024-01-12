@@ -13,8 +13,10 @@ import energy.eddie.regionconnector.es.datadis.dtos.Supply;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.InvalidPointAndMeasurementTypeCombinationException;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSuppliesException;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSupplyForMeteringPointException;
+import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
@@ -32,6 +34,7 @@ import java.util.function.Predicate;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 
+@Component
 public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoCloseable {
     private final DataApi dataApi;
     private final Sinks.Many<ConsumptionRecord> consumptionRecords;
@@ -100,8 +103,7 @@ public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoClos
         }
 
         Supply supply = optionalSupply.get();
-        permissionRequest.setDistributorCode(supply.distributorCode());
-        permissionRequest.setPointType(supply.pointType());
+        permissionRequest.setDistributorCodeAndPointType(DistributorCode.fromCode(supply.distributorCode()), supply.pointType());
 
         if (!pointTypeSupportsMeasurementType(supply.pointType(), permissionRequest.measurementType()))
             return Mono.error(new InvalidPointAndMeasurementTypeCombinationException(supply.pointType(), permissionRequest.measurementType()));

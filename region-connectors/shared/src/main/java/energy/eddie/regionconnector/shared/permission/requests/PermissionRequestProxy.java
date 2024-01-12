@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.shared.permission.requests;
 
 import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.regionconnector.shared.permission.requests.annotations.InvokeExtensions;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 
 import java.lang.reflect.InvocationHandler;
@@ -41,6 +42,10 @@ public class PermissionRequestProxy<T extends PermissionRequest> implements Invo
         );
     }
 
+    private static boolean isTransitionMethod(Method method) {
+        return Void.TYPE.equals(method.getReturnType()) && method.getParameterCount() == 0;
+    }
+
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Object result = method.invoke(delegate, args);
@@ -49,7 +54,7 @@ public class PermissionRequestProxy<T extends PermissionRequest> implements Invo
     }
 
     private void executeConsumers(Method method) {
-        if (Void.TYPE.equals(method.getReturnType()) && method.getParameterCount() == 0) {
+        if (isTransitionMethod(method) || method.isAnnotationPresent(InvokeExtensions.class)) {
             executeConsumers();
         }
     }

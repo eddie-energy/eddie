@@ -7,7 +7,6 @@ import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.CreatedState;
 import jakarta.annotation.Nullable;
 
@@ -29,10 +28,10 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     private final ZonedDateTime requestDataTo;
     private final MeasurementType measurementType;
     private final String dataNeedId;
-    private final DatadisDataSourceInformation dataSourceInformation = new DatadisDataSourceInformation();
+    private final DatadisDataSourceInformation dataSourceInformation = new DatadisDataSourceInformation(this);
     private PermissionRequestState state;
     @Nullable
-    private String distributorCode;
+    private DistributorCode distributorCode;
     @Nullable
     private Integer pointType;
     @Nullable
@@ -41,12 +40,10 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     public DatadisPermissionRequest(
             String permissionId,
             PermissionRequestForCreation requestForCreation,
-            AuthorizationApi authorizationApi,
-            EsPermissionRequestRepository repository) {
+            AuthorizationApi authorizationApi) {
         requireNonNull(permissionId);
         requireNonNull(requestForCreation);
         requireNonNull(authorizationApi);
-        requireNonNull(repository);
 
         this.permissionId = permissionId;
         this.connectionId = requestForCreation.connectionId();
@@ -59,7 +56,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
 
         this.permissionStart = ZonedDateTime.now(ZONE_ID_SPAIN);
         this.permissionEnd = latest(permissionStart, requestDataTo);
-        this.state = new CreatedState(this, authorizationApi, repository);
+        this.state = new CreatedState(this, authorizationApi);
     }
 
     /**
@@ -74,8 +71,9 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     }
 
     @Override
-    public void setDistributorCode(String distributorCode) {
+    public void setDistributorCodeAndPointType(DistributorCode distributorCode, Integer pointType) {
         this.distributorCode = distributorCode;
+        this.pointType = pointType;
     }
 
     @Override
@@ -86,11 +84,6 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     @Override
     public MeasurementType measurementType() {
         return this.measurementType;
-    }
-
-    @Override
-    public void setPointType(Integer pointType) {
-        this.pointType = pointType;
     }
 
     @Override
@@ -170,7 +163,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     }
 
     @Override
-    public Optional<String> distributorCode() {
+    public Optional<DistributorCode> distributorCode() {
         return Optional.ofNullable(distributorCode);
     }
 

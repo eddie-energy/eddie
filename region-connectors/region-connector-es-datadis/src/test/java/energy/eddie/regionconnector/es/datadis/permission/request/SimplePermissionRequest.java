@@ -9,8 +9,8 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 public class SimplePermissionRequest implements EsPermissionRequest {
-    private String permissionId;
-    private String connectionId;
+    private final String permissionId;
+    private final String connectionId;
     private ZonedDateTime requestDataFrom;
     private ZonedDateTime permissionStart;
     private ZonedDateTime requestDataTo;
@@ -22,59 +22,9 @@ public class SimplePermissionRequest implements EsPermissionRequest {
     private ZonedDateTime lastPulledMeterReading;
     private MeasurementType measurementType;
 
-    public SimplePermissionRequest() {
-    }
-
     public SimplePermissionRequest(String permissionId, String connectionId) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
-    }
-
-    public SimplePermissionRequest(String permissionId, String connectionId, ZonedDateTime start, ZonedDateTime end) {
-        this.permissionId = permissionId;
-        this.connectionId = connectionId;
-        this.permissionStart = start;
-        this.requestDataFrom = start;
-        this.permissionEnd = end;
-        this.requestDataTo = end;
-    }
-
-    public SimplePermissionRequest(String permissionId, String connectionId, ZonedDateTime start, ZonedDateTime end, PermissionRequestState state) {
-        this.permissionId = permissionId;
-        this.connectionId = connectionId;
-        this.permissionStart = start;
-        this.permissionEnd = end;
-        this.state = state;
-    }
-
-    static public SimplePermissionRequest fromMeasurementType(MeasurementType measurementType) {
-        var request = new SimplePermissionRequest();
-        request.measurementType = measurementType;
-        return request;
-    }
-
-    static public SimplePermissionRequest fromMetringPointId(String meteringPointId) {
-        var request = new SimplePermissionRequest();
-        request.meteringPointId = meteringPointId;
-        return request;
-    }
-
-    static public SimplePermissionRequest fromNif(String nif) {
-        var request = new SimplePermissionRequest();
-        request.nif = nif;
-        return request;
-    }
-
-    static public SimplePermissionRequest fromDataNeedId(String dataNeedId) {
-        var request = new SimplePermissionRequest();
-        request.dataNeedId = dataNeedId;
-        return request;
-    }
-
-    public static EsPermissionRequest fromLastPulledMeterReading(ZonedDateTime start) {
-        var request = new SimplePermissionRequest();
-        request.lastPulledMeterReading = start;
-        return request;
     }
 
     @Override
@@ -99,7 +49,7 @@ public class SimplePermissionRequest implements EsPermissionRequest {
 
     @Override
     public DataSourceInformation dataSourceInformation() {
-        return new DatadisDataSourceInformation();
+        return new DatadisDataSourceInformation(this);
     }
 
     @Override
@@ -118,14 +68,10 @@ public class SimplePermissionRequest implements EsPermissionRequest {
     }
 
     @Override
-    public Optional<String> distributorCode() {
+    public Optional<DistributorCode> distributorCode() {
         return Optional.empty();
     }
 
-    @Override
-    public void setDistributorCode(String distributorCode) {
-
-    }
 
     @Override
     public Optional<Integer> pointType() {
@@ -133,14 +79,15 @@ public class SimplePermissionRequest implements EsPermissionRequest {
     }
 
     @Override
+    public void setDistributorCodeAndPointType(DistributorCode distributorCode, Integer pointType) {
+
+    }
+
+    @Override
     public MeasurementType measurementType() {
         return measurementType;
     }
 
-    @Override
-    public void setPointType(Integer pointType) {
-
-    }
 
     @Override
     public ZonedDateTime permissionStart() {

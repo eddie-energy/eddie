@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.shared.permission.requests;
 
 import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.regionconnector.shared.permission.requests.annotations.InvokeExtensions;
 import energy.eddie.regionconnector.shared.permission.requests.decorators.SimplePermissionRequest;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import org.junit.jupiter.api.Test;
@@ -56,5 +57,37 @@ class PermissionRequestProxyTest {
         // Then
         assertEquals("pid", proxy.permissionId());
         assertEquals("cid", proxy.connectionId());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testPermissionRequestProxyInvocationOfInvokeExtensionAnnotation() throws Throwable {
+        // Given
+        SimplePermissionRequestExtension delegate = mock(SimplePermissionRequestExtension.class);
+        Set<Extension<SimplePermissionRequestExtension>> consumers = new HashSet<>();
+        Extension<SimplePermissionRequestExtension> consumer1 = mock(Extension.class);
+        Extension<SimplePermissionRequestExtension> consumer2 = mock(Extension.class);
+        consumers.add(consumer1);
+        consumers.add(consumer2);
+
+        var proxy = PermissionRequestProxy.createProxy(
+                delegate,
+                consumers,
+                SimplePermissionRequestExtension.class,
+                PermissionRequestProxy.CreationInfo.RECREATED
+        );
+
+        // When
+        proxy.testMethod(1, "2");
+
+        // Then
+        verify(delegate).testMethod(1, "2");
+        verify(consumer1).accept(delegate);
+        verify(consumer2).accept(delegate);
+    }
+
+    interface SimplePermissionRequestExtension extends PermissionRequest {
+        @InvokeExtensions
+        String testMethod(int x, String y);
     }
 }

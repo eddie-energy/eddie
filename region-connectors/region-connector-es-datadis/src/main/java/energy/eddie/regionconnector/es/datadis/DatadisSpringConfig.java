@@ -9,15 +9,21 @@ import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.permission.request.InMemoryPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.services.DatadisScheduler;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Sinks;
 import reactor.netty.http.client.HttpClient;
+
+import java.util.Set;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
@@ -80,8 +86,12 @@ public class DatadisSpringConfig {
     }
 
     @Bean
-    public DatadisScheduler datadisScheduler(DataApi dataApi, Sinks.Many<ConsumptionRecord> consumptionRecordSink) {
-        return new DatadisScheduler(dataApi, consumptionRecordSink);
+    public Set<Extension<EsPermissionRequest>> permissionRequestExtensions(EsPermissionRequestRepository repository,
+                                                                           Sinks.Many<ConnectionStatusMessage> messages) {
+        return Set.of(
+                new SavingExtension<>(repository),
+                new MessagingExtension<>(messages)
+        );
     }
 
     @Bean
