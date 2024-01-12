@@ -9,6 +9,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -17,8 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class InMemoryPermissionRequestRepositoryTest {
 
     private static Stream<Arguments> inTimeFrameDateSource() {
-        LocalDate baseDateFrom = LocalDate.of(2023, 1, 1);
-        LocalDate baseDateTo = baseDateFrom.plusDays(30);
+        ZonedDateTime baseDateFrom = LocalDate.of(2023, 1, 1).atStartOfDay(ZoneOffset.UTC);
+        ZonedDateTime baseDateTo = baseDateFrom.plusDays(30);
         return Stream.of(
                 Arguments.of(baseDateFrom, baseDateTo, baseDateFrom, "start of the timeframe"),
                 Arguments.of(baseDateFrom, baseDateTo, baseDateFrom.plusDays(15), "middle of the timeframe"),
@@ -27,8 +29,8 @@ class InMemoryPermissionRequestRepositoryTest {
     }
 
     private static Stream<Arguments> outsideTimeFrameDateSource() {
-        LocalDate baseDateFrom = LocalDate.of(2023, 1, 1);
-        LocalDate baseDateTo = baseDateFrom.plusDays(30);
+        ZonedDateTime baseDateFrom = LocalDate.of(2023, 1, 1).atStartOfDay(ZoneOffset.UTC);
+        ZonedDateTime baseDateTo = baseDateFrom.plusDays(30);
         return Stream.of(
                 Arguments.of(baseDateFrom, baseDateTo, baseDateFrom.minusMonths(1), "before start of the timeframe"),
                 Arguments.of(baseDateFrom, baseDateTo, baseDateFrom.minusDays(1), "just before start of the timeframe"),
@@ -156,7 +158,7 @@ class InMemoryPermissionRequestRepositoryTest {
     @DisplayName("Check matching permission requests for ")
     @ParameterizedTest(name = "{displayName} {3}")
     @MethodSource("inTimeFrameDateSource")
-    void findByMeteringPointIdAndDate_givenDifferentDates_returnsMatch(LocalDate dateFrom, LocalDate dateTo, LocalDate retrievalDate, String description) {
+    void findByMeteringPointIdAndDate_givenDifferentDates_returnsMatch(ZonedDateTime dateFrom, ZonedDateTime dateTo, ZonedDateTime retrievalDate, String description) {
         // Given
         var repository = new InMemoryPermissionRequestRepository();
         String meteringPointId = "meteringPointId";
@@ -168,12 +170,12 @@ class InMemoryPermissionRequestRepositoryTest {
                 "dsoId",
                 Optional.of(meteringPointId),
                 dateFrom,
-                Optional.of(dateTo),
+                dateTo,
                 null);
         repository.save(request);
 
         // When
-        var permissionRequests = repository.findByMeteringPointIdAndDate(meteringPointId, retrievalDate);
+        var permissionRequests = repository.findByMeteringPointIdAndDate(meteringPointId, retrievalDate.toLocalDate());
 
         // Then
         assertEquals(1, permissionRequests.size());
@@ -182,7 +184,7 @@ class InMemoryPermissionRequestRepositoryTest {
     @DisplayName("Check matching permission requests for ")
     @ParameterizedTest(name = "{displayName} {3}")
     @MethodSource("outsideTimeFrameDateSource")
-    void findByMeteringPointIdAndDate_givenDifferentDatesOutsideOfTimeFrame_returnsEmpty(LocalDate dateFrom, LocalDate dateTo, LocalDate retrievalDate, String description) {
+    void findByMeteringPointIdAndDate_givenDifferentDatesOutsideOfTimeFrame_returnsEmpty(ZonedDateTime dateFrom, ZonedDateTime dateTo, ZonedDateTime retrievalDate, String description) {
         // Given
         var repository = new InMemoryPermissionRequestRepository();
         String meteringPointId = "meteringPointId";
@@ -194,12 +196,12 @@ class InMemoryPermissionRequestRepositoryTest {
                 "dsoId",
                 Optional.of(meteringPointId),
                 dateFrom,
-                Optional.of(dateTo),
+                dateTo,
                 null);
         repository.save(request);
 
         // When
-        var permissionRequests = repository.findByMeteringPointIdAndDate(meteringPointId, retrievalDate);
+        var permissionRequests = repository.findByMeteringPointIdAndDate(meteringPointId, retrievalDate.toLocalDate());
 
         // Then
         assertTrue(permissionRequests.isEmpty());
@@ -208,9 +210,9 @@ class InMemoryPermissionRequestRepositoryTest {
     @Test
     void findByMeteringPointIdAndDate_withMultipleMatches_returnsMatches() {
         // Given
-        LocalDate dateFrom = LocalDate.of(2023, 1, 1);
-        LocalDate dateTo = dateFrom.plusDays(30);
-        LocalDate retrievalDate = dateFrom.plusDays(15);
+        ZonedDateTime dateFrom = LocalDate.of(2023, 1, 1).atStartOfDay(ZoneOffset.UTC);
+        ZonedDateTime dateTo = dateFrom.plusDays(30);
+        ZonedDateTime retrievalDate = dateFrom.plusDays(15);
         var repository = new InMemoryPermissionRequestRepository();
         String meteringPointId = "meteringPointId";
         var request = new SimplePermissionRequest(
@@ -222,7 +224,7 @@ class InMemoryPermissionRequestRepositoryTest {
                 "dsoId",
                 Optional.of(meteringPointId),
                 dateFrom,
-                Optional.of(dateTo),
+                dateTo,
                 null);
         var request2 = new SimplePermissionRequest(
                 "permissionId2",
@@ -233,14 +235,14 @@ class InMemoryPermissionRequestRepositoryTest {
                 "dsoId",
                 Optional.of(meteringPointId),
                 dateFrom,
-                Optional.of(dateTo),
+                dateTo,
                 null);
 
         repository.save(request);
         repository.save(request2);
 
         // When
-        var permissionRequests = repository.findByMeteringPointIdAndDate(meteringPointId, retrievalDate);
+        var permissionRequests = repository.findByMeteringPointIdAndDate(meteringPointId, retrievalDate.toLocalDate());
 
         // Then
         assertEquals(2, permissionRequests.size());
@@ -250,9 +252,9 @@ class InMemoryPermissionRequestRepositoryTest {
     @Test
     void findByMeteringPointIdAndDate_withMultipleRequests_returnsOnlyMatches() {
         // Given
-        LocalDate dateFrom = LocalDate.of(2023, 1, 1);
-        LocalDate dateTo = dateFrom.plusDays(30);
-        LocalDate retrievalDate = dateFrom.plusDays(15);
+        ZonedDateTime dateFrom = LocalDate.of(2023, 1, 1).atStartOfDay(ZoneOffset.UTC);
+        ZonedDateTime dateTo = dateFrom.plusDays(30);
+        ZonedDateTime retrievalDate = dateFrom.plusDays(15);
         var repository = new InMemoryPermissionRequestRepository();
         String meteringPointId = "meteringPointId";
         var request = new SimplePermissionRequest(
@@ -264,7 +266,7 @@ class InMemoryPermissionRequestRepositoryTest {
                 "dsoId",
                 Optional.of(meteringPointId),
                 dateFrom,
-                Optional.of(dateTo),
+                dateTo,
                 null);
         var request2 = new SimplePermissionRequest(
                 "permissionId2",
@@ -275,14 +277,14 @@ class InMemoryPermissionRequestRepositoryTest {
                 "dsoId",
                 Optional.of("otherMeteringPointId"),
                 dateFrom,
-                Optional.of(dateTo),
+                dateTo,
                 null);
 
         repository.save(request);
         repository.save(request2);
 
         // When
-        var permissionRequests = repository.findByMeteringPointIdAndDate(meteringPointId, retrievalDate);
+        var permissionRequests = repository.findByMeteringPointIdAndDate(meteringPointId, retrievalDate.toLocalDate());
 
         // Then
         assertEquals(1, permissionRequests.size());

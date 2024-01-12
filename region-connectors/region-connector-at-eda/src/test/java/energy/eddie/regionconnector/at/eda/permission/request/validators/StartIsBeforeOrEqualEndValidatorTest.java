@@ -6,8 +6,8 @@ import energy.eddie.regionconnector.at.eda.permission.request.states.AtAcceptedP
 import energy.eddie.regionconnector.at.eda.permission.request.validation.StartIsBeforeOrEqualEndValidator;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -26,8 +26,8 @@ class StartIsBeforeOrEqualEndValidatorTest {
                 "convId",
                 "dsoId",
                 Optional.empty(),
-                LocalDate.now(ZoneId.systemDefault()),
-                Optional.empty(),
+                ZonedDateTime.now(ZoneOffset.UTC),
+                null,
                 new AtAcceptedPermissionRequestState(null)
         );
 
@@ -42,8 +42,8 @@ class StartIsBeforeOrEqualEndValidatorTest {
     void isNotValid_whenPermissionRequestEndIsBeforeStart() {
         // Given
         StartIsBeforeOrEqualEndValidator validator = new StartIsBeforeOrEqualEndValidator();
-        LocalDate start = LocalDate.now(ZoneId.systemDefault());
-        LocalDate end = start.minusDays(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
+        ZonedDateTime end = start.minusDays(1);
         AtPermissionRequest permissionRequest = new SimplePermissionRequest(
                 "pid",
                 "cid",
@@ -53,7 +53,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
                 "dsoId",
                 Optional.empty(),
                 start,
-                Optional.of(end),
+                end,
                 new AtAcceptedPermissionRequestState(null)
         );
         // When
@@ -70,8 +70,8 @@ class StartIsBeforeOrEqualEndValidatorTest {
     void isValid_whenPermissionRequestStartIsBeforeEnd() {
         // Given
         StartIsBeforeOrEqualEndValidator validator = new StartIsBeforeOrEqualEndValidator();
-        LocalDate start = LocalDate.now(ZoneId.systemDefault());
-        LocalDate end = start.plusDays(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
+        ZonedDateTime end = start.plusDays(1);
         AtPermissionRequest permissionRequest = new SimplePermissionRequest(
                 "pid",
                 "cid",
@@ -81,7 +81,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
                 "dsoId",
                 Optional.empty(),
                 start,
-                Optional.of(end),
+                end,
                 new AtAcceptedPermissionRequestState(null)
         );
 
@@ -96,7 +96,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
     void isValid_whenPermissionRequestStartIsEqualEnd() {
         // Given
         StartIsBeforeOrEqualEndValidator validator = new StartIsBeforeOrEqualEndValidator();
-        LocalDate start = LocalDate.now(ZoneId.systemDefault());
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
         AtPermissionRequest permissionRequest = new SimplePermissionRequest(
                 "pid",
                 "cid",
@@ -106,7 +106,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
                 "dsoId",
                 Optional.empty(),
                 start,
-                Optional.of(start),
+                start,
                 new AtAcceptedPermissionRequestState(null)
         );
         // When

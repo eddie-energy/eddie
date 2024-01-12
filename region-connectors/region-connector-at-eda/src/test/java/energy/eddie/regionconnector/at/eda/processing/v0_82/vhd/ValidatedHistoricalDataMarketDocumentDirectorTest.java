@@ -4,7 +4,7 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHead
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.MarketParticipantDirectory;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.cim.validated_historical_data.v0_82.CodingSchemeTypeList;
+import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilder;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;

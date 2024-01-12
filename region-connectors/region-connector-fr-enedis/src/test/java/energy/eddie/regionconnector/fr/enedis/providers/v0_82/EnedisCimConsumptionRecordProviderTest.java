@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
-import energy.eddie.cim.validated_historical_data.v0_82.CodingSchemeTypeList;
+import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveIntervalReading;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;

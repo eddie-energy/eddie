@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.permission.request.api;
 
-import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.shared.permission.requests.annotations.InvokeExtensions;
@@ -8,7 +8,7 @@ import energy.eddie.regionconnector.shared.permission.requests.annotations.Invok
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-public interface EsPermissionRequest extends PermissionRequest {
+public interface EsPermissionRequest extends TimeframedPermissionRequest {
     /**
      * The NIF of the customer that requested the permission.
      * This is the username which is used to log in to the Datadis portal.
@@ -46,7 +46,7 @@ public interface EsPermissionRequest extends PermissionRequest {
 
     /**
      * The date the permission starts.
-     * This can be different from @{@link #requestDataFrom()}, as the timeframe for which data is requested can be
+     * This can be different from @{@link #start()}, as the timeframe for which data is requested can be
      * different from the timeframe for which the permission is valid.
      */
     ZonedDateTime permissionStart();
@@ -55,16 +55,6 @@ public interface EsPermissionRequest extends PermissionRequest {
      * The date the permission ends.
      */
     ZonedDateTime permissionEnd();
-
-    /**
-     * The date from which data is requested.
-     */
-    ZonedDateTime requestDataFrom();
-
-    /**
-     * The date to which data is requested.
-     */
-    ZonedDateTime requestDataTo();
 
     /**
      * The latest meter reading that was pulled for this permission request.

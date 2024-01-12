@@ -101,11 +101,11 @@ public class CCMORequest {
         return dsoIdAndMeteringPoint.dsoId();
     }
 
-    public LocalDate dataFrom() {
+    public ZonedDateTime start() {
         return timeframe.start();
     }
 
-    public Optional<LocalDate> dataTo() {
+    public Optional<ZonedDateTime> end() {
         return timeframe.end();
     }
 
@@ -164,9 +164,9 @@ public class CCMORequest {
                 .withReqDatType(requestDataType.toString(timeframe))
                 .withMeteringIntervall(meteringIntervall())
                 .withTransmissionCycle(this.transmissionCycle)
-                .withDateFrom(DateTimeConverter.dateToXml(timeframe.start()))
+                .withDateFrom(DateTimeConverter.dateTimeToXml(timeframe.start()))
                 .withDateTo(timeframe.end()
-                        .map(DateTimeConverter::dateToXml)
+                        .map(DateTimeConverter::dateTimeToXml)
                         .orElse(null)
                 );
     }

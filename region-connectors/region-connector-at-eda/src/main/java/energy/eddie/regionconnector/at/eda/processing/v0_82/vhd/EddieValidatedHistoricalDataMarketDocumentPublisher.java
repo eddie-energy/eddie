@@ -1,14 +1,14 @@
 package energy.eddie.regionconnector.at.eda.processing.v0_82.vhd;
 
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
-import energy.eddie.cim.validated_historical_data.v0_82.ValidatedHistoricalDataMarketDocument;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocument;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -20,15 +20,15 @@ public class EddieValidatedHistoricalDataMarketDocumentPublisher {
         this.permissionRequestService = permissionRequestService;
     }
 
-    private static LocalDate getDataStartDate(ValidatedHistoricalDataMarketDocument marketDocument) {
-        return LocalDateTime.parse(
-                        marketDocument.getPeriodTimeInterval().getStart(),
-                        DateTimeFormatter.ISO_DATE_TIME)
-                .toLocalDate();
+    private static ZonedDateTime getDataStartDate(ValidatedHistoricalDataMarketDocument marketDocument) {
+        return ZonedDateTime.parse(
+                marketDocument.getPeriodTimeInterval().getStart(),
+                DateTimeFormatter.ISO_DATE_TIME
+        );
     }
 
     private static String getMeteringPointId(ValidatedHistoricalDataMarketDocument marketDocument) {
-        return marketDocument.getTimeSeriesList().getTimeSeries().get(0).getMarketEvaluationPointMRID().getValue();
+        return marketDocument.getTimeSeriesList().getTimeSeries().getFirst().getMarketEvaluationPointMRID().getValue();
     }
 
     /**
@@ -40,7 +40,7 @@ public class EddieValidatedHistoricalDataMarketDocumentPublisher {
      */
     public Flux<EddieValidatedHistoricalDataMarketDocument> emitForEachPermissionRequest(ValidatedHistoricalDataMarketDocument marketDocument) {
         String meteringPointId = getMeteringPointId(marketDocument);
-        LocalDate date = getDataStartDate(marketDocument);
+        LocalDate date = getDataStartDate(marketDocument).toLocalDate();
 
         var permissionRequests = permissionRequestService.findByMeteringPointIdAndDate(meteringPointId, date);
 
@@ -49,11 +49,13 @@ public class EddieValidatedHistoricalDataMarketDocumentPublisher {
             return Flux.empty(); // Return an empty Flux if no permission requests are found
         }
 
-        return Flux.fromIterable(permissionRequests).map(permissionRequest -> new EddieValidatedHistoricalDataMarketDocument(
-                Optional.ofNullable(permissionRequest.connectionId()),
-                Optional.ofNullable(permissionRequest.permissionId()),
-                Optional.ofNullable(permissionRequest.dataNeedId()),
-                marketDocument)
-        );
+        return Flux.fromIterable(permissionRequests)
+                .map(permissionRequest -> new EddieValidatedHistoricalDataMarketDocument(
+                                Optional.ofNullable(permissionRequest.connectionId()),
+                                Optional.ofNullable(permissionRequest.permissionId()),
+                                Optional.ofNullable(permissionRequest.dataNeedId()),
+                                marketDocument
+                        )
+                );
     }
 }

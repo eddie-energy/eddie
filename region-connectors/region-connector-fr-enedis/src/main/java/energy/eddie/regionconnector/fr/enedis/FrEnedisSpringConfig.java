@@ -6,7 +6,7 @@ import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.validated_historical_data.v0_82.CodingSchemeTypeList;
+import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClientDecorator;

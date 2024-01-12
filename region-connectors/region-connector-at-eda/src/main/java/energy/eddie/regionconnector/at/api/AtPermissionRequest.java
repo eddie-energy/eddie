@@ -1,12 +1,11 @@
 package energy.eddie.regionconnector.at.api;
 
 
-import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
-public interface AtPermissionRequest extends PermissionRequest {
+public interface AtPermissionRequest extends TimeframedPermissionRequest {
     /**
      * The CM Request ID of this permission request.
      *
@@ -38,21 +37,6 @@ public interface AtPermissionRequest extends PermissionRequest {
      * @return consentId
      */
     Optional<String> consentId();
-
-    /**
-     * The start date from when data is requested.
-     *
-     * @return dataFrom
-     */
-    LocalDate dataFrom();
-
-    /**
-     * The end date until when the data is requested.
-     * If this is not present, the permission request is active until it is revoked.
-     *
-     * @return dataTo
-     */
-    Optional<LocalDate> dataTo();
 
     /**
      * Message that describes why the state transition happened.

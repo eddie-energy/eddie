@@ -5,7 +5,7 @@ import energy.eddie.regionconnector.shared.validation.SupportedGranularities;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.at.eda.requests.CCMORequest.DSO_ID_LENGTH;
 
@@ -27,8 +27,8 @@ public record PermissionRequestForCreation(
                 message = "needs to be exactly " + DSO_ID_LENGTH + " characters long"
         )
         String dsoId,
-        LocalDate start,
-        LocalDate end,
+        ZonedDateTime start,
+        ZonedDateTime end,
         @SupportedGranularities({Granularity.PT15M, Granularity.PT1H, Granularity.P1D})
         Granularity granularity
 ) {

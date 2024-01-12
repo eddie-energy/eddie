@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
-import energy.eddie.cim.validated_historical_data.v0_82.*;
+import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 
 import java.util.UUID;

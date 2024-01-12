@@ -14,6 +14,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,9 +52,9 @@ class RevocationServiceTest {
         // Given
         var edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        LocalDate now = LocalDate.now(ZoneOffset.UTC);
-        when(ccmoRequest.dataFrom()).thenReturn(now);
-        when(ccmoRequest.dataTo()).thenReturn(Optional.of(now.plusDays(10)));
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        when(ccmoRequest.start()).thenReturn(now);
+        when(ccmoRequest.end()).thenReturn(Optional.of(now.plusDays(10)));
         var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, edaAdapter);
         permissionRequest.setMeteringPointId("mpid");
         permissionRequest.changeState(new AtAcceptedPermissionRequestState(permissionRequest));
@@ -85,9 +86,9 @@ class RevocationServiceTest {
         // Given
         var edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        LocalDate now = LocalDate.now(ZoneOffset.UTC);
-        when(ccmoRequest.dataFrom()).thenReturn(now);
-        when(ccmoRequest.dataTo()).thenReturn(Optional.of(now.plusDays(10)));
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        when(ccmoRequest.start()).thenReturn(now);
+        when(ccmoRequest.end()).thenReturn(Optional.of(now.plusDays(10)));
         var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, edaAdapter);
         permissionRequest.setMeteringPointId("mpid");
         TestPublisher<CMRevoke> revocationStream = TestPublisher.create();

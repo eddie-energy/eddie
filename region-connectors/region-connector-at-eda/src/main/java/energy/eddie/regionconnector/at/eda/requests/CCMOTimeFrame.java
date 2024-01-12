@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.at.eda.requests;
 
 import jakarta.annotation.Nullable;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -14,21 +14,21 @@ import static java.util.Objects.requireNonNull;
  * It allows for the end date to be null
  */
 public final class CCMOTimeFrame {
-    private final LocalDate start;
+    private final ZonedDateTime start;
     @Nullable
-    private final LocalDate end;
+    private final ZonedDateTime end;
 
-    public CCMOTimeFrame(LocalDate start, @Nullable LocalDate end) {
+    public CCMOTimeFrame(ZonedDateTime start, @Nullable ZonedDateTime end) {
         requireNonNull(start);
         this.start = start;
         this.end = end;
     }
 
-    public LocalDate start() {
+    public ZonedDateTime start() {
         return start;
     }
 
-    public Optional<LocalDate> end() {
+    public Optional<ZonedDateTime> end() {
         return Optional.ofNullable(end);
     }
 

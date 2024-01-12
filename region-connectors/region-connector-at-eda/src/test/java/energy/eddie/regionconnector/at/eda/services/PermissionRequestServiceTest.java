@@ -15,8 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -83,7 +83,7 @@ class PermissionRequestServiceTest {
         when(permissionRequestFactory.create(permissionRequest)).thenReturn(permissionRequest);
 
         // When
-        List<AtPermissionRequest> result = permissionRequestService.findByMeteringPointIdAndDate(meteringPoint, LocalDate.now(ZoneId.systemDefault()));
+        List<AtPermissionRequest> result = permissionRequestService.findByMeteringPointIdAndDate(meteringPoint, ZonedDateTime.now(ZoneOffset.UTC).toLocalDate());
 
         // Then
         assertEquals(List.of(permissionRequest), result);

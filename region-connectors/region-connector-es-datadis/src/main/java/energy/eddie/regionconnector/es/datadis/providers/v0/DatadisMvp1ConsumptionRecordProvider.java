@@ -39,8 +39,8 @@ public class DatadisMvp1ConsumptionRecordProvider implements Mvp1ConsumptionReco
         var permissionRequest = identifiableMeteringData.permissionRequest();
         var meteringData = identifiableMeteringData.meteringData();
 
-        var from = permissionRequest.requestDataFrom().toLocalDate();
-        var to = permissionRequest.requestDataTo().toLocalDate();
+        var from = permissionRequest.start().toLocalDate();
+        var to = Objects.requireNonNull(permissionRequest.end()).toLocalDate();
 
         // remove metering data that is not in the requested time range
         meteringData.removeIf(notInRequestedRange(from, to));

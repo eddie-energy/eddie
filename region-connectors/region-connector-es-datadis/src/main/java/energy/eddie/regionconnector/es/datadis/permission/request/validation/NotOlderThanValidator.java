@@ -29,7 +29,7 @@ public class NotOlderThanValidator implements Validator<EsPermissionRequest> {
     @Override
     public List<AttributeError> validate(EsPermissionRequest value) {
         var earliestAllowedStart = ZonedDateTime.now(DatadisSpecificConstants.ZONE_ID_SPAIN).minus(limit, unit);
-        if (value.requestDataFrom().isBefore(earliestAllowedStart)) {
+        if (value.start().isBefore(earliestAllowedStart)) {
             return List.of(new AttributeError("requestDataFrom", "requestDataFrom must not be older than %s %s".formatted(limit, unit)));
         }
         return List.of();

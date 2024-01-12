@@ -17,7 +17,7 @@ public class StartIsBeforeEndValidator implements Validator<EsPermissionRequest>
     @Override
     public List<AttributeError> validate(EsPermissionRequest value) {
 
-        if (value.requestDataFrom().isBefore(value.requestDataTo())) {
+        if (value.start().isBefore(value.end())) {
             return Collections.emptyList();
         }
 

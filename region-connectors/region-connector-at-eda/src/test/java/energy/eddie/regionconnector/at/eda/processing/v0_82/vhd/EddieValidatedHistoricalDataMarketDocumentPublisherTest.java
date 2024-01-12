@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.at.eda.processing.v0_82.vhd;
 
-import energy.eddie.cim.validated_historical_data.v0_82.ESMPDateTimeIntervalComplexType;
-import energy.eddie.cim.validated_historical_data.v0_82.MeasurementPointIDStringComplexType;
-import energy.eddie.cim.validated_historical_data.v0_82.TimeSeriesComplexType;
-import energy.eddie.cim.validated_historical_data.v0_82.ValidatedHistoricalDataMarketDocument;
+import energy.eddie.cim.v0_82.vhd.ESMPDateTimeIntervalComplexType;
+import energy.eddie.cim.v0_82.vhd.MeasurementPointIDStringComplexType;
+import energy.eddie.cim.v0_82.vhd.TimeSeriesComplexType;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocument;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,7 @@ import reactor.test.StepVerifier;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,13 +38,13 @@ class EddieValidatedHistoricalDataMarketDocumentPublisherTest {
     void emitForEachPermissionRequest_forThreePermissionRequest_emitsThreeTimes() {
         String meteringPointId = "meteringPointId";
         var xmlCalendar = DatatypeFactory.newDefaultInstance().newXMLGregorianCalendar(2023, 1, 1, 0, 0, 0, 0, 0);
-        LocalDate date = xmlCalendar.toGregorianCalendar().toZonedDateTime().toLocalDate();
+        ZonedDateTime date = xmlCalendar.toGregorianCalendar().toZonedDateTime();
 
         AtPermissionRequest permissionRequest = mock(AtPermissionRequest.class);
         when(permissionRequest.meteringPointId()).thenReturn(Optional.of(meteringPointId));
 
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
-        when(permissionRequestService.findByMeteringPointIdAndDate(meteringPointId, date))
+        when(permissionRequestService.findByMeteringPointIdAndDate(meteringPointId, date.toLocalDate()))
                 .thenReturn(List.of(permissionRequest, permissionRequest, permissionRequest));
 
         ValidatedHistoricalDataMarketDocument marketDocument = createMarketDocument(meteringPointId, xmlCalendar);
@@ -60,10 +60,10 @@ class EddieValidatedHistoricalDataMarketDocumentPublisherTest {
     void emitForEachPermissionRequest_noPermissionRequest_emitsNothing() {
         String meteringPointId = "meteringPointId";
         var xmlCalendar = DatatypeFactory.newDefaultInstance().newXMLGregorianCalendar(2023, 1, 1, 0, 0, 0, 0, 0);
-        LocalDate date = xmlCalendar.toGregorianCalendar().toZonedDateTime().toLocalDate();
+        ZonedDateTime date = xmlCalendar.toGregorianCalendar().toZonedDateTime();
 
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
-        when(permissionRequestService.findByMeteringPointIdAndDate(meteringPointId, date))
+        when(permissionRequestService.findByMeteringPointIdAndDate(meteringPointId, date.toLocalDate()))
                 .thenReturn(List.of());
 
         ValidatedHistoricalDataMarketDocument marketDocument = createMarketDocument(meteringPointId, xmlCalendar);

@@ -5,7 +5,7 @@ import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 public record SimplePermissionRequest(String permissionId,
@@ -15,20 +15,21 @@ public record SimplePermissionRequest(String permissionId,
                                       String conversationId,
                                       String dsoId,
                                       Optional<String> meteringPointId,
-                                      LocalDate dataFrom,
-                                      Optional<LocalDate> dataTo,
+                                      ZonedDateTime start,
+                                      ZonedDateTime end,
                                       PermissionRequestState state
 ) implements AtPermissionRequest {
 
     public SimplePermissionRequest(String permissionId, String connectionId) {
-        this(permissionId, connectionId, null, null, null, null, Optional.empty(), null, Optional.empty(), null);
+        this(permissionId, connectionId, null, null, null, null, Optional.empty(), null, null, null);
     }
 
     public SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId, String cmRequestId, String conversationId, PermissionRequestState state) {
-        this(permissionId, connectionId, dataNeedId, cmRequestId, conversationId, null, Optional.empty(), null, Optional.empty(), state);
+        this(permissionId, connectionId, dataNeedId, cmRequestId, conversationId, null, Optional.empty(), null, null, state);
     }
 
 
+    @Override
     public Optional<String> consentId() {
         return Optional.empty();
     }

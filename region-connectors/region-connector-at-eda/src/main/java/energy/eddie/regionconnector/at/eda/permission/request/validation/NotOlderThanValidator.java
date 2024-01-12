@@ -4,10 +4,11 @@ import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 
-import java.time.Clock;
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+
+import static energy.eddie.regionconnector.at.eda.utils.DateTimeConstants.AT_ZONE_ID;
 
 public class NotOlderThanValidator implements Validator<AtPermissionRequest> {
     private final ChronoUnit unit;
@@ -21,7 +22,7 @@ public class NotOlderThanValidator implements Validator<AtPermissionRequest> {
 
     @Override
     public List<AttributeError> validate(AtPermissionRequest value) {
-        if (value.dataFrom().isBefore(LocalDate.now(Clock.systemUTC()).minus(limit, unit))) {
+        if (value.start().toLocalDate().isBefore(ZonedDateTime.now(AT_ZONE_ID).toLocalDate().minus(limit, unit))) {
             return List.of(new AttributeError("dataFrom", "Date must no be older than %s %s".formatted(limit, unit)));
         }
         return List.of();

@@ -28,7 +28,7 @@ class AiidaFactoryTest {
     @Mock
     private DataNeedsService mockDataNeedsService;
     @Mock
-    private AiidaRegionConnectorService mockService;
+    private AiidaRegionConnectorService unused;
     private AiidaFactory aiidaFactory;
 
     @BeforeEach

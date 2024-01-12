@@ -1,6 +1,6 @@
 package energy.eddie.api.v0_82.cim;
 
-import energy.eddie.cim.validated_historical_data.v0_82.ValidatedHistoricalDataMarketDocument;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocument;
 
 import java.util.Optional;
 

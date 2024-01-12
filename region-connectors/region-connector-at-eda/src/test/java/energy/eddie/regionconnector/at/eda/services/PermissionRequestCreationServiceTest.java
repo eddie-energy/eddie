@@ -8,8 +8,8 @@ import energy.eddie.regionconnector.at.eda.permission.request.PermissionRequestF
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import org.junit.jupiter.api.Test;
 
-import java.time.Clock;
-import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -25,8 +25,8 @@ class PermissionRequestCreationServiceTest {
         AtConfiguration config = mock(AtConfiguration.class);
         when(config.eligiblePartyId()).thenReturn("AT999999");
 
-        LocalDate start = LocalDate.now(Clock.systemUTC()).minusDays(10);
-        LocalDate end = start.plusDays(5);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
+        ZonedDateTime end = start.plusDays(5);
         PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100", "dnid", "AT000000", start, end, Granularity.PT15M);
         PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(edaAdapter, Set.of());
         PermissionRequestCreationService creationService = new PermissionRequestCreationService(permissionRequestFactory, config);

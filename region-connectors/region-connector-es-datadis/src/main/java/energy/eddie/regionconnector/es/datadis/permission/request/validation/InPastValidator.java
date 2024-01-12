@@ -23,7 +23,7 @@ public class InPastValidator implements Validator<EsPermissionRequest> {
     public List<AttributeError> validate(EsPermissionRequest value) {
         var nowMinus1Day = ZonedDateTime.now(ZONE_ID_SPAIN).minusDays(1);
 
-        if (nowMinus1Day.isBefore(value.requestDataFrom()) || nowMinus1Day.isBefore(value.requestDataTo())) {
+        if (nowMinus1Day.isBefore(value.start()) || nowMinus1Day.isBefore(value.end())) {
             return List.of(new AttributeError("requestDataFrom", "requestDataFrom and requestDataTo must be completely in the past (i.e. at least 1 day in the past)"));
         }
 

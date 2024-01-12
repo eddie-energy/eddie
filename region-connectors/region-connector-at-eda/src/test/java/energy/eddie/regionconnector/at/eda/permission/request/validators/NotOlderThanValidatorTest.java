@@ -6,8 +6,8 @@ import energy.eddie.regionconnector.at.eda.permission.request.states.AtAcceptedP
 import energy.eddie.regionconnector.at.eda.permission.request.validation.NotOlderThanValidator;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
@@ -28,8 +28,8 @@ class NotOlderThanValidatorTest {
                 "convId",
                 "dsoId",
                 Optional.empty(),
-                LocalDate.now(ZoneId.systemDefault()).minusDays(15),
-                Optional.empty(),
+                ZonedDateTime.now(ZoneOffset.UTC).minusDays(15),
+                null,
                 new AtAcceptedPermissionRequestState(null)
         );
 
@@ -55,8 +55,8 @@ class NotOlderThanValidatorTest {
                 "convId",
                 "dsoId",
                 Optional.empty(),
-                LocalDate.now(ZoneId.systemDefault()).minusDays(5),
-                Optional.empty(),
+                ZonedDateTime.now(ZoneOffset.UTC).minusDays(5),
+                null,
                 new AtAcceptedPermissionRequestState(null)
         );
 
@@ -79,8 +79,8 @@ class NotOlderThanValidatorTest {
                 "convId",
                 "dsoId",
                 Optional.empty(),
-                LocalDate.now(ZoneId.systemDefault()).plusDays(5),
-                Optional.empty(),
+                ZonedDateTime.now(ZoneOffset.UTC).plusDays(5),
+                null,
                 new AtAcceptedPermissionRequestState(null)
         );
 
@@ -103,8 +103,8 @@ class NotOlderThanValidatorTest {
                 "convId",
                 "dsoId",
                 Optional.empty(),
-                LocalDate.now(ZoneId.systemDefault()),
-                Optional.empty(),
+                ZonedDateTime.now(ZoneOffset.UTC),
+                null,
                 new AtAcceptedPermissionRequestState(null)
         );
 

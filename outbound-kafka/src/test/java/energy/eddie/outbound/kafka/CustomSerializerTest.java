@@ -86,7 +86,7 @@ class CustomSerializerTest {
                 Optional.of("connectionId"),
                 Optional.of("permissionId"),
                 Optional.of("dataNeedId"),
-                new energy.eddie.cim.validated_historical_data.v0_82.ValidatedHistoricalDataMarketDocument()
+                new energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocument()
         );
         byte[] expected = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
@@ -118,6 +118,6 @@ class CustomSerializerTest {
         var result = customSerializer.serialize(topic, message);
 
         // Then
-        assertEquals(expectedString, new String(result));
+        assertEquals(expectedString, new String(result, StandardCharsets.UTF_8));
     }
 }

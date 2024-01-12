@@ -2,7 +2,7 @@ package energy.eddie.core.services;
 
 import energy.eddie.api.v0_82.CimConsumptionRecordProvider;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
-import energy.eddie.cim.validated_historical_data.v0_82.ValidatedHistoricalDataMarketDocument;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocument;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import reactor.adapter.JdkFlowAdapter;

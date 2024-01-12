@@ -5,6 +5,7 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,7 +23,11 @@ public class InMemoryPermissionRequestRepository implements AtPermissionRequestR
     }
 
     private static boolean isInTimeFrame(AtPermissionRequest permissionRequest, LocalDate date) {
-        return !date.isBefore(permissionRequest.dataFrom()) && !permissionRequest.dataTo().map(date::isAfter).orElse(false);
+        return !date.isBefore(permissionRequest.start().toLocalDate())
+                && !Optional.ofNullable(permissionRequest.end())
+                .map(ZonedDateTime::toLocalDate)
+                .map(date::isAfter)
+                .orElse(false);
     }
 
     @Override
