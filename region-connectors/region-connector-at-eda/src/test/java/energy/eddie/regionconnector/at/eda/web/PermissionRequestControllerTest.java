@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.at.eda.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
@@ -10,14 +11,17 @@ import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionReq
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtAcceptedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestCreationService;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
+import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,6 +33,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import static energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice.ERRORS_JSON_PATH;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -49,6 +54,19 @@ class PermissionRequestControllerTest {
     private ServletWebServerApplicationContext unusedServerApplicationContext;
     @MockBean
     private Supplier<Integer> unusedPortSupplier;
+
+    /**
+     * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
+     * whole core is started. To be able to properly test the controller's error responses, manually add the advice
+     * to this test class.
+     */
+    @TestConfiguration
+    static class ControllerTestConfiguration {
+        @Bean
+        public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
+            return new RegionConnectorsCommonControllerAdvice();
+        }
+    }
 
     private static Stream<Arguments> permissionRequestArguments() {
         return Stream.of(
@@ -97,7 +115,8 @@ class PermissionRequestControllerTest {
                                 .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.permissionId", is("No permission with ID 123 found")));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("No permission with ID '123' found.")));
     }
 
     @Test
@@ -121,7 +140,46 @@ class PermissionRequestControllerTest {
                 )
                 // Then
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.body", is("Invalid request body")));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
+    }
+
+    @Test
+    void createPermissionRequest_400WhenMissingFields() throws Exception {
+        // Given
+        mockMvc.perform(
+                        MockMvcRequestBuilders.post("/permission-request")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}")
+                )
+                // Then
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(2)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItems(
+                        "dataNeedId: must not be blank",
+                        "connectionId: must not be blank")));
+    }
+
+    @Test
+    void createPermissionRequest_400WhenFieldsNotExactSize() throws Exception {
+        ObjectNode jsonNode = objectMapper.createObjectNode()
+                .put("connectionId", "23")
+                .put("dataNeedId", "PT4h")
+                .put("dsoId", "123")
+                .put("meteringPointId", "456");
+
+        // Given
+        mockMvc.perform(
+                        MockMvcRequestBuilders.post("/permission-request")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(jsonNode))
+                )
+                // Then
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(2)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItems(
+                        "meteringPointId: needs to be exactly 33 characters long",
+                        "dsoId: needs to be exactly 8 characters long")));
     }
 
     @Test
@@ -165,7 +223,8 @@ class PermissionRequestControllerTest {
                 )
                 // Then
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.granularity", startsWith("Unsupported granularity: 'P1M'.")));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", startsWith("granularity: Unsupported granularity: 'P1M'.")));
     }
 
     @Test
@@ -202,6 +261,7 @@ class PermissionRequestControllerTest {
                 )
                 // Then
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$." + errorFieldName, startsWithIgnoringCase(errorFieldName)));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", startsWith(errorFieldName)));
     }
 }

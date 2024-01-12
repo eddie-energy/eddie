@@ -11,20 +11,20 @@ import static energy.eddie.regionconnector.at.eda.requests.CCMORequest.DSO_ID_LE
 
 
 public record PermissionRequestForCreation(
-        @NotBlank(message = "ConnectionId must not be empty")
+        @NotBlank(message = "must not be blank")
         String connectionId,
         @Size(
                 min = 33,
                 max = 33,
-                message = "MeteringPointId needs to be exactly 33 characters long"
+                message = "needs to be exactly 33 characters long"
         )
         String meteringPointId,
-        @NotBlank(message = "DataNeedId must not be empty")
+        @NotBlank(message = "must not be blank")
         String dataNeedId,
         @Size(
                 min = DSO_ID_LENGTH,
                 max = DSO_ID_LENGTH,
-                message = "dsoId must be " + DSO_ID_LENGTH + " characters long"
+                message = "needs to be exactly " + DSO_ID_LENGTH + " characters long"
         )
         String dsoId,
         LocalDate start,
