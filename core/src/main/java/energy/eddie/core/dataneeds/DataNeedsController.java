@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.DataNeed;
 import energy.eddie.api.agnostic.DataNeedsService;
 import energy.eddie.api.agnostic.DataType;
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,8 +38,9 @@ public class DataNeedsController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<DataNeed> getDataNeeds(@PathVariable String id) {
-        return ResponseEntity.of(dataNeedsService.getDataNeed(id));
+    public ResponseEntity<DataNeed> getDataNeeds(@PathVariable String id) throws DataNeedNotFoundException {
+        var dataNeed = dataNeedsService.getDataNeed(id).orElseThrow(() -> new DataNeedNotFoundException(id, false));
+        return ResponseEntity.ok(dataNeed);
     }
 
     @GetMapping("/types")
