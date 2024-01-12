@@ -10,7 +10,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -122,6 +124,23 @@ class PermissionRequestControllerAdviceTest {
                 () -> assertEquals(1, errors.size()),
                 () -> assertTrue(errors.containsKey("permissionId")),
                 () -> assertEquals("No permission with ID testId found", errors.get("permissionId"))
+        );
+    }
+
+    @Test
+    void givenHttpMessageNotReadableException_returnsMapWithInvalidRequestBodyMessage() {
+        // Given
+        PermissionRequestControllerAdvice advice = new PermissionRequestControllerAdvice();
+        var exception = new HttpMessageNotReadableException("", mock(HttpInputMessage.class));
+
+        // When
+        var errors = advice.handleHttpMessageNotReadableException(exception);
+
+        // Then
+        assertAll(
+                () -> assertEquals(1, errors.size()),
+                () -> assertTrue(errors.containsKey("body")),
+                () -> assertEquals("Invalid request body", errors.get("body"))
         );
     }
 }

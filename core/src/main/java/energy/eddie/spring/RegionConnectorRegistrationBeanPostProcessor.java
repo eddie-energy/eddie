@@ -1,7 +1,6 @@
 package energy.eddie.spring;
 
 import energy.eddie.api.agnostic.RegionConnector;
-import jakarta.servlet.MultipartConfigElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -57,11 +56,6 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         connectorServletBean.setName(urlMapping);
         // start all region connector servlets with same priority
         connectorServletBean.setLoadOnStartup(2);
-
-        // MultipartConfigElement is needed that region connectors can support "multipart/form-data" requests
-        // TODO: once region connectors use JSON request bodies, this can be removed --> Issue #534
-        MultipartConfigElement multipartConfigElement = new MultipartConfigElement("/tmp");
-        connectorServletBean.setMultipartConfig(multipartConfigElement);
 
         return BeanDefinitionBuilder
                 .genericBeanDefinition(ServletRegistrationBean.class, () -> connectorServletBean)

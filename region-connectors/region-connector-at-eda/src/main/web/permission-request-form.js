@@ -31,11 +31,11 @@ class PermissionRequestForm extends LitElement {
 
     const formData = new FormData(event.target);
 
-    formData.append("dsoId", this.companyId);
-    formData.append("connectionId", this.connectionId);
-    if (formData.get("meteringPointId") === "") {
-      formData.delete("meteringPointId");
-    }
+      let jsonData = {};
+
+      if (formData.get("meteringPointId") !== "") {
+        jsonData.meteringPointId = formData.get("meteringPointId");
+      }
 
     const startDate = new Date();
     startDate.setDate(
@@ -49,14 +49,19 @@ class PermissionRequestForm extends LitElement {
       endDate.setDate(endDate.getDate() + this.dataNeedAttributes.durationEnd);
     }
 
-    formData.append("start", startDate.toISOString().substring(0, 10));
-    formData.append("end", endDate.toISOString().substring(0, 10));
-    formData.append("dataNeedId", this.dataNeedAttributes.id);
-    formData.append("granularity", this.dataNeedAttributes.granularity);
+      jsonData.dsoId = this.companyId;
+      jsonData.connectionId = this.connectionId;
+      jsonData.start = startDate.toISOString().substring(0, 10);
+      jsonData.end = endDate.toISOString().substring(0, 10);
+      jsonData.dataNeedId = this.dataNeedAttributes.id;
+      jsonData.granularity = this.dataNeedAttributes.granularity;
 
     fetch(REQUEST_URL, {
-      body: formData,
+      body: JSON.stringify(jsonData),
       method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
     })
       .then((response) => {
         if (!response.ok) {
@@ -72,7 +77,7 @@ class PermissionRequestForm extends LitElement {
         this._requestStatus = "Request sent.";
 
         this.requestPermissionStatus(permissionId);
-        // poll /permission-request?permissionId=... until the status is either "GRANTED" or "REJECTED"
+        // poll permission-status until the status is either "GRANTED" or "REJECTED"
         this.intervalId = setInterval(
           this.requestPermissionStatus(permissionId),
           5000

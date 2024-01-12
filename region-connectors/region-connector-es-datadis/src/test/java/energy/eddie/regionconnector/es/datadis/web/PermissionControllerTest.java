@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisDataSourceInformation;
@@ -33,6 +35,7 @@ class PermissionControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private PermissionRequestService mockService;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {
@@ -129,16 +132,15 @@ class PermissionControllerTest {
     }
 
     @Test
-    void requestPermission_missingAllRequiredFields_returnsBadRequest() throws Exception {
+    void requestPermission_missingRequiredFields_returnsBadRequest() throws Exception {
         mockMvc.perform(post("/permission-request")
-                        .param("useless", "value")
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"connectionId\": \"Hello World\"}"))
                 // Then
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", allOf(
-                        iterableWithSize(7),
-                        hasItem("connectionId must not be null or blank"),
+                        iterableWithSize(6),
                         hasItem("nif must not be null or blank"),
                         hasItem("meteringPointId must not be null or blank"),
                         hasItem("dataNeedId must not be null or blank"),
@@ -150,15 +152,17 @@ class PermissionControllerTest {
 
     @Test
     void requestPermission_missingMeasurementType_returnsBadRequest() throws Exception {
+        ObjectNode jsonNode = mapper.createObjectNode()
+                .put("connectionId", "foo")
+                .put("meteringPointId", "bar")
+                .put("dataNeedId", "du")
+                .put("nif", "muh")
+                .put("requestDataFrom", "2023-09-09")
+                .put("requestDataTo", "2023-10-10");
+
         mockMvc.perform(post("/permission-request")
-                        .param("connectionId", "foo")
-                        .param("meteringPointId", "bar")
-                        .param("dataNeedId", "du")
-                        .param("nif", "muh")
-                        .param("requestDataFrom", "2023-09-09")
-                        .param("requestDataTo", "2023-10-10")
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(jsonNode)))
                 // Then
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", allOf(
@@ -169,34 +173,43 @@ class PermissionControllerTest {
 
     @Test
     void requestPermission_invalidMeasurementType_returnsBadRequest() throws Exception {
+        ObjectNode jsonNode = mapper.createObjectNode()
+                .put("connectionId", "foo")
+                .put("meteringPointId", "bar")
+                .put("dataNeedId", "du")
+                .put("nif", "muh")
+                .put("requestDataFrom", "2023-09-09")
+                .put("requestDataTo", "2023-10-10")
+                .put("measurementType", "INVALID");
+
+
         mockMvc.perform(post("/permission-request")
-                        .param("connectionId", "foo")
-                        .param("meteringPointId", "bar")
-                        .param("dataNeedId", "du")
-                        .param("nif", "muh")
-                        .param("measurementType", "INVALID")
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(jsonNode))
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors[0]", containsString("Failed to convert")))
-                .andExpect(jsonPath("$.errors[0]", containsString("MeasurementType")));
+                .andExpect(jsonPath("$.errors", allOf(
+                        iterableWithSize(1),
+                        hasItem(org.hamcrest.Matchers.startsWith("Invalid enum value: 'INVALID' for the field 'measurementType'. The value must ")))));
     }
 
     @Test
     void requestPermission_noBody_returnsBadRequest() throws Exception {
         mockMvc.perform(post("/permission-request")
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors", allOf(
+                        iterableWithSize(1),
+                        hasItem("Invalid request body"))));
     }
 
     @Test
     void requestPermission_wrongContentType_returnsUnsupportedMediaType() throws Exception {
         mockMvc.perform(post("/permission-request")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isUnsupportedMediaType());
@@ -204,13 +217,16 @@ class PermissionControllerTest {
 
     @Test
     void requestPermission_blankOrEmptyFields_returnsBadRequest() throws Exception {
+        ObjectNode jsonNode = mapper.createObjectNode()
+                .put("connectionId", "   ")
+                .put("meteringPointId", "   ")
+                .put("dataNeedId", "")
+                .put("nif", "")
+                .put("measurementType", "QUARTER_HOURLY");
+
         mockMvc.perform(post("/permission-request")
-                        .param("connectionId", "   ")
-                        .param("meteringPointId", "   ")
-                        .param("dataNeedId", "")
-                        .param("nif", "")
-                        .param("measurementType", "QUARTER_HOURLY")
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .content(mapper.writeValueAsString(jsonNode))
+                        .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isBadRequest())
@@ -233,16 +249,20 @@ class PermissionControllerTest {
         when(mockPermissionRequest.permissionId()).thenReturn(testPermissionId);
         when(mockService.createAndSendPermissionRequest(any())).thenReturn(mockPermissionRequest);
 
+
+        ObjectNode jsonNode = mapper.createObjectNode()
+                .put("connectionId", "ConnId")
+                .put("meteringPointId", "SomeId")
+                .put("dataNeedId", "BLA_BLU_BLE")
+                .put("nif", "NOICE")
+                .put("measurementType", "QUARTER_HOURLY")
+                .put("requestDataFrom", "2023-09-09")
+                .put("requestDataTo", "2023-10-10");
+
         // When
         MockHttpServletResponse response = mockMvc.perform(post("/permission-request")
-                        .param("connectionId", "ConnId")
-                        .param("meteringPointId", "SomeId")
-                        .param("dataNeedId", "BLA_BLU_BLE")
-                        .param("nif", "NOICE")
-                        .param("measurementType", "QUARTER_HOURLY")
-                        .param("requestDataFrom", "2023-09-09")
-                        .param("requestDataTo", "2023-10-10")
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .content(mapper.writeValueAsString(jsonNode))
+                        .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isCreated())

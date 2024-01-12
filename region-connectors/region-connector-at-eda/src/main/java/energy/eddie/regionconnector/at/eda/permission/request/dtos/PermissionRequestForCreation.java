@@ -16,7 +16,7 @@ public record PermissionRequestForCreation(
         @Size(
                 min = 33,
                 max = 33,
-                message = "MeteringPoint needs to be exactly 33 characters long"
+                message = "MeteringPointId needs to be exactly 33 characters long"
         )
         String meteringPointId,
         @NotBlank(message = "DataNeedId must not be empty")

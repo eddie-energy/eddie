@@ -36,7 +36,8 @@ class PermissionRequestControllerTest {
     class NewPermissionTest {
         @Test
         void givenNoRequestBody_returnsBadRequest() throws Exception {
-            mockMvc.perform(post("/permission-request"))
+            mockMvc.perform(post("/permission-request")
+                            .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errors", allOf(
                             iterableWithSize(1),

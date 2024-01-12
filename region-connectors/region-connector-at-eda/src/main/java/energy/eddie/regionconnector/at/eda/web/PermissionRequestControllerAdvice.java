@@ -2,13 +2,14 @@ package energy.eddie.regionconnector.at.eda.web;
 
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.api.v0.process.model.validation.ValidationException;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.shared.web.StateValidationErrors;
 import energy.eddie.regionconnector.shared.web.ValidationErrors;
-import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -42,5 +43,11 @@ public class PermissionRequestControllerAdvice {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handlePermissionNotFoundException(PermissionNotFoundException exception) {
         return Map.of("permissionId", exception.getMessage());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleHttpMessageNotReadableException(HttpMessageNotReadableException ignoredException) {
+        return Map.of("body", "Invalid request body");
     }
 }

@@ -37,9 +37,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = {PermissionRequestController.class})
 @Import(PermissionRequestController.class)
 class PermissionRequestControllerTest {
-
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
     @Autowired
     private MockMvc mockMvc;
     @MockBean
@@ -53,12 +52,12 @@ class PermissionRequestControllerTest {
 
     private static Stream<Arguments> permissionRequestArguments() {
         return Stream.of(
-                Arguments.of("", "0".repeat(33), "dnid", "0".repeat(8)),
-                Arguments.of("cid", "", "dnid", "0".repeat(8)),
-                Arguments.of("cid", "0".repeat(33), "", "0".repeat(8)),
-                Arguments.of("cid", "0".repeat(33), "dnid", ""),
-                Arguments.of(null, "0".repeat(33), "dnid", "0".repeat(8)),
-                Arguments.of("cid", "0".repeat(33), null, "0".repeat(8))
+                Arguments.of("", "0".repeat(33), "dnid", "0".repeat(8), "connectionId"),
+                Arguments.of("cid", "", "dnid", "0".repeat(8), "meteringPointId"),
+                Arguments.of("cid", "0".repeat(33), "", "0".repeat(8), "dataNeedId"),
+                Arguments.of("cid", "0".repeat(33), "dnid", "", "dsoId"),
+                Arguments.of(null, "0".repeat(33), "dnid", "0".repeat(8), "connectionId"),
+                Arguments.of("cid", "0".repeat(33), null, "0".repeat(8), "dataNeedId")
         );
     }
 
@@ -99,6 +98,30 @@ class PermissionRequestControllerTest {
                 // Then
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.permissionId", is("No permission with ID 123 found")));
+    }
+
+    @Test
+    void createPermissionRequest_415WhenNotJsonBody() throws Exception {
+        // Given
+        mockMvc.perform(
+                        MockMvcRequestBuilders.post("/permission-request")
+                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                                .param("connectionId", "someValue")
+                )
+                // Then
+                .andExpect(status().isUnsupportedMediaType());
+    }
+
+    @Test
+    void createPermissionRequest_400WhenNoBody() throws Exception {
+        // Given
+        mockMvc.perform(
+                        MockMvcRequestBuilders.post("/permission-request")
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                // Then
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.body", is("Invalid request body")));
     }
 
     @Test
@@ -164,7 +187,7 @@ class PermissionRequestControllerTest {
 
     @ParameterizedTest
     @MethodSource("permissionRequestArguments")
-    void createPermissionRequest_400WhenMissingStringParameters(String connectionId, String meteringPoint, String dataNeedsId, String dsoId) throws Exception {
+    void createPermissionRequest_400WhenMissingStringParameters(String connectionId, String meteringPoint, String dataNeedsId, String dsoId, String errorFieldName) throws Exception {
         // Given
         LocalDate end = LocalDate.now(Clock.systemUTC()).minusDays(1);
         LocalDate start = end.minusDays(1);
@@ -179,12 +202,6 @@ class PermissionRequestControllerTest {
                 )
                 // Then
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(
-                        anyOf(
-                                containsString("must not be empty"),
-                                containsString("MeteringPoint needs to be exactly 33 characters long"),
-                                containsString("dsoId must be 8 characters long")
-                        ))
-                );
+                .andExpect(jsonPath("$." + errorFieldName, startsWithIgnoringCase(errorFieldName)));
     }
 }
