@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(value = DataNeedsManagementController.class, properties = "eddie.data-needs-config.data-need-source=DATABASE")
+@WebMvcTest(value = DataNeedsManagementController.class, properties = {"eddie.data-needs-config.data-need-source=DATABASE", "management.server.urlprefix=management"})
 class DataNeedsManagementControllerTest {
 
     @Autowired
