@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.aiida.services;
 
+import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.PermissionProcessStatus;
@@ -12,7 +13,6 @@ import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequestRepository;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
-import energy.eddie.regionconnector.shared.exceptions.DataNeedNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

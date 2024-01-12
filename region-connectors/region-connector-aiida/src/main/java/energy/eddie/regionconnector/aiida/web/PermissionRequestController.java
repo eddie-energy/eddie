@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.aiida.web;
 
+import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
-import energy.eddie.regionconnector.shared.exceptions.DataNeedNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

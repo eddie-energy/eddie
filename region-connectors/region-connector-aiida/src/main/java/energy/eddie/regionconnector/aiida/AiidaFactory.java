@@ -2,12 +2,12 @@ package energy.eddie.regionconnector.aiida;
 
 import energy.eddie.api.agnostic.DataNeed;
 import energy.eddie.api.agnostic.DataNeedsService;
+import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
 import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.KafkaStreamingConfig;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
-import energy.eddie.regionconnector.shared.exceptions.DataNeedNotFoundException;
 import org.apache.kafka.common.errors.InvalidTopicException;
 import org.apache.kafka.common.internals.Topic;
 import org.springframework.stereotype.Component;

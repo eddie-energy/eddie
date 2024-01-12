@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.shared.exceptions;
+package energy.eddie.api.agnostic.exceptions;
 
 public class DataNeedNotFoundException extends Exception {
     public DataNeedNotFoundException(String dataNeedId) {

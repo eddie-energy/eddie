@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.aiida.web;
 
+import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
-import energy.eddie.regionconnector.shared.exceptions.DataNeedNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

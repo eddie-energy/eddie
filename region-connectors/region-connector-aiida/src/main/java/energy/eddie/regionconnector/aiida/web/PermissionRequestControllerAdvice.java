@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.aiida.web;
 
+import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.shared.dtos.ErrorResponse;
-import energy.eddie.regionconnector.shared.exceptions.DataNeedNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
