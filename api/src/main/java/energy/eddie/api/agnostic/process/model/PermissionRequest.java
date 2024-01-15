@@ -3,6 +3,8 @@ package energy.eddie.api.agnostic.process.model;
 
 import energy.eddie.api.v0.DataSourceInformation;
 
+import java.time.ZonedDateTime;
+
 /**
  * A PermissionRequest represents the starting point of requesting the permission for data from an MDA.
  * It can have different states depending on where in the process of a specific Permission Administrator the request currently is.
@@ -48,6 +50,13 @@ public interface PermissionRequest {
      * @return the DataSourceInformation of the PermissionRequest
      */
     DataSourceInformation dataSourceInformation();
+
+    /**
+     * The datetime when the permission request first was created.
+     *
+     * @return the created datetime
+     */
+    ZonedDateTime created();
 
     /**
      * After a state transition was successful the permission requests state will be updated using this method.

@@ -4,8 +4,10 @@ import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
@@ -19,6 +21,8 @@ import energy.eddie.regionconnector.fr.enedis.providers.agnostic.IdentifiableMet
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.ConsentMarketDocumentExtension;
+import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -75,6 +79,11 @@ public class FrEnedisSpringConfig {
     }
 
     @Bean
+    public Sinks.Many<ConsentMarketDocument> cmdSink() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
     public Sinks.Many<IdentifiableMeterReading> identifiableMeterReadingMany() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
@@ -88,15 +97,28 @@ public class FrEnedisSpringConfig {
 
     @Bean
     public Set<Extension<TimeframedPermissionRequest>> extensions(PermissionRequestRepository<TimeframedPermissionRequest> repository,
-                                                                  Sinks.Many<ConnectionStatusMessage> messages) {
+                                                                  Sinks.Many<ConnectionStatusMessage> messages,
+                                                                  Sinks.Many<ConsentMarketDocument> cmds,
+                                                                  EnedisConfiguration config,
+                                                                  CommonInformationModelConfiguration cimConfig) {
         return Set.of(
                 new SavingExtension<>(repository),
-                new MessagingExtension<>(messages)
+                new MessagingExtension<>(messages),
+                new ConsentMarketDocumentExtension<>(
+                        cmds,
+                        config.clientId(),
+                        cimConfig.eligiblePartyNationalCodingScheme().value()
+                )
         );
     }
 
     @Bean
     public PermissionRequestFactory factory(Set<Extension<TimeframedPermissionRequest>> extensions) {
         return new PermissionRequestFactory(extensions);
+    }
+
+    @Bean
+    public ConsentMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<ConsentMarketDocument> sink) {
+        return new CommonConsentMarketDocumentProvider(sink);
     }
 }

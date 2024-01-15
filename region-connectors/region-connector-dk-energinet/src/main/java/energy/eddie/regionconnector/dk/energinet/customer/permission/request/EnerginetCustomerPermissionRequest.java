@@ -7,13 +7,15 @@ import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerA
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerCreatedState;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
 import reactor.core.publisher.Mono;
 
 import java.time.ZonedDateTime;
 
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.DK_ZONE_ID;
 import static java.util.Objects.requireNonNull;
 
-public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPermissionRequest {
+public class EnerginetCustomerPermissionRequest extends TimestampedPermissionRequest implements DkEnerginetCustomerPermissionRequest {
     private static final EnerginetDataSourceInformation dataSourceInformation = new EnerginetDataSourceInformation();
     private final String permissionId;
     private final String connectionId;
@@ -29,6 +31,7 @@ public class EnerginetCustomerPermissionRequest implements DkEnerginetCustomerPe
             String permissionId,
             PermissionRequestForCreation request,
             EnerginetCustomerApi apiClient) {
+        super(DK_ZONE_ID);
         requireNonNull(permissionId);
         requireNonNull(request);
         requireNonNull(apiClient);

@@ -1,8 +1,10 @@
-package energy.eddie.regionconnector.shared.permission.requests.decorators;
+package energy.eddie.regionconnector.shared.permission.requests.extensions;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
+
+import java.time.ZonedDateTime;
 
 public final class SimplePermissionRequest implements PermissionRequest {
     private final String permissionId;
@@ -45,5 +47,10 @@ public final class SimplePermissionRequest implements PermissionRequest {
     @Override
     public DataSourceInformation dataSourceInformation() {
         return new DummyDataSourceInformation();
+    }
+
+    @Override
+    public ZonedDateTime created() {
+        return null;
     }
 }

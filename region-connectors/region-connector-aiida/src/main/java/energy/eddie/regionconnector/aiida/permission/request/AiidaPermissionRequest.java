@@ -4,17 +4,19 @@ import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
 import energy.eddie.regionconnector.aiida.states.AiidaCreatedPermissionRequestState;
+import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
 
-import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
-public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
+public class AiidaPermissionRequest extends TimestampedPermissionRequest implements AiidaPermissionRequestInterface {
     private static final AiidaDataSourceInformation dataSourceInformation = new AiidaDataSourceInformation();
     private final String permissionId;
     private final String connectionId;
     private final String dataNeedId;
     private final String terminationTopic;
-    private final Instant startTime;
-    private final Instant expirationTime;
+    private final ZonedDateTime startTime;
+    private final ZonedDateTime expirationTime;
     private PermissionRequestState state;
 
     /**
@@ -32,8 +34,9 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
             String connectionId,
             String dataNeedId,
             String terminationTopic,
-            Instant startTime,
-            Instant expirationTime) {
+            ZonedDateTime startTime,
+            ZonedDateTime expirationTime) {
+        super(ZoneOffset.UTC);
         this.permissionId = permissionId;
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
@@ -44,12 +47,12 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     }
 
     @Override
-    public Instant startTime() {
+    public ZonedDateTime start() {
         return startTime;
     }
 
     @Override
-    public Instant expirationTime() {
+    public ZonedDateTime end() {
         return expirationTime;
     }
 

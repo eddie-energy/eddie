@@ -9,6 +9,7 @@ import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
+import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
@@ -23,20 +24,16 @@ class CustomSerializer implements Serializer<Object> {
 
     @Override
     public byte[] serialize(String topic, Object data) {
-        if (data instanceof ConsumptionRecord || data instanceof ConnectionStatusMessage) {
-            return serializeJson(data);
-        }
-        if (data instanceof EddieValidatedHistoricalDataMarketDocument marketDocument) {
-            return serializeEddieValidatedHistoricalDataMarketDocument(marketDocument);
-        }
-        if (data instanceof RawDataMessage rawDataMessage) {
-            return serializeRawDataMessage(rawDataMessage);
-        }
-
-        if (data == null) {
-            return new byte[0];
-        }
-        throw new UnsupportedOperationException("Unsupported object type: " + data.getClass());
+        return switch (data) {
+            case ConsumptionRecord ignored -> serializeJson(data);
+            case ConnectionStatusMessage ignored -> serializeJson(data);
+            case EddieValidatedHistoricalDataMarketDocument vhd ->
+                    serializeEddieValidatedHistoricalDataMarketDocument(vhd);
+            case ConsentMarketDocument cmd -> serializeConsentMarketDocument(cmd);
+            case RawDataMessage rawDataMessage -> serializeRawDataMessage(rawDataMessage);
+            case null -> new byte[0];
+            default -> throw new UnsupportedOperationException("Unsupported object type: " + data.getClass());
+        };
     }
 
     private byte[] serializeRawDataMessage(RawDataMessage message) {
@@ -65,6 +62,13 @@ class CustomSerializer implements Serializer<Object> {
         }
     }
 
+    private byte[] serializeConsentMarketDocument(ConsentMarketDocument cmd) {
+        try {
+            return vhdObjectMapper.writeValueAsBytes(cmd);
+        } catch (JsonProcessingException e) {
+            throw new ConsentMarketDocumentSerializationException(e);
+        }
+    }
 
     @Override
     public void close() {
@@ -79,6 +83,12 @@ class CustomSerializer implements Serializer<Object> {
 
     public static class EddieValidatedHistoricalDataMarketDocumentSerializationException extends RuntimeException {
         public EddieValidatedHistoricalDataMarketDocumentSerializationException(Throwable cause) {
+            super(cause);
+        }
+    }
+
+    public static class ConsentMarketDocumentSerializationException extends RuntimeException {
+        public ConsentMarketDocumentSerializationException(Throwable cause) {
             super(cause);
         }
     }

@@ -48,9 +48,11 @@ public class PermissionRequestProxy<T extends PermissionRequest> implements Invo
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Object result = method.invoke(delegate, args);
-        executeConsumers(method);
-        return result;
+        try {
+            return method.invoke(delegate, args);
+        } finally {
+            executeConsumers(method);
+        }
     }
 
     private void executeConsumers(Method method) {

@@ -4,11 +4,14 @@ import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisCreatedState;
+import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-public class EnedisPermissionRequest implements TimeframedPermissionRequest {
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
+
+public class EnedisPermissionRequest extends TimestampedPermissionRequest implements TimeframedPermissionRequest {
     private static final EnedisDataSourceInformation dataSourceInformation = new EnedisDataSourceInformation();
     private final String permissionId;
     private final String connectionId;
@@ -24,6 +27,7 @@ public class EnedisPermissionRequest implements TimeframedPermissionRequest {
             ZonedDateTime start,
             ZonedDateTime end
     ) {
+        super(ZONE_ID_FR);
         this.permissionId = permissionId;
         this.connectionId = connectionId;
         this.state = new FrEnedisCreatedState(this);

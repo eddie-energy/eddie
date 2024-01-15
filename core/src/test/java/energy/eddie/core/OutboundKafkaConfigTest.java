@@ -1,5 +1,6 @@
 package energy.eddie.core;
 
+import energy.eddie.core.services.ConsentMarketDocumentService;
 import energy.eddie.core.services.ConsumptionRecordService;
 import energy.eddie.core.services.EddieValidatedHistoricalDataMarketDocumentService;
 import energy.eddie.core.services.PermissionService;
@@ -87,7 +88,8 @@ class OutboundKafkaConfigTest {
                         () -> assertThat(context).hasBean("kafkaConnector"),
                         () -> assertThat(context).hasBean("mvp1ConsumptionRecordOutboundConnector"),
                         () -> assertThat(context).hasBean("mvp1ConnectionStatusMessageOutboundConnector"),
-                        () -> assertThat(context).hasBean("eddieValidatedHistoricalDataMarketDocumentOutboundConnector")
+                        () -> assertThat(context).hasBean("eddieValidatedHistoricalDataMarketDocumentOutboundConnector"),
+                        () -> assertThat(context).hasBean("consentMarketDocumentService")
                 ));
     }
 
@@ -110,6 +112,13 @@ class OutboundKafkaConfigTest {
         public EddieValidatedHistoricalDataMarketDocumentService eddieValidatedHistoricalDataMarketDocumentService() {
             EddieValidatedHistoricalDataMarketDocumentService mock = Mockito.mock(EddieValidatedHistoricalDataMarketDocumentService.class);
             when(mock.getEddieValidatedHistoricalDataMarketDocumentStream()).thenReturn(JdkFlowAdapter.publisherToFlowPublisher(Flux.empty()));
+            return mock;
+        }
+
+        @Bean
+        public ConsentMarketDocumentService consentMarketDocumentService() {
+            ConsentMarketDocumentService mock = Mockito.mock(ConsentMarketDocumentService.class);
+            when(mock.getConsentMarketDocumentStream()).thenReturn(JdkFlowAdapter.publisherToFlowPublisher(Flux.empty()));
             return mock;
         }
     }

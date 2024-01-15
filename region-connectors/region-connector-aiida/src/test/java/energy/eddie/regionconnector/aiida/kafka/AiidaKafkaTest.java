@@ -21,8 +21,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 import reactor.test.publisher.TestPublisher;
 
-import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -94,6 +96,7 @@ class AiidaKafkaTest {
             case REVOKED -> verify(request).revoke();
             case FULFILLED -> verify(request).fulfill();
             case TERMINATED -> verify(request).terminate();
+            default -> fail();
         }
     }
 
@@ -116,7 +119,7 @@ class AiidaKafkaTest {
         String permissionId = "TestPermissionId";
         String terminationTopic = "TestTopic";
         String dataNeedId = "1";
-        Instant start = Instant.now();
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
         return new AiidaPermissionRequest(permissionId, connectionId, dataNeedId, terminationTopic,
                 start, start.plusSeconds(10000));
     }

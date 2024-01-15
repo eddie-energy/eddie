@@ -24,7 +24,6 @@ dependencies {
     implementation(libs.microprofile.config)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.annotations)
-    implementation(libs.jakarta.xml.bind.api)
     implementation(libs.jakarta.annotation.api)
 
     testImplementation(libs.junit.jupiter)

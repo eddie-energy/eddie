@@ -6,8 +6,10 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordOutboundConnector;
+import energy.eddie.api.v0_82.ConsentMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
+import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -20,9 +22,13 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Flow;
 
-public class KafkaConnector implements Mvp1ConnectionStatusMessageOutboundConnector,
-        Mvp1ConsumptionRecordOutboundConnector, EddieValidatedHistoricalDataMarketDocumentOutboundConnector, Closeable,
-        RawDataOutboundConnector {
+public class KafkaConnector implements
+        Mvp1ConnectionStatusMessageOutboundConnector,
+        Mvp1ConsumptionRecordOutboundConnector,
+        EddieValidatedHistoricalDataMarketDocumentOutboundConnector,
+        ConsentMarketDocumentOutboundConnector,
+        RawDataOutboundConnector,
+        Closeable {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaProducer<String, Object> kafkaProducer;
 
@@ -49,6 +55,29 @@ public class KafkaConnector implements Mvp1ConnectionStatusMessageOutboundConnec
         JdkFlowAdapter
                 .flowPublisherToFlux(consumptionRecordStream)
                 .subscribe(this::produceConsumptionRecord);
+    }
+
+    @Override
+    public void setConsentMarketDocumentStream(Flow.Publisher<ConsentMarketDocument> consentMarketDocumentStream) {
+        JdkFlowAdapter
+                .flowPublisherToFlux(consentMarketDocumentStream)
+                .subscribe(this::produceConsentMarketDocument);
+    }
+
+    private void produceConsentMarketDocument(ConsentMarketDocument consentMarketDocument) {
+        try {
+            kafkaProducer
+                    .send(new ProducerRecord<>(
+                                    "consent-market-document",
+                                    consentMarketDocument.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID().getValue(),
+                                    consentMarketDocument
+                            )
+                    ).get();
+        } catch (ExecutionException e) {
+            LOGGER.warn("Could not produce consent market document");
+        } catch (InterruptedException e) {
+            reinterrupt(e);
+        }
     }
 
     @Override

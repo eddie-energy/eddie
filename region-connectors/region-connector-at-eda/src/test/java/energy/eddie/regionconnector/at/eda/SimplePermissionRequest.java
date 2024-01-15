@@ -28,7 +28,6 @@ public record SimplePermissionRequest(String permissionId,
         this(permissionId, connectionId, dataNeedId, cmRequestId, conversationId, null, Optional.empty(), null, null, state);
     }
 
-
     @Override
     public Optional<String> consentId() {
         return Optional.empty();
@@ -37,6 +36,11 @@ public record SimplePermissionRequest(String permissionId,
     @Override
     public DataSourceInformation dataSourceInformation() {
         return new EdaDataSourceInformation(dsoId);
+    }
+
+    @Override
+    public ZonedDateTime created() {
+        return null;
     }
 
     @Override

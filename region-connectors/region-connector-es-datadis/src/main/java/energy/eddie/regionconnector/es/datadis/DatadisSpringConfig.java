@@ -1,6 +1,11 @@
 package energy.eddie.regionconnector.es.datadis;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
+import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.client.*;
@@ -16,6 +21,8 @@ import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.ConsentMarketDocumentExtension;
+import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -66,6 +73,11 @@ public class DatadisSpringConfig {
     }
 
     @Bean
+    public Sinks.Many<ConsentMarketDocument> consentMarketDocumentSink() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
     public DatadisTokenProvider datadisTokenProvider(
             DatadisConfig config,
             DatadisEndpoints endpoints) {
@@ -86,11 +98,24 @@ public class DatadisSpringConfig {
     }
 
     @Bean
+    public CommonInformationModelConfiguration cimConfig(@Value("${" + CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme) {
+        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme));
+    }
+
+    @Bean
     public Set<Extension<EsPermissionRequest>> permissionRequestExtensions(EsPermissionRequestRepository repository,
-                                                                           Sinks.Many<ConnectionStatusMessage> messages) {
+                                                                           Sinks.Many<ConnectionStatusMessage> messages,
+                                                                           Sinks.Many<ConsentMarketDocument> cmds,
+                                                                           DatadisConfig config,
+                                                                           CommonInformationModelConfiguration cimConfig) {
         return Set.of(
                 new SavingExtension<>(repository),
-                new MessagingExtension<>(messages)
+                new MessagingExtension<>(messages),
+                new ConsentMarketDocumentExtension<>(
+                        cmds,
+                        config.username(),
+                        cimConfig.eligiblePartyNationalCodingScheme().value()
+                )
         );
     }
 
@@ -100,5 +125,10 @@ public class DatadisSpringConfig {
             PermissionRequestFactory permissionRequestFactory,
             DatadisScheduler datadisScheduler) {
         return new PermissionRequestService(repository, permissionRequestFactory, datadisScheduler);
+    }
+
+    @Bean
+    public ConsentMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<ConsentMarketDocument> sink) {
+        return new CommonConsentMarketDocumentProvider(sink);
     }
 }

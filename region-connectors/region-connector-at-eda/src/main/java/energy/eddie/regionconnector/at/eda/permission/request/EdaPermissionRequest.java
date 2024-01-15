@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtCreatedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
 import jakarta.annotation.Nullable;
 
 import java.time.ZonedDateTime;
@@ -13,7 +14,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-public class EdaPermissionRequest implements AtPermissionRequest {
+import static energy.eddie.regionconnector.at.eda.utils.DateTimeConstants.AT_ZONE_ID;
+
+public class EdaPermissionRequest extends TimestampedPermissionRequest implements AtPermissionRequest {
     private final String connectionId;
     private final String permissionId;
     private final String cmRequestId;
@@ -35,6 +38,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     }
 
     public EdaPermissionRequest(String connectionId, String permissionId, String dataNeedId, CCMORequest ccmoRequest, EdaAdapter edaAdapter) {
+        super(AT_ZONE_ID);
         this.connectionId = connectionId;
         this.permissionId = permissionId;
         this.dataNeedId = dataNeedId;

@@ -15,9 +15,9 @@ import org.apache.kafka.common.internals.Topic;
 import org.springframework.stereotype.Component;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -57,8 +57,8 @@ public class AiidaFactory {
 
         var dataNeed = getDataNeed(dataNeedId);
         // DataNeeds have relative time but AIIDA needs absolute timestamps
-        var startTime = calculateStartInstant(dataNeed);
-        var expirationTime = calculateEndInstant(dataNeed);
+        var startTime = calculateStart(dataNeed);
+        var expirationTime = calculateEnd(dataNeed);
 
         var permissionId = UUID.randomUUID().toString();
         var terminationTopic = terminationTopicForPermissionId(permissionId);
@@ -107,11 +107,9 @@ public class AiidaFactory {
      * @param dataNeed DataNeed that specifies the start date.
      * @return Instant representing the start date.
      */
-    private Instant calculateStartInstant(DataNeed dataNeed) {
-        var todayAtStartOfDay = LocalDate.now(clock).atStartOfDay();
-        var startDate = todayAtStartOfDay.plusDays(dataNeed.durationStart());
-
-        return startDate.toInstant(ZoneOffset.UTC);
+    private ZonedDateTime calculateStart(DataNeed dataNeed) {
+        var todayAtStartOfDay = LocalDate.now(clock).atStartOfDay(ZoneOffset.UTC);
+        return todayAtStartOfDay.plusDays(dataNeed.durationStart());
     }
 
     /**
@@ -120,18 +118,16 @@ public class AiidaFactory {
      * @param dataNeed DataNeed that specifies the end date.
      * @return Instant representing the end date.
      */
-    private Instant calculateEndInstant(DataNeed dataNeed) {
-        var todayAtEndOfDay = LocalDate.now(clock).atStartOfDay().plusDays(1).minusSeconds(1);
+    private ZonedDateTime calculateEnd(DataNeed dataNeed) {
+        var todayAtEndOfDay = LocalDate.now(clock).atStartOfDay(ZoneOffset.UTC).plusDays(1).minusSeconds(1);
 
         if (Boolean.TRUE.equals(dataNeed.durationOpenEnd()))
             // AIIDA needs fixed end date therefore just use a really long time
-            return todayAtEndOfDay.plusYears(1000).toInstant(ZoneOffset.UTC);
+            return todayAtEndOfDay.plusYears(1000);
 
         // dataNeed validation ensures that this is never null if durationOpenEnd is false
         Integer durationEnd = Objects.requireNonNull(dataNeed.durationEnd());
-
-        var endDate = todayAtEndOfDay.plusDays(durationEnd);
-        return endDate.toInstant(ZoneOffset.UTC);
+        return todayAtEndOfDay.plusDays(durationEnd);
     }
 
     /**
@@ -156,8 +152,8 @@ public class AiidaFactory {
                 aiidaRequest.permissionId(),
                 dataNeed.serviceName(),
                 aiidaRequest.dataNeedId(),
-                aiidaRequest.startTime(),
-                aiidaRequest.expirationTime(),
+                aiidaRequest.start().toInstant(),
+                Objects.requireNonNull(aiidaRequest.end()).toInstant(),
                 aiidaRequest.connectionId(),
                 dataNeed.sharedDataIds(),
                 kafkaConfig

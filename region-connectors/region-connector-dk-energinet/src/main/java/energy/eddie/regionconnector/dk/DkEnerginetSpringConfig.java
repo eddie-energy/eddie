@@ -2,6 +2,11 @@ package energy.eddie.regionconnector.dk;
 
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
+import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.config.PlainEnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.InMemoryPermissionRequestRepository;
@@ -11,6 +16,8 @@ import energy.eddie.regionconnector.dk.energinet.providers.agnostic.Identifiable
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.ConsentMarketDocumentExtension;
+import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +28,7 @@ import reactor.core.publisher.Sinks;
 import java.util.Set;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID;
+import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.CUSTOMER_ID_KEY;
 import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.ENERGINET_CUSTOMER_BASE_PATH_KEY;
 
 @EnableWebMvc
@@ -29,8 +37,10 @@ import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfigur
 public class DkEnerginetSpringConfig {
     @Bean
     public EnerginetConfiguration energinetConfiguration(
-            @Value("${" + ENERGINET_CUSTOMER_BASE_PATH_KEY + "}") String customerBasePath) {
-        return new PlainEnerginetConfiguration(customerBasePath);
+            @Value("${" + ENERGINET_CUSTOMER_BASE_PATH_KEY + "}") String customerBasePath,
+            @Value("${" + CUSTOMER_ID_KEY + "}") String customerId
+    ) {
+        return new PlainEnerginetConfiguration(customerBasePath, customerId);
     }
 
     @Bean
@@ -50,18 +60,44 @@ public class DkEnerginetSpringConfig {
     }
 
     @Bean
+    public Sinks.Many<ConsentMarketDocument> consentMarketDocumentSink() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public CommonInformationModelConfiguration cimConfig(
+            @Value("${" + CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}")
+            String codingScheme
+    ) {
+        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme));
+    }
+
+    @Bean
     public Set<Extension<DkEnerginetCustomerPermissionRequest>> extensions(
             DkEnerginetCustomerPermissionRequestRepository repository,
-            Sinks.Many<ConnectionStatusMessage> sink
+            Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink,
+            Sinks.Many<ConsentMarketDocument> consentMarketDocumentSink,
+            CommonInformationModelConfiguration cimConfig,
+            EnerginetConfiguration energinetConfiguration
     ) {
         return Set.of(
                 new SavingExtension<>(repository),
-                new MessagingExtension<>(sink)
+                new MessagingExtension<>(connectionStatusMessageSink),
+                new ConsentMarketDocumentExtension<>(
+                        consentMarketDocumentSink,
+                        energinetConfiguration.customerId(),
+                        cimConfig.eligiblePartyNationalCodingScheme().value()
+                )
         );
     }
 
     @Bean
     public DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository() {
         return new InMemoryPermissionRequestRepository();
+    }
+
+    @Bean
+    public ConsentMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<ConsentMarketDocument> sink) {
+        return new CommonConsentMarketDocumentProvider(sink);
     }
 }

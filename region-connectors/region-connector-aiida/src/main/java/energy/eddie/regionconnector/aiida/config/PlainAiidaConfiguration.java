@@ -7,7 +7,8 @@ public record PlainAiidaConfiguration(
         String kafkaBoostrapServers,
         String kafkaDataTopic,
         String kafkaStatusMessagesTopic,
-        String kafkaTerminationTopicPrefix
+        String kafkaTerminationTopicPrefix,
+        String customerId
 ) implements AiidaConfiguration {
 
     /**

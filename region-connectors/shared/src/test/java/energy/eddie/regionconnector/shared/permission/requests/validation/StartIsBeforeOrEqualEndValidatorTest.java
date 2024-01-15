@@ -87,6 +87,11 @@ class StartIsBeforeOrEqualEndValidatorTest {
         }
 
         @Override
+        public ZonedDateTime created() {
+            return null;
+        }
+
+        @Override
         public void changeState(PermissionRequestState state) {
             // No-Op
         }

@@ -35,6 +35,11 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     }
 
     @Override
+    public ZonedDateTime created() {
+        return null;
+    }
+
+    @Override
     public void changeState(PermissionRequestState state) {
 
     }
