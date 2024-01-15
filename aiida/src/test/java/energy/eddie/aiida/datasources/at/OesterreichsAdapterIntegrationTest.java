@@ -101,7 +101,7 @@ class OesterreichsAdapterIntegrationTest {
                 .expectNextCount(7)
                 .then(adapter::close)
                 .expectComplete()
-                .verify();
+                .verify(Duration.ofSeconds(33));    // internal timeout for .close is 30 seconds
     }
 
     /**

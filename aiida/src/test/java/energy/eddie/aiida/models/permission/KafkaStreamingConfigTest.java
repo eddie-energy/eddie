@@ -1,6 +1,5 @@
 package energy.eddie.aiida.models.permission;
 
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
@@ -42,25 +41,26 @@ class KafkaStreamingConfigTest {
 
         var violations = validator.validate(kafkaConfig);
         assertEquals(1, violations.size());
-        assertEquals("bootstrapServers must not be null or blank.", violations.iterator().next().getMessage());
+        assertEquals("must not be null or blank.", violations.iterator().next().getMessage());
+        assertEquals("bootstrapServers", violations.iterator().next().getPropertyPath().iterator().next().getName());
 
         kafkaConfig = new KafkaStreamingConfig(bootstrapServers, null, statusTopic, subscribeTopic);
         violations = validator.validate(kafkaConfig);
-        for (ConstraintViolation<KafkaStreamingConfig> violation : violations) {
-            System.out.println(violation.getMessage());
-        }
         assertEquals(1, violations.size());
-        assertEquals("dataTopic must not be null or blank.", violations.iterator().next().getMessage());
+        assertEquals("must not be null or blank.", violations.iterator().next().getMessage());
+        assertEquals("dataTopic", violations.iterator().next().getPropertyPath().iterator().next().getName());
 
         kafkaConfig = new KafkaStreamingConfig(bootstrapServers, dataTopic, null, subscribeTopic);
         violations = validator.validate(kafkaConfig);
         assertEquals(1, violations.size());
-        assertEquals("statusTopic must not be null or blank.", violations.iterator().next().getMessage());
+        assertEquals("must not be null or blank.", violations.iterator().next().getMessage());
+        assertEquals("statusTopic", violations.iterator().next().getPropertyPath().iterator().next().getName());
 
         kafkaConfig = new KafkaStreamingConfig(bootstrapServers, dataTopic, statusTopic, null);
         violations = validator.validate(kafkaConfig);
         assertEquals(1, violations.size());
-        assertEquals("subscribeTopic must not be null or blank.", violations.iterator().next().getMessage());
+        assertEquals("must not be null or blank.", violations.iterator().next().getMessage());
+        assertEquals("subscribeTopic", violations.iterator().next().getPropertyPath().iterator().next().getName());
     }
 
     @ParameterizedTest

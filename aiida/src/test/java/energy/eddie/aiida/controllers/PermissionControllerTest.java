@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import static energy.eddie.aiida.controllers.GlobalExceptionHandler.ERRORS_JSON_PATH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -90,10 +91,8 @@ class PermissionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.errors", allOf(
-                        iterableWithSize(1),
-                        hasItem("Failed to setup permission, please try again later.")
-                )));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Failed to setup permission, please try again later.")));
     }
 
     @Test
@@ -161,10 +160,8 @@ class PermissionControllerTest {
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(""))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errors", allOf(
-                            iterableWithSize(1),
-                            hasItem(org.hamcrest.Matchers.startsWith("Required request body is missing"))
-                    )));
+                    .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                    .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
         }
 
         @Test
@@ -180,8 +177,8 @@ class PermissionControllerTest {
                                     .content(json))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errors", hasSize(1)))
-                    .andExpect(jsonPath("$.errors[0]", containsString("Missing required")))
-                    .andExpect(jsonPath("$.errors[0]", containsString("startTime")));
+                    .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                    .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
 
 
             // remove some required fields by renaming the JSON keys
@@ -197,8 +194,8 @@ class PermissionControllerTest {
                                     .content(json))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errors", hasSize(1)))
-                    .andExpect(jsonPath("$.errors[0]", containsString("Missing required")))
-                    .andExpect(jsonPath("$.errors[0]", containsString("serviceName")));
+                    .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                    .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
         }
 
         @Test
@@ -211,11 +208,11 @@ class PermissionControllerTest {
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(mapper.writeValueAsString(invalidDto)))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errors", allOf(
-                            iterableWithSize(3),
-                            hasItem("startTime must not be null."),
-                            hasItem("expirationTime must not be null."),
-                            hasItem("startTime and expirationTime must not be null.")
+                    .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(3)))
+                    .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItems(
+                            "startTime: must not be null.",
+                            "expirationTime: must not be null.",
+                            "permissionDto: startTime and expirationTime must not be null."
                     )));
         }
 
@@ -231,11 +228,11 @@ class PermissionControllerTest {
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(mapper.writeValueAsString(invalidDto)))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errors", allOf(
-                            iterableWithSize(3),
-                            hasItem("dataTopic must not be null or blank."),
-                            hasItem("statusTopic must not be null or blank."),
-                            hasItem("subscribeTopic must not be null or blank.")
+                    .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(3)))
+                    .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItems(
+                            "kafkaStreamingConfig.subscribeTopic: must not be null or blank.",
+                            "kafkaStreamingConfig.statusTopic: must not be null or blank.",
+                            "kafkaStreamingConfig.dataTopic: must not be null or blank."
                     )));
         }
 
@@ -253,10 +250,8 @@ class PermissionControllerTest {
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(json))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errors", allOf(
-                            iterableWithSize(1),
-                            hasItem("expirationTime has to be after startTime.")
-                    )));
+                    .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                    .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("permissionDto: expirationTime has to be after startTime.")));
         }
 
         @Test
@@ -271,10 +266,8 @@ class PermissionControllerTest {
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(json))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errors", allOf(
-                            iterableWithSize(1),
-                            hasItem("permissionId must not be null.")
-                    )));
+                    .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                    .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("permissionId: must not be null.")));
         }
 
         @Test
@@ -289,10 +282,8 @@ class PermissionControllerTest {
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(json))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errors", allOf(
-                            iterableWithSize(1),
-                            hasItem("permissionId must be an UUID with 36 characters.")
-                    )));
+                    .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                    .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("permissionId: must be an UUID with 36 characters.")));
         }
 
         @Test
@@ -308,10 +299,8 @@ class PermissionControllerTest {
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(json))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errors", allOf(
-                            iterableWithSize(1),
-                            hasItem("permissionId must be an UUID with 36 characters.")
-                    )));
+                    .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                    .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("permissionId: must be an UUID with 36 characters.")));
         }
     }
 
@@ -418,10 +407,9 @@ class PermissionControllerTest {
             mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(""))
-                    .andExpect(jsonPath("$.errors", allOf(
-                            iterableWithSize(1),
-                            hasItem(org.hamcrest.Matchers.startsWith("Required request body is missing"))
-                    )));
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                    .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
         }
 
         @Test
@@ -450,10 +438,8 @@ class PermissionControllerTest {
                                     .content(validPatchOperationBody)
                                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.errors", allOf(
-                            iterableWithSize(1),
-                            hasItem("No permission with id %s found.".formatted(invalidId))
-                    )));
+                    .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                    .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("No permission with ID '%s' found.".formatted(invalidId))));
         }
 
         @Test
@@ -465,12 +451,10 @@ class PermissionControllerTest {
             mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(validPatchOperationBody))
-                    .andExpect(status().isMethodNotAllowed())
-                    .andExpect(jsonPath("$.errors", allOf(
-                            iterableWithSize(1),
-                            hasItem(("Permission with id " + permissionId + " cannot be revoked. Only a permission with status " +
-                                    "ACCEPTED, WAITING_FOR_START or STREAMING_DATA may be revoked."))
-                    )));
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                    .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Permission with ID '" + permissionId + "' cannot be revoked. Only a permission with status " +
+                            "ACCEPTED, WAITING_FOR_START or STREAMING_DATA may be revoked.")));
         }
 
         @Test

@@ -114,7 +114,7 @@ class PermissionControllerIntegrationTest {
 
     @Test
     void givenInvalidInput_setupNewPermission_returnsBadRequest(TestInfo testInfo) {
-        String expected = "{\"errors\":[\"expirationTime has to be after startTime.\"]}";
+        String expected = "{\"errors\":[{\"message\":\"permissionDto: expirationTime has to be after startTime.\"}]}";
 
         var start = Instant.now().plusSeconds(100_000);
         var expiration = start.minusSeconds(200_000);
@@ -164,7 +164,7 @@ class PermissionControllerIntegrationTest {
         assertNotNull(permissions);
         assertEquals(1, permissions.size());
 
-        assertDtoAndPermission(dto, permissions.get(0));
+        assertDtoAndPermission(dto, permissions.getFirst());
     }
 
     /**
@@ -256,7 +256,7 @@ class PermissionControllerIntegrationTest {
         var permissionId = "592c372e-bced-45b7-a4a9-5f39e66b8d30";
         var dto = new PatchPermissionDto(PatchOperation.REVOKE_PERMISSION);
 
-        String expected = "{\"errors\":[\"Permission with id 592c372e-bced-45b7-a4a9-5f39e66b8d30 cannot be revoked. Only a permission with status ACCEPTED, WAITING_FOR_START or STREAMING_DATA may be revoked.\"]}";
+        String expected = "{\"errors\":[{\"message\":\"Permission with ID '592c372e-bced-45b7-a4a9-5f39e66b8d30' cannot be revoked. Only a permission with status ACCEPTED, WAITING_FOR_START or STREAMING_DATA may be revoked.\"}]}";
 
         RequestEntity<PatchPermissionDto> request = RequestEntity
                 .patch(getPermissionsUrl() + "/" + permissionId)
@@ -267,11 +267,11 @@ class PermissionControllerIntegrationTest {
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
         RestTemplate restTemplate = new RestTemplate(requestFactory);
 
-        var notAllowedException = assertThrows(HttpClientErrorException.MethodNotAllowed.class,
+        var badRequestException = assertThrows(HttpClientErrorException.BadRequest.class,
                 () -> restTemplate.exchange(request, String.class));
 
-        assertEquals(HttpStatus.METHOD_NOT_ALLOWED, notAllowedException.getStatusCode());
-        assertEquals(expected, notAllowedException.getResponseBodyAsString());
+        assertEquals(HttpStatus.BAD_REQUEST, badRequestException.getStatusCode());
+        assertEquals(expected, badRequestException.getResponseBodyAsString());
     }
 
     @Test

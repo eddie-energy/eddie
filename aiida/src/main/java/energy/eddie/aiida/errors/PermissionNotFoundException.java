@@ -10,6 +10,6 @@ public class PermissionNotFoundException extends RuntimeException {
      * @param permissionId ID of the permission that could not be found.
      */
     public PermissionNotFoundException(String permissionId) {
-        super("No permission with id %s found.".formatted(permissionId));
+        super("No permission with ID '%s' found.".formatted(permissionId));
     }
 }
