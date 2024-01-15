@@ -155,11 +155,11 @@ class KafkaStreamerIntegrationTest {
 
         var timestamp = Instant.parse("2023-11-01T10:00:00.00Z");
 
-        var statusMessage = new ConnectionStatusMessage(connectionId, dataNeed, timestamp, PermissionStatus.ACCEPTED);
-        var statusMessageJson = "{\"connectionId\":\"StatusMessageIntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\",\"timestamp\":1698832800.000000000,\"status\":\"ACCEPTED\"}";
+        var statusMessage = new ConnectionStatusMessage(connectionId, dataNeed, timestamp, PermissionStatus.ACCEPTED, permissionId);
+        var statusMessageJson = "{\"connectionId\":\"StatusMessageIntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\",\"timestamp\":1698832800.000000000,\"status\":\"ACCEPTED\",\"permissionId\":\"" + permissionId + "\"}";
 
-        var statusMessage2 = new ConnectionStatusMessage(connectionId, dataNeed, timestamp.plusSeconds(10), PermissionStatus.REVOKED);
-        var statusMessageJson2 = "{\"connectionId\":\"StatusMessageIntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\",\"timestamp\":1698832810.000000000,\"status\":\"REVOKED\"}";
+        var statusMessage2 = new ConnectionStatusMessage(connectionId, dataNeed, timestamp.plusSeconds(10), PermissionStatus.REVOKED, permissionId);
+        var statusMessageJson2 = "{\"connectionId\":\"StatusMessageIntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\",\"timestamp\":1698832810.000000000,\"status\":\"REVOKED\",\"permissionId\":\"" + permissionId + "\"}";
 
 
         recordPublisher.assertNoSubscribers();
