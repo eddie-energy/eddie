@@ -34,6 +34,7 @@ dependencies {
 
 
     runtimeOnly(libs.h2database)
+    runtimeOnly(libs.postgresql)
 
 
     testImplementation(libs.junit.jupiter)
@@ -65,10 +66,18 @@ tasks.register("run-core", JavaExec::class) {
     group = "development"
     description = "run EDDIE with Spring"
 
-    environment["JDBC_URL"] = "jdbc:h2:tcp://localhost:9091/./examples/example-app"
     environment["CORE_PORT"] = 8080
     environment["IMPORT_CONFIG_FILE"] = "file:./core/src/test/resources/data-needs.yml"
-    environment["SPRING_JPA_DATABASE_PLATFORM"] = "org.hibernate.dialect.H2Dialect"
+
+    // when using PostgreSQL
+    environment["JDBC_USER"] = "test"
+    environment["JDBC_PASSWORD"] = "test"
+    environment["JDBC_URL"] = "jdbc:postgresql://localhost:5432/eddie"
+    environment["SPRING_JPA_DATABASE_PLATFORM"] = "org.hibernate.dialect.PostgreSQLDialect"
+
+    // when using H2 database, no credentials are needed
+    // environment["JDBC_URL"] = "jdbc:h2:tcp://localhost:9091/./examples/example-app"
+    // environment["SPRING_JPA_DATABASE_PLATFORM"] = "org.hibernate.dialect.H2Dialect"
 }
 
 tasks.withType<JavaCompile>().configureEach {
