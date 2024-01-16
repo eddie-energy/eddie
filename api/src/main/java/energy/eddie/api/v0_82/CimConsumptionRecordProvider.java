@@ -13,7 +13,7 @@ public interface CimConsumptionRecordProvider extends AutoCloseable {
     /**
      * Data stream of all EddieValidatedHistoricalDataMarketDocument created by this region connector.
      *
-     * @return EddieValidatedHistoricalDataMarketDocument stream that can be consumed only once
+     * @return EddieValidatedHistoricalDataMarketDocument stream
      */
     Flow.Publisher<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream();
 

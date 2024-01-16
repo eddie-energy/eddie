@@ -39,7 +39,7 @@ public class DkEnerginetSpringConfig {
 
     @Bean
     public Sinks.Many<ConsumptionRecord> consumptionRecordSink() {
-        return Sinks.many().unicast().onBackpressureBuffer();
+        return Sinks.many().multicast().onBackpressureBuffer();
     }
 
     @Bean
