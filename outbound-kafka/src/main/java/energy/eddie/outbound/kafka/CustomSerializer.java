@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
@@ -28,11 +29,23 @@ class CustomSerializer implements Serializer<Object> {
         if (data instanceof EddieValidatedHistoricalDataMarketDocument marketDocument) {
             return serializeEddieValidatedHistoricalDataMarketDocument(marketDocument);
         }
+        if (data instanceof RawDataMessage rawDataMessage) {
+            return serializeRawDataMessage(rawDataMessage);
+        }
 
         if (data == null) {
             return new byte[0];
         }
         throw new UnsupportedOperationException("Unsupported object type: " + data.getClass());
+    }
+
+    private byte[] serializeRawDataMessage(RawDataMessage message) {
+        try {
+            // use vhdObjectMapper to make timestamps human-readable
+            return vhdObjectMapper.writeValueAsBytes(message);
+        } catch (JsonProcessingException e) {
+            throw new RawDataMessageSerializationException(e);
+        }
     }
 
 
@@ -66,6 +79,12 @@ class CustomSerializer implements Serializer<Object> {
 
     public static class EddieValidatedHistoricalDataMarketDocumentSerializationException extends RuntimeException {
         public EddieValidatedHistoricalDataMarketDocumentSerializationException(Throwable cause) {
+            super(cause);
+        }
+    }
+
+    public static class RawDataMessageSerializationException extends RuntimeException {
+        public RawDataMessageSerializationException(Throwable cause) {
             super(cause);
         }
     }
