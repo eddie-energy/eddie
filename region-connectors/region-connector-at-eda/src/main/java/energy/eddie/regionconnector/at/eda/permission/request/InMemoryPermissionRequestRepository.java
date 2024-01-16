@@ -56,6 +56,13 @@ public class InMemoryPermissionRequestRepository implements AtPermissionRequestR
     }
 
     @Override
+    public Optional<AtPermissionRequest> findByConsentId(String consentId) {
+        return requests.values().stream()
+                .filter(r -> r.consentId().map(consentId::equals).orElse(false))
+                .findFirst();
+    }
+
+    @Override
     public boolean removeByPermissionId(String permissionId) {
         return requests.remove(permissionId) != null;
     }

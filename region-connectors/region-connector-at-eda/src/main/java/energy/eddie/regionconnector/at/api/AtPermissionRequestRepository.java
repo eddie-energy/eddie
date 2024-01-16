@@ -30,4 +30,6 @@ public interface AtPermissionRequestRepository extends PermissionRequestReposito
      * @return a list of matching permission requests
      */
     List<AtPermissionRequest> findByMeteringPointIdAndDate(String meteringPointId, LocalDate date);
+
+    Optional<AtPermissionRequest> findByConsentId(String consentId);
 }

@@ -23,7 +23,7 @@ public class AcceptedState
 
     @Override
     public void revoke() {
-        throw new IllegalStateException("Not implemented yet");
+        permissionRequest.changeState(new RevokedState(permissionRequest));
     }
 
     @Override

@@ -1,61 +1,46 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
-import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
-import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.shared.permission.requests.decorators.MessagingPermissionRequest;
-import energy.eddie.regionconnector.shared.permission.requests.decorators.SavingPermissionRequest;
+import energy.eddie.regionconnector.shared.permission.requests.PermissionRequestProxy;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import org.springframework.stereotype.Component;
-import reactor.adapter.JdkFlowAdapter;
-import reactor.core.publisher.Sinks;
 
+import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Flow;
 
 @Component
-public class PermissionRequestFactory implements Mvp1ConnectionStatusMessageProvider {
-    private final DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository;
-    private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
+public class PermissionRequestFactory {
     private final EnerginetCustomerApi customerApi;
+    private final Set<Extension<DkEnerginetCustomerPermissionRequest>> extensions;
 
-    public PermissionRequestFactory(DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository,
-                                    Sinks.Many<ConnectionStatusMessage> connectionStatusSink,
-                                    EnerginetCustomerApi customerApi) {
-        this.permissionRequestRepository = permissionRequestRepository;
-        this.connectionStatusSink = connectionStatusSink;
+    public PermissionRequestFactory(
+            EnerginetCustomerApi customerApi,
+            Set<Extension<DkEnerginetCustomerPermissionRequest>> extensions
+    ) {
         this.customerApi = customerApi;
+        this.extensions = extensions;
     }
 
     public DkEnerginetCustomerPermissionRequest create(PermissionRequestForCreation request) {
-        var permissionId = UUID.randomUUID().toString();
-        var permissionRequest = new EnerginetCustomerPermissionRequest(
-                permissionId,
-                request,
-                customerApi
-        );
-
-        PermissionRequest messagingPermissionRequest = new MessagingPermissionRequest(permissionRequest, connectionStatusSink);
-        PermissionRequest savingPermissionRequest = new SavingPermissionRequest<>(
-                new DkEnerginetCustomerPermissionRequestAdapter(permissionRequest, messagingPermissionRequest),
-                permissionRequestRepository
-        );
-        return new DkEnerginetCustomerPermissionRequestAdapter(
+        var permissionRequest = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(), request, customerApi);
+        return PermissionRequestProxy.createProxy(
                 permissionRequest,
-                savingPermissionRequest
+                extensions,
+                DkEnerginetCustomerPermissionRequest.class,
+                PermissionRequestProxy.CreationInfo.NEWLY_CREATED
         );
     }
 
-    @Override
-    public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(connectionStatusSink.asFlux());
+    public DkEnerginetCustomerPermissionRequest create(DkEnerginetCustomerPermissionRequest permissionRequest) {
+        return PermissionRequestProxy.createProxy(
+                permissionRequest,
+                extensions,
+                DkEnerginetCustomerPermissionRequest.class,
+                PermissionRequestProxy.CreationInfo.RECREATED
+        );
     }
 
-    @Override
-    public void close() {
-        connectionStatusSink.tryEmitComplete();
-    }
+
 }

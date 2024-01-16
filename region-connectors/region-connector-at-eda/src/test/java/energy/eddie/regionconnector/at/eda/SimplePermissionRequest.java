@@ -17,7 +17,8 @@ public record SimplePermissionRequest(String permissionId,
                                       Optional<String> meteringPointId,
                                       LocalDate dataFrom,
                                       Optional<LocalDate> dataTo,
-                                      PermissionRequestState state) implements AtPermissionRequest {
+                                      PermissionRequestState state
+) implements AtPermissionRequest {
 
     public SimplePermissionRequest(String permissionId, String connectionId) {
         this(permissionId, connectionId, null, null, null, null, Optional.empty(), null, Optional.empty(), null);
@@ -28,6 +29,9 @@ public record SimplePermissionRequest(String permissionId,
     }
 
 
+    public Optional<String> consentId() {
+        return Optional.empty();
+    }
     @Override
     public DataSourceInformation dataSourceInformation() {
         return new EdaDataSourceInformation(dsoId);
@@ -93,5 +97,10 @@ public record SimplePermissionRequest(String permissionId,
     @Override
     public void setMeteringPointId(String meteringPointId) {
 
+    }
+
+    @Override
+    public void setConsentId(String consentId) {
+        // No-Op
     }
 }

@@ -41,7 +41,12 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
     private final Sinks.Many<ConnectionStatusMessage> permissionStateMessages;
 
     @Autowired
-    public EdaRegionConnector(EdaAdapter edaAdapter, PermissionRequestService permissionRequestService, ConsumptionRecordProcessor consumptionRecordProcessor, Sinks.Many<ConnectionStatusMessage> permissionStateMessages) throws TransmissionException {
+    public EdaRegionConnector(
+            EdaAdapter edaAdapter,
+            PermissionRequestService permissionRequestService,
+            ConsumptionRecordProcessor consumptionRecordProcessor,
+            Sinks.Many<ConnectionStatusMessage> permissionStateMessages
+    ) throws TransmissionException {
         requireNonNull(edaAdapter);
         requireNonNull(permissionRequestService);
         requireNonNull(consumptionRecordProcessor);
@@ -71,6 +76,13 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
                                         throw new IllegalStateException("Metering point id is missing in ACCEPTED CMRequestStatus message for CMRequest: " + request.cmRequestId());
                                     }
                             );
+                }
+                Optional<String> cmConsentId = cmRequestStatus.getCMConsentId();
+                if (cmConsentId.isPresent()) {
+                    request.setConsentId(cmConsentId.get());
+                } else if (LOGGER.isWarnEnabled()) {
+                    LOGGER.warn("Got accept message without consent id for permission request with permission id {}",
+                            request.permissionId());
                 }
                 request.accept();
             }

@@ -1,10 +1,12 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Sinks;
@@ -24,12 +26,26 @@ public class PollingService {
         this.consumptionRecords = consumptionRecords;
     }
 
+    private static void handleException(TimeframedPermissionRequest permissionRequest, ApiException e) {
+        if (e.getCode() != HttpStatus.FORBIDDEN.value()) {
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("Something went wrong while fetching token or data from ENEDIS for permission request id: {}", permissionRequest.permissionId(), e);
+            }
+            return;
+        }
+        try {
+            permissionRequest.revoke();
+        } catch (StateTransitionException ex) {
+            LOGGER.warn("Unable to revoke permission request", ex);
+        }
+    }
+
     @Async
     public void requestData(TimeframedPermissionRequest permissionRequest, String usagePointId) {
         try {
             fetchConsumptionRecords(permissionRequest, usagePointId);
         } catch (ApiException e) {
-            LOGGER.error("Something went wrong while fetching token or data from ENEDIS for permission request id: {}", permissionRequest.permissionId(), e);
+            handleException(permissionRequest, e);
         }
     }
 

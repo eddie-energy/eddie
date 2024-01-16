@@ -13,6 +13,7 @@ import energy.eddie.regionconnector.at.eda.permission.request.states.AtSentToPer
 import energy.eddie.regionconnector.at.eda.processing.v0_82.ConsumptionRecordProcessor;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
+import energy.eddie.regionconnector.at.eda.services.RevocationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,7 +26,7 @@ import reactor.test.publisher.TestPublisher;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -43,7 +44,9 @@ class EdaRegionConnectorIntegrationTest {
     @MockBean
     private EdaAdapter adapter;
     @MockBean
-    private RegionConnector alsoIgnored;
+    private RegionConnector ignored;
+    @MockBean
+    private RevocationService alsoIgnored;
 
     @Test
     void subscribeToConnectionStatusMessagePublisher_returnsAccepted_onAccepted() throws TransmissionException {
@@ -72,11 +75,81 @@ class EdaRegionConnectorIntegrationTest {
                         throw new RuntimeException(e);
                     }
                 })
-                .assertNext(csm -> {
-                    assertEquals("connectionId", csm.connectionId());
-                    assertEquals("dataNeedId", csm.dataNeedId());
-                    assertEquals(PermissionProcessStatus.ACCEPTED, csm.status());
+                .assertNext(csm -> assertAll(
+                                () -> assertEquals("connectionId", csm.connectionId()),
+                                () -> assertEquals("dataNeedId", csm.dataNeedId()),
+                                () -> assertEquals(PermissionProcessStatus.ACCEPTED, csm.status())
+                        )
+                )
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
+    void acceptingPermissionRequest_updatesPermissionRequest() throws TransmissionException {
+        TestPublisher<CMRequestStatus> testPublisher = TestPublisher.create();
+        when(adapter.getCMRequestStatusStream())
+                .thenReturn(testPublisher.flux());
+        EdaRegionConnector rc = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, messages);
+        CCMORequest ccmoRequest = mock(CCMORequest.class);
+        when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
+        when(ccmoRequest.messageId()).thenReturn("messageId");
+        when(ccmoRequest.meteringPointId()).thenReturn(Optional.of("meteringPointId"));
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
+        permissionRequest.changeState(new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest));
+        repository.save(permissionRequest);
+
+        var source = JdkFlowAdapter.flowPublisherToFlux(((Mvp1ConnectionStatusMessageProvider) rc).getConnectionStatusMessageStream());
+        var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "messageId");
+        cmRequestStatus.setCmConsentId("consentId");
+
+        StepVerifier.create(source)
+                .then(() -> {
+                    testPublisher.emit(cmRequestStatus);
+                    testPublisher.complete();
+                    try {
+                        rc.close();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                 })
+                .assertNext(csm -> assertAll(
+                                () -> assertTrue(repository.findByConsentId("consentId").isPresent()),
+                                () -> assertEquals("permissionId", repository.findByConsentId("consentId").get().permissionId())
+                        )
+                )
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
+    void acceptingPermissionRequest_withoutConsentId_updatesPermissionRequest() throws TransmissionException {
+        TestPublisher<CMRequestStatus> testPublisher = TestPublisher.create();
+        when(adapter.getCMRequestStatusStream())
+                .thenReturn(testPublisher.flux());
+        EdaRegionConnector rc = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, messages);
+        CCMORequest ccmoRequest = mock(CCMORequest.class);
+        when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
+        when(ccmoRequest.messageId()).thenReturn("messageId");
+        when(ccmoRequest.meteringPointId()).thenReturn(Optional.of("meteringPointId"));
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
+        permissionRequest.changeState(new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest));
+        repository.save(permissionRequest);
+
+        var source = JdkFlowAdapter.flowPublisherToFlux(((Mvp1ConnectionStatusMessageProvider) rc).getConnectionStatusMessageStream());
+        var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "messageId");
+
+        StepVerifier.create(source)
+                .then(() -> {
+                    testPublisher.emit(cmRequestStatus);
+                    testPublisher.complete();
+                    try {
+                        rc.close();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .assertNext(csm -> assertTrue(permissionRequest.consentId().isEmpty()))
                 .expectComplete()
                 .verify();
     }

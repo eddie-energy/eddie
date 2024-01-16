@@ -5,7 +5,7 @@ import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
-import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
+import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -21,13 +21,14 @@ public class EnerginetRegionConnector implements RegionConnector {
     public static final int MAXIMUM_MONTHS_IN_THE_PAST = 24;
     private static final Logger LOGGER = LoggerFactory.getLogger(EnerginetRegionConnector.class);
     private final EnerginetCustomerApi energinetCustomerApi;
-    private final DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository;
+    private final PermissionRequestService permissionRequestService;
 
     public EnerginetRegionConnector(
             EnerginetCustomerApi energinetCustomerApi,
-            DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository) {
+            PermissionRequestService permissionRequestService
+    ) {
         this.energinetCustomerApi = requireNonNull(energinetCustomerApi);
-        this.permissionRequestRepository = requireNonNull(permissionRequestRepository);
+        this.permissionRequestService = requireNonNull(permissionRequestService);
     }
 
     @Override
@@ -37,7 +38,7 @@ public class EnerginetRegionConnector implements RegionConnector {
 
     @Override
     public void terminatePermission(String permissionId) {
-        var permissionRequest = permissionRequestRepository.findByPermissionId(permissionId);
+        var permissionRequest = permissionRequestService.findByPermissionId(permissionId);
         if (permissionRequest.isEmpty()) {
             return;
         }
