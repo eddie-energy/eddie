@@ -5,6 +5,7 @@ import energy.eddie.api.v0.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.v0.process.model.states.ValidatedPermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 public class EnerginetCustomerValidatedState extends ContextualizedPermissionRequestState<DkEnerginetCustomerPermissionRequest>
         implements ValidatedPermissionRequestState {
@@ -20,12 +21,12 @@ public class EnerginetCustomerValidatedState extends ContextualizedPermissionReq
         try {
             requestAccessToken();
             permissionRequest.changeState(new EnerginetCustomerPendingAcknowledgmentState(permissionRequest));
-        } catch (HttpClientErrorException.Unauthorized e) {
+        } catch (WebClientResponseException.Unauthorized | HttpClientErrorException.Unauthorized e) {
             permissionRequest.changeState(new EnerginetCustomerUnableToSendState(permissionRequest, e));
-            throw new SendToPermissionAdministratorException(this, "The given refresh token is not valid", true);
+            throw new SendToPermissionAdministratorException(this, "The given refresh token is not valid.", true);
         } catch (HttpClientErrorException.TooManyRequests e) {
             permissionRequest.changeState(new EnerginetCustomerUnableToSendState(permissionRequest, e));
-            throw new SendToPermissionAdministratorException(this, "Energinet is refusing to process the request at the moment, please try again later", false);
+            throw new SendToPermissionAdministratorException(this, "Energinet is refusing to process the request at the moment, please try again later.", false);
         } catch (Throwable e) {
             permissionRequest.changeState(new EnerginetCustomerUnableToSendState(permissionRequest, e));
             throw new SendToPermissionAdministratorException(this, "An error occurred, with exception " + e, false);

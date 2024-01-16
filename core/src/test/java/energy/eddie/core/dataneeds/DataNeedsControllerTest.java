@@ -15,11 +15,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Optional;
 import java.util.Set;
 
+import static energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice.ERRORS_JSON_PATH;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(DataNeedsController.class)
 class DataNeedsControllerTest {
@@ -45,7 +47,9 @@ class DataNeedsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(dataNeed), true));
         mvc.perform(get("/api/data-needs/nonexistent-id").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", startsWith("No dataNeed with ID 'nonexistent-id' found.")));
     }
 
     @Test

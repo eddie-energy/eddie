@@ -1,10 +1,11 @@
 package energy.eddie.regionconnector.shared.web;
 
+import energy.eddie.api.agnostic.EddieApiError;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 
 public class ValidationErrors implements ErrorMapper {
@@ -16,19 +17,22 @@ public class ValidationErrors implements ErrorMapper {
     }
 
     @Override
-    public Map<String, String> asMap() {
-        Map<String, String> errors = new HashMap<>();
-        exception.getBindingResult().getAllErrors().forEach(error -> {
-            if (error instanceof FieldError fieldError) {
-                String fieldName = fieldError.getField();
-                String errorMessage = fieldError.getDefaultMessage();
-                errors.put(fieldName, errorMessage);
-            } else {
-                String objectName = error.getObjectName();
-                String errorMessage = error.getDefaultMessage();
-                errors.put(objectName, errorMessage);
-            }
-        });
-        return errors;
+    public List<EddieApiError> asErrorsList() {
+        return exception.getBindingResult()
+                .getAllErrors()
+                .stream()
+                .map(this::mapObjectErrorToErrorMessage)
+                .toList();
+    }
+
+    private EddieApiError mapObjectErrorToErrorMessage(ObjectError error) {
+        String fieldName;
+
+        if (error instanceof FieldError fieldError) {
+            fieldName = fieldError.getField();
+        } else {
+            fieldName = error.getObjectName();
+        }
+        return new EddieApiError("%s: %s".formatted(fieldName, error.getDefaultMessage()));
     }
 }

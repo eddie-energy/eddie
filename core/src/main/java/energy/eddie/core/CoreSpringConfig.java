@@ -2,6 +2,7 @@ package energy.eddie.core;
 
 import energy.eddie.core.dataneeds.DataNeedsConfig;
 import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;
+import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,5 +53,13 @@ public class CoreSpringConfig implements WebMvcConfigurer {
     @Bean
     static RegionConnectorRegistrationBeanPostProcessor regionConnectorRegistrationBeanPostProcessor() {
         return new RegionConnectorRegistrationBeanPostProcessor();
+    }
+
+    /**
+     * Explicitly register the common controller advice as it's only automatically registered for region connectors.
+     */
+    @Bean
+    public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
+        return new RegionConnectorsCommonControllerAdvice();
     }
 }

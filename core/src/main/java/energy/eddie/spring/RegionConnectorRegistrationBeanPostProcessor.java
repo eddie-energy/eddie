@@ -1,6 +1,7 @@
 package energy.eddie.spring;
 
 import energy.eddie.api.agnostic.RegionConnector;
+import energy.eddie.api.agnostic.RegionConnectorExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -53,7 +54,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
 
         ServletRegistrationBean<DispatcherServlet> connectorServletBean = new ServletRegistrationBean<>(dispatcherServlet, urlMapping);
         // use unique name
-        connectorServletBean.setName(urlMapping);
+        connectorServletBean.setName(regionConnectorName);
         // start all region connector servlets with same priority
         connectorServletBean.setLoadOnStartup(2);
 

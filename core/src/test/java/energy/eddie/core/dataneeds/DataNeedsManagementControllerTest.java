@@ -15,11 +15,13 @@ import java.util.Optional;
 import java.util.Set;
 
 import static energy.eddie.core.dataneeds.DataNeedEntityTest.*;
+import static energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice.ERRORS_JSON_PATH;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(value = DataNeedsManagementController.class, properties = {"eddie.data-needs-config.data-need-source=DATABASE", "management.server.urlprefix=management"})
 class DataNeedsManagementControllerTest {
@@ -38,7 +40,7 @@ class DataNeedsManagementControllerTest {
         mvc.perform(post("/management/data-needs")
                         .content(objectMapper.writeValueAsString(EXAMPLE_DATA_NEED))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.TEXT_PLAIN_VALUE))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
         verify(repo).existsById(EXAMPLE_DATA_NEED_KEY);
         verify(repo).save(EXAMPLE_DATA_NEED);
@@ -52,9 +54,10 @@ class DataNeedsManagementControllerTest {
         mvc.perform(post("/management/data-needs")
                         .content(objectMapper.writeValueAsString(EXAMPLE_DATA_NEED))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.TEXT_PLAIN_VALUE))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict())
-                .andExpect(content().string("data need with id " + EXAMPLE_DATA_NEED_KEY + " already exists"));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Data need with ID '" + EXAMPLE_DATA_NEED_KEY + "' already exists.")));
         verify(repo).existsById(EXAMPLE_DATA_NEED_KEY);
         verifyNoMoreInteractions(repo);
     }
@@ -69,7 +72,7 @@ class DataNeedsManagementControllerTest {
         mvc.perform(post("/management/data-needs")
                         .content(objectMapper.writeValueAsString(dataNeed))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.TEXT_PLAIN_VALUE))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
         verify(repo).existsById(dataNeedId);
         verify(repo).save(dataNeed);
@@ -115,19 +118,23 @@ class DataNeedsManagementControllerTest {
 
         // try to fetch non-existing data need
         given(repo.findById(EXAMPLE_DATA_NEED_KEY)).willReturn(Optional.empty());
+
+        // When
         mvc.perform(get("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY).accept(MediaType.APPLICATION_JSON))
+                // Then
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("No dataNeed with ID " + EXAMPLE_DATA_NEED_KEY + " found"));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("No dataNeed with ID '" + EXAMPLE_DATA_NEED_KEY + "' found.")));
     }
 
     @Test
     void updateDataNeed_withExistingDataNeed_returnsOk() throws Exception {
-        // successfull update
+        // successful update
         given(repo.existsById(EXAMPLE_DATA_NEED_KEY)).willReturn(true);
         mvc.perform(put("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY)
                         .content(objectMapper.writeValueAsString(EXAMPLE_DATA_NEED))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.TEXT_PLAIN_VALUE))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andExpect(content().string(""));
         verify(repo).existsById(EXAMPLE_DATA_NEED_KEY);
         verify(repo).save(EXAMPLE_DATA_NEED);
@@ -141,10 +148,29 @@ class DataNeedsManagementControllerTest {
         mvc.perform(put("/management/data-needs/" + "wrong-key")
                         .content(objectMapper.writeValueAsString(EXAMPLE_DATA_NEED))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.TEXT_PLAIN_VALUE))
-                .andExpect(status().isBadRequest());
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Data need ID in URL does not match data need ID in request body.")));
         verify(repo, never()).save(any());
         verifyNoMoreInteractions(repo);
+    }
+
+    @Test
+    void updateDataNeed_nonExistingId_returnsNotFound() throws Exception {
+        // Givem
+        when(repo.existsById(EXAMPLE_DATA_NEED_KEY)).thenReturn(false);
+
+        // When
+        mvc.perform(put("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY)
+                        .content(objectMapper.writeValueAsString(EXAMPLE_DATA_NEED))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                // Then
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("No dataNeed with ID '%s' found.".formatted(EXAMPLE_DATA_NEED_KEY))));
+        verify(repo, never()).save(any());
     }
 
     @Test
@@ -162,9 +188,13 @@ class DataNeedsManagementControllerTest {
     void delete_nonExistingDataNeed_returnsNotFound() throws Exception {
         // all delete requests should be processed
         given(repo.existsById(EXAMPLE_DATA_NEED_KEY)).willReturn(false);
+
+        // When
         mvc.perform(delete("/management/data-needs/" + EXAMPLE_DATA_NEED_KEY).accept(MediaType.APPLICATION_JSON))
+                // Then
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("No dataNeed with ID " + EXAMPLE_DATA_NEED_KEY + " found"));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("No dataNeed with ID '" + EXAMPLE_DATA_NEED_KEY + "' found.")));
 
         verify(repo).existsById(EXAMPLE_DATA_NEED_KEY);
         verifyNoMoreInteractions(repo);

@@ -2,9 +2,9 @@ package energy.eddie.regionconnector.aiida.dtos;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record PermissionRequestForCreation(@NotBlank(message = "ConnectionId must not be empty")
+public record PermissionRequestForCreation(@NotBlank(message = "must not be blank")
                                            String connectionId,
-                                           @NotBlank(message = "DataNeedId must not be empty")
+                                           @NotBlank(message = "must not be blank")
                                            String dataNeedId
 ) {
 }

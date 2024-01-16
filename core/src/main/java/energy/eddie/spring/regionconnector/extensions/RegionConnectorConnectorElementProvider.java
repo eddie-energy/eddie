@@ -1,6 +1,6 @@
 package energy.eddie.spring.regionconnector.extensions;
 
-import energy.eddie.spring.RegionConnectorExtension;
+import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,7 +1,9 @@
 package energy.eddie.regionconnector.shared.web;
 
-import java.util.Map;
+import energy.eddie.api.agnostic.EddieApiError;
+
+import java.util.List;
 
 public interface ErrorMapper {
-    Map<String, String> asMap();
+    List<EddieApiError> asErrorsList();
 }

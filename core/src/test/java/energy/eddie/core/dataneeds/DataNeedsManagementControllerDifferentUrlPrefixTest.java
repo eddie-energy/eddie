@@ -14,11 +14,14 @@ import java.util.Optional;
 
 import static energy.eddie.core.dataneeds.DataNeedEntityTest.EXAMPLE_DATA_NEED;
 import static energy.eddie.core.dataneeds.DataNeedEntityTest.EXAMPLE_DATA_NEED_KEY;
+import static energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice.ERRORS_JSON_PATH;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(value = DataNeedsManagementController.class, properties = {"eddie.data-needs-config.data-need-source=DATABASE", "management.server.urlprefix=test"})
@@ -38,9 +41,10 @@ class DataNeedsManagementControllerDifferentUrlPrefixTest {
         mvc.perform(post("/test/data-needs")
                         .content(objectMapper.writeValueAsString(EXAMPLE_DATA_NEED))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.TEXT_PLAIN_VALUE))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict())
-                .andExpect(content().string("data need with id " + EXAMPLE_DATA_NEED_KEY + " already exists"));
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Data need with ID '" + EXAMPLE_DATA_NEED_KEY + "' already exists.")));
         verify(repo).existsById(EXAMPLE_DATA_NEED_KEY);
         verifyNoMoreInteractions(repo);
     }
@@ -70,7 +74,7 @@ class DataNeedsManagementControllerDifferentUrlPrefixTest {
         mvc.perform(put("/test/data-needs/" + "wrong-key")
                         .content(objectMapper.writeValueAsString(EXAMPLE_DATA_NEED))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.TEXT_PLAIN_VALUE))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
         verify(repo, never()).save(any());
         verifyNoMoreInteractions(repo);

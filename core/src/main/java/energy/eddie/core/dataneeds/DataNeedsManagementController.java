@@ -2,9 +2,10 @@ package energy.eddie.core.dataneeds;
 
 import energy.eddie.api.agnostic.DataNeed;
 import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
+import energy.eddie.core.dataneeds.exceptions.DataNeedAlreadyExistsException;
+import energy.eddie.core.dataneeds.exceptions.DataNeedIdsNotMatchingException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -29,11 +30,11 @@ public class DataNeedsManagementController {
         this.basePath = basePath;
     }
 
-    @PostMapping(produces = MediaType.TEXT_PLAIN_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> createDataNeed(@NonNull @RequestBody DataNeedEntity newDataNeed) {
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> createDataNeed(@NonNull @RequestBody DataNeedEntity newDataNeed) throws DataNeedAlreadyExistsException {
         final var id = newDataNeed.id();
         if (dataNeedsDbRepository.existsById(id)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("data need with id " + id + " already exists");
+            throw new DataNeedAlreadyExistsException(id);
         }
         dataNeedsDbRepository.save(newDataNeed);
         return ResponseEntity.created(URI.create(basePath + "/" + id)).build();
@@ -48,15 +49,15 @@ public class DataNeedsManagementController {
     public ResponseEntity<DataNeed> getDataNeed(@PathVariable String id) throws DataNeedNotFoundException {
         return dataNeedsDbRepository.findById(id)
                 .<ResponseEntity<DataNeed>>map(ResponseEntity::ok)
-                .orElseThrow(() -> new DataNeedNotFoundException(id));
+                .orElseThrow(() -> new DataNeedNotFoundException(id, false));
     }
 
-    @PutMapping(path = "/{id}", produces = MediaType.TEXT_PLAIN_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> updateDataNeed(@PathVariable String id, @RequestBody DataNeedEntity dataNeed) throws DataNeedNotFoundException {
+    @PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> updateDataNeed(@PathVariable String id, @RequestBody DataNeedEntity dataNeed) throws DataNeedNotFoundException, DataNeedIdsNotMatchingException {
         if (!dataNeed.id().equals(id)) {
-            return ResponseEntity.badRequest().body("data need id in url does not match data need id in body");
+            throw new DataNeedIdsNotMatchingException();
         } else if (!dataNeedsDbRepository.existsById(id)) {
-            throw new DataNeedNotFoundException(id);
+            throw new DataNeedNotFoundException(id, false);
         } else {
             dataNeedsDbRepository.save(dataNeed);
             return ResponseEntity.ok().build();
@@ -66,7 +67,7 @@ public class DataNeedsManagementController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteDataNeed(@PathVariable String id) throws DataNeedNotFoundException {
         if (!dataNeedsDbRepository.existsById(id)) {
-            throw new DataNeedNotFoundException(id);
+            throw new DataNeedNotFoundException(id, false);
         }
         dataNeedsDbRepository.deleteById(id);
         return ResponseEntity.noContent().build();
