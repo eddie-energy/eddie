@@ -1,9 +1,10 @@
 package energy.eddie.regionconnector.fr.enedis.client;
 
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
+import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
+import energy.eddie.regionconnector.fr.enedis.model.DailyConsumptionMeterReading;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneId;
@@ -74,7 +75,7 @@ class HealthCheckedEnedisApiTest {
         // Given
         EnedisApi mockedEnedisApi = mock(EnedisApi.class);
         HealthCheckedEnedisApi healthCheckedEnedisApi = new HealthCheckedEnedisApi(mockedEnedisApi);
-        ConsumptionRecord dummyRecord = new ConsumptionRecord();
+        DailyConsumptionMeterReading dummyRecord = new DailyConsumptionMeterReading();
         when(mockedEnedisApi.getDailyConsumption(anyString(), any(ZonedDateTime.class), any(ZonedDateTime.class)))
                 .thenReturn(dummyRecord);
 
@@ -113,7 +114,7 @@ class HealthCheckedEnedisApiTest {
         // Given
         EnedisApi mockedEnedisApi = mock(EnedisApi.class);
         HealthCheckedEnedisApi healthCheckedEnedisApi = new HealthCheckedEnedisApi(mockedEnedisApi);
-        ConsumptionRecord dummyRecord = new ConsumptionRecord();
+        DailyConsumptionMeterReading dummyRecord = new DailyConsumptionMeterReading();
         when(mockedEnedisApi.getDailyConsumption(anyString(), any(ZonedDateTime.class), any(ZonedDateTime.class)))
                 .thenReturn(dummyRecord);
         healthCheckedEnedisApi.getDailyConsumption(
@@ -157,7 +158,7 @@ class HealthCheckedEnedisApiTest {
         // Given
         EnedisApi mockedEnedisApi = mock(EnedisApi.class);
         HealthCheckedEnedisApi healthCheckedEnedisApi = new HealthCheckedEnedisApi(mockedEnedisApi);
-        ConsumptionRecord dummyRecord = new ConsumptionRecord();
+        ConsumptionLoadCurveMeterReading dummyRecord = new ConsumptionLoadCurveMeterReading();
         when(mockedEnedisApi.getConsumptionLoadCurve(anyString(), any(ZonedDateTime.class), any(ZonedDateTime.class)))
                 .thenReturn(dummyRecord);
 
@@ -195,7 +196,7 @@ class HealthCheckedEnedisApiTest {
         // Given
         EnedisApi mockedEnedisApi = mock(EnedisApi.class);
         HealthCheckedEnedisApi healthCheckedEnedisApi = new HealthCheckedEnedisApi(mockedEnedisApi);
-        ConsumptionRecord dummyRecord = new ConsumptionRecord();
+        ConsumptionLoadCurveMeterReading dummyRecord = new ConsumptionLoadCurveMeterReading();
         when(mockedEnedisApi.getConsumptionLoadCurve(anyString(), any(ZonedDateTime.class), any(ZonedDateTime.class)))
                 .thenReturn(dummyRecord);
         healthCheckedEnedisApi.getConsumptionLoadCurve(

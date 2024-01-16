@@ -10,7 +10,7 @@ import energy.eddie.cim.validated_historical_data.v0_82.QualityTypeList;
 import energy.eddie.cim.validated_historical_data.v0_82.SeriesPeriodComplexType;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.processing.utils.XmlGregorianCalenderUtils;
-import energy.eddie.regionconnector.shared.utils.EsmpDateTimeUtils;
+import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,12 +56,12 @@ public class SeriesPeriodBuilder {
                     throw new InvalidMappingException("Unexpected MeteringInterval value + '" + energy.getMeteringIntervall() + "' in consumptionRecord");
         });
 
-        var intervalStart = XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodStart());
-        var intervalEnd = XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodEnd());
+        var intervalStart = new EsmpDateTime(XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodStart()));
+        var intervalEnd = new EsmpDateTime(XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodEnd()));
 
         seriesPeriod.withTimeInterval(new ESMPDateTimeIntervalComplexType()
-                .withStart(EsmpDateTimeUtils.zonedDateTimeToESMPDateTimeString(intervalStart))
-                .withEnd(EsmpDateTimeUtils.zonedDateTimeToESMPDateTimeString(intervalEnd))
+                .withStart(intervalStart.toString())
+                .withEnd(intervalEnd.toString())
         );
 
         return this;

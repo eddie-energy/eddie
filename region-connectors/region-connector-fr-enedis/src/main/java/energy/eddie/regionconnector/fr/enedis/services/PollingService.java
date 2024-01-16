@@ -1,9 +1,10 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
+import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
+import energy.eddie.regionconnector.fr.enedis.providers.agnostic.IdentifiableMeterReading;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -14,16 +15,16 @@ import reactor.core.publisher.Sinks;
 import java.time.ZonedDateTime;
 
 @Service
-public class PollingService {
+public class PollingService implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
     private static final int NUM_OF_WEEKDAYS = 6;
 
     private final EnedisApiService enedisApiService;
-    private final Sinks.Many<ConsumptionRecord> consumptionRecords;
+    private final Sinks.Many<IdentifiableMeterReading> meterReadings;
 
-    public PollingService(EnedisApiService enedisApiService, Sinks.Many<ConsumptionRecord> consumptionRecords) {
+    public PollingService(EnedisApiService enedisApiService, Sinks.Many<IdentifiableMeterReading> meterReadings) {
         this.enedisApiService = enedisApiService;
-        this.consumptionRecords = consumptionRecords;
+        this.meterReadings = meterReadings;
     }
 
     private static void handleException(TimeframedPermissionRequest permissionRequest, ApiException e) {
@@ -60,13 +61,19 @@ public class PollingService {
                 endOfRequest = end;
             }
             LOGGER.info("Fetching data from ENEDIS for permissionId '{}' from '{}' to '{}'", permissionId, start, endOfRequest);
-            ConsumptionRecord consumptionRecord = enedisApiService.getConsumptionLoadCurve(usagePointId, start, endOfRequest);
-            // map ids
-            consumptionRecord.setConnectionId(permissionRequest.connectionId());
-            consumptionRecord.setPermissionId(permissionId);
-            consumptionRecord.setDataNeedId(permissionRequest.dataNeedId());
+            ConsumptionLoadCurveMeterReading meterReading = enedisApiService.getConsumptionLoadCurve(usagePointId, start, endOfRequest);
             // publish
-            consumptionRecords.tryEmitNext(consumptionRecord);
+            meterReadings.tryEmitNext(new IdentifiableMeterReading(
+                    permissionId,
+                    permissionRequest.connectionId(),
+                    permissionRequest.dataNeedId(),
+                    meterReading
+            ));
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+        meterReadings.tryEmitComplete();
     }
 }

@@ -1,9 +1,8 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
-import org.springframework.retry.annotation.Backoff;
+import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +17,8 @@ public class EnedisApiService {
         this.enedisApi = enedisApi;
     }
 
-    @Retryable(retryFor = ApiException.class, backoff = @Backoff(delay = 3000))
-    public ConsumptionRecord getDailyConsumption(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
-        return enedisApi.getDailyConsumption(usagePointId, start, end);
-    }
-
     @Retryable(retryFor = ApiException.class)
-    public ConsumptionRecord getConsumptionLoadCurve(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
+    public ConsumptionLoadCurveMeterReading getConsumptionLoadCurve(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
         return enedisApi.getConsumptionLoadCurve(usagePointId, start, end);
     }
 }

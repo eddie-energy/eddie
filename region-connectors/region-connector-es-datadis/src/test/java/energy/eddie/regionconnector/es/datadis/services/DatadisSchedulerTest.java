@@ -10,7 +10,6 @@ import energy.eddie.regionconnector.es.datadis.dtos.Supply;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.InvalidPointAndMeasurementTypeCombinationException;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSuppliesException;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
-import energy.eddie.regionconnector.es.datadis.permission.request.InMemoryPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.AcceptedState;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -74,7 +73,7 @@ class DatadisSchedulerTest {
         var start = ZonedDateTime.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         var creation = new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, MeasurementType.QUARTER_HOURLY);
-        DatadisPermissionRequest permissionRequest = new DatadisPermissionRequest("pid", creation, mock(AuthorizationApi.class), new InMemoryPermissionRequestRepository());
+        DatadisPermissionRequest permissionRequest = new DatadisPermissionRequest("pid", creation, mock(AuthorizationApi.class));
         permissionRequest.changeState(new AcceptedState(permissionRequest));
 
         // When
@@ -103,7 +102,7 @@ class DatadisSchedulerTest {
                 start.toLocalDate(),
                 end.toLocalDate(),
                 1,
-                "distCode"
+                "1"
         );
         doReturn(Mono.just(List.of(supply)))
                 .when(dataApi).getSupplies(anyString(), isNull());
@@ -112,7 +111,7 @@ class DatadisSchedulerTest {
         var scheduler = new DatadisScheduler(dataApi, Sinks.many().multicast().onBackpressureBuffer());
 
         var creation = new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, MeasurementType.QUARTER_HOURLY);
-        DatadisPermissionRequest permissionRequest = new DatadisPermissionRequest("pid", creation, mock(AuthorizationApi.class), new InMemoryPermissionRequestRepository());
+        DatadisPermissionRequest permissionRequest = new DatadisPermissionRequest("pid", creation, mock(AuthorizationApi.class));
         permissionRequest.changeState(new AcceptedState(permissionRequest));
 
         // When
@@ -136,7 +135,7 @@ class DatadisSchedulerTest {
         var start = ZonedDateTime.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         var creation = new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, MeasurementType.QUARTER_HOURLY);
-        DatadisPermissionRequest permissionRequest = new DatadisPermissionRequest("pid", creation, mock(AuthorizationApi.class), new InMemoryPermissionRequestRepository());
+        DatadisPermissionRequest permissionRequest = new DatadisPermissionRequest("pid", creation, mock(AuthorizationApi.class));
 
         // When
         scheduler.pullAvailableHistoricalData(permissionRequest);
@@ -159,7 +158,7 @@ class DatadisSchedulerTest {
         var start = ZonedDateTime.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         var creation = new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, MeasurementType.QUARTER_HOURLY);
-        DatadisPermissionRequest permissionRequest = new DatadisPermissionRequest("pid", creation, mock(AuthorizationApi.class), new InMemoryPermissionRequestRepository());
+        DatadisPermissionRequest permissionRequest = new DatadisPermissionRequest("pid", creation, mock(AuthorizationApi.class));
         permissionRequest.changeState(new AcceptedState(permissionRequest));
 
         // When

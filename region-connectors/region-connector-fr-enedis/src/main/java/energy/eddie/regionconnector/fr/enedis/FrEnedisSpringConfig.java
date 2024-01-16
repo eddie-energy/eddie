@@ -2,9 +2,11 @@ package energy.eddie.regionconnector.fr.enedis;
 
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.process.model.PermissionRequestRepository;
 import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.cim.validated_historical_data.v0_82.CodingSchemeTypeList;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClientDecorator;
@@ -13,6 +15,7 @@ import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.request.InMemoryPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.fr.enedis.providers.agnostic.IdentifiableMeterReading;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
@@ -22,10 +25,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.util.Set;
 
+import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID;
 import static energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration.*;
 
@@ -42,6 +47,12 @@ public class FrEnedisSpringConfig {
             @Value("${" + ENEDIS_BASE_PATH_KEY + "}") String basePath
     ) {
         return new PlainEnedisConfiguration(clientId, clientSecret, basePath);
+    }
+
+    @Bean
+    public CommonInformationModelConfiguration commonInformationModelConfiguration(
+            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingSchemeTypeList) {
+        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingSchemeTypeList));
     }
 
     @Bean
@@ -64,8 +75,15 @@ public class FrEnedisSpringConfig {
     }
 
     @Bean
-    public Sinks.Many<ConsumptionRecord> consumptionRecords() {
+    public Sinks.Many<IdentifiableMeterReading> identifiableMeterReadingMany() {
         return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public Flux<IdentifiableMeterReading> identifiableMeterReadingFlux(
+            Sinks.Many<IdentifiableMeterReading> identifiableMeterReadingMany
+    ) {
+        return identifiableMeterReadingMany.asFlux();
     }
 
     @Bean
