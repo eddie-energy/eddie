@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.aiida.states;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.PastStateException;
-import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;

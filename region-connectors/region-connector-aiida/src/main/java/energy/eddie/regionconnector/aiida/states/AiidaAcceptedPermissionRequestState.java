@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.aiida.states;
 
 import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
 import energy.eddie.api.v0.process.model.states.AcceptedPermissionRequestState;
-import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 
 public class AiidaAcceptedPermissionRequestState
         extends ContextualizedPermissionRequestState<AiidaPermissionRequest>
