@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.aiida;
 
-import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
+import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -16,11 +17,11 @@ class InMemoryAiidaPermissionRequestRepositoryTest {
         InMemoryAiidaPermissionRequestRepository repository = new InMemoryAiidaPermissionRequestRepository();
         String permissionId = "permissionId";
         var request = new AiidaPermissionRequest(permissionId, "connectionId",
-                "dataNeedId", "foo", now, now, null);
+                "dataNeedId", "foo", now, now);
 
         // When
         repository.save(request);
-        Optional<AiidaPermissionRequest> foundRequest = repository.findByPermissionId(permissionId);
+        Optional<AiidaPermissionRequestInterface> foundRequest = repository.findByPermissionId(permissionId);
 
         // Then
         assertTrue(foundRequest.isPresent());
@@ -32,7 +33,7 @@ class InMemoryAiidaPermissionRequestRepositoryTest {
         InMemoryAiidaPermissionRequestRepository repository = new InMemoryAiidaPermissionRequestRepository();
 
         // When
-        Optional<AiidaPermissionRequest> foundRequest = repository.findByPermissionId("NonExisting");
+        Optional<AiidaPermissionRequestInterface> foundRequest = repository.findByPermissionId("NonExisting");
 
         // Then
         assertTrue(foundRequest.isEmpty());
@@ -57,7 +58,7 @@ class InMemoryAiidaPermissionRequestRepositoryTest {
         InMemoryAiidaPermissionRequestRepository repository = new InMemoryAiidaPermissionRequestRepository();
         String permissionId = "permissionId";
         var request = new AiidaPermissionRequest(permissionId, "connectionId",
-                "dataNeedId", "foo", now, now, null);
+                "dataNeedId", "foo", now, now);
         repository.save(request);
 
         // When

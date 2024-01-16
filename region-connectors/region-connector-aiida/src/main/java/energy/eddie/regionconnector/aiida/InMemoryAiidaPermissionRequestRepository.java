@@ -1,7 +1,9 @@
 package energy.eddie.regionconnector.aiida;
 
-import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
-import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequestRepository;
+import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
+import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -10,15 +12,19 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class InMemoryAiidaPermissionRequestRepository implements AiidaPermissionRequestRepository {
-    private final Map<String, AiidaPermissionRequest> requests = new ConcurrentHashMap<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryAiidaPermissionRequestRepository.class);
+    private final Map<String, AiidaPermissionRequestInterface> requests = new ConcurrentHashMap<>();
 
     @Override
-    public void save(AiidaPermissionRequest request) {
+    public void save(AiidaPermissionRequestInterface request) {
+        if (LOGGER.isInfoEnabled())
+            LOGGER.info("Saving request with permission ID {} and status {}", request.permissionId(), request.state().status());
+
         requests.put(request.permissionId(), request);
     }
 
     @Override
-    public Optional<AiidaPermissionRequest> findByPermissionId(String permissionId) {
+    public Optional<AiidaPermissionRequestInterface> findByPermissionId(String permissionId) {
         return Optional.ofNullable(requests.get(permissionId));
     }
 

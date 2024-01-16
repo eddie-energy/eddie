@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.StateTransitionException;
-import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequestRepository;
 import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
+import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
+import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +23,7 @@ import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
 public class AiidaKafka {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaKafka.class);
     private final ObjectMapper mapper;
-    private final AiidaPermissionRequestRepository repository;
+    private final AiidaRegionConnectorService service;
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     /**
@@ -32,15 +34,17 @@ public class AiidaKafka {
      * Kafka termination topic of the associated permission.
      *
      * @param mapper                 ObjectMapper used to deserialize any {@link ConnectionStatusMessage} received via Kafka.
-     * @param repository             Repository that used to query and update {@link PermissionRequest}s.
+     * @param service                Service used to get permission requests from persistence layer. Needed to be able to update the state of a permission request.
      * @param terminationRequestFlux Flux that contains termination requests that should be processed.
      * @param kafkaTemplate          KafkaTemplate used to send the termination requests to the specific Kafka topics.
      */
-    public AiidaKafka(ObjectMapper mapper, AiidaPermissionRequestRepository repository,
+    public AiidaKafka(ObjectMapper mapper,
+                      AiidaRegionConnectorService service,
                       Flux<TerminationRequest> terminationRequestFlux,
-                      KafkaTemplate<String, String> kafkaTemplate) {
+                      KafkaTemplate<String, String> kafkaTemplate
+    ) {
         this.mapper = mapper;
-        this.repository = repository;
+        this.service = service;
         this.kafkaTemplate = kafkaTemplate;
 
         terminationRequestFlux.subscribe(this::sendTerminationRequest);
@@ -60,35 +64,29 @@ public class AiidaKafka {
                     ConsumerConfig.AUTO_OFFSET_RESET_CONFIG + "=earliest"
             })
     public void listenForConnectionStatusMessages(String message) {
+        ConnectionStatusMessage statusMessage = null;
         try {
-            var statusMessage = mapper.readValue(message, ConnectionStatusMessage.class);
+            statusMessage = mapper.readValue(message, ConnectionStatusMessage.class);
 
-            LOGGER.info("new status message {}", statusMessage);
+            LOGGER.info("Got new status message: {}", statusMessage);
 
-            var optionalRequest = repository.findByPermissionId(statusMessage.permissionId());
-
-            if (optionalRequest.isEmpty()) {
-                LOGGER.warn("Got ConnectionStatusMessage {}, but couldn't find a matching permission in the database.", statusMessage);
-                return;
-            }
-
-            var request = optionalRequest.get();
+            AiidaPermissionRequestInterface request = service.getPermissionRequestById(statusMessage.permissionId());
 
             switch (statusMessage.status()) {
-                // TODO should check if permission hasn't expired yet?
-                // TODO what exactly should be done for TIME_LIMIT and TERMINATED messages?
                 case ACCEPTED -> request.accept();
                 case TERMINATED -> request.terminate();
                 case REVOKED -> request.revoke();
                 case TIME_LIMIT -> request.timeLimit();
-                default ->
+                default -> {
+                    if (LOGGER.isErrorEnabled())
                         LOGGER.error("Got status message for permission {} and new status {}, but no handling for the new state is implemented",
                                 request.permissionId(), statusMessage.status());
+                }
             }
-
-            repository.save(request);
         } catch (JsonProcessingException e) {
             LOGGER.error("Error while deserializing ConnectionStatusMessage", e);
+        } catch (PermissionNotFoundException e) {
+            LOGGER.error("Got ConnectionStatusMessage {}, but couldn't find a matching permission in the persistence layer.", statusMessage, e);
         } catch (StateTransitionException e) {
             LOGGER.error("Error while transitioning state", e);
         }

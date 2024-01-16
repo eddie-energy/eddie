@@ -3,8 +3,8 @@ package energy.eddie.regionconnector.aiida;
 import energy.eddie.api.agnostic.DataNeed;
 import energy.eddie.api.agnostic.DataNeedsService;
 import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
-import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
+import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,7 @@ class AiidaFactoryTest {
     void setUp() {
         PlainAiidaConfiguration config = new PlainAiidaConfiguration("localhost:1234", "testData", "testStatus", "testTerminationPrefix");
         var fixedClock = Clock.fixed(Instant.parse("2023-10-15T15:00:00Z"), ZoneId.of("UTC"));
-        aiidaFactory = new AiidaFactory(config, mockDataNeedsService, fixedClock);
+        aiidaFactory = new AiidaFactory(config, mockDataNeedsService, fixedClock, Set.of());
     }
 
     @Test
@@ -47,7 +47,7 @@ class AiidaFactoryTest {
         // Then
         assertThrows(DataNeedNotFoundException.class,
                 // When
-                () -> aiidaFactory.createPermissionRequest("testConnId", dataNeedId, mockService));
+                () -> aiidaFactory.createPermissionRequest("testConnId", dataNeedId));
     }
 
     @Test
@@ -66,7 +66,7 @@ class AiidaFactoryTest {
 
 
         // When
-        AiidaPermissionRequest request = aiidaFactory.createPermissionRequest(connectionId, dataNeedId, mockService);
+        AiidaPermissionRequestInterface request = aiidaFactory.createPermissionRequest(connectionId, dataNeedId);
 
         // Then
         assertDoesNotThrow(() -> UUID.fromString(request.permissionId()));
@@ -93,7 +93,7 @@ class AiidaFactoryTest {
         // when open end, 1000 years get added to now()
         var expectedExpiration = Instant.parse("3023-10-15T23:59:59Z");
 
-        AiidaPermissionRequest request = aiidaFactory.createPermissionRequest(connectionId, dataNeedId, mockService);
+        AiidaPermissionRequestInterface request = aiidaFactory.createPermissionRequest(connectionId, dataNeedId);
 
 
         // When
