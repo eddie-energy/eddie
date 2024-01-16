@@ -26,7 +26,7 @@ class AiidaSentToPermissionAdministratorPermissionRequestStateTest {
         // Given
         var now = Instant.now();
         AiidaPermissionRequest permissionRequest = new AiidaPermissionRequest("foo", "bar",
-                "loo", "too", now, now, null);
+                "loo", "too", now, now);
         var state = new AiidaSentToPermissionAdministratorPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 
@@ -42,7 +42,7 @@ class AiidaSentToPermissionAdministratorPermissionRequestStateTest {
         // Given
         var now = Instant.now();
         AiidaPermissionRequest permissionRequest = new AiidaPermissionRequest("foo", "bar",
-                "loo", "too", now, now, null);
+                "loo", "too", now, now);
         var state = new AiidaSentToPermissionAdministratorPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 
@@ -58,7 +58,7 @@ class AiidaSentToPermissionAdministratorPermissionRequestStateTest {
         // Given
         var now = Instant.now();
         AiidaPermissionRequest permissionRequest = new AiidaPermissionRequest("foo", "bar",
-                "loo", "too", now, now, null);
+                "loo", "too", now, now);
         var state = new AiidaSentToPermissionAdministratorPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 

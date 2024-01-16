@@ -24,7 +24,7 @@ class AiidaAcceptedPermissionRequestStateTest {
     void terminate_changesState() {
         // Given
         var now = Instant.now();
-        AiidaPermissionRequest request = new AiidaPermissionRequest("foo", "bar", "loo", "too", now, now, null);
+        AiidaPermissionRequest request = new AiidaPermissionRequest("foo", "bar", "loo", "too", now, now);
         AiidaAcceptedPermissionRequestState state = new AiidaAcceptedPermissionRequestState(request);
 
         // When
@@ -38,7 +38,7 @@ class AiidaAcceptedPermissionRequestStateTest {
     void revoke_changesState() {
         // Given
         var now = Instant.now();
-        AiidaPermissionRequest request = new AiidaPermissionRequest("foo", "bar", "loo", "too", now, now, null);
+        AiidaPermissionRequest request = new AiidaPermissionRequest("foo", "bar", "loo", "too", now, now);
         AiidaAcceptedPermissionRequestState state = new AiidaAcceptedPermissionRequestState(request);
 
         // When
@@ -52,7 +52,7 @@ class AiidaAcceptedPermissionRequestStateTest {
     void timeLimit_changesState() {
         // Given
         var now = Instant.now();
-        AiidaPermissionRequest request = new AiidaPermissionRequest("foo", "bar", "loo", "too", now, now, null);
+        AiidaPermissionRequest request = new AiidaPermissionRequest("foo", "bar", "loo", "too", now, now);
         AiidaAcceptedPermissionRequestState state = new AiidaAcceptedPermissionRequestState(request);
 
         // When
