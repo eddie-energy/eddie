@@ -36,17 +36,24 @@ Or you can use the following links:
 
 There are three tasks in the **development** group that have to run at the same time, e.g. in different windows:
 
-- `./gradlew run-db-server`
+- `./gradlew run-db-server` (obsolete, the default DB is a PostgreSQL)
 - `./gradlew run-core`
 - `./gradlew run-example-app`
 
 The three processes are:
 
-#### H2 Database Engine
+#### Database
 
+Instead of the H2 database, a PostgreSQL database is used as default.
+Check the [docker-compose.yml](env/docker-compose.yml) file for an example PostgreSQL container that you can use as it
+is. The necessary database for the example app and the EDDIE core are created automatically when starting the docker
+container for the first time.
+
+You can still use the H2 database by changing the JDBC URLs for the example app and the EDDIE core and running
+the `run-db-server` gradle task.
 [H2 Database Engine](https://www.h2database.com/html/main.html) started as a network server.
 
-- the databases interface is acessible through <http://localhost:8082>
+- the databases interface is accessible through <http://localhost:8082>
 - JDBC connection through: `jdbc:h2:tcp://localhost/./examples/example-app` (username and password empty)
 
 #### Eligible party demo app

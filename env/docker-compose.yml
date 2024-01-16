@@ -1,12 +1,26 @@
 version: "3.9"
 name: eddie-test
 services:
-  h2:
-    image: "pcarmona/h2database"
+  # Use either H2 or postgresql as database
+  #h2:
+  #  image: "pcarmona/h2database"
+  #  environment:
+  #    H2_DBNAME: demo-db
+  #    H2_USER: "test"
+  #    H2_PASSWORD: "test"
+
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
     environment:
-      H2_DBNAME: demo-db
-      H2_USER: "test"
-      H2_PASSWORD: "test"
+      POSTGRES_PASSWORD: "test"
+      POSTGRES_USER: "test"
+      POSTGRES_DB: "eddie"
+    restart: "always"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./create-example-app-db.sql:/docker-entrypoint-initdb.d/create_database.sql
 
   eddie:
     image: ghcr.io/eddie-energy/eddie:latest
@@ -22,6 +36,7 @@ services:
       - ./data-needs.yml:/opt/core/config/data-needs.yml
     depends_on:
       - kafka
+      - db
 
   eddie-example-app:
     image: ghcr.io/eddie-energy/eddie-example-app:latest
@@ -29,11 +44,14 @@ services:
       dockerfile: src/main/docker/Dockerfile
       context: ../examples/example-app
     environment:
-      JDBC_URL: "jdbc:h2:tcp://h2/demo-db"
+      JDBC_URL: "jdbc:postgresql://db:5432/example_app"
       JDBC_USER: "test"
       JDBC_PASSWORD: "test"
       EDDIE_PUBLIC_URL: ${PUBLIC_CONTEXT_PATH}
       PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
+    restart: always
+    depends_on:
+      - db
 
   kafka:
     image: bitnami/kafka:3.6
@@ -63,3 +81,4 @@ services:
 
 volumes:
   caddy_data:
+  postgres_data:

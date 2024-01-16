@@ -22,6 +22,7 @@ commons-codec = "1.15"
 jsonschema2pojo = "1.2.1"
 jackson = "2.15.2"
 h2database = "2.1.212"
+postgresql = "42.7.1"
 javalin = "5.6.2"
 jdbi3 = "3.37.1"
 reactor = "3.5.5"
@@ -86,6 +87,7 @@ commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons
 kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients" }
 
 # used by core
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 h2database = { module = "com.h2database:h2", version.ref = "h2database" }
 javalin = { module = "io.javalin:javalin", version.ref = "javalin" }
 jetty-proxy = { module = "org.eclipse.jetty:jetty-proxy", version.ref = "jetty" }

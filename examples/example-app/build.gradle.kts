@@ -35,7 +35,10 @@ dependencies {
     implementation(libs.reactor.core)
     implementation(libs.jte)
     implementation(libs.slf4j.simple)
+
     runtimeOnly(libs.h2database)
+    runtimeOnly(libs.postgresql)
+
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.jupiter)
 }
@@ -50,9 +53,16 @@ tasks.register("run-example-app", JavaExec::class) {
     systemProperties.set("developmentMode", "true")
     group = "development"
     description = "run the example-app in development mode (for Jte templates)"
-    environment["JDBC_URL"] = "jdbc:h2:tcp://localhost:9091/./examples/example-app"
     environment["PUBLIC_CONTEXT_PATH"] = ""
     environment["EDDIE_PUBLIC_URL"] = "http://localhost:8080"
+
+    // when using PostgreSQL
+    environment["JDBC_URL"] = "jdbc:postgresql://localhost:5432/example_app"
+    environment["JDBC_USER"] = "test"
+    environment["JDBC_PASSWORD"] = "test"
+
+    // when using H2
+//    environment["JDBC_URL"] = "jdbc:h2:tcp://localhost:9091/./examples/example-app"
 }
 
 tasks.getByName<Test>("test") {

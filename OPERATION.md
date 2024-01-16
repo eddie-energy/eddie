@@ -23,7 +23,7 @@ services:
   eddie:
     image: ghcr.io/eddie-energy/eddie:latest
     environment:
-      JDBC_URL: "jdbc:h2:tcp://h2/demo-db"
+      JDBC_URL: "jdbc:postgresql://localhost:5432/example_app"
       JDBC_USER: "test"
       JDBC_PASSWORD: "test"
       PUBLIC_CONTEXT_PATH: ""                            # default value
