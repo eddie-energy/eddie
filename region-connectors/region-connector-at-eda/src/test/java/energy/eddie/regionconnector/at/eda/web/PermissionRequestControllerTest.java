@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.util.UriTemplate;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -33,6 +34,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 import static energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice.ERRORS_JSON_PATH;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -183,8 +185,9 @@ class PermissionRequestControllerTest {
     }
 
     @Test
-    void createPermissionRequest_returnsPermissionRequest() throws Exception {
+    void createPermissionRequest_returnsPermissionRequest_andSetsLocationHeader() throws Exception {
         // Given
+        var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand("pid").toString();
         CreatedPermissionRequest expected = new CreatedPermissionRequest("pid", "cmRequestId");
         when(permissionRequestCreationService.createAndSendPermissionRequest(any()))
                 .thenReturn(expected);
@@ -202,7 +205,8 @@ class PermissionRequestControllerTest {
                 )
                 // Then
                 .andExpect(status().isCreated())
-                .andExpect(content().json(objectMapper.writeValueAsString(expected)));
+                .andExpect(content().json(objectMapper.writeValueAsString(expected)))
+                .andExpect(header().string("Location", is(expectedLocationHeader)));
     }
 
     @Test
@@ -230,6 +234,9 @@ class PermissionRequestControllerTest {
     @Test
     void createPermissionRequest_201WhenEndDateNull() throws Exception {
         // Given
+        CreatedPermissionRequest expected = new CreatedPermissionRequest("pid", "cmRequestId");
+        when(permissionRequestCreationService.createAndSendPermissionRequest(any()))
+                .thenReturn(expected);
         LocalDate start = LocalDate.now(Clock.systemUTC()).minusDays(1);
         PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "0".repeat(33), "dnid", "0".repeat(8), start, null, Granularity.PT15M);
         String content = objectMapper.writeValueAsString(permissionRequestForCreation);
