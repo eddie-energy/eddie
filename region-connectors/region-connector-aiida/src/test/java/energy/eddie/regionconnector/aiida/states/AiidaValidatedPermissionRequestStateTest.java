@@ -3,27 +3,18 @@ package energy.eddie.regionconnector.aiida.states;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
-import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
-import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
 
-@ExtendWith(MockitoExtension.class)
 class AiidaValidatedPermissionRequestStateTest {
-    @Mock
-    private AiidaRegionConnectorService mockService;
-
     @Test
     void status_returnsValidated() {
         // Given
-        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null, null);
+        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null);
 
         // When
         // Then
@@ -33,7 +24,7 @@ class AiidaValidatedPermissionRequestStateTest {
     @Test
     void validate_throws() {
         // Given
-        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null, null);
+        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null);
 
         // When
         // Then
@@ -41,12 +32,12 @@ class AiidaValidatedPermissionRequestStateTest {
     }
 
     @Test
-    void sendToPermissionAdministrator_callsService_andChangesToSentToPermissionAdministrator() {
+    void sendToPermissionAdministrator_changesToSentToPermissionAdministrator() {
         // Given
         var now = Instant.now();
         AiidaPermissionRequest permissionRequest = new AiidaPermissionRequest("foo", "bar",
-                "loo", "too", now, now, mockService);
-        var state = new AiidaValidatedPermissionRequestState(permissionRequest, mockService);
+                "loo", "too", now, now);
+        var state = new AiidaValidatedPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 
         // When
@@ -54,13 +45,12 @@ class AiidaValidatedPermissionRequestStateTest {
 
         // Then
         assertEquals(AiidaSentToPermissionAdministratorPermissionRequestState.class, permissionRequest.state().getClass());
-        verify(mockService).sendToPermissionAdministrator(permissionRequest);
     }
 
     @Test
     void receivedPermissionAdministratorResponse_throws() {
         // Given
-        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null, null);
+        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null);
 
         // When
         // Then
@@ -70,7 +60,7 @@ class AiidaValidatedPermissionRequestStateTest {
     @Test
     void accept_throws() {
         // Given
-        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null, null);
+        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null);
 
         // When
         // Then
@@ -80,7 +70,7 @@ class AiidaValidatedPermissionRequestStateTest {
     @Test
     void invalid_throws() {
         // Given
-        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null, null);
+        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null);
 
         // When
         // Then
@@ -90,7 +80,7 @@ class AiidaValidatedPermissionRequestStateTest {
     @Test
     void reject_throws() {
         // Given
-        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null, null);
+        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null);
 
         // When
         // Then
@@ -100,7 +90,7 @@ class AiidaValidatedPermissionRequestStateTest {
     @Test
     void terminate_throws() {
         // Given
-        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null, null);
+        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null);
 
         // When
         // Then
@@ -110,7 +100,7 @@ class AiidaValidatedPermissionRequestStateTest {
     @Test
     void revoke_throws() {
         // Given
-        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null, null);
+        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null);
 
         // When
         // Then
@@ -120,7 +110,7 @@ class AiidaValidatedPermissionRequestStateTest {
     @Test
     void timeLimit_throws() {
         // Given
-        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null, null);
+        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null);
 
         // When
         // Then
@@ -130,7 +120,7 @@ class AiidaValidatedPermissionRequestStateTest {
     @Test
     void timeOut_throws() {
         // Given
-        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null, null);
+        AiidaValidatedPermissionRequestState state = new AiidaValidatedPermissionRequestState(null);
 
         // When
         // Then

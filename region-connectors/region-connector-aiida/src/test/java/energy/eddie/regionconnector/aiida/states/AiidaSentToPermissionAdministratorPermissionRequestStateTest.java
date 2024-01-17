@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.aiida.states;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.FutureStateException;
 import energy.eddie.api.v0.process.model.PastStateException;
-import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -26,7 +26,7 @@ class AiidaSentToPermissionAdministratorPermissionRequestStateTest {
         // Given
         var now = Instant.now();
         AiidaPermissionRequest permissionRequest = new AiidaPermissionRequest("foo", "bar",
-                "loo", "too", now, now, null);
+                "loo", "too", now, now);
         var state = new AiidaSentToPermissionAdministratorPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 
@@ -42,7 +42,7 @@ class AiidaSentToPermissionAdministratorPermissionRequestStateTest {
         // Given
         var now = Instant.now();
         AiidaPermissionRequest permissionRequest = new AiidaPermissionRequest("foo", "bar",
-                "loo", "too", now, now, null);
+                "loo", "too", now, now);
         var state = new AiidaSentToPermissionAdministratorPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 
@@ -58,7 +58,7 @@ class AiidaSentToPermissionAdministratorPermissionRequestStateTest {
         // Given
         var now = Instant.now();
         AiidaPermissionRequest permissionRequest = new AiidaPermissionRequest("foo", "bar",
-                "loo", "too", now, now, null);
+                "loo", "too", now, now);
         var state = new AiidaSentToPermissionAdministratorPermissionRequestState(permissionRequest);
         permissionRequest.changeState(state);
 

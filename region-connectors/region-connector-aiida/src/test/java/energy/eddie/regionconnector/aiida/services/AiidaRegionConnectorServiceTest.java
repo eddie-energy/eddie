@@ -5,20 +5,25 @@ import energy.eddie.api.agnostic.DataNeedsService;
 import energy.eddie.api.agnostic.DataType;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
+import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.aiida.AiidaFactory;
-import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
-import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequestRepository;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
+import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
+import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestRepository;
 import energy.eddie.regionconnector.aiida.states.AiidaAcceptedPermissionRequestState;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.adapter.JdkFlowAdapter;
@@ -33,7 +38,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
@@ -55,10 +60,16 @@ class AiidaRegionConnectorServiceTest {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(2));
 
-        var configuration = new PlainAiidaConfiguration(bootstrapServers, dataTopic, statusTopic, terminationPrefix);
-        var factory = new AiidaFactory(configuration, dataNeedsService, Clock.systemUTC());
         terminationSink = Sinks.many().unicast().onBackpressureBuffer();
-        service = new AiidaRegionConnectorService(factory, mockRepository, terminationSink);
+
+        Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().unicast().onBackpressureBuffer();
+        Set<Extension<AiidaPermissionRequestInterface>> extensions = Set.of(new MessagingExtension<>(statusMessageSink),
+                new SavingExtension<>(mockRepository));
+
+        var configuration = new PlainAiidaConfiguration(bootstrapServers, dataTopic, statusTopic, terminationPrefix);
+        var factory = new AiidaFactory(configuration, dataNeedsService, Clock.systemUTC(), extensions);
+
+        service = new AiidaRegionConnectorService(factory, mockRepository, statusMessageSink, terminationSink);
     }
 
     @Test
@@ -73,13 +84,15 @@ class AiidaRegionConnectorServiceTest {
     }
 
     @Test
-    void verify_createNewPermission_persistsAndPublishesConnectionStatusMessage() throws StateTransitionException, DataNeedNotFoundException {
+    void verify_createNewPermission_validatesAndSendsToPa_andCallsExtensions() throws StateTransitionException, DataNeedNotFoundException {
         // Given
         String dataNeedId = "1";
         var request = new PermissionRequestForCreation(connectionId, dataNeedId);
         when(dataNeedsService.getDataNeed(dataNeedId)).thenReturn(Optional.of(new TestDataNeed(dataNeedId)));
 
         StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(service.getConnectionStatusMessageStream()))
+                .expectNextMatches(msg -> msg.status() == PermissionProcessStatus.CREATED)
+                .expectNextMatches(msg -> msg.status() == PermissionProcessStatus.VALIDATED)
                 .expectNextMatches(msg -> msg.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
                 .then(service::close)
                 .expectComplete()
@@ -99,8 +112,10 @@ class AiidaRegionConnectorServiceTest {
         assertEquals(dataTopic, newPermission.kafkaStreamingConfig().dataTopic());
         assertThat(newPermission.kafkaStreamingConfig().subscribeTopic()).startsWith(terminationPrefix + "_");
 
-        verify(mockRepository).save(ArgumentMatchers.argThat(arg -> arg.connectionId().equals(connectionId)));
+        // verify status messages are published
         stepVerifier.verify();
+        // verify persistence layer is updated
+        verify(mockRepository, times(3)).save(any());
     }
 
     @Test
@@ -109,7 +124,7 @@ class AiidaRegionConnectorServiceTest {
         var start = Instant.now();
         var expiration = start.plusSeconds(1000);
         AiidaPermissionRequest request = new AiidaPermissionRequest(permissionId, connectionId,
-                "dataNeedId", "SomeTopic", start, expiration, service);
+                "dataNeedId", "SomeTopic", start, expiration);
         request.changeState(new AiidaAcceptedPermissionRequestState(request));
 
         when(mockRepository.findByPermissionId(permissionId)).thenReturn(Optional.of(request));
@@ -144,6 +159,25 @@ class AiidaRegionConnectorServiceTest {
 
         verify(mockRepository).findByPermissionId(permissionId);
         verifyNoMoreInteractions(mockRepository);
+    }
+
+    @Test
+    void givenNotExistingPermissionId_getPermissionRequestById_throws() {
+        // Given
+        when(mockRepository.findByPermissionId(anyString())).thenReturn(Optional.empty());
+
+        // When, Then
+        assertThrows(PermissionNotFoundException.class, () -> service.getPermissionRequestById("NotExisting"));
+    }
+
+    @Test
+    void givenExistingPermissionId_getPermissionRequestById_returnsRequest() throws PermissionNotFoundException {
+        // Given
+        String permissionId = "MyId";
+        when(mockRepository.findByPermissionId(permissionId)).thenReturn(Optional.of(mock(AiidaPermissionRequestInterface.class)));
+
+        // When, Then
+        assertDoesNotThrow(() -> service.getPermissionRequestById(permissionId));
     }
 
     private record TestDataNeed(String dataNeedId) implements DataNeed {

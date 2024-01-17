@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.aiida.states;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.FutureStateException;
-import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -14,7 +14,7 @@ class AiidaCreatedPermissionRequestStateTest {
     void validate_changesToValidatedState_whenValid() {
         var now = Instant.now();
         AiidaPermissionRequest request = new AiidaPermissionRequest("foo", "bar",
-                "loo", "too", now, now, null);
+                "loo", "too", now, now);
 
         // When
         assertDoesNotThrow(request::validate);
@@ -26,7 +26,7 @@ class AiidaCreatedPermissionRequestStateTest {
     @Test
     void status_returnsCreated() {
         // Given
-        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null, null);
+        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null);
 
         // When
         // Then
@@ -36,7 +36,7 @@ class AiidaCreatedPermissionRequestStateTest {
     @Test
     void sendToPermissionAdministrator_throws() {
         // Given
-        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null, null);
+        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null);
 
         // When
         // Then
@@ -46,7 +46,7 @@ class AiidaCreatedPermissionRequestStateTest {
     @Test
     void receivedPermissionAdministratorResponse_throws() {
         // Given
-        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null, null);
+        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null);
 
         // When
         // Then
@@ -56,7 +56,7 @@ class AiidaCreatedPermissionRequestStateTest {
     @Test
     void accept_throws() {
         // Given
-        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null, null);
+        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null);
 
         // When
         // Then
@@ -66,7 +66,7 @@ class AiidaCreatedPermissionRequestStateTest {
     @Test
     void invalid_throws() {
         // Given
-        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null, null);
+        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null);
 
         // When
         // Then
@@ -76,7 +76,7 @@ class AiidaCreatedPermissionRequestStateTest {
     @Test
     void reject_throws() {
         // Given
-        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null, null);
+        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null);
 
         // When
         // Then
@@ -86,7 +86,7 @@ class AiidaCreatedPermissionRequestStateTest {
     @Test
     void terminate_throws() {
         // Given
-        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null, null);
+        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null);
 
         // When
         // Then
@@ -96,7 +96,7 @@ class AiidaCreatedPermissionRequestStateTest {
     @Test
     void revoke_throws() {
         // Given
-        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null, null);
+        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null);
 
         // When
         // Then
@@ -106,7 +106,7 @@ class AiidaCreatedPermissionRequestStateTest {
     @Test
     void timeLimit_throws() {
         // Given
-        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null, null);
+        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null);
 
         // When
         // Then
@@ -116,7 +116,7 @@ class AiidaCreatedPermissionRequestStateTest {
     @Test
     void timeOut_throws() {
         // Given
-        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null, null);
+        AiidaCreatedPermissionRequestState state = new AiidaCreatedPermissionRequestState(null);
 
         // When
         // Then

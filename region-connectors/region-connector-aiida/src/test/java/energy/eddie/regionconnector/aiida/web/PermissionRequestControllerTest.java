@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.aiida.web;
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
+import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestRepository;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,8 @@ class PermissionRequestControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private AiidaRegionConnectorService service;
+    @MockBean
+    private AiidaPermissionRequestRepository unusedMockRepository;
 
     @TestConfiguration
     static class ControllerTestConfiguration {

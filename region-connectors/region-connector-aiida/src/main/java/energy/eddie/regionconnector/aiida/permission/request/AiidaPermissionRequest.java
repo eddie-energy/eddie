@@ -1,14 +1,13 @@
-package energy.eddie.regionconnector.aiida.api;
+package energy.eddie.regionconnector.aiida.permission.request;
 
 import energy.eddie.api.v0.DataSourceInformation;
-import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.PermissionRequestState;
-import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
+import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
 import energy.eddie.regionconnector.aiida.states.AiidaCreatedPermissionRequestState;
 
 import java.time.Instant;
 
-public class AiidaPermissionRequest implements PermissionRequest {
+public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     private static final AiidaDataSourceInformation dataSourceInformation = new AiidaDataSourceInformation();
     private final String permissionId;
     private final String connectionId;
@@ -27,7 +26,6 @@ public class AiidaPermissionRequest implements PermissionRequest {
      * @param terminationTopic Kafka topic, on which a termination request from the EP should be published.
      * @param startTime        Starting from this UTC timestamp, the permission is valid and data should be shared.
      * @param expirationTime   Until this UTC timestamp, the permission is valid and data sharing should stop.
-     * @param service          Reference to the service used for e.g. sending connection status messages.
      */
     public AiidaPermissionRequest(
             String permissionId,
@@ -35,40 +33,27 @@ public class AiidaPermissionRequest implements PermissionRequest {
             String dataNeedId,
             String terminationTopic,
             Instant startTime,
-            Instant expirationTime,
-            AiidaRegionConnectorService service) {
+            Instant expirationTime) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
         this.terminationTopic = terminationTopic;
         this.startTime = startTime;
         this.expirationTime = expirationTime;
-        this.state = new AiidaCreatedPermissionRequestState(this, service);
+        this.state = new AiidaCreatedPermissionRequestState(this);
     }
 
-    /**
-     * Timestamp when data sharing should startTime.
-     *
-     * @return startTime timestamp
-     */
+    @Override
     public Instant startTime() {
         return startTime;
     }
 
-    /**
-     * Timestamp until how long data should be shared.
-     *
-     * @return expirationTime timestamp
-     */
+    @Override
     public Instant expirationTime() {
         return expirationTime;
     }
 
-    /**
-     * Topic on which a permission termination request should be published.
-     *
-     * @return terminationTopic
-     */
+    @Override
     public String terminationTopic() {
         return terminationTopic;
     }

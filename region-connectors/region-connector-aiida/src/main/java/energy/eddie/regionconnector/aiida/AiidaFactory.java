@@ -3,11 +3,13 @@ package energy.eddie.regionconnector.aiida;
 import energy.eddie.api.agnostic.DataNeed;
 import energy.eddie.api.agnostic.DataNeedsService;
 import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
-import energy.eddie.regionconnector.aiida.api.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.KafkaStreamingConfig;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
-import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
+import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
+import energy.eddie.regionconnector.shared.permission.requests.PermissionRequestProxy;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import org.apache.kafka.common.errors.InvalidTopicException;
 import org.apache.kafka.common.internals.Topic;
 import org.springframework.stereotype.Component;
@@ -18,6 +20,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -25,15 +28,19 @@ public class AiidaFactory {
     private final AiidaConfiguration configuration;
     private final DataNeedsService dataNeedsService;
     private final Clock clock;
+    private final Set<Extension<AiidaPermissionRequestInterface>> extensions;
 
     // DataNeedsService is provided by core, that's why autodiscovery in IntelliJ fails
     public AiidaFactory(
             AiidaConfiguration configuration,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
-            Clock clock) {
+            Clock clock,
+            Set<Extension<AiidaPermissionRequestInterface>> extensions
+    ) {
         this.configuration = configuration;
         this.dataNeedsService = dataNeedsService;
         this.clock = clock;
+        this.extensions = extensions;
     }
 
     /**
@@ -41,14 +48,12 @@ public class AiidaFactory {
      *
      * @param connectionId connectionId that should be used for this new permission request.
      * @param dataNeedId   dataNeedId that should be used for this new permission request.
-     * @param service      Reference to the service that allows the request to transition states.
      * @return Populated permission request.
      * @throws DataNeedNotFoundException Thrown if the dataNeedsService from the parent doesn't contain a dataNeed with the specified ID.
      */
-    public AiidaPermissionRequest createPermissionRequest(
+    public AiidaPermissionRequestInterface createPermissionRequest(
             String connectionId,
-            String dataNeedId,
-            AiidaRegionConnectorService service) throws DataNeedNotFoundException {
+            String dataNeedId) throws DataNeedNotFoundException {
 
         var dataNeed = getDataNeed(dataNeedId);
         // DataNeeds have relative time but AIIDA needs absolute timestamps
@@ -57,7 +62,27 @@ public class AiidaFactory {
 
         var permissionId = UUID.randomUUID().toString();
         var terminationTopic = terminationTopicForPermissionId(permissionId);
-        return new AiidaPermissionRequest(permissionId, connectionId, dataNeedId, terminationTopic, startTime, expirationTime, service);
+        AiidaPermissionRequest request = new AiidaPermissionRequest(permissionId, connectionId, dataNeedId,
+                terminationTopic, startTime, expirationTime);
+
+        return PermissionRequestProxy.createProxy(request, extensions,
+                AiidaPermissionRequestInterface.class, PermissionRequestProxy.CreationInfo.NEWLY_CREATED);
+    }
+
+    /**
+     * Returns a proxy of an {@link AiidaPermissionRequest} that executes any {@link Extension}s when a state transition
+     * method is called on the returned object.
+     *
+     * @param permissionRequest Permission request as e.g. returned by the persistence layer.
+     * @return Proxy of {@link AiidaPermissionRequest}.
+     */
+    public AiidaPermissionRequestInterface recreatePermissionRequest(AiidaPermissionRequestInterface permissionRequest) {
+        return PermissionRequestProxy.createProxy(
+                permissionRequest,
+                extensions,
+                AiidaPermissionRequestInterface.class,
+                PermissionRequestProxy.CreationInfo.RECREATED
+        );
     }
 
     /**
@@ -117,7 +142,7 @@ public class AiidaFactory {
      * @throws InvalidTopicException If topic name for the termination topic is invalid. This indicates that either the
      *                               permissionId is not a valid UUID-4, or the prefix from the configuration is invalid.
      */
-    public PermissionDto createPermissionDto(AiidaPermissionRequest aiidaRequest) throws InvalidTopicException, DataNeedNotFoundException {
+    public PermissionDto createPermissionDto(AiidaPermissionRequestInterface aiidaRequest) throws InvalidTopicException, DataNeedNotFoundException {
         var kafkaConfig = new KafkaStreamingConfig(
                 configuration.kafkaBoostrapServers(),
                 configuration.kafkaDataTopic(),

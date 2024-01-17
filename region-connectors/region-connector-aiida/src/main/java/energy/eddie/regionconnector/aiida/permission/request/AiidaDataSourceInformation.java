@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.aiida.api;
+package energy.eddie.regionconnector.aiida.permission.request;
 
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
