@@ -5,8 +5,10 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/compone
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/button/button.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/alert/alert.js";
 
-const BASE_URL = new URL(import.meta.url).href.replace("ce.js", "");
-const REQUEST_URL = BASE_URL + "permission-request";
+const BASE_URL = new URL(import.meta.url).href
+  .replace("ce.js", "")
+  .slice(0, -1);
+const REQUEST_URL = BASE_URL + "/permission-request";
 
 class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
@@ -30,8 +32,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
     const formData = new FormData(event.target);
 
-    let jsonData = {};
-
     if (formData.get("meteringPointId") !== "") {
       jsonData.meteringPointId = formData.get("meteringPointId");
     }
@@ -48,12 +48,17 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       endDate.setDate(endDate.getDate() + this.dataNeedAttributes.durationEnd);
     }
 
-    jsonData.dsoId = this.companyId;
-    jsonData.connectionId = this.connectionId;
-    jsonData.start = startDate.toISOString().substring(0, 10);
-    jsonData.end = endDate.toISOString().substring(0, 10);
-    jsonData.dataNeedId = this.dataNeedAttributes.id;
-    jsonData.granularity = this.dataNeedAttributes.granularity;
+    const jsonData = {
+      meteringPointId: formData.get("meteringPointId")
+        ? formData.get("meteringPointId")
+        : null,
+      dsoId: this.companyId,
+      connectionId: this.connectionId,
+      start: startDate.toISOString().substring(0, 10),
+      end: endDate.toISOString().substring(0, 10),
+      dataNeedId: this.dataNeedAttributes.id,
+      granularity: this.dataNeedAttributes.granularity,
+    };
 
     this.createPermissionRequest(jsonData)
       .then()
@@ -74,6 +79,13 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       const result = await response.json();
 
       if (response.status === 201) {
+        const locationHeader = "Location";
+        if (response.headers.has(locationHeader)) {
+          this.location = BASE_URL + response.headers.get(locationHeader);
+        } else {
+          throw new Error("Header 'Location' is missing");
+        }
+
         const successTitle = "Permission request created!";
         const successMessage =
           "Your permission request was created successfully.";
@@ -92,7 +104,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           errorMessage =
             "Something went wrong when creating the permission request, please try again later.";
         } else {
-          errorMessage = result["errors"].join("<br>");
+          errorMessage = result["errors"]
+            .map(function (error) {
+              return error.message;
+            })
+            .join("<br>");
         }
         this.notify(
           this.ERROR_TITLE,
@@ -116,15 +132,14 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       }
 
       this._requestId = result["cmRequestId"];
-      this.permissionId = result["permissionId"];
       this.startOrRestartAutomaticPermissionStatusPolling();
     } catch (e) {
       this.notify(this.ERROR_TITLE, e, "danger", "exclamation-octagon");
     }
   }
 
-  async requestPermissionStatus(permissionId, maxRetries) {
-    let response = await fetch(BASE_URL + "permission-status/" + permissionId);
+  async requestPermissionStatus(location, maxRetries) {
+    let response = await fetch(location);
 
     if (response.status === 404) {
       // No permission request was created
@@ -172,11 +187,17 @@ class PermissionRequestForm extends PermissionRequestFormBase {
         this.notify(title, message);
         return;
       case "INVALID":
-        message = "The permission request was invalid. (Reason: " + result["message"] + ")";
+        message =
+          "The permission request was invalid. (Reason: " +
+          result["message"] +
+          ")";
         this.notify(title, message, "warning", "exclamation-triangle");
         return;
       case "TERMINATED":
-        message = "The permission request was terminated. (Reason: " + result["message"] + ")";
+        message =
+          "The permission request was terminated. (Reason: " +
+          result["message"] +
+          ")";
         this.notify(title, message, "warning", "exclamation-triangle");
         return;
       case "FULFILLED":

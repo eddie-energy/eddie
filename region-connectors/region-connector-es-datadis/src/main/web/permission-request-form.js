@@ -24,6 +24,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     _areResponseButtonsDisabled: { type: Boolean },
   };
 
+  permissionId = null;
+
   constructor() {
     super();
 
@@ -68,33 +70,32 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     jsonData.requestDataTo = endDate.toISOString().substring(0, 10);
     jsonData.dataNeedId = this.dataNeedAttributes.id;
 
-    this.createPermissionRequest(formData)
+    this.createPermissionRequest(jsonData)
       .then()
       .catch((error) =>
         this.notify(this.ERROR_TITLE, error, "danger", "exclamation-octagon")
       );
   }
 
-  async createPermissionRequest(formData) {
+  async createPermissionRequest(payload) {
     try {
       const response = await fetch(REQUEST_URL, {
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
       });
-      
-      const locationHeader = "Location";
-      if (response.headers.has(locationHeader)) {
-          
-      } else {
-        throw new Error("Header 'Location' is missing")
-      }
-      
       const result = await response.json();
 
       if (response.status === 201) {
+        const locationHeader = "Location";
+        if (response.headers.has(locationHeader)) {
+          this.location = BASE_URL + response.headers.get(locationHeader);
+        } else {
+          throw new Error("Header 'Location' is missing");
+        }
+
         const successTitle = "Permission request created!";
         const successMessage =
           "Your permission request was created successfully.";
@@ -113,7 +114,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           errorMessage =
             "Something went wrong when creating the permission request, please try again later.";
         } else {
-          errorMessage = result["errors"].join("<br>");
+          errorMessage = result["errors"]
+            .map(function (error) {
+              return error.message;
+            })
+            .join("<br>");
         }
 
         this.notify(
@@ -145,10 +150,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     }
   }
 
-  async requestPermissionStatus(permissionId, maxRetries) {
-    const response = await fetch(
-      BASE_URL + "permission-status/" + permissionId
-    );
+  async requestPermissionStatus(location, maxRetries) {
+    const response = await fetch(location);
 
     if (response.status === 404) {
       // No permission request was created
@@ -179,7 +182,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     const result = await response.json();
     const currentStatus = result["status"];
     this._requestStatus = currentStatus;
-    
+
     const title = "Finished!";
     let message = "";
     // Finished long poll
@@ -202,11 +205,17 @@ class PermissionRequestForm extends PermissionRequestFormBase {
         this.notify(title, message);
         return;
       case "INVALID":
-        message = "The permission request was invalid. (Reason: " + result["message"] + ")";
+        message =
+          "The permission request was invalid. (Reason: " +
+          result["message"] +
+          ")";
         this.notify(title, message, "warning", "exclamation-triangle");
         return;
       case "TERMINATED":
-        message = "The permission request was terminated. (Reason: " + result["message"] + ")";
+        message =
+          "The permission request was terminated. (Reason: " +
+          result["message"] +
+          ")";
         this.notify(title, message, "warning", "exclamation-triangle");
         return;
     }

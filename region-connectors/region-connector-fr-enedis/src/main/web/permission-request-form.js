@@ -5,7 +5,9 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/compone
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/button/button.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/alert/alert.js";
 
-const BASE_URL = new URL(import.meta.url).href.replace("/ce.js", "");
+const BASE_URL = new URL(import.meta.url).href
+  .replace("ce.js", "")
+  .slice(0, -1);
 const REQUEST_URL = BASE_URL + "/permission-request";
 
 class PermissionRequestForm extends PermissionRequestFormBase {
@@ -15,8 +17,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     _requestId: { type: String },
     _requestStatus: { type: String },
   };
-
-  location = null;
   
   constructor() {
     super();
@@ -38,15 +38,15 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     } else {
       endDate.setDate(endDate.getDate() + this.dataNeedAttributes.durationEnd);
     }
-
-    const payload = {
-      connectionId: this.connectionId,
-      start: startDate,
-      end: endDate,
-      dataNeedId: this.dataNeedAttributes.id,
-    };
-
-    this.createPermissionRequest(payload)
+    
+    const jsonData = {};
+    jsonData.connectionId = this.connectionId;
+    jsonData.start = startDate.toISOString().substring(0, 10);
+    jsonData.end = endDate.toISOString().substring(0, 10);
+    jsonData.dataNeedId = this.dataNeedAttributes.id;
+    jsonData.granularity = this.dataNeedAttributes.granularity;
+    
+    this.createPermissionRequest(jsonData)
       .then()
       .catch((error) =>
         this.notify(this.ERROR_TITLE, error, "danger", "exclamation-octagon")
@@ -54,9 +54,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   }
 
   async createPermissionRequest(payload) {
-    const locationHeader = "Location";
-    let errorMessage;
-    
     try {
       const response = await fetch(REQUEST_URL, {
         body: JSON.stringify(payload),
@@ -69,17 +66,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       const result = await response.json();
 
       if (response.status === 201) {
-        if (!response.headers.has(locationHeader)) {
-          errorMessage =
-            "Something went wrong when creating the permission request, please try again later.";
-          this.notify(
-            this.ERROR_TITLE,
-            errorMessage,
-            "danger",
-            "exclamation-octagon"
-          );
-          
-          return;
+        const locationHeader = "Location";
+        if (response.headers.has(locationHeader)) {
+          this.location = BASE_URL + response.headers.get(locationHeader);
+        } else {
+          throw new Error("Header 'Location' is missing");
         }
         
         const successTitle = "Permission request created!";
@@ -94,11 +85,17 @@ class PermissionRequestForm extends PermissionRequestFormBase {
         );
       } else if (response.status === 400) {
         // An error on the client side happened, and it should be displayed as alert in the form
+        let errorMessage;
+
         if (result["errors"] == null || result["errors"].length === 0) {
           errorMessage =
             "Something went wrong when creating the permission request, please try again later.";
         } else {
-          errorMessage = result["errors"].join("<br>");
+          errorMessage = result["errors"]
+            .map(function (error) {
+              return error.message;
+            })
+            .join("<br>");
         }
         this.notify(
           this.ERROR_TITLE,
@@ -109,7 +106,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
         return;
       } else {
-        errorMessage =
+        const errorMessage =
           "Something went wrong when creating the permission request, please try again later.";
         this.notify(
           this.ERROR_TITLE,
@@ -121,16 +118,15 @@ class PermissionRequestForm extends PermissionRequestFormBase {
         return;
       }
       
-      this.location = BASE_URL + response.headers.get(locationHeader);
       this.startOrRestartAutomaticPermissionStatusPolling();
       window.open(result["redirectUri"], "_blank");
     } catch (e) {
       this.notify(this.ERROR_TITLE, e, "danger", "exclamation-octagon");
     }
   }
-
-  async requestPermissionStatus(permissionId, maxRetries) {
-    const response = await fetch(this.location);
+  
+  async requestPermissionStatus(location, maxRetries) {
+    const response = await fetch(location);
 
     if (response.status === 404) {
       // No permission request was created

@@ -6,12 +6,12 @@ class PermissionRequestFormBase extends LitElement {
   RESTART_POLLING_BUTTON_ID = "restart-polling-button";
   MAX_RETRIES = 60; // Retry polling for 5 minutes
 
-  permissionId = null;
+  location = null;
 
   awaitRetry(delay, maxRetries) {
     return new Promise((resolve) => setTimeout(resolve, delay)).then(() => {
       if (maxRetries > 0) {
-        return this.requestPermissionStatus(this.permissionId, maxRetries - 1);
+        return this.requestPermissionStatus(this.location, maxRetries - 1);
       } else {
         // Handle the case when the maximum number of retries is reached
         const retryButton = Object.assign(document.createElement("sl-button"), {
@@ -82,7 +82,7 @@ class PermissionRequestFormBase extends LitElement {
       parent.remove();
     }
 
-    this.requestPermissionStatus(this.permissionId, this.MAX_RETRIES)
+    this.requestPermissionStatus(this.location, this.MAX_RETRIES)
       .then()
       .catch((error) => {
         this.notify(this.ERROR_TITLE, error, "danger", "exclamation-octagon");
