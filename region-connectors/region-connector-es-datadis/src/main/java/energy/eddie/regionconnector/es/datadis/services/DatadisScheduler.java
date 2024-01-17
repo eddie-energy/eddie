@@ -6,7 +6,6 @@ import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.ConsumptionRecordMapper;
 import energy.eddie.regionconnector.es.datadis.InvalidMappingException;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
-import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.api.UnauthorizedException;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
@@ -43,7 +42,7 @@ import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConst
 public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatadisScheduler.class);
     private static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.fixedDelay(10, Duration.ofMinutes(1))
-            .filter(ex -> !(ex instanceof DatadisApiException) && !(ex.getCause() instanceof DatadisApiException));
+            .filter(ex -> !(ex instanceof UnauthorizedException) && !(ex.getCause() instanceof UnauthorizedException));
     private final DataApi dataApi;
     private final Sinks.Many<ConsumptionRecord> consumptionRecords;
 
