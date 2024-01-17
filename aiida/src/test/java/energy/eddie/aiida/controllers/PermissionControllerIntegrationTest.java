@@ -37,7 +37,7 @@ import java.util.*;
 import static energy.eddie.aiida.TestUtils.getKafkaConfig;
 import static energy.eddie.aiida.TestUtils.getKafkaConsumer;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -225,9 +225,9 @@ class PermissionControllerIntegrationTest {
 
         assertEquals(3, polledRecords.size());
 
-        assertThat(polledRecords.get(0).value(), endsWith("\"status\":\"ACCEPTED\"}"));
-        assertThat(polledRecords.get(1).value(), endsWith("\"status\":\"REVOCATION_RECEIVED\"}"));
-        assertThat(polledRecords.get(2).value(), endsWith("\"status\":\"REVOKED\"}"));
+        assertThat(polledRecords.get(0).value(), containsString("ACCEPTED"));
+        assertThat(polledRecords.get(1).value(), containsString("REVOCATION_RECEIVED"));
+        assertThat(polledRecords.get(2).value(), containsString("REVOKED"));
 
         consumer.close();
     }

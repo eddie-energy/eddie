@@ -49,21 +49,23 @@ class KafkaStreamerIntegrationTest {
     private List<AiidaRecord> records;
     private ObjectMapper mapper;
     private KafkaStreamer streamer;
+    private String permissionId;
 
     @BeforeEach
     void setUp() {
+        permissionId = UUID.randomUUID().toString();
         var begin = Instant.parse("2023-10-01T10:00:00.00Z");
         var record1 = AiidaRecordFactory.createRecord("1.8.0", begin.plusSeconds(1), 10);
-        record1Json = "{\"timestamp\":1696154401.000000000,\"code\":\"1.8.0\",\"value\":10,\"connectionId\":\"IntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\"}";
+        record1Json = "{\"timestamp\":1696154401.000000000,\"code\":\"1.8.0\",\"value\":10,\"connectionId\":\"IntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\",\"permissionId\":\"" + permissionId + "\"}";
 
         var record2 = AiidaRecordFactory.createRecord("1.8.0", begin.plusSeconds(2), 20);
-        record2Json = "{\"timestamp\":1696154402.000000000,\"code\":\"1.8.0\",\"value\":20,\"connectionId\":\"IntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\"}";
+        record2Json = "{\"timestamp\":1696154402.000000000,\"code\":\"1.8.0\",\"value\":20,\"connectionId\":\"IntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\",\"permissionId\":\"" + permissionId + "\"}";
 
         var record3 = AiidaRecordFactory.createRecord("1.8.0", begin.plusSeconds(3), 30);
-        record3Json = "{\"timestamp\":1696154403.000000000,\"code\":\"1.8.0\",\"value\":30,\"connectionId\":\"IntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\"}";
+        record3Json = "{\"timestamp\":1696154403.000000000,\"code\":\"1.8.0\",\"value\":30,\"connectionId\":\"IntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\",\"permissionId\":\"" + permissionId + "\"}";
 
         var record4 = AiidaRecordFactory.createRecord("C.1.0", begin.plusSeconds(4), "Hello World");
-        record4Json = "{\"timestamp\":1696154404.000000000,\"code\":\"C.1.0\",\"value\":\"Hello World\",\"connectionId\":\"IntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\"}";
+        record4Json = "{\"timestamp\":1696154404.000000000,\"code\":\"C.1.0\",\"value\":\"Hello World\",\"connectionId\":\"IntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\",\"permissionId\":\"" + permissionId + "\"}";
 
         records = List.of(record1, record2, record3, record4);
 
@@ -76,7 +78,6 @@ class KafkaStreamerIntegrationTest {
         var start = Instant.now();
         var expiration = start.plusSeconds(10000);
         var config = getKafkaConfig(testInfo, kafka);
-        var permissionId = UUID.randomUUID().toString();
         var connectionId = "IntegrationTestConnectionId";
         var permission = new Permission(permissionId, "IntegrationTest Service Name", "DataNeed",
                 start, expiration, start, connectionId, Set.of("1.8.0"), config);
@@ -136,7 +137,6 @@ class KafkaStreamerIntegrationTest {
         var start = Instant.now();
         var expiration = start.plusSeconds(10000);
         var config = getKafkaConfig(testInfo, kafka);
-        var permissionId = UUID.randomUUID().toString();
         String connectionId = "StatusMessageIntegrationTestConnectionId";
         String dataNeed = "DataNeed";
         var permission = new Permission(permissionId, "IntegrationTest Service Name", dataNeed,
@@ -155,11 +155,11 @@ class KafkaStreamerIntegrationTest {
 
         var timestamp = Instant.parse("2023-11-01T10:00:00.00Z");
 
-        var statusMessage = new ConnectionStatusMessage(connectionId, dataNeed, timestamp, PermissionStatus.ACCEPTED);
-        var statusMessageJson = "{\"connectionId\":\"StatusMessageIntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\",\"timestamp\":1698832800.000000000,\"status\":\"ACCEPTED\"}";
+        var statusMessage = new ConnectionStatusMessage(connectionId, dataNeed, timestamp, PermissionStatus.ACCEPTED, permissionId);
+        var statusMessageJson = "{\"connectionId\":\"StatusMessageIntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\",\"timestamp\":1698832800.000000000,\"status\":\"ACCEPTED\",\"permissionId\":\"" + permissionId + "\"}";
 
-        var statusMessage2 = new ConnectionStatusMessage(connectionId, dataNeed, timestamp.plusSeconds(10), PermissionStatus.REVOKED);
-        var statusMessageJson2 = "{\"connectionId\":\"StatusMessageIntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\",\"timestamp\":1698832810.000000000,\"status\":\"REVOKED\"}";
+        var statusMessage2 = new ConnectionStatusMessage(connectionId, dataNeed, timestamp.plusSeconds(10), PermissionStatus.REVOKED, permissionId);
+        var statusMessageJson2 = "{\"connectionId\":\"StatusMessageIntegrationTestConnectionId\",\"dataNeedId\":\"DataNeed\",\"timestamp\":1698832810.000000000,\"status\":\"REVOKED\",\"permissionId\":\"" + permissionId + "\"}";
 
 
         recordPublisher.assertNoSubscribers();

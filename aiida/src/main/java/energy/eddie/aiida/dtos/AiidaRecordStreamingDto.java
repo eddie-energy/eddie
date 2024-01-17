@@ -13,6 +13,7 @@ public record AiidaRecordStreamingDto(
         @JsonProperty String code,
         @JsonProperty Object value,
         @JsonProperty String connectionId,
-        @JsonProperty String dataNeedId
+        @JsonProperty String dataNeedId,
+        @JsonProperty String permissionId
 ) {
 }

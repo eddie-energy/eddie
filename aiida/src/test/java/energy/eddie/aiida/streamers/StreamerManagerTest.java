@@ -47,7 +47,6 @@ class StreamerManagerTest {
     private Aggregator aggregatorMock;
     private Permission permission;
     private StreamerManager manager;
-    private String connectionId;
 
     @BeforeEach
     void setUp() {
@@ -60,7 +59,7 @@ class StreamerManagerTest {
         var start = grant.plusSeconds(100_000);
         var expiration = start.plusSeconds(800_000);
         var serviceName = "My NewAIIDA Test Service";
-        connectionId = "NewAiidaRandomConnectionId";
+        var connectionId = "NewAiidaRandomConnectionId";
 
         var codes = Set.of("1.8.0", "2.8.0");
         var bootstrapServers = "localhost:9092";
@@ -139,8 +138,8 @@ class StreamerManagerTest {
     @Test
     void givenValidPermissionId_sendNewConnectionStatusMessageForPermission_callsSendMessage() throws ConnectionStatusMessageSendFailedException {
         var acceptedMessageTimestamp = Instant.parse("2023-09-11T22:00:00.00Z");
-        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED);
-        String acceptedMessageJson = "{\"connectionId\":\"NewAiidaRandomConnectionId\",\"dataNeedId\":\"dataNeedId\",\"timestamp\":1694469600.000000000,\"status\":\"ACCEPTED\"}";
+        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED, permission.permissionId());
+        String acceptedMessageJson = "{\"connectionId\":\"NewAiidaRandomConnectionId\",\"dataNeedId\":\"dataNeedId\",\"timestamp\":1694469600.000000000,\"status\":\"ACCEPTED\",\"permissionId\":\"" + permission.permissionId() + "\"}";
 
         try (MockedStatic<KafkaFactory> mockKafkaFactory = mockStatic(KafkaFactory.class)) {
             var mockProducer = new MockProducer<>(false, new StringSerializer(), new StringSerializer());
@@ -156,7 +155,7 @@ class StreamerManagerTest {
 
             assertEquals(1, mockProducer.history().size());
 
-            assertEquals(acceptedMessageJson, mockProducer.history().get(0).value());
+            assertEquals(acceptedMessageJson, mockProducer.history().getFirst().value());
 
             // clean up
             manager.stopStreamer(permission.permissionId());
@@ -198,7 +197,7 @@ class StreamerManagerTest {
     @Test
     void givenConnectionStatusMessage_afterStreamerHasBeenClosed_sendNewConnectionStatusMessageForPermission_throws() {
         var acceptedMessageTimestamp = Instant.parse("2023-09-11T22:00:00.00Z");
-        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED);
+        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED, permission.permissionId());
 
         try (MockedStatic<StreamerFactory> mockStatic = mockStatic(StreamerFactory.class)) {
             var streamerMock = mock(KafkaStreamer.class);

@@ -220,7 +220,7 @@ class KafkaStreamerTest {
     void verify_sendExceptions_areHandledInCallback() {
         var connectionId = "FooBarIdRandom";
         var dataNeed = "dataNeed";
-        var statusMessage1 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.ACCEPTED);
+        var statusMessage1 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.ACCEPTED, permission.permissionId());
 
         mockProducer = new MockProducer<>(false, new StringSerializer(), new StringSerializer());
         streamer = new KafkaStreamer(mockProducer, mockConsumer, recordPublisher.flux(), statusMessagePublisher.flux(),
@@ -253,7 +253,7 @@ class KafkaStreamerTest {
     void verify_closedProducerThrowsIllegalStateException_isHandledByTryCatch() {
         var connectionId = "FooBarIdRandom";
         var dataNeed = "dataNeed";
-        var statusMessage1 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.ACCEPTED);
+        var statusMessage1 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.ACCEPTED, permission.permissionId());
 
         mockProducer = new MockProducer<>(false, new StringSerializer(), new StringSerializer());
         streamer = new KafkaStreamer(mockProducer, mockConsumer, recordPublisher.flux(), statusMessagePublisher.flux(),
@@ -293,8 +293,8 @@ class KafkaStreamerTest {
     void verify_statusMessage_areSentByKafkaProducer() {
         var connectionId = "MyStatusTestConnectionId";
         var dataNeed = "dataNeed";
-        var statusMessage1 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.ACCEPTED);
-        var statusMessage2 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.REVOKED);
+        var statusMessage1 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.ACCEPTED, permission.permissionId());
+        var statusMessage2 = new ConnectionStatusMessage(connectionId, dataNeed, Instant.now(), PermissionStatus.REVOKED, permission.permissionId());
 
         recordPublisher.assertNoSubscribers();
         statusMessagePublisher.assertNoSubscribers();
@@ -329,12 +329,15 @@ class KafkaStreamerTest {
         // Then
         assertEquals(1, mockProducer.history().size());
 
-        String value = mockProducer.history().get(0).value();
+        String value = mockProducer.history().getFirst().value();
 
         assertThat(value)
                 .contains("\"value\":10")
                 .contains("\"dataNeedId\":\"dataNeed\"")
-                .contains("\"connectionId\":\"ConnId\"");
+                .contains("\"code\":\"1.8.0\"")
+                .contains("\"connectionId\":\"ConnId\"")
+                .contains("\"timestamp\":")
+                .contains("\"permissionId\":\"" + permission.permissionId() + "\"");
     }
 
     @Test
@@ -348,12 +351,15 @@ class KafkaStreamerTest {
         // Then
         assertEquals(1, mockProducer.history().size());
 
-        String value = mockProducer.history().get(0).value();
+        String value = mockProducer.history().getFirst().value();
 
         assertThat(value)
                 .contains("\"value\":\"SomeString\"")
                 .contains("\"dataNeedId\":\"dataNeed\"")
-                .contains("\"connectionId\":\"ConnId\"");
+                .contains("\"code\":\"C.1.0\"")
+                .contains("\"connectionId\":\"ConnId\"")
+                .contains("\"timestamp\":")
+                .contains("\"permissionId\":\"" + permission.permissionId() + "\"");
     }
 
     /**

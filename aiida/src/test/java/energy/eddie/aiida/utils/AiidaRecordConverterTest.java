@@ -24,10 +24,12 @@ class AiidaRecordConverterTest {
     @Test
     void givenIntegerAiidaRecord_returnsDtoWithFieldsSet() {
         // Given
-        var record = AiidaRecordFactory.createRecord("1.8.0", Instant.now(), 23);
+        Instant timestamp = Instant.now();
+        var record = AiidaRecordFactory.createRecord("1.8.0", timestamp, 23);
         var permission = mock(Permission.class);
         when(permission.connectionId()).thenReturn("connectionId");
         when(permission.dataNeedId()).thenReturn("dataNeedId");
+        when(permission.permissionId()).thenReturn("permissionId");
 
         // When
         AiidaRecordStreamingDto dto = AiidaRecordConverter.recordToStreamingDto(record, permission);
@@ -37,15 +39,19 @@ class AiidaRecordConverterTest {
         assertEquals("1.8.0", dto.code());
         assertEquals("connectionId", dto.connectionId());
         assertEquals("dataNeedId", dto.dataNeedId());
+        assertEquals("permissionId", dto.permissionId());
+        assertEquals(timestamp.toEpochMilli(), dto.timestamp().toEpochMilli());
     }
 
     @Test
     void givenStringAiidaRecord_returnsDtoWithFieldsSet() {
         // Given
-        var record = AiidaRecordFactory.createRecord("C.1.0", Instant.now(), "Hello!");
+        Instant timestamp = Instant.now();
+        var record = AiidaRecordFactory.createRecord("C.1.0", timestamp, "Hello!");
         var permission = mock(Permission.class);
         when(permission.connectionId()).thenReturn("connectionId");
         when(permission.dataNeedId()).thenReturn("dataNeedId");
+        when(permission.permissionId()).thenReturn("permissionId");
 
         // When
         AiidaRecordStreamingDto dto = AiidaRecordConverter.recordToStreamingDto(record, permission);
@@ -55,6 +61,8 @@ class AiidaRecordConverterTest {
         assertEquals("C.1.0", dto.code());
         assertEquals("connectionId", dto.connectionId());
         assertEquals("dataNeedId", dto.dataNeedId());
+        assertEquals("permissionId", dto.permissionId());
+        assertEquals(timestamp.toEpochMilli(), dto.timestamp().toEpochMilli());
     }
 
     private static class DummyRecord extends AiidaRecord {

@@ -70,7 +70,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         repository.save(permission);
 
         try {
-            var terminated = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), terminateTime, TERMINATED);
+            var terminated = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), terminateTime, TERMINATED, permissionId);
             streamerManager.sendConnectionStatusMessageForPermission(terminated, permissionId);
         } catch (ConnectionStatusMessageSendFailedException ex) {
             LOGGER.error("Failed to send TERMINATED status message for permission {}", permissionId, ex);
@@ -97,7 +97,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         newPermission = repository.save(newPermission);
 
         var acceptedMessage = new ConnectionStatusMessage(newPermission.connectionId(), newPermission.dataNeedId(),
-                clock.instant(), ACCEPTED);
+                clock.instant(), ACCEPTED, newPermission.permissionId());
         streamerManager.createNewStreamerForPermission(newPermission);
         streamerManager.sendConnectionStatusMessageForPermission(acceptedMessage, newPermission.permissionId());
 
@@ -147,8 +147,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         }
 
         Instant revocationTime = clock.instant();
-        var revocationReceivedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), revocationTime, REVOCATION_RECEIVED);
-        var revokeMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), revocationTime, REVOKED);
+        var revocationReceivedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), revocationTime, REVOCATION_RECEIVED, permissionId);
+        var revokeMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), revocationTime, REVOKED, permissionId);
 
         try {
             streamerManager.sendConnectionStatusMessageForPermission(revocationReceivedMessage, permissionId);
@@ -212,7 +212,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             LOGGER.warn("Permission {} has status {}, meaning it was never started. Will expire it anyway.", permissionId, permission.status());
         }
 
-        var statusMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), clock.instant(), PermissionStatus.TIME_LIMIT);
+        var statusMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), clock.instant(), PermissionStatus.TIME_LIMIT, permissionId);
 
         try {
             streamerManager.sendConnectionStatusMessageForPermission(statusMessage, permissionId);

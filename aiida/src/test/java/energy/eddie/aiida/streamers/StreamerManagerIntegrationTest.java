@@ -59,10 +59,10 @@ class StreamerManagerIntegrationTest {
         KafkaConsumer<String, String> consumer = getKafkaConsumer(testInfo, kafka);
 
         var acceptedMessageTimestamp = Instant.parse("2023-09-11T22:00:00.00Z");
-        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED);
-        String acceptedMessageJson = "{\"connectionId\":\"NewAiidaRandomConnectionId\",\"dataNeedId\":\"SomeDataNeed\",\"timestamp\":1694469600.000000000,\"status\":\"ACCEPTED\"}";
-        var revokedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), acceptedMessageTimestamp.plusSeconds(100), PermissionStatus.REVOKED);
-        String revokedMessageJson = "{\"connectionId\":\"NewAiidaRandomConnectionId\",\"dataNeedId\":\"SomeDataNeed\",\"timestamp\":1694469700.000000000,\"status\":\"REVOKED\"}";
+        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED, permission.permissionId());
+        String acceptedMessageJson = "{\"connectionId\":\"NewAiidaRandomConnectionId\",\"dataNeedId\":\"SomeDataNeed\",\"timestamp\":1694469600.000000000,\"status\":\"ACCEPTED\",\"permissionId\":\"" + permission.permissionId() + "\"}";
+        var revokedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), acceptedMessageTimestamp.plusSeconds(100), PermissionStatus.REVOKED, permission.permissionId());
+        String revokedMessageJson = "{\"connectionId\":\"NewAiidaRandomConnectionId\",\"dataNeedId\":\"SomeDataNeed\",\"timestamp\":1694469700.000000000,\"status\":\"REVOKED\",\"permissionId\":\"" + permission.permissionId() + "\"}";
 
         streamerManager.createNewStreamerForPermission(permission);
 

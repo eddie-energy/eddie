@@ -29,6 +29,6 @@ public class AiidaRecordConverter {
             throw new IllegalArgumentException("No conversion logic for this type of record is implemented");
 
         return new AiidaRecordStreamingDto(aiidaRecord.timestamp(), aiidaRecord.code(), value,
-                permission.connectionId(), permission.dataNeedId());
+                permission.connectionId(), permission.dataNeedId(), permission.permissionId());
     }
 }
