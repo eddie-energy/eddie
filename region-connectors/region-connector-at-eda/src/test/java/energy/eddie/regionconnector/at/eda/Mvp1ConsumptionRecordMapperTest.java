@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.at.eda;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
+import energy.eddie.regionconnector.at.eda.utils.MeteringIntervalUtil;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ConsumptionRecordMapperTest {
+class Mvp1ConsumptionRecordMapperTest {
 
     private static Stream<Arguments> consumptionRecordConfigurations() {
         return Stream.of(
@@ -27,13 +27,16 @@ class ConsumptionRecordMapperTest {
                 Arguments.of("L2", 1, MeteringIntervall.D, UOMType.MWH),
                 Arguments.of("L3", 2, MeteringIntervall.D, UOMType.GWH),
                 Arguments.of("L2", 0.05, MeteringIntervall.QH, UOMType.KWH),
-                Arguments.of("L1", 0.7, MeteringIntervall.QH, UOMType.MWH)
+                Arguments.of("L1", 0.7, MeteringIntervall.QH, UOMType.MWH),
+                Arguments.of("L3", 0.0001, MeteringIntervall.H, UOMType.GWH),
+                Arguments.of("L1", 100, MeteringIntervall.H, UOMType.KWH),
+                Arguments.of("L2", 1000, MeteringIntervall.H, UOMType.MWH)
         );
     }
 
     @ParameterizedTest
     @MethodSource("consumptionRecordConfigurations")
-    void mapToCIM_mapsEDAConsumptionRecordWithSingleConsumptionPoint_asExpected(String meteringType, double consumptionValue, MeteringIntervall meteringInterval, UOMType unit) throws InvalidMappingException {
+    void mapToMvp1ConsumptionRecord_mapsEDAConsumptionRecordWithSingleConsumptionPoint_asExpected(String meteringType, double consumptionValue, MeteringIntervall meteringInterval, UOMType unit) throws InvalidMappingException {
         var meteringPoint = "meteringPoint";
         var expectedMeteringType = meteringType.equals("L1") ? ConsumptionPoint.MeteringType.MEASURED_VALUE : ConsumptionPoint.MeteringType.EXTRAPOLATED_VALUE;
         var conversionFactor = switch (unit) {
@@ -42,60 +45,56 @@ class ConsumptionRecordMapperTest {
             case GWH -> ConversionFactor.GWH_TO_WH;
             default -> throw new IllegalArgumentException("Unexpected value: " + unit);
         };
-        var expectedMeteringInterval = switch (meteringInterval) {
-            case QH -> Granularity.PT15M;
-            case D -> Granularity.P1D;
-            default -> throw new IllegalArgumentException("Unexpected value: " + meteringInterval);
-        };
+        var expectedMeteringInterval = MeteringIntervalUtil.toGranularity(meteringInterval);
         var expectedWh = consumptionValue * conversionFactor.getFactor();
 
         var edaCR = createConsumptionRecord(meteringPoint, meteringType, ZonedDateTime.now(ZoneOffset.UTC), meteringInterval, consumptionValue, unit);
 
-        var uut = new ConsumptionRecordMapper();
+        var uut = new Mvp1ConsumptionRecordMapper();
 
-        var cimCR = uut.mapToCIM(edaCR);
+        var cimCR = uut.mapToMvp1ConsumptionRecord(edaCR);
 
         assertEquals(meteringPoint, cimCR.getMeteringPoint());
         assertNotNull(cimCR.getConsumptionPoints());
         assertEquals(expectedMeteringInterval.name(), cimCR.getMeteringInterval());
         assertEquals(1, cimCR.getConsumptionPoints().size());
-        assertEquals(expectedMeteringType, cimCR.getConsumptionPoints().get(0).getMeteringType());
-        assertEquals(expectedWh, cimCR.getConsumptionPoints().get(0).getConsumption());
+        assertEquals(expectedMeteringType, cimCR.getConsumptionPoints().getFirst().getMeteringType());
+        assertEquals(expectedWh, cimCR.getConsumptionPoints().getFirst().getConsumption());
     }
 
     @Test
-    void mapToCIM_EdaConsumptionRecordWithEmptyProcessDirectory_throwsInvalidMappingException() {
+    void mapToMvp1ConsumptionRecord_EdaConsumptionRecordWithEmptyProcessDirectory_throwsInvalidMappingException() {
         var edaCR = new ConsumptionRecord();
         edaCR.setProcessDirectory(new ProcessDirectory());
-        var uut = new ConsumptionRecordMapper();
+        var uut = new Mvp1ConsumptionRecordMapper();
 
-        assertThrows(InvalidMappingException.class, () -> uut.mapToCIM(edaCR));
+        assertThrows(InvalidMappingException.class, () -> uut.mapToMvp1ConsumptionRecord(edaCR));
     }
 
     @Test
-    void mapToCIM_EdaConsumptionRecordWithEmptyEnergy_throwsInvalidMappingException() {
+    void mapToMvp1ConsumptionRecord_EdaConsumptionRecordWithEmptyEnergy_throwsInvalidMappingException() {
         var edaCR = createConsumptionRecord("test", "L1", ZonedDateTime.now(ZoneOffset.UTC), MeteringIntervall.QH, 1, UOMType.KWH);
         edaCR.getProcessDirectory().getEnergy().forEach(e -> e.getEnergyData().clear());
-        var uut = new ConsumptionRecordMapper();
+        var uut = new Mvp1ConsumptionRecordMapper();
 
-        assertThrows(InvalidMappingException.class, () -> uut.mapToCIM(edaCR));
+        assertThrows(InvalidMappingException.class, () -> uut.mapToMvp1ConsumptionRecord(edaCR));
     }
 
     @Test
-    void mapToCIM_EdaConsumptionRecordIsNull_throwsNullPointerException() {
-        var uut = new ConsumptionRecordMapper();
+    void mapToMvp1ConsumptionRecord_EdaConsumptionRecordIsNull_throwsNullPointerException() {
+        var uut = new Mvp1ConsumptionRecordMapper();
 
-        assertThrows(NullPointerException.class, () -> uut.mapToCIM(null));
+        assertThrows(NullPointerException.class, () -> uut.mapToMvp1ConsumptionRecord(null));
     }
 
     @Test
-    void mapToCIM_mapsEDAConsumptionRecordWithSingleConsumptionPoint_returnsAtTimeZoneInformation() throws InvalidMappingException {
+    void mapToMvp1ConsumptionRecord_mapsEDAConsumptionRecordWithSingleConsumptionPoint_returnsAtTimeZoneInformation() throws InvalidMappingException {
         var austrianTime = ZonedDateTime.of(2021, 1, 1, 0, 0, 0, 0, DateTimeConstants.AT_ZONE_ID);
         var edaCR = createConsumptionRecord("xxx", "L1", austrianTime, MeteringIntervall.QH, 10, UOMType.KWH);
 
-        var uut = new ConsumptionRecordMapper();
+        var uut = new Mvp1ConsumptionRecordMapper();
 
-        var cimCR = uut.mapToCIM(edaCR);
+        var cimCR = uut.mapToMvp1ConsumptionRecord(edaCR);
 
         assertNotNull(cimCR.getConsumptionPoints());
         assertEquals(1, cimCR.getConsumptionPoints().size());
