@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.at.eda;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
+import energy.eddie.regionconnector.at.eda.utils.MeteringIntervalUtil;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,7 +27,10 @@ class ConsumptionRecordMapperTest {
                 Arguments.of("L2", 1, MeteringIntervall.D, UOMType.MWH),
                 Arguments.of("L3", 2, MeteringIntervall.D, UOMType.GWH),
                 Arguments.of("L2", 0.05, MeteringIntervall.QH, UOMType.KWH),
-                Arguments.of("L1", 0.7, MeteringIntervall.QH, UOMType.MWH)
+                Arguments.of("L1", 0.7, MeteringIntervall.QH, UOMType.MWH),
+                Arguments.of("L3", 0.0001, MeteringIntervall.H, UOMType.GWH),
+                Arguments.of("L1", 100, MeteringIntervall.H, UOMType.KWH),
+                Arguments.of("L2", 1000, MeteringIntervall.H, UOMType.MWH)
         );
     }
 
@@ -42,11 +45,7 @@ class ConsumptionRecordMapperTest {
             case GWH -> ConversionFactor.GWH_TO_WH;
             default -> throw new IllegalArgumentException("Unexpected value: " + unit);
         };
-        var expectedMeteringInterval = switch (meteringInterval) {
-            case QH -> Granularity.PT15M;
-            case D -> Granularity.P1D;
-            default -> throw new IllegalArgumentException("Unexpected value: " + meteringInterval);
-        };
+        var expectedMeteringInterval = MeteringIntervalUtil.toGranularity(meteringInterval);
         var expectedWh = consumptionValue * conversionFactor.getFactor();
 
         var edaCR = createConsumptionRecord(meteringPoint, meteringType, ZonedDateTime.now(ZoneOffset.UTC), meteringInterval, consumptionValue, unit);
@@ -59,8 +58,8 @@ class ConsumptionRecordMapperTest {
         assertNotNull(cimCR.getConsumptionPoints());
         assertEquals(expectedMeteringInterval.name(), cimCR.getMeteringInterval());
         assertEquals(1, cimCR.getConsumptionPoints().size());
-        assertEquals(expectedMeteringType, cimCR.getConsumptionPoints().get(0).getMeteringType());
-        assertEquals(expectedWh, cimCR.getConsumptionPoints().get(0).getConsumption());
+        assertEquals(expectedMeteringType, cimCR.getConsumptionPoints().getFirst().getMeteringType());
+        assertEquals(expectedWh, cimCR.getConsumptionPoints().getFirst().getConsumption());
     }
 
     @Test

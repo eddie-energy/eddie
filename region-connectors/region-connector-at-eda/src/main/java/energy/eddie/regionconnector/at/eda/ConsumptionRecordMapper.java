@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.at.eda;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
+import energy.eddie.regionconnector.at.eda.utils.MeteringIntervalUtil;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.ZonedDateTime;
@@ -40,12 +40,7 @@ public class ConsumptionRecordMapper {
         var crEnergy = externalConsumptionRecord.getProcessDirectory().getEnergy().stream().findFirst().orElseThrow(() -> new InvalidMappingException("No Energy found in ProcessDirectory of ConsumptionRecord"));
         consumptionRecord.setMeteringPoint(externalConsumptionRecord.getProcessDirectory().getMeteringPoint());
         consumptionRecord.setStartDateTime(toZonedDateTime(crEnergy.getMeteringPeriodStart()));
-        consumptionRecord.setMeteringInterval(switch (crEnergy.getMeteringIntervall()) {
-            case D -> Granularity.P1D.name();
-            case QH -> Granularity.PT15M.name();
-            default ->
-                    throw new IllegalStateException("Unexpected value: " + crEnergy.getMeteringIntervall()); // according to the schema documentation, EnergyData can only ever have D or QH as MeteringInterval https://www.ebutilities.at/schemas/149 look for the `datantypen.pdf
-        });
+        consumptionRecord.setMeteringInterval(MeteringIntervalUtil.toGranularity(crEnergy.getMeteringIntervall()).name());
 
         var energyData = crEnergy.getEnergyData().stream().findFirst().orElseThrow(() -> new InvalidMappingException("No EnergyData found in Energy of ConsumptionRecord"));
         var conversionFactor = switch (energyData.getUOM()) {

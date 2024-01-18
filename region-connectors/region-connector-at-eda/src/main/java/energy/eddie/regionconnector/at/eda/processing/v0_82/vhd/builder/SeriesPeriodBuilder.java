@@ -3,13 +3,13 @@ package energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.Energy;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.EnergyData;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.EnergyPosition;
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.cim.validated_historical_data.v0_82.ESMPDateTimeIntervalComplexType;
 import energy.eddie.cim.validated_historical_data.v0_82.PointComplexType;
 import energy.eddie.cim.validated_historical_data.v0_82.QualityTypeList;
 import energy.eddie.cim.validated_historical_data.v0_82.SeriesPeriodComplexType;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.processing.utils.XmlGregorianCalenderUtils;
+import energy.eddie.regionconnector.at.eda.utils.MeteringIntervalUtil;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 
 import java.util.ArrayList;
@@ -48,13 +48,7 @@ public class SeriesPeriodBuilder {
     }
 
     public SeriesPeriodBuilder withEnergy(Energy energy) throws InvalidMappingException {
-        seriesPeriod.setResolution(switch (energy.getMeteringIntervall()) {
-            case D -> Granularity.P1D.name();
-            case H -> Granularity.PT1H.name();
-            case QH -> Granularity.PT15M.name();
-            default ->
-                    throw new InvalidMappingException("Unexpected MeteringInterval value + '" + energy.getMeteringIntervall() + "' in consumptionRecord");
-        });
+        seriesPeriod.setResolution(MeteringIntervalUtil.toGranularity(energy.getMeteringIntervall()).name());
 
         var intervalStart = new EsmpDateTime(XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodStart()));
         var intervalEnd = new EsmpDateTime(XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodEnd()));
