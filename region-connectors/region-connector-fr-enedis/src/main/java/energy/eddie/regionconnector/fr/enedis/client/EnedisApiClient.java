@@ -71,6 +71,7 @@ public class EnedisApiClient extends ApiClient implements EnedisApi {
      * @throws ApiException Something went wrong while retrieving data from the API
      */
     @Override
+    @SuppressWarnings("NullAway")
     public ConsumptionLoadCurveMeterReading getConsumptionLoadCurve(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
         throwIfInvalidTimeframe(start, end);
         // The end date is not in the response when requesting data, increment +1 day to prevent confusion
@@ -85,7 +86,7 @@ public class EnedisApiClient extends ApiClient implements EnedisApi {
                 APPLICATION_JSON,
                 APPLICATION_JSON,
                 USER_AGENT,
-                ""
+                null
         );
 
         return clcResponse.getMeterReading();
