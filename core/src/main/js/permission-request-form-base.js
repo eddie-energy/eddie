@@ -1,11 +1,22 @@
-import { LitElement } from "lit";
+import { html, LitElement } from "lit";
+import { createRef, ref } from "lit/directives/ref.js";
 
 class PermissionRequestFormBase extends LitElement {
   ERROR_TITLE = "An error occurred";
-  USER_NOTIFICATION_CONTAINER_ID = "user-notifications-container";
-  RESTART_POLLING_BUTTON_ID = "restart-polling-button";
   MAX_RETRIES = 60; // Retry polling for 5 minutes
 
+  static properties = {
+    alerts: { type: Array },
+  };
+
+  restartPollingButtonRef = createRef();
+
+  constructor() {
+    super();
+    this.alerts = [];
+  }
+
+  permissionId = null;
   location = null;
 
   awaitRetry(delay, maxRetries) {
@@ -14,13 +25,15 @@ class PermissionRequestFormBase extends LitElement {
         return this.requestPermissionStatus(this.location, maxRetries - 1);
       } else {
         // Handle the case when the maximum number of retries is reached
-        const retryButton = Object.assign(document.createElement("sl-button"), {
-          id: this.RESTART_POLLING_BUTTON_ID,
-          variant: "neutral",
-          outline: true,
-          innerHTML: "Restart polling",
-          onclick: this.startOrRestartAutomaticPermissionStatusPolling,
-        });
+        const retryButton = html`
+          <sl-button
+            ref=${ref(this.restartPollingButtonRef)}
+            variant="neutral"
+            outline
+            @click="${this.startOrRestartAutomaticPermissionStatusPolling}"
+            >Restart polling
+          </sl-button>
+        `;
 
         const warningTitle = "Automatic query stopped.";
         const warningMessage =
@@ -38,12 +51,6 @@ class PermissionRequestFormBase extends LitElement {
     });
   }
 
-  escapeHtml(title, message) {
-    const div = this.shadowRoot.ownerDocument.createElement("div");
-    div.innerHTML = "<p><strong>" + title + "</strong><br>" + message + "</p>";
-    return div.innerHTML;
-  }
-
   notify(
     title,
     message,
@@ -52,33 +59,24 @@ class PermissionRequestFormBase extends LitElement {
     duration = "Infinity",
     extraFunctionality = []
   ) {
-    const container = this.shadowRoot.getElementById(
-      this.USER_NOTIFICATION_CONTAINER_ID
-    );
-    const icon = "<sl-icon name=" + iconString + ' slot="icon"></sl-icon>';
-
-    const alert = Object.assign(document.createElement("sl-alert"), {
-      variant: variant,
-      duration: duration,
-      closable: true,
-      open: true,
-      innerHTML: `
-        ${icon}
-        ${this.escapeHtml(title, message)}
-      `,
-    });
-
-    extraFunctionality.forEach((element) => alert.append(element));
-    container.append(alert);
+    const alert = html`<sl-alert
+      variant="${variant}"
+      duration="${duration}"
+      closable
+      open
+    >
+      <sl-icon name="${iconString}" slot="icon"></sl-icon>
+      <p><strong>${title}</strong><br />${message}</p>
+      ${extraFunctionality.map((element) => element)}
+    </sl-alert>`;
+    this.alerts.push(alert);
+    this.requestUpdate();
   }
 
   startOrRestartAutomaticPermissionStatusPolling = () => {
-    const restartPollingButton = this.shadowRoot.getElementById(
-      this.RESTART_POLLING_BUTTON_ID
-    );
-    if (restartPollingButton != null) {
-      const parent = restartPollingButton.parentElement;
-      restartPollingButton.remove();
+    if (this.restartPollingButtonRef.value) {
+      const parent = this.restartPollingButtonRef.value.parentElement;
+      this.restartPollingButtonRef.value.remove();
       parent.remove();
     }
 

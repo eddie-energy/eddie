@@ -256,7 +256,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           </sl-alert>`}
       </div>
 
-      <div id="${this.USER_NOTIFICATION_CONTAINER_ID}"></div>
+      ${this.alerts}
     `;
   }
 }
