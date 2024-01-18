@@ -15,7 +15,7 @@ import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
-public class ConsumptionRecordMapper {
+public class Mvp1ConsumptionRecordMapper {
 
     public static final String MEASURED_VALUE = "L1";
 
@@ -26,13 +26,13 @@ public class ConsumptionRecordMapper {
     }
 
     /**
-     * Maps an EDA consumption record to a CIM consumption record
+     * Maps an EDA consumption record to a MVP1 consumption record
      *
      * @param externalConsumptionRecord The external consumption record to map
      * @return a CIM consumption record
      * @throws InvalidMappingException if the mapping cant be completed because of invalid {@link ConsumptionRecord}. This can happen if the {@link ConsumptionRecord} is missing required fields such as Energy and EnergyData
      */
-    public energy.eddie.api.v0.ConsumptionRecord mapToCIM(ConsumptionRecord externalConsumptionRecord) throws InvalidMappingException {
+    public energy.eddie.api.v0.ConsumptionRecord mapToMvp1ConsumptionRecord(ConsumptionRecord externalConsumptionRecord) throws InvalidMappingException {
         requireNonNull(externalConsumptionRecord);
 
         var consumptionRecord = new energy.eddie.api.v0.ConsumptionRecord();

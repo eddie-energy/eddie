@@ -32,7 +32,7 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
     public static final int MAXIMUM_MONTHS_IN_THE_PAST = 36;
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
     private final EdaAdapter edaAdapter;
-    private final ConsumptionRecordMapper consumptionRecordMapper;
+    private final Mvp1ConsumptionRecordMapper mvp1ConsumptionRecordMapper;
     private final PermissionRequestService permissionRequestService;
 
     /**
@@ -53,7 +53,7 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
         requireNonNull(permissionStateMessages);
 
         this.edaAdapter = edaAdapter;
-        this.consumptionRecordMapper = new ConsumptionRecordMapper();
+        this.mvp1ConsumptionRecordMapper = new Mvp1ConsumptionRecordMapper();
         this.permissionRequestService = permissionRequestService;
         this.permissionStateMessages = permissionStateMessages;
 
@@ -107,7 +107,7 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
     public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
         return JdkFlowAdapter.publisherToFlowPublisher(
                 edaAdapter.getConsumptionRecordStream()
-                        .mapNotNull(this::mapConsumptionRecordToCIMConsumptionRecord)
+                        .mapNotNull(this::mapEdaConsumptionRecordToMvp1ConsumptionRecord)
                         .flatMap(this::emitForEachPermissionRequest)
         );
     }
@@ -177,7 +177,7 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
      *
      * @param consumptionRecord the consumption record to process
      */
-    private @Nullable ConsumptionRecord mapConsumptionRecordToCIMConsumptionRecord(at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord consumptionRecord) {
+    private @Nullable ConsumptionRecord mapEdaConsumptionRecordToMvp1ConsumptionRecord(at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord consumptionRecord) {
         // map an EDA consumption record it to a CIM consumption record
         // and add connectionId and permissionId for identification
         String conversationId = consumptionRecord.getProcessDirectory().getConversationId();
@@ -187,7 +187,7 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
         String connectionId = permissionRequest.map(PermissionRequest::connectionId).orElse(null);
         LOGGER.info("Received consumption record (ConversationId '{}') for permissionId {} and connectionId {}", conversationId, permissionId, connectionId);
         try {
-            return consumptionRecordMapper.mapToCIM(consumptionRecord);
+            return mvp1ConsumptionRecordMapper.mapToMvp1ConsumptionRecord(consumptionRecord);
         } catch (InvalidMappingException e) {
             // TODO In the future this should also inform the administrative console about the invalid mapping
             LOGGER.error("Could not map consumption record to CIM consumption record", e);

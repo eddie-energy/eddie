@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ConsumptionRecordMapperTest {
+class Mvp1ConsumptionRecordMapperTest {
 
     private static Stream<Arguments> consumptionRecordConfigurations() {
         return Stream.of(
@@ -36,7 +36,7 @@ class ConsumptionRecordMapperTest {
 
     @ParameterizedTest
     @MethodSource("consumptionRecordConfigurations")
-    void mapToCIM_mapsEDAConsumptionRecordWithSingleConsumptionPoint_asExpected(String meteringType, double consumptionValue, MeteringIntervall meteringInterval, UOMType unit) throws InvalidMappingException {
+    void mapToMvp1ConsumptionRecord_mapsEDAConsumptionRecordWithSingleConsumptionPoint_asExpected(String meteringType, double consumptionValue, MeteringIntervall meteringInterval, UOMType unit) throws InvalidMappingException {
         var meteringPoint = "meteringPoint";
         var expectedMeteringType = meteringType.equals("L1") ? ConsumptionPoint.MeteringType.MEASURED_VALUE : ConsumptionPoint.MeteringType.EXTRAPOLATED_VALUE;
         var conversionFactor = switch (unit) {
@@ -50,9 +50,9 @@ class ConsumptionRecordMapperTest {
 
         var edaCR = createConsumptionRecord(meteringPoint, meteringType, ZonedDateTime.now(ZoneOffset.UTC), meteringInterval, consumptionValue, unit);
 
-        var uut = new ConsumptionRecordMapper();
+        var uut = new Mvp1ConsumptionRecordMapper();
 
-        var cimCR = uut.mapToCIM(edaCR);
+        var cimCR = uut.mapToMvp1ConsumptionRecord(edaCR);
 
         assertEquals(meteringPoint, cimCR.getMeteringPoint());
         assertNotNull(cimCR.getConsumptionPoints());
@@ -63,38 +63,38 @@ class ConsumptionRecordMapperTest {
     }
 
     @Test
-    void mapToCIM_EdaConsumptionRecordWithEmptyProcessDirectory_throwsInvalidMappingException() {
+    void mapToMvp1ConsumptionRecord_EdaConsumptionRecordWithEmptyProcessDirectory_throwsInvalidMappingException() {
         var edaCR = new ConsumptionRecord();
         edaCR.setProcessDirectory(new ProcessDirectory());
-        var uut = new ConsumptionRecordMapper();
+        var uut = new Mvp1ConsumptionRecordMapper();
 
-        assertThrows(InvalidMappingException.class, () -> uut.mapToCIM(edaCR));
+        assertThrows(InvalidMappingException.class, () -> uut.mapToMvp1ConsumptionRecord(edaCR));
     }
 
     @Test
-    void mapToCIM_EdaConsumptionRecordWithEmptyEnergy_throwsInvalidMappingException() {
+    void mapToMvp1ConsumptionRecord_EdaConsumptionRecordWithEmptyEnergy_throwsInvalidMappingException() {
         var edaCR = createConsumptionRecord("test", "L1", ZonedDateTime.now(ZoneOffset.UTC), MeteringIntervall.QH, 1, UOMType.KWH);
         edaCR.getProcessDirectory().getEnergy().forEach(e -> e.getEnergyData().clear());
-        var uut = new ConsumptionRecordMapper();
+        var uut = new Mvp1ConsumptionRecordMapper();
 
-        assertThrows(InvalidMappingException.class, () -> uut.mapToCIM(edaCR));
+        assertThrows(InvalidMappingException.class, () -> uut.mapToMvp1ConsumptionRecord(edaCR));
     }
 
     @Test
-    void mapToCIM_EdaConsumptionRecordIsNull_throwsNullPointerException() {
-        var uut = new ConsumptionRecordMapper();
+    void mapToMvp1ConsumptionRecord_EdaConsumptionRecordIsNull_throwsNullPointerException() {
+        var uut = new Mvp1ConsumptionRecordMapper();
 
-        assertThrows(NullPointerException.class, () -> uut.mapToCIM(null));
+        assertThrows(NullPointerException.class, () -> uut.mapToMvp1ConsumptionRecord(null));
     }
 
     @Test
-    void mapToCIM_mapsEDAConsumptionRecordWithSingleConsumptionPoint_returnsAtTimeZoneInformation() throws InvalidMappingException {
+    void mapToMvp1ConsumptionRecord_mapsEDAConsumptionRecordWithSingleConsumptionPoint_returnsAtTimeZoneInformation() throws InvalidMappingException {
         var austrianTime = ZonedDateTime.of(2021, 1, 1, 0, 0, 0, 0, DateTimeConstants.AT_ZONE_ID);
         var edaCR = createConsumptionRecord("xxx", "L1", austrianTime, MeteringIntervall.QH, 10, UOMType.KWH);
 
-        var uut = new ConsumptionRecordMapper();
+        var uut = new Mvp1ConsumptionRecordMapper();
 
-        var cimCR = uut.mapToCIM(edaCR);
+        var cimCR = uut.mapToMvp1ConsumptionRecord(edaCR);
 
         assertNotNull(cimCR.getConsumptionPoints());
         assertEquals(1, cimCR.getConsumptionPoints().size());
