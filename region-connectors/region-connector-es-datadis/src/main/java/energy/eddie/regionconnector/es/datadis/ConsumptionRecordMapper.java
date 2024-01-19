@@ -20,7 +20,7 @@ public class ConsumptionRecordMapper {
     private ConsumptionRecordMapper() {
     }
 
-    public static ConsumptionRecord mapToCIM(List<MeteringData> meteringData, @Nullable String permissionId, @Nullable String connectionId, MeasurementType measurementType, @Nullable String dataNeedId) throws InvalidMappingException {
+    public static ConsumptionRecord mapToMvp1ConsumptionRecord(List<MeteringData> meteringData, @Nullable String permissionId, @Nullable String connectionId, MeasurementType measurementType, @Nullable String dataNeedId) throws InvalidMappingException {
         ConsumptionRecord consumptionRecord = new ConsumptionRecord();
         consumptionRecord.setPermissionId(permissionId);
         consumptionRecord.setConnectionId(connectionId);
@@ -30,9 +30,9 @@ public class ConsumptionRecordMapper {
             throw new InvalidMappingException("No metering data found");
         }
 
-        consumptionRecord.setMeteringPoint(meteringData.get(0).cups());
+        consumptionRecord.setMeteringPoint(meteringData.getFirst().cups());
 
-        LocalDateTime startDateTime = readingToDateTime(meteringData.get(0));
+        LocalDateTime startDateTime = readingToDateTime(meteringData.getFirst());
         consumptionRecord.setStartDateTime(startDateTime.atZone(ZONE_ID_SPAIN));
 
         var consumptionPoints = meteringData.stream().map(reading -> {

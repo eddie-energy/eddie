@@ -1,14 +1,9 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
-import energy.eddie.api.v0.ConsumptionRecord;
-import energy.eddie.api.v0.Mvp1ConsumptionRecordProvider;
 import energy.eddie.api.v0.process.model.StateTransitionException;
-import energy.eddie.regionconnector.es.datadis.ConsumptionRecordMapper;
-import energy.eddie.regionconnector.es.datadis.InvalidMappingException;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.api.UnauthorizedException;
-import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.InvalidPointAndMeasurementTypeCombinationException;
@@ -16,11 +11,11 @@ import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSuppliesExcepti
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSupplyForMeteringPointException;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.util.retry.Retry;
@@ -33,27 +28,21 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.Flow;
-import java.util.function.Predicate;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 
 @Component
-public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoCloseable {
+public class DatadisScheduler implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatadisScheduler.class);
     private static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.fixedDelay(10, Duration.ofMinutes(1))
             .filter(ex -> !(ex instanceof UnauthorizedException) && !(ex.getCause() instanceof UnauthorizedException));
     private final DataApi dataApi;
-    private final Sinks.Many<ConsumptionRecord> consumptionRecords;
+    private final Sinks.Many<IdentifiableMeteringData> meteringDataSink;
 
     @Autowired
-    public DatadisScheduler(DataApi dataApi, Sinks.Many<ConsumptionRecord> consumptionRecords) {
+    public DatadisScheduler(DataApi dataApi, Sinks.Many<IdentifiableMeteringData> meteringDataSink) {
         this.dataApi = dataApi;
-        this.consumptionRecords = consumptionRecords;
-    }
-
-    private static Predicate<MeteringData> notInRequestedRange(LocalDate from, LocalDate to) {
-        return m -> m.date() == null || m.date().isBefore(from) || m.date().isAfter(to);
+        this.meteringDataSink = meteringDataSink;
     }
 
     private static void onError(EsPermissionRequest permissionRequest, Throwable e) {
@@ -99,10 +88,9 @@ public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoClos
                 .retryWhen(RETRY_BACKOFF_SPEC) // after the user has accepted the permission, the data might not be available immediately
                 .flatMap(supplies -> prepareMeteringDataRequest(permissionRequest, supplies))
                 .flatMap(dataApi::getConsumptionKwh)
-                .flatMap(meteringData -> processMeteringData(
-                        meteringData, permissionRequest, consumptionRecords))
+                .map(result -> new IdentifiableMeteringData(permissionRequest, result))
                 .doOnError(e -> onError(permissionRequest, e))
-                .subscribe();
+                .subscribe(meteringDataSink::tryEmitNext);
     }
 
     private Mono<List<Supply>> validateSupplies(List<Supply> supplies) {
@@ -152,34 +140,6 @@ public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoClos
                 .findFirst();
     }
 
-    private Mono<Void> processMeteringData(
-            List<MeteringData> meteringData,
-            EsPermissionRequest permissionRequest,
-            Sinks.Many<ConsumptionRecord> consumptionRecordSink) {
-
-        var from = permissionRequest.requestDataFrom().toLocalDate();
-        var to = permissionRequest.requestDataTo().toLocalDate();
-
-        // remove metering data that is not in the requested time range
-        meteringData.removeIf(notInRequestedRange(from, to));
-        permissionRequest.setLastPulledMeterReading(Objects.requireNonNull(meteringData.getLast().date()).atStartOfDay(ZoneOffset.UTC));
-
-        try {
-            ConsumptionRecord consumptionRecord = ConsumptionRecordMapper.mapToCIM(
-                    meteringData,
-                    permissionRequest.permissionId(),
-                    permissionRequest.connectionId(),
-                    permissionRequest.measurementType(),
-                    permissionRequest.dataNeedId()
-            );
-            consumptionRecordSink.tryEmitNext(consumptionRecord);
-            return Mono.empty();
-        } catch (InvalidMappingException e) {
-            consumptionRecordSink.tryEmitError(e);
-            return Mono.error(e);
-        }
-    }
-
     /**
      * Check if the point type supports the measurement type.
      * All point types support hourly data.
@@ -192,12 +152,7 @@ public class DatadisScheduler implements Mvp1ConsumptionRecordProvider, AutoClos
     }
 
     @Override
-    public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(consumptionRecords.asFlux());
-    }
-
-    @Override
     public void close() {
-        consumptionRecords.tryEmitComplete();
+        meteringDataSink.tryEmitComplete();
     }
 }
