@@ -1,5 +1,7 @@
 package energy.eddie.outbound.kafka;
 
+import energy.eddie.api.agnostic.RawDataMessage;
+import energy.eddie.api.agnostic.RawDataOutboundConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
@@ -19,7 +21,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Flow;
 
 public class KafkaConnector implements Mvp1ConnectionStatusMessageOutboundConnector,
-        Mvp1ConsumptionRecordOutboundConnector, EddieValidatedHistoricalDataMarketDocumentOutboundConnector, Closeable {
+        Mvp1ConsumptionRecordOutboundConnector, EddieValidatedHistoricalDataMarketDocumentOutboundConnector, Closeable,
+        RawDataOutboundConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaProducer<String, Object> kafkaProducer;
 
@@ -95,5 +98,25 @@ public class KafkaConnector implements Mvp1ConnectionStatusMessageOutboundConnec
     private void reinterrupt(InterruptedException e) {
         LOGGER.warn("Thread was interrupted", e);
         Thread.currentThread().interrupt();
+    }
+
+    @Override
+    public void setRawDataStream(Flow.Publisher<RawDataMessage> rawDataStream) {
+        JdkFlowAdapter
+                .flowPublisherToFlux(rawDataStream)
+                .subscribe(this::produceRawDataMessage);
+    }
+
+    private void produceRawDataMessage(RawDataMessage message) {
+        try {
+            kafkaProducer
+                    .send(new ProducerRecord<>("raw-data-in-proprietary-format", message.connectionId(), message))
+                    .get();
+            LOGGER.debug("Produced raw data message");
+        } catch (RuntimeException | ExecutionException e) {
+            LOGGER.warn("Could not produce raw data message", e);
+        } catch (InterruptedException e) {
+            reinterrupt(e);
+        }
     }
 }

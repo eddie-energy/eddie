@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.DataSourceInformation;
@@ -19,8 +20,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class CustomSerializerTest {
 
@@ -103,5 +103,21 @@ class CustomSerializerTest {
                                              String regionConnectorId,
                                              String permissionAdministratorId,
                                              String meteredDataAdministratorId) implements DataSourceInformation {
+    }
+
+    @Test
+    void givenRawDataMessage_serializes_asExpected() {
+        // Given
+        var expectedString = "{\"permissionId\":\"foo\",\"connectionId\":\"bar\",\"dataNeedId\":\"id1\",\"dataSourceInformation\":{\"countryCode\":\"TEST\",\"meteredDataAdministratorId\":\"tEsT\",\"permissionAdministratorId\":\"TeSt\",\"regionConnectorId\":\"test\"},\"timestamp\":\"2024-01-16T12:00:00Z\",\"rawPayload\":\"rawPayload with <xml> and <html> stuff and special Ϸ ϲ ℻ characters\"}";
+        var topic = "myTest";
+        var dataSourceInformation = new TestDataSourceInformation("TEST", "test", "TeSt", "tEsT");
+        var message = new RawDataMessage("foo", "bar", "id1", dataSourceInformation,
+                ZonedDateTime.parse("2024-01-16T12:00:00Z"), "rawPayload with <xml> and <html> stuff and special Ϸ ϲ ℻ characters");
+
+        // When
+        var result = customSerializer.serialize(topic, message);
+
+        // Then
+        assertEquals(expectedString, new String(result));
     }
 }

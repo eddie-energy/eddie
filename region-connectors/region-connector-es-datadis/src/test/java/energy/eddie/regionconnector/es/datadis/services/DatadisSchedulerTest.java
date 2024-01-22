@@ -11,11 +11,11 @@ import energy.eddie.regionconnector.es.datadis.dtos.exceptions.InvalidPointAndMe
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSuppliesException;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.AcceptedState;
+import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
@@ -49,9 +49,10 @@ class DatadisSchedulerTest {
     @Test
     void close_emitsCompleteOnPublisher() {
         // Given
-        var scheduler = new DatadisScheduler(mock(DataApi.class), Sinks.many().multicast().onBackpressureBuffer());
+        Sinks.Many<IdentifiableMeteringData> meteringDataSink = Sinks.many().multicast().onBackpressureBuffer();
+        var scheduler = new DatadisScheduler(mock(DataApi.class), meteringDataSink);
 
-        StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(scheduler.getConsumptionRecordStream()))
+        StepVerifier stepVerifier = StepVerifier.create(meteringDataSink.asFlux())
                 .expectComplete()
                 .verifyLater();
 

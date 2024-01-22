@@ -1,11 +1,13 @@
 package energy.eddie.core;
 
+import energy.eddie.api.agnostic.RawDataOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordOutboundConnector;
 import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentOutboundConnector;
 import energy.eddie.core.services.ConsumptionRecordService;
 import energy.eddie.core.services.EddieValidatedHistoricalDataMarketDocumentService;
 import energy.eddie.core.services.PermissionService;
+import energy.eddie.core.services.RawDataService;
 import energy.eddie.outbound.kafka.KafkaConnector;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -74,6 +76,16 @@ public class OutboundKafkaConfig {
             EddieValidatedHistoricalDataMarketDocumentService cimService
     ) {
         ((EddieValidatedHistoricalDataMarketDocumentOutboundConnector) kafkaConnector).setEddieValidatedHistoricalDataMarketDocumentStream(cimService.getEddieValidatedHistoricalDataMarketDocumentStream());
+        return kafkaConnector;
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
+    RawDataOutboundConnector rawDataOutboundConnector(
+            KafkaConnector kafkaConnector,
+            RawDataService rawDataService
+    ) {
+        ((RawDataOutboundConnector) kafkaConnector).setRawDataStream(rawDataService.getRawDataStream());
         return kafkaConnector;
     }
 }

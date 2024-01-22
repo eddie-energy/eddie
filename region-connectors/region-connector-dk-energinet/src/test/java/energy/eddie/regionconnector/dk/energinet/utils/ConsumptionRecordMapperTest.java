@@ -3,17 +3,19 @@ package energy.eddie.regionconnector.dk.energinet.utils;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.dk.energinet.customer.model.*;
 import energy.eddie.regionconnector.dk.energinet.enums.PointQualityEnum;
+import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class ConsumptionRecordMapperTest {
     @Test
-    void mapToCIM_mapsEnerginetConsumptionRecord_asExpected() {
+    void timeSeriesToConsumptionRecord_mapsEnerginetConsumptionRecord_asExpected() {
         //when
         var myEnergyMarketDocumentResponse = mock(MyEnergyDataMarketDocumentResponse.class);
         var myEnergyMarketDocument = mock(MyEnergyDataMarketDocument.class);
@@ -21,6 +23,8 @@ class ConsumptionRecordMapperTest {
         var timeSeries = mock(TimeSeries.class);
         var period = mock(Period.class);
         var point = mock(Point.class);
+        IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse("foo",
+                "bar", "dId", List.of(myEnergyMarketDocumentResponse));
 
         when(myEnergyMarketDocumentResponse.getMyEnergyDataMarketDocument()).thenReturn(myEnergyMarketDocument);
         when(myEnergyMarketDocument.getPeriodTimeInterval()).thenReturn(periodtimeInterval);
@@ -33,12 +37,15 @@ class ConsumptionRecordMapperTest {
         when(point.getOutQuantityQuantity()).thenReturn("5.42");
 
         //when
-        //then
-        assertDoesNotThrow(() -> ConsumptionRecordMapper.timeSeriesToCIM(List.of(myEnergyMarketDocumentResponse)));
+        var consumptionRecord = ConsumptionRecordMapper.timeSeriesToConsumptionRecord(identifiableResponse);
+
+        assertEquals("foo", consumptionRecord.getPermissionId());
+        assertEquals("bar", consumptionRecord.getConnectionId());
+        assertEquals("dId", consumptionRecord.getDataNeedId());
     }
 
     @Test
-    void mapToCIM_mapsEnerginetConsumptionRecord_illegalPointQuality() {
+    void timeSeriesToConsumptionRecord_mapsEnerginetConsumptionRecord_illegalPointQuality() {
         //given
         var illegalPointQualityEnum = PointQualityEnum.A02;
 
@@ -48,6 +55,8 @@ class ConsumptionRecordMapperTest {
         var timeSeries = mock(TimeSeries.class);
         var period = mock(Period.class);
         var point = mock(Point.class);
+        IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse("foo",
+                "bar", "dId", List.of(myEnergyMarketDocumentResponse));
 
         when(myEnergyMarketDocumentResponse.getMyEnergyDataMarketDocument()).thenReturn(myEnergyMarketDocument);
         when(myEnergyMarketDocument.getPeriodTimeInterval()).thenReturn(periodtimeInterval);
@@ -61,7 +70,7 @@ class ConsumptionRecordMapperTest {
 
         try {
             //when
-            ConsumptionRecordMapper.timeSeriesToCIM(List.of(myEnergyMarketDocumentResponse));
+            ConsumptionRecordMapper.timeSeriesToConsumptionRecord(identifiableResponse);
         } catch (IllegalStateException exception) {
             //then
             assertEquals("Illegal Quality: " + illegalPointQualityEnum, exception.getMessage());
@@ -69,12 +78,14 @@ class ConsumptionRecordMapperTest {
     }
 
     @Test
-    void mapToCIM_mapsEnerginetConsumptionRecord_energyMarketDocument_isNull() {
+    void timeSeriesToConsumptionRecord_mapsEnerginetConsumptionRecord_energyMarketDocument_isNull() {
         //given
         var myEnergyMarketDocumentResponse = List.of(mock(MyEnergyDataMarketDocumentResponse.class));
+        IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse("foo",
+                "bar", "dId", myEnergyMarketDocumentResponse);
 
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> ConsumptionRecordMapper.timeSeriesToCIM(myEnergyMarketDocumentResponse));
+                () -> ConsumptionRecordMapper.timeSeriesToConsumptionRecord(identifiableResponse));
         assertEquals("No data available", exception.getMessage());
     }
 }

@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.es.datadis;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.client.*;
@@ -11,6 +10,7 @@ import energy.eddie.regionconnector.es.datadis.permission.request.InMemoryPermis
 import energy.eddie.regionconnector.es.datadis.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
+import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import energy.eddie.regionconnector.es.datadis.services.DatadisScheduler;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.netty.http.client.HttpClient;
 
@@ -49,15 +50,14 @@ public class DatadisSpringConfig {
         return new DatadisEndpoints();
     }
 
-    /**
-     * Creates the Sink which is used to publish {@link ConsumptionRecord}s.
-     * The Flux of this sink allows only one subscriber!
-     *
-     * @return Sink for consumption records.
-     */
     @Bean
-    public Sinks.Many<ConsumptionRecord> consumptionRecordSink() {
+    public Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public Flux<IdentifiableMeteringData> identifiableMeteringDataFlux(Sinks.Many<IdentifiableMeteringData> sink) {
+        return sink.asFlux();
     }
 
     @Bean

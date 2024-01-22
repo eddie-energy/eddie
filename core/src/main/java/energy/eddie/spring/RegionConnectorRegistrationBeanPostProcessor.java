@@ -116,7 +116,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
             throw new IllegalStateException("environment must not be null");
 
         Set<BeanDefinition> regionConnectorBeanDefinitions = findAllSpringRegionConnectorBeanDefinitions();
-        List<Class<?>> regionConnectorProcessorClasses = findAllRegionConnectorProcessorClasses();
+        List<Class<?>> regionConnectorProcessorClasses = findAllRegionConnectorProcessorClasses(environment);
 
         for (BeanDefinition rcDefinition : regionConnectorBeanDefinitions) {
             try {
@@ -148,9 +148,11 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
 
     // Ignore warning to use .toList because it doesn't return a List<Class<?>> but a List<? extends Class<?>>
     @SuppressWarnings("java:S6204")
-    private List<Class<?>> findAllRegionConnectorProcessorClasses() throws InitializationException {
+    private List<Class<?>> findAllRegionConnectorProcessorClasses(Environment scannerEnvironment) throws InitializationException {
         var scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(RegionConnectorExtension.class));
+        // use environment of parent to properly evaluate @Conditional annotations
+        scanner.setEnvironment(scannerEnvironment);
 
         var beanDefinitions = scanner.findCandidateComponents(REGION_CONNECTOR_PROCESSORS_SCAN_BASE_PACKAGE);
 
