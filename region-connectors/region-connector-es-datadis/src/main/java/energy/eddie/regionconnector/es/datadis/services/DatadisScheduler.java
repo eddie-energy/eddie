@@ -2,8 +2,8 @@ package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
+import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
-import energy.eddie.regionconnector.es.datadis.api.UnauthorizedException;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.InvalidPointAndMeasurementTypeCombinationException;
@@ -15,6 +15,7 @@ import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMe
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
@@ -35,7 +36,7 @@ import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConst
 public class DatadisScheduler implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatadisScheduler.class);
     private static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.fixedDelay(10, Duration.ofMinutes(1))
-            .filter(ex -> !(ex instanceof UnauthorizedException) && !(ex.getCause() instanceof UnauthorizedException));
+            .filter(ex -> !isUnauthorized(ex));
     private final DataApi dataApi;
     private final Sinks.Many<IdentifiableMeteringData> meteringDataSink;
 
@@ -43,6 +44,15 @@ public class DatadisScheduler implements AutoCloseable {
     public DatadisScheduler(DataApi dataApi, Sinks.Many<IdentifiableMeteringData> meteringDataSink) {
         this.dataApi = dataApi;
         this.meteringDataSink = meteringDataSink;
+    }
+
+    private static boolean isUnauthorized(Throwable ex) {
+        for (var exception = ex; exception != null; exception = exception.getCause()) {
+            if (exception instanceof DatadisApiException apiException) {
+                return apiException.statusCode() == HttpStatus.UNAUTHORIZED.value();
+            }
+        }
+        return false;
     }
 
     private static void onError(EsPermissionRequest permissionRequest, Throwable e) {
@@ -62,11 +72,13 @@ public class DatadisScheduler implements AutoCloseable {
                 // we should think of a new state for this
                 // fix with #296
                 break;
-            case UnauthorizedException ignored:
-                try {
-                    permissionRequest.revoke();
-                } catch (StateTransitionException ex) {
-                    LOGGER.warn("Error revoking permission request", ex);
+            case DatadisApiException exception:
+                if (exception.statusCode() == HttpStatus.FORBIDDEN.value()) {
+                    try {
+                        permissionRequest.revoke();
+                    } catch (StateTransitionException ex) {
+                        LOGGER.warn("Error revoking permission request", ex);
+                    }
                 }
                 break;
             default:
@@ -85,7 +97,7 @@ public class DatadisScheduler implements AutoCloseable {
 
         dataApi.getSupplies(permissionRequest.nif(), null)
                 .flatMap(this::validateSupplies)
-                .retryWhen(RETRY_BACKOFF_SPEC) // after the user has accepted the permission, the data might not be available immediately
+                .retryWhen(RETRY_BACKOFF_SPEC) // after the user has accepted the permission, the data might not be available immediately, since Datadis only starts validating the permission after the user has accepted it
                 .flatMap(supplies -> prepareMeteringDataRequest(permissionRequest, supplies))
                 .flatMap(dataApi::getConsumptionKwh)
                 .map(result -> new IdentifiableMeteringData(permissionRequest, result))

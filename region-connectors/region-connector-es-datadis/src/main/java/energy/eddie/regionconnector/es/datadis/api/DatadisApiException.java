@@ -1,11 +1,32 @@
 package energy.eddie.regionconnector.es.datadis.api;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+
 public class DatadisApiException extends Exception {
-    public DatadisApiException(Throwable cause) {
-        super(cause);
+    private final int statusCode;
+    private final String responseBody;
+    private final String statusPhrase;
+    private final String message;
+
+    public DatadisApiException(String message, HttpResponseStatus status, String responseBody) {
+        super("API Exception: " + status.code() + " - " + status.reasonPhrase());
+        this.statusCode = status.code();
+        this.statusPhrase = status.reasonPhrase();
+        this.responseBody = responseBody;
+        this.message = message;
     }
 
-    public DatadisApiException(String message) {
-        super(message);
+    public int statusCode() {
+        return statusCode;
+    }
+
+    @Override
+    public String getMessage() {
+        return "DatadisApiException{" +
+                "message='" + message + '\'' +
+                ", statusCode=" + statusCode +
+                ", responseBody='" + responseBody + '\'' +
+                ", statusPhrase='" + statusPhrase + '\'' +
+                '}';
     }
 }

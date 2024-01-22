@@ -1,11 +1,12 @@
 package energy.eddie.regionconnector.es.datadis.client;
 
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
+import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
-import energy.eddie.regionconnector.es.datadis.api.UnauthorizedException;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.test.StepVerifier;
@@ -25,17 +26,17 @@ class NettyDataApiClientTest {
         StepVerifier.create(dataApi.getSupplies("replace_me", null))
                 .expectNextMatches(supplies -> {
                     System.out.println(Arrays.toString(supplies.toArray()));
-                    return supplies.size() > 0;
+                    return !supplies.isEmpty();
                 })
                 .verifyComplete();
-
     }
 
     @Test
     @Disabled("Integration test, that needs real credentials")
     void getSupplies_withUnauthorizedNif_returnsUnauthorizedException() {
         StepVerifier.create(dataApi.getSupplies("replace_me", null))
-                .expectErrorMatches(throwable -> throwable instanceof UnauthorizedException)
+                .expectErrorMatches(throwable -> throwable instanceof DatadisApiException datadisApiException
+                        && datadisApiException.statusCode() == HttpStatus.UNAUTHORIZED.value())
                 .verify();
     }
 
@@ -48,10 +49,9 @@ class NettyDataApiClientTest {
         StepVerifier.create(dataApi.getConsumptionKwh(request))
                 .expectNextMatches(consumptionKwhs -> {
                     System.out.println(Arrays.toString(consumptionKwhs.toArray()));
-                    return consumptionKwhs.size() > 0;
+                    return !consumptionKwhs.isEmpty();
                 })
                 .verifyComplete();
-
     }
 
     static class MyTokenProvider implements DatadisTokenProvider {

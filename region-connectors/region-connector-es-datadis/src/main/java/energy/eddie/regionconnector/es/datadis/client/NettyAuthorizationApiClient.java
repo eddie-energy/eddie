@@ -40,7 +40,7 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
         try {
             body = mapper.writeValueAsString(authorizationRequest);
         } catch (JsonProcessingException e) {
-            return Mono.error(new DatadisApiException(e));
+            return Mono.error(e);
         }
 
         return tokenProvider.getToken().flatMap(token -> httpClient
@@ -58,13 +58,13 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
                                 case "nonif" -> Mono.just(AuthorizationRequestResponse.NO_NIF);
                                 case "noSupplies" -> Mono.just(AuthorizationRequestResponse.NO_SUPPLIES);
                                 default ->
-                                        Mono.error(new DatadisApiException("Unexpected response: " + jsonNode.get("response").asText()));
+                                        Mono.error(new DatadisApiException("Unexpected response from authorization request", httpClientResponse.status(), bodyString));
                             };
                         } catch (JsonProcessingException e) {
-                            return Mono.error(new DatadisApiException(e));
+                            return Mono.error(e);
                         }
                     } else {
-                        return Mono.error(new DatadisApiException("Failed to post authorization request: " + httpClientResponse.status().code() + " " + bodyString));
+                        return Mono.error(new DatadisApiException("Failed to post authorization request", httpClientResponse.status(), bodyString));
                     }
                 }))
         );
