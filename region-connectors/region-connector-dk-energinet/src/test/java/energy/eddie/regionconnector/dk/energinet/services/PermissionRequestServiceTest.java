@@ -2,27 +2,26 @@ package energy.eddie.regionconnector.dk.energinet.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
+import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerAcceptedState;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
-import reactor.adapter.JdkFlowAdapter;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
@@ -47,10 +46,14 @@ class PermissionRequestServiceTest {
     private EnerginetCustomerApi customerApi;
     @Mock
     private PermissionRequestFactory requestFactory;
-    @Mock
-    private Sinks.Many<ConsumptionRecord> consumptionRecordSink;
-    @InjectMocks
     private PermissionRequestService service;
+    private Sinks.Many<IdentifiableApiResponse> apiResponseSink;
+
+    @BeforeEach
+    void setUp() {
+        apiResponseSink = Sinks.many().multicast().onBackpressureBuffer();
+        service = new PermissionRequestService(repository, requestFactory, customerApi, apiResponseSink);
+    }
 
     @Test
     void givenNonExistingId_findConnectionStatusMessageById_returnsEmptyOptional() {
@@ -148,7 +151,7 @@ class PermissionRequestServiceTest {
         when(mockRequest.accessToken()).thenReturn(Mono.just("accessToken"));
         when(requestFactory.create(requestForCreation)).thenReturn(mockRequest);
         when(customerApi.getTimeSeries(any(), any(), any(), any(), anyString(), any()))
-                .thenReturn(Mono.just(new ConsumptionRecord()));
+                .thenReturn(Mono.just(mock(MyEnergyDataMarketDocumentResponseListApiResponse.class)));
 
         // When
         service.createAndSendPermissionRequest(requestForCreation);
@@ -221,15 +224,15 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void close_emitsCompleteOnPublisher() {
-        when(consumptionRecordSink.asFlux()).thenReturn(Flux.empty());
-
-        // Given
-        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(service.getConsumptionRecordStream()))
-                // When
-                .then(service::close)
-                // Then
+    void close_emitsCompleteOnFlow() {
+        StepVerifier stepVerifier = StepVerifier.create(apiResponseSink.asFlux())
                 .expectComplete()
-                .verify(Duration.ofSeconds(2));
+                .verifyLater();
+
+        // When
+        service.close();
+
+        // Then
+        stepVerifier.verify(Duration.ofSeconds(2));
     }
 }

@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.customer.client;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
@@ -14,7 +13,6 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRe
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.StringApiResponse;
 import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
-import energy.eddie.regionconnector.dk.energinet.utils.ConsumptionRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -83,7 +81,7 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     }
 
     @Override
-    public Mono<ConsumptionRecord> getTimeSeries(
+    public Mono<MyEnergyDataMarketDocumentResponseListApiResponse> getTimeSeries(
             ZonedDateTime dateFrom,
             ZonedDateTime dateTo,
             Granularity granularity,
@@ -102,9 +100,7 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
                                     aggregation.toString(),
                                     userCorrelationId,
                                     meteringPointsRequest
-                            )
-                            .mapNotNull(MyEnergyDataMarketDocumentResponseListApiResponse::getResult)
-                            .map(ConsumptionRecordMapper::timeSeriesToCIM);
+                    );
         }
     }
 

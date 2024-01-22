@@ -1,8 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.ConsumptionRecord;
-import energy.eddie.api.v0.Mvp1ConsumptionRecordProvider;
 import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.api.v0.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.v0.process.model.StateTransitionException;
@@ -10,39 +8,39 @@ import energy.eddie.api.v0.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPoints;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
+import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.Flow;
 
 @Service
-public class PermissionRequestService implements Mvp1ConsumptionRecordProvider, AutoCloseable {
+public class PermissionRequestService implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestService.class);
     private final DkEnerginetCustomerPermissionRequestRepository repository;
     private final PermissionRequestFactory requestFactory;
     private final EnerginetCustomerApi energinetCustomerApi;
-    private final Sinks.Many<ConsumptionRecord> consumptionRecordSink;
+    private final Sinks.Many<IdentifiableApiResponse> apiResponseSink;
 
     public PermissionRequestService(
             DkEnerginetCustomerPermissionRequestRepository repository,
             PermissionRequestFactory requestFactory,
             EnerginetCustomerApi energinetCustomerApi,
-            Sinks.Many<ConsumptionRecord> consumptionRecordSink
+            Sinks.Many<IdentifiableApiResponse> apiResponseSink
     ) {
         this.repository = repository;
         this.requestFactory = requestFactory;
         this.energinetCustomerApi = energinetCustomerApi;
-        this.consumptionRecordSink = consumptionRecordSink;
+        this.apiResponseSink = apiResponseSink;
     }
 
     private static void revokePermissionRequest(DkEnerginetCustomerPermissionRequest permissionRequest,
@@ -113,23 +111,16 @@ public class PermissionRequestService implements Mvp1ConsumptionRecordProvider, 
                         accessToken,
                         UUID.fromString(permissionRequest.permissionId())
                 ))
-                .map(consumptionRecord -> {
-                    consumptionRecord.setConnectionId(permissionRequest.connectionId());
-                    consumptionRecord.setPermissionId(permissionRequest.permissionId());
-                    consumptionRecord.setDataNeedId(permissionRequest.dataNeedId());
-                    return consumptionRecord;
-                })
+                .mapNotNull(MyEnergyDataMarketDocumentResponseListApiResponse::getResult)
+                .map(response -> new IdentifiableApiResponse(permissionRequest.permissionId(),
+                        permissionRequest.connectionId(), permissionRequest.dataNeedId(), response
+                ))
                 .doOnError(error -> LOGGER.error("Something went wrong while fetching data from Energinet:", error))
-                .subscribe(consumptionRecordSink::tryEmitNext);
-    }
-
-    @Override
-    public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(consumptionRecordSink.asFlux());
+                .subscribe(apiResponseSink::tryEmitNext);
     }
 
     @Override
     public void close() {
-        consumptionRecordSink.tryEmitComplete();
+        apiResponseSink.tryEmitComplete();
     }
 }

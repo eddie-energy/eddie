@@ -4,6 +4,7 @@ import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.dk.energinet.customer.model.*;
 import energy.eddie.regionconnector.dk.energinet.enums.PointQualityEnum;
+import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,8 @@ public class ConsumptionRecordMapper {
         throw new IllegalStateException("Utility class");
     }
 
-    public static ConsumptionRecord timeSeriesToCIM(List<MyEnergyDataMarketDocumentResponse> timeSeriesResponse) throws IllegalStateException {
+    public static ConsumptionRecord timeSeriesToConsumptionRecord(IdentifiableApiResponse response) throws IllegalStateException {
+        List<MyEnergyDataMarketDocumentResponse> timeSeriesResponse = response.apiResponse();
         ConsumptionRecord consumptionRecord = new ConsumptionRecord();
         MyEnergyDataMarketDocumentResponse energyDataMarketDocumentResponse = timeSeriesResponse.stream().findFirst().orElseThrow();
         consumptionRecord.setMeteringPoint(energyDataMarketDocumentResponse.getId());
@@ -53,6 +55,9 @@ public class ConsumptionRecordMapper {
         }
 
         consumptionRecord.setConsumptionPoints(consumptionPoints);
+        consumptionRecord.setConnectionId(response.connectionId());
+        consumptionRecord.setPermissionId(response.permissionId());
+        consumptionRecord.setDataNeedId(response.dataNeedId());
         return consumptionRecord;
     }
 

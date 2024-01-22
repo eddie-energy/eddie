@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.dk.energinet.providers;
+package energy.eddie.regionconnector.dk.energinet.providers.v0;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import org.junit.jupiter.api.Test;

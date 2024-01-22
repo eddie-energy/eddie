@@ -2,12 +2,12 @@ package energy.eddie.regionconnector.dk;
 
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.config.PlainEnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.InMemoryPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
+import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.util.Set;
@@ -38,8 +39,14 @@ public class DkEnerginetSpringConfig {
     }
 
     @Bean
-    public Sinks.Many<ConsumptionRecord> consumptionRecordSink() {
+    public Sinks.Many<IdentifiableApiResponse> identifiableApiResponseSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public Flux<IdentifiableApiResponse> identifiableMeterReadingFlux(
+            Sinks.Many<IdentifiableApiResponse> identifiableApiResponseSink) {
+        return identifiableApiResponseSink.asFlux();
     }
 
     @Bean

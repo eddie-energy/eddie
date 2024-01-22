@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.customer.client;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
@@ -234,12 +233,10 @@ class EnerginetCustomerApiClientTest {
 
         // Then
         StepVerifier.create(result)
-                .assertNext(cr -> assertAll(
-                        () -> assertEquals("ID", cr.getMeteringPoint()),
-                        () -> assertEquals(PT15M.toString(), cr.getMeteringInterval()),
-                        () -> assertEquals(1, cr.getConsumptionPoints().size()),
-                        () -> assertEquals(0.0, cr.getConsumptionPoints().get(0).getConsumption()),
-                        () -> assertEquals(ConsumptionPoint.MeteringType.MEASURED_VALUE, cr.getConsumptionPoints().get(0).getMeteringType())
+                .assertNext(response -> assertAll(
+                        () -> assertNotNull(response.getResult()),
+                        () -> assertNotNull(response.getResult().getFirst()),
+                        () -> assertEquals("ID", response.getResult().getFirst().getId())
                 ))
                 .verifyComplete();
     }
