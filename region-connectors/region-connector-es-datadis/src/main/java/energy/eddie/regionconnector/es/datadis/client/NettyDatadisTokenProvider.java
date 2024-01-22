@@ -10,6 +10,7 @@ import reactor.netty.http.client.HttpClient;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.Objects.requireNonNull;
 
@@ -34,7 +35,7 @@ public class NettyDatadisTokenProvider implements DatadisTokenProvider {
 
     @Override
     public synchronized Mono<String> getToken() {
-        if (token == null || System.currentTimeMillis() > expiryTime) {
+        if (token == null || TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) > expiryTime) {
             return fetchTokenFromServer()
                     .doOnNext(this::updateTokenAndExpiry);
         }
@@ -74,7 +75,6 @@ public class NettyDatadisTokenProvider implements DatadisTokenProvider {
         } catch (JsonProcessingException e) {
             return Mono.error(new TokenProviderException(e));
         }
-
     }
 
     public long getExpiryTime() {
