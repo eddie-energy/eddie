@@ -35,7 +35,9 @@ import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConst
 @Component
 public class DatadisScheduler implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatadisScheduler.class);
-    private static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.fixedDelay(10, Duration.ofMinutes(1))
+    private static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry
+            .backoff(10, Duration.ofMinutes(2))
+            .maxBackoff(Duration.ofHours(2))
             .filter(ex -> !isUnauthorized(ex));
     private final DataApi dataApi;
     private final Sinks.Many<IdentifiableMeteringData> meteringDataSink;
