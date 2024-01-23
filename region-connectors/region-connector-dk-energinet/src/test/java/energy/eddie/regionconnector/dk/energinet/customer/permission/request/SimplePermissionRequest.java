@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
-import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import reactor.core.publisher.Mono;
 

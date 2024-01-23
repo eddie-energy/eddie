@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.shared.permission.requests.extensions;
 
-import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.api.v0.process.model.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 
 public class SavingExtension<T extends PermissionRequest> implements Extension<T> {
     private final PermissionRequestRepository<T> permissionRequestRepository;

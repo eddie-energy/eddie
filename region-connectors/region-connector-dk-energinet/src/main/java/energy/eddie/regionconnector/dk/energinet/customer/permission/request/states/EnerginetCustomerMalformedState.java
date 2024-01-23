@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.states;
 
-import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
-import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.api.v0.process.model.states.MalformedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.states.MalformedPermissionRequestState;
 
 /**
  * When a permission request cannot be successfully validated, it's state will be malformed.
@@ -24,4 +24,3 @@ public class EnerginetCustomerMalformedState
                 '}';
     }
 }
-

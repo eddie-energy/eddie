@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.shared.permission.requests;
 
-import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.regionconnector.shared.permission.requests.annotations.InvokeExtensions;
 import energy.eddie.regionconnector.shared.permission.requests.decorators.SimplePermissionRequest;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;

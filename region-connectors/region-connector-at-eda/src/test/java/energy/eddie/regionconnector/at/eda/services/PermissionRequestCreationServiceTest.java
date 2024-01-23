@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.PermissionRequestFactory;

@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
-import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
-import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.api.v0.process.model.states.RejectedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.states.RejectedPermissionRequestState;
 
 public class AtRejectedPermissionRequestState
         extends ContextualizedPermissionRequestState<PermissionRequest>

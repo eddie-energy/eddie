@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.shared.permission.requests.decorators;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.process.model.PermissionRequestState;
 
 public class SimpleState implements PermissionRequestState {
     private PermissionProcessStatus status;

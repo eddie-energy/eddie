@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.api;
 
-import energy.eddie.api.v0.process.model.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;

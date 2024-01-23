@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.at.eda;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.*;
-import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.ConsumptionRecordProcessor;

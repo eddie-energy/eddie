@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.permission.request.state;
 
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;

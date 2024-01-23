@@ -1,12 +1,12 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
+import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.providers.agnostic.IdentifiableMeterReading;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisAcceptedState;
+import energy.eddie.regionconnector.fr.enedis.providers.agnostic.IdentifiableMeterReading;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import reactor.core.publisher.Sinks;
@@ -117,6 +117,4 @@ class PollingServiceTest {
         // Clean-Up
         pollingService.close();
     }
-
-
 }

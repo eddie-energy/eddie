@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda.web;
 
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestCreationService;

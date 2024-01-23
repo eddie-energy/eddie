@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequestState;
+import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.DataSourceInformation;
-import energy.eddie.api.v0.process.model.PermissionRequestState;
-import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 
 import java.time.ZonedDateTime;
 

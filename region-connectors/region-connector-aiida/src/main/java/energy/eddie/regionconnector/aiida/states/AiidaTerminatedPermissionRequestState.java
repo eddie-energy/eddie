@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.aiida.states;
 
-import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
-import energy.eddie.api.v0.process.model.states.TerminatedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.states.TerminatedPermissionRequestState;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 
 public class AiidaTerminatedPermissionRequestState

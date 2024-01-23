@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
-import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
-import energy.eddie.api.v0.process.model.states.UnableToSendPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.states.UnableToSendPermissionRequestState;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 
 /**

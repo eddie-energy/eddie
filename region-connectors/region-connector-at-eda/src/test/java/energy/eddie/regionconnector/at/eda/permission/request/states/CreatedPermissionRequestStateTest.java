@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
-import energy.eddie.api.v0.process.model.FutureStateException;
-import energy.eddie.api.v0.process.model.StateTransitionException;
-import energy.eddie.api.v0.process.model.validation.ValidationException;
+import energy.eddie.api.agnostic.process.model.FutureStateException;
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
+import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;

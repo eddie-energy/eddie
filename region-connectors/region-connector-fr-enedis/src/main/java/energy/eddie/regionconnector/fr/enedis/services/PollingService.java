@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
-import energy.eddie.api.v0.process.model.StateTransitionException;
-import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
+import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.agnostic.IdentifiableMeterReading;

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
-import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 
@@ -32,6 +32,7 @@ public record SimplePermissionRequest(String permissionId,
     public Optional<String> consentId() {
         return Optional.empty();
     }
+
     @Override
     public DataSourceInformation dataSourceInformation() {
         return new EdaDataSourceInformation(dsoId);

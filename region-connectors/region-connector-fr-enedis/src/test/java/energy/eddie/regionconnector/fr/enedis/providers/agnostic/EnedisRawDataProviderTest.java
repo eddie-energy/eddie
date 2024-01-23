@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.providers.agnostic;
 
-import energy.eddie.api.v0.process.model.PermissionRequestRepository;
-import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

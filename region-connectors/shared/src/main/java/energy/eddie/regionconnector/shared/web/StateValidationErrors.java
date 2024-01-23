@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.shared.web;
 
 import energy.eddie.api.agnostic.EddieApiError;
-import energy.eddie.api.v0.process.model.validation.AttributeError;
-import energy.eddie.api.v0.process.model.validation.ValidationException;
+import energy.eddie.api.agnostic.process.model.validation.AttributeError;
+import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 
 import java.util.List;
 

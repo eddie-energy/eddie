@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;

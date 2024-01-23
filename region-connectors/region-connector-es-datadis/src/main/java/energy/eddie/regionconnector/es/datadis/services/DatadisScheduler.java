@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
-import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.api.UnauthorizedException;

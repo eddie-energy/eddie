@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.shared.permission.requests.decorators;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
-import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.api.v0.process.model.PermissionRequestState;
 
 public final class SimplePermissionRequest implements PermissionRequest {
     private final String permissionId;

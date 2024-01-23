@@ -1,7 +1,7 @@
-package energy.eddie.api.v0.process.model.states;
+package energy.eddie.api.agnostic.process.model.states;
 
+import energy.eddie.api.agnostic.process.model.TerminalPermissionRequestState;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.process.model.TerminalPermissionRequestState;
 
 public interface TerminatedPermissionRequestState extends TerminalPermissionRequestState {
     @Override

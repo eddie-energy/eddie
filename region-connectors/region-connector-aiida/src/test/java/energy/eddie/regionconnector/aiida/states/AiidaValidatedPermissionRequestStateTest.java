@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.aiida.states;
 
+import energy.eddie.api.agnostic.process.model.FutureStateException;
+import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.process.model.FutureStateException;
-import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import org.junit.jupiter.api.Test;
 

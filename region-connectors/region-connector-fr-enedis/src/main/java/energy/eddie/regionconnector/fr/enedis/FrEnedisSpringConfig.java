@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.fr.enedis;
 
 import energy.eddie.api.agnostic.RegionConnector;
+import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.process.model.PermissionRequestRepository;
-import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.validated_historical_data.v0_82.CodingSchemeTypeList;

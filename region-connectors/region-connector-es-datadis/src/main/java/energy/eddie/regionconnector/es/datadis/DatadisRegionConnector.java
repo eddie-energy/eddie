@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.es.datadis;
 
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
-import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.slf4j.Logger;

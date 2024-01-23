@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.permission.request.validation;
 
-import energy.eddie.api.v0.process.model.validation.AttributeError;
-import energy.eddie.api.v0.process.model.validation.Validator;
+import energy.eddie.api.agnostic.process.model.validation.AttributeError;
+import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants;
 

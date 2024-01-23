@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.states;
 
+import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.SimplePermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import org.junit.jupiter.api.Test;

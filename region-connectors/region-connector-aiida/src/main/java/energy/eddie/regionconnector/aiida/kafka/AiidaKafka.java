@@ -2,9 +2,9 @@ package energy.eddie.regionconnector.aiida.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
 import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;

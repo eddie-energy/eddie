@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.shared.permission.requests.decorators;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.PermissionRequestState;
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.DataSourceInformation;
-import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.api.v0.process.model.PermissionRequestRepository;
-import energy.eddie.api.v0.process.model.PermissionRequestState;
-import energy.eddie.api.v0.process.model.StateTransitionException;
 
 /**
  * This class will save a permission request everytime a potential state change has happened.

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis;
 
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.*;
-import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
 import org.slf4j.Logger;

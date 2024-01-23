@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda.services;
 
 import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
-import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.processing.utils.XmlGregorianCalenderUtils;

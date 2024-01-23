@@ -1,7 +1,7 @@
-package energy.eddie.api.v0.process.model.validation;
+package energy.eddie.api.agnostic.process.model.validation;
 
-import energy.eddie.api.v0.process.model.PermissionRequestState;
-import energy.eddie.api.v0.process.model.StateTransitionException;
+import energy.eddie.api.agnostic.process.model.PermissionRequestState;
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
 
 import java.util.List;
 import java.util.stream.Collectors;

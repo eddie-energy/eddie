@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.es.datadis.providers.agnostic;
 
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
-import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import reactor.adapter.JdkFlowAdapter;

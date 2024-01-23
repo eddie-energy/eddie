@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.shared.permission.requests.extensions;
 
-import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.api.v0.process.model.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.regionconnector.shared.permission.requests.decorators.SimplePermissionRequest;
 import org.junit.jupiter.api.Test;
 

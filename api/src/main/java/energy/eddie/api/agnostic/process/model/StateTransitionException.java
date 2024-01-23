@@ -1,4 +1,4 @@
-package energy.eddie.api.v0.process.model;
+package energy.eddie.api.agnostic.process.model;
 
 public abstract class StateTransitionException extends Exception {
     protected final Class<? extends PermissionRequestState> permissionRequestStateClass;

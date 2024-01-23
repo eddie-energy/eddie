@@ -2,8 +2,8 @@ package energy.eddie.regionconnector.es.datadis.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.process.model.PermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisDataSourceInformation;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.AcceptedState;
@@ -36,24 +36,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = {PermissionController.class})
 class PermissionControllerTest {
+    private final ObjectMapper mapper = new ObjectMapper();
     @Autowired
     private MockMvc mockMvc;
     @MockBean
     private PermissionRequestService mockService;
-    private final ObjectMapper mapper = new ObjectMapper();
-
-    /**
-     * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
-     * whole core is started. To be able to properly test the controller's error responses, manually add the advice
-     * to this test class.
-     */
-    @TestConfiguration
-    static class ControllerTestConfiguration {
-        @Bean
-        public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
-            return new RegionConnectorsCommonControllerAdvice();
-        }
-    }
 
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {
@@ -281,5 +268,18 @@ class PermissionControllerTest {
 
         assertEquals("/permission-status/MyTestId", response.getHeader("Location"));
         verify(mockService).createAndSendPermissionRequest(any());
+    }
+
+    /**
+     * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
+     * whole core is started. To be able to properly test the controller's error responses, manually add the advice
+     * to this test class.
+     */
+    @TestConfiguration
+    static class ControllerTestConfiguration {
+        @Bean
+        public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
+            return new RegionConnectorsCommonControllerAdvice();
+        }
     }
 }

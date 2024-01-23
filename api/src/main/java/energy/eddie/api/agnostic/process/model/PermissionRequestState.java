@@ -1,4 +1,4 @@
-package energy.eddie.api.v0.process.model;
+package energy.eddie.api.agnostic.process.model;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 
