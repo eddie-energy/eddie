@@ -21,21 +21,23 @@ public class ShowConnectionHandler implements JavalinHandler {
     @Override
     public void register(Javalin app) {
         final var selectConsumptionPointsSql = """
-                select METERING_POINT,
-                       DATEADD(SECOND, ORD*crs.METERING_INTERVAL_SECS, START_DATE_TIME)     AS START,
-                       DATEADD(SECOND, (ORD+1)*crs.METERING_INTERVAL_SECS, START_DATE_TIME) AS END_,
+                                SELECT metering_point,
+                       (start_date_time + (ord * INTERVAL '1 second' * CRS.METERING_INTERVAL_SECS))       AS start,
+                       (start_date_time + ((ord + 1) * INTERVAL '1 second' * CRS.METERING_INTERVAL_SECS)) AS END_,
                        ORD,
                        CONSUMPTION,
                        METERING_TYPE
-                from CONSUMPTION_RECORDS as crs
-                         left join CONSUMPTION_POINTS dps on crs.ID = dps.CONSUMPTION_RECORD_ID
-                where CONNECTION_ID = ? and CONSUMPTION is not null
-                order by START_DATE_TIME, ORD
+                FROM CONSUMPTION_RECORDS AS CRS
+                         LEFT JOIN CONSUMPTION_POINTS DPS
+                                   ON CRS.ID = DPS.CONSUMPTION_RECORD_ID
+                WHERE CONNECTION_ID = ?
+                  AND CONSUMPTION IS NOT NULL
+                ORDER BY START_DATE_TIME, ORD
                 """;
         app.get("/connections/{connectionId}", ctx -> {
             var connectionId = ctx.pathParam("connectionId");
             var consumptionRecordSummaries = jdbi.withHandle(h ->
-                    h.createQuery("select START_DATE_TIME || '##' || METERING_INTERVAL_SECS from CONSUMPTION_RECORDS where CONNECTION_ID=?")
+                    h.createQuery("SELECT start_date_time || '##' || metering_interval_secs FROM consumption_records WHERE connection_id=?")
                             .bind(0, connectionId)
                             .mapTo(String.class)
                             .list());
