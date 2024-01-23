@@ -7,21 +7,21 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class AiidaTimeLimitPermissionRequestStateTest {
+class AiidaFulfilledPermissionRequestStateTest {
     @Test
     void status_returnsTimeLimit() {
         // Given
-        AiidaTimeLimitPermissionRequestState state = new AiidaTimeLimitPermissionRequestState(null);
+        AiidaFulfilledPermissionRequestState state = new AiidaFulfilledPermissionRequestState(null);
 
         // When
         // Then
-        assertEquals(PermissionProcessStatus.TIME_LIMIT, state.status());
+        assertEquals(PermissionProcessStatus.FULFILLED, state.status());
     }
 
     @Test
     void validate_throws() {
         // Given
-        AiidaTimeLimitPermissionRequestState state = new AiidaTimeLimitPermissionRequestState(null);
+        AiidaFulfilledPermissionRequestState state = new AiidaFulfilledPermissionRequestState(null);
 
         // When
         // Then
@@ -31,7 +31,7 @@ class AiidaTimeLimitPermissionRequestStateTest {
     @Test
     void sendToPermissionAdministrator_throws() {
         // Given
-        AiidaTimeLimitPermissionRequestState state = new AiidaTimeLimitPermissionRequestState(null);
+        AiidaFulfilledPermissionRequestState state = new AiidaFulfilledPermissionRequestState(null);
 
         // When
         // Then
@@ -41,7 +41,7 @@ class AiidaTimeLimitPermissionRequestStateTest {
     @Test
     void receivedPermissionAdministratorResponse_throws() {
         // Given
-        AiidaTimeLimitPermissionRequestState state = new AiidaTimeLimitPermissionRequestState(null);
+        AiidaFulfilledPermissionRequestState state = new AiidaFulfilledPermissionRequestState(null);
 
         // When
         // Then
@@ -51,7 +51,7 @@ class AiidaTimeLimitPermissionRequestStateTest {
     @Test
     void accept_throws() {
         // Given
-        AiidaTimeLimitPermissionRequestState state = new AiidaTimeLimitPermissionRequestState(null);
+        AiidaFulfilledPermissionRequestState state = new AiidaFulfilledPermissionRequestState(null);
 
         // When
         // Then
@@ -61,7 +61,7 @@ class AiidaTimeLimitPermissionRequestStateTest {
     @Test
     void invalid_throws() {
         // Given
-        AiidaTimeLimitPermissionRequestState state = new AiidaTimeLimitPermissionRequestState(null);
+        AiidaFulfilledPermissionRequestState state = new AiidaFulfilledPermissionRequestState(null);
 
         // When
         // Then
@@ -71,7 +71,7 @@ class AiidaTimeLimitPermissionRequestStateTest {
     @Test
     void reject_throws() {
         // Given
-        AiidaTimeLimitPermissionRequestState state = new AiidaTimeLimitPermissionRequestState(null);
+        AiidaFulfilledPermissionRequestState state = new AiidaFulfilledPermissionRequestState(null);
 
         // When
         // Then
@@ -81,7 +81,7 @@ class AiidaTimeLimitPermissionRequestStateTest {
     @Test
     void terminate_throws() {
         // Given
-        AiidaTimeLimitPermissionRequestState state = new AiidaTimeLimitPermissionRequestState(null);
+        AiidaFulfilledPermissionRequestState state = new AiidaFulfilledPermissionRequestState(null);
 
         // When
         // Then
@@ -91,7 +91,7 @@ class AiidaTimeLimitPermissionRequestStateTest {
     @Test
     void revoke_throws() {
         // Given
-        AiidaTimeLimitPermissionRequestState state = new AiidaTimeLimitPermissionRequestState(null);
+        AiidaFulfilledPermissionRequestState state = new AiidaFulfilledPermissionRequestState(null);
 
         // When
         // Then
@@ -101,17 +101,17 @@ class AiidaTimeLimitPermissionRequestStateTest {
     @Test
     void timeLimit_throws() {
         // Given
-        AiidaTimeLimitPermissionRequestState state = new AiidaTimeLimitPermissionRequestState(null);
+        AiidaFulfilledPermissionRequestState state = new AiidaFulfilledPermissionRequestState(null);
 
         // When
         // Then
-        assertThrows(PastStateException.class, state::timeLimit);
+        assertThrows(PastStateException.class, state::fulfill);
     }
 
     @Test
     void timeOut_throws() {
         // Given
-        AiidaTimeLimitPermissionRequestState state = new AiidaTimeLimitPermissionRequestState(null);
+        AiidaFulfilledPermissionRequestState state = new AiidaFulfilledPermissionRequestState(null);
 
         // When
         // Then

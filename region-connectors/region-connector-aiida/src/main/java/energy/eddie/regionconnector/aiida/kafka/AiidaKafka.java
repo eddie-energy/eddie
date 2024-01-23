@@ -76,7 +76,7 @@ public class AiidaKafka {
                 case ACCEPTED -> request.accept();
                 case TERMINATED -> request.terminate();
                 case REVOKED -> request.revoke();
-                case TIME_LIMIT -> request.timeLimit();
+                case FULFILLED -> request.fulfill();
                 default -> {
                     if (LOGGER.isErrorEnabled())
                         LOGGER.error("Got status message for permission {} and new status {}, but no handling for the new state is implemented",

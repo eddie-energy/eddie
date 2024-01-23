@@ -1,13 +1,13 @@
 package energy.eddie.regionconnector.aiida.states;
 
 import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
-import energy.eddie.api.v0.process.model.states.TimeLimitPermissionRequestState;
+import energy.eddie.api.v0.process.model.states.FulfilledPermissionRequestState;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 
-public class AiidaTimeLimitPermissionRequestState
+public class AiidaFulfilledPermissionRequestState
         extends ContextualizedPermissionRequestState<AiidaPermissionRequest>
-        implements TimeLimitPermissionRequestState {
-    protected AiidaTimeLimitPermissionRequestState(AiidaPermissionRequest permissionRequest) {
+        implements FulfilledPermissionRequestState {
+    protected AiidaFulfilledPermissionRequestState(AiidaPermissionRequest permissionRequest) {
         super(permissionRequest);
     }
 }

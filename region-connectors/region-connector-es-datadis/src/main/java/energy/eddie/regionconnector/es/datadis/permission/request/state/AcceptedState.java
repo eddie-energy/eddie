@@ -27,7 +27,7 @@ public class AcceptedState
     }
 
     @Override
-    public void timeLimit() {
+    public void fulfill() {
         throw new IllegalStateException("Not implemented yet");
     }
 }

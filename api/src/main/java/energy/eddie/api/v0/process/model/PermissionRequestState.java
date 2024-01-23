@@ -32,7 +32,7 @@ public interface PermissionRequestState {
 
     void revoke() throws StateTransitionException;
 
-    void timeLimit() throws StateTransitionException;
+    void fulfill() throws StateTransitionException;
 
     void timeOut() throws StateTransitionException;
 }

@@ -128,7 +128,7 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
 
         // When
         // Then
-        assertThrows(FutureStateException.class, state::timeLimit);
+        assertThrows(FutureStateException.class, state::fulfill);
     }
 
     @Test

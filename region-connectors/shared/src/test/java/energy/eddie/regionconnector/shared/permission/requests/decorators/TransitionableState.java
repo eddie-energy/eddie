@@ -56,7 +56,6 @@ public class TransitionableState implements PermissionRequestState {
     @Override
     public void terminate() {
         transition();
-
     }
 
     @Override
@@ -65,7 +64,7 @@ public class TransitionableState implements PermissionRequestState {
     }
 
     @Override
-    public void timeLimit() {
+    public void fulfill() {
 
     }
 

@@ -89,8 +89,8 @@ public interface PermissionRequest {
         state().revoke();
     }
 
-    default void timeLimit() throws StateTransitionException {
-        state().timeLimit();
+    default void fulfill() throws StateTransitionException {
+        state().fulfill();
     }
 
     default void timeOut() throws StateTransitionException {

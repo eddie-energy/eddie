@@ -3,9 +3,9 @@ package energy.eddie.api.v0.process.model.states;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.process.model.TerminalPermissionRequestState;
 
-public interface TimeLimitPermissionRequestState extends TerminalPermissionRequestState {
+public interface FulfilledPermissionRequestState extends TerminalPermissionRequestState {
     @Override
     default PermissionProcessStatus status() {
-        return PermissionProcessStatus.TIME_LIMIT;
+        return PermissionProcessStatus.FULFILLED;
     }
 }

@@ -71,7 +71,7 @@ class AiidaKafkaTest {
     @ParameterizedTest
     @EnumSource(
             value = PermissionProcessStatus.class,
-            names = {"REVOKED", "TIME_LIMIT", "TERMINATED"},
+            names = {"REVOKED", "FULFILLED", "TERMINATED"},
             mode = EnumSource.Mode.INCLUDE)
     void givenRevokedMessage_listenForConnectionStatusMessages_callsRevoke(PermissionProcessStatus status) throws Exception {
         var request = spy(createTestRequest());
@@ -92,7 +92,7 @@ class AiidaKafkaTest {
 
         switch (status) {
             case REVOKED -> verify(request).revoke();
-            case TIME_LIMIT -> verify(request).timeLimit();
+            case FULFILLED -> verify(request).fulfill();
             case TERMINATED -> verify(request).terminate();
         }
     }

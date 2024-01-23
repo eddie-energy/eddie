@@ -42,7 +42,7 @@ public interface ValidatedPermissionRequestState extends PermissionRequestState 
     }
 
     @Override
-    default void timeLimit() throws FutureStateException {
+    default void fulfill() throws FutureStateException {
         throw new FutureStateException(this);
     }
 

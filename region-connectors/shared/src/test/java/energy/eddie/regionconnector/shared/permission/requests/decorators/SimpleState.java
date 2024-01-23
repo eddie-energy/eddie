@@ -59,7 +59,7 @@ public class SimpleState implements PermissionRequestState {
     }
 
     @Override
-    public void timeLimit() {
+    public void fulfill() {
 
     }
 

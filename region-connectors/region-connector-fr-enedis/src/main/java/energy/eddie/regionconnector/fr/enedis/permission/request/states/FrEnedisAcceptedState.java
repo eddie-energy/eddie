@@ -25,7 +25,7 @@ public class FrEnedisAcceptedState
     }
 
     @Override
-    public void timeLimit() {
+    public void fulfill() {
         throw new UnsupportedOperationException(NOT_IMPLEMENTED_YET);
     }
 }

@@ -56,10 +56,10 @@ class AiidaAcceptedPermissionRequestStateTest {
         AiidaAcceptedPermissionRequestState state = new AiidaAcceptedPermissionRequestState(request);
 
         // When
-        assertDoesNotThrow(state::timeLimit);
+        assertDoesNotThrow(state::fulfill);
 
         // Then
-        assertEquals(AiidaTimeLimitPermissionRequestState.class, request.state().getClass());
+        assertEquals(AiidaFulfilledPermissionRequestState.class, request.state().getClass());
     }
 
     @Test

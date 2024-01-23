@@ -46,7 +46,7 @@ public interface UnableToSendPermissionRequestState extends PermissionRequestSta
     }
 
     @Override
-    default void timeLimit() throws PastStateException {
+    default void fulfill() throws PastStateException {
         throw new PastStateException(this);
     }
 

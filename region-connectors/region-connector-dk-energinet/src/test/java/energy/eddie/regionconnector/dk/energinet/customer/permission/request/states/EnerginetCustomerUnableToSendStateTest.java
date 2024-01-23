@@ -122,7 +122,7 @@ class EnerginetCustomerUnableToSendStateTest {
 
         // When
         // Then
-        assertThrows(PastStateException.class, state::timeLimit);
+        assertThrows(PastStateException.class, state::fulfill);
     }
 
     @Test

@@ -22,7 +22,7 @@ public class AiidaAcceptedPermissionRequestState
     }
 
     @Override
-    public void timeLimit() {
-        permissionRequest.changeState(new AiidaTimeLimitPermissionRequestState(permissionRequest));
+    public void fulfill() {
+        permissionRequest.changeState(new AiidaFulfilledPermissionRequestState(permissionRequest));
     }
 }

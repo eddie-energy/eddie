@@ -21,7 +21,7 @@ public class EnerginetCustomerAcceptedState extends ContextualizedPermissionRequ
     }
 
     @Override
-    public void timeLimit() {
+    public void fulfill() {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }

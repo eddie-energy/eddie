@@ -60,7 +60,7 @@ class EnerginetCustomerAcceptedStateTest {
 
         // When
         // Then
-        assertThrows(UnsupportedOperationException.class, state::timeLimit);
+        assertThrows(UnsupportedOperationException.class, state::fulfill);
     }
 
     @Test

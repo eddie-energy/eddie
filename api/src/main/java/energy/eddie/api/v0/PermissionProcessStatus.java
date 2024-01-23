@@ -67,9 +67,7 @@ public enum PermissionProcessStatus {
      */
     TERMINATED,
     /**
-     * The permission request ran out of time.
-     * The expiration of the permission was reached.
+     * The permission request has been fulfilled, i.e. all data has been delivered.
      */
-    TIME_LIMIT,
-
+    FULFILLED,
 }

@@ -47,7 +47,7 @@ public interface PendingAcknowledgmentPermissionRequestState extends PermissionR
     }
 
     @Override
-    default void timeLimit() throws FutureStateException {
+    default void fulfill() throws FutureStateException {
         throw new FutureStateException(this);
     }
 
