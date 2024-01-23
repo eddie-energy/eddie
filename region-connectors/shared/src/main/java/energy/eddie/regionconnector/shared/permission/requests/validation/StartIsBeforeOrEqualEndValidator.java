@@ -1,15 +1,15 @@
 package energy.eddie.regionconnector.shared.permission.requests.validation;
 
-import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
-import energy.eddie.api.v0.process.model.validation.AttributeError;
-import energy.eddie.api.v0.process.model.validation.Validator;
+import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.validation.AttributeError;
+import energy.eddie.api.agnostic.process.model.validation.Validator;
 
 import java.util.Collections;
 import java.util.List;
 
 
 /**
- * A Validator that checks if the {@code start} time of the {@link energy.eddie.api.v0.process.model.TimeframedPermissionRequest}
+ * A Validator that checks if the {@code start} time of the {@link TimeframedPermissionRequest}
  * is before or equal to the {@code end} time.
  * Assumes non-null values.
  */

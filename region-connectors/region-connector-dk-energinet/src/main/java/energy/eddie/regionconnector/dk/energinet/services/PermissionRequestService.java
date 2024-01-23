@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.SendToPermissionAdministratorException;
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
+import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.api.v0.process.model.SendToPermissionAdministratorException;
-import energy.eddie.api.v0.process.model.StateTransitionException;
-import energy.eddie.api.v0.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPoints;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;

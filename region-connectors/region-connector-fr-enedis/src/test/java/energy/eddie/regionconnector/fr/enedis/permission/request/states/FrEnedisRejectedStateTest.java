@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.states;
 
-import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.SimplePermissionRequest;
 import org.junit.jupiter.api.Test;
 

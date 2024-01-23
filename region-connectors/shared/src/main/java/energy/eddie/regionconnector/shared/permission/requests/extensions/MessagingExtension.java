@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.shared.permission.requests.extensions;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.process.model.PermissionRequest;
 import reactor.core.publisher.Sinks;
 
 public class MessagingExtension<T extends PermissionRequest> implements Extension<T> {

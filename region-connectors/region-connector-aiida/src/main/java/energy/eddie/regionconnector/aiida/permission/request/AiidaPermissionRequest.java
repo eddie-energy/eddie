@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.aiida.permission.request;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
-import energy.eddie.api.v0.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
 import energy.eddie.regionconnector.aiida.states.AiidaCreatedPermissionRequestState;
 

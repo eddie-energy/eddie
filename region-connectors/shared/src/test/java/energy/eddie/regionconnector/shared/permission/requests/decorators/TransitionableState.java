@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.shared.permission.requests.decorators;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.process.model.PermissionRequestState;
 
 public class TransitionableState implements PermissionRequestState {
     private final PermissionProcessStatus initialStatus;
@@ -56,7 +56,6 @@ public class TransitionableState implements PermissionRequestState {
     @Override
     public void terminate() {
         transition();
-
     }
 
     @Override
@@ -65,7 +64,7 @@ public class TransitionableState implements PermissionRequestState {
     }
 
     @Override
-    public void timeLimit() {
+    public void fulfill() {
 
     }
 

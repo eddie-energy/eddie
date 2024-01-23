@@ -1,11 +1,11 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.states;
 
-import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
-import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
-import energy.eddie.api.v0.process.model.states.CreatedPermissionRequestState;
-import energy.eddie.api.v0.process.model.validation.AttributeError;
-import energy.eddie.api.v0.process.model.validation.ValidationException;
-import energy.eddie.api.v0.process.model.validation.Validator;
+import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.states.CreatedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.validation.AttributeError;
+import energy.eddie.api.agnostic.process.model.validation.ValidationException;
+import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.regionconnector.fr.enedis.permission.request.validation.NotFurtherThanValidator;
 import energy.eddie.regionconnector.shared.permission.requests.validation.StartIsBeforeOrEqualEndValidator;
 

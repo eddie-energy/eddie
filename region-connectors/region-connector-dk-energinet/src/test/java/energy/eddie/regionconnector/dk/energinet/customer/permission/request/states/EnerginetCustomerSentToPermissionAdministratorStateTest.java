@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.states;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.process.model.FutureStateException;
+import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.process.model.FutureStateException;
-import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
@@ -169,6 +169,6 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
 
         // When
         // Then
-        assertThrows(FutureStateException.class, state::timeLimit);
+        assertThrows(FutureStateException.class, state::fulfill);
     }
 }

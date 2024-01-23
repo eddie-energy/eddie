@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.states;
 
-import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
-import energy.eddie.api.v0.process.model.SendToPermissionAdministratorException;
-import energy.eddie.api.v0.process.model.states.ValidatedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.SendToPermissionAdministratorException;
+import energy.eddie.api.agnostic.process.model.states.ValidatedPermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;

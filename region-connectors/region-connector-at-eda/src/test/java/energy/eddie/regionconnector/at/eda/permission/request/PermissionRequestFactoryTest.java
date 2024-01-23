@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda.permission.request;
 
-import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.states;
 
-import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
-import energy.eddie.api.v0.process.model.states.AcceptedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.states.AcceptedPermissionRequestState;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 
 public class EnerginetCustomerAcceptedState extends ContextualizedPermissionRequestState<DkEnerginetCustomerPermissionRequest>
@@ -21,7 +21,7 @@ public class EnerginetCustomerAcceptedState extends ContextualizedPermissionRequ
     }
 
     @Override
-    public void timeLimit() {
+    public void fulfill() {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }

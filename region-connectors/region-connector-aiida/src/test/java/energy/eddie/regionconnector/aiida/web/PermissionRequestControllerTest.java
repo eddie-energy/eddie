@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.aiida.web;
 
-import energy.eddie.api.v0.process.model.PastStateException;
-import energy.eddie.api.v0.process.model.PermissionRequestState;
+import energy.eddie.api.agnostic.process.model.PastStateException;
+import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestRepository;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;

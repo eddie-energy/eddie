@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
-import energy.eddie.api.v0.process.model.PermissionRequestState;
+import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisMalformedState;
 import org.junit.jupiter.api.Test;
 

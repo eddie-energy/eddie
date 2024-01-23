@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.aiida.states;
 
+import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.process.model.PastStateException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -105,7 +105,7 @@ class AiidaInvalidPermissionRequestStateTest {
 
         // When
         // Then
-        assertThrows(PastStateException.class, state::timeLimit);
+        assertThrows(PastStateException.class, state::fulfill);
     }
 
     @Test

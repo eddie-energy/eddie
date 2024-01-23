@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.shared.permission.requests.extensions;
 
-import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 
 import java.util.function.Consumer;
 

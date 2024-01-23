@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.validation;
 
-import energy.eddie.api.v0.process.model.validation.AttributeError;
-import energy.eddie.api.v0.process.model.validation.Validator;
+import energy.eddie.api.agnostic.process.model.validation.AttributeError;
+import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.api.DkEnerginetCustomerPermissionRequest;
 

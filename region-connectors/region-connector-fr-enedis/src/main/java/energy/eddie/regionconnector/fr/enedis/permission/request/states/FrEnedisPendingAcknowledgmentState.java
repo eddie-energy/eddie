@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.states;
 
-import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
-import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
-import energy.eddie.api.v0.process.model.states.PendingAcknowledgmentPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.states.PendingAcknowledgmentPermissionRequestState;
 
 public class FrEnedisPendingAcknowledgmentState extends ContextualizedPermissionRequestState<TimeframedPermissionRequest> implements PendingAcknowledgmentPermissionRequestState {
     public FrEnedisPendingAcknowledgmentState(TimeframedPermissionRequest permissionRequest) {

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
-import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
-import energy.eddie.api.v0.process.model.states.AcceptedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.states.AcceptedPermissionRequestState;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 
 public class AtAcceptedPermissionRequestState
@@ -23,8 +23,7 @@ public class AtAcceptedPermissionRequestState
     }
 
     @Override
-    public void timeLimit() {
+    public void fulfill() {
         throw new IllegalStateException("Not implemented yet");
     }
-
 }

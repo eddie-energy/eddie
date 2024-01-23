@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.utils;
 
-import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;

@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.dk.energinet.customer.permission.request.states;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.process.model.PastStateException;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
@@ -60,7 +60,7 @@ class EnerginetCustomerAcceptedStateTest {
 
         // When
         // Then
-        assertThrows(UnsupportedOperationException.class, state::timeLimit);
+        assertThrows(UnsupportedOperationException.class, state::fulfill);
     }
 
     @Test

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.aiida.states;
 
-import energy.eddie.api.v0.process.model.ContextualizedPermissionRequestState;
-import energy.eddie.api.v0.process.model.states.AcceptedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.states.AcceptedPermissionRequestState;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 
 public class AiidaAcceptedPermissionRequestState
@@ -22,7 +22,7 @@ public class AiidaAcceptedPermissionRequestState
     }
 
     @Override
-    public void timeLimit() {
-        permissionRequest.changeState(new AiidaTimeLimitPermissionRequestState(permissionRequest));
+    public void fulfill() {
+        permissionRequest.changeState(new AiidaFulfilledPermissionRequestState(permissionRequest));
     }
 }

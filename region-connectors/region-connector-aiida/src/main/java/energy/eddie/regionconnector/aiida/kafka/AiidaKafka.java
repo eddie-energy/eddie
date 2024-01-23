@@ -2,9 +2,9 @@ package energy.eddie.regionconnector.aiida.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.process.model.PermissionRequest;
-import energy.eddie.api.v0.process.model.StateTransitionException;
 import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
 import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
@@ -76,7 +76,7 @@ public class AiidaKafka {
                 case ACCEPTED -> request.accept();
                 case TERMINATED -> request.terminate();
                 case REVOKED -> request.revoke();
-                case TIME_LIMIT -> request.timeLimit();
+                case FULFILLED -> request.fulfill();
                 default -> {
                     if (LOGGER.isErrorEnabled())
                         LOGGER.error("Got status message for permission {} and new status {}, but no handling for the new state is implemented",

@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.aiida.permission.request.api;
 
-import energy.eddie.api.v0.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 
 import java.time.Instant;
 
