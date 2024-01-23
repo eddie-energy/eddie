@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.aiida.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.api.agnostic.ConnectionStatusMessageMixin;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
