@@ -60,15 +60,15 @@ class PermissionRequestFormBase extends LitElement {
     extraFunctionality = []
   ) {
     const alert = html`<sl-alert
-      variant="${variant}"
-      duration="${duration}"
-      closable
-      open
-    >
-      <sl-icon name="${iconString}" slot="icon"></sl-icon>
-      <p><strong>${title}</strong><br />${message}</p>
-      ${extraFunctionality.map((element) => element)}
-    </sl-alert>`;
+        variant="${variant}"
+        duration="${duration}"
+        closable
+        open
+      >
+        <sl-icon name="${iconString}" slot="icon"></sl-icon>
+        <p><strong>${title}</strong><br />${message}</p>
+        ${extraFunctionality.map((element) => element)} </sl-alert
+      ><br />`;
     this.alerts.push(alert);
     this.requestUpdate();
   }

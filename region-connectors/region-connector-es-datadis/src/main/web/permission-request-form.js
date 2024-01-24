@@ -188,10 +188,10 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     // Finished long poll
     switch (currentStatus) {
       case "SENT_TO_PERMISSION_ADMINISTRATOR":
-        this._isSubmitDisabled = true;
+        this._isSubmitHidden = true;
         break;
       case "RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE":
-        this._isSubmitDisabled = true;
+        this._isSubmitHidden = true;
         break;
       case "ACCEPTED":
         message = "Your permission request was accepted.";
