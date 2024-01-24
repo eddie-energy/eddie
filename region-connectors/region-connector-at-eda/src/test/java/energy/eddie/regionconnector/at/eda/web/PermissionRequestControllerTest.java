@@ -2,12 +2,10 @@ package energy.eddie.regionconnector.at.eda.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
-import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtAcceptedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestCreationService;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
@@ -20,17 +18,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice.ERRORS_JSON_PATH;
@@ -50,23 +46,6 @@ class PermissionRequestControllerTest {
     private PermissionRequestService permissionRequestService;
     @MockBean
     private PermissionRequestCreationService permissionRequestCreationService;
-    @MockBean
-    private ServletWebServerApplicationContext unusedServerApplicationContext;
-    @MockBean
-    private Supplier<Integer> unusedPortSupplier;
-
-    /**
-     * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
-     * whole core is started. To be able to properly test the controller's error responses, manually add the advice
-     * to this test class.
-     */
-    @TestConfiguration
-    static class ControllerTestConfiguration {
-        @Bean
-        public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
-            return new RegionConnectorsCommonControllerAdvice();
-        }
-    }
 
     private static Stream<Arguments> permissionRequestArguments() {
         return Stream.of(
@@ -188,17 +167,23 @@ class PermissionRequestControllerTest {
         CreatedPermissionRequest expected = new CreatedPermissionRequest("pid", "cmRequestId");
         when(permissionRequestCreationService.createAndSendPermissionRequest(any()))
                 .thenReturn(expected);
-        ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
-        ZonedDateTime start = end.minusDays(1);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "0".repeat(33), "dnid", "0".repeat(8), start, end, Granularity.PT15M);
+        var end = LocalDate.now(ZoneOffset.UTC).minusDays(1);
+        var start = end.minusDays(1);
 
-        String content = objectMapper.writeValueAsString(permissionRequestForCreation);
+        ObjectNode jsonNode = objectMapper.createObjectNode()
+                .put("connectionId", "cid")
+                .put("meteringPointId", "0".repeat(33))
+                .put("dataNeedId", "dnid")
+                .put("dsoId", "0".repeat(8))
+                .put("start", start.toString())
+                .put("end", end.toString())
+                .put("granularity", "PT15M");
 
         // When
         mockMvc.perform(
                         MockMvcRequestBuilders.post("/permission-request")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(content)
+                                .content(jsonNode.toString())
                 )
                 // Then
                 .andExpect(status().isCreated())
@@ -211,15 +196,22 @@ class PermissionRequestControllerTest {
         CreatedPermissionRequest expected = new CreatedPermissionRequest("pid", "cmRequestId");
         when(permissionRequestCreationService.createAndSendPermissionRequest(any()))
                 .thenReturn(expected);
-        ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
-        ZonedDateTime start = end.minusDays(1);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "0".repeat(33), "dnid", "0".repeat(8), start, end, Granularity.P1M);
-        String content = objectMapper.writeValueAsString(permissionRequestForCreation);
+        var end = LocalDate.now(ZoneOffset.UTC).minusDays(1);
+        var start = end.minusDays(1);
+
+        ObjectNode jsonNode = objectMapper.createObjectNode()
+                .put("connectionId", "cid")
+                .put("meteringPointId", "0".repeat(33))
+                .put("dataNeedId", "dnid")
+                .put("dsoId", "0".repeat(8))
+                .put("start", start.toString())
+                .put("end", end.toString())
+                .put("granularity", "P1M");
         // When
         mockMvc.perform(
                         MockMvcRequestBuilders.post("/permission-request")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(content)
+                                .content(jsonNode.toString())
                 )
                 // Then
                 .andExpect(status().isBadRequest())
@@ -230,15 +222,22 @@ class PermissionRequestControllerTest {
     @Test
     void createPermissionRequest_201WhenEndDateNull() throws Exception {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "0".repeat(33), "dnid", "0".repeat(8), start, null, Granularity.PT15M);
-        String content = objectMapper.writeValueAsString(permissionRequestForCreation);
+        var start = LocalDate.now(ZoneOffset.UTC).minusDays(1);
+
+        ObjectNode jsonNode = objectMapper.createObjectNode()
+                .put("connectionId", "cid")
+                .put("meteringPointId", "0".repeat(33))
+                .put("dataNeedId", "dnid")
+                .put("dsoId", "0".repeat(8))
+                .put("start", start.toString())
+                .putNull("end")
+                .put("granularity", "PT15M");
 
         // When
         mockMvc.perform(
                         MockMvcRequestBuilders.post("/permission-request")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(content)
+                                .content(jsonNode.toString())
                 )
                 // Then
                 .andExpect(status().isCreated());
@@ -248,20 +247,40 @@ class PermissionRequestControllerTest {
     @MethodSource("permissionRequestArguments")
     void createPermissionRequest_400WhenMissingStringParameters(String connectionId, String meteringPoint, String dataNeedsId, String dsoId, String errorFieldName) throws Exception {
         // Given
-        ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
-        ZonedDateTime start = end.minusDays(1);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(connectionId, meteringPoint, dataNeedsId, dsoId, start, end, Granularity.PT15M);
-        String content = objectMapper.writeValueAsString(permissionRequestForCreation);
+        var end = LocalDate.now(ZoneOffset.UTC).minusDays(1);
+        var start = end.minusDays(1);
+
+        ObjectNode jsonNode = objectMapper.createObjectNode()
+                .put("connectionId", connectionId)
+                .put("meteringPointId", meteringPoint)
+                .put("dataNeedId", dataNeedsId)
+                .put("dsoId", dsoId)
+                .put("start", start.toString())
+                .put("end", end.toString())
+                .put("granularity", "PT15M");
 
         // When
         mockMvc.perform(
                         MockMvcRequestBuilders.post("/permission-request")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(content)
+                                .content(jsonNode.toString())
                 )
                 // Then
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
                 .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", startsWith(errorFieldName)));
+    }
+
+    /**
+     * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
+     * whole core is started. To be able to properly test the controller's error responses, manually add the advice
+     * to this test class.
+     */
+    @TestConfiguration
+    static class ControllerTestConfiguration {
+        @Bean
+        public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
+            return new RegionConnectorsCommonControllerAdvice();
+        }
     }
 }

@@ -13,15 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
-import java.beans.PropertyEditorSupport;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-
-import static energy.eddie.regionconnector.at.eda.utils.DateTimeConstants.AT_ZONE_ID;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 
@@ -34,20 +27,6 @@ public class PermissionRequestController {
     public PermissionRequestController(PermissionRequestService permissionRequestService, PermissionRequestCreationService creationService) {
         this.permissionRequestService = permissionRequestService;
         this.creationService = creationService;
-    }
-
-    /**
-     * Registers custom deserializers for {@link PermissionRequestForCreation} fields.
-     */
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        binder.registerCustomEditor(ZonedDateTime.class, new PropertyEditorSupport() {
-            @Override
-            public void setAsText(String text) throws IllegalArgumentException {
-                ZonedDateTime zonedDateTime = LocalDate.parse(text, DateTimeFormatter.ISO_DATE).atStartOfDay(AT_ZONE_ID);
-                setValue(zonedDateTime);
-            }
-        });
     }
 
     @GetMapping(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
