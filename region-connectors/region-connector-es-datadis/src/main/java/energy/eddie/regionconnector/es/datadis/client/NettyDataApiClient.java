@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
-import energy.eddie.regionconnector.es.datadis.api.UnauthorizedException;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
@@ -27,9 +26,7 @@ import static java.util.Objects.requireNonNull;
 public class NettyDataApiClient implements DataApi {
 
     private final HttpClient httpClient;
-
     private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
-
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM");
     private final DatadisTokenProvider tokenProvider;
     private final DatadisEndpoints endpoints;
@@ -57,19 +54,14 @@ public class NettyDataApiClient implements DataApi {
         } catch (URISyntaxException e) {
             return Mono.error(e);
         }
-
         return tokenProvider.getToken().flatMap(token -> httpClient
                 .headers(headers -> headers.add(HttpHeaderNames.AUTHORIZATION, "Bearer " + token))
                 .get()
                 .uri(uri.toString())
                 .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono.asString().flatMap(bodyString -> {
-                    if (httpClientResponse.status().code() == HttpResponseStatus.UNAUTHORIZED.code()) {
-                        return Mono.error(new UnauthorizedException("Failed to fetch supplies - " + bodyString));
-                    }
                     if (httpClientResponse.status().code() != HttpResponseStatus.OK.code()) {
-                        return Mono.error(new DatadisApiException("Failed to fetch supplies - " + bodyString));
+                        return Mono.error(new DatadisApiException("Failed to fetch supplies", httpClientResponse.status(), bodyString));
                     }
-
                     try {
                         List<Supply> supplies = mapper.readValue(bodyString, new TypeReference<>() {
                         });
@@ -104,7 +96,7 @@ public class NettyDataApiClient implements DataApi {
                 .uri(uri)
                 .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono.asString().flatMap(body -> {
                     if (httpClientResponse.status().code() != HttpResponseStatus.OK.code()) {
-                        return Mono.error(new DatadisApiException("Failed to fetch consumption - " + body));
+                        return Mono.error(new DatadisApiException("Failed to fetch consumptionKwh", httpClientResponse.status(), body));
                     }
 
                     try {
