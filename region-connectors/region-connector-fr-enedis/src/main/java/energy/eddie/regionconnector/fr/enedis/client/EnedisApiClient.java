@@ -8,8 +8,13 @@ import energy.eddie.regionconnector.fr.enedis.invoker.ApiClient;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import energy.eddie.regionconnector.fr.enedis.model.*;
 
-import java.time.*;
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Objects;
+
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
 
 public class EnedisApiClient extends ApiClient implements EnedisApi {
     private static final String APPLICATION_JSON = "application/json";
@@ -93,7 +98,7 @@ public class EnedisApiClient extends ApiClient implements EnedisApi {
     }
 
     private void throwIfInvalidTimeframe(ZonedDateTime start, ZonedDateTime end) throws DateTimeException {
-        LocalDate currentDate = LocalDate.ofInstant(Instant.now(), ZoneId.of("Europe/Paris"));
+        LocalDate currentDate = LocalDate.ofInstant(Instant.now(), ZONE_ID_FR);
 
         if (start.isAfter(end)) {
             throw new DateTimeException("Start date should be before end date.");

@@ -3,11 +3,9 @@ package energy.eddie.regionconnector.at.eda.requests;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
-import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -18,8 +16,8 @@ class CCMORequestTest {
     @Test
     void constructorWithAllParametersPresent_doesNotThrow() {
         // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
-        LocalDate end = start.plusMonths(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1);
+        ZonedDateTime end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
@@ -35,8 +33,8 @@ class CCMORequestTest {
     @Test
     void constructorWithDsoIdAndMeteringPointNull_doesNotThrow() {
         // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
-        LocalDate end = start.plusMonths(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1);
+        ZonedDateTime end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
 
@@ -65,8 +63,8 @@ class CCMORequestTest {
     @Test
     void constructorWithEddieConfigNull_throws() {
         // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
-        LocalDate end = start.plusMonths(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1);
+        ZonedDateTime end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
 
@@ -81,8 +79,8 @@ class CCMORequestTest {
     @Test
     void constructorWithRequestDataTypeNull_throws() {
         // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
-        LocalDate end = start.plusMonths(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1);
+        ZonedDateTime end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
@@ -98,8 +96,8 @@ class CCMORequestTest {
     @Test
     void constructorWithMeteringIntervalTypeNull_throws() {
         // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
-        LocalDate end = start.plusMonths(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1);
+        ZonedDateTime end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
@@ -115,8 +113,8 @@ class CCMORequestTest {
     @Test
     void constructorWithTransmissionCycleNull_throws() {
         // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
-        LocalDate end = start.plusMonths(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1);
+        ZonedDateTime end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
@@ -132,8 +130,8 @@ class CCMORequestTest {
     @Test
     void toCmRequestWithBlankConfig_throws() {
         // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
-        LocalDate end = start.plusMonths(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1);
+        ZonedDateTime end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("", null);
@@ -148,8 +146,8 @@ class CCMORequestTest {
     @Test
     void toCmRequest_withoutPrefixDoesNotAddPrefixToConversationId() {
         // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
-        LocalDate end = start.plusMonths(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1);
+        ZonedDateTime end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
@@ -165,8 +163,8 @@ class CCMORequestTest {
     @Test
     void toCmRequest_withPrefixAddsPrefixToConversationId() {
         // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
-        LocalDate end = start.plusMonths(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1);
+        ZonedDateTime end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", "prefix-");
@@ -182,8 +180,8 @@ class CCMORequestTest {
     @Test
     void toCmRequest_throwsIfUnsupportedGranularity() {
         // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
-        LocalDate end = start.plusMonths(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1);
+        ZonedDateTime end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
@@ -198,8 +196,8 @@ class CCMORequestTest {
     @Test
     void toCmRequest_ifDsoIdDoesNotMatchMeteringPoint_throwsInvalidDsoIdException() {
         // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
-        LocalDate end = start.plusMonths(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1);
+        ZonedDateTime end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT000000", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
@@ -214,8 +212,8 @@ class CCMORequestTest {
     @Test
     void messageId_returnsCorrectId() {
         // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
-        LocalDate end = start.plusMonths(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1);
+        ZonedDateTime end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
@@ -233,8 +231,8 @@ class CCMORequestTest {
     @Test
     void cmRequestId_returnsCorrectId() {
         // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
-        LocalDate end = start.plusMonths(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1);
+        ZonedDateTime end = start.plusMonths(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);

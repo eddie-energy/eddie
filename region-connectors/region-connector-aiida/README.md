@@ -42,6 +42,7 @@ Only the termination topic is unique for each permission.
 | `region-connector.aiida.kafka.status-messages-topic`    | Kafka topic name, where to all AIIDA instances should send ConnectionStatusMessages.<br/>Make sure to only use characters allowed for Kafka topic names.                                                                                                                                                                                                                                           |
 | `region-connector.aiida.kafka.termination-topic-prefix` | To avoid unnecessary traffic and for better security, each AIIDA instance gets a custom termination topic. The topic is created by concatenating this prefix and the permissionID of the permission with an underscore (_). Make sure that the prefix only contains characters that are valid for a Kafka topic name.                                                                              |               
 | `region-connector.aiida.kafka.group-id`                 | ID of the consumer group that the region-connector should be part of. Use `region-connector-aiida` unless a specific group-id is required.                                                                                                                                                                                                                                                         |
+| `region-connector.aiida.customer.id`                    | A unique ID of the eligible party, should not be changed.                                                                                                                                                                                                                                                                                                                                          |
 
 ### .properties file
 
@@ -54,6 +55,7 @@ region-connector.aiida.kafka.data-topic=aiida_data
 region-connector.aiida.kafka.status-messages-topic=aiida_status_messages
 region-connector.aiida.kafka.termination-topic-prefix=aiida_termination
 region-connector.aiida.kafka.group-id=region-connector-aiida
+region-connector.aiida.customer.id=my-unique-id
 ```
 
 ### Environment variables
@@ -72,6 +74,7 @@ REGION_CONNECTOR_AIIDA_KAFKA_DATA_TOPIC=aiida_data
 REGION_CONNECTOR_AIIDA_KAFKA_STATUS_MESSAGES_TOPIC=aiida_status_messages
 REGION_CONNECTOR_AIIDA_KAFKA_TERMINATION_TOPIC_PREFIX=aiida_termination
 REGION_CONNECTOR_AIIDA_KAFKA_GROUP_ID=region-connector-aiida
+REGION_CONNECTOR_AIIDA_CUSTOMER_ID=my-unique-id
 ```
 
 ## Running the Region Connector via EDDIE

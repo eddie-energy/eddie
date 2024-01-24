@@ -32,8 +32,8 @@ class DatadisMvp1ConsumptionRecordProviderTest {
         new DatadisPermissionRequest("pId", requestForCreation, mock(AuthorizationApi.class));
         TestPublisher<IdentifiableMeteringData> publisher = TestPublisher.create();
         EsPermissionRequest mockRequest = mock(EsPermissionRequest.class);
-        when(mockRequest.requestDataFrom()).thenReturn(now);
-        when(mockRequest.requestDataTo()).thenReturn(now);
+        when(mockRequest.start()).thenReturn(now);
+        when(mockRequest.end()).thenReturn(now);
         when(mockRequest.connectionId()).thenReturn("conId");
         when(mockRequest.dataNeedId()).thenReturn("dId");
         when(mockRequest.permissionId()).thenReturn("pId");

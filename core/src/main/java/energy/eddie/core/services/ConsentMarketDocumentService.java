@@ -1,0 +1,29 @@
+package energy.eddie.core.services;
+
+import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
+import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Sinks;
+
+import java.util.concurrent.Flow;
+
+@Service
+public class ConsentMarketDocumentService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsentMarketDocumentService.class);
+    private final Sinks.Many<ConsentMarketDocument> consentMarketDocumentSink = Sinks.many().multicast().onBackpressureBuffer();
+
+    public void registerProvider(ConsentMarketDocumentProvider statusMessageProvider) {
+        LOGGER.info("PermissionService: Registering {}", statusMessageProvider.getClass().getName());
+        JdkFlowAdapter.flowPublisherToFlux(statusMessageProvider.getConsentMarketDocumentStream())
+                .doOnNext(consentMarketDocumentSink::tryEmitNext)
+                .doOnError(consentMarketDocumentSink::tryEmitError)
+                .subscribe();
+    }
+
+    public Flow.Publisher<ConsentMarketDocument> getConsentMarketDocumentStream() {
+        return JdkFlowAdapter.publisherToFlowPublisher(consentMarketDocumentSink.asFlux());
+    }
+}

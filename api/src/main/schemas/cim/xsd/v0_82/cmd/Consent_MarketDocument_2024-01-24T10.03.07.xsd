@@ -1,0 +1,2893 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- ****************************************************************** -->
+<!-- ***** Consent_MarketDocument XML Schema File ***** -->
+<!-- ****************************************************************** -->
+<!--
+Schema agency: Gasunie 
+Schema version: 1p0
+Schema date: Wednesday, 24 January 2024 10:03:04
+ 
+Generator name: EA_Toolkit by E. van Slooten
+Generator builddate: 21/12/2023 10:47:50
+ 
+Copyright (C) Gasunie (2024). All Rights Reserved.
+ 
+This document and the information contained herein is provided on an "AS IS" basis
+and Gasunie DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+LIMITED TO ANY WARRANTY THAT THE USE OF THE INFORMATION HEREIN WILL NOT INFRINGE
+ ANY RIGHTS OR ANY IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
+PURPOSE
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:ns1="http://www.eddie.energy/Consent/EDD02/20240124"
+           targetNamespace="http://www.eddie.energy/Consent/EDD02/20240124" attributeFormDefault="unqualified"
+           elementFormDefault="qualified" version="1p0">
+    <xs:element name="Consent_MarketDocument" type="ns1:Consent_MarketDocumentComplexType">
+        <xs:annotation>
+            <xs:documentation>An electronic document containing the information necessary to satisfy the requirements of
+                a given business process.
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="Consent_MarketDocumentComplexType">
+        <xs:sequence>
+            <xs:element name="mRID" type="ns1:ID_String">
+                <xs:annotation>
+                    <xs:documentation>The unique identification of the document being exchanged within a business
+                        process flow.
+
+                        In the ESMP context, the &quot;model authority&quot; is defined as a party (originator of the
+                        exchange) that provides an identification in the context of a business exchange such as document
+                        identification, ...
+
+                        Master resource identifier issued by a model authority. The mRID is globally unique within an
+                        exchange context.
+                        Global uniqueness is easily achieved by using a UUID for the mRID. It is strongly recommended to
+                        do this.
+                        For CIMXML data files in RDF syntax, the mRID is mapped to rdf:ID or rdf:about attributes that
+                        identify CIM object elements.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="revisionNumber" type="ns1:ESMPVersion_String">
+                <xs:annotation>
+                    <xs:documentation>The identification of the version that distinguishes one evolution of a document
+                        from another.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="type" type="ns1:MessageTypeList">
+                <xs:annotation>
+                    <xs:documentation>The coded type of a document. The document type describes the principal
+                        characteristic of the document.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="createdDateTime" type="ns1:ESMP_DateTime">
+                <xs:annotation>
+                    <xs:documentation>The date and time of the creation of the document.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="description" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>The description is a free human readable text describing or naming the object. It
+                        may be non unique and may not correlate to a naming hierarchy.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="sender_MarketParticipant.mRID" type="ns1:PartyID_StringComplexType">
+                <xs:annotation>
+                    <xs:documentation>The identification of a party in the energy market.
+
+                        In the ESMP context, the &quot;model authority&quot; is defined as an authorized issuing office
+                        that provides an agreed identification coding scheme for market participant, domain, measurement
+                        point, resources (generator, lines, substations, etc.) identification.
+
+                        Master resource identifier issued by a model authority. The mRID is globally unique within an
+                        exchange context.
+                        Global uniqueness is easily achieved by using a UUID for the mRID. It is strongly recommended to
+                        do this.
+                        For CIMXML data files in RDF syntax, the mRID is mapped to rdf:ID or rdf:about attributes that
+                        identify CIM object elements.
+
+                        --- The MarketParticipant associated with an electronic document header.
+
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="sender_MarketParticipant.marketRole.type" type="ns1:RoleTypeList">
+                <xs:annotation>
+                    <xs:documentation>The identification of the role played by a market player.
+
+
+                        --- The MarketParticipant associated with an electronic document header.
+
+                        --- The role associated with a MarketParticipant.
+
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="receiver_MarketParticipant.mRID" type="ns1:PartyID_StringComplexType">
+                <xs:annotation>
+                    <xs:documentation>The identification of a party in the energy market.
+
+                        In the ESMP context, the &quot;model authority&quot; is defined as an authorized issuing office
+                        that provides an agreed identification coding scheme for market participant, domain, measurement
+                        point, resources (generator, lines, substations, etc.) identification.
+
+                        Master resource identifier issued by a model authority. The mRID is globally unique within an
+                        exchange context.
+                        Global uniqueness is easily achieved by using a UUID for the mRID. It is strongly recommended to
+                        do this.
+                        For CIMXML data files in RDF syntax, the mRID is mapped to rdf:ID or rdf:about attributes that
+                        identify CIM object elements.
+
+                        --- The MarketParticipant associated with an electronic document header.
+
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="receiver_MarketParticipant.marketRole.type" type="ns1:RoleTypeList">
+                <xs:annotation>
+                    <xs:documentation>The identification of the role played by a market player.
+
+
+                        --- The MarketParticipant associated with an electronic document header.
+
+                        --- The role associated with a MarketParticipant.
+
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="process.processType" type="ns1:ProcessTypeList"/>
+            <xs:element name="period.timeInterval" type="ns1:ESMP_DateTimeIntervalComplexType">
+                <xs:annotation>
+                    <xs:documentation>The start and end date and time for a given interval.
+
+
+                        --- The time interval that is associated with an electronic document and which is valid for the
+                        whole document.
+
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="PermissionList">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Permission" type="ns1:PermissionComplexType" minOccurs="0"
+                                    maxOccurs="unbounded">
+                            <xs:annotation>
+                                <xs:documentation>An electronic document containing the information necessary to satisfy
+                                    the requirements of a given business process.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="PermissionComplexType">
+        <xs:sequence>
+            <xs:element name="permission.mRID" type="xs:string"/>
+            <xs:element name="createdDateTime" type="ns1:ESMP_DateTime">
+                <xs:annotation>
+                    <xs:documentation>The date and time of the creation of the document.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="transmissionSchedule" type="ns1:Duration" minOccurs="0"/>
+            <xs:element name="marketEvaluationPoint.mRID" type="ns1:MeasurementPointID_StringComplexType"/>
+            <xs:element name="ReasonList">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Reason" type="ns1:ReasonComplexType" minOccurs="0" maxOccurs="unbounded">
+                            <xs:annotation>
+                                <xs:documentation>The motivation of an act.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="MktActivityRecordList">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="MktActivityRecord" type="ns1:MktActivityRecordComplexType" minOccurs="0"
+                                    maxOccurs="unbounded">
+                            <xs:annotation>
+                                <xs:documentation>Subclass of IEC61968: Common:ActivityRecord.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="TimeSeriesList">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="TimeSeries" type="ns1:TimeSeriesComplexType" minOccurs="0"
+                                    maxOccurs="unbounded">
+                            <xs:annotation>
+                                <xs:documentation>A set of time-ordered quantities being exchanged in relation to a
+                                    product.
+                                    In the ESMP profile, the TimeSeries provides not only time-ordered quantities but
+                                    also time-ordered information.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ReasonComplexType">
+        <xs:sequence>
+            <xs:element name="text" type="ns1:ReasonText_String" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>The textual explanation corresponding to the reason code.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="code" type="ns1:ReasonCodeTypeList"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MktActivityRecordComplexType">
+        <xs:sequence>
+            <xs:element name="mRID" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Master resource identifier issued by a model authority. The mRID is unique within
+                        an exchange context. Global uniqueness is easily achieved by using a UUID, as specified in RFC
+                        4122, for the mRID. The use of UUID is strongly recommended.
+                        For CIMXML data files in RDF syntax conforming to IEC 61970-552 Edition 1, the mRID is mapped to
+                        rdf:ID or rdf:about attributes that identify CIM object elements.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="createdDateTime" type="ns1:ESMP_DateTime" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Date and time this activity record has been created (different from the &#39;status.dateTime&#39;,
+                        which is the time of a status change of the associated object, if applicable).
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="description" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>The description is a free human readable text describing or naming the object. It
+                        may be non unique and may not correlate to a naming hierarchy.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="type" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Type of event resulting in this activity record.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="reason" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Reason for event resulting in this activity record, typically supplied when user
+                        initiated.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="name" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>The name is any free human readable and possibly non unique text naming the
+                        object.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="status" type="ns1:StatusTypeList" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Information on consequence of event resulting in this activity record.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="TimeSeriesComplexType">
+        <xs:sequence>
+            <xs:element name="mRID" type="ns1:ID_String">
+                <xs:annotation>
+                    <xs:documentation>A unique identification of the time series.
+
+                        In the ESMP context, the &quot;model authority&quot; is defined as a party (originator of the
+                        exchange) that provides a unique identification in the context of a business exchange such as
+                        time series identification, bid identification, ...
+
+                        Master resource identifier issued by a model authority. The mRID is globally unique within an
+                        exchange context.
+                        Global uniqueness is easily achieved by using a UUID for the mRID. It is strongly recommended to
+                        do this.
+                        For CIMXML data files in RDF syntax, the mRID is mapped to rdf:ID or rdf:about attributes that
+                        identify CIM object elements.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="CodingSchemeTypeList">
+        <xs:annotation>
+            <xs:documentation>Codification scheme used to identify the coding scheme used for the set of coded values to
+                identify specific objects.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="A01">
+                <xs:annotation>
+                    <xs:documentation>EIC</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A10">
+                <xs:annotation>
+                    <xs:documentation>GS1</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NAD">
+                <xs:annotation>
+                    <xs:documentation>Andorra National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NAL">
+                <xs:annotation>
+                    <xs:documentation>Albania National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NAM">
+                <xs:annotation>
+                    <xs:documentation>Armenia National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NAT">
+                <xs:annotation>
+                    <xs:documentation>Austria National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NAZ">
+                <xs:annotation>
+                    <xs:documentation>Azerbaijan National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NBA">
+                <xs:annotation>
+                    <xs:documentation>Bosnia and Herzegovina National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NBE">
+                <xs:annotation>
+                    <xs:documentation>Belgium National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NBG">
+                <xs:annotation>
+                    <xs:documentation>Bulgaria National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NCH">
+                <xs:annotation>
+                    <xs:documentation>Switzerland National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NCS">
+                <xs:annotation>
+                    <xs:documentation>Serbia and Montenegro National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NCZ">
+                <xs:annotation>
+                    <xs:documentation>Czech Republic National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NDE">
+                <xs:annotation>
+                    <xs:documentation>Germany National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NDK">
+                <xs:annotation>
+                    <xs:documentation>Denmark National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NEE">
+                <xs:annotation>
+                    <xs:documentation>Estonia National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NES">
+                <xs:annotation>
+                    <xs:documentation>Spain National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NFI">
+                <xs:annotation>
+                    <xs:documentation>Finland National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NFR">
+                <xs:annotation>
+                    <xs:documentation>France National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NGB">
+                <xs:annotation>
+                    <xs:documentation>United Kingdom National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NGE">
+                <xs:annotation>
+                    <xs:documentation>Georgia National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NGI">
+                <xs:annotation>
+                    <xs:documentation>Gibraltar National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NGR">
+                <xs:annotation>
+                    <xs:documentation>Greece National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NHR">
+                <xs:annotation>
+                    <xs:documentation>Croatia National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NHU">
+                <xs:annotation>
+                    <xs:documentation>Hungary National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NIE">
+                <xs:annotation>
+                    <xs:documentation>Ireland National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NIT">
+                <xs:annotation>
+                    <xs:documentation>Italy National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NKG">
+                <xs:annotation>
+                    <xs:documentation>Kyrgyzstan National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NKZ">
+                <xs:annotation>
+                    <xs:documentation>Kazakhstan National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NLI">
+                <xs:annotation>
+                    <xs:documentation>Liechtenstein National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NLT">
+                <xs:annotation>
+                    <xs:documentation>Lithuania National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NLU">
+                <xs:annotation>
+                    <xs:documentation>Luxembourg National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NLV">
+                <xs:annotation>
+                    <xs:documentation>Latvia National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NMA">
+                <xs:annotation>
+                    <xs:documentation>Morocco National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NMD">
+                <xs:annotation>
+                    <xs:documentation>Moldavia National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NMK">
+                <xs:annotation>
+                    <xs:documentation>Macedonia National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NNL">
+                <xs:annotation>
+                    <xs:documentation>Netherlands National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NNN">
+                <xs:annotation>
+                    <xs:documentation>Nordic Regional coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NNO">
+                <xs:annotation>
+                    <xs:documentation>Norway National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NPL">
+                <xs:annotation>
+                    <xs:documentation>Poland National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NPT">
+                <xs:annotation>
+                    <xs:documentation>Portugal National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NRO">
+                <xs:annotation>
+                    <xs:documentation>Romania National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NRU">
+                <xs:annotation>
+                    <xs:documentation>Russian Federation National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NSE">
+                <xs:annotation>
+                    <xs:documentation>Sweden National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NSI">
+                <xs:annotation>
+                    <xs:documentation>Slovenia National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NSK">
+                <xs:annotation>
+                    <xs:documentation>Slovakia National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NTR">
+                <xs:annotation>
+                    <xs:documentation>Turkey National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NUA">
+                <xs:annotation>
+                    <xs:documentation>Ukraine National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A02">
+                <xs:annotation>
+                    <xs:documentation>CGM</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Duration">
+        <xs:annotation>
+            <xs:documentation>Duration as &quot;PnYnMnDTnHnMnS&quot; which conforms to ISO 8601, where nY expresses a
+                number of years, nM a number of months, nD a number of days. The letter T separates the date expression
+                from the time expression and, after it, nH identifies a number of hours, nM a number of minutes and nS a
+                number of seconds. The number of seconds could be expressed as a decimal number, but all other numbers
+                are integers.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"></xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ESMP_DateTime">
+        <xs:annotation>
+            <xs:documentation>In ESMP, the dateTime shall be expressed in UTC as YYYY-MM-DDThh:mm:ssZ.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"></xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="ESMP_DateTimeIntervalComplexType">
+        <xs:sequence>
+            <xs:element name="start" type="ns1:YMDHM_DateTime">
+                <xs:annotation>
+                    <xs:documentation>The start date and time of the interval with a minute resolution.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="end" type="ns1:YMDHM_DateTime">
+                <xs:annotation>
+                    <xs:documentation>The end date and time of the interval with a minute resolution.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="ESMPVersion_String">
+        <xs:annotation>
+            <xs:documentation>In ESMP, the coded value is restricted to digits.
+
+                A code that distinguishes one evolution of an identified object from another. Information about a
+                specific object may be sent several times, each transmission being identified by a different version
+                number.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"></xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ID_String">
+        <xs:annotation>
+            <xs:documentation>A code to uniquely distinguish one occurrence of an entity from another.
+
+                In the ESMP context, the code is defined either by:
+                - an emitting company that provides an agreed identification unique within a business context such as
+                capacity auction identification, market agreement identification, etc.
+                - a party (originator of the exchange) that provides a unique identification in the framework of a
+                business exchange such as document identification, time series identification, bid identification, ...
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"></xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="MeasurementPointID_StringComplexType">
+        <xs:sequence>
+            <xs:element name="codingScheme" type="ns1:CodingSchemeTypeList">
+                <xs:annotation>
+                    <xs:documentation>DomainQualification.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="value" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>Main Core value Space.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="MessageTypeList">
+        <xs:annotation>
+            <xs:documentation>The coded type of a document. The message type describes the principal characteristic of a
+                document.
+                This enumeration is used in the XML instances based on IEC 62325.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="A01">
+                <xs:annotation>
+                    <xs:documentation>Balance responsible schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A02">
+                <xs:annotation>
+                    <xs:documentation>Allocated capacity schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A03">
+                <xs:annotation>
+                    <xs:documentation>Balance area schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A04">
+                <xs:annotation>
+                    <xs:documentation>System Operator area schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A05">
+                <xs:annotation>
+                    <xs:documentation>Control block area schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A06">
+                <xs:annotation>
+                    <xs:documentation>Coordination center area schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A07">
+                <xs:annotation>
+                    <xs:documentation>Intermediate confirmation report</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A08">
+                <xs:annotation>
+                    <xs:documentation>Final confirmation report</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A09">
+                <xs:annotation>
+                    <xs:documentation>Finalised schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A10">
+                <xs:annotation>
+                    <xs:documentation>Regulation data report</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A11">
+                <xs:annotation>
+                    <xs:documentation>Aggregated energy data report</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A12">
+                <xs:annotation>
+                    <xs:documentation>Imbalance report</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A13">
+                <xs:annotation>
+                    <xs:documentation>Interconnection Capacity</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A14">
+                <xs:annotation>
+                    <xs:documentation>Resource Provider Resource Schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A15">
+                <xs:annotation>
+                    <xs:documentation>Acquiring System Operator Reserve Schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A16">
+                <xs:annotation>
+                    <xs:documentation>Anomaly Report</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A17">
+                <xs:annotation>
+                    <xs:documentation>Acknowledgement Document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A18">
+                <xs:annotation>
+                    <xs:documentation>Confirmation report</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A19">
+                <xs:annotation>
+                    <xs:documentation>Capacity for Resale</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A20">
+                <xs:annotation>
+                    <xs:documentation>Approved Capacity Transfer</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A21">
+                <xs:annotation>
+                    <xs:documentation>Capacity transfer notification</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A22">
+                <xs:annotation>
+                    <xs:documentation>Transmission rights portfolio</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A23">
+                <xs:annotation>
+                    <xs:documentation>Allocations</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A24">
+                <xs:annotation>
+                    <xs:documentation>Bid document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A25">
+                <xs:annotation>
+                    <xs:documentation>Allocation result document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A26">
+                <xs:annotation>
+                    <xs:documentation>Capacity document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A27">
+                <xs:annotation>
+                    <xs:documentation>Rights document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A28">
+                <xs:annotation>
+                    <xs:documentation>Generation availability schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A30">
+                <xs:annotation>
+                    <xs:documentation>Cross border schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A31">
+                <xs:annotation>
+                    <xs:documentation>Agreed capacity</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A32">
+                <xs:annotation>
+                    <xs:documentation>Proposed capacity</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A33">
+                <xs:annotation>
+                    <xs:documentation>System vertical load</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A34">
+                <xs:annotation>
+                    <xs:documentation>Escalation document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A35">
+                <xs:annotation>
+                    <xs:documentation>Trouble shooting document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A36">
+                <xs:annotation>
+                    <xs:documentation>Deactivation document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A37">
+                <xs:annotation>
+                    <xs:documentation>Reserve tender document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A38">
+                <xs:annotation>
+                    <xs:documentation>Reserve Allocation Result Document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A39">
+                <xs:annotation>
+                    <xs:documentation>SATCR activation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A40">
+                <xs:annotation>
+                    <xs:documentation>DATCR activation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A41">
+                <xs:annotation>
+                    <xs:documentation>Activation response</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A42">
+                <xs:annotation>
+                    <xs:documentation>Tender reduction</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A43">
+                <xs:annotation>
+                    <xs:documentation>MOL Document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A44">
+                <xs:annotation>
+                    <xs:documentation>Price Document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A45">
+                <xs:annotation>
+                    <xs:documentation>Measurement Value Document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A46">
+                <xs:annotation>
+                    <xs:documentation>SOAM Document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A47">
+                <xs:annotation>
+                    <xs:documentation>SOVA Document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A48">
+                <xs:annotation>
+                    <xs:documentation>CCVA Document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A49">
+                <xs:annotation>
+                    <xs:documentation>Daily settlement document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A50">
+                <xs:annotation>
+                    <xs:documentation>Weekly settlement document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A51">
+                <xs:annotation>
+                    <xs:documentation>Capacity Auction Specification Document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A52">
+                <xs:annotation>
+                    <xs:documentation>Market Coupling Results Document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A53">
+                <xs:annotation>
+                    <xs:documentation>Outage publication Document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A54">
+                <xs:annotation>
+                    <xs:documentation>Forced generation outage Document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A55">
+                <xs:annotation>
+                    <xs:documentation>Summarised Market Schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A56">
+                <xs:annotation>
+                    <xs:documentation>Compensation Program Schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A57">
+                <xs:annotation>
+                    <xs:documentation>Load Frequency Control Program Schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A58">
+                <xs:annotation>
+                    <xs:documentation>Timeframe Independent Schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A59">
+                <xs:annotation>
+                    <xs:documentation>Status request for a status within a process</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A60">
+                <xs:annotation>
+                    <xs:documentation>status request for a position independently from a specific process
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A61">
+                <xs:annotation>
+                    <xs:documentation>Estimated Net Transfer Capacity</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A62">
+                <xs:annotation>
+                    <xs:documentation>Compensation rights</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A63">
+                <xs:annotation>
+                    <xs:documentation>Redispatch notice</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A64">
+                <xs:annotation>
+                    <xs:documentation>Tender reduction response</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A65">
+                <xs:annotation>
+                    <xs:documentation>System total load</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A66">
+                <xs:annotation>
+                    <xs:documentation>Final MOL</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A67">
+                <xs:annotation>
+                    <xs:documentation>Resource Provider Schedule for production/consumption</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A68">
+                <xs:annotation>
+                    <xs:documentation>Installed generation per type</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A69">
+                <xs:annotation>
+                    <xs:documentation>Wind and solar forecast</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A70">
+                <xs:annotation>
+                    <xs:documentation>Load forecast margin</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A71">
+                <xs:annotation>
+                    <xs:documentation>Generation forecast</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A72">
+                <xs:annotation>
+                    <xs:documentation>Reservoir filling information</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A73">
+                <xs:annotation>
+                    <xs:documentation>Actual generation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A74">
+                <xs:annotation>
+                    <xs:documentation>Wind and solar generation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A75">
+                <xs:annotation>
+                    <xs:documentation>Actual generation per type</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A76">
+                <xs:annotation>
+                    <xs:documentation>Load unavailability</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A77">
+                <xs:annotation>
+                    <xs:documentation>Production unavailability</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A78">
+                <xs:annotation>
+                    <xs:documentation>Transmission unavailability</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A79">
+                <xs:annotation>
+                    <xs:documentation>Offshore grid infrastructure unavailability</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A80">
+                <xs:annotation>
+                    <xs:documentation>Generation unavailability</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A81">
+                <xs:annotation>
+                    <xs:documentation>Contracted reserves</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A82">
+                <xs:annotation>
+                    <xs:documentation>Accepted offers</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A83">
+                <xs:annotation>
+                    <xs:documentation>Activated balancing quantities</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A84">
+                <xs:annotation>
+                    <xs:documentation>Activated balancing prices</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A85">
+                <xs:annotation>
+                    <xs:documentation>Imbalance prices</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A86">
+                <xs:annotation>
+                    <xs:documentation>Imbalance volume</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A87">
+                <xs:annotation>
+                    <xs:documentation>Financial situation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A88">
+                <xs:annotation>
+                    <xs:documentation>Cross border balancing</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A89">
+                <xs:annotation>
+                    <xs:documentation>Contracted reserve prices</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A90">
+                <xs:annotation>
+                    <xs:documentation>Interconnection network expansion</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A91">
+                <xs:annotation>
+                    <xs:documentation>Counter trade notice</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A92">
+                <xs:annotation>
+                    <xs:documentation>Congestion costs</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A93">
+                <xs:annotation>
+                    <xs:documentation>DC link capacity</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A94">
+                <xs:annotation>
+                    <xs:documentation>Non EU allocations</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A95">
+                <xs:annotation>
+                    <xs:documentation>Configuration document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A96">
+                <xs:annotation>
+                    <xs:documentation>Redispatch activation document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A97">
+                <xs:annotation>
+                    <xs:documentation>Detailed activation history document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A98">
+                <xs:annotation>
+                    <xs:documentation>Aggregated activation history document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A99">
+                <xs:annotation>
+                    <xs:documentation>HVDC Link constraints</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B01">
+                <xs:annotation>
+                    <xs:documentation>HVDC Configuration</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B02">
+                <xs:annotation>
+                    <xs:documentation>HVDC Schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B03">
+                <xs:annotation>
+                    <xs:documentation>EIC code request</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B04">
+                <xs:annotation>
+                    <xs:documentation>EIC code information</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B05">
+                <xs:annotation>
+                    <xs:documentation>EIC code publication</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B06">
+                <xs:annotation>
+                    <xs:documentation>Critical network element determination</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B07">
+                <xs:annotation>
+                    <xs:documentation>Critical network element publication</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B08">
+                <xs:annotation>
+                    <xs:documentation>Flow based domain</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B09">
+                <xs:annotation>
+                    <xs:documentation>Flow based domain publication</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B10">
+                <xs:annotation>
+                    <xs:documentation>Flow based domain market impact publication</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B11">
+                <xs:annotation>
+                    <xs:documentation>Anonymized flow based parameters publication</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B12">
+                <xs:annotation>
+                    <xs:documentation>Critical network element market impact publication</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B13">
+                <xs:annotation>
+                    <xs:documentation>Weather document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B14">
+                <xs:annotation>
+                    <xs:documentation>Energy prognosis document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B15">
+                <xs:annotation>
+                    <xs:documentation>Network constraint document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B16">
+                <xs:annotation>
+                    <xs:documentation>Aggregated netted external market schedule document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B17">
+                <xs:annotation>
+                    <xs:documentation>Aggregated netted external TSO schedule document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B18">
+                <xs:annotation>
+                    <xs:documentation>Reporting status market document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B19">
+                <xs:annotation>
+                    <xs:documentation>Reporting information market document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B20">
+                <xs:annotation>
+                    <xs:documentation>Status request for a reporting information market document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B21">
+                <xs:annotation>
+                    <xs:documentation>Reserve need document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B22">
+                <xs:annotation>
+                    <xs:documentation>Generation and load shift keys document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B23">
+                <xs:annotation>
+                    <xs:documentation>Offers to be activated</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B24">
+                <xs:annotation>
+                    <xs:documentation>Clearing price</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B25">
+                <xs:annotation>
+                    <xs:documentation>Security analysis report</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B26">
+                <xs:annotation>
+                    <xs:documentation>Aggregated netted external schedule document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B27">
+                <xs:annotation>
+                    <xs:documentation>External TSO schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B28">
+                <xs:annotation>
+                    <xs:documentation>Move of scheduled production</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B29">
+                <xs:annotation>
+                    <xs:documentation>PS&amp;LC results document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B30">
+                <xs:annotation>
+                    <xs:documentation>Notification data market document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B31">
+                <xs:annotation>
+                    <xs:documentation>Additional Constraint document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B32">
+                <xs:annotation>
+                    <xs:documentation>Operational state document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B33">
+                <xs:annotation>
+                    <xs:documentation>Published offered capacity</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B34">
+                <xs:annotation>
+                    <xs:documentation>Market result document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Z04">
+                <xs:annotation>
+                    <xs:documentation>Permission administration document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Z01">
+                <xs:annotation>
+                    <xs:documentation>Permission termination document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="PartyID_StringComplexType">
+        <xs:sequence>
+            <xs:element name="codingScheme" type="ns1:CodingSchemeTypeList">
+                <xs:annotation>
+                    <xs:documentation>DomainQualification.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="value" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>Main Core value Space.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="ProcessTypeList">
+        <xs:annotation>
+            <xs:documentation>Indicates the nature of process that the document addresses.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="A01">
+                <xs:annotation>
+                    <xs:documentation>Day ahead</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A02">
+                <xs:annotation>
+                    <xs:documentation>Intra day incremental</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A03">
+                <xs:annotation>
+                    <xs:documentation>Inter-area transit</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A04">
+                <xs:annotation>
+                    <xs:documentation>System operation closure</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A05">
+                <xs:annotation>
+                    <xs:documentation>Metered data aggregation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A06">
+                <xs:annotation>
+                    <xs:documentation>Imbalance settlement</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A07">
+                <xs:annotation>
+                    <xs:documentation>Capacity allocation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A08">
+                <xs:annotation>
+                    <xs:documentation>Central reconciliation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A09">
+                <xs:annotation>
+                    <xs:documentation>Released capacity allocation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A10">
+                <xs:annotation>
+                    <xs:documentation>Proposed capacity allocation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A11">
+                <xs:annotation>
+                    <xs:documentation>Agreed capacity allocation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A12">
+                <xs:annotation>
+                    <xs:documentation>Long term</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A13">
+                <xs:annotation>
+                    <xs:documentation>Post scheduling adjustment</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A14">
+                <xs:annotation>
+                    <xs:documentation>Forecast</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A15">
+                <xs:annotation>
+                    <xs:documentation>Capacity determination</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A16">
+                <xs:annotation>
+                    <xs:documentation>Realised</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A17">
+                <xs:annotation>
+                    <xs:documentation>Schedule day</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A18">
+                <xs:annotation>
+                    <xs:documentation>Intraday total</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A19">
+                <xs:annotation>
+                    <xs:documentation>Intraday accumulated</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A20">
+                <xs:annotation>
+                    <xs:documentation>SOMA process</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A21">
+                <xs:annotation>
+                    <xs:documentation>SOVM process</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A22">
+                <xs:annotation>
+                    <xs:documentation>RGCE accounting process</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A23">
+                <xs:annotation>
+                    <xs:documentation>CCSR RGCE Settlement</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A24">
+                <xs:annotation>
+                    <xs:documentation>CBSR Settlement</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A25">
+                <xs:annotation>
+                    <xs:documentation>CASR Settlement</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A26">
+                <xs:annotation>
+                    <xs:documentation>Outage information</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A27">
+                <xs:annotation>
+                    <xs:documentation>Reserve resource process</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A28">
+                <xs:annotation>
+                    <xs:documentation>Primary reserve process</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A29">
+                <xs:annotation>
+                    <xs:documentation>Secondary reserve process</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A30">
+                <xs:annotation>
+                    <xs:documentation>Tertiary reserve process</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A31">
+                <xs:annotation>
+                    <xs:documentation>Week ahead</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A32">
+                <xs:annotation>
+                    <xs:documentation>Month ahead</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A33">
+                <xs:annotation>
+                    <xs:documentation>Year ahead</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A34">
+                <xs:annotation>
+                    <xs:documentation>Contracted</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A35">
+                <xs:annotation>
+                    <xs:documentation>Network information</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A36">
+                <xs:annotation>
+                    <xs:documentation>Creation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A37">
+                <xs:annotation>
+                    <xs:documentation>Modification</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A38">
+                <xs:annotation>
+                    <xs:documentation>Deactivation process</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A39">
+                <xs:annotation>
+                    <xs:documentation>Synchronisation process</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A40">
+                <xs:annotation>
+                    <xs:documentation>Intraday process</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A41">
+                <xs:annotation>
+                    <xs:documentation>Redispatch process</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A42">
+                <xs:annotation>
+                    <xs:documentation>Activation history process</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A43">
+                <xs:annotation>
+                    <xs:documentation>Flow based domain constraint day-ahead</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A44">
+                <xs:annotation>
+                    <xs:documentation>Flow based domain constraint intraday</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A45">
+                <xs:annotation>
+                    <xs:documentation>Two days ahead</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A46">
+                <xs:annotation>
+                    <xs:documentation>Replacement reserve</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A47">
+                <xs:annotation>
+                    <xs:documentation>Manual frequency restoration reserve</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A48">
+                <xs:annotation>
+                    <xs:documentation>Day-ahead capacity determination</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A49">
+                <xs:annotation>
+                    <xs:documentation>Intraday capacity determination</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A50">
+                <xs:annotation>
+                    <xs:documentation>Long term capacity determination</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A51">
+                <xs:annotation>
+                    <xs:documentation>Automatic frequency restoration reserve</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A52">
+                <xs:annotation>
+                    <xs:documentation>Frequency containment reserve</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A53">
+                <xs:annotation>
+                    <xs:documentation>Common Grid Model (CGM) merging process</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A54">
+                <xs:annotation>
+                    <xs:documentation>Coordinated operational security analysis</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A55">
+                <xs:annotation>
+                    <xs:documentation>Access to metered data</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ReasonCodeTypeList">
+        <xs:annotation>
+            <xs:documentation>The coded motivation of an act.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="999">
+                <xs:annotation>
+                    <xs:documentation>Errors not specifically identified</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A01">
+                <xs:annotation>
+                    <xs:documentation>Message fully accepted</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A02">
+                <xs:annotation>
+                    <xs:documentation>Message fully rejected</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A03">
+                <xs:annotation>
+                    <xs:documentation>Message contains errors at the time series level</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A04">
+                <xs:annotation>
+                    <xs:documentation>Time interval incorrect</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A05">
+                <xs:annotation>
+                    <xs:documentation>Sender without valid contract</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A06">
+                <xs:annotation>
+                    <xs:documentation>Schedule accepted</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A07">
+                <xs:annotation>
+                    <xs:documentation>Schedule partially accepted</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A08">
+                <xs:annotation>
+                    <xs:documentation>Schedule rejected</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A09">
+                <xs:annotation>
+                    <xs:documentation>Time series not matching</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A10">
+                <xs:annotation>
+                    <xs:documentation>Credit limit exceeded</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A20">
+                <xs:annotation>
+                    <xs:documentation>Time series fully rejected</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A21">
+                <xs:annotation>
+                    <xs:documentation>Time series accepted with specific time interval errors</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A22">
+                <xs:annotation>
+                    <xs:documentation>In party/Out party invalid</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A23">
+                <xs:annotation>
+                    <xs:documentation>Area invalid</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A24">
+                <xs:annotation>
+                    <xs:documentation>A24 not applicable</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A25">
+                <xs:annotation>
+                    <xs:documentation>A25 not applicable</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A26">
+                <xs:annotation>
+                    <xs:documentation>Default time series applied</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A27">
+                <xs:annotation>
+                    <xs:documentation>Cross border capacity exceeded</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A28">
+                <xs:annotation>
+                    <xs:documentation>Counterpart time series missing</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A29">
+                <xs:annotation>
+                    <xs:documentation>Counterpart time series quantity differences</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A30">
+                <xs:annotation>
+                    <xs:documentation>Imposed Time series from nominated party&#39;s time series (party identified in
+                        reason text)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A41">
+                <xs:annotation>
+                    <xs:documentation>Resolution inconsistency</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A42">
+                <xs:annotation>
+                    <xs:documentation>Quantity inconsistency</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A43">
+                <xs:annotation>
+                    <xs:documentation>Quantity increased</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A44">
+                <xs:annotation>
+                    <xs:documentation>Quantity decreased</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A45">
+                <xs:annotation>
+                    <xs:documentation>Default quantity applied</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A46">
+                <xs:annotation>
+                    <xs:documentation>Quantities must not be signed values</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A47">
+                <xs:annotation>
+                    <xs:documentation>A47 not applicable</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A48">
+                <xs:annotation>
+                    <xs:documentation>Modification reason</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A49">
+                <xs:annotation>
+                    <xs:documentation>Position inconsistency</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A50">
+                <xs:annotation>
+                    <xs:documentation>Senders time series version conflict</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A51">
+                <xs:annotation>
+                    <xs:documentation>Message identification or version conflict</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A52">
+                <xs:annotation>
+                    <xs:documentation>Time series missing from new version of message</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A53">
+                <xs:annotation>
+                    <xs:documentation>Receiving party incorrect</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A54">
+                <xs:annotation>
+                    <xs:documentation>Global position not in balance</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A55">
+                <xs:annotation>
+                    <xs:documentation>Time series identification conflict</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A56">
+                <xs:annotation>
+                    <xs:documentation>Corresponding Time series not netted</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A57">
+                <xs:annotation>
+                    <xs:documentation>Deadline limit exceeded/Gate not open</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A58">
+                <xs:annotation>
+                    <xs:documentation>One to one nomination inconsistency</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A59">
+                <xs:annotation>
+                    <xs:documentation>Not compliant to local market rules</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A60">
+                <xs:annotation>
+                    <xs:documentation>Inter-area transit schedule exceeds nominated schedule</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A61">
+                <xs:annotation>
+                    <xs:documentation>Currency invalid</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A62">
+                <xs:annotation>
+                    <xs:documentation>Invalid business type</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A63">
+                <xs:annotation>
+                    <xs:documentation>Time Series modified</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A64">
+                <xs:annotation>
+                    <xs:documentation>Resource Object Invalid</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A65">
+                <xs:annotation>
+                    <xs:documentation>Reserve object Technical limits exceeded</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A66">
+                <xs:annotation>
+                    <xs:documentation>Planned reserves do not correspond with contractual data</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A67">
+                <xs:annotation>
+                    <xs:documentation>Limit Data is not available</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A68">
+                <xs:annotation>
+                    <xs:documentation>Reserve Object not qualified for reserve type</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A69">
+                <xs:annotation>
+                    <xs:documentation>Mandatory attributes missing</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A70">
+                <xs:annotation>
+                    <xs:documentation>Curtailment</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A71">
+                <xs:annotation>
+                    <xs:documentation>Linked bid rejected due to associated bid unsuccessful</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A72">
+                <xs:annotation>
+                    <xs:documentation>Original bid divided to permit acceptance</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A73">
+                <xs:annotation>
+                    <xs:documentation>Bid accepted</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A74">
+                <xs:annotation>
+                    <xs:documentation>Auction Status</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A75">
+                <xs:annotation>
+                    <xs:documentation>Right status information</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A76">
+                <xs:annotation>
+                    <xs:documentation>Agreement identification inconsistency</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A77">
+                <xs:annotation>
+                    <xs:documentation>Dependency matrix not respected</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A78">
+                <xs:annotation>
+                    <xs:documentation>Sender identification and/or role invalid</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A79">
+                <xs:annotation>
+                    <xs:documentation>Process type invalid</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A80">
+                <xs:annotation>
+                    <xs:documentation>Domain invalid</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A81">
+                <xs:annotation>
+                    <xs:documentation>Matching period invalid</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A82">
+                <xs:annotation>
+                    <xs:documentation>In/Out area inconsistent with domain</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A83">
+                <xs:annotation>
+                    <xs:documentation>Disagree with matching results</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A84">
+                <xs:annotation>
+                    <xs:documentation>Confirmation ignored due to higher version already received</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A85">
+                <xs:annotation>
+                    <xs:documentation>Confirmation without adjustment (time series have been matched without change)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A86">
+                <xs:annotation>
+                    <xs:documentation>Confirmation with adjustment (time series have been modified)</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A87">
+                <xs:annotation>
+                    <xs:documentation>For action (only in intermediate confirmation - time series need mutual agreement
+                        and action)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A88">
+                <xs:annotation>
+                    <xs:documentation>Time series matched</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A89">
+                <xs:annotation>
+                    <xs:documentation>Time series ignored (note: this can only apply to time series that are set to zero
+                        - see matching principles)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A90">
+                <xs:annotation>
+                    <xs:documentation>Modification proposal (intermediate confirmation)</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A91">
+                <xs:annotation>
+                    <xs:documentation>Expected document not received</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A92">
+                <xs:annotation>
+                    <xs:documentation>Not possible to send document on time, but estimated delivery time is provided
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A93">
+                <xs:annotation>
+                    <xs:documentation>Not possible to send document on time, and furthermore no expected time of return
+                        to normal situation
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A94">
+                <xs:annotation>
+                    <xs:documentation>Document cannot be processed by receiving system</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A95">
+                <xs:annotation>
+                    <xs:documentation>Complementary information</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A96">
+                <xs:annotation>
+                    <xs:documentation>Technical constraint</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A97">
+                <xs:annotation>
+                    <xs:documentation>Force majeure curtailment</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A98">
+                <xs:annotation>
+                    <xs:documentation>Network security curtailment</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A99">
+                <xs:annotation>
+                    <xs:documentation>Auction cancelled</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B01">
+                <xs:annotation>
+                    <xs:documentation>Incomplete document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B02">
+                <xs:annotation>
+                    <xs:documentation>Accounting Point (tie-line) Time Series missing</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B03">
+                <xs:annotation>
+                    <xs:documentation>Meter data Time series missing</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B04">
+                <xs:annotation>
+                    <xs:documentation>Estimated values not allowed in first transmission</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B05">
+                <xs:annotation>
+                    <xs:documentation>No quantity values allowed for a quality that is not available</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B06">
+                <xs:annotation>
+                    <xs:documentation>Time series accepted</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B07">
+                <xs:annotation>
+                    <xs:documentation>Auction without bids being entered</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B08">
+                <xs:annotation>
+                    <xs:documentation>Data not yet available</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B09">
+                <xs:annotation>
+                    <xs:documentation>Bid not accepted</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B10">
+                <xs:annotation>
+                    <xs:documentation>Initiator area problem</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B11">
+                <xs:annotation>
+                    <xs:documentation>Cooperating area problem</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B12">
+                <xs:annotation>
+                    <xs:documentation>Communication status currently active</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B13">
+                <xs:annotation>
+                    <xs:documentation>Communication status currently inactive</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B14">
+                <xs:annotation>
+                    <xs:documentation>Communication status currently restricted</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B15">
+                <xs:annotation>
+                    <xs:documentation>Problem associated with both areas</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B16">
+                <xs:annotation>
+                    <xs:documentation>Tender unavailable in MOL list</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B17">
+                <xs:annotation>
+                    <xs:documentation>Price based on preliminary exchange rate</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B18">
+                <xs:annotation>
+                    <xs:documentation>Failure</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B19">
+                <xs:annotation>
+                    <xs:documentation>Foreseen maintenance</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B20">
+                <xs:annotation>
+                    <xs:documentation>Shutdown</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B21">
+                <xs:annotation>
+                    <xs:documentation>Official exchange rate approved</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B22">
+                <xs:annotation>
+                    <xs:documentation>System regulation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B23">
+                <xs:annotation>
+                    <xs:documentation>Frequency regulation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B24">
+                <xs:annotation>
+                    <xs:documentation>Load flow overload</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B25">
+                <xs:annotation>
+                    <xs:documentation>Voltage level adjustment</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B26">
+                <xs:annotation>
+                    <xs:documentation>Emergency situation curtailment</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B27">
+                <xs:annotation>
+                    <xs:documentation>Calculation process failed</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B28">
+                <xs:annotation>
+                    <xs:documentation>No capacity constraint impact on the market</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B29">
+                <xs:annotation>
+                    <xs:documentation>Special Condition</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B30">
+                <xs:annotation>
+                    <xs:documentation>Unverified</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B31">
+                <xs:annotation>
+                    <xs:documentation>Verified</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B32">
+                <xs:annotation>
+                    <xs:documentation>CGM inconsistency</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B33">
+                <xs:annotation>
+                    <xs:documentation>Network dictionary inconsistency</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B34">
+                <xs:annotation>
+                    <xs:documentation>Capacity reduced by TSO</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B35">
+                <xs:annotation>
+                    <xs:documentation>Overload</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B36">
+                <xs:annotation>
+                    <xs:documentation>GLSK limitation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B37">
+                <xs:annotation>
+                    <xs:documentation>Voltage constraint</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B38">
+                <xs:annotation>
+                    <xs:documentation>Angle constraint</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B39">
+                <xs:annotation>
+                    <xs:documentation>Stability</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B40">
+                <xs:annotation>
+                    <xs:documentation>Loadflow divergence</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B41">
+                <xs:annotation>
+                    <xs:documentation>Exclusion for SoS reasons</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B42">
+                <xs:annotation>
+                    <xs:documentation>Constraint by the market</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B43">
+                <xs:annotation>
+                    <xs:documentation>Ordinary</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B44">
+                <xs:annotation>
+                    <xs:documentation>Exceptional</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B45">
+                <xs:annotation>
+                    <xs:documentation>Out of range</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B46">
+                <xs:annotation>
+                    <xs:documentation>Internal congestion</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="B47">
+                <xs:annotation>
+                    <xs:documentation>Operational security constrainsts</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Z01">
+                <xs:annotation>
+                    <xs:documentation>FULLFILLED</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Z02">
+                <xs:annotation>
+                    <xs:documentation>CANCELLED_USER</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Z03">
+                <xs:annotation>
+                    <xs:documentation>CANCELLED_EP</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Z0$">
+                <xs:annotation>
+                    <xs:documentation>Other</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ReasonText_String">
+        <xs:annotation>
+            <xs:documentation>The textual explanation of an act as a string of characters.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"></xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="RoleTypeList">
+        <xs:annotation>
+            <xs:documentation>Identification of the role played by a party.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="A01">
+                <xs:annotation>
+                    <xs:documentation>Trade responsible party</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A02">
+                <xs:annotation>
+                    <xs:documentation>Consumption responsible party</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A03">
+                <xs:annotation>
+                    <xs:documentation>Combined power exchange (not to be used)</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A04">
+                <xs:annotation>
+                    <xs:documentation>System operator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A05">
+                <xs:annotation>
+                    <xs:documentation>Imbalance settlement responsible</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A06">
+                <xs:annotation>
+                    <xs:documentation>Production responsible party</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A07">
+                <xs:annotation>
+                    <xs:documentation>Transmission capacity allocator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A08">
+                <xs:annotation>
+                    <xs:documentation>Balance responsible party</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A09">
+                <xs:annotation>
+                    <xs:documentation>Metered data aggregator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A10">
+                <xs:annotation>
+                    <xs:documentation>Billing agent</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A11">
+                <xs:annotation>
+                    <xs:documentation>Market operator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A12">
+                <xs:annotation>
+                    <xs:documentation>Balance supplier</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A13">
+                <xs:annotation>
+                    <xs:documentation>Consumer</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A14">
+                <xs:annotation>
+                    <xs:documentation>Control area operator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A15">
+                <xs:annotation>
+                    <xs:documentation>Control block operator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A16">
+                <xs:annotation>
+                    <xs:documentation>Coordination center operator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A17">
+                <xs:annotation>
+                    <xs:documentation>Grid access provider</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A18">
+                <xs:annotation>
+                    <xs:documentation>Grid operator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A19">
+                <xs:annotation>
+                    <xs:documentation>Meter administrator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A20">
+                <xs:annotation>
+                    <xs:documentation>Party connected to grid</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A21">
+                <xs:annotation>
+                    <xs:documentation>Producer</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A22">
+                <xs:annotation>
+                    <xs:documentation>Profile maintenance party</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A23">
+                <xs:annotation>
+                    <xs:documentation>Meter operator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A24">
+                <xs:annotation>
+                    <xs:documentation>Metered data collector</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A25">
+                <xs:annotation>
+                    <xs:documentation>Metered data responsible</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A26">
+                <xs:annotation>
+                    <xs:documentation>Metering point administrator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A27">
+                <xs:annotation>
+                    <xs:documentation>Resource Provider</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A28">
+                <xs:annotation>
+                    <xs:documentation>Scheduling coordinator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A29">
+                <xs:annotation>
+                    <xs:documentation>Capacity Trader</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A30">
+                <xs:annotation>
+                    <xs:documentation>Interconnection Trade Responsible</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A31">
+                <xs:annotation>
+                    <xs:documentation>Nomination Validator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A32">
+                <xs:annotation>
+                    <xs:documentation>Market information aggregator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A33">
+                <xs:annotation>
+                    <xs:documentation>Information receiver</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A34">
+                <xs:annotation>
+                    <xs:documentation>Reserve Allocator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A35">
+                <xs:annotation>
+                    <xs:documentation>MOL Responsible</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A36">
+                <xs:annotation>
+                    <xs:documentation>Capacity Coordinator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A37">
+                <xs:annotation>
+                    <xs:documentation>Reconciliation Accountable</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A38">
+                <xs:annotation>
+                    <xs:documentation>Reconciliation Responsible</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A39">
+                <xs:annotation>
+                    <xs:documentation>Data provider</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A40">
+                <xs:annotation>
+                    <xs:documentation>Local Issuing Office (LIO)</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A41">
+                <xs:annotation>
+                    <xs:documentation>Central Issuing Office (CIO)</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A42">
+                <xs:annotation>
+                    <xs:documentation>EIC Participant</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A43">
+                <xs:annotation>
+                    <xs:documentation>Weather analyser</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A44">
+                <xs:annotation>
+                    <xs:documentation>Regional Security Coordinator (RSC)</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A45">
+                <xs:annotation>
+                    <xs:documentation>Energy Service Company (ESCO)</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A46">
+                <xs:annotation>
+                    <xs:documentation>Balancing Service Provider</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value=" Axx">
+                <xs:annotation>
+                    <xs:documentation>Competent authority</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value=" Axx">
+                <xs:annotation>
+                    <xs:documentation>Identity service provider</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="A50">
+                <xs:annotation>
+                    <xs:documentation>Permission administrator</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="StatusTypeList">
+        <xs:annotation>
+            <xs:documentation>The condition or position of an object with regard to its standing.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Intermediate">
+                <xs:annotation>
+                    <xs:documentation>A01</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Final">
+                <xs:annotation>
+                    <xs:documentation>A02</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Deactivated">
+                <xs:annotation>
+                    <xs:documentation>A03</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Reactivated">
+                <xs:annotation>
+                    <xs:documentation>A04</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Active">
+                <xs:annotation>
+                    <xs:documentation>A05</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Available">
+                <xs:annotation>
+                    <xs:documentation>A06</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Activated">
+                <xs:annotation>
+                    <xs:documentation>A07</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="In process">
+                <xs:annotation>
+                    <xs:documentation>A08</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Cancelled">
+                <xs:annotation>
+                    <xs:documentation>A09</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Ordered">
+                <xs:annotation>
+                    <xs:documentation>A10</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="No longer available">
+                <xs:annotation>
+                    <xs:documentation>A11</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RGCE agreed">
+                <xs:annotation>
+                    <xs:documentation>A12</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Withdrawn">
+                <xs:annotation>
+                    <xs:documentation>A13</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Creation">
+                <xs:annotation>
+                    <xs:documentation>A14</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Update">
+                <xs:annotation>
+                    <xs:documentation>A15</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Deactivation">
+                <xs:annotation>
+                    <xs:documentation>A16</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Reactivation">
+                <xs:annotation>
+                    <xs:documentation>A17</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Preventive">
+                <xs:annotation>
+                    <xs:documentation>A18</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Curative">
+                <xs:annotation>
+                    <xs:documentation>A19</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Automatic">
+                <xs:annotation>
+                    <xs:documentation>A20</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Open">
+                <xs:annotation>
+                    <xs:documentation>A21</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Close">
+                <xs:annotation>
+                    <xs:documentation>A22</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Stop">
+                <xs:annotation>
+                    <xs:documentation>A23</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Start">
+                <xs:annotation>
+                    <xs:documentation>A24</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Relative">
+                <xs:annotation>
+                    <xs:documentation>A25</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Absolute">
+                <xs:annotation>
+                    <xs:documentation>A26</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Curative or preventive">
+                <xs:annotation>
+                    <xs:documentation>A27</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Unshared bid">
+                <xs:annotation>
+                    <xs:documentation>A28</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Pre Processed">
+                <xs:annotation>
+                    <xs:documentation>A29</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Substituted">
+                <xs:annotation>
+                    <xs:documentation>A30</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Modified">
+                <xs:annotation>
+                    <xs:documentation>A31</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Result">
+                <xs:annotation>
+                    <xs:documentation>A32</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Not satisfied">
+                <xs:annotation>
+                    <xs:documentation>A33</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Rejected">
+                <xs:annotation>
+                    <xs:documentation>A34</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Preliminary">
+                <xs:annotation>
+                    <xs:documentation>A35</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Planned">
+                <xs:annotation>
+                    <xs:documentation>A36</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Confirmed">
+                <xs:annotation>
+                    <xs:documentation>A37</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Shall Be Used">
+                <xs:annotation>
+                    <xs:documentation>A38</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Could Be Used">
+                <xs:annotation>
+                    <xs:documentation>A39</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Proposed">
+                <xs:annotation>
+                    <xs:documentation>A40</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Individual Network Data">
+                <xs:annotation>
+                    <xs:documentation>A41</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Common Network Data">
+                <xs:annotation>
+                    <xs:documentation>A42</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Setpoint schedule">
+                <xs:annotation>
+                    <xs:documentation>A43</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Proportional external signal">
+                <xs:annotation>
+                    <xs:documentation>A44</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="AC emulation">
+                <xs:annotation>
+                    <xs:documentation>A45</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Importing element">
+                <xs:annotation>
+                    <xs:documentation>A46</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Exporting element">
+                <xs:annotation>
+                    <xs:documentation>A47</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="To be optimized">
+                <xs:annotation>
+                    <xs:documentation>A48</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="To be monitored">
+                <xs:annotation>
+                    <xs:documentation>A49</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="To be included in capacity calculation">
+                <xs:annotation>
+                    <xs:documentation>A50</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Relative to previous point in time">
+                <xs:annotation>
+                    <xs:documentation>A51</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="For flow optimization">
+                <xs:annotation>
+                    <xs:documentation>A52</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="For voltage optimization">
+                <xs:annotation>
+                    <xs:documentation>A53</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Presolved">
+                <xs:annotation>
+                    <xs:documentation>A54</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="VALIDATED">
+                <xs:annotation>
+                    <xs:documentation>A100</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="MALFORMED">
+                <xs:annotation>
+                    <xs:documentation>A101</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="UNABLE_TO_SEND">
+                <xs:annotation>
+                    <xs:documentation>A102</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE">
+                <xs:annotation>
+                    <xs:documentation>A103</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT">
+                <xs:annotation>
+                    <xs:documentation>A104</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="SENT_TO_PERMISSION_ADMINISTRATOR">
+                <xs:annotation>
+                    <xs:documentation>A105</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="TIMED_OUT">
+                <xs:annotation>
+                    <xs:documentation>A106</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ACCEPTED">
+                <xs:annotation>
+                    <xs:documentation>A107</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="REVOKED">
+                <xs:annotation>
+                    <xs:documentation>A108</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="TERMINATED">
+                <xs:annotation>
+                    <xs:documentation>A109</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="TIME_LIMIT">
+                <xs:annotation>
+                    <xs:documentation>A110</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="INVALID">
+                <xs:annotation>
+                    <xs:documentation>A111</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="CREATED">
+                <xs:annotation>
+                    <xs:documentation>A112</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="YMDHM_DateTime">
+        <xs:annotation>
+            <xs:documentation>In ESMP, the date and time is expressed as &quot;YYYY-MM-DDThh:mmZ&quot;, which conforms
+                with ISO 8601 UTC time zone. This date and time is without the seconds.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"></xs:restriction>
+    </xs:simpleType>
+</xs:schema>

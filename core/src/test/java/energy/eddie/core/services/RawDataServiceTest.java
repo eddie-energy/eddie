@@ -10,6 +10,7 @@ import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.concurrent.Flow;
 
@@ -36,16 +37,16 @@ class RawDataServiceTest {
         StepVerifier.create(flux)
                 .then(() -> {
                     rawDataService.registerProvider(provider1);
-                    sink1.tryEmitNext(new RawDataMessage("foo", "bar", "id1", mock(DataSourceInformation.class), ZonedDateTime.now(), "rawPayload1"));
-                    sink1.tryEmitNext(new RawDataMessage("foo", "bar", "id1", mock(DataSourceInformation.class), ZonedDateTime.now(), "rawPayload2"));
+                    sink1.tryEmitNext(new RawDataMessage("foo", "bar", "id1", mock(DataSourceInformation.class), ZonedDateTime.now(ZoneOffset.UTC), "rawPayload1"));
+                    sink1.tryEmitNext(new RawDataMessage("foo", "bar", "id1", mock(DataSourceInformation.class), ZonedDateTime.now(ZoneOffset.UTC), "rawPayload2"));
                 })
                 // Then
                 .expectNextCount(2)
                 // When
                 .then(() -> {
                     rawDataService.registerProvider(provider2);
-                    sink1.tryEmitNext(new RawDataMessage("foo", "bar", "id1", mock(DataSourceInformation.class), ZonedDateTime.now(), "rawPayload3"));
-                    sink2.tryEmitNext(new RawDataMessage("foo", "bar", "id1", mock(DataSourceInformation.class), ZonedDateTime.now(), "rawPayload4"));
+                    sink1.tryEmitNext(new RawDataMessage("foo", "bar", "id1", mock(DataSourceInformation.class), ZonedDateTime.now(ZoneOffset.UTC), "rawPayload3"));
+                    sink2.tryEmitNext(new RawDataMessage("foo", "bar", "id1", mock(DataSourceInformation.class), ZonedDateTime.now(ZoneOffset.UTC), "rawPayload4"));
                 })
                 // Then
                 .expectNextCount(2)

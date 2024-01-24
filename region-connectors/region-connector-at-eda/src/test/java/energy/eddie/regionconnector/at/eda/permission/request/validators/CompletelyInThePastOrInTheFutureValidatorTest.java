@@ -6,9 +6,8 @@ import energy.eddie.regionconnector.at.eda.permission.request.states.AtAcceptedP
 import energy.eddie.regionconnector.at.eda.permission.request.validation.CompletelyInThePastOrInTheFutureValidator;
 import org.junit.jupiter.api.Test;
 
-import java.time.Clock;
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -27,8 +26,8 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
                 "convId",
                 "dsoId",
                 Optional.empty(),
-                LocalDate.now(ZoneId.systemDefault()).minusDays(5),
-                Optional.of(LocalDate.now(ZoneId.systemDefault()).plusDays(5)),
+                ZonedDateTime.now(ZoneOffset.UTC).minusDays(5),
+                ZonedDateTime.now(ZoneOffset.UTC).plusDays(5),
                 new AtAcceptedPermissionRequestState(null)
         );
 
@@ -45,9 +44,9 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
     @Test
     void isValid_whenStartAndEndDateInThePast() {
         // Given
-        LocalDate now = LocalDate.now(Clock.systemUTC());
-        LocalDate start = now.minusDays(11);
-        LocalDate end = now.minusDays(1);
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        ZonedDateTime start = now.minusDays(11);
+        ZonedDateTime end = now.minusDays(1);
         CompletelyInThePastOrInTheFutureValidator validator = new CompletelyInThePastOrInTheFutureValidator();
         AtPermissionRequest permissionRequest = new SimplePermissionRequest(
                 "pid",
@@ -58,7 +57,7 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
                 "dsoId",
                 Optional.empty(),
                 start,
-                Optional.of(end),
+                end,
                 new AtAcceptedPermissionRequestState(null)
         );
 
@@ -72,9 +71,9 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
     @Test
     void isValid_whenStartAndEndDateInTheFuture() {
         // Given
-        LocalDate now = LocalDate.now(Clock.systemUTC());
-        LocalDate start = now.plusDays(1);
-        LocalDate end = now.plusDays(11);
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        ZonedDateTime start = now.plusDays(1);
+        ZonedDateTime end = now.plusDays(1);
         AtPermissionRequest permissionRequest = new SimplePermissionRequest(
                 "pid",
                 "cid",
@@ -84,7 +83,7 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
                 "dsoId",
                 Optional.empty(),
                 start,
-                Optional.of(end),
+                end,
                 new AtAcceptedPermissionRequestState(null)
         );
         CompletelyInThePastOrInTheFutureValidator validator = new CompletelyInThePastOrInTheFutureValidator();
@@ -99,7 +98,7 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
     @Test
     void isValid_whenStartDateIsNow() {
         // Given
-        LocalDate now = LocalDate.now(Clock.systemUTC());
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         CompletelyInThePastOrInTheFutureValidator validator = new CompletelyInThePastOrInTheFutureValidator();
         AtPermissionRequest permissionRequest = new SimplePermissionRequest(
                 "pid",
@@ -110,7 +109,7 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
                 "dsoId",
                 Optional.empty(),
                 now,
-                Optional.empty(),
+                null,
                 new AtAcceptedPermissionRequestState(null)
         );
 
@@ -124,7 +123,7 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
     @Test
     void isValid_whenStartDateIsInTheFutureAndDataToEmpty() {
         // Given
-        LocalDate now = LocalDate.now(Clock.systemUTC());
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         CompletelyInThePastOrInTheFutureValidator validator = new CompletelyInThePastOrInTheFutureValidator();
         AtPermissionRequest permissionRequest = new SimplePermissionRequest(
                 "pid",
@@ -135,7 +134,7 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
                 "dsoId",
                 Optional.empty(),
                 now.plusDays(10),
-                Optional.empty(),
+                null,
                 new AtAcceptedPermissionRequestState(null)
         );
 
@@ -149,7 +148,7 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
     @Test
     void isNotValid_whenStartDateIsInThePastAndDataToEmpty() {
         // Given
-        LocalDate now = LocalDate.now(Clock.systemUTC());
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         CompletelyInThePastOrInTheFutureValidator validator = new CompletelyInThePastOrInTheFutureValidator();
         AtPermissionRequest permissionRequest = new SimplePermissionRequest(
                 "pid",
@@ -160,7 +159,7 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
                 "dsoId",
                 Optional.empty(),
                 now.minusDays(10),
-                Optional.empty(),
+                null,
                 new AtAcceptedPermissionRequestState(null)
         );
 

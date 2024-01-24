@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.CreatedState;
+import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
 import jakarta.annotation.Nullable;
 
 import java.time.ZonedDateTime;
@@ -17,7 +18,7 @@ import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConst
 import static java.util.Objects.requireNonNull;
 
 
-public class DatadisPermissionRequest implements EsPermissionRequest {
+public class DatadisPermissionRequest extends TimestampedPermissionRequest implements EsPermissionRequest {
     private final String connectionId;
     private final String permissionId;
     private final String nif;
@@ -40,7 +41,9 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     public DatadisPermissionRequest(
             String permissionId,
             PermissionRequestForCreation requestForCreation,
-            AuthorizationApi authorizationApi) {
+            AuthorizationApi authorizationApi
+    ) {
+        super(ZONE_ID_SPAIN);
         requireNonNull(permissionId);
         requireNonNull(requestForCreation);
         requireNonNull(authorizationApi);
@@ -178,12 +181,12 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     }
 
     @Override
-    public ZonedDateTime requestDataFrom() {
+    public ZonedDateTime start() {
         return requestDataFrom;
     }
 
     @Override
-    public ZonedDateTime requestDataTo() {
+    public ZonedDateTime end() {
         return requestDataTo;
     }
 

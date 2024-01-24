@@ -15,14 +15,14 @@ class PlainAiidaConfigurationTest {
     void givenAnyInvalidKafkaTopic_throwsException(String invalidTopic) {
         var valid = "ValidTopicName";
 
-        assertThrows(InvalidTopicException.class, () -> new PlainAiidaConfiguration("localhost:9093", invalidTopic, valid, valid));
-        assertThrows(InvalidTopicException.class, () -> new PlainAiidaConfiguration("localhost:9093", valid, invalidTopic, valid));
-        assertThrows(InvalidTopicException.class, () -> new PlainAiidaConfiguration("localhost:9093", valid, valid, invalidTopic));
+        assertThrows(InvalidTopicException.class, () -> new PlainAiidaConfiguration("localhost:9093", invalidTopic, valid, valid, "customerId"));
+        assertThrows(InvalidTopicException.class, () -> new PlainAiidaConfiguration("localhost:9093", valid, invalidTopic, valid, "customerId"));
+        assertThrows(InvalidTopicException.class, () -> new PlainAiidaConfiguration("localhost:9093", valid, valid, invalidTopic, "customerId"));
     }
 
     @Test
     void givenValidTopic_doesNotThrow() {
         var valid = "ValidTopicName";
-        assertDoesNotThrow(() -> new PlainAiidaConfiguration("localhost:9093", valid, valid, valid));
+        assertDoesNotThrow(() -> new PlainAiidaConfiguration("localhost:9093", valid, valid, valid, "customerId"));
     }
 }

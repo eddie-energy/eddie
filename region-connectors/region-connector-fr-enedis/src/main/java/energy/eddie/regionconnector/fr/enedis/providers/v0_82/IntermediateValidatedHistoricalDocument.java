@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.cim.validated_historical_data.v0_82.*;
+import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiVersion;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveIntervalReading;

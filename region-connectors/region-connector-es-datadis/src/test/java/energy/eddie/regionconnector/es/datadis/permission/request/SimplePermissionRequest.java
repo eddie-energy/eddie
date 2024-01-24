@@ -53,6 +53,11 @@ public class SimplePermissionRequest implements EsPermissionRequest {
     }
 
     @Override
+    public ZonedDateTime created() {
+        return null;
+    }
+
+    @Override
     public void changeState(PermissionRequestState state) {
         this.state = state;
     }
@@ -100,12 +105,12 @@ public class SimplePermissionRequest implements EsPermissionRequest {
     }
 
     @Override
-    public ZonedDateTime requestDataFrom() {
+    public ZonedDateTime start() {
         return requestDataFrom;
     }
 
     @Override
-    public ZonedDateTime requestDataTo() {
+    public ZonedDateTime end() {
         return requestDataTo;
     }
 

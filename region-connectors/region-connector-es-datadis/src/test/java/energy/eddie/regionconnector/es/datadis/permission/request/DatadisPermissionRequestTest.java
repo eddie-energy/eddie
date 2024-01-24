@@ -63,7 +63,7 @@ class DatadisPermissionRequestTest {
                 requestDataFrom, futureDate, measurementType);
 
         var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
-        assertEquals(request.requestDataTo(), request.permissionEnd());
+        assertEquals(request.end(), request.permissionEnd());
     }
 
     @Test

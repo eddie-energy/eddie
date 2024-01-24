@@ -24,6 +24,8 @@ dependencies {
     implementation(libs.microprofile.config)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.annotations)
+    implementation(libs.jakarta.annotation.api)
+
     testImplementation(libs.junit.jupiter)
 
     // dependencies needed to generate code
@@ -33,8 +35,7 @@ dependencies {
     jaxb(libs.jaxb.plugin.annotate)
     jaxb(libs.jackson.annotations)
 
-    implementation(libs.jakarta.xml.bind.api)
-    implementation(libs.jakarta.annotation.api)
+
 }
 
 tasks.getByName<Test>("test") {
@@ -94,7 +95,7 @@ sourceSets {
     }
 }
 
-val generateCIMSchemaClasses = tasks.create("generateCIMSchemaClasses") {
+val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
     description = "Generate CIM Java Classes from XSD files"
     group = "Build"
 
@@ -112,24 +113,30 @@ val generateCIMSchemaClasses = tasks.create("generateCIMSchemaClasses") {
 
         // iterate each folder and generate the classes with the same package name
         cimSchemaFiles.walk().forEach { srcFile ->
-            if (srcFile.isFile && srcFile.extension == xsdExtension) {
-                val xjbFileBasename = srcFile.name.dropLast(xsdExtension.length) + "xjb"
-                val file = srcFile.copyTo(temporaryDir.resolve(srcFile.relativeTo(cimSchemaFiles)), true)
-                val xjbFile = temporaryDir.resolve(srcFile.parentFile.resolve(xjbFileBasename).relativeTo(cimSchemaFiles)) // generate the bindings file
-                generateBindingsFile(srcFile, xjbFile.absolutePath)
+            if (!srcFile.isFile || srcFile.extension != xsdExtension) {
+                return@forEach
+            }
+            val xjbFileBasename = srcFile.name.dropLast(xsdExtension.length) + "xjb"
+            val file = srcFile.copyTo(temporaryDir.resolve(srcFile.relativeTo(cimSchemaFiles)), true)
+            val xjbFile = temporaryDir.resolve(
+                srcFile.parentFile.resolve(xjbFileBasename).relativeTo(cimSchemaFiles)
+            ) // generate the bindings file
+            generateBindingsFile(srcFile, xjbFile.absolutePath)
 
-                val packageName = "energy.eddie.cim." + srcFile.parentFile.parentFile.name + "." + srcFile.parentFile.name
-                exec {
-                    executable(Path(System.getProperty("java.home"), "bin", "java"))
-                    val classpath = jaxb.resolve().joinToString(File.pathSeparator)
-                    args("-cp", classpath, "com.sun.tools.xjc.XJCFacade",
-                            "-d", generatedXJCJavaDir,
-                            file.absolutePath,
-                            "-p", packageName,
-                            "-b", xjbFile.absolutePath,
-                            "-mark-generated", "-npa", "-encoding", "UTF-8",
-                            "-extension", "-Xfluent-api", "-Xannotate")
-                }
+            val packageName =
+                "energy.eddie.cim." + srcFile.parentFile.parentFile.name + "." + srcFile.parentFile.name
+            exec {
+                executable(Path(System.getProperty("java.home"), "bin", "java"))
+                val classpath = jaxb.resolve().joinToString(File.pathSeparator)
+                args(
+                    "-cp", classpath, "com.sun.tools.xjc.XJCFacade",
+                    "-d", generatedXJCJavaDir,
+                    file.absolutePath,
+                    "-p", packageName,
+                    "-b", xjbFile.absolutePath,
+                    "-mark-generated", "-npa", "-encoding", "UTF-8",
+                    "-extension", "-Xfluent-api", "-Xannotate"
+                )
             }
         }
     }
@@ -149,24 +156,27 @@ fun generateBindingsFile(xsdFile: File, bindingsFilePath: String) {
 
     val simpleTypes = xsdDocument.getElementsByTagName("xs:simpleType")
     val bindings = StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-    bindings.append("<bindings xmlns=\"https://jakarta.ee/xml/ns/jaxb\" ")
-            .append("xmlns:annox=\"http://annox.dev.java.net\" xmlns:jaxb=\"https://jakarta.ee/xml/ns/jaxb\" jaxb:extensionBindingPrefixes=\"xjc annox\" ")
-            .append("xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" ")
-            .append("xmlns:xjc=\"http://java.sun.com/xml/ns/jaxb/xjc\" ")
-            .append("version=\"3.0\">\n")
-    bindings.append("    <globalBindings>\n")
-    bindings.append("           <xjc:simple/>\n") // Removes ComplexType Suffix from Root Elements
-    bindings.append("    </globalBindings>\n")
-    bindings.append("    <bindings schemaLocation=\"${schemaLocation}\" node=\"/xs:schema\">\n")
+    bindings
+        .append("<bindings xmlns=\"https://jakarta.ee/xml/ns/jaxb\" ")
+        .append("xmlns:annox=\"http://annox.dev.java.net\" xmlns:jaxb=\"https://jakarta.ee/xml/ns/jaxb\" jaxb:extensionBindingPrefixes=\"xjc annox\" ")
+        .append("xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" ")
+        .append("xmlns:xjc=\"http://java.sun.com/xml/ns/jaxb/xjc\" ")
+        .append("version=\"3.0\">\n")
+        .append("    <globalBindings>\n")
+        .append("           <xjc:simple/>\n") // Removes ComplexType Suffix from Root Elements
+        .append("    </globalBindings>\n")
+        .append("    <bindings schemaLocation=\"${schemaLocation}\" node=\"/xs:schema\">\n")
 
-    // Add annotations to the date and time fields of the DateAndOrTimeComplexType
-    bindings.append("        <bindings node=\"//xs:complexType[@name='DateAndOrTimeComplexType']/xs:sequence/xs:element[@name='date']\">\n")
-    bindings.append("            <annox:annotate target=\"field\">@com.fasterxml.jackson.annotation.JsonFormat(shape = JsonFormat.Shape.STRING, pattern = \"yyyy-MM-dd\")</annox:annotate>\n")
-    bindings.append("        </bindings>\n")
-    bindings.append("        <bindings node=\"//xs:complexType[@name='DateAndOrTimeComplexType']/xs:sequence/xs:element[@name='time']\">\n")
-    bindings.append("            <annox:annotate target=\"field\">@com.fasterxml.jackson.annotation.JsonFormat(shape = JsonFormat.Shape.STRING, pattern = \"HH:mm:ss.SSS'Z'\")</annox:annotate>\n")
-    bindings.append("        </bindings>\n")
-
+    if (xsdDocument.getElementsByTagName("DateAndOrTimeComplexType").length > 0) {
+        // Add annotations to the date and time fields of the DateAndOrTimeComplexType
+        bindings
+            .append("        <bindings node=\"//xs:complexType[@name='DateAndOrTimeComplexType']/xs:sequence/xs:element[@name='date']\">\n")
+            .append("            <annox:annotate target=\"field\">@com.fasterxml.jackson.annotation.JsonFormat(shape = JsonFormat.Shape.STRING, pattern = \"yyyy-MM-dd\")</annox:annotate>\n")
+            .append("        </bindings>\n")
+            .append("        <bindings node=\"//xs:complexType[@name='DateAndOrTimeComplexType']/xs:sequence/xs:element[@name='time']\">\n")
+            .append("            <annox:annotate target=\"field\">@com.fasterxml.jackson.annotation.JsonFormat(shape = JsonFormat.Shape.STRING, pattern = \"HH:mm:ss.SSS'Z'\")</annox:annotate>\n")
+            .append("        </bindings>\n")
+    }
     // Make enums use the documentation as the enum name, as the values are not readable / incompatible with Java
     for (i in 0 until simpleTypes.length) {
         val simpleType = simpleTypes.item(i) as Element
@@ -200,11 +210,11 @@ fun generateBindingsFile(xsdFile: File, bindingsFilePath: String) {
 
 
 fun String.toJavaEnumName(): String =
-        this.split("\\s+".toRegex())
-                .joinToString("_") { it.uppercase() }
-                .replace("[^A-Za-z0-9_]".toRegex(), "")
+    this.split("\\s+".toRegex())
+        .joinToString("_") { it.uppercase() }
+        .replace("[^A-Za-z0-9_]".toRegex(), "")
 
 fun String.toJavaClassName(): String =
-        this.split("\\s+".toRegex())
-                .joinToString("") { it.replaceFirstChar(Char::uppercase) }
-                .replace("[^A-Za-z0-9]".toRegex(), "")
+    this.split("\\s+".toRegex())
+        .joinToString("") { it.replaceFirstChar(Char::uppercase) }
+        .replace("[^A-Za-z0-9]".toRegex(), "")

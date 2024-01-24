@@ -3,9 +3,11 @@ package energy.eddie.regionconnector.at;
 import de.ponton.xp.adapter.api.ConnectionException;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.validated_historical_data.v0_82.CodingSchemeTypeList;
+import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
@@ -24,6 +26,8 @@ import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.ConsentMarketDocumentExtension;
+import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import jakarta.annotation.Nullable;
 import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
@@ -102,11 +106,27 @@ public class AtEdaSpringConfig {
     }
 
     @Bean
+    public Sinks.Many<ConsentMarketDocument> consentMarketDocumentSink() {
+        return Sinks
+                .many()
+                .multicast()
+                .onBackpressureBuffer();
+    }
+
+    @Bean
     public Set<Extension<AtPermissionRequest>> permissionRequestExtensions(AtPermissionRequestRepository repository,
-                                                                           Sinks.Many<ConnectionStatusMessage> messages) {
+                                                                           Sinks.Many<ConnectionStatusMessage> messages,
+                                                                           Sinks.Many<ConsentMarketDocument> cmdSink,
+                                                                           AtConfiguration configuration,
+                                                                           CommonInformationModelConfiguration cimConfig) {
         return Set.of(
                 new SavingExtension<>(repository),
-                new MessagingExtension<>(messages)
+                new MessagingExtension<>(messages),
+                new ConsentMarketDocumentExtension<>(
+                        cmdSink,
+                        configuration.eligiblePartyId(),
+                        cimConfig.eligiblePartyNationalCodingScheme().value()
+                )
         );
     }
 
@@ -120,7 +140,8 @@ public class AtEdaSpringConfig {
     public ConsumptionRecordProcessor consumptionRecordProcessor(
             PermissionRequestService permissionRequestService,
             CommonInformationModelConfiguration commonInformationModelConfiguration,
-            EdaAdapter edaAdapter) {
+            EdaAdapter edaAdapter
+    ) {
         return new ConsumptionRecordProcessor(
                 new ValidatedHistoricalDataMarketDocumentDirector(
                         commonInformationModelConfiguration,
@@ -129,5 +150,10 @@ public class AtEdaSpringConfig {
                 new EddieValidatedHistoricalDataMarketDocumentPublisher(permissionRequestService),
                 edaAdapter
         );
+    }
+
+    @Bean
+    public ConsentMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<ConsentMarketDocument> sink) {
+        return new CommonConsentMarketDocumentProvider(sink);
     }
 }

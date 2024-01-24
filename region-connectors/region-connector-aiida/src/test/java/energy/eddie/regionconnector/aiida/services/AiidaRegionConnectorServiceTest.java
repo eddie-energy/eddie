@@ -32,7 +32,8 @@ import reactor.test.StepVerifier;
 
 import java.time.Clock;
 import java.time.Duration;
-import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -66,7 +67,7 @@ class AiidaRegionConnectorServiceTest {
         Set<Extension<AiidaPermissionRequestInterface>> extensions = Set.of(new MessagingExtension<>(statusMessageSink),
                 new SavingExtension<>(mockRepository));
 
-        var configuration = new PlainAiidaConfiguration(bootstrapServers, dataTopic, statusTopic, terminationPrefix);
+        var configuration = new PlainAiidaConfiguration(bootstrapServers, dataTopic, statusTopic, terminationPrefix, "customerId");
         var factory = new AiidaFactory(configuration, dataNeedsService, Clock.systemUTC(), extensions);
 
         service = new AiidaRegionConnectorService(factory, mockRepository, statusMessageSink, terminationSink);
@@ -121,7 +122,7 @@ class AiidaRegionConnectorServiceTest {
     @Test
     void givenPermissionId_terminateRequest_publishesTerminationRequestOnFluxAndUpdatesDB() throws StateTransitionException {
         var permissionId = UUID.randomUUID().toString();
-        var start = Instant.now();
+        var start = ZonedDateTime.now(ZoneOffset.UTC);
         var expiration = start.plusSeconds(1000);
         AiidaPermissionRequest request = new AiidaPermissionRequest(permissionId, connectionId,
                 "dataNeedId", "SomeTopic", start, expiration);

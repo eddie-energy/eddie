@@ -2,8 +2,8 @@ package energy.eddie.regionconnector.at.eda.requests;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -12,8 +12,8 @@ class CCMOTimeFrameTest {
     @Test
     void ccmoTimeFrameValidDates() {
         // given
-        LocalDate start = LocalDate.of(2023, 5, 1);
-        LocalDate end = LocalDate.of(2023, 5, 5);
+        ZonedDateTime start = ZonedDateTime.of(2023, 5, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        ZonedDateTime end = ZonedDateTime.of(2023, 5, 5, 0, 0, 0, 0, ZoneOffset.UTC);
 
         // when
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
@@ -30,7 +30,7 @@ class CCMOTimeFrameTest {
     @Test()
     void ccmoTimeFrameNullStart() {
         // given
-        LocalDate end = LocalDate.of(2023, 5, 5);
+        ZonedDateTime end = ZonedDateTime.of(2023, 5, 5, 0, 0, 0, 0, ZoneOffset.UTC);
 
         // when
         // then
@@ -40,7 +40,7 @@ class CCMOTimeFrameTest {
     @Test()
     void ccmoTimeFrameInFutureAndEndNull_doesNotThrow() {
         // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(10);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(10);
 
         // when
         // then

@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import energy.eddie.api.CommonInformationModelVersions;
-import energy.eddie.cim.validated_historical_data.v0_82.*;
+import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.processing.utils.XmlGregorianCalenderUtils;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;

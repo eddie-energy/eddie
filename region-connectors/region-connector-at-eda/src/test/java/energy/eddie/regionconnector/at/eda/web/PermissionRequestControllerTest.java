@@ -27,8 +27,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.time.Clock;
-import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -188,8 +188,8 @@ class PermissionRequestControllerTest {
         CreatedPermissionRequest expected = new CreatedPermissionRequest("pid", "cmRequestId");
         when(permissionRequestCreationService.createAndSendPermissionRequest(any()))
                 .thenReturn(expected);
-        LocalDate end = LocalDate.now(Clock.systemUTC()).minusDays(1);
-        LocalDate start = end.minusDays(1);
+        ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
+        ZonedDateTime start = end.minusDays(1);
         PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "0".repeat(33), "dnid", "0".repeat(8), start, end, Granularity.PT15M);
 
         String content = objectMapper.writeValueAsString(permissionRequestForCreation);
@@ -211,8 +211,8 @@ class PermissionRequestControllerTest {
         CreatedPermissionRequest expected = new CreatedPermissionRequest("pid", "cmRequestId");
         when(permissionRequestCreationService.createAndSendPermissionRequest(any()))
                 .thenReturn(expected);
-        LocalDate end = LocalDate.now(Clock.systemUTC()).minusDays(1);
-        LocalDate start = end.minusDays(1);
+        ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
+        ZonedDateTime start = end.minusDays(1);
         PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "0".repeat(33), "dnid", "0".repeat(8), start, end, Granularity.P1M);
         String content = objectMapper.writeValueAsString(permissionRequestForCreation);
         // When
@@ -230,7 +230,7 @@ class PermissionRequestControllerTest {
     @Test
     void createPermissionRequest_201WhenEndDateNull() throws Exception {
         // Given
-        LocalDate start = LocalDate.now(Clock.systemUTC()).minusDays(1);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
         PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "0".repeat(33), "dnid", "0".repeat(8), start, null, Granularity.PT15M);
         String content = objectMapper.writeValueAsString(permissionRequestForCreation);
 
@@ -248,8 +248,8 @@ class PermissionRequestControllerTest {
     @MethodSource("permissionRequestArguments")
     void createPermissionRequest_400WhenMissingStringParameters(String connectionId, String meteringPoint, String dataNeedsId, String dsoId, String errorFieldName) throws Exception {
         // Given
-        LocalDate end = LocalDate.now(Clock.systemUTC()).minusDays(1);
-        LocalDate start = end.minusDays(1);
+        ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
+        ZonedDateTime start = end.minusDays(1);
         PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(connectionId, meteringPoint, dataNeedsId, dsoId, start, end, Granularity.PT15M);
         String content = objectMapper.writeValueAsString(permissionRequestForCreation);
 

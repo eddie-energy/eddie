@@ -1,7 +1,12 @@
 package energy.eddie.regionconnector.fr.enedis.utils;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
 
 public class DateTimeConverter {
     private DateTimeConverter() {
@@ -13,6 +18,6 @@ public class DateTimeConverter {
         LocalTime localTime = LocalTime.of(0, 0, 0, 0);
         LocalDateTime localDateTime = LocalDateTime.of(localDate, localTime);
 
-        return ZonedDateTime.of(localDateTime, ZoneId.of("Europe/Paris"));
+        return ZonedDateTime.of(localDateTime, ZONE_ID_FR);
     }
 }

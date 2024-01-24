@@ -7,6 +7,7 @@ public interface AiidaConfiguration {
     String KAFKA_STATUS_MESSAGES_TOPIC = PREFIX + "kafka.status-messages-topic";
     String KAFKA_TERMINATION_TOPIC_PREFIX = PREFIX + "kafka.termination-topic-prefix";
     String KAFKA_GROUP_ID = PREFIX + "kafka.group-id";
+    String CUSTOMER_ID = PREFIX + "customer.id";
 
     /**
      * Returns the list of Kafka brokers to which this region connector will connect to, and which will be added
@@ -37,4 +38,11 @@ public interface AiidaConfiguration {
      * @return Kafka topic name prefix.
      */
     String kafkaTerminationTopicPrefix();
+
+    /**
+     * Customer Identifier
+     *
+     * @return customerId
+     */
+    String customerId();
 }

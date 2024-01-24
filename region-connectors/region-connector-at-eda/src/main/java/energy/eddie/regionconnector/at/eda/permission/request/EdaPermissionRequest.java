@@ -6,21 +6,24 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtCreatedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
 import jakarta.annotation.Nullable;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-public class EdaPermissionRequest implements AtPermissionRequest {
+import static energy.eddie.regionconnector.at.eda.utils.DateTimeConstants.AT_ZONE_ID;
+
+public class EdaPermissionRequest extends TimestampedPermissionRequest implements AtPermissionRequest {
     private final String connectionId;
     private final String permissionId;
     private final String cmRequestId;
     private final String conversationId;
-    private final LocalDate dataFrom;
+    private final ZonedDateTime start;
     @Nullable
-    private final LocalDate dataTo;
+    private final ZonedDateTime end;
     private final String dataNeedId;
     private final EdaDataSourceInformation dataSourceInformation;
     @Nullable
@@ -35,6 +38,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     }
 
     public EdaPermissionRequest(String connectionId, String permissionId, String dataNeedId, CCMORequest ccmoRequest, EdaAdapter edaAdapter) {
+        super(AT_ZONE_ID);
         this.connectionId = connectionId;
         this.permissionId = permissionId;
         this.dataNeedId = dataNeedId;
@@ -42,8 +46,8 @@ public class EdaPermissionRequest implements AtPermissionRequest {
         this.conversationId = ccmoRequest.messageId();
         this.meteringPointId = ccmoRequest.meteringPointId().orElse(null);
         this.dataSourceInformation = new EdaDataSourceInformation(ccmoRequest.dsoId());
-        this.dataFrom = ccmoRequest.dataFrom();
-        this.dataTo = ccmoRequest.dataTo().orElse(null);
+        this.start = ccmoRequest.start();
+        this.end = ccmoRequest.end().orElse(null);
         this.state = new AtCreatedPermissionRequestState(this, ccmoRequest, edaAdapter);
     }
 
@@ -93,13 +97,14 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     }
 
     @Override
-    public LocalDate dataFrom() {
-        return dataFrom;
+    public ZonedDateTime start() {
+        return start;
     }
 
     @Override
-    public Optional<LocalDate> dataTo() {
-        return Optional.ofNullable(dataTo);
+    @Nullable
+    public ZonedDateTime end() {
+        return end;
     }
 
     @Override
@@ -135,8 +140,8 @@ public class EdaPermissionRequest implements AtPermissionRequest {
                 Objects.equals(permissionId, that.permissionId) &&
                 Objects.equals(cmRequestId, that.cmRequestId) &&
                 Objects.equals(conversationId, that.conversationId) &&
-                Objects.equals(dataFrom, that.dataFrom) &&
-                Objects.equals(dataTo, that.dataTo) &&
+                Objects.equals(start, that.start) &&
+                Objects.equals(end, that.end) &&
                 Objects.equals(dataNeedId, that.dataNeedId) &&
                 Objects.equals(meteringPointId, that.meteringPointId) &&
                 Objects.equals(state.getClass(), that.state.getClass()) &&
@@ -150,8 +155,8 @@ public class EdaPermissionRequest implements AtPermissionRequest {
                 permissionId,
                 cmRequestId,
                 conversationId,
-                dataFrom,
-                dataTo,
+                start,
+                end,
                 dataNeedId,
                 meteringPointId,
                 state.getClass().hashCode(),

@@ -4,6 +4,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
@@ -13,6 +14,10 @@ public class DateTimeConverter {
     }
 
     public static XMLGregorianCalendar dateTimeToXml(LocalDateTime dateTime) {
+        return DatatypeFactory.newDefaultInstance().newXMLGregorianCalendar(Objects.requireNonNull(dateTime).format(DateTimeFormatter.ISO_DATE_TIME));
+    }
+
+    public static XMLGregorianCalendar dateTimeToXml(ZonedDateTime dateTime) {
         return DatatypeFactory.newDefaultInstance().newXMLGregorianCalendar(Objects.requireNonNull(dateTime).format(DateTimeFormatter.ISO_DATE_TIME));
     }
 

@@ -15,6 +15,10 @@ plugins {
     id("org.sonarqube")
 }
 
+dependencies {
+    implementation(libs.jakarta.xml.bind.api)
+}
+
 plugins.withId(libs.plugins.errorprone.get().pluginId) {
     dependencies {
         errorprone(libs.errorprone.core)

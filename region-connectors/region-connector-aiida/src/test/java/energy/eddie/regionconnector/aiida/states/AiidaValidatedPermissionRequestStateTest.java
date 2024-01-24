@@ -6,7 +6,8 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,7 +35,7 @@ class AiidaValidatedPermissionRequestStateTest {
     @Test
     void sendToPermissionAdministrator_changesToSentToPermissionAdministrator() {
         // Given
-        var now = Instant.now();
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
         AiidaPermissionRequest permissionRequest = new AiidaPermissionRequest("foo", "bar",
                 "loo", "too", now, now);
         var state = new AiidaValidatedPermissionRequestState(permissionRequest);

@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.aiida.web;
 
+import energy.eddie.api.agnostic.DataNeedsService;
 import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
@@ -36,6 +37,8 @@ class PermissionRequestControllerTest {
     private AiidaRegionConnectorService service;
     @MockBean
     private AiidaPermissionRequestRepository unusedMockRepository;
+    @MockBean
+    private DataNeedsService unusedDataNeedsService;
 
     @TestConfiguration
     static class ControllerTestConfiguration {

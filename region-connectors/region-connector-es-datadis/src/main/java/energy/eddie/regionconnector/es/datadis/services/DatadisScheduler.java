@@ -127,15 +127,15 @@ public class DatadisScheduler implements AutoCloseable {
             return Mono.error(new InvalidPointAndMeasurementTypeCombinationException(supply.pointType(), permissionRequest.measurementType()));
 
         LocalDate now = ZonedDateTime.now(ZoneOffset.UTC).toLocalDate();
-        LocalDate from = permissionRequest.requestDataFrom().toLocalDate();
+        LocalDate from = permissionRequest.start().toLocalDate();
         // check if request data from is in the future or today
         if (from.isAfter(now) || from.isEqual(now)) {
             return Mono.empty(); // the start of the permission is in the future, so we can't pull any metering data yet
         }
 
-        LocalDate to = permissionRequest.requestDataTo().toLocalDate().isAfter(now)
+        LocalDate to = Objects.requireNonNull(permissionRequest.end()).toLocalDate().isAfter(now)
                 ? now.minusDays(1)
-                : permissionRequest.requestDataTo().toLocalDate();
+                : permissionRequest.end().toLocalDate();
 
         return Mono.just(new MeteringDataRequest(
                 permissionRequest.nif(),

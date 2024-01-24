@@ -8,8 +8,8 @@ import energy.eddie.regionconnector.at.eda.permission.request.states.*;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -247,8 +247,8 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        when(ccmoRequest.dataFrom()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(5));
-        when(ccmoRequest.dataTo()).thenReturn(Optional.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1)));
+        when(ccmoRequest.start()).thenReturn(ZonedDateTime.now(ZoneOffset.UTC).minusDays(5));
+        when(ccmoRequest.end()).thenReturn(Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusDays(1)));
         PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
 
         // When
@@ -265,8 +265,8 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        when(ccmoRequest.dataFrom()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(5));
-        when(ccmoRequest.dataTo()).thenReturn(Optional.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1)));
+        when(ccmoRequest.start()).thenReturn(ZonedDateTime.now(ZoneOffset.UTC).minusDays(5));
+        when(ccmoRequest.end()).thenReturn(Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusDays(1)));
         PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.validate();
 
@@ -285,8 +285,8 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        when(ccmoRequest.dataFrom()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(5));
-        when(ccmoRequest.dataTo()).thenReturn(Optional.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1)));
+        when(ccmoRequest.start()).thenReturn(ZonedDateTime.now(ZoneOffset.UTC).minusDays(5));
+        when(ccmoRequest.end()).thenReturn(Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusDays(1)));
         PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
@@ -305,8 +305,8 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        when(ccmoRequest.dataFrom()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(5));
-        when(ccmoRequest.dataTo()).thenReturn(Optional.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1)));
+        when(ccmoRequest.start()).thenReturn(ZonedDateTime.now(ZoneOffset.UTC).minusDays(5));
+        when(ccmoRequest.end()).thenReturn(Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusDays(1)));
         PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
@@ -326,8 +326,8 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        when(ccmoRequest.dataFrom()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(5));
-        when(ccmoRequest.dataTo()).thenReturn(Optional.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1)));
+        when(ccmoRequest.start()).thenReturn(ZonedDateTime.now(ZoneOffset.UTC).minusDays(5));
+        when(ccmoRequest.end()).thenReturn(Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusDays(1)));
         PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
@@ -347,8 +347,8 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        when(ccmoRequest.dataFrom()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(5));
-        when(ccmoRequest.dataTo()).thenReturn(Optional.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1)));
+        when(ccmoRequest.start()).thenReturn(ZonedDateTime.now(ZoneOffset.UTC).minusDays(5));
+        when(ccmoRequest.end()).thenReturn(Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusDays(1)));
         PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();

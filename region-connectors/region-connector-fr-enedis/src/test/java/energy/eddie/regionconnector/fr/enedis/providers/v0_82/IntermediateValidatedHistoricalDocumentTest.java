@@ -1,9 +1,10 @@
 package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
-import energy.eddie.cim.validated_historical_data.v0_82.AggregateKind;
-import energy.eddie.cim.validated_historical_data.v0_82.CodingSchemeTypeList;
-import energy.eddie.cim.validated_historical_data.v0_82.SeriesPeriodComplexType;
-import energy.eddie.cim.validated_historical_data.v0_82.ValidatedHistoricalDataMarketDocument;
+
+import energy.eddie.cim.v0_82.vhd.AggregateKind;
+import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
+import energy.eddie.cim.v0_82.vhd.SeriesPeriodComplexType;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocument;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveIntervalReading;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
@@ -20,7 +21,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static energy.eddie.cim.validated_historical_data.v0_82.EnergyProductTypeList.ACTIVE_POWER;
+import static energy.eddie.cim.v0_82.vhd.EnergyProductTypeList.ACTIVE_POWER;
 import static energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveIntervalReading.IntervalLengthEnum.*;
 import static org.junit.jupiter.api.Assertions.*;
 

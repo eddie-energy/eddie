@@ -4,7 +4,7 @@ import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.Energy
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.EnergyData;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.EnergyPosition;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.MeteringIntervall;
-import energy.eddie.cim.validated_historical_data.v0_82.QualityTypeList;
+import energy.eddie.cim.v0_82.vhd.QualityTypeList;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
