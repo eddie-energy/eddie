@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.at.eda;
 
+import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.PermissionProcessStatus;
@@ -10,8 +11,11 @@ import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtPendingAcknowledgmentPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtSentToPermissionAdministratorPermissionRequestState;
-import energy.eddie.regionconnector.at.eda.processing.v0_82.ConsumptionRecordProcessor;
+import energy.eddie.regionconnector.at.eda.provider.EdaEddieValidatedHistoricalDataMarketDocumentProvider;
+import energy.eddie.regionconnector.at.eda.provider.EdaMvp1ConsumptionRecordProvider;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecordService;
+import energy.eddie.regionconnector.at.eda.services.PermissionRequestFulfillmentService;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
 import energy.eddie.regionconnector.at.eda.services.RevocationService;
 import org.junit.jupiter.api.Test;
@@ -20,6 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
@@ -38,7 +43,7 @@ class EdaRegionConnectorIntegrationTest {
     @Autowired
     private PermissionRequestService requestService;
     @MockBean
-    private ConsumptionRecordProcessor consumptionRecordProcessor;
+    private EdaEddieValidatedHistoricalDataMarketDocumentProvider edaEddieValidatedHistoricalDataMarketDocumentProvider;
     @Autowired
     private AtPermissionRequestRepository repository;
     @Autowired
@@ -46,16 +51,24 @@ class EdaRegionConnectorIntegrationTest {
     @MockBean
     private EdaAdapter adapter;
     @MockBean
+    private Flux<ConsumptionRecord> consumptionRecordFlux;
+    @MockBean
     private RegionConnector ignored;
     @MockBean
     private RevocationService alsoIgnored;
+    @MockBean
+    private PermissionRequestFulfillmentService alsoAlsoIgnored;
+    @MockBean
+    private EdaMvp1ConsumptionRecordProvider alsoAlsoAlsoIgnored;
+    @MockBean
+    private IdentifiableConsumptionRecordService alsoAlsoAlsoAlsoIgnored;
 
     @Test
     void subscribeToConnectionStatusMessagePublisher_returnsAccepted_onAccepted() throws TransmissionException {
         TestPublisher<CMRequestStatus> testPublisher = TestPublisher.create();
         when(adapter.getCMRequestStatusStream())
                 .thenReturn(testPublisher.flux());
-        EdaRegionConnector rc = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, messages);
+        EdaRegionConnector rc = new EdaRegionConnector(adapter, requestService, messages);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
@@ -92,7 +105,7 @@ class EdaRegionConnectorIntegrationTest {
         TestPublisher<CMRequestStatus> testPublisher = TestPublisher.create();
         when(adapter.getCMRequestStatusStream())
                 .thenReturn(testPublisher.flux());
-        EdaRegionConnector rc = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, messages);
+        EdaRegionConnector rc = new EdaRegionConnector(adapter, requestService, messages);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
@@ -129,7 +142,7 @@ class EdaRegionConnectorIntegrationTest {
         TestPublisher<CMRequestStatus> testPublisher = TestPublisher.create();
         when(adapter.getCMRequestStatusStream())
                 .thenReturn(testPublisher.flux());
-        EdaRegionConnector rc = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, messages);
+        EdaRegionConnector rc = new EdaRegionConnector(adapter, requestService, messages);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
@@ -164,7 +177,7 @@ class EdaRegionConnectorIntegrationTest {
 
         repository.save(new SimplePermissionRequest("permissionId", "connectionId", "dataNeedId", "test", "test", null));
 
-        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, sink);
+        var uut = new EdaRegionConnector(adapter, requestService, sink);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
 
@@ -197,7 +210,7 @@ class EdaRegionConnectorIntegrationTest {
         request.changeState(new AtSentToPermissionAdministratorPermissionRequestState(request));
         repository.save(request);
 
-        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, messages);
+        var uut = new EdaRegionConnector(adapter, requestService, messages);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ERROR, "", "messageId");
@@ -232,7 +245,7 @@ class EdaRegionConnectorIntegrationTest {
         request.changeState(new AtPendingAcknowledgmentPermissionRequestState(request));
         repository.save(request);
 
-        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, messages);
+        var uut = new EdaRegionConnector(adapter, requestService, messages);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ERROR, "", "messageId");
@@ -272,7 +285,7 @@ class EdaRegionConnectorIntegrationTest {
         request.changeState(new AtSentToPermissionAdministratorPermissionRequestState(request));
         repository.save(request);
 
-        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, messages);
+        var uut = new EdaRegionConnector(adapter, requestService, messages);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.REJECTED, "", "messageId");
@@ -308,7 +321,7 @@ class EdaRegionConnectorIntegrationTest {
         request.changeState(new AtPendingAcknowledgmentPermissionRequestState(request));
         repository.save(request);
 
-        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, messages);
+        var uut = new EdaRegionConnector(adapter, requestService, messages);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
         var cmRequestStatusSent = new CMRequestStatus(CMRequestStatus.Status.SENT, "", "messageId");
@@ -342,7 +355,7 @@ class EdaRegionConnectorIntegrationTest {
 
         repository.save(request);
 
-        var uut = new EdaRegionConnector(adapter, requestService, consumptionRecordProcessor, messages);
+        var uut = new EdaRegionConnector(adapter, requestService, messages);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.RECEIVED, "", "messageId");
