@@ -18,7 +18,7 @@ public class DateTimeConverter {
     }
 
     public static XMLGregorianCalendar dateTimeToXml(ZonedDateTime dateTime) {
-        return DatatypeFactory.newDefaultInstance().newXMLGregorianCalendar(Objects.requireNonNull(dateTime).format(DateTimeFormatter.ISO_DATE_TIME));
+        return DatatypeFactory.newDefaultInstance().newXMLGregorianCalendar(Objects.requireNonNull(dateTime).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
     }
 
     public static XMLGregorianCalendar dateToXml(LocalDate date) {
