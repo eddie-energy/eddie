@@ -31,11 +31,11 @@ class PermissionRequestForm extends LitElement {
 
     const formData = new FormData(event.target);
 
-      let jsonData = {};
+    let jsonData = {};
 
-      if (formData.get("meteringPointId") !== "") {
-        jsonData.meteringPointId = formData.get("meteringPointId");
-      }
+    if (formData.get("meteringPointId") !== "") {
+      jsonData.meteringPointId = formData.get("meteringPointId");
+    }
 
     const startDate = new Date();
     startDate.setDate(
@@ -49,12 +49,12 @@ class PermissionRequestForm extends LitElement {
       endDate.setDate(endDate.getDate() + this.dataNeedAttributes.durationEnd);
     }
 
-      jsonData.dsoId = this.companyId;
-      jsonData.connectionId = this.connectionId;
-      jsonData.start = startDate.toISOString().substring(0, 10);
-      jsonData.end = endDate.toISOString().substring(0, 10);
-      jsonData.dataNeedId = this.dataNeedAttributes.id;
-      jsonData.granularity = this.dataNeedAttributes.granularity;
+    jsonData.dsoId = this.companyId;
+    jsonData.connectionId = this.connectionId;
+    jsonData.start = startDate.toISOString().substring(0, 10);
+    jsonData.end = endDate.toISOString().substring(0, 10);
+    jsonData.dataNeedId = this.dataNeedAttributes.id;
+    jsonData.granularity = this.dataNeedAttributes.granularity;
 
     fetch(REQUEST_URL, {
       body: JSON.stringify(jsonData),
@@ -101,7 +101,8 @@ class PermissionRequestForm extends LitElement {
             result["status"] === "ACCEPTED" ||
             result["status"] === "REJECTED" ||
             result["status"] === "INVALID" ||
-            result["status"] === "TERMINATED"
+            result["status"] === "TERMINATED" ||
+            result["status"] === "FULFILLED"
           ) {
             clearInterval(this.intervalId);
           }
