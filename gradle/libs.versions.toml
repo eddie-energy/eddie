@@ -32,6 +32,7 @@ jetty = "11.0.14"
 jte = "2.3.0"
 log4j = "2.20.0"
 kafka-clients = "3.4.0"
+reactor-kafka = "1.3.22"
 microprofile-config = "3.0.3"
 hibernate-validator = "8.0.1.Final"
 
@@ -41,6 +42,8 @@ apache-httpcomponents-version = "4.5.14"
 apache-httpcomponents-client-version = "5.2.1"
 jackson-databind-nullable-version = "0.2.6"
 dotenv-version = "3.0.0"
+
+testcontainers-kafka = "1.19.3"
 
 [libraries]
 # Static analysis
@@ -85,6 +88,8 @@ commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons
 
 # dependencies required by kafka-outbound
 kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients" }
+reactor-kafka = { module = "io.projectreactor.kafka:reactor-kafka", version.ref = "reactor-kafka" }
+testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "testcontainers-kafka" }
 
 # used by core
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }

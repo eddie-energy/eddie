@@ -221,18 +221,57 @@ eddie:
 
 #### Kafka Connector
 
-All configuration values that are available for Kafka producers are supported,
+All configuration values that are available for Kafka producers and consumers are supported,
 see [kafka: Producer Configs](https://kafka.apache.org/28/documentation.html#producerconfigs). To include them the
 prefix `kafka.` has to be used.
 
 The following parameters are of special interest:
 
-| Parameter               | Type                                            | Description                                                                                    |
-|-------------------------|-------------------------------------------------|------------------------------------------------------------------------------------------------|
-| kafka.bootstrap.servers | comma-separated _host:port_  tuples (mandatory) | A list of host/port pairs to use for establishing the initial connection to the Kafka cluster. |
+| Parameter               | Type                                            | Description                                                                                                       |
+|-------------------------|-------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| kafka.bootstrap.servers | comma-separated _host:port_  tuples (mandatory) | A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.                    |
+| kafka.enable            | true/false                                      | Enables or disables the kafka connector.                                                                          |
+| kafka.termination.topic | valid kafka topic name                          | The topic on which the kafka connector listens for termination requests. Optional, the default is `terminations`. |
 
 E.g. if Kafka is installed locally:
 
 ```
 kafka.bootstrap.servers=localhost:9093
 ```
+
+##### Termination of Permission Requests
+
+To terminate permission requests, a consent market document in json format has to be sent to
+the `kafka.termination.topic`.
+The key should be the ID of the region connector, from which the request originated.
+The consent market document can look like this:
+
+```json
+{
+  "mrid": "REPLACE_ME",
+  "permissionList": {
+    "permissions": [
+      {
+        "reasonList": {
+          "reasons": [
+            {
+              "code": "Z03"
+            }
+          ]
+        },
+        "mktActivityRecordList": {
+          "mktActivityRecords": [
+            {
+              "type": "at-eda"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+The MRID should be replaced by the permission ID, the code `Z03` stands for „cancelled by eligible party“.
+If the kafka message key is unknown, the type of the mktActivityRecord is used, which is identical to the region
+connector id.

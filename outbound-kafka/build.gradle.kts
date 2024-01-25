@@ -18,6 +18,8 @@ dependencies {
 
     implementation(libs.jakarta.annotation.api)
     implementation(libs.kafka.clients)
+    implementation(libs.reactor.kafka)
+
     implementation(libs.reactor.core)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
@@ -26,6 +28,8 @@ dependencies {
 
 
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.reactor.test)
+    testImplementation(libs.testcontainers.kafka)
 }
 
 tasks.getByName<Test>("test") {

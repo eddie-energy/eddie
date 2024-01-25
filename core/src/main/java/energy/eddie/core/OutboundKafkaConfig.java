@@ -5,13 +5,12 @@ import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordOutboundConnector;
 import energy.eddie.api.v0_82.ConsentMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentOutboundConnector;
-import energy.eddie.core.services.ConsentMarketDocumentService;
-import energy.eddie.core.services.ConsumptionRecordService;
-import energy.eddie.core.services.EddieValidatedHistoricalDataMarketDocumentService;
-import energy.eddie.core.services.PermissionService;
-import energy.eddie.core.services.RawDataService;
+import energy.eddie.api.v0_82.outbound.TerminationConnector;
+import energy.eddie.core.services.*;
 import energy.eddie.outbound.kafka.KafkaConnector;
+import energy.eddie.outbound.kafka.TerminationKafkaConnector;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -21,6 +20,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Creates a {@link KafkaConnector} configured with all properties that start with <i>kafka</i> if the property
@@ -30,6 +30,8 @@ import java.util.Properties;
 @ConditionalOnProperty(name = "kafka.enabled", havingValue = "true")
 @EnableConfigurationProperties
 public class OutboundKafkaConfig {
+    private static final Set<String> CUSTOM_KEYS = Set.of("enabled", "termination.topic");
+
     @Bean(name = "kafkaPropertiesMap")
     @ConfigurationProperties(prefix = "kafka")
     public Map<String, String> kafkaPropertiesMap() {
@@ -42,7 +44,7 @@ public class OutboundKafkaConfig {
 
         kafkaPropertiesMap.forEach((key, value) -> {
             // do not add the "enabled" property to KafkaClient config
-            if (!key.equalsIgnoreCase("enabled"))
+            if (CUSTOM_KEYS.stream().noneMatch(key::equalsIgnoreCase))
                 kafkaProperties.setProperty(key, value);
         });
 
@@ -98,5 +100,11 @@ public class OutboundKafkaConfig {
     ) {
         ((RawDataOutboundConnector) kafkaConnector).setRawDataStream(rawDataService.getRawDataStream());
         return kafkaConnector;
+    }
+
+    @Bean
+    TerminationConnector terminationConnector(Properties kafkaProperties,
+                                              @Value("${kafka.termination.topic:terminations}") String terminationTopic) {
+        return new TerminationKafkaConnector(kafkaProperties, terminationTopic);
     }
 }
