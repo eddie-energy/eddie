@@ -1,22 +1,17 @@
 package energy.eddie.regionconnector.at.eda;
 
-import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.*;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
-import energy.eddie.regionconnector.at.eda.processing.v0_82.ConsumptionRecordProcessor;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
-import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.adapter.JdkFlowAdapter;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Flow;
@@ -24,15 +19,13 @@ import java.util.concurrent.Flow;
 import static java.util.Objects.requireNonNull;
 
 @Component
-public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider,
-        Mvp1ConsumptionRecordProvider {
+public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider {
     /**
      * DSOs in Austria are only allowed to store data for the last 36 months
      */
     public static final int MAXIMUM_MONTHS_IN_THE_PAST = 36;
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
     private final EdaAdapter edaAdapter;
-    private final Mvp1ConsumptionRecordMapper mvp1ConsumptionRecordMapper;
     private final PermissionRequestService permissionRequestService;
 
     /**
@@ -44,16 +37,13 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
     public EdaRegionConnector(
             EdaAdapter edaAdapter,
             PermissionRequestService permissionRequestService,
-            ConsumptionRecordProcessor consumptionRecordProcessor,
             Sinks.Many<ConnectionStatusMessage> permissionStateMessages
     ) throws TransmissionException {
         requireNonNull(edaAdapter);
         requireNonNull(permissionRequestService);
-        requireNonNull(consumptionRecordProcessor);
         requireNonNull(permissionStateMessages);
 
         this.edaAdapter = edaAdapter;
-        this.mvp1ConsumptionRecordMapper = new Mvp1ConsumptionRecordMapper();
         this.permissionRequestService = permissionRequestService;
         this.permissionStateMessages = permissionStateMessages;
 
@@ -101,15 +91,6 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
                 // because they have no matching state in the consent process model
             }
         }
-    }
-
-    @Override
-    public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(
-                edaAdapter.getConsumptionRecordStream()
-                        .mapNotNull(this::mapEdaConsumptionRecordToMvp1ConsumptionRecord)
-                        .flatMap(this::emitForEachPermissionRequest)
-        );
     }
 
     @Override
@@ -169,53 +150,5 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
         } catch (IllegalStateException | StateTransitionException e) {
             permissionStateMessages.tryEmitError(e);
         }
-    }
-
-    /**
-     * Map an EDA consumption record to a CIM consumption record
-     * and add connectionId and permissionId for identification
-     *
-     * @param consumptionRecord the consumption record to process
-     */
-    private @Nullable ConsumptionRecord mapEdaConsumptionRecordToMvp1ConsumptionRecord(at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord consumptionRecord) {
-        // map an EDA consumption record it to a CIM consumption record
-        // and add connectionId and permissionId for identification
-        String conversationId = consumptionRecord.getProcessDirectory().getConversationId();
-        Optional<AtPermissionRequest> permissionRequest = permissionRequestService
-                .findByConversationIdOrCMRequestId(conversationId, null);
-        String permissionId = permissionRequest.map(PermissionRequest::permissionId).orElse(null);
-        String connectionId = permissionRequest.map(PermissionRequest::connectionId).orElse(null);
-        LOGGER.info("Received consumption record (ConversationId '{}') for permissionId {} and connectionId {}", conversationId, permissionId, connectionId);
-        try {
-            return mvp1ConsumptionRecordMapper.mapToMvp1ConsumptionRecord(consumptionRecord);
-        } catch (InvalidMappingException e) {
-            // TODO In the future this should also inform the administrative console about the invalid mapping
-            LOGGER.error("Could not map consumption record to CIM consumption record", e);
-            return null;
-        }
-    }
-
-    /**
-     * Emit a {@link ConsumptionRecord} for each {@link AtPermissionRequest} that matches the {@link ConsumptionRecord#getMeteringPoint()} and {@link ConsumptionRecord#getStartDateTime()} of the given {@link ConsumptionRecord}
-     *
-     * @param consumptionRecord the consumption record to emit for each permission request
-     */
-    private Flux<ConsumptionRecord> emitForEachPermissionRequest(ConsumptionRecord consumptionRecord) {
-        List<AtPermissionRequest> permissionRequests = permissionRequestService.findByMeteringPointIdAndDate(
-                consumptionRecord.getMeteringPoint(),
-                consumptionRecord.getStartDateTime().toLocalDate()
-        );
-
-        if (permissionRequests.isEmpty()) {
-            LOGGER.warn("No permission requests found for consumption record {}", consumptionRecord.getPermissionId());
-            return Flux.empty(); // Return an empty Flux if no permission requests are found
-        }
-
-        return Flux.fromIterable(permissionRequests).map(permissionRequest -> {
-            consumptionRecord.setPermissionId(permissionRequest.permissionId());
-            consumptionRecord.setConnectionId(permissionRequest.connectionId());
-            consumptionRecord.setDataNeedId(permissionRequest.dataNeedId());
-            return consumptionRecord;
-        });
     }
 }

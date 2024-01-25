@@ -1,7 +1,8 @@
-package energy.eddie.regionconnector.at.eda;
+package energy.eddie.regionconnector.at.eda.processing.mvp1;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
 import energy.eddie.api.v0.ConsumptionPoint;
+import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import energy.eddie.regionconnector.at.eda.utils.MeteringIntervalUtil;

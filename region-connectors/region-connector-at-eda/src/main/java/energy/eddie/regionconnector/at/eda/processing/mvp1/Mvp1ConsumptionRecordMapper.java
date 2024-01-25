@@ -1,10 +1,12 @@
-package energy.eddie.regionconnector.at.eda;
+package energy.eddie.regionconnector.at.eda.processing.mvp1;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import energy.eddie.api.v0.ConsumptionPoint;
+import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import energy.eddie.regionconnector.at.eda.utils.MeteringIntervalUtil;
+import org.springframework.stereotype.Component;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.ZonedDateTime;
@@ -15,6 +17,7 @@ import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
+@Component
 public class Mvp1ConsumptionRecordMapper {
 
     public static final String MEASURED_VALUE = "L1";
