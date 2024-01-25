@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.at;
 
+import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import de.ponton.xp.adapter.api.ConnectionException;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
@@ -19,11 +20,9 @@ import energy.eddie.regionconnector.at.eda.ponton.NoOpEdaAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
-import energy.eddie.regionconnector.at.eda.processing.v0_82.ConsumptionRecordProcessor;
-import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.EddieValidatedHistoricalDataMarketDocumentPublisher;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
-import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
+import energy.eddie.regionconnector.at.eda.provider.EdaEddieValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecordService;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
@@ -150,18 +149,15 @@ public class AtEdaSpringConfig {
     }
 
     @Bean
-    public ConsumptionRecordProcessor consumptionRecordProcessor(
-            PermissionRequestService permissionRequestService,
+    public EdaEddieValidatedHistoricalDataMarketDocumentProvider consumptionRecordProcessor(
             CommonInformationModelConfiguration commonInformationModelConfiguration,
-            EdaAdapter edaAdapter
-    ) {
-        return new ConsumptionRecordProcessor(
+            Flux<IdentifiableConsumptionRecord> identfiableConsumptionRecordFlux) {
+        return new EdaEddieValidatedHistoricalDataMarketDocumentProvider(
                 new ValidatedHistoricalDataMarketDocumentDirector(
                         commonInformationModelConfiguration,
                         new ValidatedHistoricalDataMarketDocumentBuilderFactory()
                 ),
-                new EddieValidatedHistoricalDataMarketDocumentPublisher(permissionRequestService),
-                edaAdapter
+                identfiableConsumptionRecordFlux
         );
     }
 
