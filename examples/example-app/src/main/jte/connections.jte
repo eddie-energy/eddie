@@ -51,6 +51,15 @@ content = @`
         ></eddie-connect-button>
     </div>
     <div class="uk-flex uk-margin uk-flex-middle">
+        <div class="uk-width-medium">Connect with future data:</div>
+        <eddie-connect-button
+                class="uk-display-block"
+                connection-id="${nextConnectionId}"
+                data-need-id="NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY"
+                allow-data-need-modifications="true"
+        ></eddie-connect-button>
+    </div>
+    <div class="uk-flex uk-margin uk-flex-middle">
         <div class="uk-width-medium">Connect with near realtime P1 data:</div>
         <eddie-connect-button
                 class="uk-display-block"

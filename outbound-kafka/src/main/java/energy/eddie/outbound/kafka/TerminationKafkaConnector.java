@@ -1,0 +1,48 @@
+package energy.eddie.outbound.kafka;
+
+import energy.eddie.api.utils.Pair;
+import energy.eddie.api.v0_82.outbound.TerminationConnector;
+import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
+import reactor.kafka.receiver.KafkaReceiver;
+import reactor.kafka.receiver.ReceiverOptions;
+import reactor.kafka.receiver.ReceiverRecord;
+
+import java.util.Collections;
+import java.util.Properties;
+import java.util.concurrent.Flow;
+
+import static org.apache.kafka.common.requests.FetchMetadata.log;
+
+public class TerminationKafkaConnector implements TerminationConnector {
+    private final Flux<Pair<String, ConsentMarketDocument>> flux;
+
+    public TerminationKafkaConnector(Properties kafkaProperties, String terminationTopic) {
+        kafkaProperties.put(ConsumerConfig.GROUP_ID_CONFIG, "termination-group");
+        ReceiverOptions<String, ConsentMarketDocument> options = ReceiverOptions
+                .<String, ConsentMarketDocument>create(kafkaProperties)
+                .subscription(Collections.singleton(terminationTopic))
+                .withKeyDeserializer(new StringDeserializer())
+                .withValueDeserializer(new CustomDeserializer())
+                .addAssignListener(partitions -> log.debug("onPartitionsAssigned {}", partitions))
+                .addRevokeListener(partitions -> log.debug("onPartitionsRevoked {}", partitions));
+
+        flux = KafkaReceiver.create(options)
+                .receive()
+                .map(this::process)
+                .retry();
+    }
+
+    private Pair<String, ConsentMarketDocument> process(ReceiverRecord<String, ConsentMarketDocument> rec) {
+        rec.receiverOffset().acknowledge();
+        return new Pair<>(rec.key(), rec.value());
+    }
+
+    @Override
+    public Flow.Publisher<Pair<String, ConsentMarketDocument>> getTerminationMessages() {
+        return JdkFlowAdapter.publisherToFlowPublisher(flux);
+    }
+}

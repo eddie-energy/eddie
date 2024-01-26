@@ -70,7 +70,7 @@ class DataNeedsManagementControllerDifferentUrlPrefixTest {
 
     @Test
     void updateDataNeed_idsDontMatch_returnsBadRequest() throws Exception {
-        // updates with wrong key should not be processed
+        // updates with wrong regionConnectorId should not be processed
         mvc.perform(put("/test/data-needs/" + "wrong-key")
                         .content(objectMapper.writeValueAsString(EXAMPLE_DATA_NEED))
                         .contentType(MediaType.APPLICATION_JSON)
