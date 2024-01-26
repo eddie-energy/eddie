@@ -22,7 +22,7 @@ import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
-import energy.eddie.regionconnector.at.eda.provider.EdaEddieValidatedHistoricalDataMarketDocumentProvider;
+import energy.eddie.regionconnector.at.eda.provider.v0_82.EdaEddieValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecordService;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;

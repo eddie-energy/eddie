@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.at.eda.provider;
+package energy.eddie.regionconnector.at.eda.provider.v0_82;
 
 import energy.eddie.api.v0_82.CimConsumptionRecordProvider;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;

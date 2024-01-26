@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.at.eda.provider;
+package energy.eddie.regionconnector.at.eda.provider.v0;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;

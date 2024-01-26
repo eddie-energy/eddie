@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.at.eda.provider;
+package energy.eddie.regionconnector.at.eda.provider.v0;
 
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordProvider;
