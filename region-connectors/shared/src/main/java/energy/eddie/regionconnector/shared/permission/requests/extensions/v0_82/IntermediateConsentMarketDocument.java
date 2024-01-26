@@ -4,6 +4,8 @@ import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.cim.v0_82.cmd.*;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import jakarta.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -13,6 +15,7 @@ import java.util.UUID;
 import static energy.eddie.api.CommonInformationModelVersions.V0_82;
 
 class IntermediateConsentMarketDocument<T extends TimeframedPermissionRequest> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(IntermediateConsentMarketDocument.class);
     private final T permissionRequest;
     private final String customerIdentifier;
     private final TransmissionScheduleProvider<T> transmissionScheduleProvider;
@@ -48,14 +51,14 @@ class IntermediateConsentMarketDocument<T extends TimeframedPermissionRequest> {
                 .withSenderMarketParticipantMRID(
                         new PartyIDStringComplexType()
                                 .withCodingScheme(
-                                        CodingSchemeTypeList.fromValue("N" + permissionRequest.dataSourceInformation().countryCode())
+                                        getCodingScheme()
                                 )
                                 .withValue(customerIdentifier)
                 )
                 .withReceiverMarketParticipantMRID(
                         new PartyIDStringComplexType()
                                 .withCodingScheme(
-                                        CodingSchemeTypeList.fromValue("N" + permissionRequest.dataSourceInformation().countryCode())
+                                        getCodingScheme()
                                 )
                                 .withValue(permissionRequest.dataSourceInformation().permissionAdministratorId())
                 )
@@ -89,6 +92,15 @@ class IntermediateConsentMarketDocument<T extends TimeframedPermissionRequest> {
                                                 )
                                 )
                 );
+    }
+
+    private CodingSchemeTypeList getCodingScheme() {
+        try {
+            return CodingSchemeTypeList.fromValue("N" + permissionRequest.dataSourceInformation().countryCode());
+        } catch (IllegalArgumentException e) {
+            LOGGER.warn("Unknown country code.", e);
+            return null;
+        }
     }
 
     private StatusTypeList getStatusTypeList() {
