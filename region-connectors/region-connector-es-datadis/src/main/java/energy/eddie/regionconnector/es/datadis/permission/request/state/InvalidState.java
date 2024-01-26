@@ -8,17 +8,21 @@ public class InvalidState
         extends ContextualizedPermissionRequestState<EsPermissionRequest>
         implements InvalidPermissionRequestState {
 
-    Throwable reason;
+    private final Throwable reason;
 
-    public InvalidState(EsPermissionRequest permissionRequest, Throwable reason) {
+    protected InvalidState(EsPermissionRequest permissionRequest, Throwable reason) {
         super(permissionRequest);
         this.reason = reason;
+    }
+
+    public Throwable reason() {
+        return reason;
     }
 
     @Override
     public String toString() {
         return "InvalidState{" +
-                "reason='" + reason + '\'' +
+                "reason=" + reason +
                 '}';
     }
 }

@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequestStatusMessageResolver;
 import energy.eddie.regionconnector.es.datadis.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
@@ -19,6 +20,7 @@ public class PermissionRequestService {
     private final EsPermissionRequestRepository repository;
     private final PermissionRequestFactory permissionRequestFactory;
     private final DatadisScheduler datadisScheduler;
+
 
     @Autowired
     public PermissionRequestService(
@@ -37,7 +39,8 @@ public class PermissionRequestService {
                                 permissionRequest.permissionId(),
                                 permissionRequest.dataNeedId(),
                                 permissionRequest.dataSourceInformation(),
-                                permissionRequest.state().status()
+                                permissionRequest.state().status(),
+                                new DatadisPermissionRequestStatusMessageResolver(permissionRequest.state()).getStatusMessage()
                         )
                 );
     }
