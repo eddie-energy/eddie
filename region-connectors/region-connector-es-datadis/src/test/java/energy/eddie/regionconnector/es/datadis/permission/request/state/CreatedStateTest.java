@@ -5,7 +5,6 @@ import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -28,13 +27,20 @@ class CreatedStateTest {
         return Stream.of(
                 arguments(now.minusMonths(MAXIMUM_MONTHS_IN_THE_PAST), now.minusDays(10), "requestDataFrom must not be older than " + MAXIMUM_MONTHS_IN_THE_PAST + " months"),
                 arguments(now.minusDays(10), now.minusDays(20), "requestDataFrom must be before requestDataTo"),
-                arguments(now, now, "requestDataFrom must be before requestDataTo"),
                 arguments(now, now.plusDays(1), "requestDataFrom and requestDataTo must be completely in the past"),
                 arguments(now.minusDays(1), now, "requestDataFrom and requestDataTo must be completely in the past")
         );
     }
 
-    @ParameterizedTest(name = "{3}")
+    private static Stream<Arguments> validParameterProvider() {
+        ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
+        return Stream.of(
+                arguments(now.minusDays(2), now.minusDays(1), "start before end"),
+                arguments(now.minusDays(1), now.minusDays(1), "start equals end")
+        );
+    }
+
+    @ParameterizedTest(name = "{2}")
     @MethodSource("invalidParameterProvider")
     void validate_changesToMalformedState_whenInvalidParameter(
             ZonedDateTime requestDataFrom,
@@ -60,17 +66,15 @@ class CreatedStateTest {
         assertEquals(MalformedState.class, permissionRequest.state().getClass());
     }
 
-    @Test
-    void validate_changesToValidatedState_whenValid() {
+    @ParameterizedTest(name = "{2}")
+    @MethodSource("validParameterProvider")
+    void validate_changesToValidatedState_whenValid(ZonedDateTime requestDataFrom, ZonedDateTime requestDataTo, String testName) {
         // Given
         var permissionId = "foo";
         var connectionId = "bar";
         var dataNeedId = "luu";
         var nif = "muh";
         var meteringPointId = "kuh";
-        var now = ZonedDateTime.now(ZONE_ID_SPAIN);
-        var requestDataFrom = now.minusDays(10);
-        var requestDataTo = now.minusDays(5);
 
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 requestDataFrom, requestDataTo, MeasurementType.QUARTER_HOURLY);
