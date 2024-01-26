@@ -10,7 +10,7 @@ import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermiss
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
@@ -44,12 +44,12 @@ class ValidatedStateTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = AuthorizationRequestResponse.class)
-    void sendToPermissionAdministrator_noError_changesStateToPending(AuthorizationRequestResponse response) {
+    @ValueSource(strings = {"ok", "no_nif", "no_supplies", "unknown", "xxx"})
+    void sendToPermissionAdministrator_noError_changesStateToPending(String response) {
         // Given
         var permissionId = "SomeId";
         var permissionRequest = makeValidatedPermissionRequest(permissionId);
-        when(authorizationApi.postAuthorizationRequest(any())).thenReturn(Mono.just(response));
+        when(authorizationApi.postAuthorizationRequest(any())).thenReturn(Mono.just(AuthorizationRequestResponse.fromResponse(response)));
 
         // When
         assertDoesNotThrow(permissionRequest::sendToPermissionAdministrator);

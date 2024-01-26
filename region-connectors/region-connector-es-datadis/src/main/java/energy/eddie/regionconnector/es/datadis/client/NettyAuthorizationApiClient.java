@@ -53,13 +53,7 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
                     if (httpClientResponse.status().code() == HttpResponseStatus.OK.code()) {
                         try {
                             JsonNode jsonNode = mapper.readTree(bodyString);
-                            return switch (jsonNode.get("response").asText()) {
-                                case "ok" -> Mono.just(AuthorizationRequestResponse.OK);
-                                case "nonif" -> Mono.just(AuthorizationRequestResponse.NO_NIF);
-                                case "noSupplies" -> Mono.just(AuthorizationRequestResponse.NO_SUPPLIES);
-                                default ->
-                                        Mono.error(new DatadisApiException("Unexpected response from authorization request", httpClientResponse.status(), bodyString));
-                            };
+                            return Mono.just(AuthorizationRequestResponse.fromResponse(jsonNode.get("response").asText()));
                         } catch (JsonProcessingException e) {
                             return Mono.error(e);
                         }

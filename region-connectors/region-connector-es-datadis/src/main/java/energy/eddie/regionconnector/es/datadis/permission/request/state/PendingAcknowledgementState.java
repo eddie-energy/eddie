@@ -16,8 +16,19 @@ public class PendingAcknowledgementState extends ContextualizedPermissionRequest
 
     @Override
     public void receivedPermissionAdministratorResponse() {
+        // For datadis, it makes sense to transition to the InvalidState here if the response is NO_NIF or NO_SUPPLIES
+        // otherwise we would need to throw an exception and handle it in a more complex way
         permissionRequest.changeState(
-                new SentToPermissionAdministratorState(permissionRequest, response)
+                switch (response) {
+                    case AuthorizationRequestResponse.NoNif ignored ->
+                            new InvalidState(permissionRequest, new Throwable("Given NIF does not exist"));
+                    case AuthorizationRequestResponse.NoPermission ignored ->
+                            new InvalidState(permissionRequest, new Throwable("The given NIF has no permissions"));
+                    case AuthorizationRequestResponse.Unknown ignored ->
+                            new InvalidState(permissionRequest, new Throwable("Unknown response from datadis: " + response.originalResponse()));
+                    case AuthorizationRequestResponse.Ok ignored ->
+                            new SentToPermissionAdministratorState(permissionRequest);
+                }
         );
     }
 }
