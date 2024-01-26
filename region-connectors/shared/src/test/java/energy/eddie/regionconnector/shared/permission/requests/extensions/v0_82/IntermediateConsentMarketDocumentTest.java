@@ -7,10 +7,13 @@ import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.cmd.*;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -18,17 +21,26 @@ import static org.mockito.Mockito.when;
 
 class IntermediateConsentMarketDocumentTest {
 
-    @Test
+    public static Stream<Arguments> toConsentMarketDocument_mapsSuccessfully() {
+        return Stream.of(
+                Arguments.of("AT", CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME),
+                Arguments.of("DK", CodingSchemeTypeList.DENMARK_NATIONAL_CODING_SCHEME),
+                Arguments.of("AIIDA", null)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
     @SuppressWarnings("java:S5961")
         // Too many assertions here, but the CIM requires that many mapping steps.
-    void toConsentMarketDocument_mapsSuccessfully() {
+    void toConsentMarketDocument_mapsSuccessfully(String countryCode, CodingSchemeTypeList codingScheme) {
         // Given
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         ZonedDateTime start = now.minusDays(10);
         ZonedDateTime end = now.minusDays(5);
 
         var dataSourceInformation = mock(DataSourceInformation.class);
-        when(dataSourceInformation.countryCode()).thenReturn("AT");
+        when(dataSourceInformation.countryCode()).thenReturn(countryCode);
         when(dataSourceInformation.permissionAdministratorId()).thenReturn("paID");
         when(dataSourceInformation.regionConnectorId()).thenReturn("rc");
 
@@ -64,9 +76,9 @@ class IntermediateConsentMarketDocumentTest {
                 () -> assertEquals(RoleTypeList.PARTY_CONNECTED_TO_GRID, res.getSenderMarketParticipantMarketRoleType()),
                 () -> assertEquals(RoleTypeList.PERMISSION_ADMINISTRATOR, res.getReceiverMarketParticipantMarketRoleType()),
                 () -> assertEquals(ProcessTypeList.ACCESS_TO_METERED_DATA, res.getProcessProcessType()),
-                () -> assertEquals(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, res.getSenderMarketParticipantMRID().getCodingScheme()),
+                () -> assertEquals(codingScheme, res.getSenderMarketParticipantMRID().getCodingScheme()),
                 () -> assertEquals("customerId", res.getSenderMarketParticipantMRID().getValue()),
-                () -> assertEquals(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, res.getReceiverMarketParticipantMRID().getCodingScheme()),
+                () -> assertEquals(codingScheme, res.getReceiverMarketParticipantMRID().getCodingScheme()),
                 () -> assertEquals("paID", res.getReceiverMarketParticipantMRID().getValue()),
                 () -> assertEquals(new EsmpDateTime(start).toString(), res.getPeriodTimeInterval().getStart()),
                 () -> assertEquals(new EsmpDateTime(end).toString(), res.getPeriodTimeInterval().getEnd()),
