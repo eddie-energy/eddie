@@ -3,32 +3,27 @@ package energy.eddie.regionconnector.at.eda.permission.request.states;
 
 import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
 import energy.eddie.api.agnostic.process.model.states.PendingAcknowledgmentPermissionRequestState;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
-import energy.eddie.regionconnector.at.eda.EdaAdapter;
-import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import energy.eddie.regionconnector.at.eda.permission.request.StateBuilderFactory;
 
 public class AtPendingAcknowledgmentPermissionRequestState
         extends ContextualizedPermissionRequestState<AtPermissionRequest>
         implements PendingAcknowledgmentPermissionRequestState {
 
-    private final EdaAdapter edaAdapter;
-    private final AtConfiguration atConfiguration;
+    private final StateBuilderFactory factory;
 
     public AtPendingAcknowledgmentPermissionRequestState(AtPermissionRequest permissionRequest,
-                                                         EdaAdapter edaAdapter,
-                                                         AtConfiguration atConfiguration) {
+                                                         StateBuilderFactory factory) {
         super(permissionRequest);
-        this.edaAdapter = edaAdapter;
-        this.atConfiguration = atConfiguration;
+        this.factory = factory;
     }
 
     @Override
     public void receivedPermissionAdministratorResponse() {
         permissionRequest.changeState(
-                new AtSentToPermissionAdministratorPermissionRequestState(
-                        permissionRequest,
-                        edaAdapter,
-                        atConfiguration)
+                factory.create(permissionRequest, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
+                        .build()
         );
     }
 

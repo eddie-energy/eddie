@@ -2,37 +2,37 @@ package energy.eddie.regionconnector.at.eda.permission.request.states;
 
 import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
 import energy.eddie.api.agnostic.process.model.states.SentToPermissionAdministratorPermissionRequestState;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
-import energy.eddie.regionconnector.at.eda.EdaAdapter;
-import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import energy.eddie.regionconnector.at.eda.permission.request.StateBuilderFactory;
 
 public class AtSentToPermissionAdministratorPermissionRequestState
         extends ContextualizedPermissionRequestState<AtPermissionRequest>
         implements SentToPermissionAdministratorPermissionRequestState {
-    private final EdaAdapter edaAdapter;
-    private final AtConfiguration atConfiguration;
+    private final StateBuilderFactory factory;
 
     public AtSentToPermissionAdministratorPermissionRequestState(AtPermissionRequest permissionRequest,
-                                                                 EdaAdapter edaAdapter,
-                                                                 AtConfiguration atConfiguration) {
+                                                                 StateBuilderFactory factory) {
         super(permissionRequest);
-        this.edaAdapter = edaAdapter;
-        this.atConfiguration = atConfiguration;
+        this.factory = factory;
     }
 
     @Override
     public void accept() {
-        permissionRequest.changeState(new AtAcceptedPermissionRequestState(permissionRequest, edaAdapter, atConfiguration));
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
+                        .build()
+        );
     }
 
     @Override
     public void invalid() {
-        permissionRequest.changeState(new AtInvalidPermissionRequestState(permissionRequest));
+        permissionRequest.changeState(factory.create(permissionRequest, PermissionProcessStatus.INVALID).build());
     }
 
     @Override
     public void reject() {
-        permissionRequest.changeState(new AtRejectedPermissionRequestState(permissionRequest));
+        permissionRequest.changeState(factory.create(permissionRequest, PermissionProcessStatus.REJECTED).build());
     }
 
     @Override

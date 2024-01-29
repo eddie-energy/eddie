@@ -7,7 +7,7 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 public class AtTerminatedPermissionRequestState
         extends ContextualizedPermissionRequestState<AtPermissionRequest>
         implements TerminatedPermissionRequestState {
-    protected AtTerminatedPermissionRequestState(AtPermissionRequest permissionRequest) {
+    public AtTerminatedPermissionRequestState(AtPermissionRequest permissionRequest) {
         super(permissionRequest);
     }
 }

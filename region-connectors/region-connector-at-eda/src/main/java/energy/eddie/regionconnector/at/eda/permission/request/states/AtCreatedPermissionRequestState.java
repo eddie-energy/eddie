@@ -6,10 +6,10 @@ import energy.eddie.api.agnostic.process.model.states.CreatedPermissionRequestSt
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.api.agnostic.process.model.validation.Validator;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
-import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnector;
-import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import energy.eddie.regionconnector.at.eda.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.at.eda.permission.request.validation.NotOlderThanValidator;
 import energy.eddie.regionconnector.at.eda.permission.request.validation.StartIsBeforeOrEqualEndValidator;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -33,17 +33,14 @@ public class AtCreatedPermissionRequestState
             new StartIsBeforeOrEqualEndValidator()
     );
     private final CCMORequest ccmoRequest;
-    private final EdaAdapter edaAdapter;
-    private final AtConfiguration atConfiguration;
+    private final StateBuilderFactory stateBuilderFactory;
 
     public AtCreatedPermissionRequestState(AtPermissionRequest permissionRequest,
                                            CCMORequest ccmoRequest,
-                                           EdaAdapter edaAdapter,
-                                           AtConfiguration atConfiguration) {
+                                           StateBuilderFactory stateBuilderFactory) {
         super(permissionRequest);
         this.ccmoRequest = ccmoRequest;
-        this.edaAdapter = edaAdapter;
-        this.atConfiguration = atConfiguration;
+        this.stateBuilderFactory = stateBuilderFactory;
     }
 
     @Override
@@ -51,7 +48,10 @@ public class AtCreatedPermissionRequestState
         validateAttributes();
         try {
             CMRequest cmRequest = ccmoRequest.toCMRequest();
-            permissionRequest.changeState(new AtValidatedPermissionRequestState(permissionRequest, cmRequest, edaAdapter, atConfiguration));
+            var state = stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.VALIDATED)
+                    .withCMRequest(cmRequest)
+                    .build();
+            permissionRequest.changeState(state);
         } catch (InvalidDsoIdException e) {
             changeToMalformedState(e);
             throw new ValidationException(this, "dsoId", e.getMessage() == null ? "" : e.getMessage());
@@ -70,7 +70,11 @@ public class AtCreatedPermissionRequestState
     }
 
     private void changeToMalformedState(Exception e) {
-        permissionRequest.changeState(new AtMalformedPermissionRequestState(permissionRequest, e));
+        permissionRequest.changeState(
+                stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.MALFORMED)
+                        .withCause(e)
+                        .build()
+        );
     }
 
 }

@@ -4,10 +4,10 @@ import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestSt
 import energy.eddie.api.agnostic.process.model.states.RevokedPermissionRequestState;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 
-class AtRevokedPermissionRequestState
+public class AtRevokedPermissionRequestState
         extends ContextualizedPermissionRequestState<AtPermissionRequest>
         implements RevokedPermissionRequestState {
-    protected AtRevokedPermissionRequestState(AtPermissionRequest permissionRequest) {
+    public AtRevokedPermissionRequestState(AtPermissionRequest permissionRequest) {
         super(permissionRequest);
     }
 }
