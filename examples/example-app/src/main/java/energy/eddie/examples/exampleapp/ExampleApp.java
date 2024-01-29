@@ -2,9 +2,13 @@ package energy.eddie.examples.exampleapp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import energy.eddie.api.agnostic.ConnectionStatusMessageMixin;
+import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.examples.exampleapp.kafka.KafkaListener;
 import gg.jte.ContentType;
 import gg.jte.TemplateEngine;
 import gg.jte.resolve.DirectoryCodeResolver;
@@ -15,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 public class ExampleApp {
@@ -38,6 +43,11 @@ public class ExampleApp {
         } else {
             JavalinJte.init(TemplateEngine.createPrecompiled(Path.of("jte-classes"), ContentType.Html));
         }
+
+        var kafkaListener = new KafkaListener(injector.getInstance(Jdbi.class), injector.getInstance(ObjectMapper.class));
+        var executor = Executors.newSingleThreadExecutor();
+        executor.submit(kafkaListener);
+
         // Using try-with-resources with the Javalin instance isn't really intuitive, but: Sonar considers using
         // an AutoClosable without ensuring a close to be a major issue. To keep Javalin running the current thread
         // is suspended in a forever-sleep loop below.
@@ -71,6 +81,8 @@ public class ExampleApp {
             LOGGER.info("Exiting.");
             Thread.currentThread().interrupt();
         }
+        kafkaListener.stop();
+        executor.close();
     }
 
     private static class Module extends AbstractModule {
@@ -78,6 +90,8 @@ public class ExampleApp {
         protected void configure() {
             bind(ObjectMapper.class).toInstance(JsonMapper.builder()
                     .addModule(new JavaTimeModule())
+                    .addModule(new Jdk8Module())
+                    .addMixIn(ConnectionStatusMessage.class, ConnectionStatusMessageMixin.class)
                     .build());
             var jdbcUserName = Env.JDBC_USER.get();
             var jdbcPassword = Env.JDBC_PASSWORD.get();
@@ -88,5 +102,4 @@ public class ExampleApp {
             }
         }
     }
-
 }

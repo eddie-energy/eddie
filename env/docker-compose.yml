@@ -49,9 +49,15 @@ services:
       JDBC_PASSWORD: "test"
       EDDIE_PUBLIC_URL: ${PUBLIC_CONTEXT_PATH}
       PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
     restart: always
     depends_on:
-      - db
+      db:
+        condition: service_started
+      eddie:
+        condition: service_started
+      init-kafka:
+        condition: service_completed_successfully   # ensure all topics used in streams are created before example app is started
 
   kafka:
     # Docs: https://github.com/bitnami/containers/tree/main/bitnami/kafka#accessing-apache-kafka-with-internal-and-external-clients
@@ -69,6 +75,24 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+
+  init-kafka:
+    image: docker.io/bitnami/kafka:3.6
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics.sh --bootstrap-server kafka:9092 --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic consent-market-document --replication-factor 1 --partitions 1
+      kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic validated-historical-data --replication-factor 1 --partitions 1
+
+      echo -e 'Successfully created topics, all topics:'
+      kafka-topics.sh --bootstrap-server kafka:9092 --list
+      "
 
   caddy:
     image: caddy:alpine

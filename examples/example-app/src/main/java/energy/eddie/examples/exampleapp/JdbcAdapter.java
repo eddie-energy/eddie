@@ -31,7 +31,8 @@ public class JdbcAdapter {
                 CREATE TABLE IF NOT EXISTS CONNECTION_STATUS (
                     connection_id  VARCHAR(255) NOT NULL,
                     timestamp_     TIMESTAMP WITH TIME ZONE  NOT NULL,
-                    consent_status VARCHAR(48) NOT NULL
+                    consent_status VARCHAR(48) NOT NULL,
+                    row_number SERIAL NOT NULL
                 );
 
                 CREATE TABLE IF NOT EXISTS METERING_INTERVALS (

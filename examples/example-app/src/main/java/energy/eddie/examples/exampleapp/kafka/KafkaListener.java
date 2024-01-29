@@ -1,0 +1,176 @@
+package energy.eddie.examples.exampleapp.kafka;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
+import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.cim.v0_82.cmd.MktActivityRecordComplexType;
+import energy.eddie.cim.v0_82.cmd.PermissionComplexType;
+import energy.eddie.cim.v0_82.vhd.PointComplexType;
+import energy.eddie.cim.v0_82.vhd.TimeSeriesComplexType;
+import energy.eddie.examples.exampleapp.Env;
+import energy.eddie.examples.exampleapp.kafka.serdes.ConsentMarketDocumentSerde;
+import energy.eddie.examples.exampleapp.kafka.serdes.EddieValidatedHistoricalDataMarketDocumentSerde;
+import org.apache.kafka.common.serialization.Serde;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KafkaStreams;
+import org.apache.kafka.streams.StreamsBuilder;
+import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.kstream.Consumed;
+import org.jdbi.v3.core.Jdbi;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+
+public class KafkaListener implements Runnable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaListener.class);
+    private final CountDownLatch latch = new CountDownLatch(1);
+    private final Jdbi jdbi;
+    private final ObjectMapper mapper;
+    private static final Map<String, Integer> meteringIntervalForCode = Map.of(
+            "PT15M", 900,
+            "PT30M", 1800,
+            "PT1H", 3600,
+            "PT1D", 86400,
+            "P1D", 86400
+    );
+
+    public KafkaListener(Jdbi jdbi, ObjectMapper mapper) {
+        this.jdbi = jdbi;
+        this.mapper = mapper;
+    }
+
+    @Override
+    public void run() {
+        var vhdTopology = createVhdTopology();
+        var statusTopology = createConsentMarketDocumentTopology();
+        var vhdProperties = getKafkaProperties("vhd");
+        var statusProperties = getKafkaProperties("status");
+        var vhdStream = new KafkaStreams(vhdTopology, vhdProperties);
+        var statusStream = new KafkaStreams(statusTopology, statusProperties);
+
+        vhdStream.start();
+        statusStream.start();
+
+        try {
+            latch.await();
+        } catch (InterruptedException ignored) {
+            vhdStream.close(new KafkaStreams.CloseOptions().leaveGroup(true));
+            statusStream.close(new KafkaStreams.CloseOptions().leaveGroup(true));
+
+            Thread.currentThread().interrupt();
+        }
+
+        vhdStream.close(new KafkaStreams.CloseOptions().leaveGroup(true));
+        statusStream.close(new KafkaStreams.CloseOptions().leaveGroup(true));
+
+        vhdStream.cleanUp();
+        statusStream.cleanUp();
+    }
+
+    private Topology createVhdTopology() {
+        var inputTopic = "validated-historical-data";
+        Serde<String> stringSerde = Serdes.String();
+        var vhdSerde = new EddieValidatedHistoricalDataMarketDocumentSerde(mapper);
+
+        StreamsBuilder builder = new StreamsBuilder();
+        builder
+                .stream(inputTopic, Consumed.with(stringSerde, vhdSerde))
+                .filterNot((unusedKey, value) -> Objects.isNull(value))
+                .foreach(this::insertVhdIntoDb);
+
+        return builder.build();
+    }
+
+    private Topology createConsentMarketDocumentTopology() {
+        var inputTopic = "consent-market-document";
+        Serde<String> stringSerde = Serdes.String();
+        Serde<ConsentMarketDocument> statusSerde = new ConsentMarketDocumentSerde(mapper);
+
+        StreamsBuilder builder = new StreamsBuilder();
+        builder
+                .stream(inputTopic, Consumed.with(stringSerde, statusSerde))
+                .filterNot((unusedKey, value) -> Objects.isNull(value))
+                .foreach(this::insertConsentMarketDocument);
+
+        return builder.build();
+    }
+
+    private void insertVhdIntoDb(String key, EddieValidatedHistoricalDataMarketDocument document) {
+        TimeSeriesComplexType timeSeries = document.marketDocument().getTimeSeriesList().getTimeSeries().getFirst();
+        TimeSeriesComplexType.SeriesPeriodList seriesPeriods = timeSeries.getSeriesPeriodList();
+
+        String connectionId = document.connectionId().orElseThrow();
+        String meteringPoint = timeSeries.getMarketEvaluationPointMRID().getValue();
+        ZonedDateTime startDateTime = ZonedDateTime.parse(document.marketDocument().getPeriodTimeInterval().getStart());
+        Integer resolution = meteringIntervalForCode.get(seriesPeriods.getSeriesPeriods().getFirst().getResolution());
+
+        LOGGER.info("Writing consumption records for connection {} with metering point {} with {} data points",
+                connectionId, meteringPoint, seriesPeriods.getSeriesPeriods().size());
+
+        jdbi.withHandle(h -> {
+            var id = h.createUpdate("""
+                            INSERT INTO consumption_records(connection_id, metering_point,start_date_time,metering_interval_secs) VALUES (?,?,?,?)
+                            """)
+                    .bind(0, connectionId)
+                    .bind(1, meteringPoint)
+                    .bind(2, startDateTime)
+                    .bind(3, resolution)
+                    .executeAndReturnGeneratedKeys("id")
+                    .mapTo(Integer.class)
+                    .first();
+
+            seriesPeriods.getSeriesPeriods().forEach(period -> {
+                PointComplexType first = period.getPointList().getPoints().getFirst();
+                BigDecimal consumption = first.getEnergyQuantityQuantity();
+                Integer order = Integer.valueOf(first.getPosition());
+                String type = first.getEnergyQuantityQuality().value();
+
+                h.createUpdate("""
+                                INSERT INTO consumption_points(consumption_record_id, ord, consumption, metering_type) VALUES (?, ?, ?, ?)
+                                """)
+                        .bind(0, id)
+                        .bind(1, order)
+                        .bind(2, consumption)
+                        .bind(3, type)
+                        .execute();
+            });
+            return null;
+        });
+    }
+
+    private void insertConsentMarketDocument(String key, ConsentMarketDocument document) {
+        PermissionComplexType permission = document.getPermissionList().getPermissions().getFirst();
+        MktActivityRecordComplexType mktRecord = permission.getMktActivityRecordList().getMktActivityRecords().getFirst();
+        String status = mktRecord.getStatus().value();
+        ZonedDateTime timestamp = ZonedDateTime.parse(mktRecord.getCreatedDateTime());
+        String connectionId = permission.getMarketEvaluationPointMRID().getValue();
+
+        LOGGER.info("Writing consent market document status for {}: {}", connectionId, status);
+        jdbi.withHandle(h ->
+                h.createUpdate("INSERT INTO connection_status (connection_id, timestamp_, consent_status) VALUES (?,?,?)")
+                        .bind(0, connectionId)
+                        .bind(1, timestamp)
+                        .bind(2, status)
+                        .execute());
+    }
+
+    private Properties getKafkaProperties(String streamName) {
+        Properties streamsConfiguration = new Properties();
+        streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "example-app-" + streamName);
+        streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, Env.KAFKA_BOOTSTRAP_SERVERS.get());
+        return streamsConfiguration;
+    }
+
+    public void stop() {
+        synchronized (latch) {
+            latch.countDown();
+        }
+    }
+}
