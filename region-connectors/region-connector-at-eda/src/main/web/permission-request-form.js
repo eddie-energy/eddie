@@ -167,7 +167,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     const currentStatus = result["status"];
     this._requestStatus = currentStatus;
 
-    const title = "Finished!";
+    const title = "Request completed!";
     // Finished long poll
     switch (currentStatus) {
       case "ACCEPTED":
