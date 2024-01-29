@@ -41,8 +41,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
     const jsonData = {};
     jsonData.connectionId = this.connectionId;
-    jsonData.start = startDate.toISOString().substring(0, 10);
-    jsonData.end = endDate.toISOString().substring(0, 10);
+    jsonData.start = startDate.toISOString();
+    jsonData.end = endDate.toISOString();
     jsonData.dataNeedId = this.dataNeedAttributes.id;
     jsonData.granularity = this.dataNeedAttributes.granularity;
 
