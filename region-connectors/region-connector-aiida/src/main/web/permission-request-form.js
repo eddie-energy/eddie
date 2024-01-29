@@ -48,7 +48,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
         });
       })
       .catch((error) =>
-        this.notify(this.ERROR_TITLE, error, "danger", "exclamation-octagon")
+        this.notify({
+          title: this.ERROR_TITLE,
+          message: error,
+          variant: "danger",
+        })
       );
   }
 
@@ -70,7 +74,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       </p>
 
       ${this.alerts}
-
       ${!this._aiidaCode
         ? html`<sl-button @click="${this.requestPermission}" variant="primary">
             Connect

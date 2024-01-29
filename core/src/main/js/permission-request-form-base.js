@@ -1,6 +1,13 @@
 import { html, LitElement } from "lit";
 import { createRef, ref } from "lit/directives/ref.js";
 
+const VARIANT_ICONS = {
+  info: "info-circle",
+  success: "check2-circle",
+  warning: "exclamation-triangle",
+  danger: "exclamation-octagon",
+};
+
 class PermissionRequestFormBase extends LitElement {
   ERROR_TITLE = "An error occurred";
   MAX_RETRIES = 60; // Retry polling for 5 minutes
@@ -39,36 +46,38 @@ class PermissionRequestFormBase extends LitElement {
         const warningMessage =
           "Permission status query exceeded maximum allowed attempts.\n" +
           "Click the button below to restart the automatic polling.";
-        this.notify(
-          warningTitle,
-          warningMessage,
-          "warning",
-          "exclamation-triangle",
-          "Infinity",
-          [retryButton]
-        );
+        this.notify({
+          title: warningTitle,
+          message: warningMessage,
+          variant: "warning",
+          extraFunctionality: [retryButton],
+        });
       }
     });
   }
 
-  notify(
+  notify({
     title,
     message,
-    variant = "primary",
-    iconString = "info-circle",
-    duration = "Infinity",
-    extraFunctionality = []
-  ) {
+    reason = "",
+    variant = "info",
+    duration = Infinity,
+    extraFunctionality = [],
+  }) {
     const alert = html`<sl-alert
         variant="${variant}"
         duration="${duration}"
         closable
         open
       >
-        <sl-icon name="${iconString}" slot="icon"></sl-icon>
-        <p><strong>${title}</strong><br />${message}</p>
-        ${extraFunctionality.map((element) => element)} </sl-alert
-      ><br />`;
+        <sl-icon name="${VARIANT_ICONS[variant]}" slot="icon"></sl-icon>
+        <p>
+          <strong>${title}</strong><br />
+          ${message}${reason && " Reason: " + reason}
+        </p>
+        ${extraFunctionality.map((element) => element)}
+      </sl-alert>
+      <br />`;
     this.alerts.push(alert);
     this.requestUpdate();
   }
@@ -83,7 +92,11 @@ class PermissionRequestFormBase extends LitElement {
     this.requestPermissionStatus(this.location, this.MAX_RETRIES)
       .then()
       .catch((error) => {
-        this.notify(this.ERROR_TITLE, error, "danger", "exclamation-octagon");
+        this.notify({
+          title: this.ERROR_TITLE,
+          message: error,
+          variant: "danger",
+        });
       });
   };
 }

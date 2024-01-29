@@ -64,7 +64,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     this.createPermissionRequest(jsonData)
       .then()
       .catch((error) =>
-        this.notify(this.ERROR_TITLE, error, "danger", "exclamation-octagon")
+        this.notify({
+          title: this.ERROR_TITLE,
+          message: error,
+          variant: "danger",
+        })
       );
   }
 
@@ -87,16 +91,12 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           throw new Error("Header 'Location' is missing");
         }
 
-        const successTitle = "Permission request created!";
-        const successMessage =
-          "Your permission request was created successfully.";
-        this.notify(
-          successTitle,
-          successMessage,
-          "success",
-          "check2-circle",
-          "5000"
-        );
+        this.notify({
+          title: "Permission request created!",
+          message: "Your permission request was created successfully.",
+          variant: "success",
+          duration: 5000,
+        });
       } else if (response.status === 400) {
         // An error on the client side happened, and it should be displayed as alert in the form
         let errorMessage;
@@ -112,31 +112,29 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             .join("<br>");
         }
 
-        this.notify(
-          this.ERROR_TITLE,
-          errorMessage,
-          "danger",
-          "exclamation-octagon"
-        );
+        this.notify({
+          title: this.ERROR_TITLE,
+          message: errorMessage,
+          variant: "danger",
+        });
         this._isSubmitDisabled = false;
 
         return;
       } else {
         const errorMessage =
           "Something went wrong when creating the permission request, please try again later.";
-        this.notify(
-          this.ERROR_TITLE,
-          errorMessage,
-          "danger",
-          "exclamation-octagon"
-        );
+        this.notify({
+          title: this.ERROR_TITLE,
+          message: errorMessage,
+          variant: "danger",
+        });
 
         return;
       }
 
       this.startOrRestartAutomaticPermissionStatusPolling();
     } catch (e) {
-      this.notify(this.ERROR_TITLE, e, "danger", "exclamation-octagon");
+      this.notify({ title: this.ERROR_TITLE, message: e, variant: "danger" });
     }
   }
 
@@ -145,26 +143,24 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
     if (response.status === 404) {
       // No permission request was created
-      this.notify(
-        this.ERROR_TITLE,
-        "Your permission request could not be created.",
-        "danger",
-        "exclamation-octagon"
-      );
+      this.notify({
+        title: this.ERROR_TITLE,
+        message: "Your permission request could not be created.",
+        variant: "danger",
+      });
       return;
     }
     if (response.status !== 200) {
       // An unexpected status code was sent, try again in 10 seconds
       const millisecondsToWait = 10000;
-      this.notify(
-        this.ERROR_TITLE,
-        "An unexpected error happened, trying again in " +
-          millisecondsToWait / 1000 +
-          " seconds",
-        "danger",
-        "exclamation-octagon",
-        millisecondsToWait.toString()
-      );
+      this.notify({
+        title: this.ERROR_TITLE,
+        message: `An unexpected error happened, trying again in ${
+          millisecondsToWait / 1000
+        } seconds`,
+        variant: "danger",
+        duration: millisecondsToWait.toString(),
+      });
       await this.awaitRetry(millisecondsToWait, maxRetries);
       return;
     }
@@ -184,29 +180,35 @@ class PermissionRequestForm extends PermissionRequestFormBase {
         this._isSubmitDisabled = true;
         break;
       case "ACCEPTED":
-        message = "Your permission request was accepted.";
-        this.notify(title, message, "success", "check2-circle", "5000");
+        this.notify({
+          title,
+          message: "Your permission request was accepted.",
+          variant: "success",
+          duration: 5000,
+        });
         return;
       case "REJECTED":
-        message =
-          "The permission request has been rejected. (Reason: " +
-          result["message"] +
-          ")";
-        this.notify(title, message);
+        this.notify({
+          title,
+          message: "The permission request has been rejected",
+          reason: result["message"],
+        });
         return;
       case "INVALID":
-        message =
-          "The permission request was invalid. (Reason: " +
-          result["message"] +
-          ")";
-        this.notify(title, message, "warning", "exclamation-triangle");
+        this.notify({
+          title,
+          message: "The permission request was invalid.",
+          reason: result["message"],
+          variant: "warning",
+        });
         return;
       case "TERMINATED":
-        message =
-          "The permission request was terminated. (Reason: " +
-          result["message"] +
-          ")";
-        this.notify(title, message, "warning", "exclamation-triangle");
+        this.notify({
+          title,
+          message: "The permission request was terminated.",
+          reason: result["message"],
+          variant: "warning",
+        });
         return;
     }
 
@@ -247,7 +249,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
         <br />
 
         ${this.alerts}
-
         ${this._requestStatus &&
         html` <sl-alert open>
           <sl-icon slot="icon" name="info-circle"></sl-icon>
