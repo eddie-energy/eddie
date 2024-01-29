@@ -64,7 +64,7 @@ tasks.register("run-example-app", JavaExec::class) {
     environment["JDBC_URL"] = "jdbc:postgresql://localhost:5432/example_app"
     environment["JDBC_USER"] = "test"
     environment["JDBC_PASSWORD"] = "test"
-    environment["KAFKA_BOOTSTRAP_SERVERS"] = "localhost:9093"
+    environment["KAFKA_BOOTSTRAP_SERVERS"] = "localhost:9094"
 
     // when using H2
 //    environment["JDBC_URL"] = "jdbc:h2:tcp://localhost:9091/./examples/example-app"

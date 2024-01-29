@@ -1,12 +1,14 @@
 package energy.eddie.examples.exampleapp.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
-import energy.eddie.cim.validated_historical_data.v0_82.PointComplexType;
-import energy.eddie.cim.validated_historical_data.v0_82.TimeSeriesComplexType;
+import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.cim.v0_82.cmd.MktActivityRecordComplexType;
+import energy.eddie.cim.v0_82.cmd.PermissionComplexType;
+import energy.eddie.cim.v0_82.vhd.PointComplexType;
+import energy.eddie.cim.v0_82.vhd.TimeSeriesComplexType;
 import energy.eddie.examples.exampleapp.Env;
-import energy.eddie.examples.exampleapp.kafka.serdes.ConnectionStatusMessageSerde;
+import energy.eddie.examples.exampleapp.kafka.serdes.ConsentMarketDocumentSerde;
 import energy.eddie.examples.exampleapp.kafka.serdes.EddieValidatedHistoricalDataMarketDocumentSerde;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -47,7 +49,7 @@ public class KafkaListener implements Runnable {
     @Override
     public void run() {
         var vhdTopology = createVhdTopology();
-        var statusTopology = createStatusTopology();
+        var statusTopology = createConsentMarketDocumentTopology();
         var vhdProperties = getKafkaProperties("vhd");
         var statusProperties = getKafkaProperties("status");
         var vhdStream = new KafkaStreams(vhdTopology, vhdProperties);
@@ -80,24 +82,22 @@ public class KafkaListener implements Runnable {
         StreamsBuilder builder = new StreamsBuilder();
         builder
                 .stream(inputTopic, Consumed.with(stringSerde, vhdSerde))
-                .peek((k, v) -> LOGGER.info("Observed event: {}", v))
                 .filterNot((unusedKey, value) -> Objects.isNull(value))
                 .foreach(this::insertVhdIntoDb);
 
         return builder.build();
     }
 
-    private Topology createStatusTopology() {
-        var inputTopic = "status-messages";
+    private Topology createConsentMarketDocumentTopology() {
+        var inputTopic = "consent-market-document";
         Serde<String> stringSerde = Serdes.String();
-        Serde<ConnectionStatusMessage> statusSerde = new ConnectionStatusMessageSerde(mapper);
+        Serde<ConsentMarketDocument> statusSerde = new ConsentMarketDocumentSerde(mapper);
 
         StreamsBuilder builder = new StreamsBuilder();
         builder
                 .stream(inputTopic, Consumed.with(stringSerde, statusSerde))
-                .peek((k, v) -> LOGGER.info("Observed event: {}", v))
                 .filterNot((unusedKey, value) -> Objects.isNull(value))
-                .foreach(this::insertStatusMessage);
+                .foreach(this::insertConsentMarketDocument);
 
         return builder.build();
     }
@@ -145,13 +145,19 @@ public class KafkaListener implements Runnable {
         });
     }
 
-    private void insertStatusMessage(String key, ConnectionStatusMessage statusMessage) {
-        LOGGER.info("Writing connection status for {}: {}", statusMessage.connectionId(), statusMessage.status());
+    private void insertConsentMarketDocument(String key, ConsentMarketDocument document) {
+        PermissionComplexType permission = document.getPermissionList().getPermissions().getFirst();
+        MktActivityRecordComplexType mktRecord = permission.getMktActivityRecordList().getMktActivityRecords().getFirst();
+        String status = mktRecord.getStatus().value();
+        ZonedDateTime timestamp = ZonedDateTime.parse(mktRecord.getCreatedDateTime());
+        String connectionId = permission.getMarketEvaluationPointMRID().getValue();
+
+        LOGGER.info("Writing consent market document status for {}: {}", connectionId, status);
         jdbi.withHandle(h ->
                 h.createUpdate("INSERT INTO connection_status (connection_id, timestamp_, consent_status) VALUES (?,?,?)")
-                        .bind(0, statusMessage.connectionId())
-                        .bind(1, statusMessage.timestamp())
-                        .bind(2, statusMessage.status())
+                        .bind(0, connectionId)
+                        .bind(1, timestamp)
+                        .bind(2, status)
                         .execute());
     }
 

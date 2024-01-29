@@ -63,12 +63,12 @@ public class ShowConnectionListHandler implements JavalinHandler {
         String nextConnectionId = getNextIdFor(user);
         logger.info("Next connection id for user {} is {}", user, nextConnectionId);
         final var selectConnectionStatusesSql = """
-                select CONNECTION_ID, TIMESTAMP_, CONSENT_STATUS
-                from CONNECTION_STATUS as out
-                where TIMESTAMP_ = (select max(TIMESTAMP_) from CONNECTION_STATUS as inn where out.CONNECTION_ID = inn.CONNECTION_ID)
-                    and CONNECTION_ID in (select CONNECTION_ID from CONNECTIONS
-                        where USER_ID=(select ID from USERS where EMAIL=?))
-                order by CONNECTION_ID
+                SELECT connection_id, timestamp_, consent_status, row_number
+                FROM connection_status AS out
+                WHERE row_number = (SELECT MAX(row_number) FROM connection_status AS inn WHERE out.connection_id = inn.connection_id)
+                    AND connection_id IN (SELECT connection_id FROM connections
+                        WHERE user_id=(SELECT id FROM users WHERE email=?))
+                ORDER BY connection_id
                 """;
         var connectionStatuses = jdbi.withHandle(h ->
                 h.createQuery(selectConnectionStatusesSql)
