@@ -238,6 +238,8 @@ class PermissionRequestControllerTest {
                 .put("granularity", "PT15M");
 
         // When
+        when(permissionRequestCreationService.createAndSendPermissionRequest(any()))
+                .thenReturn(new CreatedPermissionRequest("pid", "cmRequestId"));
         mockMvc.perform(
                         MockMvcRequestBuilders.post("/permission-request")
                                 .contentType(MediaType.APPLICATION_JSON)
