@@ -5,7 +5,10 @@ import energy.eddie.api.agnostic.process.model.FutureStateException;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
+import energy.eddie.regionconnector.at.eda.EdaAdapter;
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
+import energy.eddie.regionconnector.at.eda.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.InvalidDsoIdException;
 import org.junit.jupiter.api.Test;
@@ -28,8 +31,9 @@ class CreatedPermissionRequestStateTest {
         when(ccmoRequest.start()).thenReturn(ZonedDateTime.now(ZoneOffset.UTC).minusDays(5));
         when(ccmoRequest.end()).thenReturn(Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusDays(1)));
         when(ccmoRequest.toCMRequest()).thenReturn(mock(CMRequest.class));
-        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
-        AtCreatedPermissionRequestState permissionRequestState = new AtCreatedPermissionRequestState(permissionRequest, ccmoRequest, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
+        AtCreatedPermissionRequestState permissionRequestState = new AtCreatedPermissionRequestState(permissionRequest, ccmoRequest, factory);
 
         // When
         permissionRequestState.validate();
@@ -45,8 +49,9 @@ class CreatedPermissionRequestStateTest {
         when(ccmoRequest.start()).thenReturn(ZonedDateTime.now(ZoneOffset.UTC).minusDays(5));
         when(ccmoRequest.end()).thenReturn(Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusDays(1)));
         when(ccmoRequest.toCMRequest()).thenThrow(new InvalidDsoIdException("msg"));
-        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
-        AtCreatedPermissionRequestState permissionRequestState = new AtCreatedPermissionRequestState(permissionRequest, ccmoRequest, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
+        AtCreatedPermissionRequestState permissionRequestState = new AtCreatedPermissionRequestState(permissionRequest, ccmoRequest, factory);
 
         // When
         assertThrows(StateTransitionException.class, permissionRequestState::validate);

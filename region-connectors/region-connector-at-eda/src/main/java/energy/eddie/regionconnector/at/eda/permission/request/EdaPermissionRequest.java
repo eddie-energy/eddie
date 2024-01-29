@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtCreatedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
@@ -33,11 +34,11 @@ public class EdaPermissionRequest extends TimestampedPermissionRequest implement
     @Nullable
     private String consentId;
 
-    public EdaPermissionRequest(String connectionId, String dataNeedId, CCMORequest ccmoRequest, EdaAdapter edaAdapter) {
-        this(connectionId, UUID.randomUUID().toString(), dataNeedId, ccmoRequest, edaAdapter);
+    public EdaPermissionRequest(String connectionId, String dataNeedId, CCMORequest ccmoRequest, EdaAdapter edaAdapter, AtConfiguration atConfiguration) {
+        this(connectionId, UUID.randomUUID().toString(), dataNeedId, ccmoRequest, edaAdapter, atConfiguration);
     }
 
-    public EdaPermissionRequest(String connectionId, String permissionId, String dataNeedId, CCMORequest ccmoRequest, EdaAdapter edaAdapter) {
+    public EdaPermissionRequest(String connectionId, String permissionId, String dataNeedId, CCMORequest ccmoRequest, EdaAdapter edaAdapter, AtConfiguration atConfiguration) {
         super(AT_ZONE_ID);
         this.connectionId = connectionId;
         this.permissionId = permissionId;
@@ -48,7 +49,7 @@ public class EdaPermissionRequest extends TimestampedPermissionRequest implement
         this.dataSourceInformation = new EdaDataSourceInformation(ccmoRequest.dsoId());
         this.start = ccmoRequest.start();
         this.end = ccmoRequest.end().orElse(null);
-        this.state = new AtCreatedPermissionRequestState(this, ccmoRequest, edaAdapter);
+        this.state = new AtCreatedPermissionRequestState(this, ccmoRequest, edaAdapter, atConfiguration);
     }
 
     @Override

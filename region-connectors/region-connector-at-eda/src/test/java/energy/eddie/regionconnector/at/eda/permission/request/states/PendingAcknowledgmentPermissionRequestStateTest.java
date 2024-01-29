@@ -3,7 +3,9 @@ package energy.eddie.regionconnector.at.eda.permission.request.states;
 import energy.eddie.api.agnostic.process.model.FutureStateException;
 import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
+import energy.eddie.regionconnector.at.eda.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.junit.jupiter.api.Test;
 
@@ -21,8 +23,9 @@ class PendingAcknowledgmentPermissionRequestStateTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("conversationId");
-        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
-        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(permissionRequest);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), edaAdapter);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
         // When
@@ -35,7 +38,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void validate_throws() {
         // Given
-        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null, null);
 
         // When
         // Then
@@ -45,7 +48,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void sendToPermissionAdministrator_throws() {
         // Given
-        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null, null);
 
         // When
         // Then
@@ -55,7 +58,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void accept_throws() {
         // Given
-        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null, null);
 
         // When
         // Then
@@ -65,7 +68,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void invalid_throws() {
         // Given
-        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null, null);
 
         // When
         // Then
@@ -75,7 +78,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void reject_throws() {
         // Given
-        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null, null);
 
         // When
         // Then
@@ -85,7 +88,7 @@ class PendingAcknowledgmentPermissionRequestStateTest {
     @Test
     void terminate_throws() {
         // Given
-        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null);
+        AtPendingAcknowledgmentPermissionRequestState state = new AtPendingAcknowledgmentPermissionRequestState(null, null);
 
         // When
         // Then

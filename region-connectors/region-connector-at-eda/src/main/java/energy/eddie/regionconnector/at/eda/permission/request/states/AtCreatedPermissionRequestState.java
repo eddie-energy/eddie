@@ -9,6 +9,7 @@ import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnector;
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.validation.NotOlderThanValidator;
 import energy.eddie.regionconnector.at.eda.permission.request.validation.StartIsBeforeOrEqualEndValidator;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -33,11 +34,16 @@ public class AtCreatedPermissionRequestState
     );
     private final CCMORequest ccmoRequest;
     private final EdaAdapter edaAdapter;
+    private final AtConfiguration atConfiguration;
 
-    public AtCreatedPermissionRequestState(AtPermissionRequest permissionRequest, CCMORequest ccmoRequest, EdaAdapter edaAdapter) {
+    public AtCreatedPermissionRequestState(AtPermissionRequest permissionRequest,
+                                           CCMORequest ccmoRequest,
+                                           EdaAdapter edaAdapter,
+                                           AtConfiguration atConfiguration) {
         super(permissionRequest);
         this.ccmoRequest = ccmoRequest;
         this.edaAdapter = edaAdapter;
+        this.atConfiguration = atConfiguration;
     }
 
     @Override
@@ -45,7 +51,7 @@ public class AtCreatedPermissionRequestState
         validateAttributes();
         try {
             CMRequest cmRequest = ccmoRequest.toCMRequest();
-            permissionRequest.changeState(new AtValidatedPermissionRequestState(permissionRequest, cmRequest, edaAdapter));
+            permissionRequest.changeState(new AtValidatedPermissionRequestState(permissionRequest, cmRequest, edaAdapter, atConfiguration));
         } catch (InvalidDsoIdException e) {
             changeToMalformedState(e);
             throw new ValidationException(this, "dsoId", e.getMessage() == null ? "" : e.getMessage());

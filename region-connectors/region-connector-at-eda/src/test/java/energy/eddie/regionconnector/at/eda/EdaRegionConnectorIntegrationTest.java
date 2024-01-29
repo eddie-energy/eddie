@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
+import energy.eddie.regionconnector.at.eda.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtPendingAcknowledgmentPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtSentToPermissionAdministratorPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.provider.v0.EdaMvp1ConsumptionRecordProvider;
@@ -48,6 +49,8 @@ class EdaRegionConnectorIntegrationTest {
     private AtPermissionRequestRepository repository;
     @Autowired
     private Sinks.Many<ConnectionStatusMessage> messages;
+    @Autowired
+    private StateBuilderFactory factory;
     @MockBean
     private EdaAdapter adapter;
     @MockBean
@@ -73,8 +76,8 @@ class EdaRegionConnectorIntegrationTest {
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         when(ccmoRequest.meteringPointId()).thenReturn(Optional.of("meteringPointId"));
-        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
-        permissionRequest.changeState(new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest));
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, factory);
+        permissionRequest.changeState(new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest, factory));
         repository.save(permissionRequest);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(((Mvp1ConnectionStatusMessageProvider) rc).getConnectionStatusMessageStream());
@@ -110,8 +113,8 @@ class EdaRegionConnectorIntegrationTest {
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         when(ccmoRequest.meteringPointId()).thenReturn(Optional.of("meteringPointId"));
-        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
-        permissionRequest.changeState(new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest));
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, factory);
+        permissionRequest.changeState(new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest, factory));
         repository.save(permissionRequest);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(((Mvp1ConnectionStatusMessageProvider) rc).getConnectionStatusMessageStream());
@@ -147,8 +150,8 @@ class EdaRegionConnectorIntegrationTest {
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         when(ccmoRequest.meteringPointId()).thenReturn(Optional.of("meteringPointId"));
-        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
-        permissionRequest.changeState(new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest));
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, factory);
+        permissionRequest.changeState(new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest, factory));
         repository.save(permissionRequest);
 
         var source = JdkFlowAdapter.flowPublisherToFlux(((Mvp1ConnectionStatusMessageProvider) rc).getConnectionStatusMessageStream());
@@ -206,8 +209,8 @@ class EdaRegionConnectorIntegrationTest {
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         when(ccmoRequest.start()).thenReturn(ZonedDateTime.now(ZoneOffset.UTC).minusDays(10));
-        var request = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
-        request.changeState(new AtSentToPermissionAdministratorPermissionRequestState(request));
+        var request = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, factory);
+        request.changeState(new AtSentToPermissionAdministratorPermissionRequestState(request, factory));
         repository.save(request);
 
         var uut = new EdaRegionConnector(adapter, requestService, messages);
@@ -241,8 +244,8 @@ class EdaRegionConnectorIntegrationTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var request = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
-        request.changeState(new AtPendingAcknowledgmentPermissionRequestState(request));
+        var request = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, factory);
+        request.changeState(new AtPendingAcknowledgmentPermissionRequestState(request, factory));
         repository.save(request);
 
         var uut = new EdaRegionConnector(adapter, requestService, messages);
@@ -281,8 +284,8 @@ class EdaRegionConnectorIntegrationTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var request = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
-        request.changeState(new AtSentToPermissionAdministratorPermissionRequestState(request));
+        var request = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, factory);
+        request.changeState(new AtSentToPermissionAdministratorPermissionRequestState(request, factory));
         repository.save(request);
 
         var uut = new EdaRegionConnector(adapter, requestService, messages);
@@ -317,8 +320,8 @@ class EdaRegionConnectorIntegrationTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, null);
-        request.changeState(new AtPendingAcknowledgmentPermissionRequestState(request));
+        var request = new EdaPermissionRequest("connectionId", "permissionId", ccmoRequest, factory);
+        request.changeState(new AtPendingAcknowledgmentPermissionRequestState(request, factory));
         repository.save(request);
 
         var uut = new EdaRegionConnector(adapter, requestService, messages);
@@ -350,8 +353,8 @@ class EdaRegionConnectorIntegrationTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var request = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
-        request.changeState(new AtPendingAcknowledgmentPermissionRequestState(request));
+        var request = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, factory);
+        request.changeState(new AtPendingAcknowledgmentPermissionRequestState(request, factory));
 
         repository.save(request);
 

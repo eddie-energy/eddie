@@ -314,7 +314,7 @@ public class PontonXPAdapter implements EdaAdapter {
                 .setReceiverId(new ReceiverId(revoke.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress()))
                 .setMessageType(new MessageType.MessageTypeBuilder()
                         .setSchemaSet(new SchemaSet(MessageCodes.Revoke.EligibleParty.SCHEMA))
-                        .setVersion(new MessageTypeVersion(MessageCodes.Revoke.VERSION))
+                        .setVersion(new MessageTypeVersion(MessageCodes.Revoke.EligibleParty.VERSION))
                         .setName(new MessageTypeName(MessageCodes.Revoke.EligibleParty.REVOKE))
                         .setMimeType(new MimeType("text/xml"))
                         .build())

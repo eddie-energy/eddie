@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.at.eda;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
+import jakarta.xml.bind.JAXBException;
 import org.junit.jupiter.api.Test;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
@@ -11,6 +12,7 @@ import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -76,17 +78,20 @@ class EdaRegionConnectorTest {
     }
 
     @Test
-    void terminateNonExistingPermission_throwsIllegalStateException() throws TransmissionException {
+    void terminateNonExistingPermission_doesNothing() throws TransmissionException, JAXBException {
         // given
         var adapter = mock(EdaAdapter.class);
         when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         var requestService = mock(PermissionRequestService.class);
+        when(requestService.findByPermissionId("permissionId")).thenReturn(Optional.empty());
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
         var connector = new EdaRegionConnector(adapter, requestService, sink);
 
         // when
         // then
-        assertThrows(IllegalStateException.class, () -> connector.terminatePermission("permissionId"));
+        assertDoesNotThrow(() -> connector.terminatePermission("permissionId"));
+
+        verify(adapter, never()).sendCMRevoke(any());
     }
 
     @Test

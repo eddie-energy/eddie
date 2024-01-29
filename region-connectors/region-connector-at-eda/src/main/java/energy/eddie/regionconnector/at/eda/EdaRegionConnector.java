@@ -85,7 +85,12 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
                 request.invalid();
             }
             case REJECTED -> request.reject();
-            case RECEIVED -> request.receivedPermissionAdministratorResponse();
+            case RECEIVED -> {
+                // we will also receive a received message if we sent a terminate message to the DSO, so we need to make sure not to change the state in that case
+                if (request.state().status() == PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT) {
+                    request.receivedPermissionAdministratorResponse();
+                }
+            }
             default -> {
                 // Other CMRequestStatus do not change the state of the permission request,
                 // because they have no matching state in the consent process model
@@ -118,12 +123,13 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
     public void terminatePermission(String permissionId) {
         var request = permissionRequestService.findByPermissionId(permissionId);
         if (request.isEmpty()) {
-            throw new IllegalStateException("No permission with this id found: %s".formatted(permissionId));
+            LOGGER.warn("No permission with this id found: {}", permissionId);
+            return;
         }
         try {
             request.get().terminate();
         } catch (StateTransitionException e) {
-            throw new IllegalStateException(e);
+            LOGGER.warn("Unexpected exception occured while terminating", e);
         }
     }
 
@@ -139,10 +145,9 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
                 cmRequestStatus.getCMRequestId().orElse(null)
         );
         if (optionalPermissionRequest.isEmpty()) {
-            // should not happen if a persistent mapping is used
-            // TODO inform the administrative console if it happens
-            LOGGER.warn("Received CMRequestStatus for unknown conversationId {} or requestId {}",
-                    cmRequestStatus.getConversationId(), cmRequestStatus.getCMRequestId());
+            // should not happen if a persistent mapping is used, or if an invalid termination request was sent.
+            LOGGER.warn("Received CMRequestStatus for unknown conversationId {} or requestId {} with payload: {}",
+                    cmRequestStatus.getConversationId(), cmRequestStatus.getCMRequestId(), cmRequestStatus);
             return;
         }
         try {
