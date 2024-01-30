@@ -1,5 +1,5 @@
 import { html } from "lit";
-import PermissionRequestFormBase from "../../../../../core/src/main/js/permission-request-form-base.js";
+import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
 import { createRef, ref } from "lit/directives/ref.js";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/input/input.js";

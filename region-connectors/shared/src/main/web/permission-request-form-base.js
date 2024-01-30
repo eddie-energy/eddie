@@ -30,29 +30,29 @@ class PermissionRequestFormBase extends LitElement {
     return new Promise((resolve) => setTimeout(resolve, delay)).then(() => {
       if (maxRetries > 0) {
         return this.requestPermissionStatus(this.location, maxRetries - 1);
-      } else {
-        // Handle the case when the maximum number of retries is reached
-        const retryButton = html`
-          <sl-button
-            ref=${ref(this.restartPollingButtonRef)}
-            variant="neutral"
-            outline
-            @click="${this.startOrRestartAutomaticPermissionStatusPolling}"
-            >Restart polling
-          </sl-button>
-        `;
-
-        const warningTitle = "Automatic query stopped.";
-        const warningMessage =
-          "Permission status query exceeded maximum allowed attempts.\n" +
-          "Click the button below to restart the automatic polling.";
-        this.notify({
-          title: warningTitle,
-          message: warningMessage,
-          variant: "warning",
-          extraFunctionality: [retryButton],
-        });
       }
+
+      // Handle the case when the maximum number of retries is reached
+      const retryButton = html`
+        <sl-button
+          ref=${ref(this.restartPollingButtonRef)}
+          variant="neutral"
+          outline
+          @click="${this.startOrRestartAutomaticPermissionStatusPolling}"
+          >Restart polling
+        </sl-button>
+      `;
+
+      const warningTitle = "Automatic query stopped.";
+      const warningMessage =
+        "Permission status query exceeded maximum allowed attempts.\n" +
+        "Click the button below to restart the automatic polling.";
+      this.notify({
+        title: warningTitle,
+        message: warningMessage,
+        variant: "warning",
+        extraFunctionality: [retryButton],
+      });
     });
   }
 
@@ -99,6 +99,46 @@ class PermissionRequestFormBase extends LitElement {
         });
       });
   };
+
+  handleStatus(status, reason = "") {
+    const title = "Request completed!";
+
+    if (status === "ACCEPTED") {
+      this.notify({
+        title,
+        message: "Your permission request was accepted.",
+        variant: "success",
+        duration: 5000,
+      });
+    } else if (status === "REJECTED") {
+      this.notify({
+        title,
+        message: "The permission request has been rejected.",
+        reason,
+      });
+    } else if (status === "INVALID") {
+      this.notify({
+        title,
+        message: "The permission request was invalid.",
+        reason,
+        variant: "warning",
+      });
+    } else if (status === "TERMINATED") {
+      this.notify({
+        title,
+        message: "The permission request was terminated.",
+        reason,
+        variant: "warning",
+      });
+    } else if (status === "FULFILLED") {
+      this.notify({
+        title,
+        message: "The permission request was fulfilled.",
+        variant: "success",
+        duration: 5000,
+      });
+    }
+  }
 }
 
 export default PermissionRequestFormBase;

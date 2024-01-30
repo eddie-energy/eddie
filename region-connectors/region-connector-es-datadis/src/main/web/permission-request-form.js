@@ -1,5 +1,5 @@
 import { html } from "lit";
-import PermissionRequestFormBase from "../../../../../core/src/main/js/permission-request-form-base.js";
+import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 
 import logo from "../resources/datadis-logo.svg?raw";
@@ -179,47 +179,14 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     const currentStatus = result["status"];
     this._requestStatus = currentStatus;
 
-    const title = "Request completed!";
-    // Finished long poll
-    switch (currentStatus) {
-      case "SENT_TO_PERMISSION_ADMINISTRATOR":
-        this._isSubmitHidden = true;
-        break;
-      case "RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE":
-        this._isSubmitHidden = true;
-        break;
-      case "ACCEPTED":
-        this.notify({
-          title,
-          message: "Your permission request was accepted.",
-          variant: "success",
-          duration: 5000,
-        });
-        return;
-      case "REJECTED":
-        this.notify({
-          title,
-          message: "The permission request has been rejected.",
-          reason: result["message"],
-        });
-        return;
-      case "INVALID":
-        this.notify({
-          title,
-          message: "The permission request was invalid.",
-          reason: result["message"],
-          variant: "warning",
-        });
-        return;
-      case "TERMINATED":
-        this.notify({
-          title,
-          message: "The permission request was terminated.",
-          reason: result["message"],
-          variant: "warning",
-        });
-        return;
+    if (
+      currentStatus === "SENT_TO_PERMISSION_ADMINISTRATOR" ||
+      currentStatus === "RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE"
+    ) {
+      this._isSubmitHidden = true;
     }
+
+    this.handleStatus(currentStatus, result["message"]);
 
     // Wait for status update
     await this.awaitRetry(5000, maxRetries);

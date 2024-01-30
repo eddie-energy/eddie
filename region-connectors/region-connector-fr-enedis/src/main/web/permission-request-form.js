@@ -1,5 +1,5 @@
 import { html } from "lit";
-import PermissionRequestFormBase from "../../../../../core/src/main/js/permission-request-form-base.js";
+import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/input/input.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/button/button.js";
@@ -154,41 +154,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     const currentStatus = result["status"];
     this._requestStatus = currentStatus;
 
-    const title = "Request completed!";
-    // Finished long poll
-    switch (currentStatus) {
-      case "ACCEPTED":
-        this.notify({
-          title,
-          message: "Your permission request was accepted.",
-          variant: "success",
-          duration: 5000,
-        });
-        return;
-      case "REJECTED":
-        this.notify({
-          title,
-          message: "The permission request has been rejected.",
-          reason: result["message"],
-        });
-        return;
-      case "INVALID":
-        this.notify({
-          title,
-          message: "The permission request was invalid.",
-          reason: result["message"],
-          variant: "warning",
-        });
-        return;
-      case "TERMINATED":
-        this.notify({
-          title,
-          message: "The permission request was terminated.",
-          reason: result["message"],
-          variant: "warning",
-        });
-        return;
-    }
+    this.handleStatus(currentStatus, result["message"]);
 
     // Wait for status update
     await this.awaitRetry(5000, maxRetries);
