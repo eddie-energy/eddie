@@ -1,6 +1,6 @@
 package energy.eddie.core.services;
 
-import energy.eddie.api.v0_82.CimConsumptionRecordProvider;
+import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocument;
 import org.junit.jupiter.api.BeforeAll;
@@ -21,6 +21,20 @@ class EddieValidatedHistoricalDataMarketDocumentServiceTest {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(2));
     }
 
+    private static EddieValidatedHistoricalDataMarketDocumentProvider createProvider(Sinks.Many<EddieValidatedHistoricalDataMarketDocument> sink) {
+        return new EddieValidatedHistoricalDataMarketDocumentProvider() {
+            @Override
+            public Flow.Publisher<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
+                return JdkFlowAdapter.publisherToFlowPublisher(sink.asFlux());
+            }
+
+            @Override
+            public void close() {
+                sink.tryEmitComplete();
+            }
+        };
+    }
+
     @Test
     void givenMultipleStreams_combinesAndEmitsAllValuesFromAllStreams() throws Exception {
         // Given
@@ -28,8 +42,8 @@ class EddieValidatedHistoricalDataMarketDocumentServiceTest {
         Sinks.Many<EddieValidatedHistoricalDataMarketDocument> sink1 = Sinks.many().unicast().onBackpressureBuffer();
         Sinks.Many<EddieValidatedHistoricalDataMarketDocument> sink2 = Sinks.many().unicast().onBackpressureBuffer();
 
-        CimConsumptionRecordProvider provider1 = createProvider(sink1);
-        CimConsumptionRecordProvider provider2 = createProvider(sink2);
+        EddieValidatedHistoricalDataMarketDocumentProvider provider1 = createProvider(sink1);
+        EddieValidatedHistoricalDataMarketDocumentProvider provider2 = createProvider(sink2);
 
         var one = new EddieValidatedHistoricalDataMarketDocument(Optional.of("one"), Optional.empty(), Optional.empty(), mock(ValidatedHistoricalDataMarketDocument.class));
         var two = new EddieValidatedHistoricalDataMarketDocument(Optional.of("two"), Optional.empty(), Optional.empty(), mock(ValidatedHistoricalDataMarketDocument.class));
@@ -52,19 +66,5 @@ class EddieValidatedHistoricalDataMarketDocumentServiceTest {
 
         provider1.close();
         provider2.close();
-    }
-
-    private static CimConsumptionRecordProvider createProvider(Sinks.Many<EddieValidatedHistoricalDataMarketDocument> sink) {
-        return new CimConsumptionRecordProvider() {
-            @Override
-            public Flow.Publisher<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
-                return JdkFlowAdapter.publisherToFlowPublisher(sink.asFlux());
-            }
-
-            @Override
-            public void close() {
-                sink.tryEmitComplete();
-            }
-        };
     }
 }

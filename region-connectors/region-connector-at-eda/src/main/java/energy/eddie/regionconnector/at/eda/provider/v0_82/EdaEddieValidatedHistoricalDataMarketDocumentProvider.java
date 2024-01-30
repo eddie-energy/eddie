@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda.provider.v0_82;
 
-import energy.eddie.api.v0_82.CimConsumptionRecordProvider;
+import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
@@ -18,7 +18,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * This class is for processing incoming consumption records by mapping it to ValidatedHistoricalDataMarketDocuments and emitting it for all matching permission requests
  */
-public class EdaEddieValidatedHistoricalDataMarketDocumentProvider implements CimConsumptionRecordProvider {
+public class EdaEddieValidatedHistoricalDataMarketDocumentProvider implements EddieValidatedHistoricalDataMarketDocumentProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaEddieValidatedHistoricalDataMarketDocumentProvider.class);
 
     private final ValidatedHistoricalDataMarketDocumentDirector director;
