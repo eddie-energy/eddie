@@ -1,15 +1,21 @@
 package energy.eddie.regionconnector.dk.energinet;
 
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.process.model.states.TerminatedPermissionRequestState;
 import energy.eddie.api.v0.HealthState;
+import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
-import energy.eddie.regionconnector.dk.energinet.customer.permission.request.SimplePermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerAcceptedState;
-import energy.eddie.regionconnector.dk.energinet.customer.permission.request.states.EnerginetCustomerInvalidState;
+import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.SimplePermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.states.EnerginetCustomerAcceptedState;
+import energy.eddie.regionconnector.dk.energinet.permission.request.states.EnerginetCustomerInvalidState;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
 import java.time.Clock;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -59,25 +65,24 @@ class EnerginetRegionConnectorTest {
     }
 
     @Test
-    void terminatePermission_withExistingPermissionId_throws() {
+    void terminatePermission_withExistingPermissionId_terminates() {
         // Given
         var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);
-        when(energinetCustomerApi.health()).thenReturn(Mono.just(Map.of("service", HealthState.UP)));
-        SimplePermissionRequest request = new SimplePermissionRequest(
-                "pid",
-                "cid",
-                "dataNeedId",
-                ZonedDateTime.now(Clock.systemUTC()),
-                ZonedDateTime.now(Clock.systemUTC()),
-                new EnerginetCustomerAcceptedState(null)
-        );
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
+        ZonedDateTime end = start.plusDays(10);
+        var creation = new PermissionRequestForCreation("cid", start, end, "token", Granularity.PT15M, "mpid", "dnid");
+        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", creation, mock(EnerginetCustomerApi.class));
+        EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(permissionRequest);
+        permissionRequest.changeState(state);
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
-        when(permissionRequestService.findByPermissionId(anyString())).thenReturn(Optional.of(request));
+        when(permissionRequestService.findByPermissionId(anyString())).thenReturn(Optional.of(permissionRequest));
         var rc = new EnerginetRegionConnector(energinetCustomerApi, permissionRequestService);
 
         // When
+        rc.terminatePermission("pid");
+
         // Then
-        assertThrows(UnsupportedOperationException.class, () -> rc.terminatePermission("pid"));
+        assertInstanceOf(TerminatedPermissionRequestState.class, permissionRequest.state());
     }
 
     @Test
