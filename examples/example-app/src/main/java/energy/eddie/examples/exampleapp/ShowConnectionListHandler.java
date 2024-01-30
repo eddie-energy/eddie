@@ -24,14 +24,6 @@ public class ShowConnectionListHandler implements JavalinHandler {
     @Override
     public void register(Javalin app) {
         app.get("/connections/", this::listConnections);
-        final var createTableConnectionsSql = """
-                CREATE TABLE IF NOT EXISTS CONNECTIONS (
-                    user_id INTEGER NOT NULL,
-                    connection_id VARCHAR(255) NOT NULL PRIMARY KEY
-                );
-                CREATE SEQUENCE IF NOT EXISTS CONNECTION_ID_SEQ AS BIGINT;
-                """;
-        jdbi.withHandle(h -> h.execute(createTableConnectionsSql));
     }
 
     @Nullable

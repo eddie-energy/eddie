@@ -39,6 +39,8 @@ dependencies {
     implementation(libs.jte)
     implementation(libs.slf4j.simple)
     implementation(libs.kafka.streams)
+    implementation(libs.flyway.core)
+    runtimeOnly(libs.flyway.postgresql)
 
     runtimeOnly(libs.h2database)
     runtimeOnly(libs.postgresql)

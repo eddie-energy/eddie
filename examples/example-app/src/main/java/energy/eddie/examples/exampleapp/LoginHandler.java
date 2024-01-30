@@ -30,14 +30,6 @@ public class LoginHandler implements JavalinHandler {
                 ctx.redirect(ctx.contextPath() + "/connections/");
             }
         });
-        final var createUserTableSql = """                
-                CREATE TABLE IF NOT EXISTS USERS (
-                    id SERIAL PRIMARY KEY,
-                    email VARCHAR(80)
-                );
-                CREATE INDEX IF NOT EXISTS INDEX_USER_EMAIL ON USERS (email);
-                """;
-        jdbi.withHandle(h -> h.execute(createUserTableSql));
     }
 
     private void loginUser(String email) {

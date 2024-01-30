@@ -14,6 +14,7 @@ import gg.jte.TemplateEngine;
 import gg.jte.resolve.DirectoryCodeResolver;
 import io.javalin.Javalin;
 import io.javalin.rendering.template.JavalinJte;
+import org.flywaydb.core.Flyway;
 import org.jdbi.v3.core.Jdbi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +33,14 @@ public class ExampleApp {
     }
 
     public static void main(String[] args) {
+        Flyway flyway = Flyway.configure()
+                .baselineOnMigrate(true)
+                .dataSource(Env.JDBC_URL.get(), Env.JDBC_USER.get(), Env.JDBC_PASSWORD.get())
+                .locations("db/migration")
+                .load();
+        flyway.migrate();
+
         var injector = Guice.createInjector(new Module());
-        JdbcAdapter jdbcAdapter = injector.getInstance(JdbcAdapter.class);
-        jdbcAdapter.initializeDatabase();
 
         if (inDevelopmentMode()) {
             LOGGER.info("Executing JteTemplates in development mode");
