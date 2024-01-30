@@ -20,7 +20,8 @@ services:
     restart: "always"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./create-example-app-db.sql:/docker-entrypoint-initdb.d/create_database.sql
+      - ./create-example-app-db.sql:/docker-entrypoint-initdb.d/create_example_app_database.sql
+      - ./create-fr-enedis-db.sql:/docker-entrypoint-initdb.d/create_fr_enedis_database.sql
 
   eddie:
     image: ghcr.io/eddie-energy/eddie:latest
