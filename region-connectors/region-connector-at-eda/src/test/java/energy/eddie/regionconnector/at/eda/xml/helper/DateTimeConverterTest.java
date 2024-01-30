@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -17,6 +18,7 @@ class DateTimeConverterTest {
         // Correct test
         assertNotNull(DateTimeConverter.dateToXml(LocalDate.now(ZoneId.of("Europe/Vienna"))));
         assertNotNull(DateTimeConverter.dateTimeToXml(LocalDateTime.now(ZoneId.of("Europe/Vienna"))));
+        assertNotNull(DateTimeConverter.dateTimeToXml(ZonedDateTime.now(ZoneId.of("Europe/Vienna"))));
     }
 
     @Test

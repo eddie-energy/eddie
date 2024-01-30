@@ -38,7 +38,7 @@ public class PontonXPAdapter implements EdaAdapter {
     private static final int PING_TIMEOUT = 2000;
     private static final String CM_NOTIFICATION_PROCESSED = "CMNotification processed";
     private final Sinks.Many<CMRequestStatus> requestStatusSink = Sinks.many().multicast().onBackpressureBuffer();
-    private final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().unicast().onBackpressureBuffer();
     private final Sinks.Many<CMRevoke> cmRevokeSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<MasterData> masterDataSink = Sinks.many().multicast().onBackpressureBuffer();
     private final MessengerConnection messengerConnection;
@@ -144,7 +144,7 @@ public class PontonXPAdapter implements EdaAdapter {
         try (InputStream inputStream = inboundMessage.createInputStream()) {
             var notification = (CMNotification) unmarshaller.unmarshal(inputStream);
             var cmRequestId = notification.getProcessDirectory().getCMRequestId();
-            var meteringPoint = notification.getProcessDirectory().getResponseData().get(0).getMeteringPoint();
+            var meteringPoint = notification.getProcessDirectory().getResponseData().getFirst().getMeteringPoint();
 
             var status = new CMRequestStatus(CMRequestStatus.Status.DELIVERED, "CCMO request has been delivered.", notification.getProcessDirectory().getConversationId());
             status.setCmRequestId(cmRequestId);
@@ -164,9 +164,9 @@ public class PontonXPAdapter implements EdaAdapter {
     private InboundMessageStatusUpdate handleCMAcceptNotificationMessage(InboundMessage inboundMessage) throws IOException, JAXBException {
         try (InputStream inputStream = inboundMessage.createInputStream()) {
             var notification = (CMNotification) unmarshaller.unmarshal(inputStream);
-            var consentId = notification.getProcessDirectory().getResponseData().get(0).getConsentId();
+            var consentId = notification.getProcessDirectory().getResponseData().getFirst().getConsentId();
             var cmRequestId = notification.getProcessDirectory().getCMRequestId();
-            var meteringPoint = notification.getProcessDirectory().getResponseData().get(0).getMeteringPoint();
+            var meteringPoint = notification.getProcessDirectory().getResponseData().getFirst().getMeteringPoint();
 
             var status = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "CCMO request has been accepted.", notification.getProcessDirectory().getConversationId());
             status.setCmConsentId(consentId);
@@ -187,9 +187,9 @@ public class PontonXPAdapter implements EdaAdapter {
     private InboundMessageStatusUpdate handleCMRejectNotificationMessage(InboundMessage inboundMessage) throws IOException, JAXBException {
         try (InputStream inputStream = inboundMessage.createInputStream()) {
             var notification = (CMNotification) unmarshaller.unmarshal(inputStream);
-            var responseCode = notification.getProcessDirectory().getResponseData().get(0).getResponseCode().get(0);
+            var responseCode = notification.getProcessDirectory().getResponseData().getFirst().getResponseCode().getFirst();
             var cmRequestId = notification.getProcessDirectory().getCMRequestId();
-            var meteringPoint = notification.getProcessDirectory().getResponseData().get(0).getMeteringPoint();
+            var meteringPoint = notification.getProcessDirectory().getResponseData().getFirst().getMeteringPoint();
 
             // maybe turn this into an enum that handles the mapping
             var reason = switch (responseCode) {
@@ -266,7 +266,6 @@ public class PontonXPAdapter implements EdaAdapter {
                     .setStatus(InboundStatusEnum.SUCCESS)
                     .setStatusText("CMRevoke successfully delivered to backend.")
                     .build();
-
         }
     }
 

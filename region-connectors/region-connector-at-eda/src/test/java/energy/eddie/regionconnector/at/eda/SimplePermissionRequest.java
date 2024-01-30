@@ -24,6 +24,10 @@ public record SimplePermissionRequest(String permissionId,
         this(permissionId, connectionId, null, null, null, null, Optional.empty(), null, null, null);
     }
 
+    public SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId) {
+        this(permissionId, connectionId, dataNeedId, null, null, null, Optional.empty(), null, null, null);
+    }
+
     public SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId, String cmRequestId, String conversationId, PermissionRequestState state) {
         this(permissionId, connectionId, dataNeedId, cmRequestId, conversationId, null, Optional.empty(), null, null, state);
     }
