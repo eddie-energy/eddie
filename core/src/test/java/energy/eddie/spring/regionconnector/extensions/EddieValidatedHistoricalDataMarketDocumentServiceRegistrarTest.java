@@ -1,6 +1,6 @@
 package energy.eddie.spring.regionconnector.extensions;
 
-import energy.eddie.api.v0_82.CimConsumptionRecordProvider;
+import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.core.services.EddieValidatedHistoricalDataMarketDocumentService;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +14,7 @@ class EddieValidatedHistoricalDataMarketDocumentServiceRegistrarTest {
     void givenNull_constructor_throws() {
         // Given
         var mockService = mock(EddieValidatedHistoricalDataMarketDocumentService.class);
-        Optional<CimConsumptionRecordProvider> provider = Optional.empty();
+        Optional<EddieValidatedHistoricalDataMarketDocumentProvider> provider = Optional.empty();
 
         // When, Then
         assertThrows(NullPointerException.class, () -> new EddieValidatedHistoricalDataMarketDocumentServiceRegistrar(null, mockService));
@@ -37,7 +37,7 @@ class EddieValidatedHistoricalDataMarketDocumentServiceRegistrarTest {
     void givenProvider_registersAtService() {
         // Given
         var mockService = mock(EddieValidatedHistoricalDataMarketDocumentService.class);
-        var mockProvider = mock(CimConsumptionRecordProvider.class);
+        var mockProvider = mock(EddieValidatedHistoricalDataMarketDocumentProvider.class);
 
         // When
         new EddieValidatedHistoricalDataMarketDocumentServiceRegistrar(Optional.of(mockProvider), mockService);

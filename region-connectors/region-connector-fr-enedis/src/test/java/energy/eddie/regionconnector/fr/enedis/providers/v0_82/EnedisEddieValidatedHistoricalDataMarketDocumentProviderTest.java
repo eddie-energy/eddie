@@ -20,7 +20,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class EnedisCimConsumptionRecordProviderTest {
+class EnedisEddieValidatedHistoricalDataMarketDocumentProviderTest {
     @Test
     void testGetEddieValidatedHistoricalDataMarketDocumentStream_publishesDocuments() throws Exception {
         // Given
@@ -52,7 +52,7 @@ class EnedisCimConsumptionRecordProviderTest {
                 enedisConfiguration,
                 () -> CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME
         );
-        var provider = new EnedisCimConsumptionRecordProvider(testPublisher.flux(), factory);
+        var provider = new EnedisEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(), factory);
 
         // When
         StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(provider.getEddieValidatedHistoricalDataMarketDocumentStream()))

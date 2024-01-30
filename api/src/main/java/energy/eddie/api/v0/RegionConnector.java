@@ -1,5 +1,7 @@
 package energy.eddie.api.v0;
 
+import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentProvider;
+
 import java.util.Map;
 
 /**
@@ -17,7 +19,7 @@ import java.util.Map;
  *
  * @see energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider
  * @see energy.eddie.api.v0.Mvp1ConsumptionRecordProvider
- * @see energy.eddie.api.v0_82.CimConsumptionRecordProvider
+ * @see EddieValidatedHistoricalDataMarketDocumentProvider
  */
 public interface RegionConnector {
     /**

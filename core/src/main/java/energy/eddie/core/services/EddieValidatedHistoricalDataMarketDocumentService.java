@@ -1,6 +1,6 @@
 package energy.eddie.core.services;
 
-import energy.eddie.api.v0_82.CimConsumptionRecordProvider;
+import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +16,9 @@ public class EddieValidatedHistoricalDataMarketDocumentService {
 
     private final Sinks.Many<EddieValidatedHistoricalDataMarketDocument> consumptionRecordSink = Sinks.many().multicast().onBackpressureBuffer();
 
-    public void registerProvider(CimConsumptionRecordProvider cimConsumptionRecordProvider) {
-        LOGGER.info("EddieValidatedHistoricalDataMarketDocumentService: Registering {}", cimConsumptionRecordProvider.getClass().getName());
-        JdkFlowAdapter.flowPublisherToFlux(cimConsumptionRecordProvider.getEddieValidatedHistoricalDataMarketDocumentStream())
+    public void registerProvider(EddieValidatedHistoricalDataMarketDocumentProvider eddieValidatedHistoricalDataMarketDocumentProvider) {
+        LOGGER.info("EddieValidatedHistoricalDataMarketDocumentService: Registering {}", eddieValidatedHistoricalDataMarketDocumentProvider.getClass().getName());
+        JdkFlowAdapter.flowPublisherToFlux(eddieValidatedHistoricalDataMarketDocumentProvider.getEddieValidatedHistoricalDataMarketDocumentStream())
                 .doOnNext(consumptionRecordSink::tryEmitNext)
                 .doOnError(consumptionRecordSink::tryEmitError)
                 .subscribe();
