@@ -1,8 +1,10 @@
 package energy.eddie.regionconnector.fr.enedis;
 
+import energy.eddie.api.agnostic.process.model.states.TerminatedPermissionRequestState;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
+import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.SimplePermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisAcceptedState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisInvalidState;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Sinks;
 
 import java.time.Clock;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -70,28 +73,30 @@ class EnedisRegionConnectorTest {
     }
 
     @Test
-    void terminatePermission_withExistingPermissionId_throws() {
+    void terminatePermission_withExistingPermissionId_terminates() {
         // Given
         var enedisApi = mock(EnedisApi.class);
         when(enedisApi.health()).thenReturn(Map.of("service", HealthState.UP));
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
-        SimplePermissionRequest request = new SimplePermissionRequest(
-                "pid",
+        var request = new EnedisPermissionRequest(
                 "cid",
                 "dnid",
-                ZonedDateTime.now(Clock.systemUTC()),
-                ZonedDateTime.now(Clock.systemUTC()),
-                new FrEnedisAcceptedState(null)
+                ZonedDateTime.now(ZoneOffset.UTC),
+                ZonedDateTime.now(ZoneOffset.UTC)
         );
+        request.changeState(new FrEnedisAcceptedState(request));
         when(permissionRequestService.findPermissionRequestByPermissionId(anyString()))
                 .thenReturn(Optional.of(request));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink)) {
+        var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink);
 
-            // When
-            // Then
-            assertThrows(UnsupportedOperationException.class, () -> rc.terminatePermission("pid"));
-        }
+        // When
+        rc.terminatePermission("pid");
+        // Then
+        assertInstanceOf(TerminatedPermissionRequestState.class, request.state());
+
+        // Clean-Up
+        rc.close();
     }
 
     @Test
