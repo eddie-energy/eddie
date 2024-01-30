@@ -1,0 +1,8 @@
+{
+  "name": "eddie-shared",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "lit": "^2.7.5"
+  }
+}

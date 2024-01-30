@@ -16,12 +16,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.util.UriTemplate;
 
 import java.net.URI;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 import static energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice.ERRORS_JSON_PATH;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -84,6 +86,7 @@ class PermissionRequestControllerTest {
     @Test
     void createPermissionRequest_returnsCreated() throws Exception {
         // Given
+        var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand("pid").toString();
         when(permissionRequestService.createPermissionRequest(any()))
                 .thenReturn(new CreatedPermissionRequest("pid", URI.create("https://redirect.com")));
         PermissionRequestForCreation pr = new PermissionRequestForCreation(
@@ -101,7 +104,7 @@ class PermissionRequestControllerTest {
                 )
                 // Then
                 .andExpect(status().isCreated())
-                .andExpect(header().exists("Location"));
+                .andExpect(header().string("Location", is(expectedLocationHeader)));
     }
 
     @Test

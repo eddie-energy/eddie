@@ -1,4 +1,5 @@
-import { html, LitElement } from "lit";
+import { html } from "lit";
+import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
 import { createRef, ref } from "lit/directives/ref.js";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/input/input.js";
@@ -10,7 +11,7 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/compone
 const BASE_URL = new URL(import.meta.url).href.replace("ce.js", "");
 const REQUEST_URL = BASE_URL + "permission-request";
 
-class PermissionRequestForm extends LitElement {
+class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
@@ -46,7 +47,13 @@ class PermissionRequestForm extends LitElement {
           this.qrCodeRef.value.style.visibility = "visible";
         });
       })
-      .catch((error) => console.error(error));
+      .catch((error) =>
+        this.notify({
+          title: this.ERROR_TITLE,
+          message: error,
+          variant: "danger",
+        })
+      );
   }
 
   convertToBase64(content) {
@@ -66,6 +73,7 @@ class PermissionRequestForm extends LitElement {
         set up a new permission and enter the token below the QR code.
       </p>
 
+      ${this.alerts}
       ${!this._aiidaCode
         ? html`<sl-button @click="${this.requestPermission}" variant="primary">
             Connect

@@ -1,9 +1,5 @@
 lockfileVersion: '6.0'
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
-
 importers:
 
   .:
@@ -76,6 +72,12 @@ importers:
       vite:
         specifier: ^4.3.9
         version: 4.3.9
+
+  region-connectors/shared:
+    dependencies:
+      lit:
+        specifier: ^2.7.5
+        version: 2.7.5
 
 packages:
 
@@ -390,3 +392,7 @@ packages:
       rollup: 3.25.0
     optionalDependencies:
       fsevents: 2.3.2
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
