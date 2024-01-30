@@ -25,28 +25,19 @@ dependencies {
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
 
-
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
-
-
     implementation(libs.jakarta.annotation.api)
 
-
     implementation(libs.reactor.core)
+    implementation(libs.reactor.netty.http)
+    implementation(libs.netty.codec.http)
+
     testImplementation(libs.reactor.test)
-
-
-    // TODO: move to common versions.toml file
-    // https://mvnrepository.com/artifact/io.projectreactor.netty/reactor-netty
-    implementation("io.projectreactor.netty:reactor-netty:1.1.10")
-    // https://mvnrepository.com/artifact/io.netty/netty-codec-http
-    implementation("io.netty:netty-codec-http:4.1.97.Final")
-
-
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.okhttp3.mockwebserver)
 }
 
 tasks.test {
