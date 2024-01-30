@@ -16,7 +16,7 @@ public class FrEnedisAcceptedState
 
     @Override
     public void terminate() {
-        throw new UnsupportedOperationException(NOT_IMPLEMENTED_YET);
+        permissionRequest.changeState(new FrEnedisTerminatedState(permissionRequest));
     }
 
     @Override

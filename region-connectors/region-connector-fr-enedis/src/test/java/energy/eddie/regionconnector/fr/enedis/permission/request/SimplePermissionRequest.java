@@ -13,10 +13,6 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
         this(permissionId, connectionId, null, null, null, null);
     }
 
-    public SimplePermissionRequest(String permissionId, String connectionId, ZonedDateTime start, ZonedDateTime end) {
-        this(permissionId, connectionId, null, start, end, null);
-    }
-
     @Override
     public DataSourceInformation dataSourceInformation() {
         return new EnedisDataSourceInformation();

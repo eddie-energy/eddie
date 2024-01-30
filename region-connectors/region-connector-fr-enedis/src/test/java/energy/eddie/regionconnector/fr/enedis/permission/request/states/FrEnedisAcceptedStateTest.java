@@ -1,18 +1,31 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.states;
 
+import energy.eddie.api.agnostic.process.model.states.TerminatedPermissionRequestState;
+import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 class FrEnedisAcceptedStateTest {
 
     @Test
-    void terminateNotImplemented() {
+    void terminate_transitionsToTerminated() {
         // Given
-        FrEnedisAcceptedState acceptedState = new FrEnedisAcceptedState(null);
+        var request = new EnedisPermissionRequest(
+                "cid",
+                "dnid",
+                ZonedDateTime.now(ZoneOffset.UTC),
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
+        FrEnedisAcceptedState acceptedState = new FrEnedisAcceptedState(request);
 
         // When
+        acceptedState.terminate();
+
         // Then
-        assertThrows(UnsupportedOperationException.class, acceptedState::terminate);
+        assertInstanceOf(TerminatedPermissionRequestState.class, request.state());
     }
 }
