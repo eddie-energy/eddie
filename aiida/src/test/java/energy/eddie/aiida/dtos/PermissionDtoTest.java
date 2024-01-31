@@ -102,47 +102,54 @@ class PermissionDtoTest {
         var violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         var first = violations.iterator().next();
-        assertEquals("permissionId must not be null.", first.getMessage());
+        assertEquals("must not be null.", first.getMessage());
+        assertEquals("permissionId", violations.iterator().next().getPropertyPath().iterator().next().getName());
 
         permissionDto = new PermissionDto(permissionId, null, dataNeedId, start, end, grant, connectionId, codes, streamingConfig);
         violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         first = violations.iterator().next();
-        assertEquals("serviceName must not be null or blank.", first.getMessage());
+        assertEquals("must not be null or blank.", first.getMessage());
+        assertEquals("serviceName", violations.iterator().next().getPropertyPath().iterator().next().getName());
 
         permissionDto = new PermissionDto(permissionId, name, null, start, end, grant, connectionId, codes, streamingConfig);
         violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         first = violations.iterator().next();
-        assertEquals("dataNeedId must not be null or blank.", first.getMessage());
+        assertEquals("must not be null or blank.", first.getMessage());
+        assertEquals("dataNeedId", violations.iterator().next().getPropertyPath().iterator().next().getName());
 
         permissionDto = new PermissionDto(permissionId, name, dataNeedId, null, end, grant, connectionId, codes, streamingConfig);
         violations = validator.validate(permissionDto);
         assertEquals(2, violations.size());
         var violationMessages = violations.stream().map(ConstraintViolation::getMessage);
-        assertThat(violationMessages).hasSameElementsAs(List.of("startTime must not be null.",
+        assertThat(violationMessages).hasSameElementsAs(List.of("must not be null.",
                 "startTime and expirationTime must not be null."));
+        var fieldNames = violations.stream().map(violation -> violation.getPropertyPath().iterator().next().getName()).toList();
+        assertThat(fieldNames).contains("startTime");
 
         permissionDto = new PermissionDto(permissionId, name, dataNeedId, start, null, grant, connectionId, codes, streamingConfig);
         violations = validator.validate(permissionDto);
         assertEquals(2, violations.size());
         violationMessages = violations.stream().map(ConstraintViolation::getMessage);
-        assertThat(violationMessages).hasSameElementsAs(List.of("expirationTime must not be null.",
+        assertThat(violationMessages).hasSameElementsAs(List.of("must not be null.",
                 "startTime and expirationTime must not be null."));
-
 
         permissionDto = new PermissionDto(permissionId, name, dataNeedId, start, end, null, connectionId, codes, streamingConfig);
         violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         first = violations.iterator().next();
-        assertEquals("grantTime must not be null.", first.getMessage());
+        assertEquals("must not be null.", first.getMessage());
+        fieldNames = violations.stream().map(violation -> violation.getPropertyPath().iterator().next().getName()).toList();
+        assertThat(fieldNames).contains("grantTime");
 
 
         permissionDto = new PermissionDto(permissionId, name, dataNeedId, start, end, grant, null, codes, streamingConfig);
         violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         first = violations.iterator().next();
-        assertEquals("connectionId must not be null or blank.", first.getMessage());
+        assertEquals("must not be null or blank.", first.getMessage());
+        assertEquals("connectionId", violations.iterator().next().getPropertyPath().iterator().next().getName());
 
 
         permissionDto = new PermissionDto(permissionId, name, dataNeedId, start, end, grant, connectionId, null, streamingConfig);
@@ -150,13 +157,15 @@ class PermissionDtoTest {
         assertEquals(1, violations.size());
         first = violations.iterator().next();
         assertEquals("At least one OBIS code needs to be requested.", first.getMessage());
+        assertEquals("requestedCodes", violations.iterator().next().getPropertyPath().iterator().next().getName());
 
 
         permissionDto = new PermissionDto(permissionId, name, dataNeedId, start, end, grant, connectionId, codes, null);
         violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         first = violations.iterator().next();
-        assertEquals("kafkaStreamingConfig must not be null.", first.getMessage());
+        assertEquals("must not be null.", first.getMessage());
+        assertEquals("kafkaStreamingConfig", violations.iterator().next().getPropertyPath().iterator().next().getName());
     }
 
     @Test
@@ -169,7 +178,7 @@ class PermissionDtoTest {
         var violations = validator.validate(permissionDto);
         assertEquals(1, violations.size());
         var first = violations.iterator().next();
-        assertEquals("bootstrapServers must not be null or blank.", first.getMessage());
+        assertEquals("must not be null or blank.", first.getMessage());
     }
 
     @Test

@@ -20,22 +20,22 @@ public class KafkaStreamingConfig {
     private Integer id;
     @Schema(description = "Comma separated list of Kafka boostrap servers.", example = "localhost:9092")
     @Column(nullable = false)
-    @NotBlank(message = "bootstrapServers must not be null or blank.")
+    @NotBlank(message = "must not be null or blank.")
     @JsonProperty(required = true)
     private String bootstrapServers;
     @Schema(description = "Kafka topic to which the near real-time data should be sent.", example = "SomeDataTopic")
     @Column(nullable = false)
-    @NotBlank(message = "dataTopic must not be null or blank.")
+    @NotBlank(message = "must not be null or blank.")
     @JsonProperty(required = true)
     private String dataTopic;
     @Schema(description = "Kafka topic to which the connection status messages should be sent.", example = "SomeStatusTopic")
     @Column(nullable = false)
-    @NotBlank(message = "statusTopic must not be null or blank.")
+    @NotBlank(message = "must not be null or blank.")
     @JsonProperty(required = true)
     private String statusTopic;
     @Schema(description = "Kafka topic on which the EP/EDDIE publishers termination requests and AIIDA subscribes to.", example = "SomeSubscribeTopic")
     @Column(nullable = false)
-    @NotBlank(message = "subscribeTopic must not be null or blank.")
+    @NotBlank(message = "must not be null or blank.")
     @JsonProperty(required = true)
     private String subscribeTopic;
 
