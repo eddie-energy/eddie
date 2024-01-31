@@ -9,18 +9,21 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
  * This state is recoverable, by retrying to send the permission request.
  */
 public class UnableToSendState extends ContextualizedPermissionRequestState<EsPermissionRequest> implements UnableToSendPermissionRequestState {
-    private final Throwable cause;
+    private final Throwable reason;
 
-    protected UnableToSendState(EsPermissionRequest permissionRequest, Throwable cause) {
+    protected UnableToSendState(EsPermissionRequest permissionRequest, Throwable reason) {
         super(permissionRequest);
-        this.cause = cause;
+        this.reason = reason;
+    }
+
+    public Throwable reason() {
+        return reason;
     }
 
     @Override
     public String toString() {
-        return "UnableToSendPermissionRequestState{" +
-                "cause=" + cause +
+        return "UnableToSendState{" +
+                "reason=" + reason +
                 '}';
     }
-
 }

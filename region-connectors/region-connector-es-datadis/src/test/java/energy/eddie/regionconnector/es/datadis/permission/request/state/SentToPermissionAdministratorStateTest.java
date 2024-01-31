@@ -4,7 +4,6 @@ import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
-import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import org.junit.jupiter.api.Test;
@@ -16,6 +15,7 @@ import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith({MockitoExtension.class})
 class SentToPermissionAdministratorStateTest {
@@ -34,34 +34,15 @@ class SentToPermissionAdministratorStateTest {
 
     private DatadisPermissionRequest makeSentPermissionRequest() {
         var permissionRequest = makePermissionRequest();
-        permissionRequest.changeState(new SentToPermissionAdministratorState(permissionRequest, AuthorizationRequestResponse.OK));
+        permissionRequest.changeState(new SentToPermissionAdministratorState(permissionRequest));
         return permissionRequest;
-    }
-
-
-    @Test
-    void creatingState_withNoNifResponse_changesStateToInvalid() {
-        var permissionRequest = makePermissionRequest();
-
-        new SentToPermissionAdministratorState(permissionRequest, AuthorizationRequestResponse.NO_NIF);
-
-        assertEquals(PermissionProcessStatus.INVALID, permissionRequest.state().status());
-    }
-
-    @Test
-    void creatingState_withNoSuppliesResponse_changesStateToInvalid() {
-        var permissionRequest = makePermissionRequest();
-
-        new SentToPermissionAdministratorState(permissionRequest, AuthorizationRequestResponse.NO_SUPPLIES);
-
-        assertEquals(PermissionProcessStatus.INVALID, permissionRequest.state().status());
     }
 
     @Test
     void creatingState_withOkResponse_doesNotChangeState() {
         var permissionRequest = makeSentPermissionRequest();
 
-        new SentToPermissionAdministratorState(permissionRequest, AuthorizationRequestResponse.OK);
+        new SentToPermissionAdministratorState(permissionRequest);
 
         assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, permissionRequest.state().status());
     }
@@ -85,11 +66,9 @@ class SentToPermissionAdministratorStateTest {
     }
 
     @Test
-    void invalid_changesToInvalid() throws StateTransitionException {
+    void invalid_throwsPastStateException() {
         var permissionRequest = makeSentPermissionRequest();
 
-        permissionRequest.invalid();
-
-        assertEquals(PermissionProcessStatus.INVALID, permissionRequest.state().status());
+        assertThrows(StateTransitionException.class, permissionRequest::invalid);
     }
 }

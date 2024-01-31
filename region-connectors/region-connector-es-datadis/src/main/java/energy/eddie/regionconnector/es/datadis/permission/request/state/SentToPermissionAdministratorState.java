@@ -1,20 +1,15 @@
 package energy.eddie.regionconnector.es.datadis.permission.request.state;
 
 import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.agnostic.process.model.states.SentToPermissionAdministratorPermissionRequestState;
-import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 
 public class SentToPermissionAdministratorState extends ContextualizedPermissionRequestState<EsPermissionRequest> implements SentToPermissionAdministratorPermissionRequestState {
 
-    protected SentToPermissionAdministratorState(EsPermissionRequest permissionRequest, AuthorizationRequestResponse response) {
-        super(permissionRequest);
 
-        if (response == AuthorizationRequestResponse.NO_NIF) {
-            permissionRequest.changeState(new InvalidState(permissionRequest, new Throwable("Given NIF does not exist")));
-        } else if (response == AuthorizationRequestResponse.NO_SUPPLIES) {
-            permissionRequest.changeState(new InvalidState(permissionRequest, new Throwable("The given NIF has no associated supplies")));
-        }
+    protected SentToPermissionAdministratorState(EsPermissionRequest permissionRequest) {
+        super(permissionRequest);
     }
 
     @Override
@@ -23,8 +18,9 @@ public class SentToPermissionAdministratorState extends ContextualizedPermission
     }
 
     @Override
-    public void invalid() {
-        permissionRequest.changeState(new InvalidState(permissionRequest, new Throwable("Invalid permission request")));
+    public void invalid() throws PastStateException {
+        // in datadis, invalid is handled by the PendingAcknowledgementState
+        throw new PastStateException(this);
     }
 
     @Override

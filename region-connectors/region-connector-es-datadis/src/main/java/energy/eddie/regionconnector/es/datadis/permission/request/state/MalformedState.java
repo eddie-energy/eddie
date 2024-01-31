@@ -8,17 +8,21 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
  * The state of a permission request if it was malformed could not be validated.
  */
 public class MalformedState extends ContextualizedPermissionRequestState<EsPermissionRequest> implements MalformedPermissionRequestState {
-    private final Throwable cause;
+    private final Throwable reason;
 
-    public MalformedState(EsPermissionRequest permissionRequest, Throwable cause) {
+    protected MalformedState(EsPermissionRequest permissionRequest, Throwable reason) {
         super(permissionRequest);
-        this.cause = cause;
+        this.reason = reason;
+    }
+
+    public Throwable reason() {
+        return reason;
     }
 
     @Override
     public String toString() {
         return "MalformedPermissionRequestState{" +
-                "cause=" + cause +
+                "reason=" + reason +
                 '}';
     }
 }
