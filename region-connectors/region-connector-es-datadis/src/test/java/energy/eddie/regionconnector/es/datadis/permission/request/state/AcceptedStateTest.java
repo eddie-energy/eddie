@@ -1,0 +1,73 @@
+package energy.eddie.regionconnector.es.datadis.permission.request.state;
+
+import energy.eddie.api.agnostic.process.model.states.RevokedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.states.TerminatedPermissionRequestState;
+import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
+import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
+import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
+import org.junit.jupiter.api.Test;
+
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+
+class AcceptedStateTest {
+    @Test
+    void terminate_terminatesPermissionRequest() {
+        // Given
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
+        ZonedDateTime end = start.plusDays(10);
+        var permissionRequest = new DatadisPermissionRequest(
+                "pid",
+                new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, MeasurementType.QUARTER_HOURLY),
+                mock(AuthorizationApi.class)
+        );
+        AcceptedState state = new AcceptedState(permissionRequest);
+
+        // When
+        state.terminate();
+
+        // Then
+        assertInstanceOf(TerminatedPermissionRequestState.class, permissionRequest.state());
+    }
+
+    @Test
+    void revoke_revokesPermissionRequest() {
+        // Given
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
+        ZonedDateTime end = start.plusDays(10);
+        var permissionRequest = new DatadisPermissionRequest(
+                "pid",
+                new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, MeasurementType.QUARTER_HOURLY),
+                mock(AuthorizationApi.class)
+        );
+        AcceptedState state = new AcceptedState(permissionRequest);
+
+        // When
+        state.revoke();
+
+        // Then
+        assertInstanceOf(RevokedPermissionRequestState.class, permissionRequest.state());
+    }
+
+    @Test
+    void fulfill_throws() {
+        // Given
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
+        ZonedDateTime end = start.plusDays(10);
+        var permissionRequest = new DatadisPermissionRequest(
+                "pid",
+                new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, MeasurementType.QUARTER_HOURLY),
+                mock(AuthorizationApi.class)
+        );
+        AcceptedState state = new AcceptedState(permissionRequest);
+
+        // When
+        // Then
+        assertThrows(IllegalStateException.class, state::fulfill);
+    }
+}

@@ -18,7 +18,7 @@ public class AcceptedState
 
     @Override
     public void terminate() {
-        throw new UnsupportedOperationException();
+        permissionRequest.changeState(new TerminatedState(permissionRequest));
     }
 
     @Override

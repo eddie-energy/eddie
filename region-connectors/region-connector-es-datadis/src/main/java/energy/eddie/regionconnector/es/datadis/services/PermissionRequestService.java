@@ -78,7 +78,6 @@ public class PermissionRequestService {
 
     public void terminatePermission(String permissionId) throws PermissionNotFoundException, StateTransitionException {
         var permissionRequest = getPermissionRequestById(permissionId);
-
         permissionRequest.terminate();
     }
 }
