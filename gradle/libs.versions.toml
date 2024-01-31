@@ -36,6 +36,7 @@ kafka-streams = "3.6.1"
 reactor-kafka = "1.3.22"
 microprofile-config = "3.0.3"
 hibernate-validator = "8.0.1.Final"
+flyway = "10.6.0"
 
 swagger-codegen-version = "3.0.45"
 openapi-generator = "7.1.0"
@@ -128,6 +129,8 @@ hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", 
 
 # Example app
 kafka-streams = { module = "org.apache.kafka:kafka-streams", version.ref = "kafka-streams" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 
 [bundles]
 
