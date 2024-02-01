@@ -25,7 +25,7 @@ public class FrEnedisAcceptedState
     }
 
     @Override
-    public void timeLimit() {
-        permissionRequest.changeState(new FrEnedisTimeLimitState(permissionRequest));
+    public void fulfill() {
+        permissionRequest.changeState(new FrEnedisFulfilledState(permissionRequest));
     }
 }

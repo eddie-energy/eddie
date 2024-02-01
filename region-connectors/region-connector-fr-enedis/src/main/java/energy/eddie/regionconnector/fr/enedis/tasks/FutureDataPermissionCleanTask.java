@@ -1,8 +1,9 @@
 package energy.eddie.regionconnector.fr.enedis.tasks;
 
-import energy.eddie.api.v0.process.model.PermissionRequestRepository;
-import energy.eddie.api.v0.process.model.StateTransitionException;
-import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
+
+import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.StateTransitionException;
+import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.models.FutureDataPermission;
 import energy.eddie.regionconnector.fr.enedis.permission.request.repositories.FutureDataPermissionRepository;
 import org.slf4j.Logger;
@@ -26,9 +27,9 @@ public class FutureDataPermissionCleanTask implements Runnable {
     private void changeFutureDataPermissionStates() {
         for (var futureDataPermission : futureDataPermissions) {
             try {
-                permissionRequestRepository.findByPermissionId(futureDataPermission.permissionId()).orElseThrow().timeLimit();
+                permissionRequestRepository.findByPermissionId(futureDataPermission.permissionId()).orElseThrow().fulfill();
             } catch (StateTransitionException e) {
-                LOGGER.error("PermissionRequest with permissionID {} cannot be set to time limit", futureDataPermission.permissionId(), e);
+                LOGGER.error("PermissionRequest with permissionID {} cannot be set to fulfilled", futureDataPermission.permissionId(), e);
             } catch (NoSuchElementException e) {
                 LOGGER.error("PermissionRequest with permissionID {} could not be found.", futureDataPermission.permissionId(), e);
             }
