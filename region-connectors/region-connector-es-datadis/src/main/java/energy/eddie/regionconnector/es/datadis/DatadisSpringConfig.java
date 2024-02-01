@@ -8,6 +8,7 @@ import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
+import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
 import energy.eddie.regionconnector.es.datadis.client.*;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
@@ -54,11 +55,6 @@ public class DatadisSpringConfig {
     }
 
     @Bean
-    public DatadisEndpoints datadisEndpoints() {
-        return new DatadisEndpoints();
-    }
-
-    @Bean
     public Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
@@ -79,23 +75,31 @@ public class DatadisSpringConfig {
     }
 
     @Bean
+    public HttpClient httpClient() {
+        return HttpClient.create();
+    }
+
+    @Bean
     public DatadisTokenProvider datadisTokenProvider(
             DatadisConfig config,
-            DatadisEndpoints endpoints) {
-        var httpClient = HttpClient.create();
-        return new NettyDatadisTokenProvider(config, httpClient, endpoints);
+            HttpClient httpClient) {
+        return new NettyDatadisTokenProvider(config, httpClient);
     }
 
     @Bean
-    public DataApi dataApi(DatadisTokenProvider tokenProvider, DatadisEndpoints endpoints) {
-        var httpClient = HttpClient.create();
-        return new NettyDataApiClient(httpClient, tokenProvider, endpoints);
+    public DataApi dataApi(DatadisTokenProvider tokenProvider, DatadisConfig config, HttpClient httpClient) {
+        return new NettyDataApiClient(httpClient, tokenProvider, config.basePath());
     }
 
     @Bean
-    public AuthorizationApi authorizationApi(DatadisTokenProvider tokenProvider, DatadisEndpoints endpoints) {
+    public SupplyApi supplyApi(DatadisTokenProvider tokenProvider, DatadisConfig config, HttpClient httpClient) {
+        return new NettySupplyApiClient(httpClient, tokenProvider, config.basePath());
+    }
+
+    @Bean
+    public AuthorizationApi authorizationApi(DatadisTokenProvider tokenProvider, DatadisConfig config) {
         var httpClient = HttpClient.create();
-        return new NettyAuthorizationApiClient(httpClient, tokenProvider, endpoints);
+        return new NettyAuthorizationApiClient(httpClient, tokenProvider, config.basePath());
     }
 
     @Bean

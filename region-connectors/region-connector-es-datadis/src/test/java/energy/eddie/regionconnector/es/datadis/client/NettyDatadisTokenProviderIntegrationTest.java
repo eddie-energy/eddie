@@ -12,18 +12,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-class NettyDatadisTokenProviderTest {
+class NettyDatadisTokenProviderIntegrationTest {
+
 
     @Test
     @Disabled("Integration test, that needs real credentials")
     void getToken_withValidCredentials_returnsToken() {
         NettyDatadisTokenProvider uut = new NettyDatadisTokenProvider(
-                new MyDatadisConfig("replace", "replace"),
-                HttpClient.create(),
-                new DatadisEndpoints());
+                new MyDatadisConfig("replace", "replace"), HttpClient.create());
 
         StepVerifier.create(uut.getToken())
-                .expectNextMatches(token -> token.length() > 0)
+                .expectNextMatches(token -> !token.isEmpty())
                 .verifyComplete();
     }
 
@@ -31,7 +30,8 @@ class NettyDatadisTokenProviderTest {
     void getToken_withInvalidCredentials_returnsError() {
         NettyDatadisTokenProvider uut = new NettyDatadisTokenProvider(
                 new MyDatadisConfig("x", "x"),
-                HttpClient.create(), new DatadisEndpoints());
+                HttpClient.create()
+        );
 
         StepVerifier.create(uut.getToken())
                 .expectError(TokenProviderException.class)
@@ -45,7 +45,8 @@ class NettyDatadisTokenProviderTest {
 
         NettyDatadisTokenProvider uut = new NettyDatadisTokenProvider(
                 new MyDatadisConfig("x", "x"),
-                mock, new DatadisEndpoints());
+                mock
+        );
 
         StepVerifier.create(uut.updateTokenAndExpiry("invalid token"))
                 .expectError(TokenProviderException.class)
@@ -61,7 +62,8 @@ class NettyDatadisTokenProviderTest {
 
         NettyDatadisTokenProvider uut = new NettyDatadisTokenProvider(
                 new MyDatadisConfig("x", "x"),
-                mock, new DatadisEndpoints());
+                mock
+        );
 
         StepVerifier.create(uut.updateTokenAndExpiry(token))
                 .expectNext(token)
@@ -82,7 +84,8 @@ class NettyDatadisTokenProviderTest {
 
         NettyDatadisTokenProvider uut = new NettyDatadisTokenProvider(
                 new MyDatadisConfig("x", "x"),
-                mock, new DatadisEndpoints());
+                mock
+        );
 
         uut.updateTokenAndExpiry(token).block();
         assertThrows(NullPointerException.class, () -> uut.getToken().block());
@@ -99,31 +102,17 @@ class NettyDatadisTokenProviderTest {
 
         NettyDatadisTokenProvider uut = new NettyDatadisTokenProvider(
                 new MyDatadisConfig("x", "x"),
-                mock, new DatadisEndpoints());
+                mock
+        );
 
         assertThrows(NullPointerException.class, () -> uut.getToken().block());
         verify(requestMock, times(1)).sendForm(any());
-
     }
 
-    private static class MyDatadisConfig implements DatadisConfig {
-        private final String username;
-        private final String password;
-
-        public MyDatadisConfig(String username, String password) {
-            this.username = username;
-            this.password = password;
-        }
-
-
+    private record MyDatadisConfig(String username, String password) implements DatadisConfig {
         @Override
-        public String username() {
-            return username;
-        }
-
-        @Override
-        public String password() {
-            return password;
+        public String basePath() {
+            return "https://datadis.es";
         }
     }
 }

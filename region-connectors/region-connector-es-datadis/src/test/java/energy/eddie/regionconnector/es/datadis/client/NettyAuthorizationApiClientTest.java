@@ -18,8 +18,6 @@ import reactor.netty.http.client.HttpClient;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -27,21 +25,18 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @SuppressWarnings("rawtypes")
 class NettyAuthorizationApiClientTest {
     static MockWebServer mockBackEnd;
-    static DatadisEndpoints datadisEndpoints;
+
+    private static String basePath;
 
     @BeforeAll
-    static void setUp() throws IOException, URISyntaxException {
+    static void setUp() throws IOException {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
-        URI endpoint = new URI("http://localhost:" + mockBackEnd.getPort());
-        datadisEndpoints = mock(DatadisEndpoints.class);
-        when(datadisEndpoints.authorizationRequestEndpoint()).thenReturn(endpoint);
+        basePath = "http://localhost:" + mockBackEnd.getPort();
     }
 
     @AfterAll
@@ -65,7 +60,7 @@ class NettyAuthorizationApiClientTest {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
                 () -> Mono.just("token"),
-                datadisEndpoints);
+                basePath);
 
         AuthorizationRequest request = new AuthorizationRequest(
                 LocalDate.now(ZoneOffset.UTC),
@@ -93,7 +88,7 @@ class NettyAuthorizationApiClientTest {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
                 () -> Mono.just("invalid token"),
-                datadisEndpoints);
+                basePath);
 
         AuthorizationRequest request = new AuthorizationRequest(
                 LocalDate.now(ZoneOffset.UTC),

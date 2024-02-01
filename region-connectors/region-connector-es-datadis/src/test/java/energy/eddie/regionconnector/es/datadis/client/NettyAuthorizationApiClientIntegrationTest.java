@@ -12,10 +12,11 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 
-@SuppressWarnings("rawtypes")
 class NettyAuthorizationApiClientIntegrationTest {
     String requestNif = "replace_me";
     String token = "replace_me";
+
+    String basePath = "https://datadis.es";
 
     @Test
     @Disabled("Integration test, that needs real credentials")
@@ -23,7 +24,7 @@ class NettyAuthorizationApiClientIntegrationTest {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
                 new MyTokenProvider(),
-                new DatadisEndpoints());
+                basePath);
 
         AuthorizationRequest request = new AuthorizationRequest(
                 LocalDate.now(ZoneOffset.UTC),
@@ -41,7 +42,7 @@ class NettyAuthorizationApiClientIntegrationTest {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
                 () -> Mono.just("invalid token"),
-                new DatadisEndpoints());
+                basePath);
 
         AuthorizationRequest request = new AuthorizationRequest(
                 LocalDate.now(ZoneOffset.UTC),
@@ -61,7 +62,7 @@ class NettyAuthorizationApiClientIntegrationTest {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
                 new MyTokenProvider(),
-                new DatadisEndpoints());
+                basePath);
 
         AuthorizationRequest request = new AuthorizationRequest(
                 LocalDate.now(ZoneOffset.UTC),
