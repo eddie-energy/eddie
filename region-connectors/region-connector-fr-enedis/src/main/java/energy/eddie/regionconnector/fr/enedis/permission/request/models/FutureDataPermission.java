@@ -1,11 +1,12 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.models;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequestState;
+import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.DataSourceInformation;
-import energy.eddie.api.v0.process.model.PermissionRequestState;
-import energy.eddie.api.v0.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisDataSourceInformation;
 import jakarta.persistence.*;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -37,9 +38,11 @@ public class FutureDataPermission implements TimeframedPermissionRequest {
     private String state;
     @Transient
     private PermissionRequestState permissionRequestState;
+    @Transient
+    private ZonedDateTime createdAt;
 
     public FutureDataPermission() {
-
+        this.createdAt = ZonedDateTime.now(ZONE_ID);
     }
 
     public FutureDataPermission(FutureDataPermission futureDataPermission) {
@@ -53,6 +56,7 @@ public class FutureDataPermission implements TimeframedPermissionRequest {
         this.lastPoll = futureDataPermission.lastPoll;
         this.state = futureDataPermission.state;
         this.permissionRequestState = futureDataPermission.permissionRequestState;
+        this.createdAt = ZonedDateTime.now(ZONE_ID);
     }
 
     public FutureDataPermission withConnectionId(String connectionId) {
@@ -90,8 +94,8 @@ public class FutureDataPermission implements TimeframedPermissionRequest {
         return this;
     }
 
-    public FutureDataPermission withValidTo(ZonedDateTime endDate) {
-        this.validTo = endDate.toInstant();
+    public FutureDataPermission withValidTo(@Nullable ZonedDateTime endDate) {
+        this.validTo = endDate != null ? endDate.toInstant() : null;
         return this;
     }
 
@@ -122,6 +126,11 @@ public class FutureDataPermission implements TimeframedPermissionRequest {
     @Override
     public DataSourceInformation dataSourceInformation() {
         return dataSourceInformation;
+    }
+
+    @Override
+    public ZonedDateTime created() {
+        return createdAt;
     }
 
     @Override
