@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissio
 import energy.eddie.regionconnector.fr.enedis.permission.request.SimplePermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisAcceptedState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisInvalidState;
+import energy.eddie.regionconnector.fr.enedis.services.FutureDataPermissionService;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Sinks;
@@ -30,7 +31,7 @@ class EnedisRegionConnectorTest {
         var enedisApi = mock(EnedisApi.class);
         when(enedisApi.health()).thenReturn(Map.of("service", HealthState.UP));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        try (var rc = new EnedisRegionConnector(enedisApi, mock(PermissionRequestService.class), sink)) {
+        try (var rc = new EnedisRegionConnector(enedisApi, mock(PermissionRequestService.class), sink, mock(FutureDataPermissionService.class))) {
 
             // When
             var res = rc.health();
@@ -44,9 +45,8 @@ class EnedisRegionConnectorTest {
     void getMetadata_returnsExpected() {
         // Given
         var enedisApi = mock(EnedisApi.class);
-        var permissionRequestService = mock(PermissionRequestService.class);
         Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();
-        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, connectionStatusSink)) {
+        try (var rc = new EnedisRegionConnector(enedisApi, mock(PermissionRequestService.class), connectionStatusSink, mock(FutureDataPermissionService.class))) {
 
             // When
             var res = rc.getMetadata();
@@ -64,7 +64,7 @@ class EnedisRegionConnectorTest {
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
         when(permissionRequestService.findPermissionRequestByPermissionId(anyString())).thenReturn(Optional.empty());
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink)) {
+        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, mock(FutureDataPermissionService.class))) {
 
             // When
             // Then
@@ -88,7 +88,7 @@ class EnedisRegionConnectorTest {
         when(permissionRequestService.findPermissionRequestByPermissionId(anyString()))
                 .thenReturn(Optional.of(request));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink);
+        var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, mock(FutureDataPermissionService.class));
 
         // When
         rc.terminatePermission("pid");
@@ -115,7 +115,7 @@ class EnedisRegionConnectorTest {
         );
         when(permissionRequestService.findPermissionRequestByPermissionId(anyString())).thenReturn(Optional.of(request));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink)) {
+        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink, mock(FutureDataPermissionService.class))) {
 
             // When
             // Then
