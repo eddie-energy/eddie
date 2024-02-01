@@ -26,6 +26,7 @@ dependencies {
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
+    implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.hibernate.validator)
     implementation(libs.spring.retry)
     implementation(libs.spring.aspects)
@@ -101,6 +102,7 @@ tasks.withType<JavaCompile>().configureEach {
             option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.fr.enedis")
             option("NullAway:UnannotatedClasses", "energy.eddie.regionconnector.fr.enedis.api.MeteringDataApi")
             option("NullAway:UnannotatedClasses", "energy.eddie.regionconnector.fr.enedis.api.AuthorizationApi")
+            option("NullAway:UnannotatedClasses", "energy.eddie.regionconnector.fr.enedis.permission.request.models.FutureDataPermission")
             option("NullAway:TreatGeneratedAsUnannotated", true)
             // Regex fits to Windows and Unix-style path separators. CAVEAT: excludedPaths needs a rexex string!
             val regexString = ".*/energy/eddie/regionconnector/fr/enedis/invoker/.*".replace("/", "[/\\\\]")
