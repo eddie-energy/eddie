@@ -8,13 +8,13 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-public class FutureDataPermissionPollTask implements Runnable {
+public class PollFutureDataTask implements Runnable {
     private static final ZoneId ZONE_ID = ZoneId.of("Europe/Paris");
     private final PollingService pollingService;
     private final List<FutureDataPermission> futureDataPermissions;
     private final FutureDataPermissionRepository futureDataPermissionRepository;
 
-    public FutureDataPermissionPollTask(PollingService pollingService, List<FutureDataPermission> futureDataPermissions, FutureDataPermissionRepository futureDataPermissionRepository) {
+    public PollFutureDataTask(PollingService pollingService, List<FutureDataPermission> futureDataPermissions, FutureDataPermissionRepository futureDataPermissionRepository) {
         this.pollingService = pollingService;
         this.futureDataPermissions = futureDataPermissions;
         this.futureDataPermissionRepository = futureDataPermissionRepository;
