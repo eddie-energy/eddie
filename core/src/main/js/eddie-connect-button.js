@@ -68,10 +68,10 @@ function durationFromDateString(dateString) {
 
 class EddieConnectButton extends LitElement {
   static properties = {
-    connectionId: { attribute: "connection-id" },
-    dataNeedId: { attribute: "data-need-id" },
-    allowDataNeedModifications: { attribute: "allow-data-need-modifications" },
-    allowDataNeedSelection: { attribute: "allow-data-need-selection" },
+    connectionId: { attribute: "connection-id", type: String },
+    dataNeedId: { attribute: "data-need-id", type: String },
+    allowDataNeedModifications: { attribute: "allow-data-need-modifications", type: Object },
+    allowDataNeedSelection: { attribute: "allow-data-need-selection", type: Object },
 
     _dataNeedIds: { type: Array },
     _selectedCountry: { type: String },
