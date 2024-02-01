@@ -43,8 +43,9 @@ public class DatadisSpringConfig {
     @Bean
     public DatadisConfig datadisConfig(
             @Value("${" + DatadisConfig.USERNAME_KEY + "}") String username,
-            @Value("${" + DatadisConfig.PASSWORD_KEY + "}") String password) {
-        return new PlainDatadisConfiguration(username, password);
+            @Value("${" + DatadisConfig.PASSWORD_KEY + "}") String password,
+            @Value("${" + DatadisConfig.BASE_PATH_KEY + ":https://datadis.es}") String basePath) {
+        return new PlainDatadisConfiguration(username, password, basePath);
     }
 
     @Bean

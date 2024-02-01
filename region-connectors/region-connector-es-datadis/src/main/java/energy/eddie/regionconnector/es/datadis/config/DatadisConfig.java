@@ -8,7 +8,11 @@ public interface DatadisConfig {
 
     String PASSWORD_KEY = PREFIX + "password";
 
+    String BASE_PATH_KEY = PREFIX + "basepath";
+
     String username();
 
     String password();
+
+    String basePath();
 }
