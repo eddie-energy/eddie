@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.fr.enedis;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.*;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
+import energy.eddie.regionconnector.fr.enedis.services.FutureDataPermissionService;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,15 +22,18 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
     private final EnedisApi enedisApi;
     private final PermissionRequestService permissionRequestService;
+    private final FutureDataPermissionService futureDataPermissionService;
 
     public EnedisRegionConnector(
             EnedisApi enedisApi,
             PermissionRequestService permissionRequestService,
-            Sinks.Many<ConnectionStatusMessage> connectionStatusSink
+            Sinks.Many<ConnectionStatusMessage> connectionStatusSink,
+            FutureDataPermissionService futureDataPermissionService
     ) {
         this.enedisApi = enedisApi;
         this.permissionRequestService = permissionRequestService;
         this.connectionStatusSink = connectionStatusSink;
+        this.futureDataPermissionService = futureDataPermissionService;
     }
 
     @Override
@@ -50,6 +54,7 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
         }
         try {
             permissionRequest.get().terminate();
+            futureDataPermissionService.terminateFutureDataPermission(permissionRequest.get());
         } catch (StateTransitionException e) {
             LOGGER.error("PermissionRequest with permissionID {} cannot be revoked", permissionId, e);
         }

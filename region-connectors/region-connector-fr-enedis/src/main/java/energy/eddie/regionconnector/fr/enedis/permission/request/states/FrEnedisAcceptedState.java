@@ -25,7 +25,7 @@ public class FrEnedisAcceptedState
     }
 
     @Override
-    public void fulfill() {
-        throw new UnsupportedOperationException(NOT_IMPLEMENTED_YET);
+    public void timeLimit() {
+        permissionRequest.changeState(new FrEnedisTimeLimitState(permissionRequest));
     }
 }
