@@ -9,7 +9,6 @@ import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import energy.eddie.regionconnector.es.datadis.permission.request.validation.InPastValidator;
 import energy.eddie.regionconnector.es.datadis.permission.request.validation.NotOlderThanValidator;
 import energy.eddie.regionconnector.es.datadis.permission.request.validation.StartIsBeforeEndValidator;
 import energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants;
@@ -21,8 +20,7 @@ import java.util.Set;
 public class CreatedState extends ContextualizedPermissionRequestState<EsPermissionRequest> implements CreatedPermissionRequestState {
     private static final Set<Validator<EsPermissionRequest>> VALIDATORS = Set.of(
             new NotOlderThanValidator(ChronoUnit.MONTHS, DatadisSpecificConstants.MAXIMUM_MONTHS_IN_THE_PAST),
-            new StartIsBeforeEndValidator(),
-            new InPastValidator()
+            new StartIsBeforeEndValidator()
     );
     private final AuthorizationApi authorizationApi;
 

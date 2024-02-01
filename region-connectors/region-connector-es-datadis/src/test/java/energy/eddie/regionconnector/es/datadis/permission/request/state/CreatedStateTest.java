@@ -26,9 +26,7 @@ class CreatedStateTest {
         ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
         return Stream.of(
                 arguments(now.minusMonths(MAXIMUM_MONTHS_IN_THE_PAST), now.minusDays(10), "requestDataFrom must not be older than " + MAXIMUM_MONTHS_IN_THE_PAST + " months"),
-                arguments(now.minusDays(10), now.minusDays(20), "requestDataFrom must be before requestDataTo"),
-                arguments(now, now.plusDays(1), "requestDataFrom and requestDataTo must be completely in the past"),
-                arguments(now.minusDays(1), now, "requestDataFrom and requestDataTo must be completely in the past")
+                arguments(now.minusDays(10), now.minusDays(20), "requestDataFrom must be before requestDataTo")
         );
     }
 
@@ -36,7 +34,8 @@ class CreatedStateTest {
         ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
         return Stream.of(
                 arguments(now.minusDays(2), now.minusDays(1), "start before end"),
-                arguments(now.minusDays(1), now.minusDays(1), "start equals end")
+                arguments(now.minusDays(1), now.minusDays(1), "start equals end"),
+                arguments(now.minusDays(1), now.plusDays(1), "start in the past, end in the future")
         );
     }
 
