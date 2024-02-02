@@ -67,5 +67,13 @@ content = @`
                 data-need-id="FUTURE_NEAR_REALTIME_DATA"
         ></eddie-connect-button>
     </div>
+    <div class="uk-flex uk-margin uk-flex-middle">
+        <div class="uk-width-medium">Invalid Data Need ID:</div>
+        <eddie-connect-button
+                class="uk-display-block"
+                connection-id="${nextConnectionId}"
+                data-need-id="INVALID_ID"
+        ></eddie-connect-button>
+    </div>
 `
 )
