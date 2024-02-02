@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.dk.energinet.services.PermissionCreationService;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import jakarta.validation.Valid;
@@ -30,10 +31,12 @@ import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSI
 public class PermissionRequestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final PermissionRequestService service;
+    private final PermissionCreationService permissionCreationService;
 
     @Autowired
-    public PermissionRequestController(PermissionRequestService service) {
+    public PermissionRequestController(PermissionRequestService service, PermissionCreationService permissionCreationService) {
         this.service = service;
+        this.permissionCreationService = permissionCreationService;
     }
 
     /**
@@ -62,7 +65,7 @@ public class PermissionRequestController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedPermissionRequest> permissionRequest(@Valid @RequestBody PermissionRequestForCreation requestForCreation)
             throws StateTransitionException {
-        var permissionId = service.createAndSendPermissionRequest(requestForCreation).permissionId();
+        var permissionId = permissionCreationService.createAndSendPermissionRequest(requestForCreation).permissionId();
         LOGGER.info("New Permission Request with PermissionId: {}", permissionId);
 
         var location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)

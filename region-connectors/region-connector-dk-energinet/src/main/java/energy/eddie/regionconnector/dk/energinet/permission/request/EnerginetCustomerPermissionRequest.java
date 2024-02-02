@@ -26,6 +26,7 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
     private final String dataNeedId;
     private final Granularity granularity;
     private PermissionRequestState state;
+    private ZonedDateTime lastPolled;
 
     public EnerginetCustomerPermissionRequest(
             String permissionId,
@@ -46,6 +47,7 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
         this.granularity = requireNonNull(request.granularity());
 
         this.state = new EnerginetCustomerCreatedState(this);
+        this.lastPolled = start;
     }
 
     @Override
@@ -101,5 +103,15 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
     @Override
     public String meteringPoint() {
         return meteringPoint;
+    }
+
+    @Override
+    public ZonedDateTime lastPolled() {
+        return lastPolled;
+    }
+
+    @Override
+    public void updateLastPolled(ZonedDateTime lastPolled) {
+        this.lastPolled = lastPolled;
     }
 }

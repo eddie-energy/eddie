@@ -9,11 +9,11 @@ import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnector;
-import energy.eddie.regionconnector.at.eda.permission.request.validation.CompletelyInThePastOrInTheFutureValidator;
 import energy.eddie.regionconnector.at.eda.permission.request.validation.NotOlderThanValidator;
 import energy.eddie.regionconnector.at.eda.permission.request.validation.StartIsBeforeOrEqualEndValidator;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.InvalidDsoIdException;
+import energy.eddie.regionconnector.shared.permission.requests.validation.CompletelyInThePastOrInTheFutureValidator;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -28,7 +28,7 @@ public class AtCreatedPermissionRequestState
         implements CreatedPermissionRequestState {
     private static final Set<Validator<AtPermissionRequest>> VALIDATORS = Set.of(
             new NotOlderThanValidator(ChronoUnit.MONTHS, EdaRegionConnector.MAXIMUM_MONTHS_IN_THE_PAST),
-            new CompletelyInThePastOrInTheFutureValidator(),
+            new CompletelyInThePastOrInTheFutureValidator<>(),
             new StartIsBeforeOrEqualEndValidator()
     );
     private final CCMORequest ccmoRequest;
