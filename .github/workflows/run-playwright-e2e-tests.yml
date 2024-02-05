@@ -27,7 +27,23 @@ jobs:
       - name: Start docker containers
         run: docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} up -d --wait
 
+      - name: Install playwright dependencies
+        run: ./gradlew e2e-tests:install-playwright-deps
+
+      - name: Run playwright tests
+        run: ./gradlew e2e-tests:cleanTest e2e-tests:test
+
       - name: Clean up
         if: always()  # always clean up, even when other steps failed
         run: |
           docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} down
+
+      - name: Archive playwright screenshots and test report
+        if: ${{ failure() }}  # we are only interested in failed tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-result-and-screenshots
+          path: |
+            ./e2e-tests/build/playwright-results
+            ./e2e-tests/build/reports/tests/test
+          retention-days: 40
