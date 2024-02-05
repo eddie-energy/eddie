@@ -3,6 +3,8 @@ on: [ push ]
 env:
   E2E_TEST_COMPOSE_FILE: "./e2e-tests/docker/docker-compose.yml"
   E2E_COMPOSE_SECRETS_FILE: "./e2e-tests/docker/.env_secrets"
+  PONTON_FOLDER: "./e2e-tests/docker/ponton"
+  PONTON_ID_DAT_FILE: "./e2e-tests/docker/ponton/id.dat"
 
 jobs:
   e2e-tests:
@@ -25,8 +27,11 @@ jobs:
       - name: Build docker images
         run: docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} build
 
-      - name: Write secrets to file
-        run: echo "${{ secrets.E2E_TEST_ALL_SECRETS }}" >  ${{ env.E2E_COMPOSE_SECRETS_FILE }}
+      - name: Write secrets to files
+        run: |
+          echo "${{ secrets.E2E_TEST_ALL_SECRETS }}" >  ${{ env.E2E_COMPOSE_SECRETS_FILE }}
+          mkdir -p  ${{ env.PONTON_FOLDER }}
+          echo -n "${{ secrets.PONTON_ID_DAT_FILE }}" | base64 -di > ${{ env.PONTON_ID_DAT_FILE }}
 
       - name: Start docker containers
         run: docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} up -d --wait
@@ -44,7 +49,8 @@ jobs:
         if: always()  # always clean up, even when other steps failed
         run: |
           docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} down
-          rm -f ./e2e-tests/docker/.env_secrets
+          rm -f ${{ env.E2E_COMPOSE_SECRETS_FILE }}
+          rm -rf ${{ env.PONTON_FOLDER }}
 
       - name: Archive playwright screenshots and test report
         if: ${{ failure() }}  # we are only interested in failed tests
