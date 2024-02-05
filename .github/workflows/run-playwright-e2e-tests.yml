@@ -2,6 +2,7 @@ name: Run playwright E2E tests
 on: [ push ]
 env:
   E2E_TEST_COMPOSE_FILE: "./e2e-tests/docker/docker-compose.yml"
+  E2E_COMPOSE_SECRETS_FILE: "./e2e-tests/docker/.env_secrets"
 
 jobs:
   e2e-tests:
@@ -24,6 +25,9 @@ jobs:
       - name: Build docker images
         run: docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} build
 
+      - name: Write secrets to file
+        run: echo "${{ secrets.E2E_TEST_ALL_SECRETS }}" >  ${{ env.E2E_COMPOSE_SECRETS_FILE }}
+
       - name: Start docker containers
         run: docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} up -d --wait
 
@@ -40,6 +44,7 @@ jobs:
         if: always()  # always clean up, even when other steps failed
         run: |
           docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} down
+          rm -f ./e2e-tests/docker/.env_secrets
 
       - name: Archive playwright screenshots and test report
         if: ${{ failure() }}  # we are only interested in failed tests

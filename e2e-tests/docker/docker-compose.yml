@@ -21,6 +21,7 @@ services:
       - "24733:8080"
     env_file:
       - .env
+      - .env_secrets
     volumes:
       - ./ponton:/ponton # mount a folder to store ponton files
       - ./data-needs.yml:/opt/core/config/data-needs.yml
