@@ -31,6 +31,9 @@ jobs:
         run: ./gradlew e2e-tests:install-playwright-deps
 
       - name: Run playwright tests
+        env:
+          DK_ENERGINET_REFRESH_TOKEN: ${{ secrets.DK_ENERGINET_REFRESH_TOKEN }}
+          DK_ENERGINET_METERING_POINT: ${{ secrets.DK_ENERGINET_METERING_POINT }}
         run: ./gradlew e2e-tests:cleanTest e2e-tests:test
 
       - name: Clean up

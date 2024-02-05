@@ -2,6 +2,7 @@ package energy.eddie.tests.e2e.dk;
 
 
 import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.AriaRole;
@@ -18,6 +19,8 @@ class DkEnerginetTest {
     private static Playwright playwright;
     private static Browser browser;
     private Page page;
+    private static final String DK_ENERGINET_REFRESH_TOKEN = System.getenv("DK_ENERGINET_REFRESH_TOKEN");
+    private static final String DK_ENERGINET_METERING_POINT = System.getenv("DK_ENERGINET_METERING_POINT");
 
     @BeforeAll
     static void launchBrowser() {
@@ -58,5 +61,20 @@ class DkEnerginetTest {
         page.getByLabel("Metering Point").fill("blu");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
         assertThat(page.getByRole(AriaRole.PARAGRAPH)).containsText("An error occurred The given refresh token is not valid.");
+    }
+
+    @Test
+    void givenValidInput_showsAcceptedInfo() {
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(1).click();
+        page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Country")).click();
+        page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("Denmark")).locator("slot").nth(1).click();
+        page.locator("sl-select").filter(new Locator.FilterOptions().setHasText("Energinet Permission")).locator("sl-popup div").first().click();
+        page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("Energinet")).locator("slot").nth(1).click();
+        page.getByLabel("Refresh Token").fill(DK_ENERGINET_REFRESH_TOKEN);
+        page.getByLabel("Metering Point").fill(DK_ENERGINET_METERING_POINT);
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
+        assertThat(page.locator("sl-alert:nth-child(7) > .alert > .alert__message")).isVisible();
+        assertThat(page.locator("dk-energinet-pa-ce")).containsText("Request completed! Your permission request was accepted.");
+        assertThat(page.locator("dk-energinet-pa-ce")).containsText("The request status is: ACCEPTED");
     }
 }
