@@ -22,7 +22,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Gradle installDist
-        run: ./gradlew installDist
+        run: ./gradlew clean installDist
 
       - name: Build docker images
         run: docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} build
@@ -45,13 +45,6 @@ jobs:
           DK_ENERGINET_METERING_POINT: ${{ secrets.DK_ENERGINET_METERING_POINT }}
         run: ./gradlew e2e-tests:cleanTest e2e-tests:test
 
-      - name: Clean up
-        if: always()  # always clean up, even when other steps failed
-        run: |
-          docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} down
-          rm -f ${{ env.E2E_COMPOSE_SECRETS_FILE }}
-          rm -rf ${{ env.PONTON_FOLDER }}
-
       - name: Archive playwright screenshots and test report
         if: ${{ failure() }}  # we are only interested in failed tests
         uses: actions/upload-artifact@v4
@@ -61,3 +54,10 @@ jobs:
             ./e2e-tests/build/playwright-results
             ./e2e-tests/build/reports/tests/test
           retention-days: 40
+
+      - name: Clean up
+        if: always()  # always clean up, even when other steps failed; a post-job script will delete anything anyway, but be sure to always delete the secrets files
+        run: |
+          docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} down
+          rm -f ${{ env.E2E_COMPOSE_SECRETS_FILE }}
+          rm -rf ${{ env.PONTON_FOLDER }}

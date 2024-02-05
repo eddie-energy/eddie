@@ -17,8 +17,6 @@ services:
     build:
       dockerfile: src/main/docker/Dockerfile
       context: ../../core
-    ports:
-      - "24733:8080"
     env_file:
       - .env
       - .env_secrets
@@ -34,8 +32,6 @@ services:
     build:
       dockerfile: src/main/docker/Dockerfile
       context: ../../examples/example-app
-    ports:
-      - "24732:8081"
     environment:
       JDBC_URL: "jdbc:postgresql://db:5432/example_app"
       JDBC_USER: "test"
@@ -55,16 +51,14 @@ services:
   kafka:
     # Docs: https://github.com/bitnami/containers/tree/main/bitnami/kafka#accessing-apache-kafka-with-internal-and-external-clients
     image: docker.io/bitnami/kafka:3.6
-    ports:
-      - "24734:24734"
     environment:
       # KRaft settings
       - KAFKA_CFG_NODE_ID=0
       - KAFKA_CFG_PROCESS_ROLES=controller,broker
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
       # Listeners
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:24734
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:24734
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
@@ -89,3 +83,8 @@ services:
 
 volumes:
   postgres_data:
+
+networks:
+  default:
+    external: true
+    name: "e2e-tests-network"

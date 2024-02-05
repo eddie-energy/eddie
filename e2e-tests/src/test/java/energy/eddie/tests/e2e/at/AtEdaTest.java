@@ -19,6 +19,7 @@ class AtEdaTest extends E2eTestSetup {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
         assertThat(page.locator("sl-alert").filter(new Locator.FilterOptions().setHasText("Permission request created!")).locator("div").nth(2)).isVisible();
         assertThat(page.locator("at-eda-pa-ce")).containsText("The Consent Request ID for this connection is: ");
-        assertThat(page.locator("at-eda-pa-ce")).containsText("The request status is: SENT_TO_PERMISSION_ADMINISTRATOR");
+        // could be either SENT_TO_PERMISSION_ADMINISTRATOR if very fast, otherwise it would be PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT
+        assertThat(page.locator("at-eda-pa-ce")).containsText("PERMISSION_ADMINISTRATOR");
     }
 }
