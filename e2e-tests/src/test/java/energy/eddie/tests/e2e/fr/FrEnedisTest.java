@@ -1,52 +1,16 @@
 package energy.eddie.tests.e2e.fr;
 
-import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.AriaRole;
-import energy.eddie.tests.e2e.TestConfig;
-import org.junit.jupiter.api.*;
-
-import java.nio.file.Paths;
+import energy.eddie.tests.e2e.E2eTestSetup;
+import org.junit.jupiter.api.Test;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-import static energy.eddie.tests.e2e.TestConfig.EXAMPLE_APP_URL;
 
-class FrEnedisTest {
-    private static final String OUT_DIR = TestConfig.OUT_DIR_BASE_PATH + FrEnedisTest.class.getSimpleName();
-    private static Playwright playwright;
-    private static Browser browser;
-    private Page page;
-
-    @BeforeAll
-    static void launchBrowser() {
-        playwright = Playwright.create();
-        browser = playwright.chromium().launch();
-    }
-
-    @BeforeEach
-    void openPage() {
-        page = browser.newPage();
-        page.setViewportSize(1920, 2080);
-        page.navigate(EXAMPLE_APP_URL);
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Login")).click();
-    }
-
-    @AfterEach
-    void closePage(TestInfo testInfo) {
-        var screenshotPath = Paths.get(OUT_DIR, testInfo.getTestMethod().orElseThrow().getName() + ".png");
-        page.screenshot(new Page.ScreenshotOptions().setPath(screenshotPath));
-        page.close();
-    }
-
-    @AfterAll
-    static void closeBrowser() {
-        playwright.close();
-    }
-
+class FrEnedisTest extends E2eTestSetup {
     @Test
-    void frEnedis_buttonClickOpensNewPage_statusIsPending() {
+    void buttonClickOpensNewPage_statusIsPending() {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(1).click();
         page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Country")).click();
         page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("France")).locator("slot").nth(1).click();
