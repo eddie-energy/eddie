@@ -10,19 +10,19 @@ import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveInterval
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveReadingType;
 import energy.eddie.regionconnector.fr.enedis.providers.agnostic.IdentifiableMeterReading;
-import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
+import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.stream.Stream;
 
 import static energy.eddie.cim.v0_82.vhd.EnergyProductTypeList.ACTIVE_POWER;
 import static energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveIntervalReading.IntervalLengthEnum.*;
+import static energy.eddie.regionconnector.fr.enedis.providers.v0_82.IntermediateValidatedHistoricalDocument.ECT;
 import static org.junit.jupiter.api.Assertions.*;
 
 class IntermediateValidatedHistoricalDocumentTest {
@@ -47,12 +47,12 @@ class IntermediateValidatedHistoricalDocumentTest {
         intervalReading.setIntervalLength(interval);
         intervalReading.setValue("100");
         intervalReading.setMeasureType(ConsumptionLoadCurveIntervalReading.MeasureTypeEnum.B);
-        String date = LocalDate.now(ZoneOffset.UTC).format(IntermediateValidatedHistoricalDocument.ENEDIS_DATE_FORMAT);
+        String date = LocalDate.now(ECT).format(IntermediateValidatedHistoricalDocument.ENEDIS_DATE_FORMAT);
         intervalReading.setDate(date);
         var clcMeterReading = new ConsumptionLoadCurveMeterReading();
         clcMeterReading.setUsagePointId("uid");
-        var start = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC).minusDays(10);
-        var end = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC).minusDays(1);
+        var start = LocalDate.now(ECT).atStartOfDay(ECT).minusDays(10);
+        var end = LocalDate.now(ECT).atStartOfDay(ECT).minusDays(1);
         clcMeterReading.setStart(start.format(IntermediateValidatedHistoricalDocument.ENEDIS_DATE_FORMAT));
         clcMeterReading.setEnd(end.format(IntermediateValidatedHistoricalDocument.ENEDIS_DATE_FORMAT));
         ConsumptionLoadCurveReadingType readingType = new ConsumptionLoadCurveReadingType();
@@ -66,7 +66,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
                 new PlainEnedisConfiguration("clientId", "clientSecret", "basepath")
         );
-
+        var esmpTimeInterval = new EsmpTimeInterval(start, end);
         // When
         var res = intermediateVHD.eddieValidatedHistoricalDataMarketDocument();
 
@@ -86,15 +86,15 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> assertEquals("cid", res.connectionId().get()),
                 () -> assertEquals("dnid", res.dataNeedId().get()),
                 () -> assertEquals("clientId", marketDocument.getReceiverMarketParticipantMRID().getValue()),
-                () -> assertEquals(new EsmpDateTime(start).toString(), marketDocument.getPeriodTimeInterval().getStart()),
-                () -> assertEquals(new EsmpDateTime(end).toString(), marketDocument.getPeriodTimeInterval().getEnd()),
+                () -> assertEquals(esmpTimeInterval.start(), marketDocument.getPeriodTimeInterval().getStart()),
+                () -> assertEquals(esmpTimeInterval.end(), marketDocument.getPeriodTimeInterval().getEnd()),
                 () -> assertEquals(ACTIVE_POWER, timeSeries.getProduct()),
                 () -> assertEquals(AggregateKind.SUM, timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation()),
                 () -> assertEquals("uid", timeSeries.getMarketEvaluationPointMRID().getValue()),
                 () -> assertEquals(1, timeSeries.getSeriesPeriodList().getSeriesPeriods().size()),
                 () -> assertEquals(duration, seriesPeriod.getResolution()),
-                () -> assertEquals(new EsmpDateTime(start).toString(), seriesPeriod.getTimeInterval().getStart()),
-                () -> assertEquals(new EsmpDateTime(end).toString(), seriesPeriod.getTimeInterval().getEnd()),
+                () -> assertEquals(esmpTimeInterval.start(), seriesPeriod.getTimeInterval().getStart()),
+                () -> assertEquals(esmpTimeInterval.end(), seriesPeriod.getTimeInterval().getEnd()),
                 () -> assertEquals("0", seriesPeriod.getPointList().getPoints().getFirst().getPosition()),
                 () -> assertEquals(new BigDecimal(100), seriesPeriod.getPointList().getPoints().getFirst().getEnergyQuantityQuantity())
         );
