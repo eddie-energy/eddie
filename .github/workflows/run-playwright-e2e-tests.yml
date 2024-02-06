@@ -1,5 +1,15 @@
 name: Run playwright E2E tests
-on: [ push ]
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+  push:
+    branches:
+      - main
+
 env:
   E2E_TEST_COMPOSE_FILE: "./e2e-tests/docker/docker-compose.yml"
   E2E_COMPOSE_SECRETS_FILE: "./e2e-tests/docker/.env_secrets"
