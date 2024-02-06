@@ -3,13 +3,14 @@ package energy.eddie.regionconnector.fr.enedis.services;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.FrEnedisPostgresqlContainer;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisAcceptedState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisPendingAcknowledgmentState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisRejectedState;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.ClassRule;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class PermissionRequestServiceTest {
-    static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:latest");
+    @ClassRule
+    public static PostgreSQLContainer<FrEnedisPostgresqlContainer> postgreSQLContainer = FrEnedisPostgresqlContainer.getInstance();
     @Autowired
     private PermissionRequestService permissionRequestService;
     @Autowired
@@ -35,11 +37,6 @@ class PermissionRequestServiceTest {
     @BeforeAll
     static void beforeAll() {
         postgreSQLContainer.start();
-    }
-
-    @AfterAll
-    static void afterAll() {
-        postgreSQLContainer.stop();
     }
 
     @DynamicPropertySource
