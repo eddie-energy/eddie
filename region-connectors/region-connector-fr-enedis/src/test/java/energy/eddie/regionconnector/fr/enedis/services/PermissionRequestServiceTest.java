@@ -9,10 +9,15 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedis
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisPendingAcknowledgmentState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisRejectedState;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -21,10 +26,28 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class PermissionRequestServiceTest {
+    static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:latest");
     @Autowired
     private PermissionRequestService permissionRequestService;
     @Autowired
     private PermissionRequestRepository<TimeframedPermissionRequest> repository;
+
+    @BeforeAll
+    static void beforeAll() {
+        postgreSQLContainer.start();
+    }
+
+    @AfterAll
+    static void afterAll() {
+        postgreSQLContainer.stop();
+    }
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("region-connector.fr.enedis.datasource.url", postgreSQLContainer::getJdbcUrl);
+        registry.add("region-connector.fr.enedis.datasource.username", postgreSQLContainer::getUsername);
+        registry.add("region-connector.fr.enedis.datasource.password", postgreSQLContainer::getPassword);
+    }
 
     @Test
     void testCreatePermissionRequest_createsPermissionRequest() throws StateTransitionException {

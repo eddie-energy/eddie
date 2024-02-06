@@ -48,7 +48,7 @@ apache-httpcomponents-client-version = "5.2.1"
 jackson-databind-nullable-version = "0.2.6"
 dotenv-version = "3.0.0"
 
-testcontainers-kafka = "1.19.3"
+testcontainers = "1.19.4"
 
 [libraries]
 # Static analysis
@@ -97,7 +97,7 @@ commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons
 # dependencies required by kafka-outbound
 kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients" }
 reactor-kafka = { module = "io.projectreactor.kafka:reactor-kafka", version.ref = "reactor-kafka" }
-testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "testcontainers-kafka" }
+testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "testcontainers" }
 
 # used by core
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
@@ -140,6 +140,8 @@ okhttp3-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version
 kafka-streams = { module = "org.apache.kafka:kafka-streams", version.ref = "kafka-streams" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 
 [bundles]
 
