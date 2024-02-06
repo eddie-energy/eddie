@@ -70,8 +70,14 @@ class EddieConnectButton extends LitElement {
   static properties = {
     connectionId: { attribute: "connection-id", type: String },
     dataNeedId: { attribute: "data-need-id", type: String },
-    allowDataNeedModifications: { attribute: "allow-data-need-modifications", type: Object },
-    allowDataNeedSelection: { attribute: "allow-data-need-selection", type: Object },
+    allowDataNeedModifications: {
+      attribute: "allow-data-need-modifications",
+      type: Object,
+    },
+    allowDataNeedSelection: {
+      attribute: "allow-data-need-selection",
+      type: Object,
+    },
 
     _dataNeedIds: { type: Array },
     _selectedCountry: { type: String },
@@ -102,6 +108,11 @@ class EddieConnectButton extends LitElement {
       padding: 0.5rem 1.25rem 0.5rem 1rem;
       font-weight: bold;
       cursor: pointer;
+    }
+
+    .eddie-connect-button--disabled {
+      cursor: default;
+      filter: grayscale(100%);
     }
   `;
   dialogRef = createRef();
@@ -237,11 +248,22 @@ class EddieConnectButton extends LitElement {
 
     if (this.isAiida()) {
       this.selectAiida();
-    } else if (this._selectedPermissionAdministrator?.regionConnector === "aiida") {
+    } else if (
+      this._selectedPermissionAdministrator?.regionConnector === "aiida"
+    ) {
       this._selectedPermissionAdministrator = null;
     }
 
     this.requestUpdate();
+  }
+
+  async isValidDataNeedId() {
+    if (!this.dataNeedId) {
+      return true;
+    }
+    return await fetch(`${BASE_URL}/api/data-needs/${this.dataNeedId}`).then(
+      (response) => response.status === 200
+    );
   }
 
   isAiida() {
@@ -259,11 +281,26 @@ class EddieConnectButton extends LitElement {
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/themes/light.css"
       />
-
-      <button class="eddie-connect-button" @click="${this.connect}">
-        ${unsafeSVG(buttonIcon)}
-        <span>Connect with EDDIE</span>
-      </button>
+      ${until(
+        this.isValidDataNeedId().then((isValid) =>
+          isValid
+            ? html`
+                <button class="eddie-connect-button" @click="${this.connect}">
+                  ${unsafeSVG(buttonIcon)}
+                  <span>Connect with EDDIE</span>
+                </button>
+              `
+            : html`
+                <button
+                  class="eddie-connect-button eddie-connect-button--disabled"
+                  disabled
+                >
+                  ${unsafeSVG(buttonIcon)}
+                  <span>Invalid DataNeed ${this.dataNeedId}</span>
+                </button>
+              `
+        )
+      )}
 
       <sl-dialog
         ${ref(this.dialogRef)}
