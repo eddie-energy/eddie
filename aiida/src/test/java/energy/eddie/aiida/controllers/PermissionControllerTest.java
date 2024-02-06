@@ -83,7 +83,7 @@ class PermissionControllerTest {
     @Test
     void givenErrorWhileSendingConnectionStatusMessage_returnsInternalServerError() throws Exception {
         when(permissionService.setupNewPermission(ArgumentMatchers.any(PermissionDto.class)))
-                .thenThrow(new PermissionStartFailedException());
+                .thenThrow(new PermissionStartFailedException(mock(Permission.class)));
 
         var json = mapper.writeValueAsString(permissionDto);
 

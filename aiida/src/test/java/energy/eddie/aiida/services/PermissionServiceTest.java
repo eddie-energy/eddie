@@ -55,7 +55,7 @@ class PermissionServiceTest {
     @Mock
     private TaskScheduler scheduler;
     @Spy
-    private ConcurrentMap<String, ScheduledFuture<?>> expirationFutures = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, ScheduledFuture<?>> permissionFutures = new ConcurrentHashMap<>();
     private Permission permission;
     private TestPublisher<String> testPublisher;
     private PermissionService service;
@@ -95,7 +95,7 @@ class PermissionServiceTest {
         clock = Clock.fixed(terminationTime, ZoneId.systemDefault());
 
         doReturn(testPublisher.flux()).when(streamerManager).terminationRequestsFlux();
-        service = new PermissionService(repository, clock, streamerManager, scheduler, expirationFutures);
+        service = new PermissionService(repository, clock, streamerManager, scheduler, permissionFutures);
     }
 
     @AfterAll
@@ -145,6 +145,43 @@ class PermissionServiceTest {
         verify(streamerManager).createNewStreamerForPermission(any(Permission.class));
         verify(streamerManager).sendConnectionStatusMessageForPermission(any(ConnectionStatusMessage.class), eq(permissionId));
         verify(scheduler).schedule(any(), eq(expiration));
+    }
+
+    @Test
+    void givenExceptionWhenSendingConnectionStatusMessage_setupPermission_changesStatus() throws ConnectionStatusMessageSendFailedException {
+        var permissionDto = new PermissionDto(permissionId, serviceName, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
+
+        when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
+
+        doThrow(ConnectionStatusMessageSendFailedException.class)
+                .when(streamerManager).sendConnectionStatusMessageForPermission(any(), anyString());
+
+        // When
+        var thrown = assertThrows(PermissionStartFailedException.class, () -> service.setupNewPermission(permissionDto));
+
+        // Then
+        Permission permission = thrown.permission();
+        assertEquals(PermissionStatus.FAILED_TO_START, permission.status());
+
+        verify(repository, atLeastOnce()).save(argThat(per -> per.status() == PermissionStatus.FAILED_TO_START));
+    }
+
+    @Test
+    void givenStartTimeInFuture_setupPermission_schedulesStart() throws PermissionStartFailedException {
+        // Given
+        start = Instant.now(clock).plusSeconds(1000);
+        expiration = start.plusSeconds(2000);
+        var permissionDto = new PermissionDto(permissionId, serviceName, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
+        when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
+        Mockito.doReturn(mockScheduledFuture).when(scheduler).schedule(Mockito.any(), Mockito.any(Instant.class));
+
+        // When
+        var permission = service.setupNewPermission(permissionDto);
+
+        // Then
+        assertEquals(PermissionStatus.WAITING_FOR_START, permission.status());
+        verify(repository, atLeastOnce()).save(argThat(per -> PermissionStatus.WAITING_FOR_START.equals(per.status())));
+        verify(scheduler).schedule(any(), eq(start));
     }
 
     /**
@@ -214,7 +251,6 @@ class PermissionServiceTest {
     @Test
     void givenModifiedPermission_expirePermission_willLogError() throws PermissionStartFailedException {
         var permissionId = "ba1c641e-df74-4bdf-8cd4-2ae2785c05a9";
-        start = Instant.now();
         expiration = start.plusMillis(500);
         var permissionDto = new PermissionDto(permissionId, serviceName, dataNeedId, start, expiration, start, connectionId, codes, streamingConfig);
         permission = new Permission(permissionId, serviceName, dataNeedId, start, expiration, start, connectionId, codes, streamingConfig);
@@ -275,13 +311,36 @@ class PermissionServiceTest {
                 && Objects.requireNonNull(permission.revokeTime()).toEpochMilli() == terminationTime.toEpochMilli()));
     }
 
+    @Test
+    void givenTerminationRequest_whenPermissionWaitingForStart_doesNotSendStatusMessage() throws ConnectionStatusMessageSendFailedException {
+        // Given
+        start = Instant.now(clock).plusSeconds(1000);
+        grant = Instant.now(clock).minusSeconds(150);
+        expiration = start.plusSeconds(2000);
+        permission = new Permission(permissionId, serviceName, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
+        permission.updateStatus(PermissionStatus.WAITING_FOR_START);
+        when(repository.findById(permission.permissionId())).thenReturn(Optional.of(permission));
+        doReturn(mockScheduledFuture).when(permissionFutures).get(permissionId);
+
+        // When
+        testPublisher.next(permission.permissionId());
+
+        // Then
+        verify(streamerManager, never()).stopStreamer(anyString());
+        verify(streamerManager, never()).sendConnectionStatusMessageForPermission(any(), anyString());
+        verify(permissionFutures).get(permissionId);
+        verify(mockScheduledFuture).cancel(true);
+        verify(repository, atLeastOnce()).findById(permissionId);
+        verify(repository).save(argThat(per -> per.status() == PermissionStatus.TERMINATED));
+    }
+
     @Nested
     @DisplayName("Test service layer revocation of a permission")
     class PermissionServiceRevocationTest {
         @BeforeEach
         void setUp() {
             clock = mock(Clock.class);
-            service = new PermissionService(repository, clock, streamerManager, scheduler, expirationFutures);
+            service = new PermissionService(repository, clock, streamerManager, scheduler, permissionFutures);
         }
 
         @Test
@@ -310,7 +369,8 @@ class PermissionServiceTest {
         @ParameterizedTest
         @EnumSource(
                 value = PermissionStatus.class,
-                names = {"ACCEPTED", "WAITING_FOR_START", "STREAMING_DATA"},
+                names = {"ACCEPTED", "STREAMING_DATA"},
+                // WAITING_FOR_START is tested by #givenRevoke_whenPermissionWaitingForStart_doesNotSendStatusMessage()
                 mode = EnumSource.Mode.INCLUDE)
         void givenValidPermission_revokePermission_asExpected(PermissionStatus status) throws ConnectionStatusMessageSendFailedException {
             Instant revokeTime = Instant.parse("2023-09-13T10:15:30.00Z");
@@ -371,7 +431,7 @@ class PermissionServiceTest {
             // create a new PermissionService with a real scheduler
             var scheduler = new TaskSchedulerBuilder().awaitTermination(true).build();
             scheduler.initialize();
-            var service = new PermissionService(repository, clock, streamerManager, scheduler, expirationFutures);
+            var service = new PermissionService(repository, clock, streamerManager, scheduler, permissionFutures);
 
             start = Instant.now();
             expiration = start.plusMillis(500);
@@ -390,7 +450,7 @@ class PermissionServiceTest {
             verify(streamerManager).createNewStreamerForPermission(any());
             verify(streamerManager).sendConnectionStatusMessageForPermission(
                     argThat(arg -> arg.status() == PermissionStatus.ACCEPTED), eq(permissionId));
-            verify(expirationFutures).get(permissionId);
+            verify(permissionFutures).get(permissionId);
 
             // revoke should have been executed correctly
             verify(streamerManager, times(2)).sendConnectionStatusMessageForPermission(
@@ -402,6 +462,33 @@ class PermissionServiceTest {
                     argThat(arg -> arg.status() == PermissionStatus.TIME_LIMIT), eq(permissionId));
 
             scheduler.shutdown();
+        }
+
+        @Test
+        void givenRevoke_whenPermissionWaitingForStart_doesNotSendStatusMessage() throws ConnectionStatusMessageSendFailedException {
+            // Given
+            clock = Clock.fixed(terminationTime, ZoneId.systemDefault());
+            service = new PermissionService(repository, clock, streamerManager, scheduler, permissionFutures);
+            start = Instant.now(clock).plusSeconds(1000);
+            grant = Instant.now(clock).minusSeconds(150);
+            expiration = start.plusSeconds(2000);
+            permission = new Permission(permissionId, serviceName, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
+            permission.updateStatus(PermissionStatus.WAITING_FOR_START);
+            when(repository.findById(permission.permissionId())).thenReturn(Optional.of(permission));
+            when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
+            doReturn(mockScheduledFuture).when(permissionFutures).get(permissionId);
+
+            // When
+            var permission = service.revokePermission(permissionId);
+
+            // Then
+            assertEquals(PermissionStatus.REVOKED, permission.status());
+            verify(streamerManager, never()).stopStreamer(anyString());
+            verify(streamerManager, never()).sendConnectionStatusMessageForPermission(any(), anyString());
+            verify(permissionFutures).get(permissionId);
+            verify(mockScheduledFuture).cancel(true);
+            verify(repository, atLeastOnce()).findById(permissionId);
+            verify(repository).save(argThat(per -> per.status() == PermissionStatus.REVOKED));
         }
 
         @Test
@@ -451,7 +538,7 @@ class PermissionServiceTest {
         @BeforeEach
         void setUp() {
             clock = mock(Clock.class);
-            service = new PermissionService(repository, clock, streamerManager, scheduler, expirationFutures);
+            service = new PermissionService(repository, clock, streamerManager, scheduler, permissionFutures);
         }
 
         /**
@@ -507,7 +594,7 @@ class PermissionServiceTest {
                 savedByMethod.put(per.permissionId(), per);
                 return per;
             });
-            when(scheduler.schedule(any(), any(Instant.class))).thenReturn(mock(ScheduledFuture.class));
+            doReturn(mockScheduledFuture).when(scheduler).schedule(any(), any(Instant.class));
 
             service.onApplicationEvent(mock(ContextRefreshedEvent.class));
 
@@ -528,8 +615,8 @@ class PermissionServiceTest {
                     arg.permissionId().equals(streamingDataId)));
 
             verify(scheduler, times(2)).schedule(any(), any(Instant.class));
-            verify(expirationFutures).put(eq(shouldStreamPermissionId), any());
-            verify(expirationFutures).put(eq(streamingDataId), any());
+            verify(permissionFutures).put(eq(shouldStreamPermissionId), any());
+            verify(permissionFutures).put(eq(streamingDataId), any());
         }
     }
 }
