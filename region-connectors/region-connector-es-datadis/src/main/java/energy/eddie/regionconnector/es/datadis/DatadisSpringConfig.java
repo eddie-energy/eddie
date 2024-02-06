@@ -28,6 +28,7 @@ import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsen
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
@@ -40,6 +41,7 @@ import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMeta
 
 @EnableWebMvc
 @SpringBootApplication
+@EnableScheduling
 @energy.eddie.api.agnostic.RegionConnector(name = REGION_CONNECTOR_ID)
 public class DatadisSpringConfig {
     @Bean
@@ -98,8 +100,7 @@ public class DatadisSpringConfig {
     }
 
     @Bean
-    public AuthorizationApi authorizationApi(DatadisTokenProvider tokenProvider, DatadisConfig config) {
-        var httpClient = HttpClient.create();
+    public AuthorizationApi authorizationApi(HttpClient httpClient, DatadisTokenProvider tokenProvider, DatadisConfig config) {
         return new NettyAuthorizationApiClient(httpClient, tokenProvider, config.basePath());
     }
 
