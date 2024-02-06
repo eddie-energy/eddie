@@ -215,9 +215,9 @@ class PermissionServiceTest {
         verify(scheduler).schedule(any(), eq(expiration));
 
         verify(streamerManager).sendConnectionStatusMessageForPermission(
-                argThat(arg -> arg.status() == PermissionStatus.TIME_LIMIT), eq(permissionId));
+                argThat(arg -> arg.status() == PermissionStatus.FULFILLED), eq(permissionId));
         verify(streamerManager).stopStreamer(permissionId);
-        verify(repository).save(argThat(arg -> arg.status() == PermissionStatus.TIME_LIMIT));
+        verify(repository).save(argThat(arg -> arg.status() == PermissionStatus.FULFILLED));
     }
 
     @Test
@@ -292,7 +292,7 @@ class PermissionServiceTest {
         service.setupNewPermission(permissionDto);
 
         assertThat(logCaptor.getInfoLogs()).contains("Will expire permission with id %s".formatted(permissionId));
-        verifyErrorLogStartsWith("Error while sending TIME_LIMIT ConnectionStatusMessage", logCaptor,
+        verifyErrorLogStartsWith("Error while sending FULFILLED ConnectionStatusMessage", logCaptor,
                 ConnectionStatusMessageSendFailedException.class);
     }
 
@@ -423,7 +423,7 @@ class PermissionServiceTest {
 
         /**
          * Tests that a permission can be setup correctly and revoking it will cause the
-         * {@link energy.eddie.aiida.utils.PermissionExpiredRunnable} to be cancelled and no TIME_LIMIT status message
+         * {@link energy.eddie.aiida.utils.PermissionExpiredRunnable} to be cancelled and no FULFILLED status message
          * will be sent.
          */
         @Test
@@ -459,7 +459,7 @@ class PermissionServiceTest {
 
             // ensure the expiration runnable has not caused updates to the permission
             verify(streamerManager, never()).sendConnectionStatusMessageForPermission(
-                    argThat(arg -> arg.status() == PermissionStatus.TIME_LIMIT), eq(permissionId));
+                    argThat(arg -> arg.status() == PermissionStatus.FULFILLED), eq(permissionId));
 
             scheduler.shutdown();
         }
@@ -565,7 +565,7 @@ class PermissionServiceTest {
             expiration = Instant.parse("2023-09-19T00:00:00.000Z");
             String timeLimit1 = "9609a9b3-0718-4082-935d-6a98c0f8c5a2";
             var waitingForStartShouldBeTimeLimit = new Permission(timeLimit1,
-                    "Was WAITING_FOR_START and should be TIME_LIMIT after test completes", "SomeDataNeedId", start,
+                    "Was WAITING_FOR_START and should be FULFILLED after test completes", "SomeDataNeedId", start,
                     expiration, start, "SomeConnectionId", codes, streamingConfig);
             waitingForStartShouldBeTimeLimit.updateStatus(PermissionStatus.WAITING_FOR_START);
 
@@ -573,7 +573,7 @@ class PermissionServiceTest {
             expiration = Instant.parse("2023-09-30T00:00:00.000Z");
             String timeLimit2 = "0b3b6f6d-d878-49dd-9dfd-62156b5cdc37";
             var streamingDataShouldBeTimeLimit = new Permission(timeLimit2,
-                    "Was STREAMING_DATA and should be TIME_LIMIT after test completes", "SomeDataNeedId", start,
+                    "Was STREAMING_DATA and should be FULFILLED after test completes", "SomeDataNeedId", start,
                     expiration, start, "SomeConnectionId", codes, streamingConfig);
             streamingDataShouldBeTimeLimit.updateStatus(PermissionStatus.STREAMING_DATA);
 
@@ -604,10 +604,10 @@ class PermissionServiceTest {
                     arg.permissionId().equals(shouldStreamPermissionId)));
 
             permission = savedByMethod.get(timeLimit1);
-            assertEquals(PermissionStatus.TIME_LIMIT, permission.status());
+            assertEquals(PermissionStatus.FULFILLED, permission.status());
 
             permission = savedByMethod.get(timeLimit2);
-            assertEquals(PermissionStatus.TIME_LIMIT, permission.status());
+            assertEquals(PermissionStatus.FULFILLED, permission.status());
 
             permission = savedByMethod.get(streamingDataId);
             assertEquals(PermissionStatus.STREAMING_DATA, permission.status());

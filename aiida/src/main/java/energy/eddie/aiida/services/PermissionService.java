@@ -237,8 +237,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     /**
-     * Sends the {@link PermissionStatus#TIME_LIMIT} status message to the EDDIE framework for the permission with
-     * {@code permissionId} , stops the associated streamer, sets the permission's status to TIME_LIMIT and
+     * Sends the {@link PermissionStatus#FULFILLED} status message to the EDDIE framework for the permission with
+     * {@code permissionId} , stops the associated streamer, sets the permission's status to FULFILLED and
      * updates the database.
      *
      * @param permissionId ID of the permission which has reached its expiration time.
@@ -264,16 +264,16 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             LOGGER.warn("Permission {} has status {}, meaning it was never started. Will expire it anyway.", permissionId, permission.status());
         }
 
-        var statusMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), clock.instant(), PermissionStatus.TIME_LIMIT, permissionId);
+        var statusMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), clock.instant(), PermissionStatus.FULFILLED, permissionId);
 
         try {
             streamerManager.sendConnectionStatusMessageForPermission(statusMessage, permissionId);
         } catch (ConnectionStatusMessageSendFailedException ex) {
-            LOGGER.error("Error while sending TIME_LIMIT ConnectionStatusMessage", ex);
+            LOGGER.error("Error while sending FULFILLED ConnectionStatusMessage", ex);
         }
         streamerManager.stopStreamer(permissionId);
 
-        permission.updateStatus(PermissionStatus.TIME_LIMIT);
+        permission.updateStatus(PermissionStatus.FULFILLED);
         repository.save(permission);
     }
 
@@ -312,7 +312,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                 repository.save(permission);
             } else {
                 LOGGER.info("Permission {} has expired but AIIDA was not running at that time, will expire it now", permission.permissionId());
-                permission.updateStatus(PermissionStatus.TIME_LIMIT);
+                permission.updateStatus(PermissionStatus.FULFILLED);
                 repository.save(permission);
             }
         }
