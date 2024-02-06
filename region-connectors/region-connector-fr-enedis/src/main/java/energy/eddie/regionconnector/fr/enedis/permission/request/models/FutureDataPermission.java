@@ -8,14 +8,13 @@ import jakarta.persistence.*;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
+
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
 
 @Entity
 @Table(name = "FUTURE_DATA_PERMISSIONS")
 public class FutureDataPermission implements TimeframedPermissionRequest {
-    @Transient
-    private static final ZoneId ZONE_ID = ZoneId.of("Europe/Paris");
     @Transient
     private final DataSourceInformation dataSourceInformation = new EnedisDataSourceInformation();
     @Id
@@ -42,7 +41,7 @@ public class FutureDataPermission implements TimeframedPermissionRequest {
     private ZonedDateTime createdAt;
 
     public FutureDataPermission() {
-        this.createdAt = ZonedDateTime.now(ZONE_ID);
+        this.createdAt = ZonedDateTime.now(ZONE_ID_FR);
     }
 
     public FutureDataPermission(FutureDataPermission futureDataPermission) {
@@ -56,7 +55,7 @@ public class FutureDataPermission implements TimeframedPermissionRequest {
         this.lastPoll = futureDataPermission.lastPoll;
         this.state = futureDataPermission.state;
         this.permissionRequestState = futureDataPermission.permissionRequestState;
-        this.createdAt = ZonedDateTime.now(ZONE_ID);
+        this.createdAt = ZonedDateTime.now(ZONE_ID_FR);
     }
 
     public FutureDataPermission withConnectionId(String connectionId) {
@@ -141,11 +140,11 @@ public class FutureDataPermission implements TimeframedPermissionRequest {
 
     @Override
     public ZonedDateTime start() {
-        return ZonedDateTime.ofInstant(validFrom, ZONE_ID);
+        return ZonedDateTime.ofInstant(validFrom, ZONE_ID_FR);
     }
 
     @Override
     public ZonedDateTime end() {
-        return ZonedDateTime.ofInstant(validTo, ZONE_ID);
+        return ZonedDateTime.ofInstant(validTo, ZONE_ID_FR);
     }
 }

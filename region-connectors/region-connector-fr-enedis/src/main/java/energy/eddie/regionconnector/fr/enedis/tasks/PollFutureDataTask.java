@@ -1,15 +1,14 @@
 package energy.eddie.regionconnector.fr.enedis.tasks;
 
+import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector;
 import energy.eddie.regionconnector.fr.enedis.permission.request.models.FutureDataPermission;
 import energy.eddie.regionconnector.fr.enedis.permission.request.repositories.FutureDataPermissionRepository;
 import energy.eddie.regionconnector.fr.enedis.services.PollingService;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
 public class PollFutureDataTask implements Runnable {
-    private static final ZoneId ZONE_ID = ZoneId.of("Europe/Paris");
     private final PollingService pollingService;
     private final List<FutureDataPermission> futureDataPermissions;
     private final FutureDataPermissionRepository futureDataPermissionRepository;
@@ -24,7 +23,7 @@ public class PollFutureDataTask implements Runnable {
         for (var futureDataPermission : futureDataPermissions) {
             // Copy permission request to retrieve the data of yesterday
             // ENEDIS only allows to retrieve the values from the day before, we have to subtract 1 from the current date and 2 from the start date
-            var today = ZonedDateTime.now(ZONE_ID);
+            var today = ZonedDateTime.now(EnedisRegionConnector.ZONE_ID_FR);
             var end = today.minusDays(1);
             var start = today.minusDays(2);
             var permissionRequestForToday = new FutureDataPermission(futureDataPermission);

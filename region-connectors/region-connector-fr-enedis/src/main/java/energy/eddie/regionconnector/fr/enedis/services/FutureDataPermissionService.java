@@ -16,14 +16,14 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Sinks;
 
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
 
 @Service
 public class FutureDataPermissionService {
     private static final String ACCEPTED = PermissionProcessStatus.ACCEPTED.toString();
-    private static final ZoneId ZONE_ID = ZoneId.of("Europe/Paris");
     private final FutureDataPermissionRepository futureDataPermissionRepository;
     private final AsyncTaskExecutor taskExecutor;
     private final PollingService pollingService;
@@ -48,7 +48,7 @@ public class FutureDataPermissionService {
 
     @Scheduled(cron = "${region-connector.fr.enedis.tasks.cron.future.data.permission.poll}")
     private void pollFutureData() {
-        List<FutureDataPermission> futureDataPermissions = getValidFutureDataPermissions(ZonedDateTime.now(ZONE_ID).toInstant());
+        List<FutureDataPermission> futureDataPermissions = getValidFutureDataPermissions(ZonedDateTime.now(ZONE_ID_FR).toInstant());
         for (int i = 0; i < futureDataPermissions.size(); i += tasksPerThread) {
             int end = Math.min(i + tasksPerThread, futureDataPermissions.size());
             List<FutureDataPermission> batch = futureDataPermissions.subList(i, end);
@@ -59,7 +59,7 @@ public class FutureDataPermissionService {
 
     @Scheduled(cron = "${region-connector.fr.enedis.tasks.cron.future.data.permission.clean}")
     private void removeInvalidFutureDataPermissions() {
-        List<FutureDataPermission> futureDataPermissions = getInvalidFutureDataPermissions(ZonedDateTime.now(ZONE_ID).toInstant());
+        List<FutureDataPermission> futureDataPermissions = getInvalidFutureDataPermissions(ZonedDateTime.now(ZONE_ID_FR).toInstant());
 
         for (int i = 0; i < futureDataPermissions.size(); i += tasksPerThread) {
             int end = Math.min(i + tasksPerThread, futureDataPermissions.size());
