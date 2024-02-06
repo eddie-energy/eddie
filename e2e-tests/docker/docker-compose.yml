@@ -1,0 +1,90 @@
+version: "3.9"
+name: eddie-e2e-test
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: "test"
+      POSTGRES_USER: "test"
+      POSTGRES_DB: "eddie"
+    restart: "always"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./create-example-app-db.sql:/docker-entrypoint-initdb.d/create_database.sql
+
+  eddie:
+    image: ghcr.io/eddie-energy/eddie:latest
+    build:
+      dockerfile: src/main/docker/Dockerfile
+      context: ../../core
+    ports:
+      - "24733:8080"
+    env_file:
+      - .env
+    volumes:
+      - ./ponton:/ponton # mount a folder to store ponton files
+      - ./data-needs.yml:/opt/core/config/data-needs.yml
+    depends_on:
+      - kafka
+      - db
+
+  eddie-example-app:
+    image: ghcr.io/eddie-energy/eddie-example-app:latest
+    build:
+      dockerfile: src/main/docker/Dockerfile
+      context: ../../examples/example-app
+    ports:
+      - "24732:8081"
+    environment:
+      JDBC_URL: "jdbc:postgresql://db:5432/example_app"
+      JDBC_USER: "test"
+      JDBC_PASSWORD: "test"
+      EDDIE_PUBLIC_URL: ${EDDIE_PUBLIC_URL}
+      PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+    restart: always
+    depends_on:
+      db:
+        condition: service_started
+      eddie:
+        condition: service_started
+      init-kafka:
+        condition: service_completed_successfully   # ensure all topics used in streams are created before example app is started
+
+  kafka:
+    # Docs: https://github.com/bitnami/containers/tree/main/bitnami/kafka#accessing-apache-kafka-with-internal-and-external-clients
+    image: docker.io/bitnami/kafka:3.6
+    ports:
+      - "24734:24734"
+    environment:
+      # KRaft settings
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      # Listeners
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:24734
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:24734
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+
+  init-kafka:
+    image: docker.io/bitnami/kafka:3.6
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics.sh --bootstrap-server kafka:9092 --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic consent-market-document --replication-factor 1 --partitions 1
+      kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic validated-historical-data --replication-factor 1 --partitions 1
+
+      echo -e 'Successfully created topics, all topics:'
+      kafka-topics.sh --bootstrap-server kafka:9092 --list
+      "
+
+volumes:
+  postgres_data:

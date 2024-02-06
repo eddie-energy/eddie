@@ -1,0 +1,33 @@
+name: Run playwright E2E tests
+on: [ push ]
+env:
+  E2E_TEST_COMPOSE_FILE: "./e2e-tests/docker/docker-compose.yml"
+
+jobs:
+  e2e-tests:
+    name: Build and run E2E tests
+    runs-on: [ self-hosted, fh-server ]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # No shallow clones
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Gradle installDist
+        run: ./gradlew installDist
+
+      - name: Build docker images
+        run: docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} build
+
+      - name: Start docker containers
+        run: docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} up -d --wait
+
+      - name: Clean up
+        if: always()  # always clean up, even when other steps failed
+        run: |
+          docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} down
