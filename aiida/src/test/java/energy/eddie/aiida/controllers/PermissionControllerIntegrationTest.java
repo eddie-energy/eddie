@@ -114,8 +114,6 @@ class PermissionControllerIntegrationTest {
 
     @Test
     void givenInvalidInput_setupNewPermission_returnsBadRequest(TestInfo testInfo) {
-        String expected = "{\"errors\":[{\"message\":\"permissionDto: expirationTime has to be after startTime.\"}]}";
-
         var start = Instant.now().plusSeconds(100_000);
         var expiration = start.minusSeconds(200_000);
         var dto = getPermissionDto(start, expiration, testInfo);
@@ -124,7 +122,9 @@ class PermissionControllerIntegrationTest {
                 dto, String.class);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals(expected, responseEntity.getBody());
+        assertNotNull(responseEntity.getBody());
+        assertTrue(responseEntity.getBody().contains("permissionDto: expirationTime has to be after startTime."));
+        assertTrue(responseEntity.getBody().contains("permissionDto: expirationTime must not lie in the past."));
     }
 
     /**

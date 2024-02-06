@@ -208,10 +208,11 @@ class PermissionControllerTest {
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(mapper.writeValueAsString(invalidDto)))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(3)))
+                    .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(4)))
                     .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItems(
                             "startTime: must not be null.",
                             "expirationTime: must not be null.",
+                            "permissionDto: expirationTime must not be null.",
                             "permissionDto: startTime and expirationTime must not be null."
                     )));
         }
@@ -301,6 +302,25 @@ class PermissionControllerTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
                     .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("permissionId: must be an UUID with 36 characters.")));
+        }
+
+        @Test
+        void givenExpirationTimeInPast_permissionRequest_returnsBadRequest() throws Exception {
+            start = Instant.now().minusSeconds(1000);
+            expiration = Instant.now().minusSeconds(500);
+            permissionDto = new PermissionDto(permissionId, serviceName, dataNeedId, start, expiration, grant,
+                    connectionId, codes, streamingConfig);
+
+            var json = mapper.writeValueAsString(permissionDto);
+
+            mockMvc.perform(
+                            post("/permissions")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(json))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.errors", hasSize(1)))
+                    .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                    .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("permissionDto: expirationTime must not lie in the past.")));
         }
     }
 

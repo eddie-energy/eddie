@@ -71,9 +71,24 @@ class PermissionDtoTest {
 
         var violations = validator.validate(permissionDto);
         System.out.println(violations);
+        assertEquals(2, violations.size());
+        List<String> list = violations.stream().map(ConstraintViolation::getMessage).toList();
+        assertThat(list).hasSameElementsAs(List.of("expirationTime has to be after startTime.",
+                "expirationTime must not lie in the past."));
+    }
+
+    @Test
+    void givenExpirationTimeInPast_validation_fails() {
+        start = Instant.now().minusSeconds(1000);
+        end = Instant.now().minusSeconds(500);
+
+        var permissionDto = new PermissionDto(permissionId, name, dataNeedId, start, end, grant, connectionId, codes, streamingConfig);
+
+        var violations = validator.validate(permissionDto);
+        System.out.println(violations);
         assertEquals(1, violations.size());
-        var first = violations.iterator().next();
-        assertEquals("expirationTime has to be after startTime.", first.getMessage());
+        List<String> list = violations.stream().map(ConstraintViolation::getMessage).toList();
+        assertThat(list).hasSameElementsAs(List.of("expirationTime must not lie in the past."));
     }
 
     @ParameterizedTest
@@ -130,9 +145,10 @@ class PermissionDtoTest {
 
         permissionDto = new PermissionDto(permissionId, name, dataNeedId, start, null, grant, connectionId, codes, streamingConfig);
         violations = validator.validate(permissionDto);
-        assertEquals(2, violations.size());
+        assertEquals(3, violations.size());
         violationMessages = violations.stream().map(ConstraintViolation::getMessage);
-        assertThat(violationMessages).hasSameElementsAs(List.of("must not be null.",
+        assertThat(violationMessages).hasSameElementsAs(List.of("expirationTime must not be null.",
+                "must not be null.",
                 "startTime and expirationTime must not be null."));
 
         permissionDto = new PermissionDto(permissionId, name, dataNeedId, start, end, null, connectionId, codes, streamingConfig);
