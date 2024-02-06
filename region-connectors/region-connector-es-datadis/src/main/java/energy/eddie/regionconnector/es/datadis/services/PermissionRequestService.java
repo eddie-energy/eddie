@@ -69,6 +69,10 @@ public class PermissionRequestService {
                 .orElseThrow(() -> new PermissionNotFoundException(permissionId));
     }
 
+    public Stream<EsPermissionRequest> getAllAcceptedPermissionRequests() {
+        return repository.findAllAccepted().map(permissionRequestFactory::create);
+    }
+
     public PermissionRequest createAndSendPermissionRequest(PermissionRequestForCreation requestForCreation) throws StateTransitionException {
         LOGGER.info("Got request to create a new permission, request was: {}", requestForCreation);
 

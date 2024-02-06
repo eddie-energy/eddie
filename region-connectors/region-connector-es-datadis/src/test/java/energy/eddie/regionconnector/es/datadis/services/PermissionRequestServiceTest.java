@@ -49,6 +49,22 @@ class PermissionRequestServiceTest {
     }
 
     @Test
+    void getAllAcceptedPermissionRequests() {
+        // Given
+        EsPermissionRequest permissionRequest = mock(EsPermissionRequest.class);
+        when(factory.create(permissionRequest)).thenReturn(permissionRequest);
+        when(repository.findAllAccepted()).thenReturn(Stream.of(permissionRequest));
+
+
+        // When
+        var acceptedPermissionRequests = service.getAllAcceptedPermissionRequests().toList();
+
+        // Then
+        assertEquals(1, acceptedPermissionRequests.size());
+        assertEquals(permissionRequest, acceptedPermissionRequests.getFirst());
+    }
+
+    @Test
     void findConnectionStatusMessageById_existingId_returnsPopulatedStatusMessage() {
         // Given
         var permissionId = "Existing";
