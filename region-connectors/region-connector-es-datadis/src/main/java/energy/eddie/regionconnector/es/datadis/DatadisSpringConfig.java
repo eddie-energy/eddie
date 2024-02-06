@@ -12,13 +12,14 @@ import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
 import energy.eddie.regionconnector.es.datadis.client.*;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
 import energy.eddie.regionconnector.es.datadis.permission.request.InMemoryPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
-import energy.eddie.regionconnector.es.datadis.services.DatadisScheduler;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
+import energy.eddie.regionconnector.es.datadis.services.SupplyApiService;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
@@ -128,8 +129,10 @@ public class DatadisSpringConfig {
     public PermissionRequestService permissionRequestService(
             EsPermissionRequestRepository repository,
             PermissionRequestFactory permissionRequestFactory,
-            DatadisScheduler datadisScheduler) {
-        return new PermissionRequestService(repository, permissionRequestFactory, datadisScheduler);
+            PermissionRequestConsumer permissionRequestConsumer,
+            SupplyApiService supplyApiService
+    ) {
+        return new PermissionRequestService(repository, permissionRequestFactory, supplyApiService, permissionRequestConsumer);
     }
 
     @Bean

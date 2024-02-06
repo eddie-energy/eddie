@@ -4,21 +4,28 @@ import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
+import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
+import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.es.datadis.dtos.Supply;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,7 +38,9 @@ class PermissionRequestServiceTest {
     @Mock
     private PermissionRequestFactory factory;
     @Mock
-    private DatadisScheduler scheduler;
+    private SupplyApiService supplyApiService;
+    @Mock
+    private PermissionRequestConsumer permissionRequestConsumer;
     @InjectMocks
     private PermissionRequestService service;
 
@@ -104,22 +113,40 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void acceptPermission_existingId_acceptsPermissionRequest_andSchedulesPoll() throws StateTransitionException {
+    void acceptPermission_existingId_callsPermissionRequestConsumer() {
+        // Given
+        var permissionId = "Existing";
+        var permissionRequest = mock(DatadisPermissionRequest.class);
+        Supply supply = new Supply("", "", "", "", "", "1", LocalDate.now(), null, 1, "1");
+        when(permissionRequest.permissionId()).thenReturn(permissionId);
+        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
+        when(factory.create(permissionRequest)).thenReturn(permissionRequest);
+        when(supplyApiService.fetchSupplyForPermissionRequest(permissionRequest)).thenReturn(Mono.just(supply));
+
+        // When
+        assertDoesNotThrow(() -> service.acceptPermission(permissionId));
+
+        // Then
+        verify(permissionRequestConsumer).acceptPermission(permissionRequest, supply);
+    }
+
+    @Test
+    void acceptPermission_existingId_whenSupplyApiServiceReturnsException_callsErrorConsumer() {
         // Given
         var permissionId = "Existing";
         var permissionRequest = mock(DatadisPermissionRequest.class);
         when(permissionRequest.permissionId()).thenReturn(permissionId);
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
         when(factory.create(permissionRequest)).thenReturn(permissionRequest);
+        when(supplyApiService.fetchSupplyForPermissionRequest(permissionRequest)).thenReturn(Mono.error(new DatadisApiException("", HttpResponseStatus.FORBIDDEN, "")));
 
         // When
         assertDoesNotThrow(() -> service.acceptPermission(permissionId));
 
         // Then
-        verify(permissionRequest).accept();
-        verify(scheduler).pullAvailableHistoricalData(argThat(arg -> arg.permissionId().equals(permissionId)));
-        verifyNoMoreInteractions(permissionRequest);
+        verify(permissionRequestConsumer).consumeError(any(), eq(permissionRequest));
     }
+
 
     @Test
     void rejectPermission_nonExistingId_throws() {
@@ -144,7 +171,7 @@ class PermissionRequestServiceTest {
 
         // Then
         verify(permissionRequest).reject();
-        verifyNoInteractions(scheduler);
+        verifyNoInteractions(permissionRequestConsumer);
     }
 
     @Test

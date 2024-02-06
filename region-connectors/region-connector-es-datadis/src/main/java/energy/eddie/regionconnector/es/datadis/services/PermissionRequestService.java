@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.es.datadis.services;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequestStatusMessageResolver;
 import energy.eddie.regionconnector.es.datadis.permission.request.PermissionRequestFactory;
@@ -14,22 +15,25 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class PermissionRequestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestService.class);
     private final EsPermissionRequestRepository repository;
     private final PermissionRequestFactory permissionRequestFactory;
-    private final DatadisScheduler datadisScheduler;
-
+    private final SupplyApiService supplyApiService;
+    private final PermissionRequestConsumer permissionRequestConsumer;
 
     @Autowired
     public PermissionRequestService(
             EsPermissionRequestRepository repository,
             PermissionRequestFactory permissionRequestFactory,
-            DatadisScheduler datadisScheduler) {
+            SupplyApiService supplyApiService,
+            PermissionRequestConsumer permissionRequestConsumer) {
         this.repository = repository;
         this.permissionRequestFactory = permissionRequestFactory;
-        this.datadisScheduler = datadisScheduler;
+        this.supplyApiService = supplyApiService;
+        this.permissionRequestConsumer = permissionRequestConsumer;
     }
 
     public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
@@ -45,14 +49,17 @@ public class PermissionRequestService {
                 );
     }
 
-    public void acceptPermission(String permissionId) throws StateTransitionException, PermissionNotFoundException {
+    public void acceptPermission(String permissionId) throws PermissionNotFoundException {
         var permissionRequest = getPermissionRequestById(permissionId);
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Got request to accept permission {}", permissionRequest.permissionId());
         }
-        permissionRequest.accept();
 
-        datadisScheduler.pullAvailableHistoricalData(permissionRequest);
+        supplyApiService.fetchSupplyForPermissionRequest(permissionRequest)
+                .subscribe(
+                        supply -> permissionRequestConsumer.acceptPermission(permissionRequest, supply),
+                        e -> permissionRequestConsumer.consumeError(e, permissionRequest)
+                );
     }
 
     public void rejectPermission(String permissionId) throws PermissionNotFoundException, StateTransitionException {
