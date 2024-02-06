@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import static energy.eddie.regionconnector.shared.utils.EsmpDateTime.ESMP_DATE_TIME_FORMATTER;
+import static energy.eddie.regionconnector.shared.utils.EsmpDateTime.ESMP_DATE_TIME_MINUTE_FORMATTER;
+import static energy.eddie.regionconnector.shared.utils.EsmpDateTime.ESMP_DATE_TIME_SECOND_FORMATTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -51,7 +52,7 @@ class ValidatedHistoricalDataMarketDocumentBuilderTest {
         assertEquals(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, validatedHistoricalDataMarketDocument.getSenderMarketParticipantMRID().getCodingScheme());
         assertEquals(receiver, validatedHistoricalDataMarketDocument.getReceiverMarketParticipantMRID().getValue());
         assertEquals(CodingSchemeTypeList.NORWAY_NATIONAL_CODING_SCHEME, validatedHistoricalDataMarketDocument.getReceiverMarketParticipantMRID().getCodingScheme());
-        assertEquals(date, LocalDateTime.parse(validatedHistoricalDataMarketDocument.getCreatedDateTime(), ESMP_DATE_TIME_FORMATTER));
+        assertEquals(date, LocalDateTime.parse(validatedHistoricalDataMarketDocument.getCreatedDateTime(), ESMP_DATE_TIME_SECOND_FORMATTER));
     }
 
     @Test
@@ -108,8 +109,8 @@ class ValidatedHistoricalDataMarketDocumentBuilderTest {
 
         var period = validatedHistoricalDataMarketDocument.getPeriodTimeInterval();
 
-        assertEquals(start, LocalDate.parse(period.getStart(), ESMP_DATE_TIME_FORMATTER));
-        assertEquals(end, LocalDate.parse(period.getEnd(), ESMP_DATE_TIME_FORMATTER));
+        assertEquals(start, LocalDate.parse(period.getStart(), ESMP_DATE_TIME_MINUTE_FORMATTER));
+        assertEquals(end, LocalDate.parse(period.getEnd(), ESMP_DATE_TIME_MINUTE_FORMATTER));
 
         verify(seriesPeriodBuilder).withEnergy(any());
         verify(seriesPeriodBuilder).withEnergyData(any());

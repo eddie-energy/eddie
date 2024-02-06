@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82
 import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.cim.v0_82.cmd.*;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
+import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +35,7 @@ class IntermediateConsentMarketDocument<T extends TimeframedPermissionRequest> {
     ConsentMarketDocument toConsentMarketDocument() {
         EsmpDateTime now = EsmpDateTime.now();
         EsmpDateTime created = new EsmpDateTime(permissionRequest.created());
-        EsmpDateTime start = new EsmpDateTime(permissionRequest.start());
-        String end = permissionRequest.end() == null
-                ? null
-                : new EsmpDateTime(permissionRequest.end()).toString();
+        EsmpTimeInterval interval = new EsmpTimeInterval(permissionRequest.start(), permissionRequest.end());
 
         return new ConsentMarketDocument()
                 .withMRID(permissionRequest.permissionId())
@@ -64,8 +62,8 @@ class IntermediateConsentMarketDocument<T extends TimeframedPermissionRequest> {
                 )
                 .withPeriodTimeInterval(
                         new ESMPDateTimeIntervalComplexType()
-                                .withStart(start.toString())
-                                .withEnd(end)
+                                .withStart(interval.start())
+                                .withEnd(interval.end())
                 )
                 .withPermissionList(
                         new ConsentMarketDocument.PermissionList()

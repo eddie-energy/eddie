@@ -7,6 +7,7 @@ import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.cmd.*;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
+import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -38,6 +39,7 @@ class IntermediateConsentMarketDocumentTest {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         ZonedDateTime start = now.minusDays(10);
         ZonedDateTime end = now.minusDays(5);
+        var timeInterval = new EsmpTimeInterval(start, end);
 
         var dataSourceInformation = mock(DataSourceInformation.class);
         when(dataSourceInformation.countryCode()).thenReturn(countryCode);
@@ -80,8 +82,8 @@ class IntermediateConsentMarketDocumentTest {
                 () -> assertEquals("customerId", res.getSenderMarketParticipantMRID().getValue()),
                 () -> assertEquals(codingScheme, res.getReceiverMarketParticipantMRID().getCodingScheme()),
                 () -> assertEquals("paID", res.getReceiverMarketParticipantMRID().getValue()),
-                () -> assertEquals(new EsmpDateTime(start).toString(), res.getPeriodTimeInterval().getStart()),
-                () -> assertEquals(new EsmpDateTime(end).toString(), res.getPeriodTimeInterval().getEnd()),
+                () -> assertEquals(timeInterval.start(), res.getPeriodTimeInterval().getStart()),
+                () -> assertEquals(timeInterval.end(), res.getPeriodTimeInterval().getEnd()),
                 () -> assertEquals("pid", res.getPermissionList().getPermissions().getFirst().getPermissionMRID()),
                 () -> assertEquals(new EsmpDateTime(now).toString(), res.getPermissionList().getPermissions().getFirst().getCreatedDateTime()),
                 () -> assertNull(res.getPermissionList().getPermissions().getFirst().getTransmissionSchedule()),

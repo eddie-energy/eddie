@@ -10,6 +10,7 @@ import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveInterval
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.agnostic.IdentifiableMeterReading;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
+import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 import jakarta.annotation.Nullable;
 
 import java.math.BigDecimal;
@@ -19,12 +20,12 @@ import java.util.*;
 
 public final class IntermediateValidatedHistoricalDocument {
     public static final DateTimeFormatter ENEDIS_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public static final ZoneId ECT = ZoneId.of("Europe/Paris");
     private static final TimeSeriesComplexType.ReasonList REASON_LIST = new TimeSeriesComplexType.ReasonList()
             .withReasons(
                     new ReasonComplexType()
                             .withCode(ReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED)
             );
-    private static final ZoneId ECT = ZoneId.of("Europe/Paris");
     private final ValidatedHistoricalDataMarketDocument vhd = new ValidatedHistoricalDataMarketDocument()
             .withMRID(UUID.randomUUID().toString())
             .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
@@ -50,8 +51,12 @@ public final class IntermediateValidatedHistoricalDocument {
     }
 
     public EddieValidatedHistoricalDataMarketDocument eddieValidatedHistoricalDataMarketDocument() {
-        EsmpDateTime start = new EsmpDateTime(consumptionLoadCurveMeterReading().getStart(), ENEDIS_DATE_FORMAT, ECT);
-        EsmpDateTime end = new EsmpDateTime(consumptionLoadCurveMeterReading().getEnd(), ENEDIS_DATE_FORMAT, ECT);
+        var timeframe = new EsmpTimeInterval(
+                consumptionLoadCurveMeterReading().getStart(),
+                consumptionLoadCurveMeterReading().getEnd(),
+                ENEDIS_DATE_FORMAT,
+                ECT
+        );
         vhd
                 .withCreatedDateTime(EsmpDateTime.now().toString())
                 .withReceiverMarketParticipantMRID(
@@ -61,8 +66,8 @@ public final class IntermediateValidatedHistoricalDocument {
                 )
                 .withPeriodTimeInterval(
                         new ESMPDateTimeIntervalComplexType()
-                                .withStart(start.toString())
-                                .withEnd(end.toString())
+                                .withStart(timeframe.start())
+                                .withEnd(timeframe.end())
                 )
                 .withTimeSeriesList(timeSeriesList());
         return new EddieValidatedHistoricalDataMarketDocument(
@@ -123,8 +128,12 @@ public final class IntermediateValidatedHistoricalDocument {
     }
 
     private List<SeriesPeriodComplexType> seriesPeriods() {
-        var start = new EsmpDateTime(consumptionLoadCurveMeterReading().getStart(), ENEDIS_DATE_FORMAT, ECT);
-        var end = new EsmpDateTime(consumptionLoadCurveMeterReading().getEnd(), ENEDIS_DATE_FORMAT, ECT);
+        var interval = new EsmpTimeInterval(
+                consumptionLoadCurveMeterReading().getStart(),
+                consumptionLoadCurveMeterReading().getEnd(),
+                ENEDIS_DATE_FORMAT,
+                ECT
+        );
         var consumptionLoadCurveMeterReading = consumptionLoadCurveMeterReading();
         List<SeriesPeriodComplexType> seriesPeriods = new ArrayList<>();
         int position = 0;
@@ -133,8 +142,8 @@ public final class IntermediateValidatedHistoricalDocument {
             var seriesPeriod = new SeriesPeriodComplexType()
                     .withResolution(intervalReading.getIntervalLength().getValue())
                     .withTimeInterval(new ESMPDateTimeIntervalComplexType()
-                            .withStart(start.toString())
-                            .withEnd(end.toString())
+                            .withStart(interval.start())
+                            .withEnd(interval.end())
                     )
                     .withPointList(
                             new SeriesPeriodComplexType.PointList()

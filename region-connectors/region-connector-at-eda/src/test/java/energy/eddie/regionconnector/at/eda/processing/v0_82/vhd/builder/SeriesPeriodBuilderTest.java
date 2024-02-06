@@ -14,7 +14,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static energy.eddie.regionconnector.shared.utils.EsmpDateTime.ESMP_DATE_TIME_FORMATTER;
+import static energy.eddie.regionconnector.shared.utils.EsmpDateTime.ESMP_DATE_TIME_MINUTE_FORMATTER;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SeriesPeriodBuilderTest {
@@ -87,8 +87,8 @@ class SeriesPeriodBuilderTest {
         SeriesPeriodBuilder uut = new SeriesPeriodBuilder().withEnergy(energy);
 
         var timeInterval = uut.build().getTimeInterval();
-        assertEquals(start, LocalDateTime.parse(timeInterval.getStart(), ESMP_DATE_TIME_FORMATTER));
-        assertEquals(end, LocalDateTime.parse(timeInterval.getEnd(), ESMP_DATE_TIME_FORMATTER));
+        assertEquals(start, LocalDateTime.parse(timeInterval.getStart(), ESMP_DATE_TIME_MINUTE_FORMATTER));
+        assertEquals(end, LocalDateTime.parse(timeInterval.getEnd(), ESMP_DATE_TIME_MINUTE_FORMATTER));
     }
 
     @Test

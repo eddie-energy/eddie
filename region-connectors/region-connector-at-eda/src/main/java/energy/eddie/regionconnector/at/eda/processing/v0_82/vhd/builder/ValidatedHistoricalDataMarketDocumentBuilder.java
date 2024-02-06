@@ -7,6 +7,7 @@ import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.processing.utils.XmlGregorianCalenderUtils;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
+import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 
 import java.util.UUID;
 
@@ -66,9 +67,10 @@ public class ValidatedHistoricalDataMarketDocumentBuilder {
                 .withEnergyData(energyData)
                 .withSeriesPeriod(seriesPeriod)
                 .build();
-
-        var periodStart = new EsmpDateTime(XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodStart()));
-        var periodEnd = new EsmpDateTime(XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodEnd()));
+        var interval = new EsmpTimeInterval(
+                XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodStart()),
+                XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodEnd())
+        );
 
         validatedHistoricalDataMarketDocument
                 .withTimeSeriesList(
@@ -77,8 +79,8 @@ public class ValidatedHistoricalDataMarketDocumentBuilder {
                 )
                 .withPeriodTimeInterval(
                         new ESMPDateTimeIntervalComplexType()
-                                .withStart(periodStart.toString())
-                                .withEnd(periodEnd.toString())
+                                .withStart(interval.start())
+                                .withEnd(interval.end())
                 );
 
         return this;

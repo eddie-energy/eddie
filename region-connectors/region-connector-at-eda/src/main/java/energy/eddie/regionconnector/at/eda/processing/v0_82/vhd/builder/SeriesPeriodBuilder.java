@@ -10,7 +10,7 @@ import energy.eddie.cim.v0_82.vhd.SeriesPeriodComplexType;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.processing.utils.XmlGregorianCalenderUtils;
 import energy.eddie.regionconnector.at.eda.utils.MeteringIntervalUtil;
-import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
+import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,12 +50,14 @@ public class SeriesPeriodBuilder {
     public SeriesPeriodBuilder withEnergy(Energy energy) throws InvalidMappingException {
         seriesPeriod.setResolution(MeteringIntervalUtil.toGranularity(energy.getMeteringIntervall()).name());
 
-        var intervalStart = new EsmpDateTime(XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodStart()));
-        var intervalEnd = new EsmpDateTime(XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodEnd()));
+        var interval = new EsmpTimeInterval(
+                XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodStart()),
+                XmlGregorianCalenderUtils.toUtcZonedDateTime(energy.getMeteringPeriodEnd())
+        );
 
         seriesPeriod.withTimeInterval(new ESMPDateTimeIntervalComplexType()
-                .withStart(intervalStart.toString())
-                .withEnd(intervalEnd.toString())
+                .withStart(interval.start())
+                .withEnd(interval.end())
         );
 
         return this;
