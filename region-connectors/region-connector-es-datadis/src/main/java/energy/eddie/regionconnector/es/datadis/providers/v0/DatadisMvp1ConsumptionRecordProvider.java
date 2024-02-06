@@ -4,7 +4,6 @@ import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordProvider;
 import energy.eddie.regionconnector.es.datadis.ConsumptionRecordMapper;
 import energy.eddie.regionconnector.es.datadis.InvalidMappingException;
-import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
@@ -13,11 +12,7 @@ import org.springframework.stereotype.Component;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.util.Objects;
 import java.util.concurrent.Flow;
-import java.util.function.Predicate;
 
 @Component
 public class DatadisMvp1ConsumptionRecordProvider implements Mvp1ConsumptionRecordProvider {
@@ -39,13 +34,6 @@ public class DatadisMvp1ConsumptionRecordProvider implements Mvp1ConsumptionReco
         var permissionRequest = identifiableMeteringData.permissionRequest();
         var meteringData = identifiableMeteringData.meteringData();
 
-        var from = permissionRequest.start().toLocalDate();
-        var to = Objects.requireNonNull(permissionRequest.end()).toLocalDate();
-
-        // remove metering data that is not in the requested time range
-        meteringData.removeIf(notInRequestedRange(from, to));
-        permissionRequest.setLastPulledMeterReading(Objects.requireNonNull(meteringData.getLast().date()).atStartOfDay(ZoneOffset.UTC));
-
         try {
             return ConsumptionRecordMapper.mapToMvp1ConsumptionRecord(
                     meteringData,
@@ -58,10 +46,6 @@ public class DatadisMvp1ConsumptionRecordProvider implements Mvp1ConsumptionReco
             LOGGER.error("Invalid mapping exception while mapping for raw data output.", e);
             return null;
         }
-    }
-
-    private static Predicate<MeteringData> notInRequestedRange(LocalDate from, LocalDate to) {
-        return m -> m.date() == null || m.date().isBefore(from) || m.date().isAfter(to);
     }
 
     @Override
