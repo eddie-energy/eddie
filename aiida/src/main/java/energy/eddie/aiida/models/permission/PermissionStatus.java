@@ -32,5 +32,9 @@ public enum PermissionStatus {
     /**
      * The expiration time of the permission was reached.
      */
-    TIME_LIMIT
+    TIME_LIMIT,
+    /**
+     * An error occurred and the permission could not be started.
+     */
+    FAILED_TO_START
 }

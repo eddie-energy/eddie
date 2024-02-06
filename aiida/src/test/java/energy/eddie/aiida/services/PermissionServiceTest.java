@@ -4,6 +4,7 @@ import energy.eddie.aiida.dtos.PermissionDto;
 import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.errors.InvalidPermissionRevocationException;
 import energy.eddie.aiida.errors.PermissionNotFoundException;
+import energy.eddie.aiida.errors.PermissionStartFailedException;
 import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
@@ -117,7 +118,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenValidInput_setupPermission_asExpected() throws ConnectionStatusMessageSendFailedException {
+    void givenValidInput_setupPermission_asExpected() throws PermissionStartFailedException, ConnectionStatusMessageSendFailedException {
         var permissionDto = new PermissionDto(permissionId, serviceName, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
 
         when(repository.save(any(Permission.class))).then(i -> i.getArgument(0));
@@ -152,7 +153,7 @@ class PermissionServiceTest {
      */
     @Test
     void verify_expirePermission_sendsStatusMessage_andStopsStreamer_andUpdatesDb()
-            throws ConnectionStatusMessageSendFailedException {
+            throws ConnectionStatusMessageSendFailedException, PermissionStartFailedException {
         // Given
         start = Instant.now();
         expiration = start.plusMillis(500);
@@ -183,7 +184,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenNonExistingPermission_expirePermission_willLogError() throws ConnectionStatusMessageSendFailedException {
+    void givenNonExistingPermission_expirePermission_willLogError() throws PermissionStartFailedException {
         // Given
         var permissionId = "ba1c641e-df74-4bdf-8cd4-2ae2785c05a9";
         start = Instant.now();
@@ -211,7 +212,7 @@ class PermissionServiceTest {
      * part of AIIDA (e.g. revoked, but the cancellation of the runnable was not successful).
      */
     @Test
-    void givenModifiedPermission_expirePermission_willLogError() throws ConnectionStatusMessageSendFailedException {
+    void givenModifiedPermission_expirePermission_willLogError() throws PermissionStartFailedException {
         var permissionId = "ba1c641e-df74-4bdf-8cd4-2ae2785c05a9";
         start = Instant.now();
         expiration = start.plusMillis(500);
@@ -234,7 +235,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenExceptionWhenSendingConnectionStatusMessage_expirePermission_willLogError() throws ConnectionStatusMessageSendFailedException {
+    void givenExceptionWhenSendingConnectionStatusMessage_expirePermission_willLogError() throws ConnectionStatusMessageSendFailedException, PermissionStartFailedException {
         var permissionId = "ba1c641e-df74-4bdf-8cd4-2ae2785c05a9";
         start = Instant.now();
         expiration = start.plusMillis(500);
@@ -366,7 +367,7 @@ class PermissionServiceTest {
          * will be sent.
          */
         @Test
-        void verify_revokePermission_cancelsPermissionExpiredRunnable() throws ConnectionStatusMessageSendFailedException {
+        void verify_revokePermission_cancelsPermissionExpiredRunnable() throws PermissionStartFailedException, ConnectionStatusMessageSendFailedException {
             // create a new PermissionService with a real scheduler
             var scheduler = new TaskSchedulerBuilder().awaitTermination(true).build();
             scheduler.initialize();

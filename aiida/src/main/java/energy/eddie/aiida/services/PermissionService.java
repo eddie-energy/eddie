@@ -4,6 +4,7 @@ import energy.eddie.aiida.dtos.PermissionDto;
 import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.errors.InvalidPermissionRevocationException;
 import energy.eddie.aiida.errors.PermissionNotFoundException;
+import energy.eddie.aiida.errors.PermissionStartFailedException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
@@ -20,7 +21,6 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.lang.NonNull;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Sinks;
 
 import java.time.Clock;
@@ -86,11 +86,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      *
      * @param dto Data transfer object containing the information for the new permission.
      * @return Permission object as returned by the database.
-     * @throws ConnectionStatusMessageSendFailedException Thrown when the connection status message couldn't be sent.
-     *                                                    This will result in a rollback and the permission will not be saved.
+     * @throws PermissionStartFailedException If the permission couldn't be started.
      */
-    @Transactional(rollbackFor = ConnectionStatusMessageSendFailedException.class)
-    public Permission setupNewPermission(PermissionDto dto) throws ConnectionStatusMessageSendFailedException {
+    public Permission setupNewPermission(PermissionDto dto) throws PermissionStartFailedException {
         Permission newPermission = new Permission(dto.permissionId(), dto.serviceName(), dto.dataNeedId(),
                 dto.startTime(), dto.expirationTime(), dto.grantTime(), dto.connectionId(),
                 dto.requestedCodes(), dto.kafkaStreamingConfig());
@@ -99,13 +97,20 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         var acceptedMessage = new ConnectionStatusMessage(newPermission.connectionId(), newPermission.dataNeedId(),
                 clock.instant(), ACCEPTED, newPermission.permissionId());
         streamerManager.createNewStreamerForPermission(newPermission);
-        streamerManager.sendConnectionStatusMessageForPermission(acceptedMessage, newPermission.permissionId());
 
-        schedulePermissionExpirationRunnable(newPermission);
+        try {
+            streamerManager.sendConnectionStatusMessageForPermission(acceptedMessage, newPermission.permissionId());
+            schedulePermissionExpirationRunnable(newPermission);
 
-        // scheduled start will be implemented later, for now, streaming is started right away and should be reflected in db
-        newPermission.updateStatus(PermissionStatus.STREAMING_DATA);
-        newPermission = repository.save(newPermission);
+            // scheduled start will be implemented later, for now, streaming is started right away and should be reflected in db
+            newPermission.updateStatus(PermissionStatus.STREAMING_DATA);
+            newPermission = repository.save(newPermission);
+        } catch (ConnectionStatusMessageSendFailedException exception) {
+            LOGGER.error("Failed to start permission {}", newPermission.permissionId(), exception);
+            newPermission.updateStatus(FAILED_TO_START);
+            repository.save(newPermission);
+            throw new PermissionStartFailedException();
+        }
 
         return newPermission;
     }

@@ -4,9 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.aiida.dtos.PermissionDto;
-import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.errors.InvalidPermissionRevocationException;
 import energy.eddie.aiida.errors.PermissionNotFoundException;
+import energy.eddie.aiida.errors.PermissionStartFailedException;
 import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
@@ -83,7 +83,7 @@ class PermissionControllerTest {
     @Test
     void givenErrorWhileSendingConnectionStatusMessage_returnsInternalServerError() throws Exception {
         when(permissionService.setupNewPermission(ArgumentMatchers.any(PermissionDto.class)))
-                .thenThrow(new ConnectionStatusMessageSendFailedException("Expected by Test"));
+                .thenThrow(new PermissionStartFailedException());
 
         var json = mapper.writeValueAsString(permissionDto);
 
@@ -92,7 +92,7 @@ class PermissionControllerTest {
                         .content(json))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Failed to setup permission, please try again later.")));
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Failed to start permission, please try again later.")));
     }
 
     @Test

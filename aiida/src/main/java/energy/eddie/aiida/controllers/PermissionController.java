@@ -4,8 +4,8 @@ import energy.eddie.aiida.dtos.ErrorResponse;
 import energy.eddie.aiida.dtos.PatchOperation;
 import energy.eddie.aiida.dtos.PatchPermissionDto;
 import energy.eddie.aiida.dtos.PermissionDto;
-import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.errors.InvalidPatchOperationException;
+import energy.eddie.aiida.errors.PermissionStartFailedException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.PermissionService;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -55,10 +55,10 @@ public class PermissionController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Permission.class))}),
             @ApiResponse(responseCode = "400", description = "Invalid body supplied", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "500", description = "Connection status message sending failed", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class), examples = @ExampleObject(value = "{\"errors\":[\"Failed to setup permission, please try again later.\"]}")))})
+            @ApiResponse(responseCode = "500", description = "Failed to start permission", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class), examples = @ExampleObject(value = "{\"errors\":[\"Failed to start permission, please try again later.\"]}")))})
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Permission> setupNewPermission(@Valid @RequestBody PermissionDto newPermission)
-            throws ConnectionStatusMessageSendFailedException {
+            throws PermissionStartFailedException {
         LOGGER.debug("Got new permission request {}", newPermission);
 
         var permission = permissionService.setupNewPermission(newPermission);
