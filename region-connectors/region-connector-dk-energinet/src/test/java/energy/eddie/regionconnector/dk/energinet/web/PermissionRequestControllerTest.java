@@ -8,6 +8,8 @@ import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerA
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetDataSourceInformation;
+import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
+import energy.eddie.regionconnector.dk.energinet.services.PermissionCreationService;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
@@ -21,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.util.UriTemplate;
+import reactor.core.publisher.Flux;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -41,6 +44,10 @@ class PermissionRequestControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private PermissionRequestService service;
+    @MockBean
+    private PermissionCreationService creationService;
+    @MockBean
+    private Flux<IdentifiableApiResponse> unused;
     @Autowired
     private ObjectMapper mapper;
 
@@ -192,7 +199,7 @@ class PermissionRequestControllerTest {
         var permissionId = UUID.randomUUID().toString();
         var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId).toString();
 
-        when(service.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
+        when(creationService.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
             PermissionRequestForCreation request = invocation.getArgument(0);
             return new EnerginetCustomerPermissionRequest(
                     permissionId, request, mock(EnerginetCustomerApi.class)
@@ -222,7 +229,7 @@ class PermissionRequestControllerTest {
         var permissionId = UUID.randomUUID().toString();
         var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId).toString();
 
-        when(service.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
+        when(creationService.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
             PermissionRequestForCreation request = invocation.getArgument(0);
             return new EnerginetCustomerPermissionRequest(
                     permissionId, request, mock(EnerginetCustomerApi.class)

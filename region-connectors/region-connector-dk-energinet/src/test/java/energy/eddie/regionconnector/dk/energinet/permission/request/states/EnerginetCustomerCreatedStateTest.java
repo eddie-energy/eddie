@@ -107,7 +107,7 @@ class EnerginetCustomerCreatedStateTest {
 
         // When
         var thrown = assertThrows(ValidationException.class, permissionRequest::validate);
-        assertThat(thrown.getMessage()).contains("start and end must be completely in the past");
+        assertThat(thrown.getMessage()).contains("start and end must lie completely in the past or completely in the future");
 
         // Then
         assertEquals(EnerginetCustomerMalformedState.class, permissionRequest.state().getClass());

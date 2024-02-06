@@ -13,6 +13,7 @@ import energy.eddie.regionconnector.dk.energinet.permission.request.InMemoryPerm
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
+import energy.eddie.regionconnector.dk.energinet.services.PollingService;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
@@ -21,6 +22,7 @@ import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsen
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
@@ -32,6 +34,7 @@ import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfigur
 import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.ENERGINET_CUSTOMER_BASE_PATH_KEY;
 
 @EnableWebMvc
+@EnableScheduling
 @SpringBootApplication
 @RegionConnector(name = REGION_CONNECTOR_ID)
 public class DkEnerginetSpringConfig {
@@ -49,14 +52,8 @@ public class DkEnerginetSpringConfig {
     }
 
     @Bean
-    public Sinks.Many<IdentifiableApiResponse> identifiableApiResponseSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
-    public Flux<IdentifiableApiResponse> identifiableMeterReadingFlux(
-            Sinks.Many<IdentifiableApiResponse> identifiableApiResponseSink) {
-        return identifiableApiResponseSink.asFlux();
+    public Flux<IdentifiableApiResponse> identifiableMeterReadingFlux(PollingService pollingService) {
+        return pollingService.identifiableMeterReadings();
     }
 
     @Bean

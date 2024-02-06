@@ -54,4 +54,14 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     public String meteringPoint() {
         return "meteringPoint";
     }
+
+    @Override
+    public ZonedDateTime lastPolled() {
+        return start;
+    }
+
+    @Override
+    public void updateLastPolled(ZonedDateTime lastPolled) {
+        // No-Op
+    }
 }

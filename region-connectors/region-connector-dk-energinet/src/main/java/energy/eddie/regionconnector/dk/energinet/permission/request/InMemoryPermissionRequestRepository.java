@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.permission.request;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,5 +24,10 @@ public class InMemoryPermissionRequestRepository implements DkEnerginetCustomerP
     @Override
     public boolean removeByPermissionId(String permissionId) {
         return requests.remove(permissionId) != null;
+    }
+
+    @Override
+    public Collection<DkEnerginetCustomerPermissionRequest> findAll() {
+        return requests.values();
     }
 }

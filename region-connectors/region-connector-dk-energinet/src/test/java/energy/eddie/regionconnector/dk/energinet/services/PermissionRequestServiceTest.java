@@ -1,40 +1,27 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.PastStateException;
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
-import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.permission.request.states.EnerginetCustomerAcceptedState;
-import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
-import reactor.core.publisher.Mono;
-import reactor.core.publisher.Sinks;
-import reactor.test.StepVerifier;
 
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.DK_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -47,12 +34,10 @@ class PermissionRequestServiceTest {
     @Mock
     private PermissionRequestFactory requestFactory;
     private PermissionRequestService service;
-    private Sinks.Many<IdentifiableApiResponse> apiResponseSink;
 
     @BeforeEach
     void setUp() {
-        apiResponseSink = Sinks.many().multicast().onBackpressureBuffer();
-        service = new PermissionRequestService(repository, requestFactory, customerApi, apiResponseSink);
+        service = new PermissionRequestService(repository, requestFactory);
     }
 
     @Test
@@ -135,104 +120,26 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void createAndSendPermissionRequest_callsApi() throws StateTransitionException {
+    void findAllAccepted_returnsAllAcceptedPermissionRequests() {
         // Given
-        var start = ZonedDateTime.now(DK_ZONE_ID).minusDays(10);
-        var end = start.plusDays(5);
         String connectionId = "connId";
         String dataNeedId = "dataNeedId";
-        String refreshToken = "token";
-        String meteringPoint = "meteringPoint";
-        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId, start, end,
-                refreshToken, Granularity.PT1H, meteringPoint, dataNeedId);
+        var start = ZonedDateTime.now(ZoneOffset.UTC);
+        var end = start.plusDays(10);
+        var creation = new PermissionRequestForCreation(connectionId, start, end, "token", Granularity.PT15M, "mpid", dataNeedId);
+        var permissionRequest1 = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(), creation, customerApi);
+        permissionRequest1.changeState(new EnerginetCustomerAcceptedState(permissionRequest1));
+        var permissionRequest2 = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(), creation, customerApi);
+        when(requestFactory.create(permissionRequest1))
+                .thenReturn(permissionRequest1);
 
-        DkEnerginetCustomerPermissionRequest mockRequest = mock(DkEnerginetCustomerPermissionRequest.class);
-        when(mockRequest.permissionId()).thenReturn(UUID.randomUUID().toString());
-        when(mockRequest.accessToken()).thenReturn(Mono.just("accessToken"));
-        when(requestFactory.create(requestForCreation)).thenReturn(mockRequest);
-        when(customerApi.getTimeSeries(any(), any(), any(), any(), anyString(), any()))
-                .thenReturn(Mono.just(mock(MyEnergyDataMarketDocumentResponseListApiResponse.class)));
-
-        // When
-        service.createAndSendPermissionRequest(requestForCreation);
-
-
-        // Then
-        verify(requestFactory).create(requestForCreation);
-        verify(mockRequest).validate();
-        verify(mockRequest).sendToPermissionAdministrator();
-        verify(mockRequest).receivedPermissionAdministratorResponse();
-        verify(mockRequest).accessToken();
-        verify(customerApi).getTimeSeries(any(), any(), any(), any(), anyString(), any());
-    }
-
-    @Test
-    void createAndSendPermissionRequest_doesNotCallApiOnDeniedPermissionRequest() throws StateTransitionException {
-        // Given
-        var start = ZonedDateTime.now(DK_ZONE_ID).minusDays(10);
-        var end = start.plusDays(5);
-        String connectionId = "connId";
-        String dataNeedId = "dataNeedId";
-        String refreshToken = "token";
-        String meteringPoint = "meteringPoint";
-        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId, start, end,
-                refreshToken, Granularity.PT1H, meteringPoint, dataNeedId);
-
-        DkEnerginetCustomerPermissionRequest mockRequest = mock(DkEnerginetCustomerPermissionRequest.class);
-        when(requestFactory.create(requestForCreation)).thenReturn(mockRequest);
-        doThrow(PastStateException.class).when(mockRequest).accept();
+        when(repository.findAll())
+                .thenReturn(List.of(permissionRequest1, permissionRequest2));
 
         // When
-        // Then
-        assertThrows(PastStateException.class, () -> service.createAndSendPermissionRequest(requestForCreation));
-        verify(requestFactory).create(requestForCreation);
-        verify(mockRequest).validate();
-        verify(mockRequest).sendToPermissionAdministrator();
-        verify(mockRequest).receivedPermissionAdministratorResponse();
-        verify(mockRequest, never()).accessToken();
-        verify(customerApi, never()).getTimeSeries(any(), any(), any(), any(), anyString(), any());
-    }
-
-    @Test
-    void createAndSendPermissionRequest_revokesPermissionRequest_ifTokenInvalid() throws StateTransitionException {
-        // Given
-        var start = ZonedDateTime.now(DK_ZONE_ID).minusDays(10);
-        var end = start.plusDays(5);
-        String connectionId = "connId";
-        String dataNeedId = "dataNeedId";
-        String refreshToken = "token";
-        String meteringPoint = "meteringPoint";
-        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId, start, end,
-                refreshToken, Granularity.PT1H, meteringPoint, dataNeedId);
-
-        DkEnerginetCustomerPermissionRequest mockRequest = new EnerginetCustomerPermissionRequest("pid", requestForCreation, customerApi);
-        when(requestFactory.create(requestForCreation)).thenReturn(mockRequest);
-        HttpClientErrorException unauthorized = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "", HttpHeaders.EMPTY, null, null);
-        var expiration = ZonedDateTime.now(ZoneOffset.UTC).minusYears(1);
-        String payload = "{ \"exp\": %d}".formatted(expiration.toEpochSecond());
-        String accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.%s.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ"
-                .formatted(Base64.getEncoder().encodeToString(payload.getBytes(StandardCharsets.UTF_8)));
-        when(customerApi.accessToken(anyString()))
-                .thenReturn(Mono.just(accessToken))
-                .thenReturn(Mono.error(unauthorized));
-
-        // When
-        service.createAndSendPermissionRequest(requestForCreation);
+        var res = service.findAllAcceptedPermissionRequests();
 
         // Then
-        assertEquals(PermissionProcessStatus.REVOKED, mockRequest.state().status());
-    }
-
-    @Test
-    void close_emitsCompleteOnFlow() {
-        StepVerifier stepVerifier = StepVerifier.create(apiResponseSink.asFlux())
-                .expectComplete()
-                .verifyLater();
-
-        // When
-        service.close();
-
-        // Then
-        stepVerifier.verify(Duration.ofSeconds(2));
+        assertEquals(List.of(permissionRequest1), res);
     }
 }
