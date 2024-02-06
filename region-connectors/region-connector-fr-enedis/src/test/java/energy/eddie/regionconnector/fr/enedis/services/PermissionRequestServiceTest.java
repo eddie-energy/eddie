@@ -48,7 +48,7 @@ class PermissionRequestServiceTest {
     void testAuthorizePermissionRequest_acceptsPermissionRequest() throws StateTransitionException, PermissionNotFoundException {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
-        var end = ZonedDateTime.now(ZoneOffset.UTC);
+        var end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
         var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
         request.changeState(new FrEnedisPendingAcknowledgmentState(request));
         repository.save(request);
@@ -65,7 +65,7 @@ class PermissionRequestServiceTest {
     void testAuthorizePermissionRequestWithNullUsageId_rejectsPermissionRequest() throws StateTransitionException, PermissionNotFoundException {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
-        var end = ZonedDateTime.now(ZoneOffset.UTC);
+        var end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
         var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
         request.changeState(new FrEnedisPendingAcknowledgmentState(request));
         repository.save(request);
@@ -88,7 +88,7 @@ class PermissionRequestServiceTest {
     void testFindConnectionStatusById_returnsConnectionStatus() {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
-        var end = ZonedDateTime.now(ZoneOffset.UTC);
+        var end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
         var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
         repository.save(request);
 
@@ -105,7 +105,7 @@ class PermissionRequestServiceTest {
     void testFindConnectionStatusById_withNotExistingPermissionId_returnsEmpty() {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
-        var end = ZonedDateTime.now(ZoneOffset.UTC);
+        var end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
         var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
         repository.save(request);
 
@@ -121,7 +121,7 @@ class PermissionRequestServiceTest {
     void testFindPermissionRequestById_returnsPermissionRequest() {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
-        var end = ZonedDateTime.now(ZoneOffset.UTC);
+        var end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
         var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
         repository.save(request);
 
@@ -138,7 +138,7 @@ class PermissionRequestServiceTest {
     void testFindPermissionRequestById_withNotExistingPermissionId_returnsEmpty() {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
-        var end = ZonedDateTime.now(ZoneOffset.UTC);
+        var end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
         var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
         repository.save(request);
 

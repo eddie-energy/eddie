@@ -45,6 +45,8 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.spring.boot.starter.test)
+
+    runtimeOnly(libs.postgresql)
 }
 
 tasks.getByName<Test>("test") {
