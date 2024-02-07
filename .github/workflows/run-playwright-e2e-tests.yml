@@ -1,0 +1,81 @@
+name: Run playwright E2E tests
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+  push:
+    branches:
+      - main
+
+env:
+  E2E_TEST_COMPOSE_FILE: "./e2e-tests/docker/docker-compose.yml"
+  E2E_COMPOSE_SECRETS_FILE: "./e2e-tests/docker/.env_secrets"
+  PONTON_FOLDER: "./e2e-tests/docker/ponton"
+  PONTON_ID_DAT_FILE: "./e2e-tests/docker/ponton/id.dat"
+
+jobs:
+  e2e-tests:
+    name: Build and run E2E tests
+    runs-on: [ self-hosted, fh-server ]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # No shallow clones
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Gradle installDist
+        run: ./gradlew clean installDist
+
+      - name: Build docker images
+        run: docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} build
+
+      - name: Write secrets to files
+        run: |
+          echo "${{ secrets.E2E_TEST_ALL_SECRETS }}" >  ${{ env.E2E_COMPOSE_SECRETS_FILE }}
+          mkdir -p  ${{ env.PONTON_FOLDER }}
+          echo -n "${{ secrets.PONTON_ID_DAT_FILE }}" | base64 -di > ${{ env.PONTON_ID_DAT_FILE }}
+
+      - name: Start docker containers
+        run: docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} up -d --wait
+
+      - name: Install playwright dependencies
+        run: ./gradlew e2e-tests:install-playwright-deps
+
+      - name: Run playwright tests
+        env:
+          DK_ENERGINET_REFRESH_TOKEN: ${{ secrets.DK_ENERGINET_REFRESH_TOKEN }}
+          DK_ENERGINET_METERING_POINT: ${{ secrets.DK_ENERGINET_METERING_POINT }}
+        run: ./gradlew e2e-tests:cleanTest e2e-tests:test
+
+      - name: Copy docker logs for archiving
+        if: ${{ failure() }}  # only store logs when tests failed
+        run: |
+          mkdir -p ./e2e-tests/build/docker-logs
+          docker logs eddie-e2e-test-eddie-1 &> ./e2e-tests/build/docker-logs/eddie.log
+          docker logs eddie-e2e-test-eddie-example-app-1 &> ./e2e-tests/build/docker-logs/example-app.log
+
+      - name: Archive results
+        if: ${{ failure() }}  # we are only interested in failed tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-result-and-screenshots-and-docker-logs
+          path: |
+            ./e2e-tests/build/playwright-results
+            ./e2e-tests/build/reports/tests/test
+            ./e2e-tests/build/docker-logs
+          retention-days: 40
+
+      - name: Clean up
+        if: always()  # always clean up, even when other steps failed; a post-job script will delete anything anyway, but be sure to always delete the secrets files
+        run: |
+          docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} down
+          rm -f ${{ env.E2E_COMPOSE_SECRETS_FILE }}
+          rm -rf ${{ env.PONTON_FOLDER }}

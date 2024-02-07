@@ -4,6 +4,9 @@ include("region-connectors")
 include("api")
 findProject("api")?.name = "api"
 
+include("core")
+findProject("core")?.name = "core"
+
 include("region-connectors:region-connector-aiida")
 findProject(":region-connectors:region-connector-aiida")?.name = "region-connector-aiida"
 
@@ -22,14 +25,13 @@ findProject(":region-connectors:region-connector-es-datadis")?.name = "region-co
 include("region-connectors:region-connector-simulation")
 findProject(":region-connectors:region-connector-simulation")?.name = "region-connector-simulation"
 
-include("examples:example-app")
-findProject(":examples:example-app")?.name = "example-app"
-
-include("core")
-findProject("core")?.name = "core"
-
-include("outbound-kafka")
-
 include("region-connectors:shared")
 findProject(":region-connectors:shared")?.name = "shared"
 
+include("outbound-kafka")
+
+include("examples:example-app")
+findProject(":examples:example-app")?.name = "example-app"
+
+include("e2e-tests")
+findProject("e2e-tests")?.name = "e2e-tests"

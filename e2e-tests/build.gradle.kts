@@ -1,0 +1,49 @@
+plugins {
+    id("java")
+    id("energy.eddie.java-conventions")
+}
+
+group = "energy.eddie.tests.e2e"
+version = "1.0"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation(libs.kafka.clients)
+    implementation("com.microsoft.playwright:playwright:1.40.0")
+    testImplementation("org.slf4j:slf4j-simple:2.0.10")
+
+    testImplementation(libs.junit.jupiter)
+    testImplementation("org.assertj:assertj-core:3.25.2")
+}
+
+tasks.register("record-test", JavaExec::class) {
+    group = "playwright"
+    mainClass.set("com.microsoft.playwright.CLI")
+    classpath = sourceSets["main"].runtimeClasspath
+    args = listOf("codegen", "online.eddie.energy")
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
+}
+
+tasks.register<JavaExec>("install-playwright-deps") {
+    group = "playwright"
+    mainClass.set("com.microsoft.playwright.CLI")
+    classpath = sourceSets["main"].runtimeClasspath
+    args = listOf("install", "--with-deps")
+}
+
+project(":e2e-tests") {
+    tasks.test {
+        onlyIf {
+            project.hasProperty("run-e2e-tests")
+        }
+    }
+}

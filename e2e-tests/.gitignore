@@ -1,0 +1,2 @@
+# Is used by workflow to supply secrets needed by EDDIE
+.env_secrets
