@@ -31,6 +31,7 @@ Or you can use the following links:
 * [Austria (EDA)](./region-connectors/region-connector-at-eda/README.md)
 * [France (Enedis)](./region-connectors/region-connector-fr-enedis/README.md)
 * [Spain (Datadis)](./region-connectors/region-connector-es-datadis/README.md)
+* [Denmark (Energinet)](./region-connectors/region-connector-dk-energinet/README.md)
 
 ### Gradle tasks
 

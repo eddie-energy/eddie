@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import jakarta.annotation.Nullable;
+import org.apache.logging.log4j.util.Strings;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
@@ -18,19 +20,18 @@ public class NettyDatadisTokenProvider implements DatadisTokenProvider {
     private final DatadisConfig config;
     private final HttpClient httpClient;
     private final ObjectMapper mapper = new ObjectMapper();
-    private final DatadisEndpoints endpoints;
+    private final URI tokenEndpoint;
     @Nullable
     private String token;
     private long expiryTime;
 
-    public NettyDatadisTokenProvider(DatadisConfig config, HttpClient httpClient, DatadisEndpoints endpoints) {
+    public NettyDatadisTokenProvider(DatadisConfig config, HttpClient httpClient) {
         requireNonNull(config);
         requireNonNull(httpClient);
-        requireNonNull(endpoints);
 
         this.config = config;
         this.httpClient = httpClient;
-        this.endpoints = endpoints;
+        this.tokenEndpoint = URI.create(config.basePath()).resolve("nikola-auth/tokens/login");
     }
 
     @Override
@@ -45,17 +46,19 @@ public class NettyDatadisTokenProvider implements DatadisTokenProvider {
     private Mono<String> fetchTokenFromServer() {
         return httpClient
                 .post()
-                .uri(endpoints.tokenEndpoint())
+                .uri(tokenEndpoint)
                 .sendForm((req, form) -> form.multipart(false)
                         .attr("username", config.username())
                         .attr("password", config.password())
                 )
-                .responseSingle((httpClientResponse, byteBufMono) -> {
-                    if (httpClientResponse.status().code() != 200) {
-                        return byteBufMono.asString().flatMap(bodyString -> Mono.error(new TokenProviderException("Failed to fetch token - " + bodyString)));
-                    }
-                    return byteBufMono.asString();
-                });
+                .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono.asString()
+                        .defaultIfEmpty(Strings.EMPTY)
+                        .flatMap(bodyString -> {
+                            if (httpClientResponse.status().code() != 200 || bodyString.isEmpty()) {
+                                return Mono.error(new TokenProviderException("Failed to fetch token:" + httpClientResponse.status().code() + " - " + bodyString));
+                            }
+                            return Mono.just(bodyString);
+                        }));
     }
 
     Mono<String> updateTokenAndExpiry(String jwtToken) {

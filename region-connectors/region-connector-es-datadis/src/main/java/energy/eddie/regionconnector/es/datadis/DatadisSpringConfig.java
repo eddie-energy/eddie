@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.es.datadis;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
@@ -8,16 +10,18 @@ import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
+import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
 import energy.eddie.regionconnector.es.datadis.client.*;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
 import energy.eddie.regionconnector.es.datadis.permission.request.InMemoryPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
-import energy.eddie.regionconnector.es.datadis.services.DatadisScheduler;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
+import energy.eddie.regionconnector.es.datadis.services.SupplyApiService;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
@@ -26,6 +30,7 @@ import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsen
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
@@ -38,23 +43,25 @@ import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMeta
 
 @EnableWebMvc
 @SpringBootApplication
+@EnableScheduling
 @energy.eddie.api.agnostic.RegionConnector(name = REGION_CONNECTOR_ID)
 public class DatadisSpringConfig {
     @Bean
     public DatadisConfig datadisConfig(
             @Value("${" + DatadisConfig.USERNAME_KEY + "}") String username,
-            @Value("${" + DatadisConfig.PASSWORD_KEY + "}") String password) {
-        return new PlainDatadisConfiguration(username, password);
+            @Value("${" + DatadisConfig.PASSWORD_KEY + "}") String password,
+            @Value("${" + DatadisConfig.BASE_PATH_KEY + ":https://datadis.es}") String basePath) {
+        return new PlainDatadisConfiguration(username, password, basePath);
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper().registerModule(new JavaTimeModule());
     }
 
     @Bean
     public EsPermissionRequestRepository repository() {
         return new InMemoryPermissionRequestRepository();
-    }
-
-    @Bean
-    public DatadisEndpoints datadisEndpoints() {
-        return new DatadisEndpoints();
     }
 
     @Bean
@@ -78,23 +85,30 @@ public class DatadisSpringConfig {
     }
 
     @Bean
+    public HttpClient httpClient() {
+        return HttpClient.create();
+    }
+
+    @Bean
     public DatadisTokenProvider datadisTokenProvider(
             DatadisConfig config,
-            DatadisEndpoints endpoints) {
-        var httpClient = HttpClient.create();
-        return new NettyDatadisTokenProvider(config, httpClient, endpoints);
+            HttpClient httpClient) {
+        return new NettyDatadisTokenProvider(config, httpClient);
     }
 
     @Bean
-    public DataApi dataApi(DatadisTokenProvider tokenProvider, DatadisEndpoints endpoints) {
-        var httpClient = HttpClient.create();
-        return new NettyDataApiClient(httpClient, tokenProvider, endpoints);
+    public DataApi dataApi(DatadisTokenProvider tokenProvider, ObjectMapper mapper, DatadisConfig config, HttpClient httpClient) {
+        return new NettyDataApiClient(httpClient, mapper, tokenProvider, config.basePath());
     }
 
     @Bean
-    public AuthorizationApi authorizationApi(DatadisTokenProvider tokenProvider, DatadisEndpoints endpoints) {
-        var httpClient = HttpClient.create();
-        return new NettyAuthorizationApiClient(httpClient, tokenProvider, endpoints);
+    public SupplyApi supplyApi(DatadisTokenProvider tokenProvider, ObjectMapper mapper, DatadisConfig config, HttpClient httpClient) {
+        return new NettySupplyApiClient(httpClient, mapper, tokenProvider, config.basePath());
+    }
+
+    @Bean
+    public AuthorizationApi authorizationApi(HttpClient httpClient, ObjectMapper mapper, DatadisTokenProvider tokenProvider, DatadisConfig config) {
+        return new NettyAuthorizationApiClient(httpClient, mapper, tokenProvider, config.basePath());
     }
 
     @Bean
@@ -123,8 +137,10 @@ public class DatadisSpringConfig {
     public PermissionRequestService permissionRequestService(
             EsPermissionRequestRepository repository,
             PermissionRequestFactory permissionRequestFactory,
-            DatadisScheduler datadisScheduler) {
-        return new PermissionRequestService(repository, permissionRequestFactory, datadisScheduler);
+            PermissionRequestConsumer permissionRequestConsumer,
+            SupplyApiService supplyApiService
+    ) {
+        return new PermissionRequestService(repository, permissionRequestFactory, supplyApiService, permissionRequestConsumer);
     }
 
     @Bean

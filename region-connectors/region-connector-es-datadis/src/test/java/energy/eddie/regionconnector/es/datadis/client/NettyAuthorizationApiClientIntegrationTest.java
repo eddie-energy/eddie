@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import org.junit.jupiter.api.Disabled;
@@ -12,18 +14,21 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 
-@SuppressWarnings("rawtypes")
 class NettyAuthorizationApiClientIntegrationTest {
+    static ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     String requestNif = "replace_me";
     String token = "replace_me";
+
+    String basePath = "https://datadis.es";
 
     @Test
     @Disabled("Integration test, that needs real credentials")
     void postAuthorizationRequest_withValidInput_doesNotReturnError() {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
+                mapper,
                 new MyTokenProvider(),
-                new DatadisEndpoints());
+                basePath);
 
         AuthorizationRequest request = new AuthorizationRequest(
                 LocalDate.now(ZoneOffset.UTC),
@@ -40,8 +45,9 @@ class NettyAuthorizationApiClientIntegrationTest {
     void postAuthorizationRequest_withInvalidToken_returnsError() {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
+                mapper,
                 () -> Mono.just("invalid token"),
-                new DatadisEndpoints());
+                basePath);
 
         AuthorizationRequest request = new AuthorizationRequest(
                 LocalDate.now(ZoneOffset.UTC),
@@ -60,8 +66,9 @@ class NettyAuthorizationApiClientIntegrationTest {
     void postAuthorizationRequest_withInvalidNif_returnsError() {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
+                mapper,
                 new MyTokenProvider(),
-                new DatadisEndpoints());
+                basePath);
 
         AuthorizationRequest request = new AuthorizationRequest(
                 LocalDate.now(ZoneOffset.UTC),

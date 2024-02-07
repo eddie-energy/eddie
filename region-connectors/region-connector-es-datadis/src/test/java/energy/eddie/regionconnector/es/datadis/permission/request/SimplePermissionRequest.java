@@ -27,6 +27,12 @@ public class SimplePermissionRequest implements EsPermissionRequest {
         this.connectionId = connectionId;
     }
 
+    public SimplePermissionRequest(String permissionId, String connectionId, PermissionRequestState state) {
+        this.permissionId = permissionId;
+        this.connectionId = connectionId;
+        this.state = state;
+    }
+
     @Override
     public String permissionId() {
         return permissionId;

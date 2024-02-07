@@ -62,5 +62,6 @@ public interface EsPermissionRequest extends TimeframedPermissionRequest {
      */
     Optional<ZonedDateTime> lastPulledMeterReading();
 
+    @InvokeExtensions
     void setLastPulledMeterReading(ZonedDateTime lastPulledMeterReading);
 }

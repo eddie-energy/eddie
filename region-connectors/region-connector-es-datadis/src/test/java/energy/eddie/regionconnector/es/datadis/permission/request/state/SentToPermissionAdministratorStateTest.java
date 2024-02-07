@@ -66,6 +66,15 @@ class SentToPermissionAdministratorStateTest {
     }
 
     @Test
+    void timeOut_changesToTimedOut() throws StateTransitionException {
+        var permissionRequest = makeSentPermissionRequest();
+
+        permissionRequest.timeOut();
+
+        assertEquals(PermissionProcessStatus.TIMED_OUT, permissionRequest.state().status());
+    }
+
+    @Test
     void invalid_throwsPastStateException() {
         var permissionRequest = makeSentPermissionRequest();
 

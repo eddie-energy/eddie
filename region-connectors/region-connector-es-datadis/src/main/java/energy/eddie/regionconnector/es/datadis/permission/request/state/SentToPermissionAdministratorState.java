@@ -30,6 +30,6 @@ public class SentToPermissionAdministratorState extends ContextualizedPermission
 
     @Override
     public void timeOut() {
-        throw new IllegalStateException("Not implemented yet");
+        permissionRequest.changeState(new TimedOutState(permissionRequest));
     }
 }
