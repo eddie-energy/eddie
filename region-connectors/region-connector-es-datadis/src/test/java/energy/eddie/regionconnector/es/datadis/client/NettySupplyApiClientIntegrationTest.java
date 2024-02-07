@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
 import org.junit.jupiter.api.Disabled;
@@ -12,9 +14,11 @@ import reactor.test.StepVerifier;
 import java.util.Arrays;
 
 class NettySupplyApiClientIntegrationTest {
+    static ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     SupplyApi supplyApi = new NettySupplyApiClient(
             HttpClient.create(),
+            mapper,
             () -> Mono.just("replace_me"),
             "https://datadis.es");
 

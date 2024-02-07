@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
@@ -28,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("rawtypes")
 class NettyAuthorizationApiClientTest {
+    static ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     static MockWebServer mockBackEnd;
 
     private static String basePath;
@@ -59,6 +62,7 @@ class NettyAuthorizationApiClientTest {
     void postAuthorizationRequest_withMock_returnsAuthorizationRequestResponse(String response, Class expectedResponse) {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
+                mapper,
                 () -> Mono.just("token"),
                 basePath);
 
@@ -87,6 +91,7 @@ class NettyAuthorizationApiClientTest {
     void postAuthorizationRequest_withInvalidToken_returnsError() {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
+                mapper,
                 () -> Mono.just("invalid token"),
                 basePath);
 

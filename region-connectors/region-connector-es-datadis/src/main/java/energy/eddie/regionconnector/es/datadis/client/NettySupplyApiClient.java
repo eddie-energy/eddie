@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.es.datadis.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
@@ -24,16 +23,18 @@ import static java.util.Objects.requireNonNull;
 public class NettySupplyApiClient implements SupplyApi {
 
     private final HttpClient httpClient;
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper mapper;
     private final DatadisTokenProvider tokenProvider;
     private final URI suppliesEndpoint;
 
-    public NettySupplyApiClient(HttpClient httpClient, DatadisTokenProvider tokenProvider, String basePath) {
+    public NettySupplyApiClient(HttpClient httpClient, ObjectMapper mapper, DatadisTokenProvider tokenProvider, String basePath) {
         requireNonNull(httpClient);
+        requireNonNull(mapper);
         requireNonNull(tokenProvider);
         requireNonNull(basePath);
 
         this.httpClient = httpClient;
+        this.mapper = mapper;
         this.tokenProvider = tokenProvider;
         this.suppliesEndpoint = URI.create(basePath).resolve("api-private/api/get-supplies");
     }

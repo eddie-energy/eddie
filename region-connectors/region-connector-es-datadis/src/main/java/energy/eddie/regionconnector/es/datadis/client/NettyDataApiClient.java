@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.es.datadis.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
@@ -25,17 +24,19 @@ import static java.util.Objects.requireNonNull;
 public class NettyDataApiClient implements DataApi {
 
     private final HttpClient httpClient;
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper mapper;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM");
     private final DatadisTokenProvider tokenProvider;
     private final URI consumptionKwhEndpoint;
 
-    public NettyDataApiClient(HttpClient httpClient, DatadisTokenProvider tokenProvider, String basePath) {
+    public NettyDataApiClient(HttpClient httpClient, ObjectMapper mapper, DatadisTokenProvider tokenProvider, String basePath) {
         requireNonNull(httpClient);
+        requireNonNull(mapper);
         requireNonNull(tokenProvider);
         requireNonNull(basePath);
 
         this.httpClient = httpClient;
+        this.mapper = mapper;
         this.tokenProvider = tokenProvider;
         this.consumptionKwhEndpoint = URI.create(basePath).resolve("api-private/api/get-consumption-data");
     }

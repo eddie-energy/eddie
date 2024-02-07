@@ -33,6 +33,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class NettyDataApiClientTest {
+    static ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     static MockWebServer mockBackEnd;
     private static String basePath;
@@ -63,6 +64,7 @@ class NettyDataApiClientTest {
     void getConsumptionKwh_withWhenReceivingSupplies_returnsSupplies() throws JsonProcessingException {
         DataApi uut = new NettyDataApiClient(
                 HttpClient.create(),
+                mapper,
                 () -> Mono.just("token"),
                 basePath);
 
@@ -88,6 +90,7 @@ class NettyDataApiClientTest {
     void getConsumptionKwh_whenReceivingNotFound_producesDatadisApiException() {
         DataApi uut = new NettyDataApiClient(
                 HttpClient.create(),
+                mapper,
                 () -> Mono.just("token"),
                 basePath);
 

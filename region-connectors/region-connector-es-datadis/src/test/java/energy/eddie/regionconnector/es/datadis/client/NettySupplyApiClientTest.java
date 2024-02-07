@@ -25,6 +25,7 @@ import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConst
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class NettySupplyApiClientTest {
+    static ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     static MockWebServer mockBackEnd;
     private static String basePath;
 
@@ -44,6 +45,7 @@ class NettySupplyApiClientTest {
     void getSupplies_withWhenReceivingSupplies_returnsSupplies() throws JsonProcessingException {
         SupplyApi uut = new NettySupplyApiClient(
                 HttpClient.create(),
+                mapper,
                 () -> Mono.just("token"),
                 basePath);
 
@@ -69,6 +71,7 @@ class NettySupplyApiClientTest {
     void getSupplies_whenReceivingForbidden_producesDatadisApiException() {
         SupplyApi uut = new NettySupplyApiClient(
                 HttpClient.create(),
+                mapper,
                 () -> Mono.just("token"),
                 basePath);
 

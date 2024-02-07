@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.es.datadis;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
@@ -53,6 +55,11 @@ public class DatadisSpringConfig {
     }
 
     @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper().registerModule(new JavaTimeModule());
+    }
+
+    @Bean
     public EsPermissionRequestRepository repository() {
         return new InMemoryPermissionRequestRepository();
     }
@@ -90,18 +97,18 @@ public class DatadisSpringConfig {
     }
 
     @Bean
-    public DataApi dataApi(DatadisTokenProvider tokenProvider, DatadisConfig config, HttpClient httpClient) {
-        return new NettyDataApiClient(httpClient, tokenProvider, config.basePath());
+    public DataApi dataApi(DatadisTokenProvider tokenProvider, ObjectMapper mapper, DatadisConfig config, HttpClient httpClient) {
+        return new NettyDataApiClient(httpClient, mapper, tokenProvider, config.basePath());
     }
 
     @Bean
-    public SupplyApi supplyApi(DatadisTokenProvider tokenProvider, DatadisConfig config, HttpClient httpClient) {
-        return new NettySupplyApiClient(httpClient, tokenProvider, config.basePath());
+    public SupplyApi supplyApi(DatadisTokenProvider tokenProvider, ObjectMapper mapper, DatadisConfig config, HttpClient httpClient) {
+        return new NettySupplyApiClient(httpClient, mapper, tokenProvider, config.basePath());
     }
 
     @Bean
-    public AuthorizationApi authorizationApi(HttpClient httpClient, DatadisTokenProvider tokenProvider, DatadisConfig config) {
-        return new NettyAuthorizationApiClient(httpClient, tokenProvider, config.basePath());
+    public AuthorizationApi authorizationApi(HttpClient httpClient, ObjectMapper mapper, DatadisTokenProvider tokenProvider, DatadisConfig config) {
+        return new NettyAuthorizationApiClient(httpClient, mapper, tokenProvider, config.basePath());
     }
 
     @Bean

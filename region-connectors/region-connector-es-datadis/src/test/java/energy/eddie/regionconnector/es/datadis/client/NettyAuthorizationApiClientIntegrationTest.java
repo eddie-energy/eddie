@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import org.junit.jupiter.api.Disabled;
@@ -13,6 +15,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 
 class NettyAuthorizationApiClientIntegrationTest {
+    static ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     String requestNif = "replace_me";
     String token = "replace_me";
 
@@ -23,6 +26,7 @@ class NettyAuthorizationApiClientIntegrationTest {
     void postAuthorizationRequest_withValidInput_doesNotReturnError() {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
+                mapper,
                 new MyTokenProvider(),
                 basePath);
 
@@ -41,6 +45,7 @@ class NettyAuthorizationApiClientIntegrationTest {
     void postAuthorizationRequest_withInvalidToken_returnsError() {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
+                mapper,
                 () -> Mono.just("invalid token"),
                 basePath);
 
@@ -61,6 +66,7 @@ class NettyAuthorizationApiClientIntegrationTest {
     void postAuthorizationRequest_withInvalidNif_returnsError() {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
+                mapper,
                 new MyTokenProvider(),
                 basePath);
 
