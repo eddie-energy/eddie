@@ -55,14 +55,22 @@ jobs:
           DK_ENERGINET_METERING_POINT: ${{ secrets.DK_ENERGINET_METERING_POINT }}
         run: ./gradlew e2e-tests:cleanTest e2e-tests:test
 
-      - name: Archive playwright screenshots and test report
+      - name: Copy docker logs for archiving
+        if: ${{ failure() }}  # only store logs when tests failed
+        run: |
+          mkdir -p ./e2e-tests/build/docker-logs
+          docker logs eddie-e2e-test-eddie-1 &> ./e2e-tests/build/docker-logs/eddie.log
+          docker logs eddie-e2e-test-eddie-example-app-1 &> ./e2e-tests/build/docker-logs/example-app.log
+
+      - name: Archive results
         if: ${{ failure() }}  # we are only interested in failed tests
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-test-result-and-screenshots
+          name: playwright-test-result-and-screenshots-and-docker-logs
           path: |
             ./e2e-tests/build/playwright-results
             ./e2e-tests/build/reports/tests/test
+            ./e2e-tests/build/docker-logs
           retention-days: 40
 
       - name: Clean up
