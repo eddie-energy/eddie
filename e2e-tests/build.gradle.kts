@@ -39,3 +39,11 @@ tasks.register<JavaExec>("install-playwright-deps") {
     classpath = sourceSets["main"].runtimeClasspath
     args = listOf("install", "--with-deps")
 }
+
+project(":e2e-tests") {
+    tasks.test {
+        onlyIf {
+            project.hasProperty("run-e2e-tests")
+        }
+    }
+}
