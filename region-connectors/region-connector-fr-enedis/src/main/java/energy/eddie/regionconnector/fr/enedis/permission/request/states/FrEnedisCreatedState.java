@@ -7,6 +7,7 @@ import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.regionconnector.fr.enedis.permission.request.validation.NotFurtherThanValidator;
+import energy.eddie.regionconnector.shared.permission.requests.validation.CompletelyInThePastOrInTheFutureValidator;
 import energy.eddie.regionconnector.shared.permission.requests.validation.StartIsBeforeOrEqualEndValidator;
 
 import java.time.temporal.ChronoUnit;
@@ -18,7 +19,8 @@ public class FrEnedisCreatedState
         implements CreatedPermissionRequestState {
     private static final Set<Validator<TimeframedPermissionRequest>> VALIDATORS = Set.of(
             new StartIsBeforeOrEqualEndValidator<>(),
-            new NotFurtherThanValidator(ChronoUnit.YEARS, 3)
+            new NotFurtherThanValidator(ChronoUnit.YEARS, 3),
+            new CompletelyInThePastOrInTheFutureValidator<>()
     );
 
     public FrEnedisCreatedState(TimeframedPermissionRequest permissionRequest) {
