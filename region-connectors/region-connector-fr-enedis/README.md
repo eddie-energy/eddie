@@ -28,12 +28,17 @@ administrators in France.
 The region connector needs a set of configuration values to be able to function correctly, how you provide these values
 depends on the way you deploy the region connector.
 
-| Configuration values                       | Description                                                                                                 |
-|--------------------------------------------|-------------------------------------------------------------------------------------------------------------|
-| `region-connector.fr.enedis.basepath`      | Path to the data connect endpoints: https://ext.prod.api.enedis.fr for production.                          |
-| `region-connector.fr.enedis.client.id`     | Public key/id of the application you want to switch to production. Can be found under "_Mes applications_". |
-| `region-connector.fr.enedis.client.secret` | Secret key of the application you want to switch to production. Can be found under "_Mes applications_".    |
-
+| Configuration values                                                 | Description                                                                                                 |
+|----------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| `region-connector.fr.enedis.basepath`                                | Path to the data connect endpoints: https://ext.prod.api.enedis.fr for production.                          |
+| `region-connector.fr.enedis.client.id`                               | Public key/id of the application you want to switch to production. Can be found under "_Mes applications_". |
+| `region-connector.fr.enedis.client.secret`                           | Secret key of the application you want to switch to production. Can be found under "_Mes applications_".    |
+| `region-connector.fr.enedis.threadpool.core.pool.size`               | How many threads are kept alive, also when idle (default 5)                                                 |
+| `region-connector.fr.enedis.threadpool.max.pool.size`                | How many threads can exist simultaneously inside the thread pool (default 10)                               |
+| `region-connector.fr.enedis.threadpool.queue.capacity`               | Amount of tasks to be queued before new threads are created (default 25)                                    |
+| `region-connector.fr.enedis.tasks.permissions.per.task`              | How many permissions are handled per task (default 50)                                                      |
+| `region-connector.fr.enedis.tasks.cron.future.data.permission.poll`  | When the future data is polled (default 10:30)                                                              |
+| `region-connector.fr.enedis.tasks.cron.future.data.permission.clean` | When the clean up of future data permissions is happening (default 00:00)                                   |
 ### .properties file
 
 Example configuration for an `application.properties` file:
@@ -42,6 +47,12 @@ Example configuration for an `application.properties` file:
 region-connector.fr.enedis.basepath=https://ext.prod.api.enedis.fr
 region-connector.fr.enedis.client.id=a5d5ce56-2bca-123d-1ccd-46a28f1ac132
 region-connector.fr.enedis.client.secret=11d145d8-25a6-55c1-b6af-04ac332211b1
+region-connector.fr.enedis.threadpool.core.pool.size=5
+region-connector.fr.enedis.threadpool.max.pool.size=10
+region-connector.fr.enedis.threadpool.queue.capacity=25
+region-connector.fr.enedis.tasks.permissions.per.task=50
+region-connector.fr.enedis.tasks.cron.future.data.permission.poll=0 30 10 * * ?
+region-connector.fr.enedis.tasks.cron.future.data.permission.clean=0 0 0 * * ?
 ```
 
 ### Environment variables
@@ -57,6 +68,12 @@ Example configuration for dotenv file:
 REGION_CONNECTOR_FR_ENEDIS_BASEPATH=https://ext.prod.api.enedis.fr
 REGION_CONNECTOR_FR_ENEDIS_CLIENT_ID=a5d5ce56-2bca-123d-1ccd-46a28f1ac132
 REGION_CONNECTOR_FR_ENEDIS_CLIENT_SECRET=11d145d8-25a6-55c1-b6af-04ac332211b1
+REGION_CONNECTOR_THREAD_POOL_CORE_POOL_SIZE=5   
+REGION_CONNECTOR_THREAD_POOL_MAX_POOL_SIZE=10   
+REGION_CONNECTOR_THREAD_POOL_QUEUE_CAPACITY=25  
+REGION_CONNECTOR_TASKS_PERMISSIONS_PER_TASK=50                           
+REGION_CONNECTOR_TASKS_CRON_FUTURE_DATA_PERMISSION_POLL=0 30 10 * * ?
+REGION_CONNECTOR_TASKS_CRON_FUTURE_DATA_PERMISSION_CLEAN=0 0 0 * * ? 
 ```
 
 ## Running the Region Connector via EDDIE

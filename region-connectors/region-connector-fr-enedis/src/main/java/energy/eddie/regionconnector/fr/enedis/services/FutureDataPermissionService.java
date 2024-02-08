@@ -29,8 +29,8 @@ public class FutureDataPermissionService {
     private final PollingService pollingService;
     private final PermissionRequestRepository<TimeframedPermissionRequest> permissionRequestRepository;
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
-    @Value(value = "${region-connector.fr.enedis.tasks.threads.per.task}")
-    private int tasksPerThread = 50;
+    @Value(value = "${region-connector.fr.enedis.tasks.permissions.per.task}")
+    private int permissionsPerTask = 50;
 
     public FutureDataPermissionService(PollingService pollingService, @Qualifier("taskExecutor") AsyncTaskExecutor taskExecutor, FutureDataPermissionRepository futureDataPermissionRepository, PermissionRequestRepository<TimeframedPermissionRequest> permissionRequestRepository, Sinks.Many<ConnectionStatusMessage> connectionStatusSink) {
         this.pollingService = pollingService;
@@ -49,8 +49,8 @@ public class FutureDataPermissionService {
     @Scheduled(cron = "${region-connector.fr.enedis.tasks.cron.future.data.permission.poll}")
     private void pollFutureData() {
         List<FutureDataPermission> futureDataPermissions = getValidFutureDataPermissions(ZonedDateTime.now(ZONE_ID_FR).toInstant());
-        for (int i = 0; i < futureDataPermissions.size(); i += tasksPerThread) {
-            int end = Math.min(i + tasksPerThread, futureDataPermissions.size());
+        for (int i = 0; i < futureDataPermissions.size(); i += permissionsPerTask) {
+            int end = Math.min(i + permissionsPerTask, futureDataPermissions.size());
             List<FutureDataPermission> batch = futureDataPermissions.subList(i, end);
 
             taskExecutor.execute(new PollFutureDataTask(pollingService, batch, futureDataPermissionRepository));
@@ -61,8 +61,8 @@ public class FutureDataPermissionService {
     private void removeInvalidFutureDataPermissions() {
         List<FutureDataPermission> futureDataPermissions = getInvalidFutureDataPermissions(ZonedDateTime.now(ZONE_ID_FR).toInstant());
 
-        for (int i = 0; i < futureDataPermissions.size(); i += tasksPerThread) {
-            int end = Math.min(i + tasksPerThread, futureDataPermissions.size());
+        for (int i = 0; i < futureDataPermissions.size(); i += permissionsPerTask) {
+            int end = Math.min(i + permissionsPerTask, futureDataPermissions.size());
             List<FutureDataPermission> batch = futureDataPermissions.subList(i, end);
             taskExecutor.execute(new RemoveInvalidFutureDataPermissionTask(batch, futureDataPermissionRepository, permissionRequestRepository, connectionStatusSink));
         }
