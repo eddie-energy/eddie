@@ -38,7 +38,7 @@ class DatadisMvp1ConsumptionRecordProviderTest {
         when(mockRequest.dataNeedId()).thenReturn("dId");
         when(mockRequest.permissionId()).thenReturn("pId");
         List<MeteringData> list = new ArrayList<>();
-        list.add(new MeteringData("CUPS", now.toLocalDate(), now.toLocalTime(), 123.123, "foo", 456.456));
+        list.add(new MeteringData("CUPS", now, 123.123, "foo", 456.456));
         var reading = new IdentifiableMeteringData(mockRequest, list);
 
         //noinspection resource StepVerifier closes provider

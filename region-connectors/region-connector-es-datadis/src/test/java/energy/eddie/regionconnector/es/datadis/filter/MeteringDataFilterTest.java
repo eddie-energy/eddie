@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -43,10 +44,10 @@ class MeteringDataFilterTest {
 
         assertEquals(72, result.size());
 
-        assertEquals(expectedStartDate, result.getFirst().date());
-        assertEquals(LocalTime.MIN.plusHours(1), result.getFirst().time());
-        assertEquals(expectedEndDate, result.getLast().date());
-        assertEquals(LocalTime.MIDNIGHT, result.getLast().time());
+        assertEquals(expectedStartDate, result.getFirst().dateTime().toLocalDate());
+        assertEquals(LocalTime.MIN.plusHours(1), result.getFirst().dateTime().toLocalTime());
+        assertEquals(expectedEndDate, result.getLast().dateTime().toLocalDate());
+        assertEquals(LocalTime.MIDNIGHT, result.getLast().dateTime().toLocalTime());
     }
 
     @Test
@@ -64,10 +65,10 @@ class MeteringDataFilterTest {
 
         assertEquals(120, result.size());
 
-        assertEquals(expectedStartDate, result.getFirst().date());
-        assertEquals(LocalTime.MIN.plusHours(1), result.getFirst().time());
-        assertEquals(endDate, result.getLast().date());
-        assertEquals(LocalTime.MIDNIGHT, result.getLast().time());
+        assertEquals(expectedStartDate, result.getFirst().dateTime().toLocalDate());
+        assertEquals(LocalTime.MIN.plusHours(1), result.getFirst().dateTime().toLocalTime());
+        assertEquals(endDate, result.getLast().dateTime().toLocalDate());
+        assertEquals(LocalTime.MIDNIGHT, result.getLast().dateTime().toLocalTime());
     }
 
     @Test
@@ -115,6 +116,6 @@ class MeteringDataFilterTest {
     }
 
     private MeteringData createMeteringData(LocalDate date, LocalTime time) {
-        return new MeteringData("1", date, time, 0.0, "REAL", 0.0);
+        return new MeteringData("1", ZonedDateTime.of(date, time, ZONE_ID_SPAIN), 0.0, "REAL", 0.0);
     }
 }

@@ -7,12 +7,7 @@ import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import jakarta.annotation.Nullable;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
-
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 
 public class ConsumptionRecordMapper {
     public static final int CONVERSION_FACTOR = 1000;
@@ -30,10 +25,10 @@ public class ConsumptionRecordMapper {
             throw new InvalidMappingException("No metering data found");
         }
 
-        consumptionRecord.setMeteringPoint(meteringData.getFirst().cups());
+        var firstMeteringData = meteringData.getFirst();
 
-        LocalDateTime startDateTime = readingToDateTime(meteringData.getFirst());
-        consumptionRecord.setStartDateTime(startDateTime.atZone(ZONE_ID_SPAIN));
+        consumptionRecord.setMeteringPoint(firstMeteringData.cups());
+        consumptionRecord.setStartDateTime(firstMeteringData.dateTime());
 
         var consumptionPoints = meteringData.stream().map(reading -> {
             ConsumptionPoint consumptionPoint = new ConsumptionPoint();
@@ -52,16 +47,5 @@ public class ConsumptionRecordMapper {
 
         consumptionRecord.setMeteringInterval(measurementType == MeasurementType.HOURLY ? Granularity.PT1H.name() : Granularity.PT15M.name());
         return consumptionRecord;
-    }
-
-    private static LocalDateTime readingToDateTime(MeteringData reading) throws InvalidMappingException {
-        LocalDate date = reading.date();
-        LocalTime time = reading.time();
-
-        if (date == null || time == null) {
-            throw new InvalidMappingException("No date or time found");
-        }
-
-        return LocalDateTime.of(date, time);
     }
 }
