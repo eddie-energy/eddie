@@ -28,6 +28,6 @@ public class AcceptedState
 
     @Override
     public void fulfill() {
-        throw new IllegalStateException("Not implemented yet");
+        permissionRequest.changeState(new FulfilledState(permissionRequest));
     }
 }

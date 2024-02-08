@@ -12,7 +12,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 class AcceptedStateTest {
@@ -55,7 +54,7 @@ class AcceptedStateTest {
     }
 
     @Test
-    void fulfill_throws() {
+    void fulfill_fulfillsPermissionRequest() {
         // Given
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
         ZonedDateTime end = start.plusDays(10);
@@ -67,7 +66,9 @@ class AcceptedStateTest {
         AcceptedState state = new AcceptedState(permissionRequest);
 
         // When
+        state.fulfill();
+
         // Then
-        assertThrows(IllegalStateException.class, state::fulfill);
+        assertInstanceOf(FulfilledState.class, permissionRequest.state());
     }
 }
