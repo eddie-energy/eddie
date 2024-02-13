@@ -63,7 +63,7 @@ class PermissionRequestControllerTest {
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {
         // Given
-        var state = new AtAcceptedPermissionRequestState(null);
+        var state = new AtAcceptedPermissionRequestState(null, null, null, null);
         String permissionId = "permissionId";
         when(permissionRequestService.findConnectionStatusMessageById(permissionId))
                 .thenReturn(Optional.of(new ConnectionStatusMessage(
@@ -87,7 +87,7 @@ class PermissionRequestControllerTest {
     @Test
     void permissionStatus_permissionDoesNotExist_returnsNotFound() throws Exception {
         // Given
-        var state = new AtAcceptedPermissionRequestState(null);
+        var state = new AtAcceptedPermissionRequestState(null, null, null, null);
         when(permissionRequestService.findByPermissionId("pid"))
                 .thenReturn(Optional.of(new SimplePermissionRequest("pid", "cid", "dnid", "cmId", "conid", state)));
         // When

@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.at.eda.permission.request;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
+import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.junit.jupiter.api.Test;
 
@@ -14,8 +15,8 @@ class PermissionRequestFactoryTest {
     @Test
     void testCreatePermissionRequest() {
         // Given
-        EdaAdapter edaAdapterMock = mock(EdaAdapter.class);
-        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(edaAdapterMock, Set.of());
+        StateBuilderFactory factory = new StateBuilderFactory(new PlainAtConfiguration("id", null), mock(EdaAdapter.class));
+        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(Set.of(), factory);
 
         String connectionId = "connection123";
         String dataNeedId = "dataNeedId";

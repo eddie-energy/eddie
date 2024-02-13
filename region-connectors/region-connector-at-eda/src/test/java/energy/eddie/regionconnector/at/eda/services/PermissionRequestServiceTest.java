@@ -7,19 +7,18 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.at.eda.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtAcceptedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,16 +28,16 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 class PermissionRequestServiceTest {
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private PermissionRequestService permissionRequestService;
     @MockBean
     private PermissionRequestFactory permissionRequestFactory;
     @MockBean
     private AtPermissionRequestRepository permissionRequestRepository;
-    @MockBean
-    private ServletWebServerApplicationContext ignore;
-    @MockBean
-    private Supplier<Integer> alsoIgnore;
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    @Autowired
+    private StateBuilderFactory factory;
 
     @Test
     void findByPermissionId_shouldReturnPermissionRequest() {
@@ -78,7 +77,7 @@ class PermissionRequestServiceTest {
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         when(ccmoRequest.meteringPointId()).thenReturn(Optional.of("meteringPointId"));
-        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, null);
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "permissionId", "dataNeedId", ccmoRequest, factory);
         when(permissionRequestRepository.findByMeteringPointIdAndDate(eq(meteringPoint), any())).thenReturn(List.of(permissionRequest));
         when(permissionRequestFactory.create(permissionRequest)).thenReturn(permissionRequest);
 
@@ -93,7 +92,7 @@ class PermissionRequestServiceTest {
     void findConnectionStatusMessageById_shouldReturnConnectionStatusMessage() {
         // Given
         String permissionId = "123";
-        PermissionRequestState state = new AtAcceptedPermissionRequestState(null);
+        PermissionRequestState state = new AtAcceptedPermissionRequestState(null, null, null, factory);
         AtPermissionRequest atPermissionRequest = new SimplePermissionRequest(permissionId, "cid", "dnid", "cmRequestId", "convId", state);
 
 

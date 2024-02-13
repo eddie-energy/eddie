@@ -13,7 +13,7 @@ public class AtUnableToSendPermissionRequestState
         implements UnableToSendPermissionRequestState {
     private final Throwable cause;
 
-    protected AtUnableToSendPermissionRequestState(AtPermissionRequest permissionRequest, Throwable cause) {
+    public AtUnableToSendPermissionRequestState(AtPermissionRequest permissionRequest, Throwable cause) {
         super(permissionRequest);
         this.cause = cause;
     }

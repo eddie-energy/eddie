@@ -1,12 +1,19 @@
 package energy.eddie.regionconnector.at.eda.permission.request;
 
+import at.ebutilities.schemata.customerconsent.cmrequest._01p10.CMRequest;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
+import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.states.*;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import energy.eddie.regionconnector.at.eda.requests.InvalidDsoIdException;
 import org.junit.jupiter.api.Test;
+import reactor.test.publisher.TestPublisher;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -22,7 +29,8 @@ class EdaPermissionRequestTest {
     void edaPermissionRequest_hasCreatedStateAsInitialState() {
         // Given
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        PermissionRequest permissionRequest = new EdaPermissionRequest("cid", "dataNeedId", ccmoRequest, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest = new EdaPermissionRequest("cid", "dataNeedId", ccmoRequest, factory);
 
         // When
         var state = permissionRequest.state();
@@ -34,9 +42,10 @@ class EdaPermissionRequestTest {
     @Test
     void edaPermissionRequest_changesState() {
         // Given
-        AtCreatedPermissionRequestState createdState = new AtCreatedPermissionRequestState(null, null, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        AtCreatedPermissionRequestState createdState = new AtCreatedPermissionRequestState(null, null, factory);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        PermissionRequest permissionRequest = new EdaPermissionRequest("cid", "dataNeedId", ccmoRequest, null);
+        PermissionRequest permissionRequest = new EdaPermissionRequest("cid", "dataNeedId", ccmoRequest, factory);
 
         // When
         permissionRequest.changeState(createdState);
@@ -51,7 +60,8 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
 
         // When
         String cmRequestId = permissionRequest.cmRequestId();
@@ -66,7 +76,8 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
 
         // When
         String conversationId = permissionRequest.conversationId();
@@ -83,7 +94,8 @@ class EdaPermissionRequestTest {
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         when(ccmoRequest.dsoId()).thenReturn(dsoId);
-        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
 
         // Then
         assertEquals(EdaDataSourceInformation.class, permissionRequest.dataSourceInformation().getClass());
@@ -95,8 +107,9 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", "dataNeedId", ccmoRequest, null);
-        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid", "dataNeedId", ccmoRequest, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", "dataNeedId", ccmoRequest, factory);
+        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid", "dataNeedId", ccmoRequest, factory);
 
         // When
         boolean res = permissionRequest1.equals(permissionRequest2);
@@ -111,7 +124,8 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "pid", ccmoRequest, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "pid", ccmoRequest, factory);
 
         // When
         boolean res = permissionRequest.equals(new Object());
@@ -126,8 +140,9 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest, null);
-        PermissionRequest permissionRequest2 = new EdaPermissionRequest("cid", "pid", ccmoRequest, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest, factory);
+        PermissionRequest permissionRequest2 = new EdaPermissionRequest("cid", "pid", ccmoRequest, factory);
 
         // When
         boolean res = permissionRequest1.equals(permissionRequest2);
@@ -142,8 +157,9 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid1", ccmoRequest, null);
-        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid2", ccmoRequest, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid1", ccmoRequest, factory);
+        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid2", ccmoRequest, factory);
 
         // When
         boolean res = permissionRequest1.equals(permissionRequest2);
@@ -161,8 +177,9 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest2 = mock(CCMORequest.class);
         when(ccmoRequest2.cmRequestId()).thenReturn("cmRequestId2");
         when(ccmoRequest2.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest1, null);
-        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest2, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest1, factory);
+        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest2, factory);
 
         // When
         boolean res = permissionRequest1.equals(permissionRequest2);
@@ -180,8 +197,9 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest2 = mock(CCMORequest.class);
         when(ccmoRequest2.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest2.messageId()).thenReturn("messageId2");
-        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest1, null);
-        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest2, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest1, factory);
+        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest2, factory);
 
         // When
         boolean res = permissionRequest1.equals(permissionRequest2);
@@ -196,8 +214,9 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid1", ccmoRequest, null);
-        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid2", ccmoRequest, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid1", ccmoRequest, factory);
+        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid2", ccmoRequest, factory);
         permissionRequest2.changeState(new AtInvalidPermissionRequestState(permissionRequest2));
 
         // When
@@ -213,8 +232,9 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", "dataNeedId", ccmoRequest, null);
-        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid", "dataNeedId", ccmoRequest, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", "dataNeedId", ccmoRequest, factory);
+        PermissionRequest permissionRequest2 = new EdaPermissionRequest("connectionId", "pid", "dataNeedId", ccmoRequest, factory);
 
         // When
         int res1 = permissionRequest1.hashCode();
@@ -230,8 +250,9 @@ class EdaPermissionRequestTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest, null);
-        PermissionRequest permissionRequest2 = new EdaPermissionRequest("cid", "pid2", ccmoRequest, null);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest1 = new EdaPermissionRequest("connectionId", "pid", ccmoRequest, factory);
+        PermissionRequest permissionRequest2 = new EdaPermissionRequest("cid", "pid2", ccmoRequest, factory);
 
         // When
         int res1 = permissionRequest1.hashCode();
@@ -242,14 +263,16 @@ class EdaPermissionRequestTest {
     }
 
     @Test
-    void validatedTransitionsEdaPermissionRequest() throws StateTransitionException {
+    void validatedTransitionsEdaPermissionRequest() throws StateTransitionException, InvalidDsoIdException {
         // Given
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         when(ccmoRequest.start()).thenReturn(ZonedDateTime.now(ZoneOffset.UTC).minusDays(5));
         when(ccmoRequest.end()).thenReturn(Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusDays(1)));
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
+        when(ccmoRequest.toCMRequest()).thenReturn(new CMRequest());
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
 
         // When
         permissionRequest.validate();
@@ -259,15 +282,16 @@ class EdaPermissionRequestTest {
     }
 
     @Test
-    void sendToPermissionAdministratorTransitionsEdaPermissionRequest() throws StateTransitionException {
+    void sendToPermissionAdministratorTransitionsEdaPermissionRequest() throws StateTransitionException, InvalidDsoIdException {
         // Given
-        EdaAdapter edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         when(ccmoRequest.start()).thenReturn(ZonedDateTime.now(ZoneOffset.UTC).minusDays(5));
         when(ccmoRequest.end()).thenReturn(Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusDays(1)));
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
+        when(ccmoRequest.toCMRequest()).thenReturn(new CMRequest());
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
         permissionRequest.validate();
 
         // When
@@ -279,15 +303,16 @@ class EdaPermissionRequestTest {
     }
 
     @Test
-    void receivedPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws StateTransitionException {
+    void receivedPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws StateTransitionException, InvalidDsoIdException {
         // Given
-        EdaAdapter edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         when(ccmoRequest.start()).thenReturn(ZonedDateTime.now(ZoneOffset.UTC).minusDays(5));
         when(ccmoRequest.end()).thenReturn(Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusDays(1)));
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
+        when(ccmoRequest.toCMRequest()).thenReturn(new CMRequest());
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
 
@@ -299,15 +324,16 @@ class EdaPermissionRequestTest {
     }
 
     @Test
-    void acceptPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws StateTransitionException {
+    void acceptPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws StateTransitionException, InvalidDsoIdException {
         // Given
-        EdaAdapter edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         when(ccmoRequest.start()).thenReturn(ZonedDateTime.now(ZoneOffset.UTC).minusDays(5));
         when(ccmoRequest.end()).thenReturn(Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusDays(1)));
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
+        when(ccmoRequest.toCMRequest()).thenReturn(new CMRequest());
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
         permissionRequest.receivedPermissionAdministratorResponse();
@@ -320,15 +346,16 @@ class EdaPermissionRequestTest {
     }
 
     @Test
-    void invalidPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws StateTransitionException {
+    void invalidPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws StateTransitionException, InvalidDsoIdException {
         // Given
-        EdaAdapter edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         when(ccmoRequest.start()).thenReturn(ZonedDateTime.now(ZoneOffset.UTC).minusDays(5));
         when(ccmoRequest.end()).thenReturn(Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusDays(1)));
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
+        when(ccmoRequest.toCMRequest()).thenReturn(new CMRequest());
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
         permissionRequest.receivedPermissionAdministratorResponse();
@@ -341,15 +368,16 @@ class EdaPermissionRequestTest {
     }
 
     @Test
-    void rejectPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws StateTransitionException {
+    void rejectPermissionAdministratorResponseTransitionsEdaPermissionRequest() throws StateTransitionException, InvalidDsoIdException {
         // Given
-        EdaAdapter edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
         when(ccmoRequest.start()).thenReturn(ZonedDateTime.now(ZoneOffset.UTC).minusDays(5));
         when(ccmoRequest.end()).thenReturn(Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusDays(1)));
-        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
+        when(ccmoRequest.toCMRequest()).thenReturn(new CMRequest());
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        PermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();
         permissionRequest.receivedPermissionAdministratorResponse();
@@ -362,17 +390,28 @@ class EdaPermissionRequestTest {
     }
 
     @Test
-    void terminatePermissionAdministratorResponseTransitionsEdaPermissionRequest() {
+    void terminatePermissionRequest_terminates() throws StateTransitionException {
         // Given
+        AtConfiguration atConfiguration = new PlainAtConfiguration("ep", null);
+        TestPublisher<CMRequestStatus> testPublisher = TestPublisher.createCold();
+        CMRequestStatus cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.DELIVERED, "", "convId");
+        cmRequestStatus.setCmConsentId("consentId");
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
+        when(edaAdapter.getCMRequestStatusStream()).thenReturn(testPublisher.flux());
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, edaAdapter);
-        permissionRequest.changeState(new AtAcceptedPermissionRequestState(permissionRequest));
+        when(ccmoRequest.dsoId()).thenReturn("dsoId");
+        var factory = new StateBuilderFactory(atConfiguration, edaAdapter);
+        AtPermissionRequest permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
+        permissionRequest.setConsentId("consentId");
+        permissionRequest.changeState(new AtAcceptedPermissionRequestState(permissionRequest, edaAdapter, atConfiguration, factory));
+        testPublisher.emit(cmRequestStatus);
 
         // When
+        permissionRequest.terminate();
+
         // Then
-        assertThrows(UnsupportedOperationException.class, permissionRequest::terminate);
+        assertEquals(PermissionProcessStatus.TERMINATED, permissionRequest.state().status());
     }
 }

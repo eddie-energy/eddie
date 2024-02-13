@@ -1,7 +1,10 @@
 package energy.eddie.regionconnector.at.eda.permission.request.validators;
 
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
+import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import energy.eddie.regionconnector.at.eda.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtAcceptedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.permission.request.validation.StartIsBeforeOrEqualEndValidator;
 import org.junit.jupiter.api.Test;
@@ -12,12 +15,14 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 class StartIsBeforeOrEqualEndValidatorTest {
     @Test
     void isValid_whenPermissionRequestEndNull() {
         // Given
         StartIsBeforeOrEqualEndValidator validator = new StartIsBeforeOrEqualEndValidator();
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
         AtPermissionRequest permissionRequest = new SimplePermissionRequest(
                 "pid",
                 "cid",
@@ -28,7 +33,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
                 Optional.empty(),
                 ZonedDateTime.now(ZoneOffset.UTC),
                 null,
-                new AtAcceptedPermissionRequestState(null)
+                new AtAcceptedPermissionRequestState(null, null, null, factory)
         );
 
         // When
@@ -44,6 +49,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
         StartIsBeforeOrEqualEndValidator validator = new StartIsBeforeOrEqualEndValidator();
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
         ZonedDateTime end = start.minusDays(1);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
         AtPermissionRequest permissionRequest = new SimplePermissionRequest(
                 "pid",
                 "cid",
@@ -54,7 +60,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
                 Optional.empty(),
                 start,
                 end,
-                new AtAcceptedPermissionRequestState(null)
+                new AtAcceptedPermissionRequestState(null, null, null, factory)
         );
         // When
         var res = validator.validate(permissionRequest);
@@ -72,6 +78,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
         StartIsBeforeOrEqualEndValidator validator = new StartIsBeforeOrEqualEndValidator();
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
         ZonedDateTime end = start.plusDays(1);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
         AtPermissionRequest permissionRequest = new SimplePermissionRequest(
                 "pid",
                 "cid",
@@ -82,7 +89,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
                 Optional.empty(),
                 start,
                 end,
-                new AtAcceptedPermissionRequestState(null)
+                new AtAcceptedPermissionRequestState(null, null, null, factory)
         );
 
         // When
@@ -97,6 +104,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
         // Given
         StartIsBeforeOrEqualEndValidator validator = new StartIsBeforeOrEqualEndValidator();
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
         AtPermissionRequest permissionRequest = new SimplePermissionRequest(
                 "pid",
                 "cid",
@@ -107,7 +115,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
                 Optional.empty(),
                 start,
                 start,
-                new AtAcceptedPermissionRequestState(null)
+                new AtAcceptedPermissionRequestState(null, null, null, factory)
         );
         // When
         var res = validator.validate(permissionRequest);

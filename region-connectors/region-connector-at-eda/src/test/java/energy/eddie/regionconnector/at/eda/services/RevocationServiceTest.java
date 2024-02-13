@@ -4,7 +4,9 @@ import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
 import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.ProcessDirectory;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
+import energy.eddie.regionconnector.at.eda.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.at.eda.permission.request.states.AtAcceptedPermissionRequestState;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.junit.jupiter.api.Test;
@@ -29,8 +31,9 @@ class RevocationServiceTest {
     void revokeWithConsentId_revokesPermissionRequest() {
         // Given
         var edaAdapter = mock(EdaAdapter.class);
-        var permissionRequest = new EdaPermissionRequest("cid", "dnid", mock(CCMORequest.class), edaAdapter);
-        permissionRequest.changeState(new AtAcceptedPermissionRequestState(permissionRequest));
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), edaAdapter);
+        var permissionRequest = new EdaPermissionRequest("cid", "dnid", mock(CCMORequest.class), factory);
+        permissionRequest.changeState(new AtAcceptedPermissionRequestState(permissionRequest, edaAdapter, null, factory));
         TestPublisher<CMRevoke> revocationStream = TestPublisher.create();
         when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());
         var permissionRequestService = mock(PermissionRequestService.class);
@@ -54,9 +57,10 @@ class RevocationServiceTest {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         when(ccmoRequest.start()).thenReturn(now);
         when(ccmoRequest.end()).thenReturn(Optional.of(now.plusDays(10)));
-        var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, edaAdapter);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), edaAdapter);
+        var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, factory);
         permissionRequest.setMeteringPointId("mpid");
-        permissionRequest.changeState(new AtAcceptedPermissionRequestState(permissionRequest));
+        permissionRequest.changeState(new AtAcceptedPermissionRequestState(permissionRequest, null, null, factory));
         TestPublisher<CMRevoke> revocationStream = TestPublisher.create();
         when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());
         var permissionRequestService = mock(PermissionRequestService.class);
@@ -88,7 +92,8 @@ class RevocationServiceTest {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         when(ccmoRequest.start()).thenReturn(now);
         when(ccmoRequest.end()).thenReturn(Optional.of(now.plusDays(10)));
-        var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, edaAdapter);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), edaAdapter);
+        var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, factory);
         permissionRequest.setMeteringPointId("mpid");
         TestPublisher<CMRevoke> revocationStream = TestPublisher.create();
         when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());

@@ -1,13 +1,13 @@
 package energy.eddie.regionconnector.at.eda.permission.request.states;
 
 import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
-import energy.eddie.api.agnostic.process.model.states.RevokedPermissionRequestState;
+import energy.eddie.api.agnostic.process.model.states.TerminatedPermissionRequestState;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 
-public class AtRevokedPermissionRequestState
+public class AtTerminatedPermissionRequestState
         extends ContextualizedPermissionRequestState<AtPermissionRequest>
-        implements RevokedPermissionRequestState {
-    public AtRevokedPermissionRequestState(AtPermissionRequest permissionRequest) {
+        implements TerminatedPermissionRequestState {
+    public AtTerminatedPermissionRequestState(AtPermissionRequest permissionRequest) {
         super(permissionRequest);
     }
 }

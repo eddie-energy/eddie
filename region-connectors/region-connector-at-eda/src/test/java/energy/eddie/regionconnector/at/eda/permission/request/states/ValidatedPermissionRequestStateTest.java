@@ -5,7 +5,9 @@ import energy.eddie.api.agnostic.process.model.FutureStateException;
 import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
+import energy.eddie.regionconnector.at.eda.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import jakarta.xml.bind.JAXBException;
 import org.junit.jupiter.api.Test;
@@ -23,8 +25,9 @@ class ValidatedPermissionRequestStateTest {
         // Given
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
-        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(permissionRequest, new CMRequest(), edaAdapter);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), edaAdapter);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
+        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(permissionRequest, new CMRequest(), edaAdapter, factory);
         permissionRequest.changeState(state);
 
         // When
@@ -39,9 +42,10 @@ class ValidatedPermissionRequestStateTest {
         // Given
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
         doThrow(new JAXBException("msg")).when(edaAdapter).sendCMRequest(any());
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), edaAdapter);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
-        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(permissionRequest, new CMRequest(), edaAdapter);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
+        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(permissionRequest, new CMRequest(), edaAdapter, factory);
         permissionRequest.changeState(state);
 
         // When
@@ -56,9 +60,10 @@ class ValidatedPermissionRequestStateTest {
         // Given
         EdaAdapter edaAdapter = mock(EdaAdapter.class);
         doThrow(new TransmissionException(new Exception())).when(edaAdapter).sendCMRequest(any());
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), edaAdapter);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
-        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(permissionRequest, new CMRequest(), edaAdapter);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
+        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(permissionRequest, new CMRequest(), edaAdapter, factory);
         permissionRequest.changeState(state);
 
         // When
@@ -71,7 +76,7 @@ class ValidatedPermissionRequestStateTest {
     @Test
     void validate_throws() {
         // Given
-        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(null, null, null);
+        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(null, null, null, null);
 
         // When
         // Then
@@ -81,7 +86,7 @@ class ValidatedPermissionRequestStateTest {
     @Test
     void receivedPermissionAdministratorResponse_throws() {
         // Given
-        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(null, null, null);
+        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(null, null, null, null);
 
         // When
         // Then
@@ -91,7 +96,7 @@ class ValidatedPermissionRequestStateTest {
     @Test
     void accept_throws() {
         // Given
-        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(null, null, null);
+        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(null, null, null, null);
 
         // When
         // Then
@@ -101,7 +106,7 @@ class ValidatedPermissionRequestStateTest {
     @Test
     void invalid_throws() {
         // Given
-        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(null, null, null);
+        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(null, null, null, null);
 
         // When
         // Then
@@ -111,7 +116,7 @@ class ValidatedPermissionRequestStateTest {
     @Test
     void reject_throws() {
         // Given
-        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(null, null, null);
+        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(null, null, null, null);
 
         // When
         // Then
@@ -121,7 +126,7 @@ class ValidatedPermissionRequestStateTest {
     @Test
     void terminate_throws() {
         // Given
-        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(null, null, null);
+        AtValidatedPermissionRequestState state = new AtValidatedPermissionRequestState(null, null, null, null);
 
         // When
         // Then

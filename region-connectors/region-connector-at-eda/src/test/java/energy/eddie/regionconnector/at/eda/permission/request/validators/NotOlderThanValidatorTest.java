@@ -30,7 +30,7 @@ class NotOlderThanValidatorTest {
                 Optional.empty(),
                 ZonedDateTime.now(ZoneOffset.UTC).minusDays(15),
                 null,
-                new AtAcceptedPermissionRequestState(null)
+                new AtAcceptedPermissionRequestState(null, null, null, null)
         );
 
         // When
@@ -57,7 +57,7 @@ class NotOlderThanValidatorTest {
                 Optional.empty(),
                 ZonedDateTime.now(ZoneOffset.UTC).minusDays(5),
                 null,
-                new AtAcceptedPermissionRequestState(null)
+                new AtAcceptedPermissionRequestState(null, null, null, null)
         );
 
         // When
@@ -81,7 +81,7 @@ class NotOlderThanValidatorTest {
                 Optional.empty(),
                 ZonedDateTime.now(ZoneOffset.UTC).plusDays(5),
                 null,
-                new AtAcceptedPermissionRequestState(null)
+                new AtAcceptedPermissionRequestState(null, null, null, null)
         );
 
         // When
@@ -105,7 +105,7 @@ class NotOlderThanValidatorTest {
                 Optional.empty(),
                 ZonedDateTime.now(ZoneOffset.UTC),
                 null,
-                new AtAcceptedPermissionRequestState(null)
+                new AtAcceptedPermissionRequestState(null, null, null, null)
         );
 
         // When

@@ -8,7 +8,7 @@ public class AtRejectedPermissionRequestState
         extends ContextualizedPermissionRequestState<PermissionRequest>
         implements RejectedPermissionRequestState {
 
-    protected AtRejectedPermissionRequestState(PermissionRequest permissionRequest) {
+    public AtRejectedPermissionRequestState(PermissionRequest permissionRequest) {
         super(permissionRequest);
     }
 

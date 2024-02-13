@@ -2,7 +2,10 @@ package energy.eddie.regionconnector.at.eda.permission.request.states;
 
 import energy.eddie.api.agnostic.process.model.FutureStateException;
 import energy.eddie.api.agnostic.process.model.PastStateException;
+import energy.eddie.regionconnector.at.eda.EdaAdapter;
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
+import energy.eddie.regionconnector.at.eda.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.junit.jupiter.api.Test;
 
@@ -19,8 +22,9 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
-        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
+        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
         // When
@@ -36,8 +40,9 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
-        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
+        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
         // When
@@ -53,8 +58,9 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
         CCMORequest ccmoRequest = mock(CCMORequest.class);
         when(ccmoRequest.cmRequestId()).thenReturn("cmRequestId");
         when(ccmoRequest.messageId()).thenReturn("messageId");
-        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, null);
-        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest);
+        var factory = new StateBuilderFactory(mock(AtConfiguration.class), mock(EdaAdapter.class));
+        var permissionRequest = new EdaPermissionRequest("connectionId", "dataNeedId", ccmoRequest, factory);
+        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
         // When
@@ -67,7 +73,7 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
     @Test
     void validate_throws() {
         // Given
-        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(null);
+        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(null, null);
 
         // When
         // Then
@@ -77,7 +83,7 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
     @Test
     void sendToPermissionAdministrator_throws() {
         // Given
-        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(null);
+        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(null, null);
 
         // When
         // Then
@@ -87,7 +93,7 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
     @Test
     void receivedPermissionAdministratorResponse_throws() {
         // Given
-        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(null);
+        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(null, null);
 
         // When
         // Then
@@ -97,7 +103,7 @@ class SentToPermissionAdministratorPermissionRequestStateTest {
     @Test
     void terminate_throws() {
         // Given
-        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(null);
+        AtSentToPermissionAdministratorPermissionRequestState state = new AtSentToPermissionAdministratorPermissionRequestState(null, null);
 
         // When
         // Then
