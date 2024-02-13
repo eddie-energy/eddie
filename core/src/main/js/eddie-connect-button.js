@@ -78,6 +78,10 @@ class EddieConnectButton extends LitElement {
       attribute: "allow-data-need-selection",
       type: Object,
     },
+    permissionAdministrator: {
+      attribute: "permission-administrator",
+      type: String,
+    },
 
     _dataNeedIds: { type: Array },
     _selectedCountry: { type: String },
@@ -125,6 +129,7 @@ class EddieConnectButton extends LitElement {
     this._dataNeedIds = [];
     this._dataNeedTypes = [];
     this._dataNeedGranularities = [];
+    this._presetPermissionAdministrator = null;
   }
 
   async connect() {
@@ -150,6 +155,28 @@ class EddieConnectButton extends LitElement {
     }
 
     this._availableConnectors = await getRegionConnectors();
+
+    if (this.permissionAdministrator) {
+      const pa = PERMISSION_ADMINISTRATORS.find(
+        (it) => it.companyId === this.permissionAdministrator
+      );
+
+      if (pa) {
+        if (this._availableConnectors[pa.regionConnector]) {
+          this._selectedCountry = pa.country;
+          this._selectedPermissionAdministrator = pa;
+          this._presetPermissionAdministrator = pa;
+        } else {
+          console.error(
+            `Region Connector "${pa.regionConnector}" for Permission Administrator "${this.permissionAdministrator}" is unavailable.`
+          );
+        }
+      } else {
+        console.error(
+          `No Permission Administrator with ID "${this.permissionAdministrator}".`
+        );
+      }
+    }
 
     if (this.isAiida()) {
       this.selectAiida();
@@ -205,7 +232,8 @@ class EddieConnectButton extends LitElement {
     if (this.isAiida()) {
       this.selectAiida();
     } else {
-      this._selectedPermissionAdministrator = null;
+      this._selectedPermissionAdministrator =
+        this._presetPermissionAdministrator;
     }
   }
 
@@ -251,7 +279,8 @@ class EddieConnectButton extends LitElement {
     } else if (
       this._selectedPermissionAdministrator?.regionConnector === "aiida"
     ) {
-      this._selectedPermissionAdministrator = null;
+      this._selectedPermissionAdministrator =
+        this._presetPermissionAdministrator;
     }
 
     this.requestUpdate();
@@ -308,6 +337,7 @@ class EddieConnectButton extends LitElement {
       >
         <div slot="label">${unsafeSVG(headerImage)}</div>
 
+        <!-- Render the data need selection form if the feature is enabled -->
         ${this.allowDataNeedSelection
           ? html`
               <sl-select
@@ -323,6 +353,8 @@ class EddieConnectButton extends LitElement {
               <br />
             `
           : ""}
+
+        <!-- Render a data need description if available -->
         ${this._dataNeedAttributes.description
           ? html`
               <sl-alert open>
@@ -333,6 +365,8 @@ class EddieConnectButton extends LitElement {
               <br />
             `
           : ""}
+
+        <!-- Render the data need modification form if the feature is enabled -->
         ${this.allowDataNeedModifications && this._dataNeedAttributes.id
           ? html`
               <sl-details
@@ -411,7 +445,9 @@ class EddieConnectButton extends LitElement {
               <br />
             `
           : ""}
-        ${!this.isAiida()
+
+        <!-- Render country selection when not preset -->
+        ${!this.isAiida() && !this._presetPermissionAdministrator
           ? html`
               <sl-select
                 label="Country"
@@ -432,7 +468,9 @@ class EddieConnectButton extends LitElement {
               <br />
             `
           : ""}
-        ${this._selectedCountry
+
+        <!-- Render permission administrator selection when not preset -->
+        ${this._selectedCountry && !this._presetPermissionAdministrator
           ? html`
               <sl-select
                 label="Permission Administrator"
@@ -457,6 +495,24 @@ class EddieConnectButton extends LitElement {
                   `
                 )}
               </sl-select>
+              <br />
+            `
+          : ""}
+
+        <!-- Render static fields for preset permission administrator -->
+        ${this._presetPermissionAdministrator
+          ? html`
+              <sl-input
+                label="Country"
+                value="${COUNTRY_NAMES.of(this._selectedCountry.toUpperCase())}"
+                disabled
+              ></sl-input>
+              <br />
+              <sl-input
+                label="Permission Administrator"
+                value="${this._selectedPermissionAdministrator.company}"
+                disabled
+              ></sl-input>
               <br />
             `
           : ""}
