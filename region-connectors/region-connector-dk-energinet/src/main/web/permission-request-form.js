@@ -1,4 +1,4 @@
-import { html } from "lit";
+import { html, nothing } from "lit";
 import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/input/input.js";
@@ -15,6 +15,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
+    accountingPointId: { attribute: "accounting-point-id" },
     _requestId: { type: String },
     _requestStatus: { type: String },
   };
@@ -200,6 +201,9 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             type="text"
             id="meteringPoint"
             name="meteringPoint"
+            .helpText=${this.accountingPointId ? "The service has already provided a metering point. If this value is incorrect, please contact the service provider." : nothing}
+            .value="${this.accountingPointId ? this.accountingPointId : nothing}"
+            .disabled="${!!this.accountingPointId}"
             required
           ></sl-input>
           <br />

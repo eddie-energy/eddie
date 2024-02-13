@@ -1,4 +1,4 @@
-import { html } from "lit";
+import { html, nothing } from "lit";
 import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/input/input.js";
@@ -16,6 +16,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
     jumpOffUrl: { attribute: "jump-off-url" },
     companyId: { attribute: "company-id" },
+    accountingPointId: { attribute: "accounting-point-id" },
     _requestId: { type: String },
     _requestStatus: { type: String },
   };
@@ -176,11 +177,15 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           <sl-input
             label="Zählpunktnummer"
             type="text"
-            help-text="Enter your Zählpunktnummer for the request to show up in your DSO portal. Leave blank to search for the generated Consent Request ID."
+            .helpText=${this.accountingPointId
+              ? "The service has already provided a Zählpunktnummer. If this value is incorrect, please contact the service provider."
+              : "Enter your Zählpunktnummer for the request to show up in your DSO portal. Leave blank to search for the generated Consent Request ID."}
             name="meteringPointId"
             minlength="33"
             maxlength="33"
             placeholder="${this.companyId}"
+            .value="${this.accountingPointId ? this.accountingPointId : nothing}"
+            .disabled="${!!this.accountingPointId}"
           ></sl-input>
 
           <br />

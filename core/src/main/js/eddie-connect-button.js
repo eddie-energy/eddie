@@ -82,6 +82,7 @@ class EddieConnectButton extends LitElement {
       attribute: "permission-administrator",
       type: String,
     },
+    accountingPointId: { attribute: "accounting-point-id", type: String },
 
     _dataNeedIds: { type: Array },
     _selectedCountry: { type: String },
@@ -178,6 +179,11 @@ class EddieConnectButton extends LitElement {
       }
     }
 
+    if (this.accountingPointId && !this.permissionAdministrator) {
+      console.error("Accounting point specified without permission administrator.");
+      this.accountingPointId = null; // prevents further errors
+    }
+
     if (this.isAiida()) {
       this.selectAiida();
     }
@@ -221,6 +227,10 @@ class EddieConnectButton extends LitElement {
       "company-id",
       this._selectedPermissionAdministrator.companyId
     );
+
+    if (this.accountingPointId) {
+      element.setAttribute("accounting-point-id", this.accountingPointId);
+    }
 
     return element;
   }

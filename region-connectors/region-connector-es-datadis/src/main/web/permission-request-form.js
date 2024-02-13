@@ -1,4 +1,4 @@
-import { html } from "lit";
+import { html, nothing } from "lit";
 import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 
@@ -17,6 +17,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
+    accountingPointId: { attribute: "accounting-point-id" },
     _requestId: { type: String },
     _requestStatus: { type: String },
     _isCooldown: { type: Boolean },
@@ -243,6 +244,9 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             id="meteringPointId"
             type="text"
             name="meteringPointId"
+            .helpText=${this.accountingPointId ? "The service has already provided a CUPS value. If this value is incorrect, please contact the service provider." : nothing}
+            .value="${this.accountingPointId ? this.accountingPointId : nothing}"
+            .disabled="${!!this.accountingPointId}"
             required
           ></sl-input>
 
