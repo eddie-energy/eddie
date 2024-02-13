@@ -828,49 +828,49 @@
   {
     "country": "dk",
     "company": "Energinet",
-    "companyId": "",
+    "companyId": "energinet",
     "jumpOffUrl": "https://eloverblik.dk/customer/login",
     "regionConnector": "dk-energinet"
   },
   {
     "country": "es",
     "company": "Datadis",
-    "companyId": "",
+    "companyId": "datadis",
     "jumpOffUrl": "https://datadis.es",
     "regionConnector": "es-datadis"
   },
   {
     "country": "fi",
     "company": "Fingrid Datahub",
-    "companyId": "",
+    "companyId": "fingrid-datahub",
     "jumpOffUrl": "https://oma.datahub.fi/#/login",
     "regionConnector": "fi"
   },
   {
     "country": "fr",
     "company": "Enedis",
-    "companyId": "",
+    "companyId": "enedis",
     "jumpOffUrl": "",
     "regionConnector": "fr-enedis"
   },
   {
     "country": "fr",
     "company": "SRD Energies",
-    "companyId": "",
+    "companyId": "srd-energies",
     "jumpOffUrl": "",
     "regionConnector": "fr-enedis"
   },
   {
     "country": "it",
     "company": "Acquirente Unico / Portale SII / Portale Consumi",
-    "companyId": "",
+    "companyId": "acquirente-unico--portale-sii--portale-consumi",
     "jumpOffUrl": "https://www.consumienergia.it/eid-gateway/?client_id=Ah5HdneY38Nc9Ifd#0",
     "regionConnector": "it"
   },
   {
     "country": "nl",
     "company": "BAS/MFF",
-    "companyId": "",
+    "companyId": "basmff",
     "jumpOffUrl": "",
     "regionConnector": "nl"
   }
