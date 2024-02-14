@@ -1,6 +1,8 @@
 package energy.eddie.regionconnector.at.eda.services;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
+import energy.eddie.api.agnostic.process.model.PermissionRequestState;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
@@ -30,12 +32,18 @@ class IdentifiableConsumptionRecordServiceTest {
         var unidentifiableConsumptionRecord = createConsumptionRecord(unidentifiableMeteringPoint);
 
         TestPublisher<ConsumptionRecord> testPublisher = TestPublisher.create();
-
+        PermissionRequestState state = mock(PermissionRequestState.class);
+        when(state.status())
+                .thenReturn(PermissionProcessStatus.ACCEPTED)
+                .thenReturn(PermissionProcessStatus.ACCEPTED)
+                .thenReturn(PermissionProcessStatus.REJECTED);
         var requestService = mock(PermissionRequestService.class);
         when(requestService.findByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any()))
                 .thenReturn(List.of(
-                        new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1", null),
-                        new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2", null))
+                                new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1", state),
+                                new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2", state),
+                                new SimplePermissionRequest("pmId3", "connId3", "dataNeedId3", "test3", "any3", state)
+                        )
                 );
         when(requestService.findByMeteringPointIdAndDate(eq(unidentifiableMeteringPoint), any()))
                 .thenReturn(List.of());
@@ -58,12 +66,13 @@ class IdentifiableConsumptionRecordServiceTest {
         var identifiableConsumptionRecord = createConsumptionRecord(identifiableMeteringPoint);
 
         Sinks.Many<ConsumptionRecord> testPublisher = Sinks.many().unicast().onBackpressureBuffer();
-
+        PermissionRequestState state = mock(PermissionRequestState.class);
+        when(state.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
         var requestService = mock(PermissionRequestService.class);
         when(requestService.findByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any()))
                 .thenReturn(List.of(
-                        new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1", null),
-                        new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2", null))
+                        new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1", state),
+                        new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2", state))
                 );
 
         IdentifiableConsumptionRecordService identifiableConsumptionRecordService = new IdentifiableConsumptionRecordService(testPublisher.asFlux(), requestService);
