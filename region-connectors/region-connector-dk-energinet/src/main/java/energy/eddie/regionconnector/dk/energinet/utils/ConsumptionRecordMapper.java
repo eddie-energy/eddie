@@ -19,9 +19,8 @@ public class ConsumptionRecordMapper {
     }
 
     public static ConsumptionRecord timeSeriesToConsumptionRecord(IdentifiableApiResponse response) throws IllegalStateException {
-        List<MyEnergyDataMarketDocumentResponse> timeSeriesResponse = response.apiResponse();
         ConsumptionRecord consumptionRecord = new ConsumptionRecord();
-        MyEnergyDataMarketDocumentResponse energyDataMarketDocumentResponse = timeSeriesResponse.stream().findFirst().orElseThrow();
+        MyEnergyDataMarketDocumentResponse energyDataMarketDocumentResponse = response.apiResponse();
         consumptionRecord.setMeteringPoint(energyDataMarketDocumentResponse.getId());
 
         if (energyDataMarketDocumentResponse.getMyEnergyDataMarketDocument() == null) {

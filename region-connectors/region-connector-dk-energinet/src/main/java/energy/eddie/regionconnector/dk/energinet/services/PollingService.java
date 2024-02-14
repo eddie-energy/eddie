@@ -93,9 +93,9 @@ public class PollingService implements AutoCloseable {
                         UUID.fromString(permissionId)
                 ))
                 .mapNotNull(MyEnergyDataMarketDocumentResponseListApiResponse::getResult)
-                .map(response -> new IdentifiableApiResponse(permissionRequest.permissionId(),
-                        permissionRequest.connectionId(), permissionRequest.dataNeedId(), response)
-                )
+                .map(response ->
+                        new IdentifiableApiResponse(permissionRequest.permissionId(),
+                                permissionRequest.connectionId(), permissionRequest.dataNeedId(), response.getFirst()))
                 .doOnError(error -> LOGGER.error("Something went wrong while fetching data from Energinet:", error))
                 .doOnSuccess(ignored -> permissionRequest.updateLastPolled(now));
     }
