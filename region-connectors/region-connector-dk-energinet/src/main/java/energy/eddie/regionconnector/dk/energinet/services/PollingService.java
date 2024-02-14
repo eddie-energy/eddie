@@ -77,13 +77,20 @@ public class PollingService implements AutoCloseable {
         return permissionRequest.accessToken()
                 // If we get an 401 Unauthorized error, the refresh token was revoked and the permission request with that
                 .doOnError(error -> revokePermissionRequest(permissionRequest, error))
+        LocalDate now = LocalDate.now(DK_ZONE_ID);
+
+        LocalDate dateFrom = permissionRequest.lastPolled().toLocalDate();
+        var endDate = Optional.ofNullable(permissionRequest.end()).flatMap(end -> Optional.of(end.toLocalDate()));
+        LocalDate dateTo = endDate.filter(d -> d.isBefore(now)).orElse(now);
+        String permissionId = permissionRequest.permissionId();
+
                 .flatMap(accessToken -> energinetCustomerApi.getTimeSeries(
-                        permissionRequest.lastPolled(),
-                        now.isBefore(permissionRequest.end()) ? now : permissionRequest.end(),
+                        dateFrom,
+                        dateTo,
                         permissionRequest.granularity(),
                         meteringPointsRequest,
                         accessToken,
-                        UUID.fromString(permissionRequest.permissionId())
+                        UUID.fromString(permissionId)
                 ))
                 .mapNotNull(MyEnergyDataMarketDocumentResponseListApiResponse::getResult)
                 .map(response -> new IdentifiableApiResponse(permissionRequest.permissionId(),
