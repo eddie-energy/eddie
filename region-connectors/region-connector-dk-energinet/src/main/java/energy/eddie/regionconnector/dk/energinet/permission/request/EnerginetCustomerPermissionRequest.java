@@ -39,8 +39,8 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
 
         this.permissionId = requireNonNull(permissionId);
         this.connectionId = requireNonNull(request.connectionId());
-        this.start = requireNonNull(request.start());
-        this.end = requireNonNull(request.end());
+        this.start = requireNonNull(request.start()).withZoneSameInstant(DK_ZONE_ID);
+        this.end = requireNonNull(request.end()).withZoneSameInstant(DK_ZONE_ID);
         this.credentials = new ApiCredentials(apiClient, requireNonNull(request.refreshToken()));
         this.meteringPoint = requireNonNull(request.meteringPoint());
         this.dataNeedId = requireNonNull(request.dataNeedId());
