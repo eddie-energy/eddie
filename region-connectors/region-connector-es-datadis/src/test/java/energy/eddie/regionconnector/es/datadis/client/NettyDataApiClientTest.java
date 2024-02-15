@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.es.datadis.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
@@ -10,6 +11,7 @@ import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.serializer.MeteringDataSerializer;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -24,6 +26,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,7 +36,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class NettyDataApiClientTest {
-    static ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    static ObjectMapper mapper;
 
     static MockWebServer mockBackEnd;
     private static String basePath;
@@ -44,6 +47,9 @@ class NettyDataApiClientTest {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
         basePath = "http://localhost:" + mockBackEnd.getPort();
+        var module = new SimpleModule();
+        module.addSerializer(MeteringData.class, new MeteringDataSerializer());
+        mapper = new ObjectMapper().registerModule(new JavaTimeModule()).registerModule(module);
     }
 
     @AfterAll
@@ -68,8 +74,7 @@ class NettyDataApiClientTest {
                 () -> Mono.just("token"),
                 basePath);
 
-        var mapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        MeteringData meteringData = new MeteringData("1", LocalDate.now(ZONE_ID_SPAIN), LocalTime.MIN, 0.0, "REAL", 0.0);
+        MeteringData meteringData = new MeteringData("1", ZonedDateTime.of(LocalDate.now(ZONE_ID_SPAIN), LocalTime.NOON, ZONE_ID_SPAIN), 0.0, "REAL", 0.0);
 
         String body = mapper.writeValueAsString(List.of(meteringData));
 

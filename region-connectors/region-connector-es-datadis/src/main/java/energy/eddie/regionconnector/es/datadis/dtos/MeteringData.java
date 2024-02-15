@@ -1,18 +1,18 @@
 package energy.eddie.regionconnector.es.datadis.dtos;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import energy.eddie.regionconnector.es.datadis.deserializer.MeteringDataDeserializer;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.ZonedDateTime;
 
 /**
  * This class represents the metering data returned by the Datadis API.
  * It contains both consumption and surplus energy (production) data.
  */
+@JsonDeserialize(using = MeteringDataDeserializer.class)
 public record MeteringData(
         String cups,
-        @JsonFormat(pattern = "yyyy/MM/dd") LocalDate date,
-        @JsonFormat(pattern = "HH:mm") LocalTime time,
+        ZonedDateTime dateTime,
         Double consumptionKWh,
         String obtainMethod,
         Double surplusEnergyKWh) {
