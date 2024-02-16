@@ -33,7 +33,7 @@ public record PermissionRequestForCreation(
         ZonedDateTime start,
         @JsonDeserialize(using = StartOfDayZonedDateTimeDeserializer.class)
         ZonedDateTime end,
-        @SupportedGranularities({Granularity.PT15M, Granularity.PT1H, Granularity.P1D})
+        @SupportedGranularities({Granularity.PT15M, Granularity.P1D})
         Granularity granularity
 ) {
 }
