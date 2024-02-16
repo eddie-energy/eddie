@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.time.ZoneId;
 import java.util.Map;
 
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID;
 import static java.util.Objects.requireNonNull;
 
 @Component
@@ -38,6 +39,7 @@ public class EnerginetRegionConnector implements RegionConnector {
 
     @Override
     public void terminatePermission(String permissionId) {
+        LOGGER.info("{} got termination request for permission {}", REGION_CONNECTOR_ID, permissionId);
         var permissionRequest = permissionRequestService.findByPermissionId(permissionId);
         if (permissionRequest.isEmpty()) {
             return;

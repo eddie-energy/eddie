@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 
 public class EnedisRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "fr-enedis";
-    public static final String BASE_PATH = "/region-connectors/" + REGION_CONNECTOR_ID;
 
     @Nullable
     private static EnedisRegionConnectorMetadata instance = null;

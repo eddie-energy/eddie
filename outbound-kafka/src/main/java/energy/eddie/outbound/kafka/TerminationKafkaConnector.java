@@ -5,6 +5,8 @@ import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 import reactor.kafka.receiver.KafkaReceiver;
@@ -18,9 +20,11 @@ import java.util.concurrent.Flow;
 import static org.apache.kafka.common.requests.FetchMetadata.log;
 
 public class TerminationKafkaConnector implements TerminationConnector {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TerminationKafkaConnector.class);
     private final Flux<Pair<String, ConsentMarketDocument>> flux;
 
     public TerminationKafkaConnector(Properties kafkaProperties, String terminationTopic) {
+        LOGGER.info("Creating TerminationKafkaConnector which will listen on topic {}", terminationTopic);
         kafkaProperties.put(ConsumerConfig.GROUP_ID_CONFIG, "termination-group");
         ReceiverOptions<String, ConsentMarketDocument> options = ReceiverOptions
                 .<String, ConsentMarketDocument>create(kafkaProperties)
@@ -37,6 +41,7 @@ public class TerminationKafkaConnector implements TerminationConnector {
     }
 
     private Pair<String, ConsentMarketDocument> process(ReceiverRecord<String, ConsentMarketDocument> rec) {
+        LOGGER.debug("Got new ConsentMarketDocument {}", rec);
         rec.receiverOffset().acknowledge();
         return new Pair<>(rec.key(), rec.value());
     }

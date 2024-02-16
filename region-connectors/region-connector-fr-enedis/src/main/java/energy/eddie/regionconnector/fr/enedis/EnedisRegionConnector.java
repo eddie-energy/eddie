@@ -14,6 +14,8 @@ import java.time.ZoneId;
 import java.util.Map;
 import java.util.concurrent.Flow;
 
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID;
+
 @Component
 public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider {
     public static final ZoneId ZONE_ID_FR = ZoneId.of("Europe/Paris");
@@ -44,6 +46,7 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
 
     @Override
     public void terminatePermission(String permissionId) {
+        LOGGER.info("{} got termination request for permission {}", REGION_CONNECTOR_ID, permissionId);
         var permissionRequest = permissionRequestService.findPermissionRequestByPermissionId(permissionId);
         if (permissionRequest.isEmpty()) {
             return;

@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Flow;
 
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.REGION_CONNECTOR_ID;
 import static java.util.Objects.requireNonNull;
 
 @Component
@@ -121,6 +122,7 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
 
     @Override
     public void terminatePermission(String permissionId) {
+        LOGGER.info("{} got termination request for permission {}", REGION_CONNECTOR_ID, permissionId);
         var request = permissionRequestService.findByPermissionId(permissionId);
         if (request.isEmpty()) {
             LOGGER.warn("No permission with this id found: {}", permissionId);
