@@ -8,7 +8,6 @@ import energy.eddie.regionconnector.dk.energinet.customer.api.IsAliveApi;
 import energy.eddie.regionconnector.dk.energinet.customer.api.MeterDataApi;
 import energy.eddie.regionconnector.dk.energinet.customer.api.TokenApi;
 import energy.eddie.regionconnector.dk.energinet.customer.invoker.ApiClient;
-import energy.eddie.regionconnector.dk.energinet.customer.model.Period;
 import energy.eddie.regionconnector.dk.energinet.customer.model.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -22,7 +21,9 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
-import java.time.*;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -37,13 +38,13 @@ class EnerginetCustomerApiClientTest {
     private static final int MAX_PERIOD = 730;
 
     static Stream<Arguments> getTimeSeries_invalidTimeFrame_throws() {
-        var endBeforeStart = ZonedDateTime.of(LocalDate.of(2023, 1, 1).atStartOfDay(), DK_ZONE_ID);
-        var today = ZonedDateTime.of(LocalDate.now(ZoneId.systemDefault()).atStartOfDay(), DK_ZONE_ID);
-        var start = ZonedDateTime.of(LocalDate.of(2023, 2, 1).atStartOfDay(), DK_ZONE_ID);
+        var endBeforeStart = LocalDate.of(2023, 1, 1);
+        var tomorrow = LocalDate.now(DK_ZONE_ID).plusDays(1);
+        var start = LocalDate.of(2023, 2, 1);
         return Stream.of(
                 Arguments.of(start, endBeforeStart),
-                Arguments.of(start, today),
-                Arguments.of(today, today),
+                Arguments.of(start, tomorrow),
+                Arguments.of(tomorrow, tomorrow),
                 Arguments.of(start, start)
         );
     }
@@ -74,7 +75,6 @@ class EnerginetCustomerApiClientTest {
                 () -> assertTrue(actualHealth.containsKey("isAliveApi")),
                 () -> assertEquals(HealthState.UP, actualHealth.get("isAliveApi"))
         );
-
     }
 
     @Test
@@ -100,7 +100,7 @@ class EnerginetCustomerApiClientTest {
 
     @ParameterizedTest
     @MethodSource
-    void getTimeSeries_invalidTimeFrame_throws(ZonedDateTime start, ZonedDateTime end) {
+    void getTimeSeries_invalidTimeFrame_throws(LocalDate start, LocalDate end) {
         // Given
         Granularity granularity = mock(Granularity.class);
         var meteringPointsRequest = mock(MeteringPointsRequest.class);
@@ -120,7 +120,7 @@ class EnerginetCustomerApiClientTest {
     @Test
     void getTimeSeries_invalidTimeFrame_exceedMaxPeriod_throws() {
         // Given
-        var end = ZonedDateTime.of(LocalDate.now(ZoneId.systemDefault()).minusDays(1).atStartOfDay(), DK_ZONE_ID);
+        var end = LocalDate.now(DK_ZONE_ID).minusDays(1);
         var startExceedsMaxPeriod = end.minusDays(MAX_PERIOD + 1);
         Granularity granularity = mock(Granularity.class);
         var meteringPointsRequest = mock(MeteringPointsRequest.class);
@@ -190,14 +190,14 @@ class EnerginetCustomerApiClientTest {
     @Test
     void getTimeSeries_returnsConsumptionRecord() {
         // Given
-        ZonedDateTime start = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        ZonedDateTime end = ZonedDateTime.of(2023, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
+        var start = LocalDate.of(2023, 1, 1);
+        var end = LocalDate.of(2023, 1, 2);
         MeterDataApi meterDataApi = mock(MeterDataApi.class);
         var document = new MyEnergyDataMarketDocument()
                 .periodTimeInterval(
                         new PeriodtimeInterval()
                                 .start(start.toString())
-                                .end(end.toLocalDate().toString())
+                                .end(end.toString())
                 )
                 .addTimeSeriesItem(
                         new TimeSeries()
@@ -244,8 +244,8 @@ class EnerginetCustomerApiClientTest {
     @Test
     void getTimeSeries_throwsExceptionWhenUnauthorized() {
         // Given
-        ZonedDateTime start = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        ZonedDateTime end = ZonedDateTime.of(2023, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
+        LocalDate start = LocalDate.of(2023, 1, 1);
+        LocalDate end = LocalDate.of(2023, 1, 2);
         MeterDataApi meterDataApi = mock(MeterDataApi.class);
         HttpClientErrorException unauthorized = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "Unauthorized", HttpHeaders.EMPTY, "".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
         when(meterDataApi.apiMeterdataGettimeseriesDateFromDateToAggregationPost(anyString(), anyString(), anyString(), any(), any()))

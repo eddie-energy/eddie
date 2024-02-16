@@ -3,8 +3,10 @@ package energy.eddie.regionconnector.dk.energinet.services;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
+import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocument;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
+import energy.eddie.regionconnector.dk.energinet.customer.model.PeriodtimeInterval;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
@@ -16,10 +18,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -61,19 +66,17 @@ class PollingServiceTest {
                 requestForCreation,
                 customerApi
         );
-        HttpClientErrorException unauthorized = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "", HttpHeaders.EMPTY, null, null);
+        WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(), "", HttpHeaders.EMPTY, null, null);
         permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest));
         doReturn(Mono.error(unauthorized))
                 .when(customerApi).accessToken(anyString());
 
-        // When
-        pollingService.fetchHistoricalMeterReadings(permissionRequest);
-
         // Then
         StepVerifier.create(pollingService.identifiableMeterReadings())
+                .then(() -> pollingService.fetchHistoricalMeterReadings(permissionRequest))
                 .then(pollingService::close)
-                .expectError(HttpClientErrorException.Unauthorized.class)
-                .verify();
+                .expectComplete()
+                .verify(Duration.ofSeconds(2));
         assertEquals(PermissionProcessStatus.REVOKED, permissionRequest.state().status());
     }
 
@@ -94,18 +97,16 @@ class PollingServiceTest {
                 requestForCreation,
                 customerApi
         );
-        HttpClientErrorException unauthorized = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "", HttpHeaders.EMPTY, null, null);
+        WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(), "", HttpHeaders.EMPTY, null, null);
         doReturn(Mono.error(unauthorized))
                 .when(customerApi).accessToken(anyString());
 
-        // When
-        pollingService.fetchHistoricalMeterReadings(permissionRequest);
-
         // Then
         StepVerifier.create(pollingService.identifiableMeterReadings())
+                .then(() -> pollingService.fetchHistoricalMeterReadings(permissionRequest))
                 .then(pollingService::close)
-                .expectError(HttpClientErrorException.Unauthorized.class)
-                .verify();
+                .expectComplete()
+                .verify(Duration.ofSeconds(2));
         assertEquals(PermissionProcessStatus.CREATED, permissionRequest.state().status());
     }
 
@@ -126,26 +127,24 @@ class PollingServiceTest {
                 requestForCreation,
                 customerApi
         );
-        HttpClientErrorException unauthorized = HttpClientErrorException.create(HttpStatus.INTERNAL_SERVER_ERROR, "", HttpHeaders.EMPTY, null, null);
+        WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR.value(), "", HttpHeaders.EMPTY, null, null);
         permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest));
         doReturn(Mono.error(unauthorized))
                 .when(customerApi).accessToken(anyString());
 
-        // When
-        pollingService.fetchHistoricalMeterReadings(permissionRequest);
-
         // Then
         StepVerifier.create(pollingService.identifiableMeterReadings())
+                .then(() -> pollingService.fetchHistoricalMeterReadings(permissionRequest))
                 .then(pollingService::close)
-                .expectError(HttpClientErrorException.class)
-                .verify();
+                .expectComplete()
+                .verify(Duration.ofSeconds(2));
         assertEquals(PermissionProcessStatus.ACCEPTED, permissionRequest.state().status());
     }
 
     @Test
     void fetchingAConsumptionRecord_emitsRecord() {
         // Given
-        var start = ZonedDateTime.now(DK_ZONE_ID).minusDays(10);
+        var start = LocalDate.now().atStartOfDay(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
         String connectionId = "connId";
         String dataNeedId = "dataNeedId";
@@ -162,17 +161,20 @@ class PollingServiceTest {
         permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest));
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
+        MyEnergyDataMarketDocumentResponse resultItem = new MyEnergyDataMarketDocumentResponse();
+        resultItem.setMyEnergyDataMarketDocument(new MyEnergyDataMarketDocument()
+                .periodTimeInterval(new PeriodtimeInterval()
+                        .start(start.withZoneSameInstant(ZoneOffset.UTC).toString())
+                        .end(end.withZoneSameInstant(ZoneOffset.UTC).toString()))
+        );
         MyEnergyDataMarketDocumentResponseListApiResponse data = new MyEnergyDataMarketDocumentResponseListApiResponse()
-                .addResultItem(new MyEnergyDataMarketDocumentResponse());
-        when(customerApi.getTimeSeries(eq(start), eq(end), any(), any(), eq("token"), any()))
+                .addResultItem(resultItem);
+        when(customerApi.getTimeSeries(eq(start.toLocalDate()), eq(end.toLocalDate()), any(), any(), eq("token"), any()))
                 .thenReturn(Mono.just(data));
-
-        // When
-        pollingService.fetchHistoricalMeterReadings(permissionRequest);
 
         // Then
         StepVerifier.create(pollingService.identifiableMeterReadings())
-                .then(pollingService::close)
+                .then(() -> pollingService.fetchHistoricalMeterReadings(permissionRequest))
                 .assertNext(mr -> assertAll(
                         () -> assertEquals(permissionRequest.permissionId(), mr.permissionId()),
                         () -> assertEquals(permissionRequest.connectionId(), mr.connectionId()),
@@ -180,7 +182,9 @@ class PollingServiceTest {
                         () -> assertNotNull(mr.apiResponse()),
                         () -> assertNotEquals(permissionRequest.start(), permissionRequest.lastPolled())
                 ))
-                .verifyComplete();
+                .then(pollingService::close)
+                .expectComplete()
+                .verify(Duration.ofSeconds(2));
     }
 
     @Test
@@ -212,7 +216,7 @@ class PollingServiceTest {
     }
 
     @Test
-    void emitActivePermissionRequests_emitsRecords() {
+    void fetchFutureMeterReadings_emitsRecords() {
         // Given
         var start1 = ZonedDateTime.now(DK_ZONE_ID).minusDays(1);
         var end1 = start1.plusDays(5);
@@ -229,9 +233,15 @@ class PollingServiceTest {
                 customerApi
         );
         permissionRequest1.changeState(new EnerginetCustomerAcceptedState(permissionRequest1));
+        MyEnergyDataMarketDocumentResponse resultItem = new MyEnergyDataMarketDocumentResponse();
+        resultItem.setMyEnergyDataMarketDocument(new MyEnergyDataMarketDocument()
+                .periodTimeInterval(new PeriodtimeInterval()
+                        .start(start1.withZoneSameInstant(ZoneOffset.UTC).toString())
+                        .end(end1.withZoneSameInstant(ZoneOffset.UTC).toString()))
+        );
         MyEnergyDataMarketDocumentResponseListApiResponse data = new MyEnergyDataMarketDocumentResponseListApiResponse()
-                .addResultItem(new MyEnergyDataMarketDocumentResponse());
-        when(customerApi.getTimeSeries(eq(start1), any(), any(), any(), eq("token"), any()))
+                .addResultItem(resultItem);
+        when(customerApi.getTimeSeries(eq(start1.toLocalDate()), any(), any(), any(), eq("token"), any()))
                 .thenReturn(Mono.just(data));
 
         PermissionRequestForCreation requestForCreation2 = new PermissionRequestForCreation("connId2", start2, end2,
@@ -248,11 +258,9 @@ class PollingServiceTest {
         when(permissionRequestService.findAllAcceptedPermissionRequests())
                 .thenReturn(List.of(permissionRequest1, permissionRequest2));
 
-        // When
-        pollingService.emitActivePermissionRequests();
-
         // Then
         StepVerifier.create(pollingService.identifiableMeterReadings())
+                .then(() -> pollingService.fetchFutureMeterReadings())
                 .then(pollingService::close)
                 .assertNext(mr -> assertAll(
                         () -> assertEquals(permissionRequest1.permissionId(), mr.permissionId()),

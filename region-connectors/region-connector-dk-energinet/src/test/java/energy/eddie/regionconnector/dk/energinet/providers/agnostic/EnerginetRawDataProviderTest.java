@@ -11,7 +11,6 @@ import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
 import java.time.Duration;
-import java.util.List;
 
 import static org.mockito.Mockito.mock;
 
@@ -24,7 +23,7 @@ class EnerginetRawDataProviderTest {
     void givenValueOnFlux_publishesOnFlow() {
         // Given
         TestPublisher<IdentifiableApiResponse> publisher = TestPublisher.create();
-        var reading = new IdentifiableApiResponse("foo", "bar", "dId", List.of(mock(MyEnergyDataMarketDocumentResponse.class)));
+        var reading = new IdentifiableApiResponse("foo", "bar", "dId", mock(MyEnergyDataMarketDocumentResponse.class));
 
         //noinspection resource StepVerifier closes provider
         var provider = new EnerginetRawDataProvider(publisher.flux(), mockRepo);

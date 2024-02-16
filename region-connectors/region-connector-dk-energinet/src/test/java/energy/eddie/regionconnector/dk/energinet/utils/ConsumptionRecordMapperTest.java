@@ -24,7 +24,7 @@ class ConsumptionRecordMapperTest {
         var period = mock(Period.class);
         var point = mock(Point.class);
         IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse("foo",
-                "bar", "dId", List.of(myEnergyMarketDocumentResponse));
+                "bar", "dId", myEnergyMarketDocumentResponse);
 
         when(myEnergyMarketDocumentResponse.getMyEnergyDataMarketDocument()).thenReturn(myEnergyMarketDocument);
         when(myEnergyMarketDocument.getPeriodTimeInterval()).thenReturn(periodtimeInterval);
@@ -56,7 +56,7 @@ class ConsumptionRecordMapperTest {
         var period = mock(Period.class);
         var point = mock(Point.class);
         IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse("foo",
-                "bar", "dId", List.of(myEnergyMarketDocumentResponse));
+                "bar", "dId", myEnergyMarketDocumentResponse);
 
         when(myEnergyMarketDocumentResponse.getMyEnergyDataMarketDocument()).thenReturn(myEnergyMarketDocument);
         when(myEnergyMarketDocument.getPeriodTimeInterval()).thenReturn(periodtimeInterval);
@@ -80,7 +80,7 @@ class ConsumptionRecordMapperTest {
     @Test
     void timeSeriesToConsumptionRecord_mapsEnerginetConsumptionRecord_energyMarketDocument_isNull() {
         //given
-        var myEnergyMarketDocumentResponse = List.of(mock(MyEnergyDataMarketDocumentResponse.class));
+        var myEnergyMarketDocumentResponse = mock(MyEnergyDataMarketDocumentResponse.class);
         IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse("foo",
                 "bar", "dId", myEnergyMarketDocumentResponse);
 

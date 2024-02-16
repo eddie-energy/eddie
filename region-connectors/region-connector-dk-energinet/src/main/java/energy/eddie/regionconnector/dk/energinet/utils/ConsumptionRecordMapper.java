@@ -6,21 +6,21 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.*;
 import energy.eddie.regionconnector.dk.energinet.enums.PointQualityEnum;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class ConsumptionRecordMapper {
-    private static final String ZONE_ID = "Europe/Copenhagen";
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.DK_ZONE_ID;
 
+public class ConsumptionRecordMapper {
     private ConsumptionRecordMapper() {
         throw new IllegalStateException("Utility class");
     }
 
     public static ConsumptionRecord timeSeriesToConsumptionRecord(IdentifiableApiResponse response) throws IllegalStateException {
-        List<MyEnergyDataMarketDocumentResponse> timeSeriesResponse = response.apiResponse();
         ConsumptionRecord consumptionRecord = new ConsumptionRecord();
-        MyEnergyDataMarketDocumentResponse energyDataMarketDocumentResponse = timeSeriesResponse.stream().findFirst().orElseThrow();
+        MyEnergyDataMarketDocumentResponse energyDataMarketDocumentResponse = response.apiResponse();
         consumptionRecord.setMeteringPoint(energyDataMarketDocumentResponse.getId());
 
         if (energyDataMarketDocumentResponse.getMyEnergyDataMarketDocument() == null) {
@@ -29,7 +29,7 @@ public class ConsumptionRecordMapper {
 
         MyEnergyDataMarketDocument energyDataMarketDocument = energyDataMarketDocumentResponse.getMyEnergyDataMarketDocument();
         PeriodtimeInterval periodtimeInterval = energyDataMarketDocument.getPeriodTimeInterval();
-        consumptionRecord.setStartDateTime(DateTimeConverter.isoDateTimeToZonedDateTime(Objects.requireNonNull(periodtimeInterval).getStart(), ZONE_ID));
+        consumptionRecord.setStartDateTime(DateTimeConverter.isoDateTimeToZonedDateTime(Objects.requireNonNull(periodtimeInterval).getStart(), ZoneOffset.UTC.getId()).withZoneSameInstant(DK_ZONE_ID));
 
         List<ConsumptionPoint> consumptionPoints = new ArrayList<>();
         for (TimeSeries timeSeries : Objects.requireNonNull(energyDataMarketDocument.getTimeSeries())) {

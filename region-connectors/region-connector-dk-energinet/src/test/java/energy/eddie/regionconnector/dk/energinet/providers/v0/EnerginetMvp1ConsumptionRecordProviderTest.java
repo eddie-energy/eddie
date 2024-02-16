@@ -10,7 +10,6 @@ import reactor.test.publisher.TestPublisher;
 import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,7 +43,7 @@ class EnerginetMvp1ConsumptionRecordProviderTest {
         var responseDocument = new MyEnergyDataMarketDocumentResponse();
         responseDocument.setId("ID");
         responseDocument.setMyEnergyDataMarketDocument(document);
-        var apiResponse = new IdentifiableApiResponse("pId", "conId", "dId", List.of(responseDocument));
+        var apiResponse = new IdentifiableApiResponse("pId", "conId", "dId", responseDocument);
 
 
         StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(provider.getConsumptionRecordStream()))

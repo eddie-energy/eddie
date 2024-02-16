@@ -6,7 +6,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRe
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
 import reactor.core.publisher.Mono;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
 
@@ -30,7 +30,7 @@ public interface EnerginetCustomerApi {
      * @param meteringPointsRequest List of metering point ids. (optional)
      * @return MyEnergyDataMarketDocumentResponseListApiResponse from the server.
      */
-    Mono<MyEnergyDataMarketDocumentResponseListApiResponse> getTimeSeries(ZonedDateTime dateFrom, ZonedDateTime dateTo, Granularity granularity, MeteringPointsRequest meteringPointsRequest, String accessToken, UUID correlationId);
+    Mono<MyEnergyDataMarketDocumentResponseListApiResponse> getTimeSeries(LocalDate dateFrom, LocalDate dateTo, Granularity granularity, MeteringPointsRequest meteringPointsRequest, String accessToken, UUID correlationId);
 
     Mono<Map<String, HealthState>> health();
 }

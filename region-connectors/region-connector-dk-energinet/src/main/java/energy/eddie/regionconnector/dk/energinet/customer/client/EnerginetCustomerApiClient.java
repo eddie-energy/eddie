@@ -20,7 +20,7 @@ import reactor.core.publisher.Mono;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.UUID;
 
@@ -50,14 +50,14 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
         this.isAliveApi = isAliveApi;
     }
 
-    private void throwIfInvalidTimeframe(ZonedDateTime start, ZonedDateTime end) throws DateTimeException {
+    private void throwIfInvalidTimeframe(LocalDate start, LocalDate end) throws DateTimeException {
         LocalDate currentDate = LocalDate.ofInstant(Instant.now(), EnerginetRegionConnector.DK_ZONE_ID);
 
         if (start.isEqual(end) || start.isAfter(end)) {
             throw new DateTimeException("Start date must be before end date.");
         }
-        if (end.toLocalDate().isEqual(currentDate) || end.toLocalDate().isAfter(currentDate)) {
-            throw new DateTimeException("The end date parameter must be earlier than the current date.");
+        if (end.isAfter(currentDate)) {
+            throw new DateTimeException("The end date parameter must be <= than the current date.");
         }
         if (start.plusDays(MAX_REQUEST_PERIOD).isBefore(end)) {
             throw new DateTimeException("Request period exceeds the maximum number of days (" + MAX_REQUEST_PERIOD + ").");
@@ -82,8 +82,8 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
 
     @Override
     public Mono<MyEnergyDataMarketDocumentResponseListApiResponse> getTimeSeries(
-            ZonedDateTime dateFrom,
-            ZonedDateTime dateTo,
+            LocalDate dateFrom,
+            LocalDate dateTo,
             Granularity granularity,
             MeteringPointsRequest meteringPointsRequest,
             String accessToken,
@@ -95,11 +95,11 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
             setApiKey(accessToken);
             return
                     meterDataApi.apiMeterdataGettimeseriesDateFromDateToAggregationPost(
-                                    dateFrom.toLocalDate().toString(),
-                                    dateTo.toLocalDate().toString(),
-                                    aggregation.toString(),
-                                    userCorrelationId,
-                                    meteringPointsRequest
+                            dateFrom.format(DateTimeFormatter.ISO_DATE),
+                            dateTo.format(DateTimeFormatter.ISO_DATE),
+                            aggregation.toString(),
+                            userCorrelationId,
+                            meteringPointsRequest
                     );
         }
     }
