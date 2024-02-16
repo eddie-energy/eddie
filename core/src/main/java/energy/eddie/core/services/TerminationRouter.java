@@ -58,6 +58,8 @@ public class TerminationRouter {
     private void route(Pair<String, ConsentMarketDocument> cmd) {
         String rcId = getRegionConnectorId(cmd);
         String permissionId = cmd.value().getMRID();
+        LOGGER.info("Will route ConsentMarketDocument for permissionId {} and region connector ID {}", permissionId, rcId);
+
         if (!terminateIfRegionConnectorPresent(rcId, permissionId)) {
             LOGGER.warn("Could not find permission request with id {} and region connector id {}", permissionId, rcId);
             // TODO: Propagate error, related to GH-410

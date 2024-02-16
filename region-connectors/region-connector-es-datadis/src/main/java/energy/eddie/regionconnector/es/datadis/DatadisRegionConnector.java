@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID;
+
 @Component
 public class DatadisRegionConnector implements RegionConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatadisRegionConnector.class);
@@ -28,6 +30,7 @@ public class DatadisRegionConnector implements RegionConnector {
 
     @Override
     public void terminatePermission(String permissionId) {
+        LOGGER.info("{} got termination request for permission {}", REGION_CONNECTOR_ID, permissionId);
         try {
             permissionRequestService.terminatePermission(permissionId);
         } catch (PermissionNotFoundException e) {

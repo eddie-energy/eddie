@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID;
+
 @Component
 public class AiidaRegionConnector implements RegionConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaRegionConnector.class);
@@ -27,6 +29,7 @@ public class AiidaRegionConnector implements RegionConnector {
 
     @Override
     public void terminatePermission(String permissionId) {
+        LOGGER.info("{} got termination request for permission {}", REGION_CONNECTOR_ID, permissionId);
         try {
             aiidaService.terminatePermission(permissionId);
         } catch (StateTransitionException e) {
