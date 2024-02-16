@@ -53,7 +53,7 @@ jobs:
         env:
           DK_ENERGINET_REFRESH_TOKEN: ${{ secrets.DK_ENERGINET_REFRESH_TOKEN }}
           DK_ENERGINET_METERING_POINT: ${{ secrets.DK_ENERGINET_METERING_POINT }}
-        run: ./gradlew e2e-tests:cleanTest e2e-tests:test
+        run: ./gradlew -Prun-e2e-tests e2e-tests:cleanTest e2e-tests:test
 
       - name: Copy docker logs for archiving
         if: ${{ failure() }}  # only store logs when tests failed

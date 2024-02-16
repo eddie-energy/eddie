@@ -9,7 +9,6 @@ services:
       POSTGRES_DB: "eddie"
     restart: "always"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
       - ./create-example-app-db.sql:/docker-entrypoint-initdb.d/create_database.sql
 
   eddie:
