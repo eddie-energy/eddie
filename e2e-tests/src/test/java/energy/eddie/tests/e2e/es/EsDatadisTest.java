@@ -16,9 +16,9 @@ class EsDatadisTest extends E2eTestSetup {
         page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Permission Administrator")).click();
         page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("Datadis")).locator("slot").nth(1).click();
         page.getByLabel("DNI/Nif").click();
-        page.getByLabel("DNI/Nif").fill("some");
+        page.getByLabel("DNI/Nif").fill("foo");
         page.getByLabel("DNI/Nif").press("Tab");
-        page.getByLabel("CUPS").fill("thing");
+        page.getByLabel("CUPS").fill("bar");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
         assertThat(page.locator("es-datadis-pa-ce")).containsText("Permission request created! Your permission request was created successfully.");
         assertThat(page.locator("es-datadis-pa-ce")).containsText("Request completed! The permission request was invalid. Reason: Given NIF does not exist");
