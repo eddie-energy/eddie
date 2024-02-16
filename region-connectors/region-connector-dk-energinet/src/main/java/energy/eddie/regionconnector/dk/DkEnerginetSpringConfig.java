@@ -13,6 +13,9 @@ import energy.eddie.regionconnector.dk.energinet.permission.request.InMemoryPerm
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
+import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.SeriesPeriodBuilderFactory;
+import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.TimeSeriesBuilderFactory;
+import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.services.PollingService;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
@@ -85,6 +88,15 @@ public class DkEnerginetSpringConfig {
                         energinetConfiguration.customerId(),
                         cimConfig.eligiblePartyNationalCodingScheme().value()
                 )
+        );
+    }
+
+    @Bean
+    public ValidatedHistoricalDataMarketDocumentBuilderFactory validatedHistoricalDataMarketDocumentBuilderFactory(EnerginetConfiguration energinetConfiguration, CommonInformationModelConfiguration commonInformationModelConfiguration) {
+        return new ValidatedHistoricalDataMarketDocumentBuilderFactory(
+                energinetConfiguration,
+                commonInformationModelConfiguration,
+                new TimeSeriesBuilderFactory(new SeriesPeriodBuilderFactory())
         );
     }
 

@@ -1,0 +1,570 @@
+{
+  "result": [
+    {
+      "MyEnergyData_MarketDocument": {
+        "mRID": "80024a18-0001-ef00-b63f-84710c7967XX",
+        "createdDateTime": "2024-02-15T10:10:07Z",
+        "sender_MarketParticipant.name": "",
+        "sender_MarketParticipant.mRID": {
+          "codingScheme": null,
+          "name": null
+        },
+        "period.timeInterval": {
+          "start": "2024-02-11T23:00:00Z",
+          "end": "2024-02-13T23:00:00Z"
+        },
+        "TimeSeries": [
+          {
+            "mRID": "5713131791000XXXX1",
+            "businessType": "A04",
+            "curveType": "A01",
+            "measurement_Unit.name": "KWH",
+            "MarketEvaluationPoint": {
+              "mRID": {
+                "codingScheme": "A10",
+                "name": "5713131791000XXXX1"
+              }
+            },
+            "Period": [
+              {
+                "resolution": "PT1H",
+                "timeInterval": {
+                  "start": "2024-02-11T23:00:00Z",
+                  "end": "2024-02-12T23:00:00Z"
+                },
+                "Point": [
+                  {
+                    "position": "1",
+                    "out_Quantity.quantity": "0.13",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "2",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "3",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "4",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "5",
+                    "out_Quantity.quantity": "0.13",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "6",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "7",
+                    "out_Quantity.quantity": "0.14",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "8",
+                    "out_Quantity.quantity": "0.16",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "9",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "10",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "11",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "12",
+                    "out_Quantity.quantity": "0.12",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "13",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "14",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "15",
+                    "out_Quantity.quantity": "0.09",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "16",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "17",
+                    "out_Quantity.quantity": "0.24",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "18",
+                    "out_Quantity.quantity": "0.18",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "19",
+                    "out_Quantity.quantity": "0.19",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "20",
+                    "out_Quantity.quantity": "0.17",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "21",
+                    "out_Quantity.quantity": "0.16",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "22",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "23",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "24",
+                    "out_Quantity.quantity": "0.12",
+                    "out_Quantity.quality": "A04"
+                  }
+                ]
+              },
+              {
+                "resolution": "PT1H",
+                "timeInterval": {
+                  "start": "2024-02-12T23:00:00Z",
+                  "end": "2024-02-13T23:00:00Z"
+                },
+                "Point": [
+                  {
+                    "position": "1",
+                    "out_Quantity.quantity": "0.12",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "2",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "3",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "4",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "5",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "6",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "7",
+                    "out_Quantity.quantity": "0.13",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "8",
+                    "out_Quantity.quantity": "0.19",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "9",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "10",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "11",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "12",
+                    "out_Quantity.quantity": "0.09",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "13",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "14",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "15",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "16",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "17",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "18",
+                    "out_Quantity.quantity": "0.73",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "19",
+                    "out_Quantity.quantity": "0.17",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "20",
+                    "out_Quantity.quantity": "0.17",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "21",
+                    "out_Quantity.quantity": "0.16",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "22",
+                    "out_Quantity.quantity": "0.13",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "23",
+                    "out_Quantity.quantity": "0.12",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "24",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "mRID": "5713131791000XXXX2",
+            "businessType": "A01",
+            "curveType": "A01",
+            "measurement_Unit.name": "KWH",
+            "MarketEvaluationPoint": {
+              "mRID": {
+                "codingScheme": "A10",
+                "name": "5713131791000XXXX2"
+              }
+            },
+            "Period": [
+              {
+                "resolution": "PT1H",
+                "timeInterval": {
+                  "start": "2024-02-12T23:00:00Z",
+                  "end": "2024-02-13T23:00:00Z"
+                },
+                "Point": [
+                  {
+                    "position": "1",
+                    "out_Quantity.quantity": "0.03",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "2",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "3",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "4",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "5",
+                    "out_Quantity.quantity": "0.13",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "6",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "7",
+                    "out_Quantity.quantity": "0.14",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "8",
+                    "out_Quantity.quantity": "0.16",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "9",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "10",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "11",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "12",
+                    "out_Quantity.quantity": "0.12",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "13",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "14",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "15",
+                    "out_Quantity.quantity": "0.09",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "16",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "17",
+                    "out_Quantity.quantity": "0.24",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "18",
+                    "out_Quantity.quantity": "0.18",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "19",
+                    "out_Quantity.quantity": "0.19",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "20",
+                    "out_Quantity.quantity": "0.17",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "21",
+                    "out_Quantity.quantity": "0.16",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "22",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "23",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "24",
+                    "out_Quantity.quantity": "0.15",
+                    "out_Quantity.quality": "A04"
+                  }
+                ]
+              },
+              {
+                "resolution": "PT1H",
+                "timeInterval": {
+                  "start": "2024-02-13T23:00:00Z",
+                  "end": "2024-02-14T23:00:00Z"
+                },
+                "Point": [
+                  {
+                    "position": "1",
+                    "out_Quantity.quantity": "0.22",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "2",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "3",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "4",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "5",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "6",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "7",
+                    "out_Quantity.quantity": "0.13",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "8",
+                    "out_Quantity.quantity": "0.19",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "9",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "10",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "11",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "12",
+                    "out_Quantity.quantity": "0.09",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "13",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "14",
+                    "out_Quantity.quantity": "0.1",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "15",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "16",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "17",
+                    "out_Quantity.quantity": "0.11",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "18",
+                    "out_Quantity.quantity": "0.73",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "19",
+                    "out_Quantity.quantity": "0.17",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "20",
+                    "out_Quantity.quantity": "0.17",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "21",
+                    "out_Quantity.quantity": "0.16",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "22",
+                    "out_Quantity.quantity": "0.13",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "23",
+                    "out_Quantity.quantity": "0.12",
+                    "out_Quantity.quality": "A04"
+                  },
+                  {
+                    "position": "24",
+                    "out_Quantity.quantity": "0.05",
+                    "out_Quantity.quality": "A04"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "success": true,
+      "errorCode": 10000,
+      "errorText": "NoError",
+      "id": "571313179100066516",
+      "stackTrace": null
+    }
+  ]
+}
