@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.test.publisher.TestPublisher;
 
+import java.util.Optional;
+
 import static org.mockito.Mockito.*;
 
 class TerminationRouterTest {
@@ -19,7 +21,7 @@ class TerminationRouterTest {
         TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
         var connector = mock(TerminationConnector.class);
         when(connector.getTerminationMessages()).thenReturn(JdkFlowAdapter.publisherToFlowPublisher(publisher));
-        var router = new TerminationRouter(connector);
+        var router = new TerminationRouter(Optional.of(connector));
 
         var metadata1 = mock(RegionConnectorMetadata.class);
         when(metadata1.id()).thenReturn("id");
@@ -60,7 +62,7 @@ class TerminationRouterTest {
         TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
         var connector = mock(TerminationConnector.class);
         when(connector.getTerminationMessages()).thenReturn(JdkFlowAdapter.publisherToFlowPublisher(publisher));
-        var router = new TerminationRouter(connector);
+        var router = new TerminationRouter(Optional.of(connector));
 
         var metadata1 = mock(RegionConnectorMetadata.class);
         when(metadata1.id()).thenReturn("id");
@@ -106,7 +108,7 @@ class TerminationRouterTest {
         TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
         var connector = mock(TerminationConnector.class);
         when(connector.getTerminationMessages()).thenReturn(JdkFlowAdapter.publisherToFlowPublisher(publisher));
-        var router = new TerminationRouter(connector);
+        var router = new TerminationRouter(Optional.of(connector));
 
         var metadata1 = mock(RegionConnectorMetadata.class);
         when(metadata1.id()).thenReturn("id");
