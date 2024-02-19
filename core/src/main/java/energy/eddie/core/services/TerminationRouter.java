@@ -8,7 +8,6 @@ import energy.eddie.cim.v0_82.cmd.ReasonCodeTypeList;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 import reactor.adapter.JdkFlowAdapter;
 
@@ -21,14 +20,21 @@ import java.util.Optional;
  * It does that by either using a regionConnectorId, which should match the region connector id or as a fallback uses the country code of the region connector.
  */
 @Service
-@ConditionalOnBean(TerminationConnector.class)
 public class TerminationRouter {
     private static final Logger LOGGER = LoggerFactory.getLogger(TerminationRouter.class);
     private final Map<String, RegionConnector> regionConnectors = new HashMap<>();
 
-    public TerminationRouter(TerminationConnector terminationConnector) {
+    public TerminationRouter(Optional<TerminationConnector> terminationConnectorOptional) {
+        if (terminationConnectorOptional.isEmpty()) {
+            LOGGER.warn("No instance of TerminationConnector found in context, therefore no way that terminations can be received by the core.");
+            return;
+        }
+
+        var terminationConnector = terminationConnectorOptional.get();
         JdkFlowAdapter.flowPublisherToFlux(terminationConnector.getTerminationMessages())
                 .filter(TerminationRouter::isTerminationMessage)
+                .log()
+                .doOnError(e -> LOGGER.error("Error in TerminationRouter", e))
                 .subscribe(this::route);
     }
 

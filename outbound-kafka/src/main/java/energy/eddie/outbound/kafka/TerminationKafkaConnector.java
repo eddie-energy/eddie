@@ -29,6 +29,9 @@ public class TerminationKafkaConnector implements TerminationConnector {
         ReceiverOptions<String, ConsentMarketDocument> options = ReceiverOptions
                 .<String, ConsentMarketDocument>create(kafkaProperties)
                 .subscription(Collections.singleton(terminationTopic))
+                // ensure no messages are skipped: start at the beginning of topic of no committed offsets are found
+                .consumerProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
+                .commitBatchSize(1) // commit after every message
                 .withKeyDeserializer(new StringDeserializer())
                 .withValueDeserializer(new CustomDeserializer())
                 .addAssignListener(partitions -> log.debug("onPartitionsAssigned {}", partitions))
