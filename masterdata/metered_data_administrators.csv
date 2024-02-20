@@ -1,121 +1,251 @@
-Country,"Market Role",Company,"Type of identification","Identification of organisation",Website,"Official Contact","Metering Grid Area","Metering Points served","Permission Administrator"
-AT,DSO,"AAE Wasserkraft GmbH",AT-Code,AT007240,https://aae.at/,office@aae-wasserkraft.at,,689,"AAE Wasserkraft GmbH"
-AT,DSO,"Alfenzwerke Elektrizitätserzeugung GmbH",AT-Code,AT006250,0,office@alfenzwerke.at,,14,"Alfenzwerke Elektrizitätserzeugung GmbH"
-AT,DSO,"Andreas Braunstein",AT-Code,AT008550,0,andy.braunstein@aon.at,,360,"Andreas Braunstein"
-AT,DSO,"Anton Kittel Mühle Plaika GmbH",AT-Code,AT002220,https://kittelmuehle.at/,office@kittelmuehle.at,,800,"Anton Kittel Mühle Plaika GmbH"
-AT,DSO,"Austrian Power Grid AG",AT-Code,AT000000,https://www.apg.at/,office.uai@apg.at,,0,"Austrian Power Grid AG"
-AT,DSO,"Bad Gleichenberger Energie GmbH",AT-Code,AT008310,https://bg-energie.at/,office@bg-energie.at,,2497,"Bad Gleichenberger Energie GmbH"
-AT,DSO,"Ebner Strom GmbH",AT-Code,AT003460,https://www.ebnerstrom.at/,kontakt@ebnerstrom.at,,7109,"Ebner Strom GmbH"
-AT,DSO,"Elektrizitätsgenossenschaft Laintal eGen",AT-Code,AT008510,https://www.laintal-strom.at/,office@laintal-strom.at,,354,"Elektrizitätsgenossenschaft Laintal eGen"
-AT,DSO,"Elektrizitätswerk Bad Hofgastein Gesellschaft m.b.H.",AT-Code,AT004110,https://ewh.co.at/,ewerk@ewh.co.at,,5326,"Elektrizitätswerk Bad Hofgastein Gesellschaft m.b.H."
-AT,DSO,"Elektrizitätswerk Clam Carl-Philip Clam-Martinic e. U.",AT-Code,AT002910,http://www.clamstrom.at/,office@clamstrom.at,,993,"Elektrizitätswerk Clam Carl-Philip Clam-Martinic e. U."
-AT,DSO,"Elektrizitätswerk der Gemeinde Gries am Brenner",AT-Code,AT005540,https://www.griesambrenner.tirol.gv.at/Elektrizitaetswerk_der_Gemeinde_Gries_am_Brenner,ewerk@griesambrenner.tirol.gv.at,,618,"Elektrizitätswerk der Gemeinde Gries am Brenner"
-AT,DSO,"Elektrizitätswerk der Gemeinde Kematen",AT-Code,AT005350,https://ewerk.kematenintirol.at/,gemeindewerke.kematen@aon.at,,1800,"Elektrizitätswerk der Gemeinde Kematen"
-AT,DSO,"Elektrizitätswerk der Stadtgemeinde Kindberg",AT-Code,AT008110,https://www.ewerk-kindberg.at/,sekretariat@ewerk-kindberg.at,,14037,"Elektrizitätswerk der Stadtgemeinde Kindberg"
-AT,DSO,"Elektrizitätswerk Eisenhuber GmbH & Co KG",AT-Code,AT002210,https://www.eisenhuber.com/,johann.wagner@eisenhuber.com,,2734,"Elektrizitätswerk Eisenhuber GmbH & Co KG"
-AT,DSO,"Elektrizitätswerk Fernitz, Ing. Franz Purkarthofer GmbH & Co KG.",AT-Code,AT008570,https://ewerkfernitz.at/,office@ewerkfernitz.at,,9253,"Elektrizitätswerk Fernitz, Ing. Franz Purkarthofer GmbH & Co KG."
-AT,DSO,"Elektrizitätswerk Gröbming KG",AT-Code,AT008620,https://www.das-ewerk.at/,office@ewerk-groebming.at,,7078,"Elektrizitätswerk Gröbming KG"
-AT,DSO,"Elektrizitätswerk Mürzsteg",AT-Code,AT008370,http://www.neuberg-muerz.gv.at/e-werk-muerzsteg-2/,m.seiser@muerzsteg.at,,434,"Elektrizitätswerk Mürzsteg"
-AT,DSO,"Elektrizitätswerk Perg GmbH",AT-Code,AT003310,https://www.ewerk-perg.at/,ewerk@ewerk-perg.at,,7590,"Elektrizitätswerk Perg GmbH"
-AT,DSO,"Elektrizitätswerk Prantl Gesellschaft m.b.H.",AT-Code,AT005460,https://www.prantlstrom.at/,ew-prantl@tirol.com,,3457,"Elektrizitätswerk Prantl Gesellschaft m.b.H."
-AT,DSO,"Elektrizitätswerk Winkler GmbH",AT-Code,AT005480,http://www.e-werk-winkler.at/,e.werk.winkler@aon.at,,531,"Elektrizitätswerk Winkler GmbH"
-AT,DSO,"Elektrizitätswerke Bad Radkersburg GmbH",AT-Code,AT008450,https://www.ewerk-badradkersburg.at/,,,2306,"Elektrizitätswerke Bad Radkersburg GmbH"
-AT,DSO,"Elektrizitätswerke Frastanz Gesellschaft m.b.H.",AT-Code,AT006210,https://www.ewerke.at/,info@ewerke.at,,4633,"Elektrizitätswerke Frastanz Gesellschaft m.b.H."
-AT,DSO,"Elektrizitätswerke Reutte AG",AT-Code,AT005110,https://www.ewr-energie.com/,edm@ewr.at,,18495,"Elektrizitätswerke Reutte AG"
-AT,DSO,"Elektriztätswerk Mariahof GmbH",AT-Code,AT008650,http://www.ewerk-mariahof.at/,office@ewerk-mariahof.at,,4517,"Elektriztätswerk Mariahof GmbH"
-AT,DSO,"Elektrogenossenschaft Weerberg reg. Gen.m.b.H.",AT-Code,AT005630,0,info@e-g-w.at,,1009,"Elektrogenossenschaft Weerberg reg. Gen.m.b.H."
-AT,DSO,"Elektrowerk Assling reg. Gen.m.b.H.",AT-Code,AT005490,https://www.ewa.at/,ewa@ewa.at,,839,"Elektrowerk Assling reg. Gen.m.b.H."
-AT,DSO,"Elektrowerk Schöder GmbH",AT-Code,AT008720,https://www.evu-schoeder.at/,office@evu-schoeder.at,,2701,"Elektrowerk Schöder GmbH"
-AT,DSO,"Elektrowerkgenossenschaft Hopfgarten i. Def. reg. Gen. m. b. H.",AT-Code,AT005600,https://www.ew-hopfgarten.at/,office@ew-hopfgarten.at,,469,"Elektrowerkgenossenschaft Hopfgarten i. Def. reg. Gen. m. b. H."
-AT,DSO,"Energie Güssing GmbH",AT-Code,AT009220,https://e-guessing.at/,office@e-guessing.at,,3969,"Energie Güssing GmbH"
-AT,DSO,"Energie Klagenfurt GmbH",AT-Code,AT007100,https://www.energieklagenfurt.at,office@energieklagenfurt.at,,86728,"Energie Klagenfurt GmbH"
-AT,DSO,"Energie Ried Gesellschaft m.b.H.",AT-Code,AT003200,https://www.energie-ried.at/,office@energie-ried.at,,25430,"Energie Ried Gesellschaft m.b.H."
-AT,DSO,"Energienetze Steiermark GmbH",AT-Code,AT008000,https://www.e-netze.at/,office@e-netze.at,,497204,"Energienetze Steiermark GmbH"
-AT,DSO,"Energieversorgung Kleinwalsertal Ges. m. b. H.",AT-Code,AT006230,https://www.evk.at/,info@evk.at,,3955,"Energieversorgung Kleinwalsertal Ges. m. b. H."
-AT,DSO,"Energieversorgungs GmbH",AT-Code,AT003580,0,strom@mitheis.at,,203,"Energieversorgungs GmbH"
-AT,DSO,"Energieversorgungsunternehmen der Florian Lugitsch Gruppe GmbH",AT-Code,AT008580,https://www.e-lugitsch.at/,office@lugitsch.at,,5567,"Energieversorgungsunternehmen der Florian Lugitsch Gruppe GmbH"
-AT,DSO,"ENVESTA Energie- und Dienstleistungs GmbH",AT-Code,AT008560,https://www.envesta.at/,office@envesta.at,,3746,"ENVESTA Energie- und Dienstleistungs GmbH"
-AT,DSO,"EVU der Marktgemeinde Eibiswald",AT-Code,AT008390,0,evu@eibiswald.gv.at,,1324,"EVU der Marktgemeinde Eibiswald"
-AT,DSO,"EVU der Stadtgemeinde Mureck",AT-Code,AT008360,https://evu-mureck.at/,markus.neubauer@evu-mureck.at,,1706,"EVU der Stadtgemeinde Mureck"
-AT,DSO,"EVU Gerald Mathe e.U.",AT-Code,AT003570,http://www.mathestrom.at/,office@mathestrom.at,,332,"EVU Gerald Mathe e.U."
-AT,DSO,"EWA Energie- u Wirtschaftsbetriebe der Gemeinde St. Anton GmbH",AT-Code,AT005320,https://www.ewa-services.at/,office@ewa-services.at,,2411,"EWA Energie- u Wirtschaftsbetriebe der Gemeinde St. Anton GmbH"
-AT,DSO,"E-Werk Altenfelden GmbH",AT-Code,AT003900,0,strom@freistrom.at,,157,"E-Werk Altenfelden GmbH"
-AT,DSO,"E-Werk der Marktgemeinde Unzmarkt-Frauenburg",AT-Code,AT008410,0,evu@ainet.at,,946,"E-Werk der Marktgemeinde Unzmarkt-Frauenburg"
-AT,DSO,"E-Werk Dietrichschlag eGen",AT-Code,AT003920,https://www.ewerk-dietrichschlag.at/startseite.html,e-werk.dietrichschlag@aon.at,,60,"E-Werk Dietrichschlag eGen"
-AT,DSO,"E-Werk Ebner GesmbH",AT-Code,AT008730,0,verwaltung@EWEbner.at,,7733,"E-Werk Ebner GesmbH"
-AT,DSO,"E-Werk Gleinstätten GmbH",AT-Code,AT008740,0,office@ktg-austria.at,,1159,"E-Werk Gleinstätten GmbH"
-AT,DSO,"E-Werk Gösting Stromversorgung GmbH",AT-Code,AT008210,0,a.froehlich@ewg.at,,29443,"E-Werk Gösting Stromversorgung GmbH"
-AT,DSO,"E-Werk Piwetz",AT-Code,AT008950,0,office@ew-piwetz.at,,643,"E-Werk Piwetz"
-AT,DSO,"E-Werk Ranklleiten",AT-Code,AT003590,https://ranklleiten.at,office@ranklleiten.at,,218,"E-Werk Ranklleiten"
-AT,DSO,"E-Werk Redlmühle B. Drack Elektrotechnik ",AT-Code,AT003910,http://www.drackstrom.at/ws/frontend/seite/SeiteCms.php?coId=2&coType=navigation1,office@drackstrom.at,,124,"E-Werk Redlmühle B. Drack Elektrotechnik "
-AT,DSO,"E-Werk Sarmingstein Ing. H. Engelmann & Co KG",AT-Code,AT002900,0,ewsa@e-werke.at,,64,"E-Werk Sarmingstein Ing. H. Engelmann & Co KG"
-AT,DSO,"E-Werk Schattwald e.U.",AT-Code,AT005340,https://ew-schattwald.at/,office@ew-schattwald.at,,1628,"E-Werk Schattwald e.U."
-AT,DSO,"E-Werk Schwaighofer GmbH",AT-Code,AT002250,0,e.werk@schwaighofer-lunz.at,,834,"E-Werk Schwaighofer GmbH"
-AT,DSO,"E-Werk Sigl GmbH & Co KG",AT-Code,AT008540,0,,,1175,"E-Werk Sigl GmbH & Co KG"
-AT,DSO,"E-Werk Stadler GmbH",AT-Code,AT005470,0,info@elektro-stadler.at,,1501,"E-Werk Stadler GmbH"
-AT,DSO,"E-Werk Stubenberg eGen",AT-Code,AT008910,0,office@e-werk-stubenberg.at,,908,"E-Werk Stubenberg eGen"
-AT,DSO,"eww AG",AT-Code,AT003300,0,info@eww.at,,55103,"eww AG"
-AT,DSO,"Feistritzthaler Elektrizitätswerk eGen",AT-Code,AT008770,0,s.brantweiner@ewerk-growi.at,,1692,"Feistritzthaler Elektrizitätswerk eGen"
-AT,DSO,Feistritzwerke-STEWEAG-GmbH,AT-Code,AT008130,0,office@feistritzwerke.at,,53845,Feistritzwerke-STEWEAG-GmbH
-AT,DSO,"Forstverwaltung Seehof GmbH",AT-Code,AT002280,0,office@kupelwieser-forst.at,,32,"Forstverwaltung Seehof GmbH"
-AT,DSO,"Gertraud Schafler GmbH",AT-Code,AT008690,0,office@schaflerstrom.at,,1494,"Gertraud Schafler GmbH"
-AT,DSO,"Getzner, Mutter & Cie. Gesellschaft m.b.H. & Co. KG",AT-Code,AT006240,0,office.gmc@getzner.at,,3,"Getzner, Mutter & Cie. Gesellschaft m.b.H. & Co. KG"
-AT,DSO,"HALLAG Kommunal GmbH",AT-Code,AT005120,https://www.hall.ag/,c.neuzil@hall.ag,,19764,"HALLAG Kommunal GmbH"
-AT,DSO,"Heinrich Polsterer UND MITGES.GES.N.B.R.",AT-Code,AT002400,0,h.polsterer@polsterer.co.at,,82,"Heinrich Polsterer UND MITGES.GES.N.B.R."
-AT,DSO,"Innsbrucker Kommunalbetriebe AG",AT-Code,AT005100,0,snot@ikb.at,,130100,"Innsbrucker Kommunalbetriebe AG"
-AT,DSO,"Joh. Pengg Holding Gesellschaft m.b.H.",AT-Code,AT008930,0,pengg.holding@aon.at,,98,"Joh. Pengg Holding Gesellschaft m.b.H."
-AT,DSO,"K. u. F. Drack Gesellschaft m.b.H. & Co. KG.",AT-Code,AT003520,,office@kfd.at,,3027,"K. u. F. Drack Gesellschaft m.b.H. & Co. KG."
-AT,DSO,"KARLSTROM e.U.",AT-Code,AT003470,0,service@karlstrom.at,,1074,"KARLSTROM e.U."
-AT,DSO,"Klausbauer Wasser Kraft GesmbH & Co KG",AT-Code,AT008250,,office@klausbauerwasserkraft.at,,105,"Klausbauer Wasser Kraft GesmbH & Co KG"
-AT,DSO,"KNG-Kärnten Netz GmbH",AT-Code,AT007000,0,office@kaerntennetz.at,,309717,"KNG-Kärnten Netz GmbH"
-AT,DSO,"Kommunalbetriebe Hopfgarten GmbH",AT-Code,AT005330,0,office@kbh.at,,3363,"Kommunalbetriebe Hopfgarten GmbH"
-AT,DSO,"Kommunalbetriebe Rinn GmbH",AT-Code,AT005650,0,office@kbrinn.at,,1106,"Kommunalbetriebe Rinn GmbH"
-AT,DSO,"Kraftwerk Glatzing-Rüstorf eGen",AT-Code,AT003510,0,kwg@kwg.at,,5784,"Kraftwerk Glatzing-Rüstorf eGen"
-AT,DSO,"Kraftwerk Reinisch GmbH",AT-Code,AT005690,0,office@kw-reinisch.at,,72,"Kraftwerk Reinisch GmbH"
-AT,DSO,"Kraftwerke Haim K.G.",AT-Code,AT005210,0,info@kraftwerkhaim.at,,7940,"Kraftwerke Haim K.G."
-AT,DSO,"Kraut E-Werk KG",AT-Code,AT008970,0,reinhard.kraut@aon.at,,72,"Kraut E-Werk KG"
-AT,DSO,"Licht- u. Kraftstromvertrieb d. Marktgemeinde Göstling a.d. Ybbs",AT-Code,AT002120,0,b.blamauer@goestling.com,,1062,"Licht- u. Kraftstromvertrieb d. Marktgemeinde Göstling a.d. Ybbs"
-AT,DSO,"Licht- und Kraftstromvertrieb der Gemeinde Opponitz",AT-Code,AT002300,0,gemeinde@opponitz.gv.at,,413,"Licht- und Kraftstromvertrieb der Gemeinde Opponitz"
-AT,DSO,"Licht- und Kraftvertrieb der Gemeinde Hollenstein",AT-Code,AT002130,0,lkv@hollenstein.at,,1079,"Licht- und Kraftvertrieb der Gemeinde Hollenstein"
-AT,DSO,"Lichtgenossenschaft Neukirchen eGen",AT-Code,AT004120,0,info@lichtgenossenschaft.at,,1199,"Lichtgenossenschaft Neukirchen eGen"
-AT,DSO,"LINZ NETZ GmbH",AT-Code,AT003100,0,office@linznetz.at,,287297,"LINZ NETZ GmbH"
-AT,DSO,"Mag. Engelbert Julius Tassotti jun. (E-Werk Tassotti) ",AT-Code,AT008990,0,tassotti@gmail.com,,250,"Mag. Engelbert Julius Tassotti jun. (E-Werk Tassotti) "
-AT,DSO,"Marktgemeinde Neumarkt Versorgungsbetriebsges.mbH",AT-Code,AT008420,0,g.hofer@ew-nmkt.at,,3509,"Marktgemeinde Neumarkt Versorgungsbetriebsges.mbH"
-AT,DSO,"Marktgemeinde Niklasdorf, EVU Niklasdorf",AT-Code,AT008330,0,evu@niklasdorf.steiermark.at,,2185,"Marktgemeinde Niklasdorf, EVU Niklasdorf"
-AT,DSO,"Montafonerbahn AG",AT-Code,AT006220,0,info@montafonerbahn.at,,7197,"Montafonerbahn AG"
-AT,DSO,"Murauer Stadtwerke GmbH",AT-Code,AT008430,0,tarifstelle@stadtwerke-murau.at,,3590,"Murauer Stadtwerke GmbH"
-AT,DSO,"Netz Burgenland GmbH",AT-Code,AT009000,0,info@netzburgenland.at,,207046,"Netz Burgenland GmbH"
-AT,DSO,"Netz Niederösterreich GmbH",AT-Code,AT002000,0,"pdf-rechnung@netz-noe.at ",,846024,"Netz Niederösterreich GmbH"
-AT,DSO,"Netz Oberösterreich GmbH",AT-Code,AT003000,0,service@netzooe.at,,675380,"Netz Oberösterreich GmbH"
-AT,DSO,"P.K. Energieversorgungs-GmbH",AT-Code,AT008630,0,strom@kiendler.at,,5177,"P.K. Energieversorgungs-GmbH"
-AT,DSO,"Plövner Schmiede Betriebs GesmbH",AT-Code,AT005670,0,info@ploevnerschmiede.at,,4,"Plövner Schmiede Betriebs GesmbH"
-AT,DSO,"Polsterer Kerres Ruttin Holding GmbH",AT-Code,AT002270,0,office@polsterer-holding.at,,733,"Polsterer Kerres Ruttin Holding GmbH"
-AT,DSO,"Revertera'sches E-Werk",AT-Code,AT003540,https://www.revertera.at/,strom@revertera.at,,479,"Revertera'sches E-Werk"
-AT,DSO,"Salzburg Netz GmbH",AT-Code,AT004000,https://www.salzburgnetz.at/,office@salzburg-ag.at,,449993,"Salzburg Netz GmbH"
-AT,DSO,"Schwarz, Wagendorffer & Co, Elektrizitätswerk GmbH ",AT-Code,AT008850,https://www.ewerk.at/,office@ewerk.at,,3510,"Schwarz, Wagendorffer & Co, Elektrizitätswerk GmbH "
-AT,DSO,"Stadtbetriebe Mariazell GmbH",AT-Code,AT008440,https://www.sbm.or.at/,office@sbm.or.at,,3273,"Stadtbetriebe Mariazell GmbH"
-AT,DSO,"Städtische Betriebe Rottenmann GmbH",AT-Code,AT008350,http://www.sb-rottenmann.at/,office.sbr@rottenmann.at,,3923,"Städtische Betriebe Rottenmann GmbH"
-AT,DSO,"Stadtwerke Amstetten ",AT-Code,AT002110,https://stadtwerke.amstetten.at/home/,,,11519,"Stadtwerke Amstetten "
-AT,DSO,"Stadtwerke Bruck an der Mur GmbH",AT-Code,AT008140,https://www.stadtwerke-bruck.at/,office@stadtwerke-bruck.at,,15919,"Stadtwerke Bruck an der Mur GmbH"
-AT,DSO,"Stadtwerke Feldkirch",AT-Code,AT006110,https://www.stadtwerke-feldkirch.at/,kundencenter@stadtwerke-feldkirch.at,,22017,"Stadtwerke Feldkirch"
-AT,DSO,"Stadtwerke Fürstenfeld GmbH",AT-Code,AT008150,http://www.stwff.at/,lang@stwff.at,,7351,"Stadtwerke Fürstenfeld GmbH"
-AT,DSO,"Stadtwerke Hartberg Energieversorgungs GmbH",AT-Code,AT008470,https://www.stadtwerke-hartberg.at/,stadtwerke@stadtwerke-hartberg.at,,7000,"Stadtwerke Hartberg Energieversorgungs GmbH"
-AT,DSO,"Stadtwerke Imst",AT-Code,AT005370,https://www.stwimst.at/,stadtwerke@stwimst.at,,7336,"Stadtwerke Imst"
-AT,DSO,"Stadtwerke Judenburg Aktiengesellschaft",AT-Code,AT008160,https://stadtwerke.co.at/,office@stadtwerke.co.at,,20176,"Stadtwerke Judenburg Aktiengesellschaft"
-AT,DSO,"Stadtwerke Kapfenberg GmbH",AT-Code,AT008170,https://www.stadtwerke-kapfenberg.at/start.html,office@stadtwerke-kapfenberg.at,,18997,"Stadtwerke Kapfenberg GmbH"
-AT,DSO,"Stadtwerke Kitzbühel e.U.",AT-Code,AT005130,https://www.stadtwerke-kitzbuehel.at/,office@stwk.kitz.net,,9310,"Stadtwerke Kitzbühel e.U."
-AT,DSO,"Stadtwerke Köflach GmbH",AT-Code,AT008180,https://www.stadtwerke-koeflach.at/,office@stadtwerke-koeflach.at,,10449,"Stadtwerke Köflach GmbH"
-AT,DSO,"Stadtwerke Kufstein GmbH",AT-Code,AT005140,https://www.stwk.at/,kundenberatung-backoffice@stwk.at,,16819,"Stadtwerke Kufstein GmbH"
-AT,DSO,"Stadtwerke Mürzzuschlag Gesellschaft m.b.H.",AT-Code,AT008190,https://www.stadtwerke-mz.at/,office@stwmz.at;,,10049,"Stadtwerke Mürzzuschlag Gesellschaft m.b.H."
-AT,DSO,"Stadtwerke Schwaz GmbH",AT-Code,AT005150,https://www.stadtwerkeschwaz.at/,info@stadtwerkeschwaz.at,,15215,"Stadtwerke Schwaz GmbH"
-AT,DSO,"Stadtwerke Trofaiach Gesellschaft m.b.H.",AT-Code,AT008490,https://stadtwerke-trofaiach.at/,office@stadtwerke-trofaiach.at,,8217,"Stadtwerke Trofaiach Gesellschaft m.b.H."
-AT,DSO,"Stadtwerke Voitsberg GmbH",AT-Code,AT008120,https://www.stadtwerke-voitsberg.at/,office@stadtwerkevoitsberg.at,,10994,"Stadtwerke Voitsberg GmbH"
-AT,DSO,"Stadtwerke Wörgl GmbH",AT-Code,AT005160,https://www.stww.at/,info@stww.at,,11555,"Stadtwerke Wörgl GmbH"
-AT,DSO,"Stromnetz Graz GmbH & Co KG",AT-Code,AT008100,https://www.stromnetz-graz.at/,office@stromnetz-graz.at,,186466,"Stromnetz Graz GmbH & Co KG"
-AT,DSO,"TINETZ-Tiroler Netze GmbH",AT-Code,AT005000,https://www.tinetz.at/,sc@tinetz.at,,246000,"TINETZ-Tiroler Netze GmbH"
-AT,DSO,"Vorarlberger Energienetze GmbH",AT-Code,AT006000,https://www.vorarlbergnetz.at/,markus.eberle@vorarlbergnetz.at,,226134,"Vorarlberger Energienetze GmbH"
-AT,DSO,"Wasserkraft Sölden eGen",AT-Code,AT005610,https://www.wasserkraft-soelden.at/,info@wasserkraft-soelden.at,,91,"Wasserkraft Sölden eGen"
-AT,DSO,"Wiener Netze GmbH",AT-Code,AT001000,https://www.wienernetze.at/,office@wienenergie.at,,1582154,"Wiener Netze GmbH"
-AT,DSO,"wüsterstrom E-Werk GmbH",AT-Code,AT002230,https://www.wuesterstrom.at/,office@wuesterstrom.at,,3614,"wüsterstrom E-Werk GmbH"
-FR,DSO,Enedis,n.a.,n.a.,https://enedis.fr,n.a.,,36951446,Enedis
-FR,DSO,"SRD Energies",n.a.,n.a.,https://www.srd-energies.fr/,n.a.,,149793,"SRD Energies"
+Country,Market Role,Company,Type of identification,Identification of organisation,Website,Official Contact,Metering Grid Area,Metering Points served,Time of day for data availability ,Metering interval at the meter,Meter reading interval (Meter to DSO),Availability interval for 3rd parties,Permission Administrator
+AT,DSO,AAE Wasserkraft GmbH,AT-Code,AT007240,https://aae.at/,office@aae-wasserkraft.at,,689,,,,,AAE Wasserkraft GmbH
+AT,DSO,Alfenzwerke Elektrizitätserzeugung GmbH,AT-Code,AT006250,0,office@alfenzwerke.at,,14,,,,,Alfenzwerke Elektrizitätserzeugung GmbH
+AT,DSO,Andreas Braunstein,AT-Code,AT008550,0,andy.braunstein@aon.at,,360,,,,,Andreas Braunstein
+AT,DSO,Anton Kittel Mühle Plaika GmbH,AT-Code,AT002220,https://kittelmuehle.at/,office@kittelmuehle.at,,800,,,,,Anton Kittel Mühle Plaika GmbH
+AT,DSO,Austrian Power Grid AG,AT-Code,AT000000,https://www.apg.at/,office.uai@apg.at,,0,,,,,Austrian Power Grid AG
+AT,DSO,Bad Gleichenberger Energie GmbH,AT-Code,AT008310,https://bg-energie.at/,office@bg-energie.at,,2497,,,,,Bad Gleichenberger Energie GmbH
+AT,DSO,Ebner Strom GmbH,AT-Code,AT003460,https://www.ebnerstrom.at/,kontakt@ebnerstrom.at,,7109,,,,,Ebner Strom GmbH
+AT,DSO,Elektrizitätsgenossenschaft Laintal eGen,AT-Code,AT008510,https://www.laintal-strom.at/,office@laintal-strom.at,,354,,,,,Elektrizitätsgenossenschaft Laintal eGen
+AT,DSO,Elektrizitätswerk Bad Hofgastein Gesellschaft m.b.H.,AT-Code,AT004110,https://ewh.co.at/,ewerk@ewh.co.at,,5326,,,,,Elektrizitätswerk Bad Hofgastein Gesellschaft m.b.H.
+AT,DSO,Elektrizitätswerk Clam Carl-Philip Clam-Martinic e. U.,AT-Code,AT002910,http://www.clamstrom.at/,office@clamstrom.at,,993,,,,,Elektrizitätswerk Clam Carl-Philip Clam-Martinic e. U.
+AT,DSO,Elektrizitätswerk der Gemeinde Gries am Brenner,AT-Code,AT005540,https://www.griesambrenner.tirol.gv.at/Elektrizitaetswerk_der_Gemeinde_Gries_am_Brenner,ewerk@griesambrenner.tirol.gv.at,,618,,,,,Elektrizitätswerk der Gemeinde Gries am Brenner
+AT,DSO,Elektrizitätswerk der Gemeinde Kematen,AT-Code,AT005350,https://ewerk.kematenintirol.at/,gemeindewerke.kematen@aon.at,,1800,,,,,Elektrizitätswerk der Gemeinde Kematen
+AT,DSO,Elektrizitätswerk der Stadtgemeinde Kindberg,AT-Code,AT008110,https://www.ewerk-kindberg.at/,sekretariat@ewerk-kindberg.at,,14037,,,,,Elektrizitätswerk der Stadtgemeinde Kindberg
+AT,DSO,Elektrizitätswerk Eisenhuber GmbH & Co KG,AT-Code,AT002210,https://www.eisenhuber.com/,johann.wagner@eisenhuber.com,,2734,,,,,Elektrizitätswerk Eisenhuber GmbH & Co KG
+AT,DSO,"Elektrizitätswerk Fernitz, Ing. Franz Purkarthofer GmbH & Co KG.",AT-Code,AT008570,https://ewerkfernitz.at/,office@ewerkfernitz.at,,9253,,,,,"Elektrizitätswerk Fernitz, Ing. Franz Purkarthofer GmbH & Co KG."
+AT,DSO,Elektrizitätswerk Gröbming KG,AT-Code,AT008620,https://www.das-ewerk.at/,office@ewerk-groebming.at,,7078,,,,,Elektrizitätswerk Gröbming KG
+AT,DSO,Elektrizitätswerk Mürzsteg,AT-Code,AT008370,http://www.neuberg-muerz.gv.at/e-werk-muerzsteg-2/,m.seiser@muerzsteg.at,,434,,,,,Elektrizitätswerk Mürzsteg
+AT,DSO,Elektrizitätswerk Perg GmbH,AT-Code,AT003310,https://www.ewerk-perg.at/,ewerk@ewerk-perg.at,,7590,,,,,Elektrizitätswerk Perg GmbH
+AT,DSO,Elektrizitätswerk Prantl Gesellschaft m.b.H.,AT-Code,AT005460,https://www.prantlstrom.at/,ew-prantl@tirol.com,,3457,,,,,Elektrizitätswerk Prantl Gesellschaft m.b.H.
+AT,DSO,Elektrizitätswerk Winkler GmbH,AT-Code,AT005480,http://www.e-werk-winkler.at/,e.werk.winkler@aon.at,,531,,,,,Elektrizitätswerk Winkler GmbH
+AT,DSO,Elektrizitätswerke Bad Radkersburg GmbH,AT-Code,AT008450,https://www.ewerk-badradkersburg.at/,,,2306,,,,,Elektrizitätswerke Bad Radkersburg GmbH
+AT,DSO,Elektrizitätswerke Frastanz Gesellschaft m.b.H.,AT-Code,AT006210,https://www.ewerke.at/,info@ewerke.at,,4633,,,,,Elektrizitätswerke Frastanz Gesellschaft m.b.H.
+AT,DSO,Elektrizitätswerke Reutte AG,AT-Code,AT005110,https://www.ewr-energie.com/,edm@ewr.at,,18495,,,,,Elektrizitätswerke Reutte AG
+AT,DSO,Elektriztätswerk Mariahof GmbH,AT-Code,AT008650,http://www.ewerk-mariahof.at/,office@ewerk-mariahof.at,,4517,,,,,Elektriztätswerk Mariahof GmbH
+AT,DSO,Elektrogenossenschaft Weerberg reg. Gen.m.b.H.,AT-Code,AT005630,0,info@e-g-w.at,,1009,,,,,Elektrogenossenschaft Weerberg reg. Gen.m.b.H.
+AT,DSO,Elektrowerk Assling reg. Gen.m.b.H.,AT-Code,AT005490,https://www.ewa.at/,ewa@ewa.at,,839,,,,,Elektrowerk Assling reg. Gen.m.b.H.
+AT,DSO,Elektrowerk Schöder GmbH,AT-Code,AT008720,https://www.evu-schoeder.at/,office@evu-schoeder.at,,2701,,,,,Elektrowerk Schöder GmbH
+AT,DSO,Elektrowerkgenossenschaft Hopfgarten i. Def. reg. Gen. m. b. H.,AT-Code,AT005600,https://www.ew-hopfgarten.at/,office@ew-hopfgarten.at,,469,,,,,Elektrowerkgenossenschaft Hopfgarten i. Def. reg. Gen. m. b. H.
+AT,DSO,Energie Güssing GmbH,AT-Code,AT009220,https://e-guessing.at/,office@e-guessing.at,,3969,,,,,Energie Güssing GmbH
+AT,DSO,Energie Klagenfurt GmbH,AT-Code,AT007100,https://www.energieklagenfurt.at,office@energieklagenfurt.at,,86728,,,,,Energie Klagenfurt GmbH
+AT,DSO,Energie Ried Gesellschaft m.b.H.,AT-Code,AT003200,https://www.energie-ried.at/,office@energie-ried.at,,25430,,,,,Energie Ried Gesellschaft m.b.H.
+AT,DSO,Energienetze Steiermark GmbH,AT-Code,AT008000,https://www.e-netze.at/,office@e-netze.at,,497204,,,,,Energienetze Steiermark GmbH
+AT,DSO,Energieversorgung Kleinwalsertal Ges. m. b. H.,AT-Code,AT006230,https://www.evk.at/,info@evk.at,,3955,,,,,Energieversorgung Kleinwalsertal Ges. m. b. H.
+AT,DSO,Energieversorgungs GmbH,AT-Code,AT003580,0,strom@mitheis.at,,203,,,,,Energieversorgungs GmbH
+AT,DSO,Energieversorgungsunternehmen der Florian Lugitsch Gruppe GmbH,AT-Code,AT008580,https://www.e-lugitsch.at/,office@lugitsch.at,,5567,,,,,Energieversorgungsunternehmen der Florian Lugitsch Gruppe GmbH
+AT,DSO,ENVESTA Energie- und Dienstleistungs GmbH,AT-Code,AT008560,https://www.envesta.at/,office@envesta.at,,3746,,,,,ENVESTA Energie- und Dienstleistungs GmbH
+AT,DSO,EVU der Marktgemeinde Eibiswald,AT-Code,AT008390,0,evu@eibiswald.gv.at,,1324,,,,,EVU der Marktgemeinde Eibiswald
+AT,DSO,EVU der Stadtgemeinde Mureck,AT-Code,AT008360,https://evu-mureck.at/,markus.neubauer@evu-mureck.at,,1706,,,,,EVU der Stadtgemeinde Mureck
+AT,DSO,EVU Gerald Mathe e.U.,AT-Code,AT003570,http://www.mathestrom.at/,office@mathestrom.at,,332,,,,,EVU Gerald Mathe e.U.
+AT,DSO,EWA Energie- u Wirtschaftsbetriebe der Gemeinde St. Anton GmbH,AT-Code,AT005320,https://www.ewa-services.at/,office@ewa-services.at,,2411,,,,,EWA Energie- u Wirtschaftsbetriebe der Gemeinde St. Anton GmbH
+AT,DSO,E-Werk Altenfelden GmbH,AT-Code,AT003900,0,strom@freistrom.at,,157,,,,,E-Werk Altenfelden GmbH
+AT,DSO,E-Werk der Marktgemeinde Unzmarkt-Frauenburg,AT-Code,AT008410,0,evu@ainet.at,,946,,,,,E-Werk der Marktgemeinde Unzmarkt-Frauenburg
+AT,DSO,E-Werk Dietrichschlag eGen,AT-Code,AT003920,https://www.ewerk-dietrichschlag.at/startseite.html,e-werk.dietrichschlag@aon.at,,60,,,,,E-Werk Dietrichschlag eGen
+AT,DSO,E-Werk Ebner GesmbH,AT-Code,AT008730,0,verwaltung@EWEbner.at,,7733,,,,,E-Werk Ebner GesmbH
+AT,DSO,E-Werk Gleinstätten GmbH,AT-Code,AT008740,0,office@ktg-austria.at,,1159,,,,,E-Werk Gleinstätten GmbH
+AT,DSO,E-Werk Gösting Stromversorgung GmbH,AT-Code,AT008210,0,a.froehlich@ewg.at,,29443,,,,,E-Werk Gösting Stromversorgung GmbH
+AT,DSO,E-Werk Piwetz,AT-Code,AT008950,0,office@ew-piwetz.at,,643,,,,,E-Werk Piwetz
+AT,DSO,E-Werk Ranklleiten,AT-Code,AT003590,https://ranklleiten.at,office@ranklleiten.at,,218,,,,,E-Werk Ranklleiten
+AT,DSO,E-Werk Redlmühle B. Drack Elektrotechnik ,AT-Code,AT003910,http://www.drackstrom.at/ws/frontend/seite/SeiteCms.php?coId=2&coType=navigation1,office@drackstrom.at,,124,,,,,E-Werk Redlmühle B. Drack Elektrotechnik
+AT,DSO,E-Werk Sarmingstein Ing. H. Engelmann & Co KG,AT-Code,AT002900,0,ewsa@e-werke.at,,64,,,,,E-Werk Sarmingstein Ing. H. Engelmann & Co KG
+AT,DSO,E-Werk Schattwald e.U.,AT-Code,AT005340,https://ew-schattwald.at/,office@ew-schattwald.at,,1628,,,,,E-Werk Schattwald e.U.
+AT,DSO,E-Werk Schwaighofer GmbH,AT-Code,AT002250,0,e.werk@schwaighofer-lunz.at,,834,,,,,E-Werk Schwaighofer GmbH
+AT,DSO,E-Werk Sigl GmbH & Co KG,AT-Code,AT008540,0,,,1175,,,,,E-Werk Sigl GmbH & Co KG
+AT,DSO,E-Werk Stadler GmbH,AT-Code,AT005470,0,info@elektro-stadler.at,,1501,,,,,E-Werk Stadler GmbH
+AT,DSO,E-Werk Stubenberg eGen,AT-Code,AT008910,0,office@e-werk-stubenberg.at,,908,,,,,E-Werk Stubenberg eGen
+AT,DSO,eww AG,AT-Code,AT003300,0,info@eww.at,,55103,,,,,eww AG
+AT,DSO,Feistritzthaler Elektrizitätswerk eGen,AT-Code,AT008770,0,s.brantweiner@ewerk-growi.at,,1692,,,,,Feistritzthaler Elektrizitätswerk eGen
+AT,DSO,Feistritzwerke-STEWEAG-GmbH,AT-Code,AT008130,0,office@feistritzwerke.at,,53845,,,,,Feistritzwerke-STEWEAG-GmbH
+AT,DSO,Forstverwaltung Seehof GmbH,AT-Code,AT002280,0,office@kupelwieser-forst.at,,32,,,,,Forstverwaltung Seehof GmbH
+AT,DSO,Gertraud Schafler GmbH,AT-Code,AT008690,0,office@schaflerstrom.at,,1494,,,,,Gertraud Schafler GmbH
+AT,DSO,"Getzner, Mutter & Cie. Gesellschaft m.b.H. & Co. KG",AT-Code,AT006240,0,office.gmc@getzner.at,,3,,,,,"Getzner, Mutter & Cie. Gesellschaft m.b.H. & Co. KG"
+AT,DSO,HALLAG Kommunal GmbH,AT-Code,AT005120,https://www.hall.ag/,c.neuzil@hall.ag,,19764,,,,,HALLAG Kommunal GmbH
+AT,DSO,Heinrich Polsterer UND MITGES.GES.N.B.R.,AT-Code,AT002400,0,h.polsterer@polsterer.co.at,,82,,,,,Heinrich Polsterer UND MITGES.GES.N.B.R.
+AT,DSO,Innsbrucker Kommunalbetriebe AG,AT-Code,AT005100,0,snot@ikb.at,,130100,,,,,Innsbrucker Kommunalbetriebe AG
+AT,DSO,Joh. Pengg Holding Gesellschaft m.b.H.,AT-Code,AT008930,0,pengg.holding@aon.at,,98,,,,,Joh. Pengg Holding Gesellschaft m.b.H.
+AT,DSO,K. u. F. Drack Gesellschaft m.b.H. & Co. KG.,AT-Code,AT003520,,office@kfd.at,,3027,,,,,K. u. F. Drack Gesellschaft m.b.H. & Co. KG.
+AT,DSO,KARLSTROM e.U.,AT-Code,AT003470,0,service@karlstrom.at,,1074,,,,,KARLSTROM e.U.
+AT,DSO,Klausbauer Wasser Kraft GesmbH & Co KG,AT-Code,AT008250,,office@klausbauerwasserkraft.at,,105,,,,,Klausbauer Wasser Kraft GesmbH & Co KG
+AT,DSO,KNG-Kärnten Netz GmbH,AT-Code,AT007000,0,office@kaerntennetz.at,,309717,,,,,KNG-Kärnten Netz GmbH
+AT,DSO,Kommunalbetriebe Hopfgarten GmbH,AT-Code,AT005330,0,office@kbh.at,,3363,,,,,Kommunalbetriebe Hopfgarten GmbH
+AT,DSO,Kommunalbetriebe Rinn GmbH,AT-Code,AT005650,0,office@kbrinn.at,,1106,,,,,Kommunalbetriebe Rinn GmbH
+AT,DSO,Kraftwerk Glatzing-Rüstorf eGen,AT-Code,AT003510,0,kwg@kwg.at,,5784,,,,,Kraftwerk Glatzing-Rüstorf eGen
+AT,DSO,Kraftwerk Reinisch GmbH,AT-Code,AT005690,0,office@kw-reinisch.at,,72,,,,,Kraftwerk Reinisch GmbH
+AT,DSO,Kraftwerke Haim K.G.,AT-Code,AT005210,0,info@kraftwerkhaim.at,,7940,,,,,Kraftwerke Haim K.G.
+AT,DSO,Kraut E-Werk KG,AT-Code,AT008970,0,reinhard.kraut@aon.at,,72,,,,,Kraut E-Werk KG
+AT,DSO,Licht- u. Kraftstromvertrieb d. Marktgemeinde Göstling a.d. Ybbs,AT-Code,AT002120,0,b.blamauer@goestling.com,,1062,,,,,Licht- u. Kraftstromvertrieb d. Marktgemeinde Göstling a.d. Ybbs
+AT,DSO,Licht- und Kraftstromvertrieb der Gemeinde Opponitz,AT-Code,AT002300,0,gemeinde@opponitz.gv.at,,413,,,,,Licht- und Kraftstromvertrieb der Gemeinde Opponitz
+AT,DSO,Licht- und Kraftvertrieb der Gemeinde Hollenstein,AT-Code,AT002130,0,lkv@hollenstein.at,,1079,,,,,Licht- und Kraftvertrieb der Gemeinde Hollenstein
+AT,DSO,Lichtgenossenschaft Neukirchen eGen,AT-Code,AT004120,0,info@lichtgenossenschaft.at,,1199,,,,,Lichtgenossenschaft Neukirchen eGen
+AT,DSO,LINZ NETZ GmbH,AT-Code,AT003100,0,office@linznetz.at,,287297,,,,,LINZ NETZ GmbH
+AT,DSO,Mag. Engelbert Julius Tassotti jun. (E-Werk Tassotti) ,AT-Code,AT008990,0,tassotti@gmail.com,,250,,,,,Mag. Engelbert Julius Tassotti jun. (E-Werk Tassotti)
+AT,DSO,Marktgemeinde Neumarkt Versorgungsbetriebsges.mbH,AT-Code,AT008420,0,g.hofer@ew-nmkt.at,,3509,,,,,Marktgemeinde Neumarkt Versorgungsbetriebsges.mbH
+AT,DSO,"Marktgemeinde Niklasdorf, EVU Niklasdorf",AT-Code,AT008330,0,evu@niklasdorf.steiermark.at,,2185,,,,,"Marktgemeinde Niklasdorf, EVU Niklasdorf"
+AT,DSO,Montafonerbahn AG,AT-Code,AT006220,0,info@montafonerbahn.at,,7197,,,,,Montafonerbahn AG
+AT,DSO,Murauer Stadtwerke GmbH,AT-Code,AT008430,0,tarifstelle@stadtwerke-murau.at,,3590,,,,,Murauer Stadtwerke GmbH
+AT,DSO,Netz Burgenland GmbH,AT-Code,AT009000,0,info@netzburgenland.at,,207046,,,,,Netz Burgenland GmbH
+AT,DSO,Netz Niederösterreich GmbH,AT-Code,AT002000,0,pdf-rechnung@netz-noe.at ,,846024,,,,,Netz Niederösterreich GmbH
+AT,DSO,Netz Oberösterreich GmbH,AT-Code,AT003000,0,service@netzooe.at,,675380,,,,,Netz Oberösterreich GmbH
+AT,DSO,P.K. Energieversorgungs-GmbH,AT-Code,AT008630,0,strom@kiendler.at,,5177,,,,,P.K. Energieversorgungs-GmbH
+AT,DSO,Plövner Schmiede Betriebs GesmbH,AT-Code,AT005670,0,info@ploevnerschmiede.at,,4,,,,,Plövner Schmiede Betriebs GesmbH
+AT,DSO,Polsterer Kerres Ruttin Holding GmbH,AT-Code,AT002270,0,office@polsterer-holding.at,,733,,,,,Polsterer Kerres Ruttin Holding GmbH
+AT,DSO,Revertera'sches E-Werk,AT-Code,AT003540,https://www.revertera.at/,strom@revertera.at,,479,,,,,Revertera'sches E-Werk
+AT,DSO,Salzburg Netz GmbH,AT-Code,AT004000,https://www.salzburgnetz.at/,office@salzburg-ag.at,,449993,,,,,Salzburg Netz GmbH
+AT,DSO,"Schwarz, Wagendorffer & Co, Elektrizitätswerk GmbH ",AT-Code,AT008850,https://www.ewerk.at/,office@ewerk.at,,3510,,,,,"Schwarz, Wagendorffer & Co, Elektrizitätswerk GmbH "
+AT,DSO,Stadtbetriebe Mariazell GmbH,AT-Code,AT008440,https://www.sbm.or.at/,office@sbm.or.at,,3273,,,,,Stadtbetriebe Mariazell GmbH
+AT,DSO,Städtische Betriebe Rottenmann GmbH,AT-Code,AT008350,http://www.sb-rottenmann.at/,office.sbr@rottenmann.at,,3923,,,,,Städtische Betriebe Rottenmann GmbH
+AT,DSO,Stadtwerke Amstetten ,AT-Code,AT002110,https://stadtwerke.amstetten.at/home/,,,11519,,,,,Stadtwerke Amstetten
+AT,DSO,Stadtwerke Bruck an der Mur GmbH,AT-Code,AT008140,https://www.stadtwerke-bruck.at/,office@stadtwerke-bruck.at,,15919,,,,,Stadtwerke Bruck an der Mur GmbH
+AT,DSO,Stadtwerke Feldkirch,AT-Code,AT006110,https://www.stadtwerke-feldkirch.at/,kundencenter@stadtwerke-feldkirch.at,,22017,,,,,Stadtwerke Feldkirch
+AT,DSO,Stadtwerke Fürstenfeld GmbH,AT-Code,AT008150,http://www.stwff.at/,lang@stwff.at,,7351,,,,,Stadtwerke Fürstenfeld GmbH
+AT,DSO,Stadtwerke Hartberg Energieversorgungs GmbH,AT-Code,AT008470,https://www.stadtwerke-hartberg.at/,stadtwerke@stadtwerke-hartberg.at,,7000,,,,,Stadtwerke Hartberg Energieversorgungs GmbH
+AT,DSO,Stadtwerke Imst,AT-Code,AT005370,https://www.stwimst.at/,stadtwerke@stwimst.at,,7336,,,,,Stadtwerke Imst
+AT,DSO,Stadtwerke Judenburg Aktiengesellschaft,AT-Code,AT008160,https://stadtwerke.co.at/,office@stadtwerke.co.at,,20176,,,,,Stadtwerke Judenburg Aktiengesellschaft
+AT,DSO,Stadtwerke Kapfenberg GmbH,AT-Code,AT008170,https://www.stadtwerke-kapfenberg.at/start.html,office@stadtwerke-kapfenberg.at,,18997,,,,,Stadtwerke Kapfenberg GmbH
+AT,DSO,Stadtwerke Kitzbühel e.U.,AT-Code,AT005130,https://www.stadtwerke-kitzbuehel.at/,office@stwk.kitz.net,,9310,,,,,Stadtwerke Kitzbühel e.U.
+AT,DSO,Stadtwerke Köflach GmbH,AT-Code,AT008180,https://www.stadtwerke-koeflach.at/,office@stadtwerke-koeflach.at,,10449,,,,,Stadtwerke Köflach GmbH
+AT,DSO,Stadtwerke Kufstein GmbH,AT-Code,AT005140,https://www.stwk.at/,kundenberatung-backoffice@stwk.at,,16819,,,,,Stadtwerke Kufstein GmbH
+AT,DSO,Stadtwerke Mürzzuschlag Gesellschaft m.b.H.,AT-Code,AT008190,https://www.stadtwerke-mz.at/,office@stwmz.at;,,10049,,,,,Stadtwerke Mürzzuschlag Gesellschaft m.b.H.
+AT,DSO,Stadtwerke Schwaz GmbH,AT-Code,AT005150,https://www.stadtwerkeschwaz.at/,info@stadtwerkeschwaz.at,,15215,,,,,Stadtwerke Schwaz GmbH
+AT,DSO,Stadtwerke Trofaiach Gesellschaft m.b.H.,AT-Code,AT008490,https://stadtwerke-trofaiach.at/,office@stadtwerke-trofaiach.at,,8217,,,,,Stadtwerke Trofaiach Gesellschaft m.b.H.
+AT,DSO,Stadtwerke Voitsberg GmbH,AT-Code,AT008120,https://www.stadtwerke-voitsberg.at/,office@stadtwerkevoitsberg.at,,10994,,,,,Stadtwerke Voitsberg GmbH
+AT,DSO,Stadtwerke Wörgl GmbH,AT-Code,AT005160,https://www.stww.at/,info@stww.at,,11555,,,,,Stadtwerke Wörgl GmbH
+AT,DSO,Stromnetz Graz GmbH & Co KG,AT-Code,AT008100,https://www.stromnetz-graz.at/,office@stromnetz-graz.at,,186466,,,,,Stromnetz Graz GmbH & Co KG
+AT,DSO,TINETZ-Tiroler Netze GmbH,AT-Code,AT005000,https://www.tinetz.at/,sc@tinetz.at,,246000,,,,,TINETZ-Tiroler Netze GmbH
+AT,DSO,Vorarlberger Energienetze GmbH,AT-Code,AT006000,https://www.vorarlbergnetz.at/,markus.eberle@vorarlbergnetz.at,,226134,,,,,Vorarlberger Energienetze GmbH
+AT,DSO,Wasserkraft Sölden eGen,AT-Code,AT005610,https://www.wasserkraft-soelden.at/,info@wasserkraft-soelden.at,,91,,,,,Wasserkraft Sölden eGen
+AT,DSO,Wiener Netze GmbH,AT-Code,AT001000,https://www.wienernetze.at/,office@wienenergie.at,,1582154,,,,,Wiener Netze GmbH
+AT,DSO,wüsterstrom E-Werk GmbH,AT-Code,AT002230,https://www.wuesterstrom.at/,office@wuesterstrom.at,,3614,,,,,wüsterstrom E-Werk GmbH
+FR,DSO,Enedis,n.a.,n.a.,https://enedis.fr,serviceclients-api@enedis.fr,,36951446,,,,,Enedis
+FR,DSO,SRD Energies,n.a.,n.a.,https://www.srd-energies.fr/,n.a.,,149793,,,,,SRD Energies
+IT,DSO,ACEGASAPSAMGA S.P.A.,ID-Sogetto ARERA,926,http://www.acegasapsamga.it,info.pd@acegasapsamga.it,,n.a.,,,,,ACEGASAPSAMGA S.P.A.
+IT,DSO,AIR AZIENDA INTERCOMUNALE ROTALIANA S.P.A. SOCIETÀ BENEFIT,ID-Sogetto ARERA,1417,https://www.airspa.it/,info@airspa.it,,n.a.,,,,,AIR AZIENDA INTERCOMUNALE ROTALIANA S.P.A. SOCIETÀ BENEFIT
+IT,DSO,ALTO GARDA SERVIZI SPA,ID-Sogetto ARERA,927,http://www.altogardaservizi.com,info@altogardaservizi.com,,n.a.,,,,,ALTO GARDA SERVIZI SPA
+IT,DSO,AMAIE SPA,ID-Sogetto ARERA,439,https://www.amaie.it,info@amaie.it,,n.a.,,,,,AMAIE SPA
+IT,DSO,AMEA S.P.A.,ID-Sogetto ARERA,335,http://www.amea.it,webmaster@amea.it,,n.a.,,,,,AMEA S.P.A.
+IT,DSO,AMET S.P.A.,ID-Sogetto ARERA,888,http://www.ametspa.it,commerciale@ametspa.it,,n.a.,,,,,AMET S.P.A.
+IT,DSO,AMIAS SERVIZI SRL,ID-Sogetto ARERA,433,https://comunediselvino.it/contenuti/64166/amias-servizi-sua-storia,pierangelo.bertocchi@amiasservizi.it,,n.a.,,,,,AMIAS SERVIZI SRL
+IT,DSO,ARETI SPA,ID-Sogetto ARERA,338,https://www.areti.it/home.php,,,n.a.,,,,,ARETI SPA
+IT,DSO,ASM BRESSANONE SPA,ID-Sogetto ARERA,1343,http://www.asmb.it,mail@asmb.it,,n.a.,,,,,ASM BRESSANONE SPA
+IT,DSO,ASM TERNI S.P.A.,ID-Sogetto ARERA,1095,http://www.asmterni.it,asmterni@asmterni.it,,n.a.,,,,,ASM TERNI S.P.A.
+IT,DSO,ASM TIONE - AZIENDA SERVIZI MUNICIPALIZZATI,ID-Sogetto ARERA,780,http://www.asmtione.it,asm@asmtione.it,,n.a.,,,,,ASM TIONE - AZIENDA SERVIZI MUNICIPALIZZATI
+IT,DSO,ASM VERCELLI SPA,ID-Sogetto ARERA,990,http://www.asmvercelli.it,paolo.roggero@asmvercelli.it,,n.a.,,,,,ASM VERCELLI SPA
+IT,DSO,ASPM SORESINA SERVIZI SRL,ID-Sogetto ARERA,896,http://www.aspmsoresina.it/,info@aspmsoresina.it,,n.a.,,,,,ASPM SORESINA SERVIZI SRL
+IT,DSO,A.S.SE.M. SPA,ID-Sogetto ARERA,230,http://www.assemspa.it,p.migliozzi@assemspa.it,,n.a.,,,,,A.S.SE.M. SPA
+IT,DSO,A.S.S.M. S.P.A. - TOLENTINO,ID-Sogetto ARERA,1392,http://www.assm.it,segreteria@assm.it,,n.a.,,,,,A.S.S.M. S.P.A. - TOLENTINO
+IT,DSO,AURINO ENERGIA SRL,ID-Sogetto ARERA,941,,,,n.a.,,,,,AURINO ENERGIA SRL
+IT,DSO,AZ. EL. HALLER SAS DI KRUSELBURGHER ANDREAS,ID-Sogetto ARERA,471,http://www.energy-dis.it/haller/,info@schneeberg.it,,n.a.,,,,,AZ. EL. HALLER SAS DI KRUSELBURGHER ANDREAS
+IT,DSO,AZIENDA ELETTRICA ANTERSELVA SRL,ID-Sogetto ARERA,1039,https://ew-antholz.e-bz.it/de,pallhuber@ewantholz.it,,n.a.,,,,,AZIENDA ELETTRICA ANTERSELVA SRL
+IT,DSO,AZIENDA ELETTRICA CASIES SOCIETÀ COOP.,ID-Sogetto ARERA,1760,https://customers.psaierenergies.it/gsies,info@ewerk-gsies.it,,n.a.,,,,,AZIENDA ELETTRICA CASIES SOCIETÀ COOP.
+IT,DSO,AZIENDA ELETTRICA CHIENES S.R.L.,ID-Sogetto ARERA,617,http://www.ew-kiens.it/,e-werk-kiens@rolmail.net,,n.a.,,,,,AZIENDA ELETTRICA CHIENES S.R.L.
+IT,DSO,AZIENDA ELETTRICA DOBBIACO SPA,ID-Sogetto ARERA,640,http://www.ewtoblach.it,info@ewtoblach.it,,n.a.,,,,,AZIENDA ELETTRICA DOBBIACO SPA
+IT,DSO,AZIENDA ELETTRICA GANTERER S.A.S.,ID-Sogetto ARERA,1053,http://www.energy-dis.it/ganterer/,info@sachsenklemme.it,,n.a.,,,,,AZIENDA ELETTRICA GANTERER S.A.S.
+IT,DSO,AZIENDA ELETTRICA KALMTAL,ID-Sogetto ARERA,581,,ew-kalmtal@brennercom.net,,n.a.,,,,,AZIENDA ELETTRICA KALMTAL
+IT,DSO,AZIENDA ELETTRICA LA VALLE COOPERATIVA,ID-Sogetto ARERA,663,http://www.ael-eww.it/page1955.aspx,info@ael-eww.it,,n.a.,,,,,AZIENDA ELETTRICA LA VALLE COOPERATIVA
+IT,DSO,AZIENDA ELETTRICA LUSON,ID-Sogetto ARERA,799,http://www.ewerk-luesen.it/,,,n.a.,,,,,AZIENDA ELETTRICA LUSON
+IT,DSO,AZIENDA ELETTRICA STEIN S.R.L.,ID-Sogetto ARERA,1014,http://www.energy-dis.it/stein/,stein@profimail.it,,n.a.,,,,,AZIENDA ELETTRICA STEIN S.R.L.
+IT,DSO,AZIENDA ELETTRICA STELVIO SOC. COOP,ID-Sogetto ARERA,506,http://www.ewstilfs.it,info@ewstilfs.it,,n.a.,,,,,AZIENDA ELETTRICA STELVIO SOC. COOP
+IT,DSO,AZIENDA ELETTRICA VERSCIACO PRATO ALLA DRAVA SOC. COOP. A R.L.,ID-Sogetto ARERA,914,http://www.ewerk-vierschach.it/,info@ewerk-vierschach.it,,n.a.,,,,,AZIENDA ELETTRICA VERSCIACO PRATO ALLA DRAVA SOC. COOP. A R.L.
+IT,DSO,AZIENDA ELETTRICA WEISSTEINER SRL,ID-Sogetto ARERA,1603,http://www.energy-dis.it/weissteiner/,,,n.a.,,,,,AZIENDA ELETTRICA WEISSTEINER SRL
+IT,DSO,AZIENDA ENERGETICA FUNES SOCIETÀ COOPERATIVA,ID-Sogetto ARERA,1015,http://www.energie-villnoess.it/,info@energie-villnoess.it,,n.a.,,,,,AZIENDA ENERGETICA FUNES SOCIETÀ COOPERATIVA
+IT,DSO,"AZIENDA ENERGETICA PRATO SOCIETÀ COOPERATIVA IN BREVE ""EWP SOCIETÀ COOPERATIVA""",ID-Sogetto ARERA,1118,http://www.e-werk-prad.it,info@e-werk-prad.it,,n.a.,,,,,"AZIENDA ENERGETICA PRATO SOCIETÀ COOPERATIVA IN BREVE ""EWP SOCIETÀ COOPERATIVA"""
+IT,DSO,AZIENDA ENERGETICA S. MARTINO SRL,ID-Sogetto ARERA,169,http://www.ewerk-stmartin.it/,ewerk.stmartin@rolmail.net,,n.a.,,,,,AZIENDA ENERGETICA S. MARTINO SRL
+IT,DSO,AZIENDA PUBBLISERVIZI BRUNICO,ID-Sogetto ARERA,5,http://www.pubbliservizi.it,info@pubbliservizi.it,,n.a.,,,,,AZIENDA PUBBLISERVIZI BRUNICO
+IT,DSO,AZIENDA RETI ELETTRICHE S.R.L.,ID-Sogetto ARERA,24541,https://www.aziendareti.com/,commerciale@aziendareti.com,,n.a.,,,,,AZIENDA RETI ELETTRICHE S.R.L.
+IT,DSO,CAMUNA ENERGIA SRL,ID-Sogetto ARERA,1273,https://www.camunaenergia.eu,camunaenergia@camunaenergia.eu,,n.a.,,,,,CAMUNA ENERGIA SRL
+IT,DSO,C.E.G. SOCIETA' COOPERATIVA ELETTRICA GIGNOD,ID-Sogetto ARERA,10,http://www.ceg-energia.it,amministrazione@cafl.it,,n.a.,,,,,C.E.G. SOCIETA' COOPERATIVA ELETTRICA GIGNOD
+IT,DSO,CENTRALE ELETTRICA AHRNTAL,ID-Sogetto ARERA,1179,http://www.ahrntaler-e-werk.com,info@ahrntaler-e-werk.com,,n.a.,,,,,CENTRALE ELETTRICA AHRNTAL
+IT,DSO,CENTRALE ELETTRICA S.N.C. COLZ SPESSA,ID-Sogetto ARERA,1708,http://www.energy-dis.it/colz/,info@energy-dis.it,,n.a.,,,,,CENTRALE ELETTRICA S.N.C. COLZ SPESSA
+IT,DSO,COMUNE DI ANDALO,ID-Sogetto ARERA,542,http://www.comune.andalo.tn.it,tributi@comune.andalo.tn.it,,n.a.,,,,,COMUNE DI ANDALO
+IT,DSO,COMUNE DI ANVERSA DEGLI ABRUZZI,ID-Sogetto ARERA,258,http://www.comune.anversadegliabruzzi.aq.it,ufficiotecnico@comunedianversa.it,,n.a.,,,,,COMUNE DI ANVERSA DEGLI ABRUZZI
+IT,DSO,COMUNE DI BENETUTTI,ID-Sogetto ARERA,1367,http://www.comune.benetutti.ss.it,aec@comune.benetutti.ss.it,,n.a.,,,,,COMUNE DI BENETUTTI
+IT,DSO,COMUNE DI BERCHIDDA,ID-Sogetto ARERA,44,http://www.comune.berchidda.ot.it/,aec@comune.berchidda.ot.it,,n.a.,,,,,COMUNE DI BERCHIDDA
+IT,DSO,COMUNE DI CASTEL DEL MONTE,ID-Sogetto ARERA,349,http://www.comune.casteldelmonte.aq.it/,comune.casteldelmonte@gmail.com,,n.a.,,,,,COMUNE DI CASTEL DEL MONTE
+IT,DSO,COMUNE DI CASTIGLIONE DI SICILIA,ID-Sogetto ARERA,259,http://www.comune.castiglionedisicilia.ct.it,idroelettrico@comune.castiglionedisicilia.ct.it,,n.a.,,,,,COMUNE DI CASTIGLIONE DI SICILIA
+IT,DSO,COMUNE DI CAVALESE,ID-Sogetto ARERA,79,http://www.comunecavalese.it,aziendaelettrica@comunecavalese.it,,n.a.,,,,,COMUNE DI CAVALESE
+IT,DSO,COMUNE DI CHIOMONTE,ID-Sogetto ARERA,64,http://www.aemcomunechiomonte.it,aem@comune.chiomonte.to.it,,n.a.,,,,,COMUNE DI CHIOMONTE
+IT,DSO,COMUNE DI EXILLES,ID-Sogetto ARERA,297,http://www.comune.exilles.to.it,aziendaelettrica@comune.exilles.to.it,,n.a.,,,,,COMUNE DI EXILLES
+IT,DSO,COMUNE DI FRANCAVILLA DI SICILIA,ID-Sogetto ARERA,314,http://www.secfrancavilladisicilia.it/,ufficioelettrico@comune.francavilladisicilia.me.it,,n.a.,,,,,COMUNE DI FRANCAVILLA DI SICILIA
+IT,DSO,COMUNE DI MAGLIANO DI TENNA,ID-Sogetto ARERA,1755,http://www.comune.maglianoditenna.fm.it,ragioneria@comune.maglianoditenna.fm.it,,n.a.,,,,,COMUNE DI MAGLIANO DI TENNA
+IT,DSO,COMUNE DI PACENTRO,ID-Sogetto ARERA,1391,http://www.comunepacentro.aq.it,tributi@comunepacentro.aq.it,,n.a.,,,,,COMUNE DI PACENTRO
+IT,DSO,COMUNE DI PERDIFUMO,ID-Sogetto ARERA,1914,http://www.comune.perdifumo.sa.it/,,,n.a.,,,,,COMUNE DI PERDIFUMO
+IT,DSO,COMUNE DI ROCCA PIA,ID-Sogetto ARERA,1879,https://www.comune.roccapia.aq.it,ufficioragioneria@comune.roccapia.aq.it,,n.a.,,,,,COMUNE DI ROCCA PIA
+IT,DSO,COMUNE DI RONCO CANAVESE,ID-Sogetto ARERA,296,http://aemroncocanavese.it/,anagrafe@comune.roncocanavese.to.it,,n.a.,,,,,COMUNE DI RONCO CANAVESE
+IT,DSO,COMUNE DI SANTO STEFANO DI SESSANIO,ID-Sogetto ARERA,2674,http://www.comunesantostefanodisessanio.aq.it/,anagrafe@comunesantostefanodisessanio.aq.it,,n.a.,,,,,COMUNE DI SANTO STEFANO DI SESSANIO
+IT,DSO,COMUNE DI SARACINESCO,ID-Sogetto ARERA,1353,http://www.comune.saracinesco.rm.it,comunesaracinescorag@libero.it,,n.a.,,,,,COMUNE DI SARACINESCO
+IT,DSO,COMUNE DI SELLA GIUDICARIE,ID-Sogetto ARERA,24663,http://www.comunesellagiudicarie.tn.it,comune@comune.sellagiudicarie.tn.it,,n.a.,,,,,COMUNE DI SELLA GIUDICARIE
+IT,DSO,COMUNE DI SESSA CILENTO,ID-Sogetto ARERA,1909,http://www.comune.sessacilento.sa.it,sessac@tiscali.it,,n.a.,,,,,COMUNE DI SESSA CILENTO
+IT,DSO,COMUNE DI SILANDRO,ID-Sogetto ARERA,14644,http://www.schlanders.it,,,n.a.,,,,,COMUNE DI SILANDRO
+IT,DSO,COMUNE DI USSITA,ID-Sogetto ARERA,1812,http://www.comune.ussita.mc.it/,info@comune.ussita.mc.it,,n.a.,,,,,COMUNE DI USSITA
+IT,DSO,COMUNE DI VILLA LATINA,ID-Sogetto ARERA,1627,http://www.comune.villalatina.fr.it,adiduc@tin.it,,n.a.,,,,,COMUNE DI VILLA LATINA
+IT,DSO,CONSORZIO ELETTRICO DI POZZA DI FASSA,ID-Sogetto ARERA,172,http://www.consorzioelettrico.com,info@consorzioelettrico.com,,n.a.,,,,,CONSORZIO ELETTRICO DI POZZA DI FASSA
+IT,DSO,CONSORZIO ELETTRICO DI STORO SOCIETA' COOPERATIVA,ID-Sogetto ARERA,731,http://www.cedis.info,cedis@cedis.info,,n.a.,,,,,CONSORZIO ELETTRICO DI STORO SOCIETA' COOPERATIVA
+IT,DSO,CONSORZIO ELETTRICO INDUSTRIALE DI STENICO S.C.,ID-Sogetto ARERA,4,http://www.ceis-stenico.it,info@ceis-stenico.it,,n.a.,,,,,CONSORZIO ELETTRICO INDUSTRIALE DI STENICO S.C.
+IT,DSO,CONSORZIO ELETTRICO PENNES,ID-Sogetto ARERA,622,http://www.egpens.it,info@egpens.it,,n.a.,,,,,CONSORZIO ELETTRICO PENNES
+IT,DSO,CONSORZIO ENERGETICO VAL VENOSTA,ID-Sogetto ARERA,22678,http://www.vek.bz.it,info@vion.bz.it,,n.a.,,,,,CONSORZIO ENERGETICO VAL VENOSTA
+IT,DSO,CONSORZIO PER I SERVIZI TERRITORIALI DEL NOCE - STN VAL DI SOLE,ID-Sogetto ARERA,22276,http://www.stnvaldisole.it,daniel.mosconi@stnvaldisole.it,,n.a.,,,,,CONSORZIO PER I SERVIZI TERRITORIALI DEL NOCE - STN VAL DI SOLE
+IT,DSO,COOPERATIVA AZIENDA ELETTRICA RIDANNA,ID-Sogetto ARERA,2337,http://www.ewerk-ridnaun.it/,info@ewerk-ridnaun.it,,n.a.,,,,,COOPERATIVA AZIENDA ELETTRICA RIDANNA
+IT,DSO,COOPERATIVA CENTRALE ELETTRICA FLERES,ID-Sogetto ARERA,508,https://www.ew-pflersch.it/it/energia-elettrica/,info@ew-pflersch.it,,n.a.,,,,,COOPERATIVA CENTRALE ELETTRICA FLERES
+IT,DSO,COOPERATIVA ELETTRICA VALGIOVO,ID-Sogetto ARERA,851,http://www.energy-dis.it/jaufental/,info@ewerk-jaufental.it,,n.a.,,,,,COOPERATIVA ELETTRICA VALGIOVO
+IT,DSO,COOPERATIVA PER L'UTILIZZO DI FONTI ENERGETICHE NOVA LEVANTE,ID-Sogetto ARERA,454,https://eg-welschnofen.e-bz.it,weg@welschnofen.net,,n.a.,,,,,COOPERATIVA PER L'UTILIZZO DI FONTI ENERGETICHE NOVA LEVANTE
+IT,DSO,DEVAL,ID-Sogetto ARERA,1290,http://www.devalspa.it/,deval@pec.devalspa.it,,n.a.,,,,,DEVAL
+IT,DSO,DISTRIBUZIONE ELETTRICA ADRIATICA S.P.A.,ID-Sogetto ARERA,23023,http://www.deaelettrica.it,dea@deaelettrica.it,,n.a.,,,,,DISTRIBUZIONE ELETTRICA ADRIATICA S.P.A.
+IT,DSO,E-DISTRIBUZIONE S.P.A.,ID-Sogetto ARERA,435,http://www.e-distribuzione.it,info@e-distribuzione.com,,n.a.,,,,,E-DISTRIBUZIONE S.P.A.
+IT,DSO,EDYNA SRL,ID-Sogetto ARERA,3255,http://www.edyna.net/,alessandro.randon@edyna.net,,n.a.,,,,,EDYNA SRL
+IT,DSO,EGRA,ID-Sogetto ARERA,3286,http://www.energy-dis.it/egra/,egra@rolmail.net,,n.a.,,,,,EGRA
+IT,DSO,ELEKTROWERK PREIMS GMBH,ID-Sogetto ARERA,1876,http://www.energy-dis.it/preims/,info@energy-dis.it,,n.a.,,,,,ELEKTROWERK PREIMS GMBH
+IT,DSO,ENERGIE OFFIDA S.R.L.,ID-Sogetto ARERA,1629,http://www.energieoffida.it,info@energieoffida.it,,n.a.,,,,,ENERGIE OFFIDA S.R.L.
+IT,DSO,E.U.M. SOC. COOP. PER L'ENERGIA E L'AMBIENTE MOSO,ID-Sogetto ARERA,501,http://www.eum.bz,info@eum.bz,,n.a.,,,,,E.U.M. SOC. COOP. PER L'ENERGIA E L'AMBIENTE MOSO
+IT,DSO,EUP,ID-Sogetto ARERA,3288,http://eup.bz.it/,info@eup.bz.it,,n.a.,,,,,EUP
+IT,DSO,E-WERKE DI PILLING HELGA & C. S.A.S. - KG,ID-Sogetto ARERA,533,http://www.energy-dis.it/groebner/,groebner@gmx.it,,n.a.,,,,,E-WERKE DI PILLING HELGA & C. S.A.S. - KG
+IT,DSO,FAST WIND SPA,ID-Sogetto ARERA,2145,,FAST.WIND@LIERO.IT,,n.a.,,,,,FAST WIND SPA
+IT,DSO,GANNEBACH SRL / GMBH,ID-Sogetto ARERA,858,http://www.e-werk.it,,,n.a.,,,,,GANNEBACH SRL / GMBH
+IT,DSO,GEMEINDE STERZING / COMUNE DI VIPITENO,ID-Sogetto ARERA,805,http://www.vipiteno.eu,aziendaelettrica@vipiteno.eu,,n.a.,,,,,GEMEINDE STERZING / COMUNE DI VIPITENO
+IT,DSO,GERMANO INDUSTRIE ELETTRICHE S.R.L.,ID-Sogetto ARERA,48,http://www.germano-srl.it,gie@germano-srl.it,,n.a.,,,,,GERMANO INDUSTRIE ELETTRICHE S.R.L.
+IT,DSO,IDROELETTRICA VALCANALE DI MARIO GABRIELE MASSARUTTO E C. S.A.S.,ID-Sogetto ARERA,1906,http://www.idroelettricavalcanale.it,,,n.a.,,,,,IDROELETTRICA VALCANALE DI MARIO GABRIELE MASSARUTTO E C. S.A.S.
+IT,DSO,IMPRESA CAMPO ELETTRICITA' I.C.EL. S.R.L.,ID-Sogetto ARERA,1,http://www.icelweb.it,icel@icelweb.it,,n.a.,,,,,IMPRESA CAMPO ELETTRICITA' I.C.EL. S.R.L.
+IT,DSO,IMPRESA ELETTRICA D'ANNA E BONACCORSI S.R.L.,ID-Sogetto ARERA,43,https://www.dannabonaccorsi.com,ufficioamministrativo@dannabonaccorsi.it,,n.a.,,,,,IMPRESA ELETTRICA D'ANNA E BONACCORSI S.R.L.
+IT,DSO,IMPRESA PRODUZIONE ENERGIA ELETTRICA PESENTI SRL,ID-Sogetto ARERA,1471,,,,n.a.,,,,,IMPRESA PRODUZIONE ENERGIA ELETTRICA PESENTI SRL
+IT,DSO,INRETE DISTRIBUZIONE ENERGIA,ID-Sogetto ARERA,25367,http://www.inretedistribuzione.it,inrete_distribuzione@legalmail.it,,n.a.,,,,,INRETE DISTRIBUZIONE ENERGIA
+IT,DSO,INTERESSENZA ELETTRICA VICINA ARMENTAROLA,ID-Sogetto ARERA,500,https://ew-armentarola.e-bz.it/it,,,n.a.,,,,,INTERESSENZA ELETTRICA VICINA ARMENTAROLA
+IT,DSO,INTERESSENZA UTILIZZAZIONI IDRAULICHE PEDRACES - COSTALTA,ID-Sogetto ARERA,1569,http://www.werk-castalta.it,,,n.a.,,,,,INTERESSENZA UTILIZZAZIONI IDRAULICHE PEDRACES - COSTALTA
+IT,DSO,IRETI S.P.A.,ID-Sogetto ARERA,3045,https://www.ireti.it/,posta@ireti.it,,n.a.,,,,,IRETI S.P.A.
+IT,DSO,KIRCHLER SRL,ID-Sogetto ARERA,25427,http://www.energy-dis.it/kirchler,Info@arturkirchler.com,,n.a.,,,,,KIRCHLER SRL
+IT,DSO,LD RETI S.R.L.,ID-Sogetto ARERA,860,http://www.ldreti.it,segreteria@ldreti.it,,n.a.,,,,,LD RETI S.R.L.
+IT,DSO,ODOARDO ZECCA S.R.L.,ID-Sogetto ARERA,242,http://www.zeccaonline.it,segreteria@zeccaonline.it,,n.a.,,,,,ODOARDO ZECCA S.R.L.
+IT,DSO,OFFICINA ELETTRICA SAN VIGILIO DI MAREBBE S.P.A.,ID-Sogetto ARERA,20,http://www.oesv.bz.it,info@oesv.bz.it,,n.a.,,,,,OFFICINA ELETTRICA SAN VIGILIO DI MAREBBE S.P.A.
+IT,DSO,RETI DI. VOGHERA S.R.L.,ID-Sogetto ARERA,28120,https://www.retidivoghera.it/,info@retidivoghera.it,,n.a.,,,,,RETI DI. VOGHERA S.R.L.
+IT,DSO,RETI VALTELLINA VALCHIAVENNA S.R.L. UNIPERSONALE,ID-Sogetto ARERA,28064,http://www.valtellinarevv.it,revv@valtellinarevv.it,,n.a.,,,,,RETI VALTELLINA VALCHIAVENNA S.R.L. UNIPERSONALE
+IT,DSO,RETIPIÙ SRL,ID-Sogetto ARERA,353,http://www.retipiu.it,info@retipiu.it,,n.a.,,,,,RETIPIÙ SRL
+IT,DSO,SEA S.C.,ID-Sogetto ARERA,91,http://www.sea.bz.it,info@sea.bz.it,,n.a.,,,,,SEA S.C.
+IT,DSO,SEA SOC. ELETTRICA DI FAVIGNANA S.P.A.,ID-Sogetto ARERA,82,http://www.seafavignana.com,info@seafavignana.com,,n.a.,,,,,SEA SOC. ELETTRICA DI FAVIGNANA S.P.A.
+IT,DSO,SECAB SOCIETÀ COOPERATIVA,ID-Sogetto ARERA,1051,http://www.secab.it,secab@secab.it,,n.a.,,,,,SECAB SOCIETÀ COOPERATIVA
+IT,DSO,S.EL.I.S. LAMPEDUSA S.P.A.,ID-Sogetto ARERA,14,http://www.grupposofip.it/,lampedusa@selis.it,,n.a.,,,,,S.EL.I.S. LAMPEDUSA S.P.A.
+IT,DSO,S.EL.I.S. LINOSA S.P.A.,ID-Sogetto ARERA,15,http://www.grupposofip.it/,linosa@selis.it,,n.a.,,,,,S.EL.I.S. LINOSA S.P.A.
+IT,DSO,S.EL.I.S. MARETTIMO S.P.A.,ID-Sogetto ARERA,16,http://www.grupposofip.it/,marettimo@selis.it,,n.a.,,,,,S.EL.I.S. MARETTIMO S.P.A.
+IT,DSO,SET DISTRIBUZIONE S.P.A.,ID-Sogetto ARERA,198,https://www.set.tn.it,info@setdistribuzione.it,,n.a.,,,,,SET DISTRIBUZIONE S.P.A.
+IT,DSO,SIE - SOCIETA IMPIANTI ELETTRICI S.R.L.,ID-Sogetto ARERA,1208,http://www.siegiglio.it,martelli.giovanni@siegiglio.it,,n.a.,,,,,SIE - SOCIETA IMPIANTI ELETTRICI S.R.L.
+IT,DSO,S.I.E.C.  SOC. COOP.,ID-Sogetto ARERA,361,http://www.siec-chiavenna.it,siec@siec-chiavenna.it,,n.a.,,,,,S.I.E.C.  SOC. COOP.
+IT,DSO,S.I.P.P.I.C. S.P.A.,ID-Sogetto ARERA,1571,http://www.sippicspa.it,sippicspa@yahoo.it,,n.a.,,,,,S.I.P.P.I.C. S.P.A.
+IT,DSO,S.MED.E. PANTELLERIA S.P.A.,ID-Sogetto ARERA,17,http://www.grupposofip.it/,pantelleria@smede.it,,n.a.,,,,,S.MED.E. PANTELLERIA S.P.A.
+IT,DSO,SOC. COOP. AZ. ELETTRICA MONGUELFO,ID-Sogetto ARERA,1069,https://www.ewerk-welsberg.com/it/,,,n.a.,,,,,SOC. COOP. AZ. ELETTRICA MONGUELFO
+IT,DSO,SOC. ELETTRICA LIPARESE S.R.L.,ID-Sogetto ARERA,1093,http://www.selenergia.it,sellip@tin.it,,n.a.,,,,,SOC. ELETTRICA LIPARESE S.R.L.
+IT,DSO,SOCIET` COOPERATIVA CANTUCCIO,ID-Sogetto ARERA,126,http://www.winkel.it,gen@winkel.it,,n.a.,,,,,SOCIET` COOPERATIVA CANTUCCIO
+IT,DSO,SOCIETÀ COOPERATIVA ELETTRICA DI DISTRIBUZIONE CAMPO TURES,ID-Sogetto ARERA,3373,http://www.evg.bz.it/index.php?lang=de,info@evg.bz.it,,n.a.,,,,,SOCIETÀ COOPERATIVA ELETTRICA DI DISTRIBUZIONE CAMPO TURES
+IT,DSO,SOCIETA' COOPERATIVA ELETTRICITA' BADIA,ID-Sogetto ARERA,1911,http://www.energy-dis.it/badia/,sevdata@sev.bz.it,,n.a.,,,,,SOCIETA' COOPERATIVA ELETTRICITA' BADIA
+IT,DSO,"SOCIETÀ COOPERATIVA ENERGETICA SAN MARTINO-VALDURNA, IN BREVE ""ERD""",ID-Sogetto ARERA,1588,http://www.erd.bz.it,info@erd.bz.it,,n.a.,,,,,"SOCIETÀ COOPERATIVA ENERGETICA SAN MARTINO-VALDURNA, IN BREVE ""ERD"""
+IT,DSO,SOCIETÀ COOPERATIVA IDROELETTRICA DI FORNI DI SOPRA,ID-Sogetto ARERA,749,http://www.sci-forni.it/,info@sci-forni.it,,n.a.,,,,,SOCIETÀ COOPERATIVA IDROELETTRICA DI FORNI DI SOPRA
+IT,DSO,SOCIETA' ELETTRICA IN MORBEGNO SOCIETA' COOPERATIVA PER AZIONI,ID-Sogetto ARERA,726,https://www.sem-morbegno.it/,mrapella@sem-morbegno.it,,n.a.,,,,,SOCIETA' ELETTRICA IN MORBEGNO SOCIETA' COOPERATIVA PER AZIONI
+IT,DSO,SOCIETA' ELETTRICA LA BRUZOLESE S.R.L.,ID-Sogetto ARERA,123,http://www.labruzoleseelettrica.it,posta@pec.labruzoleseelettrica.it,,n.a.,,,,,SOCIETA' ELETTRICA LA BRUZOLESE S.R.L.
+IT,DSO,SOCIETA ELETTRICA PONZESE,ID-Sogetto ARERA,158,http://www.societaelettricaponzese.it,sep@societaelettricaponzese.it,,n.a.,,,,,SOCIETA ELETTRICA PONZESE
+IT,DSO,SOCIETÀ NOLANA PER IMPRESE ELETTRICHE,ID-Sogetto ARERA,548,http://www.snie.it,distribuzione@snie.it,,n.a.,,,,,SOCIETÀ NOLANA PER IMPRESE ELETTRICHE
+IT,DSO,UNARETI SPA,ID-Sogetto ARERA,1247,http://www.unareti.it,info@unareti.it,,n.a.,,,,,UNARETI SPA
+IT,DSO,V-RETI S.P.A.,ID-Sogetto ARERA,301,http://www.v-reti.it,segreteria@v-reti.it,,n.a.,,,,,V-RETI S.P.A.
+NL,DSO,Westland Infra Netbeheer,EAN code,8716878999996,https://www.westlandinfra.nl/,n.a.,,122231,,,,,Gegevens Uitwisselings Entiteit (BAS)
+NL,DSO,Coteq Netbeheer,EAN code,8716916000004,https://coteqnetbeheer.nl/,info@coteq.nl,,198978,,,,,Gegevens Uitwisselings Entiteit (BAS)
+NL,DSO,Stedin Net,EAN code,8716874000009,https://www.stedin.net/,n.a.,,4326391,,,,,Gegevens Uitwisselings Entiteit (BAS)
+NL,DSO,Rendo,EAN code,8716912000008,https://www.rendogroep.nl/,info@rendo.nl,,138840,,,,,Gegevens Uitwisselings Entiteit (BAS)
+NL ,DSO,Liander,EAN code,8716871000002,https://www.liander.nl/,n.a.,,5982216,,,,,Gegevens Uitwisselings Entiteit (BAS)
+NL ,DSO,Enexis,EAN code,8716879000004,https://www.enexis.nl/,n.a.,,5244987,,,,,Gegevens Uitwisselings Entiteit (BAS)
+FI,National Hub,Fingrid Datahub,GS1/GLN,,https://palvelut.datahub.fi/en,datahub@fingrid.fi,All distribution systems,4000000, Before noon , 1 hour or 15 minutes (75% / 25%), Daily , Up to 6 years ,Fingrid Datahub

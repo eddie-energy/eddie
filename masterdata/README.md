@@ -21,11 +21,17 @@ in2csv BPRT_Region_Roles.xlsx --write-sheets - --use-sheet-names
 
 ## CSV to JSON
 
-The exported data requires further processing to be usable by the application. This is done through a Python script that reads the csv file, adds additional fields, and writes the data to a JSON file.
+The exported data requires further processing to be usable by the application. This is done through the Python script `transform.py` that reads the csv file, adds additional fields, and writes the data to a JSON file.
 
-The permission administrators data is transformed using the `transform-permission-administrators.py` script.
-To update the permission administrators data, run the following command:
+The type of data to be transformed is specified as an argument to the script.
+To update the permission administrators, run the following command:
 
 ```shell
-python transform-permission-administrators.py permission_administrator.csv ../core/src/main/resources/permission-administrators.json
+python transform.py pa permission_administrator.csv ../core/src/main/resources/permission-administrators.json
+```
+
+For metered data administrators, run this command instead.
+
+```shell
+python transform.py mda metered_data_administrators.csv ../core/src/main/resources/metered-data-administrators.json
 ```
