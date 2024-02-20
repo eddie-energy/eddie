@@ -60,7 +60,7 @@ class PermissionRequestFactoryTest {
         assertEquals(meteringPointId, createdRequest.meteringPointId());
         assertEquals(measurementType, createdRequest.measurementType());
         assertEquals(requestDataFrom, createdRequest.start());
-        assertEquals(requestDataTo, createdRequest.end());
+        assertEquals(requestDataTo.plusDays(1), createdRequest.end());
         assertTrue(createdRequest.distributorCode().isEmpty());
         assertTrue(createdRequest.lastPulledMeterReading().isEmpty());
         assertTrue(createdRequest.pointType().isEmpty());

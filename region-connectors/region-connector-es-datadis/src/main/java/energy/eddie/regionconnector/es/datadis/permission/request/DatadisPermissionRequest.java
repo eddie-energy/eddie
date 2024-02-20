@@ -14,6 +14,7 @@ import jakarta.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.MAXIMUM_MONTHS_IN_THE_FUTURE;
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static java.util.Objects.requireNonNull;
 
@@ -54,8 +55,11 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
         this.nif = requestForCreation.nif();
         this.meteringPointId = requestForCreation.meteringPointId();
         this.measurementType = requestForCreation.measurementType();
-        this.requestDataFrom = requestForCreation.requestDataFrom();
-        this.requestDataTo = requestForCreation.requestDataTo();
+        this.requestDataFrom = requestForCreation.requestDataFrom().withZoneSameLocal(ZONE_ID_SPAIN);
+        //noinspection OptionalOfNullableMisuse
+        this.requestDataTo = Optional.ofNullable(requestForCreation.requestDataTo())
+                .map(toDate -> toDate.withZoneSameLocal(ZONE_ID_SPAIN).plusDays(1))
+                .orElse(requestDataFrom.plusMonths(MAXIMUM_MONTHS_IN_THE_FUTURE));
 
         this.permissionStart = ZonedDateTime.now(ZONE_ID_SPAIN);
         this.permissionEnd = latest(permissionStart, requestDataTo);

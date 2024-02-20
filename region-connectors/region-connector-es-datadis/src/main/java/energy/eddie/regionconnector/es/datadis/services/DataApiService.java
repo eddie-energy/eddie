@@ -16,6 +16,7 @@ import reactor.core.publisher.Sinks;
 import java.time.LocalDate;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.MAXIMUM_MONTHS_IN_THE_PAST;
+import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 
 @Service
 public class DataApiService implements AutoCloseable {
@@ -67,7 +68,7 @@ public class DataApiService implements AutoCloseable {
             }
             if (exception.statusCode() == HttpStatus.TOO_MANY_REQUESTS.value()) {
                 request = request.minusMonths(1);
-                if (!request.startDate().isBefore(LocalDate.now().minusMonths(MAXIMUM_MONTHS_IN_THE_PAST))) {
+                if (!request.startDate().isBefore(LocalDate.now(ZONE_ID_SPAIN).minusMonths(MAXIMUM_MONTHS_IN_THE_PAST))) {
                     tryGetConsumptionKwh(request, permissionRequest);
                 }
             }
