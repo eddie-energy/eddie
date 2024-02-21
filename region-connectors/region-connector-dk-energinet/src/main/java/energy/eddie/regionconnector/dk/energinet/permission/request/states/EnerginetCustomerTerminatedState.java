@@ -6,7 +6,7 @@ import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnergi
 
 public class EnerginetCustomerTerminatedState extends ContextualizedPermissionRequestState<DkEnerginetCustomerPermissionRequest>
         implements TerminatedPermissionRequestState {
-    protected EnerginetCustomerTerminatedState(DkEnerginetCustomerPermissionRequest permissionRequest) {
+    public EnerginetCustomerTerminatedState(DkEnerginetCustomerPermissionRequest permissionRequest) {
         super(permissionRequest);
     }
 }

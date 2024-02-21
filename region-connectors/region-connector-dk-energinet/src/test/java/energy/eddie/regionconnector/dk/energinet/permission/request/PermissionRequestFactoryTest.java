@@ -23,7 +23,7 @@ class PermissionRequestFactoryTest {
         var requestForCreation = new PermissionRequestForCreation("foo", start, end, "token",
                 Granularity.PT1H, "bar", "foo");
         EnerginetCustomerApi customerApi = mock(EnerginetCustomerApi.class);
-        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(customerApi, Set.of());
+        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(customerApi, Set.of(), new StateBuilderFactory());
 
         // When
         PermissionRequest permissionRequest = permissionRequestFactory.create(requestForCreation);
@@ -40,9 +40,9 @@ class PermissionRequestFactoryTest {
         var requestForCreation = new PermissionRequestForCreation("foo", start, end, "token",
                 Granularity.PT1H, "bar", "foo");
         EnerginetCustomerApi customerApi = mock(EnerginetCustomerApi.class);
-        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", requestForCreation, customerApi);
+        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", requestForCreation, customerApi, new StateBuilderFactory());
         var extension = mock(Extension.class);
-        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(customerApi, Set.of(extension));
+        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(customerApi, Set.of(extension), new StateBuilderFactory());
 
         // When
         PermissionRequest wrapped = permissionRequestFactory.create(permissionRequest);

@@ -57,7 +57,6 @@ public class PollingService implements AutoCloseable {
      */
     @Scheduled(cron = "${region-connector.dk.energinet.polling:0 0 17 * * *}", zone = "Europe/Copenhagen")
     public void fetchFutureMeterReadings() {
-
         List<DkEnerginetCustomerPermissionRequest> prs = permissionRequestService.findAllAcceptedPermissionRequests();
         LOGGER.info("Fetching metering data for {} permission requests", prs.size());
         prs

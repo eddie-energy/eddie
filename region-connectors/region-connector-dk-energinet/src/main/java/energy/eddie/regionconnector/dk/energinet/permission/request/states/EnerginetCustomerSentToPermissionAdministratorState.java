@@ -2,27 +2,38 @@ package energy.eddie.regionconnector.dk.energinet.permission.request.states;
 
 import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
 import energy.eddie.api.agnostic.process.model.states.SentToPermissionAdministratorPermissionRequestState;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
 
 public class EnerginetCustomerSentToPermissionAdministratorState extends ContextualizedPermissionRequestState<DkEnerginetCustomerPermissionRequest>
         implements SentToPermissionAdministratorPermissionRequestState {
-    public EnerginetCustomerSentToPermissionAdministratorState(DkEnerginetCustomerPermissionRequest permissionRequest) {
+    private final StateBuilderFactory factory;
+
+    public EnerginetCustomerSentToPermissionAdministratorState(DkEnerginetCustomerPermissionRequest permissionRequest, StateBuilderFactory factory) {
         super(permissionRequest);
+        this.factory = factory;
     }
 
     @Override
     public void accept() {
-        permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest));
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build()
+        );
     }
 
     @Override
     public void invalid() {
-        permissionRequest.changeState(new EnerginetCustomerInvalidState(permissionRequest));
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.INVALID).build()
+        );
     }
 
     @Override
     public void reject() {
-        permissionRequest.changeState(new EnerginetCustomerRejectedState(permissionRequest));
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.REJECTED).build()
+        );
     }
 
     @Override

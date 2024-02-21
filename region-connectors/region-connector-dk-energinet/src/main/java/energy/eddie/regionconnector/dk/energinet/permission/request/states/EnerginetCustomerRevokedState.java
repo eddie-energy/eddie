@@ -7,7 +7,7 @@ import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnergi
 public class EnerginetCustomerRevokedState
         extends ContextualizedPermissionRequestState<DkEnerginetCustomerPermissionRequest>
         implements RevokedPermissionRequestState {
-    protected EnerginetCustomerRevokedState(DkEnerginetCustomerPermissionRequest permissionRequest) {
+    public EnerginetCustomerRevokedState(DkEnerginetCustomerPermissionRequest permissionRequest) {
         super(permissionRequest);
     }
 }

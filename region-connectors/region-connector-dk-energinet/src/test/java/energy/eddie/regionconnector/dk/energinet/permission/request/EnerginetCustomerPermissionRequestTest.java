@@ -29,7 +29,7 @@ class EnerginetCustomerPermissionRequestTest {
         var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
 
         // When
-        var request = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient);
+        var request = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, new StateBuilderFactory());
 
         // Then
         assertEquals(permissionId, request.permissionId());
@@ -56,7 +56,7 @@ class EnerginetCustomerPermissionRequestTest {
         var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
 
         // When
-        var request = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient);
+        var request = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, new StateBuilderFactory());
         PermissionRequestState newState = new EnerginetCustomerRejectedState(request);
 
         // When

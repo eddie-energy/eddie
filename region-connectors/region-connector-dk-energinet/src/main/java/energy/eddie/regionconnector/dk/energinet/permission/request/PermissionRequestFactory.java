@@ -14,17 +14,24 @@ import java.util.UUID;
 public class PermissionRequestFactory {
     private final EnerginetCustomerApi customerApi;
     private final Set<Extension<DkEnerginetCustomerPermissionRequest>> extensions;
+    private final StateBuilderFactory stateBuilderFactory;
 
     public PermissionRequestFactory(
             EnerginetCustomerApi customerApi,
-            Set<Extension<DkEnerginetCustomerPermissionRequest>> extensions
+            Set<Extension<DkEnerginetCustomerPermissionRequest>> extensions,
+            StateBuilderFactory stateBuilderFactory
     ) {
         this.customerApi = customerApi;
         this.extensions = extensions;
+        this.stateBuilderFactory = stateBuilderFactory;
     }
 
     public DkEnerginetCustomerPermissionRequest create(PermissionRequestForCreation request) {
-        var permissionRequest = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(), request, customerApi);
+        DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(
+                UUID.randomUUID().toString(),
+                request,
+                customerApi,
+                stateBuilderFactory);
         return PermissionRequestProxy.createProxy(
                 permissionRequest,
                 extensions,
@@ -35,12 +42,10 @@ public class PermissionRequestFactory {
 
     public DkEnerginetCustomerPermissionRequest create(DkEnerginetCustomerPermissionRequest permissionRequest) {
         return PermissionRequestProxy.createProxy(
-                permissionRequest,
+                permissionRequest.withApiClient(customerApi).withStateBuilderFactory(stateBuilderFactory),
                 extensions,
                 DkEnerginetCustomerPermissionRequest.class,
                 PermissionRequestProxy.CreationInfo.RECREATED
         );
     }
-
-
 }

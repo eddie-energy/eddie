@@ -32,10 +32,12 @@ dependencies {
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.websocket)
     implementation(libs.reactor.core)
+    implementation(libs.flyway.core)
 
 
     runtimeOnly(libs.h2database)
     runtimeOnly(libs.postgresql)
+    runtimeOnly(libs.flyway.postgresql)
 
 
     testImplementation(libs.junit.jupiter)

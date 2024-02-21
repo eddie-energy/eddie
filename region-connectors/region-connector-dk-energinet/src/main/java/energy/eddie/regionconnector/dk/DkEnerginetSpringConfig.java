@@ -9,9 +9,9 @@ import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.config.PlainEnerginetConfiguration;
-import energy.eddie.regionconnector.dk.energinet.permission.request.InMemoryPermissionRequestRepository;
+import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
+import energy.eddie.regionconnector.dk.energinet.permission.request.persistence.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.SeriesPeriodBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.TimeSeriesBuilderFactory;
@@ -47,6 +47,11 @@ public class DkEnerginetSpringConfig {
             @Value("${" + CUSTOMER_ID_KEY + "}") String customerId
     ) {
         return new PlainEnerginetConfiguration(customerBasePath, customerId);
+    }
+
+    @Bean
+    public StateBuilderFactory stateBuilderFactory() {
+        return new StateBuilderFactory();
     }
 
     @Bean
@@ -98,11 +103,6 @@ public class DkEnerginetSpringConfig {
                 commonInformationModelConfiguration,
                 new TimeSeriesBuilderFactory(new SeriesPeriodBuilderFactory())
         );
-    }
-
-    @Bean
-    public DkEnerginetCustomerPermissionRequestRepository permissionRequestRepository() {
-        return new InMemoryPermissionRequestRepository();
     }
 
     @Bean

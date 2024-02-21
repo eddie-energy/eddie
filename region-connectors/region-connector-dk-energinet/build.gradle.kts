@@ -23,8 +23,9 @@ dependencies {
     implementation(project(":api"))
     implementation(project(":region-connectors:shared"))
     implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.validation)
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation(libs.spring.boot.starter.webflux)
 
     // Required for openapi generator
     implementation(libs.jackson.databind)

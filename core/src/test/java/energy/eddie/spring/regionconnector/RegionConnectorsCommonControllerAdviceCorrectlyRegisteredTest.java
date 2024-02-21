@@ -43,8 +43,8 @@ class RegionConnectorsCommonControllerAdviceCorrectlyRegisteredTest {
 
     @BeforeEach
     void setUp() {
-        var dkChildContext = getChildContext("dk-energinet");
-        mockMvc = MockMvcBuilders.webAppContextSetup(dkChildContext).build();
+        var esChildContext = getChildContext("es-datadis");
+        mockMvc = MockMvcBuilders.webAppContextSetup(esChildContext).build();
     }
 
     @Test
@@ -96,8 +96,13 @@ class RegionConnectorsCommonControllerAdviceCorrectlyRegisteredTest {
                 // Then
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItems(
-                        "meteringPoint: must not be blank",
-                        "refreshToken: must not be blank")));
+                        "nif: must not be null or blank",
+                        "meteringPointId: must not be null or blank",
+                        "measurementType: must not be null",
+                        "dataNeedId: must not be null or blank",
+                        "connectionId: must not be null or blank",
+                        "requestDataTo: must not be null",
+                        "requestDataFrom: must not be null")));
     }
 
     @Test

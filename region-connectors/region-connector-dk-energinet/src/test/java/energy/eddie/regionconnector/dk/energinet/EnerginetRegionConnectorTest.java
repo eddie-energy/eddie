@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustom
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.SimplePermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.permission.request.states.EnerginetCustomerAcceptedState;
 import energy.eddie.regionconnector.dk.energinet.permission.request.states.EnerginetCustomerInvalidState;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
@@ -71,7 +72,7 @@ class EnerginetRegionConnectorTest {
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
         ZonedDateTime end = start.plusDays(10);
         var creation = new PermissionRequestForCreation("cid", start, end, "token", Granularity.PT15M, "mpid", "dnid");
-        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", creation, mock(EnerginetCustomerApi.class));
+        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", creation, mock(EnerginetCustomerApi.class), new StateBuilderFactory());
         EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(permissionRequest);
         permissionRequest.changeState(state);
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
