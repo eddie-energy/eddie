@@ -2,6 +2,7 @@ package energy.eddie.spring;
 
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
+import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -22,6 +24,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -118,6 +121,8 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         Set<BeanDefinition> regionConnectorBeanDefinitions = findAllSpringRegionConnectorBeanDefinitions();
         List<Class<?>> regionConnectorProcessorClasses = findAllRegionConnectorProcessorClasses(environment);
 
+        List<String> enabledRegionConnectorNames = new ArrayList<>();
+
         for (BeanDefinition rcDefinition : regionConnectorBeanDefinitions) {
             try {
                 Class<?> regionConnectorConfigClass = Class.forName(rcDefinition.getBeanClassName());
@@ -132,11 +137,43 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
                     var beanDefinition = createBeanDefinition(applicationContext, regionConnectorName);
 
                     registry.registerBeanDefinition(regionConnectorName, beanDefinition);
+                    enabledRegionConnectorNames.add(regionConnectorName);
                 }
             } catch (ClassNotFoundException e) {
                 LOGGER.error("Found a region connector bean definition {}, but couldn't get the class for it", rcDefinition, e);
             }
         }
+
+        registerFlywayStrategy(registry, enabledRegionConnectorNames);
+    }
+
+    /**
+     * Creates a {@link FlywayMigrationStrategy} that creates the schemas for all enabled region connectors and
+     * the {@code core}, as well as executing any migration scripts found in the respective folders on the classpath.
+     * The folder pattern is: "db/migration/&lt;region-connector-name&gt;".
+     * Any minus ('-') in the region connector's name will be replaced by an underscore ('_') for the schema name.
+     *
+     * @param registry                    BeanDefinitionRegistry where the {@link FlywayMigrationStrategy} is registered.
+     * @param enabledRegionConnectorNames List of the names of the enabled region connectors for which the migrations will be run.
+     */
+    private void registerFlywayStrategy(BeanDefinitionRegistry registry, List<String> enabledRegionConnectorNames) {
+        FlywayMigrationStrategy strategy = flyway -> {
+            // also execute flyway migration for core
+            enabledRegionConnectorNames.add("core");
+            enabledRegionConnectorNames.forEach(regionConnectorName -> {
+                var schemaName = regionConnectorName.replace('-', '_');
+                Flyway.configure()
+                        .configuration(flyway.getConfiguration())
+                        .schemas(schemaName)
+                        .locations("db/migration/" + regionConnectorName)
+                        .load()
+                        .migrate();
+            });
+        };
+
+        registry.registerBeanDefinition("flywayMigrationStrategy", BeanDefinitionBuilder
+                .genericBeanDefinition(FlywayMigrationStrategy.class, () -> strategy)
+                .getBeanDefinition());
     }
 
     private Set<BeanDefinition> findAllSpringRegionConnectorBeanDefinitions() {
