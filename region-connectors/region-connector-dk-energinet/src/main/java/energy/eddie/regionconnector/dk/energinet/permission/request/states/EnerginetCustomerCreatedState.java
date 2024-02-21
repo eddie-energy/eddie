@@ -5,8 +5,9 @@ import energy.eddie.api.agnostic.process.model.states.CreatedPermissionRequestSt
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.api.agnostic.process.model.validation.Validator;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
-import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.validation.NotOlderThanValidator;
 import energy.eddie.regionconnector.shared.permission.requests.validation.CompletelyInThePastOrInTheFutureValidator;
@@ -24,15 +25,19 @@ public class EnerginetCustomerCreatedState
             new CompletelyInThePastOrInTheFutureValidator<>(),
             new StartIsBeforeOrEqualEndValidator<>()
     );
+    private final StateBuilderFactory factory;
 
-    public EnerginetCustomerCreatedState(EnerginetCustomerPermissionRequest request) {
-        super(request);
+    public EnerginetCustomerCreatedState(DkEnerginetCustomerPermissionRequest permissionRequest, StateBuilderFactory factory) {
+        super(permissionRequest);
+        this.factory = factory;
     }
 
     @Override
     public void validate() throws ValidationException {
         validateAttributes();
-        permissionRequest.changeState(new EnerginetCustomerValidatedState(permissionRequest));
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.VALIDATED).build()
+        );
     }
 
     private void validateAttributes() throws ValidationException {
@@ -48,6 +53,10 @@ public class EnerginetCustomerCreatedState
     }
 
     private void changeToMalformedState(Exception e) {
-        permissionRequest.changeState(new EnerginetCustomerMalformedState(permissionRequest, e));
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.MALFORMED)
+                        .withCause(e)
+                        .build()
+        );
     }
 }
