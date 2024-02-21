@@ -41,6 +41,10 @@ for row in rows[1:]:
     else:
         regionConnector = country
 
+    # If empty infer company id from company name
+    if companyId == '':
+        companyId = re.sub(r'[^a-z0-9-]', '', company.lower().replace(' ', '-'))
+
     result.append({
         'country': country,
         'company': company,

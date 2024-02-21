@@ -35,7 +35,7 @@ const BASE_URL = import.meta.url.replace("/lib/eddie-components.js", "");
 
 function fetchJson(path) {
   return fetch(BASE_URL + path)
-    .then((response) => response.json())
+    .then((response) => response.ok && response.json())
     .catch((error) => console.error(error));
 }
 
@@ -78,6 +78,11 @@ class EddieConnectButton extends LitElement {
       attribute: "allow-data-need-selection",
       type: Object,
     },
+    permissionAdministrator: {
+      attribute: "permission-administrator",
+      type: String,
+    },
+    accountingPointId: { attribute: "accounting-point-id", type: String },
 
     _dataNeedIds: { type: Array },
     _selectedCountry: { type: String },
@@ -86,6 +91,7 @@ class EddieConnectButton extends LitElement {
     _dataNeedAttributes: { type: Object },
     _dataNeedTypes: { type: Array },
     _dataNeedGranularities: { type: Array },
+    _isValidConfiguration: { type: Boolean, state: true },
   };
   static styles = css`
     :host {
@@ -125,36 +131,15 @@ class EddieConnectButton extends LitElement {
     this._dataNeedIds = [];
     this._dataNeedTypes = [];
     this._dataNeedGranularities = [];
+    this._presetPermissionAdministrator = null;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this._isValidConfiguration = this.configure();
   }
 
   async connect() {
-    if (!this.dataNeedId && !this.allowDataNeedSelection) {
-      console.error(
-        "EDDIE button loaded without data-need-id or allow-data-need-selection."
-      );
-    }
-
-    if (this.allowDataNeedSelection) {
-      this._dataNeedIds = await fetchJson("/api/data-needs");
-    }
-
-    if (this.dataNeedId) {
-      this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
-    }
-
-    if (this.allowDataNeedModifications) {
-      this._dataNeedTypes = await fetchJson("/api/data-needs/types");
-      this._dataNeedGranularities = await fetchJson(
-        "/api/data-needs/granularities"
-      );
-    }
-
-    this._availableConnectors = await getRegionConnectors();
-
-    if (this.isAiida()) {
-      this.selectAiida();
-    }
-
     this.dialogRef.value.show();
   }
 
@@ -195,6 +180,10 @@ class EddieConnectButton extends LitElement {
       this._selectedPermissionAdministrator.companyId
     );
 
+    if (this.accountingPointId) {
+      element.setAttribute("accounting-point-id", this.accountingPointId);
+    }
+
     return element;
   }
 
@@ -205,7 +194,8 @@ class EddieConnectButton extends LitElement {
     if (this.isAiida()) {
       this.selectAiida();
     } else {
-      this._selectedPermissionAdministrator = null;
+      this._selectedPermissionAdministrator =
+        this._presetPermissionAdministrator;
     }
   }
 
@@ -251,19 +241,79 @@ class EddieConnectButton extends LitElement {
     } else if (
       this._selectedPermissionAdministrator?.regionConnector === "aiida"
     ) {
-      this._selectedPermissionAdministrator = null;
+      this._selectedPermissionAdministrator =
+        this._presetPermissionAdministrator;
     }
 
     this.requestUpdate();
   }
 
-  async isValidDataNeedId() {
-    if (!this.dataNeedId) {
-      return true;
+  async configure() {
+    if (!this.dataNeedId && !this.allowDataNeedSelection) {
+      console.error(
+        "EDDIE button loaded without data-need-id or allow-data-need-selection."
+      );
+      return false;
     }
-    return await fetch(`${BASE_URL}/api/data-needs/${this.dataNeedId}`).then(
-      (response) => response.status === 200
-    );
+
+    if (this.accountingPointId && !this.permissionAdministrator) {
+      console.error(
+        "Accounting point specified without permission administrator."
+      );
+      return false;
+    }
+
+    if (this.allowDataNeedSelection) {
+      this._dataNeedIds = await fetchJson("/api/data-needs");
+    }
+
+    if (this.dataNeedId) {
+      this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
+
+      if (!this._dataNeedAttributes) {
+        console.error(`Invalid Data Need ${this.dataNeedId}`);
+        return false;
+      }
+    }
+
+    if (this.allowDataNeedModifications) {
+      this._dataNeedTypes = await fetchJson("/api/data-needs/types");
+      this._dataNeedGranularities = await fetchJson(
+        "/api/data-needs/granularities"
+      );
+    }
+
+    this._availableConnectors = await getRegionConnectors();
+
+    if (this.permissionAdministrator) {
+      const pa = PERMISSION_ADMINISTRATORS.find(
+        (it) => it.companyId === this.permissionAdministrator
+      );
+
+      if (pa) {
+        this._selectedCountry = pa.country;
+        this._selectedPermissionAdministrator = pa;
+        this._presetPermissionAdministrator = pa;
+      } else {
+        console.error(
+          `No Permission Administrator ${this.permissionAdministrator}.`
+        );
+        return false;
+      }
+
+      if (!this._availableConnectors[pa.regionConnector]) {
+        console.error(
+          `Region Connector "${pa.regionConnector}" for Permission Administrator "${this.permissionAdministrator}" is unavailable.`
+        );
+        return false;
+      }
+    }
+
+    if (this.isAiida()) {
+      this.selectAiida();
+    }
+
+    return true;
   }
 
   isAiida() {
@@ -282,7 +332,7 @@ class EddieConnectButton extends LitElement {
         href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/themes/light.css"
       />
       ${until(
-        this.isValidDataNeedId().then((isValid) =>
+        this._isValidConfiguration.then((isValid) =>
           isValid
             ? html`
                 <button class="eddie-connect-button" @click="${this.connect}">
@@ -296,7 +346,7 @@ class EddieConnectButton extends LitElement {
                   disabled
                 >
                   ${unsafeSVG(buttonIcon)}
-                  <span>Invalid DataNeed ${this.dataNeedId}</span>
+                  <span>Invalid configuration</span>
                 </button>
               `
         )
@@ -308,6 +358,7 @@ class EddieConnectButton extends LitElement {
       >
         <div slot="label">${unsafeSVG(headerImage)}</div>
 
+        <!-- Render the data need selection form if the feature is enabled -->
         ${this.allowDataNeedSelection
           ? html`
               <sl-select
@@ -323,6 +374,8 @@ class EddieConnectButton extends LitElement {
               <br />
             `
           : ""}
+
+        <!-- Render a data need description if available -->
         ${this._dataNeedAttributes.description
           ? html`
               <sl-alert open>
@@ -333,6 +386,8 @@ class EddieConnectButton extends LitElement {
               <br />
             `
           : ""}
+
+        <!-- Render the data need modification form if the feature is enabled -->
         ${this.allowDataNeedModifications && this._dataNeedAttributes.id
           ? html`
               <sl-details
@@ -411,7 +466,9 @@ class EddieConnectButton extends LitElement {
               <br />
             `
           : ""}
-        ${!this.isAiida()
+
+        <!-- Render country selection when not preset -->
+        ${!this.isAiida() && !this._presetPermissionAdministrator
           ? html`
               <sl-select
                 label="Country"
@@ -432,7 +489,9 @@ class EddieConnectButton extends LitElement {
               <br />
             `
           : ""}
-        ${this._selectedCountry
+
+        <!-- Render permission administrator selection when not preset -->
+        ${this._selectedCountry && !this._presetPermissionAdministrator
           ? html`
               <sl-select
                 label="Permission Administrator"
@@ -457,6 +516,24 @@ class EddieConnectButton extends LitElement {
                   `
                 )}
               </sl-select>
+              <br />
+            `
+          : ""}
+
+        <!-- Render static fields for preset permission administrator -->
+        ${this._presetPermissionAdministrator
+          ? html`
+              <sl-input
+                label="Country"
+                value="${COUNTRY_NAMES.of(this._selectedCountry.toUpperCase())}"
+                disabled
+              ></sl-input>
+              <br />
+              <sl-input
+                label="Permission Administrator"
+                value="${this._selectedPermissionAdministrator.company}"
+                disabled
+              ></sl-input>
               <br />
             `
           : ""}
