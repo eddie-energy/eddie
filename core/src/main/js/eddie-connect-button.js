@@ -2,6 +2,7 @@ import { css, html, LitElement } from "lit";
 import { createRef, ref } from "lit/directives/ref.js";
 import { until } from "lit/directives/until.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
+import { when } from "lit/directives/when.js";
 
 // Shoelace
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/dialog/dialog.js";
@@ -87,6 +88,7 @@ class EddieConnectButton extends LitElement {
     _dataNeedIds: { type: Array },
     _selectedCountry: { type: String },
     _selectedPermissionAdministrator: { type: Object },
+    _filteredPermissionAdministrators: { type: Array },
     _availableConnectors: { type: Object },
     _dataNeedAttributes: { type: Object },
     _dataNeedTypes: { type: Array },
@@ -150,10 +152,20 @@ class EddieConnectButton extends LitElement {
   async getRegionConnectorElement() {
     const regionConnectorId =
       this._selectedPermissionAdministrator.regionConnector;
+    const regionConnector = this._availableConnectors[regionConnectorId];
+
+    if (!regionConnector) {
+      return html` <sl-alert variant="danger" open>
+        <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+        The region connector for
+        ${this._selectedPermissionAdministrator.company} is unavailable. Please
+        try again later or contact the service provider.
+      </sl-alert>`;
+    }
+
     const customElementName = regionConnectorId + "-pa-ce";
 
     if (!customElements.get(customElementName)) {
-      const regionConnector = this._availableConnectors[regionConnectorId];
       // loaded module needs to have the custom element class as its default export
       const module = await import(
         `${BASE_URL}/region-connectors/${regionConnector.id}/ce.js`
@@ -212,6 +224,14 @@ class EddieConnectButton extends LitElement {
       this._selectedPermissionAdministrator = { regionConnector: "sim" };
     } else {
       this._selectedCountry = event.target.value;
+      this._filteredPermissionAdministrators = PERMISSION_ADMINISTRATORS.filter(
+        (pa) => pa.country === this._selectedCountry
+      );
+
+      if (this._filteredPermissionAdministrators.length === 1) {
+        this._selectedPermissionAdministrator =
+          this._filteredPermissionAdministrators[0];
+      }
     }
   }
 
@@ -492,32 +512,41 @@ class EddieConnectButton extends LitElement {
 
         <!-- Render permission administrator selection when not preset -->
         ${this._selectedCountry && !this._presetPermissionAdministrator
-          ? html`
-              <sl-select
-                label="Permission Administrator"
-                placeholder="Select your Permission Administrator"
-                @sl-change="${this.handlePermissionAdministratorSelect}"
-                ${ref(this.permissionAdministratorSelectRef)}
-              >
-                ${PERMISSION_ADMINISTRATORS.filter(
-                  (pa) => pa.country === this._selectedCountry
-                ).map(
-                  (pa) => html`
-                    <sl-option
-                      value="${PERMISSION_ADMINISTRATORS.findIndex(
-                        (item) => item === pa
-                      )}"
-                      .disabled="${!this._availableConnectors[
-                        pa.regionConnector
-                      ]}"
-                    >
-                      ${pa.company}
-                    </sl-option>
-                  `
-                )}
-              </sl-select>
-              <br />
-            `
+          ? when(
+              this._filteredPermissionAdministrators.length === 1,
+              () => html`
+                <sl-input
+                  label="Permission Administrator"
+                  value="${this._selectedPermissionAdministrator.company}"
+                  disabled
+                ></sl-input>
+                <br />
+              `,
+              () => html`
+                <sl-select
+                  label="Permission Administrator"
+                  placeholder="Select your Permission Administrator"
+                  @sl-change="${this.handlePermissionAdministratorSelect}"
+                  ${ref(this.permissionAdministratorSelectRef)}
+                >
+                  ${this._filteredPermissionAdministrators.map(
+                    (pa) => html`
+                      <sl-option
+                        value="${PERMISSION_ADMINISTRATORS.findIndex(
+                          (item) => item === pa
+                        )}"
+                        .disabled="${!this._availableConnectors[
+                          pa.regionConnector
+                        ]}"
+                      >
+                        ${pa.company}
+                      </sl-option>
+                    `
+                  )}
+                </sl-select>
+                <br />
+              `
+            )
           : ""}
 
         <!-- Render static fields for preset permission administrator -->
