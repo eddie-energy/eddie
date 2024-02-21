@@ -37,8 +37,9 @@ public class IdentifiableMeteringDataService {
             return;
         }
 
-        // the last metring data date is always at 00:00 the next day, so if we get data for the 24.01.2024 the last metering data date will be 25.01.2024T00:00:00
-        if (permissionEnd.toLocalDate().isBefore(meteringDataDate.toLocalDate())) {
+        // the last metering data date is always at 00:00 the next day, so if we get data for the 24.01.2024 the last metering data date will be 25.01.2024T00:00:00
+        // this check makes sure that the permission request is fulfilled if the last metering data date is equal or after the permission end date
+        if (!meteringDataDate.isBefore(permissionEnd)) {
             try {
                 permissionRequest.fulfill();
             } catch (StateTransitionException e) {

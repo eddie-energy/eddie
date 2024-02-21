@@ -83,7 +83,7 @@ class IdentifiableMeteringDataServiceTest {
     void ifMeteringDataDateBeforePermissionEndDate_doesNotCallFulfill() throws StateTransitionException {
         // Arrange
         EsPermissionRequest permissionRequest = mock(EsPermissionRequest.class);
-        ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
+        ZonedDateTime now = LocalDate.now().atStartOfDay(ZONE_ID_SPAIN);
         when(permissionRequest.end()).thenReturn(now.plusDays(1));
 
         MeteringData meteringData = new MeteringData("", ZonedDateTime.of(now.minusDays(1).toLocalDate(), LocalTime.MIN, ZONE_ID_SPAIN), 0.0, "REAL", 0.0);
@@ -100,13 +100,33 @@ class IdentifiableMeteringDataServiceTest {
     }
 
     @Test
-    void ifMeteringDataDateAfterPermissionEndDate_callsFulfill() throws StateTransitionException {
+    void ifMeteringDataDateAfterPermissionEndDate_callsFulfillOnlyOnce() throws StateTransitionException {
         // Arrange
         EsPermissionRequest permissionRequest = mock(EsPermissionRequest.class);
         ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
         when(permissionRequest.end()).thenReturn(now.minusDays(1));
 
         MeteringData meteringData = new MeteringData("", ZonedDateTime.of(now.toLocalDate(), LocalTime.MIN, ZONE_ID_SPAIN), 0.0, "REAL", 0.0);
+        TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
+
+        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(testPublisher.flux());
+        // Act
+        StepVerifier.create(testPublisher)
+                .then(() -> testPublisher.emit(new IdentifiableMeteringData(permissionRequest, List.of(meteringData, meteringData))))
+                .expectNextCount(1)
+                .verifyComplete();
+        // Assert
+        verify(permissionRequest, times(1)).fulfill();
+    }
+
+    @Test
+    void ifMeteringDataDateEqualsPermissionEndDate_callsFulfill() throws StateTransitionException {
+        // Arrange
+        EsPermissionRequest permissionRequest = mock(EsPermissionRequest.class);
+        ZonedDateTime now = LocalDate.now().atStartOfDay(ZONE_ID_SPAIN);
+        when(permissionRequest.end()).thenReturn(now);
+
+        MeteringData meteringData = new MeteringData("", now, 0.0, "REAL", 0.0);
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
         IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(testPublisher.flux());

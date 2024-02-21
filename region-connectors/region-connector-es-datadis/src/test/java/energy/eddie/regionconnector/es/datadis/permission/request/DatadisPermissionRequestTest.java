@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -79,13 +80,13 @@ class DatadisPermissionRequestTest {
 
     @Test
     void permissionEnd_whenRequestingTodaysData_isOneDayGraterThanPermissionStart() {
-        var today = ZonedDateTime.now(ZoneOffset.UTC);
+        var today = LocalDate.now().atStartOfDay(ZoneOffset.UTC);
         requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 today, today, measurementType);
 
         var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
 
-        assertEquals(request.permissionStart().plusDays(1), request.permissionEnd());
+        assertEquals(request.permissionStart().toLocalDate().plusDays(1), request.permissionEnd().toLocalDate());
     }
 
     @Test
