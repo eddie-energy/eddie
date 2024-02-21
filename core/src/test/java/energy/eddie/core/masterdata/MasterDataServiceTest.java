@@ -48,6 +48,30 @@ class MasterDataServiceTest {
     }
 
     @Test
+    void getMeteredDataAdministrators() throws IOException {
+        List<MeteredDataAdministrator> meteredDataAdministrators = List.of(new MeteredDataAdministrator("country", "company", "company-id", "websiteUrl", "officialContact"));
+
+        when(objectMapper.readValue(any(URL.class), any(TypeReference.class))).thenReturn(meteredDataAdministrators);
+
+        MasterDataService masterDataService = new MasterDataService(objectMapper);
+
+        List<MeteredDataAdministrator> result = masterDataService.getMeteredDataAdministrators();
+        assertEquals(meteredDataAdministrators, result);
+    }
+
+    @Test
+    void getMeteredDataAdministrator() throws IOException {
+        MeteredDataAdministrator meteredDataAdministrator = new MeteredDataAdministrator("country", "company", "company-id", "websiteUrl", "officialContact");
+
+        when(objectMapper.readValue(any(URL.class), any(TypeReference.class))).thenReturn(List.of(meteredDataAdministrator));
+
+        MasterDataService masterDataService = new MasterDataService(objectMapper);
+
+        MeteredDataAdministrator result = masterDataService.getMeteredDataAdministrator("company-id").orElseThrow();
+        assertEquals(meteredDataAdministrator, result);
+    }
+
+    @Test
     void fileNotFound() throws IOException {
         when(objectMapper.readValue(any(URL.class), any(TypeReference.class))).thenThrow(new IOException());
 

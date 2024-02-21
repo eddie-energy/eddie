@@ -13,16 +13,26 @@ import java.util.Optional;
 public class MasterDataService {
 
     private final List<PermissionAdministrator> permissionAdministrators;
+    private final List<MeteredDataAdministrator> meteredDataAdministrators;
+
+    private final ObjectMapper objectMapper;
 
     public MasterDataService(ObjectMapper objectMapper) throws FileNotFoundException {
+        this.objectMapper = objectMapper;
+
+        this.permissionAdministrators = readJsonFile("permission-administrators.json");
+        this.meteredDataAdministrators = readJsonFile("metered-data-administrators.json");
+    }
+
+    private <T> List<T> readJsonFile(String filename) throws FileNotFoundException {
         try {
-            this.permissionAdministrators = objectMapper.readValue(
-                    getClass().getClassLoader().getResource("permission-administrators.json"),
+            return objectMapper.readValue(
+                    getClass().getClassLoader().getResource(filename),
                     new TypeReference<>() {
                     }
             );
         } catch (IOException e) {
-            throw new FileNotFoundException("Error while reading permission administrators from config file");
+            throw new FileNotFoundException("Error reading config file " + filename + ": " + e.getMessage());
         }
     }
 
@@ -33,6 +43,16 @@ public class MasterDataService {
     public Optional<PermissionAdministrator> getPermissionAdministrator(String id) {
         return permissionAdministrators.stream()
                 .filter(p -> p.companyId().equals(id))
+                .findFirst();
+    }
+
+    public List<MeteredDataAdministrator> getMeteredDataAdministrators() {
+        return meteredDataAdministrators;
+    }
+
+    public Optional<MeteredDataAdministrator> getMeteredDataAdministrator(String id) {
+        return meteredDataAdministrators.stream()
+                .filter(m -> m.companyId().equals(id))
                 .findFirst();
     }
 }

@@ -26,4 +26,14 @@ public class MasterDataController {
     public ResponseEntity<PermissionAdministrator> getPermissionAdministrator(@PathVariable String id) {
         return ResponseEntity.of(masterDataService.getPermissionAdministrator(id));
     }
+
+    @RequestMapping("/metered-data-administrators")
+    public List<MeteredDataAdministrator> getMeteredDataAdministrators() {
+        return masterDataService.getMeteredDataAdministrators();
+    }
+
+    @RequestMapping("/metered-data-administrators/{id}")
+    public ResponseEntity<MeteredDataAdministrator> getMeteredDataAdministrator(@PathVariable String id) {
+        return ResponseEntity.of(masterDataService.getMeteredDataAdministrator(id));
+    }
 }

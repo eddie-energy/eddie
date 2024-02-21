@@ -53,4 +53,32 @@ class MasterDataControllerTest {
         mvc.perform(get("/api/permission-administrators/nonexistent-id").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void getMeteredDataAdministrators() throws Exception {
+        final var meteredDataAdministrators = List.of(new MeteredDataAdministrator("country", "company", "company-id", "websiteUrl", "officialContact"));
+        given(this.masterDataService.getMeteredDataAdministrators())
+                .willReturn(meteredDataAdministrators);
+        mvc.perform(get("/api/metered-data-administrators").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(meteredDataAdministrators), true));
+    }
+
+    @Test
+    void getMeteredDataAdministrator() throws Exception {
+        final var meteredDataAdministrator = new MeteredDataAdministrator("country", "company", "company-id", "websiteUrl", "officialContact");
+        given(this.masterDataService.getMeteredDataAdministrator("company-id"))
+                .willReturn(Optional.of(meteredDataAdministrator));
+        mvc.perform(get("/api/metered-data-administrators/company-id").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(meteredDataAdministrator), true));
+    }
+
+    @Test
+    void getMeteredDataAdministrator_notFound() throws Exception {
+        given(this.masterDataService.getMeteredDataAdministrator("nonexistent-id"))
+                .willReturn(Optional.empty());
+        mvc.perform(get("/api/metered-data-administrators/nonexistent-id").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
 }
