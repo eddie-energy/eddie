@@ -25,7 +25,7 @@ public class TimeSeriesBuilder {
             var timeSeriesComplexType = new TimeSeriesComplexType()
                     .withMRID(Objects.requireNonNull(timeSeries.getmRID()))
                     .withBusinessType(businessType)
-                    .withProduct(EnergyProductTypeList.ACTIVE_POWER)
+                    .withProduct(EnergyProductTypeList.ACTIVE_ENERGY)
                     .withFlowDirectionDirection(businessType == BusinessTypeList.CONSUMPTION ? DirectionTypeList.DOWN : DirectionTypeList.UP)
                     .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(CommodityKind.ELECTRICITYPRIMARYMETERED)
                     .withEnergyMeasurementUnitName(UnitOfMeasureTypeList.fromValue(Objects.requireNonNull(timeSeries.getMeasurementUnitName())))
