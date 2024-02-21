@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMark
 import energy.eddie.regionconnector.dk.energinet.customer.model.PeriodtimeInterval;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.states.EnerginetCustomerAcceptedState;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,7 +65,8 @@ class PollingServiceTest {
         DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(
                 UUID.randomUUID().toString(),
                 requestForCreation,
-                customerApi
+                customerApi,
+                new StateBuilderFactory()
         );
         WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(), "", HttpHeaders.EMPTY, null, null);
         permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest));
@@ -95,7 +97,8 @@ class PollingServiceTest {
         DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(
                 UUID.randomUUID().toString(),
                 requestForCreation,
-                customerApi
+                customerApi,
+                new StateBuilderFactory()
         );
         WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(), "", HttpHeaders.EMPTY, null, null);
         doReturn(Mono.error(unauthorized))
@@ -125,7 +128,8 @@ class PollingServiceTest {
         DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(
                 UUID.randomUUID().toString(),
                 requestForCreation,
-                customerApi
+                customerApi,
+                new StateBuilderFactory()
         );
         WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR.value(), "", HttpHeaders.EMPTY, null, null);
         permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest));
@@ -156,7 +160,8 @@ class PollingServiceTest {
         DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(
                 UUID.randomUUID().toString(),
                 requestForCreation,
-                customerApi
+                customerApi,
+                new StateBuilderFactory()
         );
         permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest));
         doReturn(Mono.just("token"))
@@ -202,7 +207,8 @@ class PollingServiceTest {
         DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(
                 UUID.randomUUID().toString(),
                 requestForCreation,
-                customerApi
+                customerApi,
+                new StateBuilderFactory()
         );
         permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest));
 
@@ -230,7 +236,8 @@ class PollingServiceTest {
         DkEnerginetCustomerPermissionRequest permissionRequest1 = new EnerginetCustomerPermissionRequest(
                 UUID.randomUUID().toString(),
                 requestForCreation1,
-                customerApi
+                customerApi,
+                new StateBuilderFactory()
         );
         permissionRequest1.changeState(new EnerginetCustomerAcceptedState(permissionRequest1));
         MyEnergyDataMarketDocumentResponse resultItem = new MyEnergyDataMarketDocumentResponse();
@@ -249,7 +256,8 @@ class PollingServiceTest {
         DkEnerginetCustomerPermissionRequest permissionRequest2 = new EnerginetCustomerPermissionRequest(
                 UUID.randomUUID().toString(),
                 requestForCreation2,
-                customerApi
+                customerApi,
+                new StateBuilderFactory()
         );
         permissionRequest2.changeState(new EnerginetCustomerAcceptedState(permissionRequest2));
         doReturn(Mono.just("token"))

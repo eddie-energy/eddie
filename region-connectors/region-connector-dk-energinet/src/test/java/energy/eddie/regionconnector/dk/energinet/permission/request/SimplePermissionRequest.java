@@ -3,6 +3,8 @@ package energy.eddie.regionconnector.dk.energinet.permission.request;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import reactor.core.publisher.Mono;
 
@@ -41,6 +43,16 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     }
 
     @Override
+    public EnerginetCustomerPermissionRequest withApiClient(EnerginetCustomerApi client) {
+        return null;
+    }
+
+    @Override
+    public EnerginetCustomerPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
+        return null;
+    }
+
+    @Override
     public Mono<String> accessToken() {
         return Mono.empty();
     }
@@ -58,6 +70,11 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     @Override
     public ZonedDateTime lastPolled() {
         return start;
+    }
+
+    @Override
+    public PermissionProcessStatus status() {
+        return null;
     }
 
     @Override

@@ -8,6 +8,8 @@ import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerA
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetDataSourceInformation;
+import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
+import energy.eddie.regionconnector.dk.energinet.permission.request.persistence.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionCreationService;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
@@ -46,6 +48,8 @@ class PermissionRequestControllerTest {
     private PermissionRequestService service;
     @MockBean
     private PermissionCreationService creationService;
+    @MockBean
+    private DkEnerginetCustomerPermissionRequestRepository repository;
     @MockBean
     private Flux<IdentifiableApiResponse> unused;
     @Autowired
@@ -202,7 +206,7 @@ class PermissionRequestControllerTest {
         when(creationService.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
             PermissionRequestForCreation request = invocation.getArgument(0);
             return new EnerginetCustomerPermissionRequest(
-                    permissionId, request, mock(EnerginetCustomerApi.class)
+                    permissionId, request, mock(EnerginetCustomerApi.class), new StateBuilderFactory()
             );
         });
 
@@ -232,7 +236,7 @@ class PermissionRequestControllerTest {
         when(creationService.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
             PermissionRequestForCreation request = invocation.getArgument(0);
             return new EnerginetCustomerPermissionRequest(
-                    permissionId, request, mock(EnerginetCustomerApi.class)
+                    permissionId, request, mock(EnerginetCustomerApi.class), new StateBuilderFactory()
             );
         });
 

@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,6 +61,6 @@ class NotOlderThanValidatorTest {
 
     private EnerginetCustomerPermissionRequest createTestRequest(ZonedDateTime start, ZonedDateTime end) {
         var forCreation = new PermissionRequestForCreation("bar", start, end, "too", Granularity.PT1H, "laa", "luu");
-        return new EnerginetCustomerPermissionRequest("foo", forCreation, mockApiClient);
+        return new EnerginetCustomerPermissionRequest("foo", forCreation, mockApiClient, new StateBuilderFactory());
     }
 }

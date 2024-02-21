@@ -7,6 +7,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
@@ -32,7 +33,7 @@ class EnerginetCustomerAcceptedStateTest {
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
         ZonedDateTime end = start.plusDays(10);
         var creation = new PermissionRequestForCreation("cid", start, end, "token", Granularity.PT15M, "mpid", "dnid");
-        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", creation, mock(EnerginetCustomerApi.class));
+        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", creation, mock(EnerginetCustomerApi.class), new StateBuilderFactory());
         EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(permissionRequest);
         permissionRequest.changeState(state);
 
@@ -49,7 +50,7 @@ class EnerginetCustomerAcceptedStateTest {
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
         ZonedDateTime end = start.plusDays(10);
         var creation = new PermissionRequestForCreation("cid", start, end, "token", Granularity.PT15M, "mpid", "dnid");
-        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", creation, mock(EnerginetCustomerApi.class));
+        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", creation, mock(EnerginetCustomerApi.class), new StateBuilderFactory());
         EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(permissionRequest);
         permissionRequest.changeState(state);
 

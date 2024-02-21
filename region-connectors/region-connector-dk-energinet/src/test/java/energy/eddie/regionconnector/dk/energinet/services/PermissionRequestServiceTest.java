@@ -7,8 +7,9 @@ import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerA
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequestRepository;
+import energy.eddie.regionconnector.dk.energinet.permission.request.persistence.DkEnerginetCustomerPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.permission.request.states.EnerginetCustomerAcceptedState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,7 @@ class PermissionRequestServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new PermissionRequestService(repository, requestFactory);
+        service = new PermissionRequestService(requestFactory, repository);
     }
 
     @Test
@@ -57,12 +58,11 @@ class PermissionRequestServiceTest {
         String connectionId = "connId";
         String dataNeedId = "dataNeedId";
         var permissionRequest = mock(EnerginetCustomerPermissionRequest.class);
-        var state = new EnerginetCustomerAcceptedState(permissionRequest);
 
         doReturn(permissionId).when(permissionRequest).permissionId();
         doReturn(connectionId).when(permissionRequest).connectionId();
         doReturn(dataNeedId).when(permissionRequest).dataNeedId();
-        doReturn(state).when(permissionRequest).state();
+        doReturn(PermissionProcessStatus.ACCEPTED).when(permissionRequest).status();
 
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
 
@@ -98,7 +98,8 @@ class PermissionRequestServiceTest {
         var start = ZonedDateTime.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         var creation = new PermissionRequestForCreation(connectionId, start, end, "token", Granularity.PT15M, "mpid", dataNeedId);
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, creation, customerApi);
+        StateBuilderFactory factory = new StateBuilderFactory();
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, creation, customerApi, factory);
         var state = new EnerginetCustomerAcceptedState(permissionRequest);
         permissionRequest.changeState(state);
 
@@ -127,13 +128,14 @@ class PermissionRequestServiceTest {
         var start = ZonedDateTime.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         var creation = new PermissionRequestForCreation(connectionId, start, end, "token", Granularity.PT15M, "mpid", dataNeedId);
-        var permissionRequest1 = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(), creation, customerApi);
+        StateBuilderFactory factory = new StateBuilderFactory();
+        var permissionRequest1 = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(), creation, customerApi, factory);
         permissionRequest1.changeState(new EnerginetCustomerAcceptedState(permissionRequest1));
-        var permissionRequest2 = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(), creation, customerApi);
+        var permissionRequest2 = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(), creation, customerApi, factory);
         when(requestFactory.create(permissionRequest1))
                 .thenReturn(permissionRequest1);
 
-        when(repository.findAll())
+        when(repository.findAllByStatusIs(PermissionProcessStatus.ACCEPTED))
                 .thenReturn(List.of(permissionRequest1, permissionRequest2));
 
         // When

@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
@@ -31,7 +32,7 @@ class EnerginetCustomerCreatedStateTest {
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         var forCreation = new PermissionRequestForCreation(connectionId, start, start.plusDays(5), refreshToken, granularity, meteringPoint, dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, new StateBuilderFactory());
 
         // When
         assertDoesNotThrow(permissionRequest::validate);
@@ -54,7 +55,7 @@ class EnerginetCustomerCreatedStateTest {
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, new StateBuilderFactory());
 
         // When
         var thrown = assertThrows(ValidationException.class, permissionRequest::validate);
@@ -78,7 +79,7 @@ class EnerginetCustomerCreatedStateTest {
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, new StateBuilderFactory());
 
         // When
         var thrown = assertThrows(ValidationException.class, permissionRequest::validate);
@@ -103,7 +104,7 @@ class EnerginetCustomerCreatedStateTest {
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, new StateBuilderFactory());
 
         // When
         var thrown = assertThrows(ValidationException.class, permissionRequest::validate);
@@ -116,7 +117,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void status_returnsCreated() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, new StateBuilderFactory());
 
         // When
         // Then
@@ -126,7 +127,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void sendToPermissionAdministrator_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, new StateBuilderFactory());
 
         // When
         // Then
@@ -136,7 +137,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void receivedPermissionAdministratorResponse_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, new StateBuilderFactory());
 
         // When
         // Then
@@ -146,7 +147,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void accept_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, new StateBuilderFactory());
 
         // When
         // Then
@@ -156,7 +157,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void invalid_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, new StateBuilderFactory());
 
         // When
         // Then
@@ -166,7 +167,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void reject_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, new StateBuilderFactory());
 
         // When
         // Then
@@ -176,7 +177,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void terminate_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, new StateBuilderFactory());
 
         // When
         // Then
@@ -186,7 +187,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void revoke_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, new StateBuilderFactory());
 
         // When
         // Then
@@ -196,7 +197,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void timeLimit_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, new StateBuilderFactory());
 
         // When
         // Then
@@ -206,7 +207,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void timeOut_throws() {
         // Given
-        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null);
+        EnerginetCustomerCreatedState state = new EnerginetCustomerCreatedState(null, new StateBuilderFactory());
 
         // When
         // Then
