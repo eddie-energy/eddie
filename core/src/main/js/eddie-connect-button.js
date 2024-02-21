@@ -27,9 +27,6 @@ import PERMISSION_ADMINISTRATORS from "../resources/permission-administrators.js
 
 setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn");
 
-const COUNTRIES = [
-  ...new Set(PERMISSION_ADMINISTRATORS.map((item) => item.country)),
-];
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
 const BASE_URL = import.meta.url.replace("/lib/eddie-components.js", "");
@@ -88,8 +85,10 @@ class EddieConnectButton extends LitElement {
     _dataNeedIds: { type: Array },
     _selectedCountry: { type: String },
     _selectedPermissionAdministrator: { type: Object },
+    _availablePermissionAdministrators: { type: Array },
     _filteredPermissionAdministrators: { type: Array },
     _availableConnectors: { type: Object },
+    _availableCountries: { type: Array },
     _dataNeedAttributes: { type: Object },
     _dataNeedTypes: { type: Array },
     _dataNeedGranularities: { type: Array },
@@ -129,6 +128,7 @@ class EddieConnectButton extends LitElement {
   constructor() {
     super();
     this._availableConnectors = {};
+    this._availableCountries = [];
     this._dataNeedAttributes = {};
     this._dataNeedIds = [];
     this._dataNeedTypes = [];
@@ -154,23 +154,25 @@ class EddieConnectButton extends LitElement {
       this._selectedPermissionAdministrator.regionConnector;
     const regionConnector = this._availableConnectors[regionConnectorId];
 
-    if (!regionConnector) {
-      return html` <sl-alert variant="danger" open>
-        <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
-        The region connector for
-        ${this._selectedPermissionAdministrator.company} is unavailable. Please
-        try again later or contact the service provider.
-      </sl-alert>`;
-    }
-
     const customElementName = regionConnectorId + "-pa-ce";
 
     if (!customElements.get(customElementName)) {
       // loaded module needs to have the custom element class as its default export
-      const module = await import(
-        `${BASE_URL}/region-connectors/${regionConnector.id}/ce.js`
-      );
-      customElements.define(customElementName, module.default);
+      try {
+        const module = await import(
+          `${BASE_URL}/region-connectors/${regionConnector.id}/ce.js`
+        );
+        customElements.define(customElementName, module.default);
+      } catch (error) {
+        console.error(error);
+
+        return html`<sl-alert variant="danger" open>
+          <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+          Could not load region connector for
+          ${this._selectedPermissionAdministrator.company}. Please contact the
+          service provider.
+        </sl-alert>`;
+      }
     }
 
     const element = document.createElement(customElementName);
@@ -224,9 +226,12 @@ class EddieConnectButton extends LitElement {
       this._selectedPermissionAdministrator = { regionConnector: "sim" };
     } else {
       this._selectedCountry = event.target.value;
-      this._filteredPermissionAdministrators = PERMISSION_ADMINISTRATORS.filter(
-        (pa) => pa.country === this._selectedCountry
-      );
+      this._filteredPermissionAdministrators =
+        this._availablePermissionAdministrators.filter(
+          (pa) =>
+            pa.country === this._selectedCountry &&
+            this._availableConnectors[pa.regionConnector]
+        );
 
       if (this._filteredPermissionAdministrators.length === 1) {
         this._selectedPermissionAdministrator =
@@ -304,9 +309,17 @@ class EddieConnectButton extends LitElement {
     }
 
     this._availableConnectors = await getRegionConnectors();
+    this._availablePermissionAdministrators = PERMISSION_ADMINISTRATORS.filter(
+      (pa) => this._availableConnectors[pa.regionConnector]
+    );
+    this._availableCountries = [
+      ...new Set(
+        this._availablePermissionAdministrators.map((pa) => pa.country)
+      ),
+    ];
 
     if (this.permissionAdministrator) {
-      const pa = PERMISSION_ADMINISTRATORS.find(
+      const pa = this._availablePermissionAdministrators.find(
         (it) => it.companyId === this.permissionAdministrator
       );
 
@@ -495,7 +508,7 @@ class EddieConnectButton extends LitElement {
                 placeholder="Select your country"
                 @sl-change="${this.handleCountrySelect}"
               >
-                ${COUNTRIES.map(
+                ${this._availableCountries.map(
                   (country) => html`
                     <sl-option value="${country}">
                       ${COUNTRY_NAMES.of(country.toUpperCase())}
@@ -535,9 +548,6 @@ class EddieConnectButton extends LitElement {
                         value="${PERMISSION_ADMINISTRATORS.findIndex(
                           (item) => item === pa
                         )}"
-                        .disabled="${!this._availableConnectors[
-                          pa.regionConnector
-                        ]}"
                       >
                         ${pa.company}
                       </sl-option>
