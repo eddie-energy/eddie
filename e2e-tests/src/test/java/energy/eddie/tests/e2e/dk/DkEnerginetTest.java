@@ -1,7 +1,6 @@
 package energy.eddie.tests.e2e.dk;
 
 
-import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
 import energy.eddie.tests.e2e.E2eTestSetup;
@@ -18,8 +17,6 @@ class DkEnerginetTest extends E2eTestSetup {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(1).click();
         page.locator("div:nth-child(6) > .uk-display-block > sl-dialog > sl-select > .form-control > .form-control-input > .select > .select__combobox").click();
         page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("Denmark")).locator("slot").nth(1).click();
-        page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Permission Administrator")).click();
-        page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("Energinet")).locator("slot").nth(1).click();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
         page.getByLabel("Refresh Token").fill("bla");
         page.getByLabel("Refresh Token").press("Tab");
@@ -33,8 +30,6 @@ class DkEnerginetTest extends E2eTestSetup {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(1).click();
         page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Country")).click();
         page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("Denmark")).locator("slot").nth(1).click();
-        page.locator("sl-select").filter(new Locator.FilterOptions().setHasText("Energinet Permission")).locator("sl-popup div").first().click();
-        page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("Energinet")).locator("slot").nth(1).click();
         page.getByLabel("Refresh Token").fill(DK_ENERGINET_REFRESH_TOKEN);
         page.getByLabel("Metering Point").fill(DK_ENERGINET_METERING_POINT);
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();

@@ -1,6 +1,5 @@
 package energy.eddie.tests.e2e.fr;
 
-import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
 import energy.eddie.tests.e2e.E2eTestSetup;
@@ -14,8 +13,6 @@ class FrEnedisTest extends E2eTestSetup {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(1).click();
         page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Country")).click();
         page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("France")).locator("slot").nth(1).click();
-        page.locator("sl-select").filter(new Locator.FilterOptions().setHasText("Enedis SRD Energies")).locator("sl-popup div").first().click();
-        page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("Enedis")).locator("slot").nth(1).click();
 
         // When navigating to new page, set the variable page to the new page, to make sure that the new page gets screenshotted if something goes wrong on the new page
         var oldPage = page;
