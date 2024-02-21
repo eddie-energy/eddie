@@ -854,13 +854,6 @@
     "regionConnector": "fr-enedis"
   },
   {
-    "country": "fr",
-    "company": "SRD Energies",
-    "companyId": "srd-energies",
-    "jumpOffUrl": "",
-    "regionConnector": "fr-enedis"
-  },
-  {
     "country": "it",
     "company": "Acquirente Unico / Portale SII / Portale Consumi",
     "companyId": "acquirente-unico--portale-sii--portale-consumi",
