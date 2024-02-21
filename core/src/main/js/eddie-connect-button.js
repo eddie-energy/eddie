@@ -2,7 +2,7 @@ import { css, html, LitElement } from "lit";
 import { createRef, ref } from "lit/directives/ref.js";
 import { until } from "lit/directives/until.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
-import { when } from "lit/directives/when.js";
+import { ifDefined } from "lit/directives/if-defined.js";
 
 // Shoelace
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/dialog/dialog.js";
@@ -76,7 +76,7 @@ class EddieConnectButton extends LitElement {
       attribute: "allow-data-need-selection",
       type: Object,
     },
-    permissionAdministrator: {
+    permissionAdministratorId: {
       attribute: "permission-administrator",
       type: String,
     },
@@ -123,17 +123,17 @@ class EddieConnectButton extends LitElement {
     }
   `;
   dialogRef = createRef();
-  permissionAdministratorSelectRef = createRef();
 
   constructor() {
     super();
     this._availableConnectors = {};
+    this._availablePermissionAdministrators = [];
     this._availableCountries = [];
+    this._filteredPermissionAdministrators = [];
     this._dataNeedAttributes = {};
     this._dataNeedIds = [];
     this._dataNeedTypes = [];
     this._dataNeedGranularities = [];
-    this._presetPermissionAdministrator = null;
   }
 
   connectedCallback() {
@@ -201,6 +201,23 @@ class EddieConnectButton extends LitElement {
     return element;
   }
 
+  getPermissionAdministratorByCompanyId(companyId) {
+    return this._availablePermissionAdministrators.find(
+      (pa) => pa.companyId === companyId
+    );
+  }
+
+  handlePermissionAdministratorSelect(event) {
+    const companyId = event.target.value;
+    this._selectedPermissionAdministrator =
+      this.getPermissionAdministratorByCompanyId(companyId);
+  }
+
+  selectPermissionAdministrator(permissionAdministrator) {
+    this._selectedPermissionAdministrator = permissionAdministrator;
+    this.selectCountry(permissionAdministrator?.country);
+  }
+
   async handleDataNeedSelect(event) {
     this.dataNeedId = event.target.value;
     this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
@@ -208,41 +225,35 @@ class EddieConnectButton extends LitElement {
     if (this.isAiida()) {
       this.selectAiida();
     } else {
-      this._selectedPermissionAdministrator =
-        this._presetPermissionAdministrator;
+      this.selectPermissionAdministrator(this._presetPermissionAdministrator);
     }
   }
 
   handleCountrySelect(event) {
     this._selectedPermissionAdministrator = null;
 
-    // clear permission administrator value on country change
-    if (this.permissionAdministratorSelectRef.value) {
-      this.permissionAdministratorSelectRef.value.value = "";
-    }
-
     if (event.target.value === "sim") {
       this._selectedCountry = null;
       this._selectedPermissionAdministrator = { regionConnector: "sim" };
     } else {
-      this._selectedCountry = event.target.value;
-      this._filteredPermissionAdministrators =
-        this._availablePermissionAdministrators.filter(
-          (pa) =>
-            pa.country === this._selectedCountry &&
-            this._availableConnectors[pa.regionConnector]
-        );
-
-      if (this._filteredPermissionAdministrators.length === 1) {
-        this._selectedPermissionAdministrator =
-          this._filteredPermissionAdministrators[0];
-      }
+      this.selectCountry(event.target.value);
     }
   }
 
-  handlePermissionAdministratorSelect(event) {
-    this._selectedPermissionAdministrator =
-      PERMISSION_ADMINISTRATORS[event.target.value];
+  selectCountry(country) {
+    this._selectedCountry = country;
+
+    this._filteredPermissionAdministrators =
+      this._availablePermissionAdministrators.filter(
+        (pa) =>
+          pa.country === this._selectedCountry &&
+          this._availableConnectors[pa.regionConnector]
+      );
+
+    if (this._filteredPermissionAdministrators.length === 1) {
+      this._selectedPermissionAdministrator =
+        this._filteredPermissionAdministrators[0];
+    }
   }
 
   handleDataNeedModification(event) {
@@ -281,7 +292,7 @@ class EddieConnectButton extends LitElement {
       return false;
     }
 
-    if (this.accountingPointId && !this.permissionAdministrator) {
+    if (this.accountingPointId && !this.permissionAdministratorId) {
       console.error(
         "Accounting point specified without permission administrator."
       );
@@ -318,28 +329,20 @@ class EddieConnectButton extends LitElement {
       ),
     ];
 
-    if (this.permissionAdministrator) {
-      const pa = this._availablePermissionAdministrators.find(
-        (it) => it.companyId === this.permissionAdministrator
+    if (this.permissionAdministratorId) {
+      const pa = this.getPermissionAdministratorByCompanyId(
+        this.permissionAdministratorId
       );
 
-      if (pa) {
-        this._selectedCountry = pa.country;
-        this._selectedPermissionAdministrator = pa;
-        this._presetPermissionAdministrator = pa;
-      } else {
+      if (!pa) {
         console.error(
-          `No Permission Administrator ${this.permissionAdministrator}.`
+          `Permission Administrator ${this.permissionAdministratorId} is unavailable.`
         );
         return false;
       }
 
-      if (!this._availableConnectors[pa.regionConnector]) {
-        console.error(
-          `Region Connector "${pa.regionConnector}" for Permission Administrator "${this.permissionAdministrator}" is unavailable.`
-        );
-        return false;
-      }
+      this._presetPermissionAdministrator = pa;
+      this.selectPermissionAdministrator(pa);
     }
 
     if (this.isAiida()) {
@@ -500,13 +503,15 @@ class EddieConnectButton extends LitElement {
             `
           : ""}
 
-        <!-- Render country selection when not preset -->
-        ${!this.isAiida() && !this._presetPermissionAdministrator
+        <!-- Render country selection -->
+        ${!this.isAiida()
           ? html`
               <sl-select
                 label="Country"
                 placeholder="Select your country"
                 @sl-change="${this.handleCountrySelect}"
+                value="${this._selectedPermissionAdministrator?.country ?? ""}"
+                ?disabled="${!!this._presetPermissionAdministrator}"
               >
                 ${this._availableCountries.map(
                   (country) => html`
@@ -523,56 +528,25 @@ class EddieConnectButton extends LitElement {
             `
           : ""}
 
-        <!-- Render permission administrator selection when not preset -->
-        ${this._selectedCountry && !this._presetPermissionAdministrator
-          ? when(
-              this._filteredPermissionAdministrators.length === 1,
-              () => html`
-                <sl-input
-                  label="Permission Administrator"
-                  value="${this._selectedPermissionAdministrator.company}"
-                  disabled
-                ></sl-input>
-                <br />
-              `,
-              () => html`
-                <sl-select
-                  label="Permission Administrator"
-                  placeholder="Select your Permission Administrator"
-                  @sl-change="${this.handlePermissionAdministratorSelect}"
-                  ${ref(this.permissionAdministratorSelectRef)}
-                >
-                  ${this._filteredPermissionAdministrators.map(
-                    (pa) => html`
-                      <sl-option
-                        value="${PERMISSION_ADMINISTRATORS.findIndex(
-                          (item) => item === pa
-                        )}"
-                      >
-                        ${pa.company}
-                      </sl-option>
-                    `
-                  )}
-                </sl-select>
-                <br />
-              `
-            )
-          : ""}
-
-        <!-- Render static fields for preset permission administrator -->
-        ${this._presetPermissionAdministrator
+        <!-- Render permission administrator selection -->
+        ${this._selectedCountry
           ? html`
-              <sl-input
-                label="Country"
-                value="${COUNTRY_NAMES.of(this._selectedCountry.toUpperCase())}"
-                disabled
-              ></sl-input>
-              <br />
-              <sl-input
+              <sl-select
                 label="Permission Administrator"
-                value="${this._selectedPermissionAdministrator.company}"
-                disabled
-              ></sl-input>
+                placeholder="Select your Permission Administrator"
+                @sl-change="${this.handlePermissionAdministratorSelect}"
+                value="${ifDefined(
+                  this._selectedPermissionAdministrator?.companyId
+                )}"
+                ?disabled="${!!this._presetPermissionAdministrator ||
+                this._filteredPermissionAdministrators.length === 1}"
+              >
+                ${this._filteredPermissionAdministrators.map(
+                  (pa) => html`
+                    <sl-option value="${pa.companyId}"> ${pa.company} </sl-option>
+                  `
+                )}
+              </sl-select>
               <br />
             `
           : ""}
