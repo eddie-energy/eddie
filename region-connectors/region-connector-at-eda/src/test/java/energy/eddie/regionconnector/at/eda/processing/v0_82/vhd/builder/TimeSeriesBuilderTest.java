@@ -22,7 +22,7 @@ class TimeSeriesBuilderTest {
         assertNull(timeSeries.getRegistrationDateAndOrTimeDateTime());
         assertNull(timeSeries.getMarketEvaluationPointMRID());
         assertNotNull(timeSeries.getMRID());
-        assertEquals(EnergyProductTypeList.ACTIVE_POWER, timeSeries.getProduct());
+        assertEquals(EnergyProductTypeList.ACTIVE_ENERGY, timeSeries.getProduct());
     }
 
     @Test
@@ -61,8 +61,8 @@ class TimeSeriesBuilderTest {
         TimeSeriesBuilder uut = new TimeSeriesBuilder().withEnergy(energy);
         var timeSeries = uut.build();
 
-        assertEquals(meteringReason, timeSeries.getReasonList().getReasons().get(0).getText());
-        assertEquals(ReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED, timeSeries.getReasonList().getReasons().get(0).getCode());
+        assertEquals(meteringReason, timeSeries.getReasonList().getReasons().getFirst().getText());
+        assertEquals(ReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED, timeSeries.getReasonList().getReasons().getFirst().getCode());
     }
 
     @Test
@@ -124,6 +124,6 @@ class TimeSeriesBuilderTest {
         TimeSeriesBuilder uut = new TimeSeriesBuilder().withSeriesPeriod(seriesPeriod);
         var timeSeries = uut.build();
 
-        assertEquals(seriesPeriod, timeSeries.getSeriesPeriodList().getSeriesPeriods().get(0));
+        assertEquals(seriesPeriod, timeSeries.getSeriesPeriodList().getSeriesPeriods().getFirst());
     }
 }

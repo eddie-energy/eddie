@@ -11,7 +11,7 @@ public class TimeSeriesBuilder {
 
     private final TimeSeriesComplexType timeSeries = new TimeSeriesComplexType()
             .withMRID(UUID.randomUUID().toString())
-            .withProduct(EnergyProductTypeList.ACTIVE_POWER);
+            .withProduct(EnergyProductTypeList.ACTIVE_ENERGY);
 
     public TimeSeriesBuilder withProcessDirectory(ProcessDirectory processDirectory) {
         timeSeries
