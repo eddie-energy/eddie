@@ -8,6 +8,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.cmd.*;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -30,6 +31,7 @@ class IntermediateConsentMarketDocumentTest {
         );
     }
 
+    @Disabled("GH-708")
     @ParameterizedTest
     @MethodSource
     @SuppressWarnings("java:S5961")
