@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
@@ -15,6 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.mock;
 
 class AcceptedStateTest {
+    StateBuilderFactory factory = new StateBuilderFactory(mock(AuthorizationApi.class));
+
     @Test
     void terminate_terminatesPermissionRequest() {
         // Given
@@ -23,9 +26,9 @@ class AcceptedStateTest {
         var permissionRequest = new DatadisPermissionRequest(
                 "pid",
                 new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, MeasurementType.QUARTER_HOURLY),
-                mock(AuthorizationApi.class)
+                factory
         );
-        AcceptedState state = new AcceptedState(permissionRequest);
+        AcceptedState state = new AcceptedState(permissionRequest, factory);
 
         // When
         state.terminate();
@@ -42,9 +45,9 @@ class AcceptedStateTest {
         var permissionRequest = new DatadisPermissionRequest(
                 "pid",
                 new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, MeasurementType.QUARTER_HOURLY),
-                mock(AuthorizationApi.class)
+                factory
         );
-        AcceptedState state = new AcceptedState(permissionRequest);
+        AcceptedState state = new AcceptedState(permissionRequest, factory);
 
         // When
         state.revoke();
@@ -61,9 +64,9 @@ class AcceptedStateTest {
         var permissionRequest = new DatadisPermissionRequest(
                 "pid",
                 new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, MeasurementType.QUARTER_HOURLY),
-                mock(AuthorizationApi.class)
+                factory
         );
-        AcceptedState state = new AcceptedState(permissionRequest);
+        AcceptedState state = new AcceptedState(permissionRequest, factory);
 
         // When
         state.fulfill();

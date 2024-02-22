@@ -3,18 +3,24 @@ package energy.eddie.regionconnector.es.datadis.permission.request.state;
 import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
 import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.agnostic.process.model.states.SentToPermissionAdministratorPermissionRequestState;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 
 public class SentToPermissionAdministratorState extends ContextualizedPermissionRequestState<EsPermissionRequest> implements SentToPermissionAdministratorPermissionRequestState {
+    private final StateBuilderFactory factory;
 
-
-    protected SentToPermissionAdministratorState(EsPermissionRequest permissionRequest) {
+    public SentToPermissionAdministratorState(EsPermissionRequest permissionRequest, StateBuilderFactory factory) {
         super(permissionRequest);
+        this.factory = factory;
     }
 
     @Override
     public void accept() {
-        permissionRequest.changeState(new AcceptedState(permissionRequest));
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
+                        .build()
+        );
     }
 
     @Override
@@ -25,11 +31,17 @@ public class SentToPermissionAdministratorState extends ContextualizedPermission
 
     @Override
     public void reject() {
-        permissionRequest.changeState(new RejectedState(permissionRequest));
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.REJECTED)
+                        .build()
+        );
     }
 
     @Override
     public void timeOut() {
-        permissionRequest.changeState(new TimedOutState(permissionRequest));
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.TIMED_OUT)
+                        .build()
+        );
     }
 }

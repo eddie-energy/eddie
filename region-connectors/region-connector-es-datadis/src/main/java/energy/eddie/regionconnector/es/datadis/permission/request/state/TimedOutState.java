@@ -6,7 +6,7 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 
 public class TimedOutState extends ContextualizedPermissionRequestState<EsPermissionRequest>
         implements TimedOutPermissionRequestState {
-    protected TimedOutState(EsPermissionRequest permissionRequest) {
+    public TimedOutState(EsPermissionRequest permissionRequest) {
         super(permissionRequest);
     }
 }

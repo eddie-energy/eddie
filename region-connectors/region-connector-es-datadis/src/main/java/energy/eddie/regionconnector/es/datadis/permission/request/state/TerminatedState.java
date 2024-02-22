@@ -6,7 +6,7 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 
 public class TerminatedState extends ContextualizedPermissionRequestState<EsPermissionRequest>
         implements TerminatedPermissionRequestState {
-    protected TerminatedState(EsPermissionRequest permissionRequest) {
+    public TerminatedState(EsPermissionRequest permissionRequest) {
         super(permissionRequest);
     }
 }

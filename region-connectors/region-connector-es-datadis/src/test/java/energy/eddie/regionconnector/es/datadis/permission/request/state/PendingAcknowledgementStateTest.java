@@ -7,23 +7,22 @@ import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith({MockitoExtension.class})
 class PendingAcknowledgementStateTest {
-
-    @Mock
-    private AuthorizationApi authorizationApi;
+    StateBuilderFactory factory = new StateBuilderFactory(mock(AuthorizationApi.class));
 
     private DatadisPermissionRequest makePendingPermissionRequest(AuthorizationRequestResponse response) {
         var now = ZonedDateTime.now(ZONE_ID_SPAIN);
@@ -31,8 +30,8 @@ class PendingAcknowledgementStateTest {
         var requestDataTo = now.minusDays(5);
 
         var requestForCreation = new PermissionRequestForCreation("bar", "luu", "muh", "kuh", requestDataFrom, requestDataTo, MeasurementType.QUARTER_HOURLY);
-        var permissionRequest = new DatadisPermissionRequest("SomeId", requestForCreation, authorizationApi);
-        var pendingAcknowledgementState = new PendingAcknowledgementState(permissionRequest, response);
+        var permissionRequest = new DatadisPermissionRequest("SomeId", requestForCreation, factory);
+        var pendingAcknowledgementState = new PendingAcknowledgementState(permissionRequest, response, factory);
         permissionRequest.changeState(pendingAcknowledgementState);
         return permissionRequest;
     }

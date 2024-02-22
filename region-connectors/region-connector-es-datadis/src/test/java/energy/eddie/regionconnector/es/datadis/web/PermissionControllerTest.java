@@ -45,7 +45,7 @@ class PermissionControllerTest {
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {
         // Given
-        var state = new AcceptedState(null);
+        var state = new AcceptedState(null, null);
         var datadisDataSourceInformation = new DatadisDataSourceInformation(mock(EsPermissionRequest.class));
         String permissionId = "ValidId";
         var statusMessage = new ConnectionStatusMessage("cid", permissionId, "dnid", datadisDataSourceInformation, state.status());

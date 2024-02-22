@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
@@ -17,6 +16,7 @@ import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class DatadisPermissionRequestTest {
@@ -30,28 +30,28 @@ class DatadisPermissionRequestTest {
     private final ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
     private final ZonedDateTime requestDataFrom = now.minusDays(10);
     private final ZonedDateTime requestDataTo = now.minusDays(5);
-    @Mock
-    private AuthorizationApi authorizationApi;
+    private StateBuilderFactory factory;
     private PermissionRequestForCreation requestForCreation;
 
     @BeforeEach
     void setUp() {
+        factory = new StateBuilderFactory(mock(AuthorizationApi.class));
         requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 requestDataFrom, requestDataTo, measurementType);
     }
 
     @Test
     void givenValidInput_constructor_requestIsInCreatedState() {
-        DatadisPermissionRequest request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
+        DatadisPermissionRequest request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
 
         assertEquals(PermissionProcessStatus.CREATED, request.state().status());
     }
 
     @Test
     void givenNull_constructor_throws() {
-        assertThrows(NullPointerException.class, () -> new DatadisPermissionRequest(null, requestForCreation, authorizationApi));
+        assertThrows(NullPointerException.class, () -> new DatadisPermissionRequest(null, requestForCreation, factory));
 
-        assertThrows(NullPointerException.class, () -> new DatadisPermissionRequest(permissionId, null, authorizationApi));
+        assertThrows(NullPointerException.class, () -> new DatadisPermissionRequest(permissionId, null, factory));
 
         assertThrows(NullPointerException.class, () -> new DatadisPermissionRequest(permissionId, requestForCreation, null));
     }
@@ -63,7 +63,7 @@ class DatadisPermissionRequestTest {
         requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 requestDataFrom, futureDate, measurementType);
 
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
         assertEquals(request.end(), request.permissionEnd());
     }
 
@@ -73,7 +73,7 @@ class DatadisPermissionRequestTest {
         requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 requestDataFrom, pastDate, measurementType);
 
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
 
         assertEquals(request.permissionStart().plusDays(1), request.permissionEnd());
     }
@@ -84,27 +84,27 @@ class DatadisPermissionRequestTest {
         requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 today, today, measurementType);
 
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
 
         assertEquals(request.permissionStart().toLocalDate().plusDays(1), request.permissionEnd().toLocalDate());
     }
 
     @Test
     void lastPulledMeterReading_whenConstructed_isEmpty() {
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
         assertTrue(request.lastPulledMeterReading().isEmpty());
     }
 
     @Test
     void distributorCode_whenConstructed_isEmpty() {
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
 
         assertTrue(request.distributorCode().isEmpty());
     }
 
     @Test
     void pointType_whenConstructed_IsEmpty() {
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
 
         assertTrue(request.pointType().isEmpty());
     }
@@ -112,7 +112,7 @@ class DatadisPermissionRequestTest {
     @Test
     void setLastPulledMeterReading_worksAsExpected() {
         // Given
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
         ZonedDateTime expected = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
@@ -126,7 +126,7 @@ class DatadisPermissionRequestTest {
     @Test
     void setDistributorCodeAndPointType_worksAsExpected() {
         // Given
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
+        var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
         DistributorCode expectedDistributorCode = DistributorCode.VIESGO;
         var expectedPointType = 1;
 

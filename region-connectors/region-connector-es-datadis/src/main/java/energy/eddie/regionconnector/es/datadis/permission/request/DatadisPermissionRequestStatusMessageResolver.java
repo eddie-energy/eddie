@@ -9,9 +9,11 @@ import jakarta.annotation.Nullable;
 public record DatadisPermissionRequestStatusMessageResolver(PermissionRequestState state) {
     public @Nullable String getStatusMessage() {
         return switch (state) {
-            case InvalidState invalidState -> invalidState.reason().getMessage();
-            case MalformedState malformedState -> malformedState.reason().getMessage();
-            case UnableToSendState unableToSendState -> unableToSendState.reason().getMessage();
+            case InvalidState invalidState -> invalidState.reason() != null ? invalidState.reason().getMessage() : null;
+            case MalformedState malformedState ->
+                    malformedState.reason() != null ? malformedState.reason().getMessage() : null;
+            case UnableToSendState unableToSendState ->
+                    unableToSendState.reason() != null ? unableToSendState.reason().getMessage() : null;
             default -> null;
         };
     }

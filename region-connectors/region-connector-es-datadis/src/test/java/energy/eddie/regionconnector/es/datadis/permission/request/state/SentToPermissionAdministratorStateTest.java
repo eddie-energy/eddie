@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -19,9 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith({MockitoExtension.class})
 class SentToPermissionAdministratorStateTest {
-
     @Mock
     private AuthorizationApi authorizationApi;
+    private final StateBuilderFactory factory = new StateBuilderFactory(authorizationApi);
 
     private DatadisPermissionRequest makePermissionRequest() {
         var now = ZonedDateTime.now(ZONE_ID_SPAIN);
@@ -29,12 +30,12 @@ class SentToPermissionAdministratorStateTest {
         var requestDataTo = now.minusDays(5);
 
         var requestForCreation = new PermissionRequestForCreation("bar", "luu", "muh", "kuh", requestDataFrom, requestDataTo, MeasurementType.QUARTER_HOURLY);
-        return new DatadisPermissionRequest("SomeId", requestForCreation, authorizationApi);
+        return new DatadisPermissionRequest("SomeId", requestForCreation, factory);
     }
 
     private DatadisPermissionRequest makeSentPermissionRequest() {
         var permissionRequest = makePermissionRequest();
-        permissionRequest.changeState(new SentToPermissionAdministratorState(permissionRequest));
+        permissionRequest.changeState(new SentToPermissionAdministratorState(permissionRequest, factory));
         return permissionRequest;
     }
 
@@ -42,7 +43,7 @@ class SentToPermissionAdministratorStateTest {
     void creatingState_withOkResponse_doesNotChangeState() {
         var permissionRequest = makeSentPermissionRequest();
 
-        new SentToPermissionAdministratorState(permissionRequest);
+        new SentToPermissionAdministratorState(permissionRequest, factory);
 
         assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, permissionRequest.state().status());
     }

@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -87,7 +88,7 @@ class PermissionRequestServiceTest {
         var measurementType = MeasurementType.QUARTER_HOURLY;
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 requestDataFrom, requestDataTo, measurementType);
-        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, mock(AuthorizationApi.class));
+        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, new StateBuilderFactory(mock(AuthorizationApi.class)));
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
 
         // When

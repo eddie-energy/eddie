@@ -7,6 +7,7 @@ import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -30,6 +31,7 @@ class ValidatedStateTest {
     private AuthorizationRequest authorizationRequest;
     @Mock
     private AuthorizationApi authorizationApi;
+    private final StateBuilderFactory factory = new StateBuilderFactory(authorizationApi);
 
     private DatadisPermissionRequest makeValidatedPermissionRequest(String permissionId) {
         var now = ZonedDateTime.now(ZONE_ID_SPAIN);
@@ -37,8 +39,8 @@ class ValidatedStateTest {
         var requestDataTo = now.minusDays(5);
 
         var requestForCreation = new PermissionRequestForCreation("bar", "luu", "muh", "kuh", requestDataFrom, requestDataTo, MeasurementType.QUARTER_HOURLY);
-        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
-        var validatedState = new ValidatedState(permissionRequest, authorizationRequest, authorizationApi);
+        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
+        var validatedState = new ValidatedState(permissionRequest, authorizationApi, factory);
         permissionRequest.changeState(validatedState);
         return permissionRequest;
     }
@@ -56,7 +58,7 @@ class ValidatedStateTest {
 
         // Then before response is received
         assertEquals(PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT, permissionRequest.state().status());
-        verify(authorizationApi).postAuthorizationRequest(authorizationRequest);
+        verify(authorizationApi).postAuthorizationRequest(any());
     }
 
     @Test
@@ -71,6 +73,6 @@ class ValidatedStateTest {
 
         // Then before response is received
         assertEquals(PermissionProcessStatus.UNABLE_TO_SEND, permissionRequest.state().status());
-        verify(authorizationApi).postAuthorizationRequest(authorizationRequest);
+        verify(authorizationApi).postAuthorizationRequest(any());
     }
 }
