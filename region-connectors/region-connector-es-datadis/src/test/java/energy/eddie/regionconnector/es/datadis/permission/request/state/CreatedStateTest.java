@@ -5,6 +5,7 @@ import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.mock;
 
 class CreatedStateTest {
     private final AuthorizationApi authorizationApi = mock(AuthorizationApi.class);
+    private final StateBuilderFactory factory = new StateBuilderFactory(authorizationApi);
 
     private static Stream<Arguments> invalidParameterProvider() {
         ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
@@ -53,9 +55,9 @@ class CreatedStateTest {
         var meteringPointId = "kuh";
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 requestDataFrom, requestDataTo, MeasurementType.QUARTER_HOURLY);
-        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
+        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
 
-        CreatedState createdState = new CreatedState(permissionRequest, authorizationApi);
+        CreatedState createdState = new CreatedState(permissionRequest, factory);
 
         // When
         var thrown = assertThrows(ValidationException.class, createdState::validate);
@@ -77,8 +79,8 @@ class CreatedStateTest {
 
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 requestDataFrom, requestDataTo, MeasurementType.QUARTER_HOURLY);
-        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, authorizationApi);
-        CreatedState createdState = new CreatedState(permissionRequest, authorizationApi);
+        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
+        CreatedState createdState = new CreatedState(permissionRequest, factory);
 
         // When
         assertDoesNotThrow(createdState::validate);

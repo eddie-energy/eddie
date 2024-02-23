@@ -5,6 +5,7 @@ import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,7 @@ class DatadisMvp1ConsumptionRecordProviderTest {
         // Given
         var now = ZonedDateTime.now(ZoneId.systemDefault());
         PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation("conId", "dId", "nif", "mip", now, now, MeasurementType.HOURLY);
-        new DatadisPermissionRequest("pId", requestForCreation, mock(AuthorizationApi.class));
+        new DatadisPermissionRequest("pId", requestForCreation, new StateBuilderFactory(mock(AuthorizationApi.class)));
         TestPublisher<IdentifiableMeteringData> publisher = TestPublisher.create();
         EsPermissionRequest mockRequest = mock(EsPermissionRequest.class);
         when(mockRequest.start()).thenReturn(now);

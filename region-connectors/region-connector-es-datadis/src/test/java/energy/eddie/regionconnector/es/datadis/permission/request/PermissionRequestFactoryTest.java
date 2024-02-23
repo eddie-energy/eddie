@@ -6,9 +6,9 @@ import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.adapter.JdkFlowAdapter;
@@ -29,11 +29,15 @@ class PermissionRequestFactoryTest {
     private Sinks.Many<ConnectionStatusMessage> unusedConnectionStatusMessageSink;
     @Mock
     private AuthorizationApi authorizationApi;
-
     @Mock
     private Set<Extension<EsPermissionRequest>> unusedExtensions;
-    @InjectMocks
     private PermissionRequestFactory factory;
+
+    @BeforeEach
+    void setUp() {
+        StateBuilderFactory stateFactory = new StateBuilderFactory(authorizationApi);
+        factory = new PermissionRequestFactory(unusedConnectionStatusMessageSink, unusedExtensions, stateFactory);
+    }
 
     @Test
     void givenValidInput_returnsPermissionRequestWithSetId() {
@@ -69,7 +73,7 @@ class PermissionRequestFactoryTest {
     @Test
     void close_emitsCompleteOnPublisher() {
         // Given
-        var factory = new PermissionRequestFactory(authorizationApi, Sinks.many().multicast().onBackpressureBuffer(), Set.of());
+        var factory = new PermissionRequestFactory(Sinks.many().multicast().onBackpressureBuffer(), Set.of(), new StateBuilderFactory(authorizationApi));
         StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(factory.getConnectionStatusMessageStream()))
                 .expectComplete()
                 .verifyLater();

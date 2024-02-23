@@ -7,6 +7,7 @@ import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,7 +48,7 @@ class MeteringDataFilterTest {
         return new DatadisPermissionRequest("1",
                 new PermissionRequestForCreation("1", "1", "1", "1", requestedStartDate.atStartOfDay(ZONE_ID_SPAIN),
                         requestedEndDate == null ? null : requestedEndDate.atStartOfDay(ZONE_ID_SPAIN), MeasurementType.HOURLY),
-                mock(AuthorizationApi.class));
+                new StateBuilderFactory(mock(AuthorizationApi.class)));
     }
 
     @Test

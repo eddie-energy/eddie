@@ -7,7 +7,7 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 public class FulfilledState
         extends ContextualizedPermissionRequestState<EsPermissionRequest>
         implements FulfilledPermissionRequestState {
-    protected FulfilledState(EsPermissionRequest permissionRequest) {
+    public FulfilledState(EsPermissionRequest permissionRequest) {
         super(permissionRequest);
     }
 }

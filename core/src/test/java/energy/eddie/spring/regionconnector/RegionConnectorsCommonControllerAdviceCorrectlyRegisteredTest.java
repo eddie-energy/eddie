@@ -11,6 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -33,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CoreSpringConfig.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("common-controller-advice")
+@Sql(scripts = "/common-controller-advice.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 class RegionConnectorsCommonControllerAdviceCorrectlyRegisteredTest {
     private static final String PREFIX_SERVLET_ATTRIBUTE_NAME = "org.springframework.web.servlet.FrameworkServlet.CONTEXT.";
     @Autowired

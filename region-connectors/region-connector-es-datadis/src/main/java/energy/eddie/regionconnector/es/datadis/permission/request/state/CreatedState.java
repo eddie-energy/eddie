@@ -6,8 +6,8 @@ import energy.eddie.api.agnostic.process.model.states.CreatedPermissionRequestSt
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.api.agnostic.process.model.validation.Validator;
-import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.validation.NotOlderThanValidator;
 import energy.eddie.regionconnector.es.datadis.permission.request.validation.StartIsBeforeEndValidator;
@@ -22,25 +22,21 @@ public class CreatedState extends ContextualizedPermissionRequestState<EsPermiss
             new NotOlderThanValidator(ChronoUnit.MONTHS, DatadisSpecificConstants.MAXIMUM_MONTHS_IN_THE_PAST),
             new StartIsBeforeEndValidator()
     );
-    private final AuthorizationApi authorizationApi;
+    private final StateBuilderFactory factory;
 
-    public CreatedState(EsPermissionRequest permissionRequest, AuthorizationApi authorizationApi) {
+    public CreatedState(EsPermissionRequest permissionRequest,
+                        StateBuilderFactory factory
+    ) {
         super(permissionRequest);
-        this.authorizationApi = authorizationApi;
+        this.factory = factory;
     }
 
     @Override
     public void validate() throws ValidationException {
         validateAttributes();
-
-        AuthorizationRequest authorizationRequest = new AuthorizationRequest(
-                permissionRequest.permissionStart().toLocalDate(),
-                permissionRequest.permissionEnd().toLocalDate(),
-                permissionRequest.nif(),
-                List.of(permissionRequest.meteringPointId())
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.VALIDATED).build()
         );
-
-        permissionRequest.changeState(new ValidatedState(permissionRequest, authorizationRequest, authorizationApi));
     }
 
     private void validateAttributes() throws ValidationException {
@@ -56,6 +52,10 @@ public class CreatedState extends ContextualizedPermissionRequestState<EsPermiss
     }
 
     private void changeToMalformedState(Exception e) {
-        permissionRequest.changeState(new MalformedState(permissionRequest, e));
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.MALFORMED)
+                        .withCause(e)
+                        .build()
+        );
     }
 }
