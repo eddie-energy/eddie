@@ -38,13 +38,13 @@ public class PermissionRequestService {
     public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
         return repository.findByPermissionId(permissionId)
                 .map(permissionRequest -> new ConnectionStatusMessage(
-                                permissionRequest.connectionId(),
-                                permissionRequest.permissionId(),
-                                permissionRequest.dataNeedId(),
-                                permissionRequest.dataSourceInformation(),
-                        permissionRequest.status()
-                        )
-                );
+                        permissionRequest.connectionId(),
+                        permissionRequest.permissionId(),
+                        permissionRequest.dataNeedId(),
+                        permissionRequest.dataSourceInformation(),
+                        permissionRequest.status(),
+                        permissionRequest.errorMessage()
+                ));
     }
 
     public void acceptPermission(String permissionId) throws PermissionNotFoundException {

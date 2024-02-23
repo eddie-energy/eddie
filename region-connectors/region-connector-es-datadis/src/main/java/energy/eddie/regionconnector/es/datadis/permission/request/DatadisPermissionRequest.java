@@ -46,6 +46,8 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     private ZonedDateTime lastPulledMeterReading;
     @Enumerated(EnumType.STRING)
     private PermissionProcessStatus status;
+    @Nullable
+    private String errorMessage;
 
     // just for JPA
     @SuppressWarnings("NullAway.Init")
@@ -229,5 +231,16 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     @Override
     public void setLastPulledMeterReading(ZonedDateTime lastPulledMeterReading) {
         this.lastPulledMeterReading = lastPulledMeterReading;
+    }
+
+    @Override
+    @Nullable
+    public String errorMessage() {
+        return errorMessage;
+    }
+
+    @Override
+    public void setErrorMessage(@Nullable String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }

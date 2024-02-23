@@ -7,6 +7,7 @@ import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermiss
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.shared.permission.requests.annotations.InvokeExtensions;
+import jakarta.annotation.Nullable;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -74,4 +75,9 @@ public interface EsPermissionRequest extends TimeframedPermissionRequest {
 
     @InvokeExtensions
     void setLastPulledMeterReading(ZonedDateTime lastPulledMeterReading);
+
+    @Nullable
+    String errorMessage();
+
+    void setErrorMessage(@Nullable String errorMessage);
 }

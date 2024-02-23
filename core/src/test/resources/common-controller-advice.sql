@@ -15,5 +15,6 @@ CREATE TABLE IF NOT EXISTS es_datadis.datadis_permission_request
     point_type                integer                     NULL DEFAULT NULL,
     request_data_from         timestamp(6) WITH TIME ZONE NOT NULL,
     request_data_to           timestamp(6) WITH TIME ZONE NOT NULL,
-    status                    varchar(75)                 NOT NULL
+    status        varchar(75) NOT NULL,
+    error_message TEXT        NULL DEFAULT NULL
 );

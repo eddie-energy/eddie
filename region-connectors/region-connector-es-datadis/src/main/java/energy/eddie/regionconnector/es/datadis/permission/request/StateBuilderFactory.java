@@ -39,6 +39,7 @@ public class StateBuilderFactory {
 
         public PermissionRequestStateBuilder withCause(Throwable cause) {
             this.cause = cause;
+            this.permissionRequest.setErrorMessage(cause.getMessage());
             return this;
         }
 
