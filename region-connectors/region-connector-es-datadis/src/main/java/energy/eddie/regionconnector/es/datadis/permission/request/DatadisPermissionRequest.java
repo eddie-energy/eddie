@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
 import jakarta.annotation.Nullable;
+import jakarta.persistence.*;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -17,26 +18,40 @@ import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConst
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static java.util.Objects.requireNonNull;
 
-
+@Entity
+@Table(schema = "es_datadis")
 public class DatadisPermissionRequest extends TimestampedPermissionRequest implements EsPermissionRequest {
-    private final String connectionId;
-    private final String permissionId;
-    private final String nif;
-    private final String meteringPointId;
-    private final ZonedDateTime permissionStart;
-    private final ZonedDateTime permissionEnd;
-    private final ZonedDateTime requestDataFrom;
-    private final ZonedDateTime requestDataTo;
-    private final MeasurementType measurementType;
-    private final String dataNeedId;
+    @Id
+    private String permissionId;
+    private String connectionId;
+    private String nif;
+    private String meteringPointId;
+    private ZonedDateTime permissionStart;
+    private ZonedDateTime permissionEnd;
+    private ZonedDateTime requestDataFrom;
+    private ZonedDateTime requestDataTo;
+    @Enumerated(EnumType.STRING)
+    private MeasurementType measurementType;
+    private String dataNeedId;
+    @Transient
     private final DatadisDataSourceInformation dataSourceInformation = new DatadisDataSourceInformation(this);
+    @Transient
     private PermissionRequestState state;
     @Nullable
+    @Enumerated(EnumType.STRING)
     private DistributorCode distributorCode;
     @Nullable
     private Integer pointType;
     @Nullable
     private ZonedDateTime lastPulledMeterReading;
+    @Enumerated(EnumType.STRING)
+    private PermissionProcessStatus status;
+
+    // just for JPA
+    @SuppressWarnings("NullAway.Init")
+    protected DatadisPermissionRequest() {
+        super(ZONE_ID_SPAIN);
+    }
 
     public DatadisPermissionRequest(
             String permissionId,
@@ -55,7 +70,6 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
         this.meteringPointId = requestForCreation.meteringPointId();
         this.measurementType = requestForCreation.measurementType();
         this.requestDataFrom = requestForCreation.requestDataFrom().withZoneSameLocal(ZONE_ID_SPAIN);
-        //noinspection OptionalOfNullableMisuse
         this.requestDataTo = Optional.ofNullable(requestForCreation.requestDataTo())
                 .map(toDate -> toDate.withZoneSameLocal(ZONE_ID_SPAIN).plusDays(1))
                 .orElse(requestDataFrom.plusMonths(MAXIMUM_MONTHS_IN_THE_FUTURE));
@@ -63,6 +77,15 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
         this.permissionStart = ZonedDateTime.now(ZONE_ID_SPAIN);
         this.permissionEnd = latest(permissionStart, requestDataTo);
         this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
+        this.status = state.status();
+    }
+
+    @Override
+    public DatadisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
+        this.state = factory
+                .create(this, status)
+                .build();
+        return this;
     }
 
     /**
@@ -117,10 +140,10 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
         return dataSourceInformation;
     }
 
-
     @Override
     public void changeState(PermissionRequestState state) {
         this.state = state;
+        this.status = state.status();
     }
 
     @Override
@@ -196,6 +219,11 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     @Override
     public Optional<ZonedDateTime> lastPulledMeterReading() {
         return Optional.ofNullable(this.lastPulledMeterReading);
+    }
+
+    @Override
+    public PermissionProcessStatus status() {
+        return status;
     }
 
     @Override

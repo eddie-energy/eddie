@@ -46,7 +46,7 @@ public class PermissionRequestFactory implements Mvp1ConnectionStatusMessageProv
 
     public EsPermissionRequest create(EsPermissionRequest permissionRequest) {
         return PermissionRequestProxy.createProxy(
-                permissionRequest,
+                permissionRequest.withStateBuilderFactory(stateBuilderFactory),
                 extensions,
                 EsPermissionRequest.class,
                 PermissionRequestProxy.CreationInfo.RECREATED

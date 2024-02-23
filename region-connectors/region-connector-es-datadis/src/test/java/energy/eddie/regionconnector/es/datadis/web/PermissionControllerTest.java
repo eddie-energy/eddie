@@ -6,6 +6,7 @@ import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisDataSourceInformation;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.permission.request.persistence.DatadisPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.AcceptedState;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -41,6 +42,8 @@ class PermissionControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private PermissionRequestService mockService;
+    @MockBean
+    private DatadisPermissionRequestRepository unusedMockRepository;
 
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {

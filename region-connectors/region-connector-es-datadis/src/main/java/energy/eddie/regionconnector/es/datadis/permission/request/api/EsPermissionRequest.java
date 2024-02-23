@@ -1,8 +1,11 @@
 package energy.eddie.regionconnector.es.datadis.permission.request.api;
 
 import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
+import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
+import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.shared.permission.requests.annotations.InvokeExtensions;
 
 import java.time.ZonedDateTime;
@@ -34,6 +37,8 @@ public interface EsPermissionRequest extends TimeframedPermissionRequest {
      */
     Optional<Integer> pointType();
 
+    DatadisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory);
+
     @InvokeExtensions
     void setDistributorCodeAndPointType(DistributorCode distributorCode, Integer pointType);
 
@@ -61,6 +66,11 @@ public interface EsPermissionRequest extends TimeframedPermissionRequest {
      * Use this to avoid pulling the same meter reading twice.
      */
     Optional<ZonedDateTime> lastPulledMeterReading();
+
+    /**
+     * The current process status of this permission request.
+     */
+    PermissionProcessStatus status();
 
     @InvokeExtensions
     void setLastPulledMeterReading(ZonedDateTime lastPulledMeterReading);
