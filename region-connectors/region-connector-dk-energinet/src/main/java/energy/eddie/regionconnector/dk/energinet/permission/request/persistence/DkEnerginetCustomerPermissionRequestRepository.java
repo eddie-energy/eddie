@@ -19,8 +19,7 @@ public class DkEnerginetCustomerPermissionRequestRepository implements Permissio
 
     @Override
     public void save(DkEnerginetCustomerPermissionRequest request) {
-        EnerginetCustomerPermissionRequest request1 = (EnerginetCustomerPermissionRequest) request;
-        repository.save(request1);
+        repository.save((EnerginetCustomerPermissionRequest) request);
     }
 
     @Override
@@ -37,7 +36,7 @@ public class DkEnerginetCustomerPermissionRequestRepository implements Permissio
     @Override
     public boolean removeByPermissionId(String permissionId) {
         repository.deleteById(permissionId);
-        return false;
+        return true;
     }
 
     public List<EnerginetCustomerPermissionRequest> findAllByStatusIs(PermissionProcessStatus status) {

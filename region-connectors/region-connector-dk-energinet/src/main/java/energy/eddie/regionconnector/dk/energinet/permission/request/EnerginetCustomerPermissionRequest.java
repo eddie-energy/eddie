@@ -38,12 +38,6 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
     private ZonedDateTime lastPolled;
     @Column(columnDefinition = "TEXT")
     private String refreshToken;
-
-    @Override
-    public PermissionProcessStatus status() {
-        return status;
-    }
-
     @Enumerated(EnumType.STRING)
     private PermissionProcessStatus status;
 
@@ -90,6 +84,11 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
         this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
         this.lastPolled = start;
         this.status = state.status();
+    }
+
+    @Override
+    public PermissionProcessStatus status() {
+        return status;
     }
 
     @Override
