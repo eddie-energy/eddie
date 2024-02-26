@@ -11,11 +11,14 @@ import java.util.Set;
 @Component
 public class PermissionRequestFactory {
     private final Set<Extension<FrEnedisPermissionRequest>> extensions;
+    private final StateBuilderFactory stateBuilderFactory;
 
     public PermissionRequestFactory(
-            Set<Extension<FrEnedisPermissionRequest>> extensions
+            Set<Extension<FrEnedisPermissionRequest>> extensions,
+            StateBuilderFactory stateBuilderFactory
     ) {
         this.extensions = extensions;
+        this.stateBuilderFactory = stateBuilderFactory;
     }
 
     /**
@@ -30,7 +33,8 @@ public class PermissionRequestFactory {
                 permissionRequestForCreation.dataNeedId(),
                 permissionRequestForCreation.start(),
                 permissionRequestForCreation.end(),
-                permissionRequestForCreation.granularity()
+                permissionRequestForCreation.granularity(),
+                stateBuilderFactory
         );
         return PermissionRequestProxy.createProxy(
                 permissionRequest,

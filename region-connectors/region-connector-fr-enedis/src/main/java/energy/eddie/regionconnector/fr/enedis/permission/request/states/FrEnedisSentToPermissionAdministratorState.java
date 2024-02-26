@@ -3,27 +3,44 @@ package energy.eddie.regionconnector.fr.enedis.permission.request.states;
 import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
 import energy.eddie.api.agnostic.process.model.states.SentToPermissionAdministratorPermissionRequestState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
 
 public class FrEnedisSentToPermissionAdministratorState
         extends ContextualizedPermissionRequestState<FrEnedisPermissionRequest>
         implements SentToPermissionAdministratorPermissionRequestState {
-    public FrEnedisSentToPermissionAdministratorState(FrEnedisPermissionRequest permissionRequest) {
+    private final StateBuilderFactory factory;
+
+    public FrEnedisSentToPermissionAdministratorState(
+            FrEnedisPermissionRequest permissionRequest,
+            StateBuilderFactory factory
+    ) {
         super(permissionRequest);
+        this.factory = factory;
     }
 
     @Override
     public void accept() {
-        permissionRequest.changeState(new FrEnedisAcceptedState(permissionRequest));
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
+                        .build()
+        );
     }
 
     @Override
     public void invalid() {
-        permissionRequest.changeState(new FrEnedisInvalidState(permissionRequest));
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.INVALID)
+                        .build()
+        );
     }
 
     @Override
     public void reject() {
-        permissionRequest.changeState(new FrEnedisRejectedState(permissionRequest));
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.REJECTED)
+                        .build()
+        );
     }
 
 

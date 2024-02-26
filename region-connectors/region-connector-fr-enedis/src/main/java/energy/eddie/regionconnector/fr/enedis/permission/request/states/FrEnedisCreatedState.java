@@ -6,6 +6,8 @@ import energy.eddie.api.agnostic.process.model.states.CreatedPermissionRequestSt
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.api.agnostic.process.model.validation.Validator;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.validation.NotFurtherThanValidator;
 import energy.eddie.regionconnector.shared.permission.requests.validation.StartIsBeforeOrEqualEndValidator;
@@ -21,24 +23,34 @@ public class FrEnedisCreatedState
             new StartIsBeforeOrEqualEndValidator<>(),
             new NotFurtherThanValidator(ChronoUnit.YEARS, 3)
     );
+    private final StateBuilderFactory factory;
 
-    public FrEnedisCreatedState(FrEnedisPermissionRequest permissionRequest) {
+    public FrEnedisCreatedState(FrEnedisPermissionRequest permissionRequest, StateBuilderFactory factory) {
         super(permissionRequest);
+        this.factory = factory;
     }
 
     @Override
     public void validate() throws ValidationException {
         validateAttributes();
-        permissionRequest.changeState(new FrEnedisValidatedState(permissionRequest));
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.VALIDATED).build()
+        );
     }
 
     private void validateAttributes() throws ValidationException {
         List<AttributeError> errors = VALIDATORS.stream()
                 .flatMap(val -> val.validate(permissionRequest).stream())
                 .toList();
+
         if (!errors.isEmpty()) {
-            permissionRequest.changeState(new FrEnedisMalformedState(permissionRequest, errors));
-            throw new ValidationException(this, errors);
+            ValidationException exception = new ValidationException(this, errors);
+            permissionRequest.changeState(
+                    factory.create(permissionRequest, PermissionProcessStatus.MALFORMED)
+                            .withCause(exception)
+                            .build()
+            );
+            throw exception;
         }
     }
 }

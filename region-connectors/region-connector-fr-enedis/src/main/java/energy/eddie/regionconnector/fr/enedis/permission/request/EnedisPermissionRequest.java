@@ -5,6 +5,7 @@ import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisCreatedState;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
 import jakarta.annotation.Nullable;
 
@@ -32,11 +33,13 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
             String dataNeedId,
             ZonedDateTime start,
             ZonedDateTime end,
-            Granularity granularity) {
+            Granularity granularity,
+            StateBuilderFactory factory
+            ) {
         super(ZONE_ID_FR);
         this.permissionId = permissionId;
         this.connectionId = connectionId;
-        this.state = new FrEnedisCreatedState(this);
+        this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
         this.dataNeedId = dataNeedId;
         this.start = start;
         this.end = end;
@@ -48,8 +51,10 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
             String dataNeedId,
             ZonedDateTime start,
             ZonedDateTime end,
-            Granularity granularity) {
-        this(UUID.randomUUID().toString(), connectionId, dataNeedId, start, end, granularity);
+            Granularity granularity,
+            StateBuilderFactory factory
+            ) {
+        this(UUID.randomUUID().toString(), connectionId, dataNeedId, start, end, granularity, factory);
     }
 
     @Override

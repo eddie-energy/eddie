@@ -33,6 +33,11 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     }
 
     @Override
+    public FrEnedisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
+        return this;
+    }
+
+    @Override
     public void setUsagePointId(String usagePointId) {
 
     }

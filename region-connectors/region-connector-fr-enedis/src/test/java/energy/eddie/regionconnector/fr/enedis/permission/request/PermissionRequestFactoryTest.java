@@ -18,7 +18,7 @@ class PermissionRequestFactoryTest {
         // Given
         ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
         ZonedDateTime end = start.plusDays(1);
-        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(Set.of());
+        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(Set.of(), new StateBuilderFactory());
         PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "dnid", start, end, Granularity.P1D);
 
         // When
@@ -33,8 +33,9 @@ class PermissionRequestFactoryTest {
         // Given
         ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
         ZonedDateTime end = start.plusDays(1);
-        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(Set.of());
-        FrEnedisPermissionRequest original = new EnedisPermissionRequest("cid", "dnid", start, end, Granularity.P1D);
+        StateBuilderFactory factory = new StateBuilderFactory();
+        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(Set.of(), factory);
+        FrEnedisPermissionRequest original = new EnedisPermissionRequest("cid", "dnid", start, end, Granularity.P1D, factory);
 
         // When
         PermissionRequest permissionRequest = permissionRequestFactory.create(original);

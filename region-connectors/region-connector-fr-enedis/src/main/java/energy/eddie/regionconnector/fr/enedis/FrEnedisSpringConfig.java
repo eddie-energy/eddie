@@ -18,6 +18,7 @@ import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.request.InMemoryPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
@@ -127,8 +128,16 @@ public class FrEnedisSpringConfig {
     }
 
     @Bean
-    public PermissionRequestFactory factory(Set<Extension<FrEnedisPermissionRequest>> extensions) {
-        return new PermissionRequestFactory(extensions);
+    public PermissionRequestFactory factory(
+            Set<Extension<FrEnedisPermissionRequest>> extensions,
+            StateBuilderFactory stateBuilderFactory
+    ) {
+        return new PermissionRequestFactory(extensions, stateBuilderFactory);
+    }
+
+    @Bean
+    public StateBuilderFactory stateBuilderFactory() {
+        return new StateBuilderFactory();
     }
 
     @Bean
