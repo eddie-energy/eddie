@@ -3,12 +3,11 @@ package energy.eddie.regionconnector.fr.enedis.permission.request;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
-import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisCreatedState;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
-import jakarta.persistence.*;
 import jakarta.annotation.Nullable;
+import jakarta.persistence.*;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -21,28 +20,33 @@ import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_
 public class EnedisPermissionRequest extends TimestampedPermissionRequest implements FrEnedisPermissionRequest {
     private static final EnedisDataSourceInformation dataSourceInformation = new EnedisDataSourceInformation();
     @Id
+    @Column(name = "permission_id")
     private String permissionId;
+    @Column(name = "connection_id")
     private String connectionId;
     @Column(name = "start_timestamp")
     private ZonedDateTime start;
     @Column(name = "end_timestamp")
     private ZonedDateTime end;
+    @Column(name = "data_need_id")
     private String dataNeedId;
     @Transient
     private PermissionRequestState state;
+    @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private PermissionProcessStatus status;
+    @Column(name = "granularity")
     @Enumerated(EnumType.STRING)
     private Granularity granularity;
-
+    @Column(name = "usage_point_id")
+    @Nullable
+    private String usagePointId;
 
     // just for JPA
     @SuppressWarnings("NullAway.Init")
     protected EnedisPermissionRequest() {
         super(ZONE_ID_FR);
     }
-    @Nullable
-    private String usagePointId;
 
     public EnedisPermissionRequest(
             String permissionId,
@@ -52,7 +56,7 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
             ZonedDateTime end,
             Granularity granularity,
             StateBuilderFactory factory
-            ) {
+    ) {
         super(ZONE_ID_FR);
         this.permissionId = permissionId;
         this.connectionId = connectionId;
@@ -71,11 +75,12 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
             ZonedDateTime end,
             Granularity granularity,
             StateBuilderFactory factory
-            ) {
+    ) {
         this(UUID.randomUUID().toString(), connectionId, dataNeedId, start, end, granularity, factory);
     }
 
-    public EnedisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
+    @Override
+    public FrEnedisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
         this.state = factory
                 .create(this, status)
                 .build();
@@ -123,6 +128,7 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
         return end;
     }
 
+    @Override
     public PermissionProcessStatus status() {
         return status;
     }

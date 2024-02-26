@@ -48,7 +48,7 @@ apache-httpcomponents-client-version = "5.2.1"
 jackson-databind-nullable-version = "0.2.6"
 dotenv-version = "3.0.0"
 
-testcontainers-kafka = "1.19.3"
+testcontainers = "1.19.6"
 
 [libraries]
 # Static analysis
@@ -94,10 +94,15 @@ slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
 
+# FR Enedis region connector
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+
+
 # dependencies required by kafka-outbound
 kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients" }
 reactor-kafka = { module = "io.projectreactor.kafka:reactor-kafka", version.ref = "reactor-kafka" }
-testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "testcontainers-kafka" }
+testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "testcontainers" }
 
 # used by core
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
@@ -127,6 +132,7 @@ spring-boot-starter-validation = { module = "org.springframework.boot:spring-boo
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
 spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
+spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
 spring-kafka = { module = "org.springframework.kafka:spring-kafka", version.ref = "spring-kafka" }
 spring-websocket = { module = "org.springframework:spring-websocket", version.ref = "spring-websocket" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "spring-retry" }

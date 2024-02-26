@@ -46,6 +46,13 @@ dependencies {
     testImplementation(libs.junit.mockito)
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.okhttp3.mockwebserver)
+    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.testcontainers.junit)
+    testImplementation(libs.spring.boot.testcontainers)
+    testImplementation(libs.flyway.core)
+    testImplementation(libs.flyway.postgresql)
+
+    testRuntimeOnly(libs.postgresql)
 }
 
 tasks.getByName<Test>("test") {

@@ -1,15 +1,15 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.persistence;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 @Component
-public class EnedisPermissionRequestRepository implements PermissionRequestRepository<TimeframedPermissionRequest> {
+public class EnedisPermissionRequestRepository implements PermissionRequestRepository<FrEnedisPermissionRequest> {
     private final JpaPermissionRequestRepository repository;
     private final StateBuilderFactory factory;
 
@@ -19,12 +19,12 @@ public class EnedisPermissionRequestRepository implements PermissionRequestRepos
     }
 
     @Override
-    public void save(TimeframedPermissionRequest request) {
+    public void save(FrEnedisPermissionRequest request) {
         repository.save((EnedisPermissionRequest) request);
     }
 
     @Override
-    public Optional<TimeframedPermissionRequest> findByPermissionId(String permissionId) {
+    public Optional<FrEnedisPermissionRequest> findByPermissionId(String permissionId) {
         return repository.findById(permissionId).map(r -> {
             r.changeState(factory.create(r, r.status()).build());
             return r;

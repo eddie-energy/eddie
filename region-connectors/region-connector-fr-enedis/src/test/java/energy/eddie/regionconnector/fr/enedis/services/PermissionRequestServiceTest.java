@@ -13,16 +13,27 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedis
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.annotation.DirtiesContext;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Testcontainers
 class PermissionRequestServiceTest {
+    @Container
+    @ServiceConnection
+    private static final PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:15-alpine");
+
     @Autowired
     private PermissionRequestService permissionRequestService;
     @Autowired
@@ -59,7 +70,6 @@ class PermissionRequestServiceTest {
 
         // When
         permissionRequestService.authorizePermissionRequest("pid", "upid");
-
         // Then
         FrEnedisPermissionRequest updatedRequest = repository.findByPermissionId("pid").orElseThrow();
         assertEquals(FrEnedisAcceptedState.class, updatedRequest.state().getClass());
