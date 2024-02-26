@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.es.datadis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
@@ -43,7 +44,7 @@ import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMeta
 @EnableWebMvc
 @SpringBootApplication
 @EnableScheduling
-@energy.eddie.api.agnostic.RegionConnector(name = REGION_CONNECTOR_ID)
+@RegionConnector(name = REGION_CONNECTOR_ID)
 public class DatadisSpringConfig {
     @Bean
     public DatadisConfig datadisConfig(
