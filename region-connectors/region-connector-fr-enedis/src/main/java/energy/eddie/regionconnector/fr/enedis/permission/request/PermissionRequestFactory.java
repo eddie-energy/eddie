@@ -37,7 +37,7 @@ public class PermissionRequestFactory {
                 stateBuilderFactory
         );
         return PermissionRequestProxy.createProxy(
-                permissionRequest,
+                permissionRequest.withStateBuilderFactory(stateBuilderFactory),
                 extensions,
                 FrEnedisPermissionRequest.class,
                 PermissionRequestProxy.CreationInfo.NEWLY_CREATED

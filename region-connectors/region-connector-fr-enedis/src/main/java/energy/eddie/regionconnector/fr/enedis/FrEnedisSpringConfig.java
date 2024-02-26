@@ -16,7 +16,6 @@ import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisTokenProvider;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
-import energy.eddie.regionconnector.fr.enedis.permission.request.InMemoryPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
@@ -81,11 +80,6 @@ public class FrEnedisSpringConfig {
     @Bean
     public EnedisApi enedisApi(EnedisTokenProvider tokenProvider, WebClient webClient) {
         return new EnedisApiClient(tokenProvider, webClient);
-    }
-
-    @Bean
-    public PermissionRequestRepository<FrEnedisPermissionRequest> permissionRequestRepository() {
-        return new InMemoryPermissionRequestRepository();
     }
 
     @Bean
