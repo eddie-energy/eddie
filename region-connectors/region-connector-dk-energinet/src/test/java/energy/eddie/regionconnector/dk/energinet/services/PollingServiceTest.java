@@ -62,14 +62,15 @@ class PollingServiceTest {
         PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId, start, end,
                 refreshToken, Granularity.PT1H, meteringPoint, dataNeedId);
 
+        StateBuilderFactory factory = new StateBuilderFactory();
         DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(
                 UUID.randomUUID().toString(),
                 requestForCreation,
                 customerApi,
-                new StateBuilderFactory()
+                factory
         );
         WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(), "", HttpHeaders.EMPTY, null, null);
-        permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest));
+        permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest, factory));
         doReturn(Mono.error(unauthorized))
                 .when(customerApi).accessToken(anyString());
 
@@ -125,14 +126,15 @@ class PollingServiceTest {
         PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId, start, end,
                 refreshToken, Granularity.PT1H, meteringPoint, dataNeedId);
 
+        StateBuilderFactory factory = new StateBuilderFactory();
         DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(
                 UUID.randomUUID().toString(),
                 requestForCreation,
                 customerApi,
-                new StateBuilderFactory()
+                factory
         );
         WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR.value(), "", HttpHeaders.EMPTY, null, null);
-        permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest));
+        permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest, factory));
         doReturn(Mono.error(unauthorized))
                 .when(customerApi).accessToken(anyString());
 
@@ -157,13 +159,14 @@ class PollingServiceTest {
         PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId, start, end,
                 refreshToken, Granularity.PT1H, meteringPoint, dataNeedId);
 
+        StateBuilderFactory factory = new StateBuilderFactory();
         DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(
                 UUID.randomUUID().toString(),
                 requestForCreation,
                 customerApi,
-                new StateBuilderFactory()
+                factory
         );
-        permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest));
+        permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest, factory));
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
         MyEnergyDataMarketDocumentResponse resultItem = new MyEnergyDataMarketDocumentResponse();
@@ -204,13 +207,14 @@ class PollingServiceTest {
         PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId, start, end,
                 refreshToken, Granularity.PT1H, meteringPoint, dataNeedId);
 
+        StateBuilderFactory factory = new StateBuilderFactory();
         DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(
                 UUID.randomUUID().toString(),
                 requestForCreation,
                 customerApi,
-                new StateBuilderFactory()
+                factory
         );
-        permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest));
+        permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest, factory));
 
         // When
         pollingService.fetchHistoricalMeterReadings(permissionRequest);
@@ -233,13 +237,14 @@ class PollingServiceTest {
         String meteringPoint = "meteringPoint";
         PermissionRequestForCreation requestForCreation1 = new PermissionRequestForCreation("connId1", start1, end1,
                 refreshToken, Granularity.PT1H, meteringPoint, dataNeedId);
+        StateBuilderFactory factory = new StateBuilderFactory();
         DkEnerginetCustomerPermissionRequest permissionRequest1 = new EnerginetCustomerPermissionRequest(
                 UUID.randomUUID().toString(),
                 requestForCreation1,
                 customerApi,
-                new StateBuilderFactory()
+                factory
         );
-        permissionRequest1.changeState(new EnerginetCustomerAcceptedState(permissionRequest1));
+        permissionRequest1.changeState(new EnerginetCustomerAcceptedState(permissionRequest1, factory));
         MyEnergyDataMarketDocumentResponse resultItem = new MyEnergyDataMarketDocumentResponse();
         resultItem.setMyEnergyDataMarketDocument(new MyEnergyDataMarketDocument()
                 .periodTimeInterval(new PeriodtimeInterval()
@@ -257,9 +262,9 @@ class PollingServiceTest {
                 UUID.randomUUID().toString(),
                 requestForCreation2,
                 customerApi,
-                new StateBuilderFactory()
+                factory
         );
-        permissionRequest2.changeState(new EnerginetCustomerAcceptedState(permissionRequest2));
+        permissionRequest2.changeState(new EnerginetCustomerAcceptedState(permissionRequest2, factory));
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
 
