@@ -510,7 +510,9 @@ class EddieConnectButton extends LitElement {
                 label="Country"
                 placeholder="Select your country"
                 @sl-change="${this.handleCountrySelect}"
-                value="${this._selectedPermissionAdministrator?.country ?? ""}"
+                value="${this._selectedPermissionAdministrator?.country ??
+                this._selectedCountry ??
+                ""}"
                 ?disabled="${!!this._presetPermissionAdministrator}"
               >
                 ${this._availableCountries.map(
