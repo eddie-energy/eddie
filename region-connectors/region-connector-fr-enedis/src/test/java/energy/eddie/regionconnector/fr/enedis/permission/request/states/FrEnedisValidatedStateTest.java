@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.states;
 
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneId;
@@ -14,7 +14,7 @@ class FrEnedisValidatedStateTest {
     void sendToPermissionAdministrator_transitionsStatePendingAcknowledgmentState() {
         // Given
         ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
-        TimeframedPermissionRequest permissionRequest = new EnedisPermissionRequest("pid", "cid", "dnid", now, now.plusDays(1));
+        FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("pid", "cid", "dnid", now, now.plusDays(1));
         FrEnedisValidatedState state = new FrEnedisValidatedState(permissionRequest);
 
         // When

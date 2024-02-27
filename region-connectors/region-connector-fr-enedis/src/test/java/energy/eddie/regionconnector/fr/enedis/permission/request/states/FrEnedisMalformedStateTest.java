@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.states;
 
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.regionconnector.fr.enedis.permission.request.SimplePermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -14,7 +14,7 @@ class FrEnedisMalformedStateTest {
     @Test
     void toString_returnsErrorString() {
         // Given
-        TimeframedPermissionRequest permissionRequest = new SimplePermissionRequest("pid", "cid");
+        FrEnedisPermissionRequest permissionRequest = new SimplePermissionRequest("pid", "cid");
         List<AttributeError> errors = List.of(new AttributeError("field", "Error message"));
         FrEnedisMalformedState malformedState = new FrEnedisMalformedState(permissionRequest, errors);
 

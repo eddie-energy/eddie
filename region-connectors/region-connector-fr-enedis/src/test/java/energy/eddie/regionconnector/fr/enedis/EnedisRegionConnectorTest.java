@@ -109,6 +109,7 @@ class EnedisRegionConnectorTest {
                 "pid",
                 "cid",
                 "dnid",
+                Optional.of("upId"),
                 ZonedDateTime.now(Clock.systemUTC()),
                 ZonedDateTime.now(Clock.systemUTC()),
                 new FrEnedisInvalidState(null)

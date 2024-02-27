@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -16,7 +16,7 @@ class InMemoryPermissionRequestRepositoryTest {
 
         // When
         repository.save(request);
-        Optional<TimeframedPermissionRequest> foundRequest = repository.findByPermissionId("permissionId");
+        Optional<FrEnedisPermissionRequest> foundRequest = repository.findByPermissionId("permissionId");
 
         // Then
         assertTrue(foundRequest.isPresent());
@@ -30,7 +30,7 @@ class InMemoryPermissionRequestRepositoryTest {
         repository.save(request);
 
         // When
-        Optional<TimeframedPermissionRequest> foundRequest = repository.findByPermissionId("nonExistentId");
+        Optional<FrEnedisPermissionRequest> foundRequest = repository.findByPermissionId("nonExistentId");
 
         // Then
         assertTrue(foundRequest.isEmpty());
@@ -44,12 +44,13 @@ class InMemoryPermissionRequestRepositoryTest {
         repository.save(request);
 
         // When
-        Optional<TimeframedPermissionRequest> foundRequest = repository.findByPermissionId(null);
+        Optional<FrEnedisPermissionRequest> foundRequest = repository.findByPermissionId(null);
 
         // Then
         assertTrue(foundRequest.isEmpty());
     }
 
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     void givenRepositoryWithMultipleRequests_whenFindByPermissionId_thenCorrectRequestsFound() {
         // Given
@@ -60,7 +61,7 @@ class InMemoryPermissionRequestRepositoryTest {
         repository.save(request2);
 
         // When
-        Optional<TimeframedPermissionRequest> foundRequest1 = repository.findByPermissionId("permissionId1");
+        Optional<FrEnedisPermissionRequest> foundRequest1 = repository.findByPermissionId("permissionId1");
 
         // Then
         assertEquals("connectionId1", foundRequest1.get().connectionId());

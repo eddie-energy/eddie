@@ -1,22 +1,22 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class InMemoryPermissionRequestRepository implements PermissionRequestRepository<TimeframedPermissionRequest> {
-    private final Map<String, TimeframedPermissionRequest> requests = new ConcurrentHashMap<>();
+public class InMemoryPermissionRequestRepository implements PermissionRequestRepository<FrEnedisPermissionRequest> {
+    private final Map<String, FrEnedisPermissionRequest> requests = new ConcurrentHashMap<>();
 
     @Override
-    public void save(TimeframedPermissionRequest request) {
+    public void save(FrEnedisPermissionRequest request) {
         requests.put(request.permissionId(), request);
     }
 
     @Override
-    public Optional<TimeframedPermissionRequest> findByPermissionId(String permissionId) {
+    public Optional<FrEnedisPermissionRequest> findByPermissionId(String permissionId) {
         if (permissionId == null) {
             return Optional.empty();
         }

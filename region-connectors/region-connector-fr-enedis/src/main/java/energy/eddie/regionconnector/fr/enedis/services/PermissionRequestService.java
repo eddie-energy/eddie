@@ -2,10 +2,10 @@ package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fr.enedis.utils.EnedisDuration;
@@ -19,12 +19,12 @@ import java.util.Optional;
 
 @Service
 public class PermissionRequestService {
-    private final PermissionRequestRepository<TimeframedPermissionRequest> repository;
+    private final PermissionRequestRepository<FrEnedisPermissionRequest> repository;
     private final PermissionRequestFactory factory;
     private final EnedisConfiguration configuration;
     private final PollingService pollingService;
 
-    public PermissionRequestService(PermissionRequestRepository<TimeframedPermissionRequest> repository, PermissionRequestFactory factory, EnedisConfiguration configuration, PollingService pollingService) {
+    public PermissionRequestService(PermissionRequestRepository<FrEnedisPermissionRequest> repository, PermissionRequestFactory factory, EnedisConfiguration configuration, PollingService pollingService) {
         this.repository = repository;
         this.factory = factory;
         this.configuration = configuration;
@@ -32,7 +32,7 @@ public class PermissionRequestService {
     }
 
     public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation permissionRequestForCreation) throws StateTransitionException {
-        TimeframedPermissionRequest permissionRequest = factory.create(permissionRequestForCreation);
+        FrEnedisPermissionRequest permissionRequest = factory.create(permissionRequestForCreation);
         permissionRequest.validate();
         URI redirectUri = buildRedirectUri(permissionRequest);
         permissionRequest.sendToPermissionAdministrator();
@@ -40,13 +40,13 @@ public class PermissionRequestService {
     }
 
     public void authorizePermissionRequest(String permissionId, String usagePointId) throws StateTransitionException, PermissionNotFoundException {
-        Optional<TimeframedPermissionRequest> optionalPermissionRequest = findPermissionRequestByPermissionId(permissionId);
+        Optional<FrEnedisPermissionRequest> optionalPermissionRequest = findPermissionRequestByPermissionId(permissionId);
         if (optionalPermissionRequest.isEmpty()) {
             // unknown state / permissionId => not coming / initiated by our frontend
             throw new PermissionNotFoundException(permissionId);
         }
 
-        TimeframedPermissionRequest permissionRequest = optionalPermissionRequest.get();
+        FrEnedisPermissionRequest permissionRequest = optionalPermissionRequest.get();
         permissionRequest.receivedPermissionAdministratorResponse();
         if (usagePointId == null) { // probably when request was denied
             permissionRequest.reject();
@@ -56,7 +56,7 @@ public class PermissionRequestService {
         }
     }
 
-    private URI buildRedirectUri(TimeframedPermissionRequest permissionRequest) {
+    private URI buildRedirectUri(FrEnedisPermissionRequest permissionRequest) {
         try {
             return new URIBuilder()
                     .setScheme("https")
@@ -76,7 +76,7 @@ public class PermissionRequestService {
         return repository.findByPermissionId(permissionId).map(request -> new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(), null, request.state().status()));
     }
 
-    public Optional<TimeframedPermissionRequest> findPermissionRequestByPermissionId(String permissionId) {
+    public Optional<FrEnedisPermissionRequest> findPermissionRequestByPermissionId(String permissionId) {
         return repository.findByPermissionId(permissionId)
                 .map(factory::create);
     }
