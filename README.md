@@ -1,13 +1,42 @@
 # EDDIE - European Distributed Data Infrastructure for Energy
 
-Development & Deployment Strategy can be
-found [here](https://github.com/eddie-energy/eddie/wiki/EDDIE-Development-&-Deployment-Strategy)
+EDDIE provides a unified interface for requesting energy data from various MDAs (Metered Data Administrators) throughout
+the European Union.
+It abstracts the complex and diverse processes required by the different MDAs and provides easy access to energy data.
 
-To get started with the development process see [DEVELOPMENT.md](./DEVELOPMENT.md)
+## Quick overview how EDDIE works
 
-To install, integrate and operate EDDIE, see the operation manual: [OPERATION.md](OPERATION.md)
+![EDDIE basic architecture](./docs/images/EDDIE%20Infrastructure.png "EDDIE basic architecture")
 
-## How to run in development
+On your website you incorporate a so-called *EDDIE connect button*, which is loaded from the *EDDIE Core* and might look
+like this:
+
+![EDDIE connect button](./docs/images/EDDIE%20Connect%20Button.png "EDDIE connect button")
+
+When the user clicks on the button, a popup opens:
+
+![EDDIE popup](./docs/images/EDDIE%20Popup.png "EDDIE popup")
+
+In the popup, the user has to select their country and their MDA. When they click on *Connect*, a *permission request*
+for sharing their energy data is created.
+These permission requests are handled by the *EDDIE Core*.
+Any status messages (see
+the [permission process](https://github.com/eddie-energy/eddie/wiki/EDDIE-Permission-Process-Model)) and data messages
+(in various formats as described [here](docs/kafka/KAFKA.md)) are published by the core to a Kafka cluster. Your
+website or application can then get these messages directly from the Kafka cluster (see used
+topics [here](docs/kafka/KAFKA.md))
+
+You can configure the data that is requested by creating a *Data Need* and passing its ID to the connect button.
+For possible settings, see the *Data Needs* section, and the section *"Using the EDDIE Button in an application*
+in [operation.md](docs/OPERATION.md).
+
+## Running EDDIE with Docker
+
+See the [operation.md](docs/OPERATION.md) file to get started.
+
+## Running EDDIE locally
+
+Firstly clone the repository.
 
 Some modules provide custom web elements that need to be built with pnpm:
 
@@ -16,53 +45,23 @@ pnpm install
 pnpm run build
 ```
 
-### Configuring different regions / countries
-
-To retrieve data from various regions and countries, it is crucial to correctly set up the relevant region connectors.
-These connectors can be configured through two methods: by modifying the `application.properties` file of
-the `core` module or by utilizing environment variables.
-
-For each region connector, specific configurations and prerequisites are necessary for operation. Details for these
-setups are provided in the README file of the individual region connector. You can locate these files
-under `region-connectors/region-connector-<country-code>-<permission-administrator>/README.md`.
-
-Or you can use the following links:
-
-* [Austria (EDA)](./region-connectors/region-connector-at-eda/README.md)
-* [France (Enedis)](./region-connectors/region-connector-fr-enedis/README.md)
-* [Spain (Datadis)](./region-connectors/region-connector-es-datadis/README.md)
-* [Denmark (Energinet)](./region-connectors/region-connector-dk-energinet/README.md)
-
 ### Gradle tasks
 
-There are three tasks in the **development** group that have to run at the same time, e.g. in different windows:
+There are two tasks in the **development** group that have to run at the same time, e.g. in different windows:
 
-- `./gradlew run-db-server` (obsolete, the default DB is a PostgreSQL)
 - `./gradlew run-core`
 - `./gradlew run-example-app`
 
-The three processes are:
-
-#### Database
-
-Instead of the H2 database, a PostgreSQL database is used as default.
-Check the [docker-compose.yml](env/docker-compose.yml) file for an example PostgreSQL container that you can use as it
-is. The necessary database for the example app and the EDDIE core are created automatically when starting the docker
-container for the first time.
-
-You can still use the H2 database by changing the JDBC URLs for the example app and the EDDIE core and running
-the `run-db-server` gradle task.
-[H2 Database Engine](https://www.h2database.com/html/main.html) started as a network server.
-
-- the databases interface is accessible through <http://localhost:8082>
-- JDBC connection through: `jdbc:h2:tcp://localhost/./examples/example-app` (username and password empty)
+The processes are:
 
 #### Eligible party demo app
 
-A simple demo app to check EDDIE's functionality.
+A simple demo app to check and try EDDIE's functionality.
 
-- access the web-interface through <http://localhost:8081/login>
-- login is possible through every email/password (not checked)
+- access the web-interface at <http://localhost:8081/login>
+- login is possible with every email/password (not checked)
+
+See [example app readme](./examples/example-app/README.md) for further information.
 
 #### EDDIE core
 
@@ -79,10 +78,35 @@ There are several parameters to configure the core via the environment:
 - `PUBLIC_CONTEXT_PATH`: Base path for reaching the application and the web components
 - `CORE_PORT`: The port were the core should run
 
-## How to build docker images locally
+### Database & Kafka
+
+Be aware that EDDIE Core needs a PostgreSQL database to function properly.
+The example [docker-compose.yml](env/docker-compose.yml) contains a *db* service that you can use.
+
+To prevent any Kafka clients from spamming log messages every second, a running Kafka cluster is
+recommended. An example can be found in the [docker-compose.yml](env/docker-compose.yml) as well.
+Alternatively, you can disable Kafka in the [application.properties](core/src/main/resources/application.properties)
+(not recommended).
+
+## Building docker images locally
 
 Building and running can be done using `docker compose` with the files provided in the `/env` folder. For performing a
 local test run with compiling the software, building and starting a local docker environment shell scripts exist:
 
 - `build_and_run_containers.ps1`
 - `build_and_run_containers.bash`
+
+## Configuring EDDIE
+
+Although the docker compose file and local configuration should run out of the box, EDDIE requires further
+configuration.
+Please read the *"Configuration*" section in the [operation.md](./docs/OPERATION.md) file.
+
+# Contributing
+
+Development & Deployment Strategy can be
+found [here](https://github.com/eddie-energy/eddie/wiki/EDDIE-Development-&-Deployment-Strategy).
+
+To get started with the development process see [DEVELOPMENT.md](docs/DEVELOPMENT.md).
+
+To install, integrate and operate EDDIE, see the operation manual: [operation.md](docs/OPERATION.md).
