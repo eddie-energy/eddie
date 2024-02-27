@@ -48,7 +48,7 @@ class TimeSeriesBuilderTest {
         var firstTimeSeries = result.getTimeSeries().getFirst();
         assertEquals(meteringPointId1, firstTimeSeries.getMRID());
         assertEquals(BusinessTypeList.CONSUMPTION, firstTimeSeries.getBusinessType());
-        assertEquals(EnergyProductTypeList.ACTIVE_POWER, firstTimeSeries.getProduct());
+        assertEquals(EnergyProductTypeList.ACTIVE_ENERGY, firstTimeSeries.getProduct());
         assertEquals(DirectionTypeList.DOWN, firstTimeSeries.getFlowDirectionDirection());
         assertEquals(CommodityKind.ELECTRICITYPRIMARYMETERED, firstTimeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity());
         assertEquals(UnitOfMeasureTypeList.KILOWATT_HOUR, firstTimeSeries.getEnergyMeasurementUnitName());
@@ -59,7 +59,7 @@ class TimeSeriesBuilderTest {
         var lastTimeSeries = result.getTimeSeries().getLast();
         assertEquals(meteringPointId2, lastTimeSeries.getMRID());
         assertEquals(BusinessTypeList.PRODUCTION, lastTimeSeries.getBusinessType());
-        assertEquals(EnergyProductTypeList.ACTIVE_POWER, lastTimeSeries.getProduct());
+        assertEquals(EnergyProductTypeList.ACTIVE_ENERGY, lastTimeSeries.getProduct());
         assertEquals(DirectionTypeList.UP, lastTimeSeries.getFlowDirectionDirection());
         assertEquals(CommodityKind.ELECTRICITYPRIMARYMETERED, lastTimeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity());
         assertEquals(UnitOfMeasureTypeList.KILOWATT_HOUR, lastTimeSeries.getEnergyMeasurementUnitName());
