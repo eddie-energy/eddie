@@ -3,8 +3,8 @@ package energy.eddie.regionconnector.fr.enedis.providers.agnostic;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -21,10 +21,10 @@ import java.util.concurrent.Flow;
 public class EnedisRawDataProvider implements RawDataProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRawDataProvider.class);
     private final Flux<IdentifiableMeterReading> identifiableMeterReadingFlux;
-    private final PermissionRequestRepository<TimeframedPermissionRequest> repository;
+    private final PermissionRequestRepository<FrEnedisPermissionRequest> repository;
 
     public EnedisRawDataProvider(Flux<IdentifiableMeterReading> identifiableMeterReadingFlux,
-                                 PermissionRequestRepository<TimeframedPermissionRequest> repository
+                                 PermissionRequestRepository<FrEnedisPermissionRequest> repository
     ) {
         this.identifiableMeterReadingFlux = identifiableMeterReadingFlux;
         this.repository = repository;

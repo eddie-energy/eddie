@@ -1,17 +1,19 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisCreatedState;
 import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
+import jakarta.annotation.Nullable;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
 
-public class EnedisPermissionRequest extends TimestampedPermissionRequest implements TimeframedPermissionRequest {
+public class EnedisPermissionRequest extends TimestampedPermissionRequest implements FrEnedisPermissionRequest {
     private static final EnedisDataSourceInformation dataSourceInformation = new EnedisDataSourceInformation();
     private final String permissionId;
     private final String connectionId;
@@ -19,6 +21,8 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
     private final ZonedDateTime end;
     private final String dataNeedId;
     private PermissionRequestState state;
+    @Nullable
+    private String usagePointId;
 
     public EnedisPermissionRequest(
             String permissionId,
@@ -83,5 +87,16 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
     @Override
     public ZonedDateTime end() {
         return end;
+    }
+
+    @Override
+    public Optional<String> usagePointId() {
+        return Optional.ofNullable(usagePointId);
+    }
+
+    @SuppressWarnings("NullableProblems")
+    @Override
+    public void setUsagePointId(String usagePointId) {
+        this.usagePointId = usagePointId;
     }
 }

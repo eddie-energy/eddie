@@ -8,8 +8,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class EnedisPermissionRequestTest {
     @Test
@@ -116,5 +115,36 @@ class EnedisPermissionRequestTest {
 
         // Then
         assertEquals(newState, request.state());
+    }
+
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    @Test
+    void setUsagePointId_setsUsagePointId() {
+        // Given
+        String permissionId = "testPermissionId";
+        String connectionId = "testConnectionId";
+        ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
+        ZonedDateTime end = start.plusDays(1);
+        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end);
+        String usagePointId = "testUsagePointId";
+
+        // When
+        request.setUsagePointId(usagePointId);
+
+        // Then
+        assertEquals(usagePointId, request.usagePointId().get());
+    }
+
+    @Test
+    void usagePointIdIsNotSet_returnsEmpty() {
+        // Given
+        String permissionId = "testPermissionId";
+        String connectionId = "testConnectionId";
+        ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
+        ZonedDateTime end = start.plusDays(1);
+        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end);
+
+        // Then
+        assertFalse(request.usagePointId().isPresent());
     }
 }

@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.states;
 
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneId;
@@ -17,7 +17,7 @@ class FrEnedisCreatedStateTest {
     void validate_changesToValidatedState_whenValid() throws ValidationException {
         // Given
         ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
-        TimeframedPermissionRequest permissionRequest = new EnedisPermissionRequest("cid", "dnid", now, now.plusDays(1));
+        FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("cid", "dnid", now, now.plusDays(1));
         FrEnedisCreatedState createdState = new FrEnedisCreatedState(permissionRequest);
 
         // When
@@ -32,7 +32,7 @@ class FrEnedisCreatedStateTest {
         // Given
         ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
         ZonedDateTime end = start.minusDays(1);
-        TimeframedPermissionRequest permissionRequest = new EnedisPermissionRequest("cid", "dnid", start, end);
+        FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("cid", "dnid", start, end);
         FrEnedisCreatedState createdState = new FrEnedisCreatedState(permissionRequest);
 
         // When, Then
@@ -45,7 +45,7 @@ class FrEnedisCreatedStateTest {
         // Given
         ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
         ZonedDateTime end = start.plusYears(4);
-        TimeframedPermissionRequest permissionRequest = new EnedisPermissionRequest("cid", "dnid", start, end);
+        FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("cid", "dnid", start, end);
         FrEnedisCreatedState createdState = new FrEnedisCreatedState(permissionRequest);
 
         // When, Then

@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.fr.enedis.providers.agnostic;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.mock;
 @ExtendWith(MockitoExtension.class)
 class EnedisRawDataProviderTest {
     @Mock
-    private PermissionRequestRepository<TimeframedPermissionRequest> mockRepo;
+    private PermissionRequestRepository<FrEnedisPermissionRequest> mockRepo;
 
     @Test
     void completeOnInputFlux_emitsCompleteOnRawDataFlow() {

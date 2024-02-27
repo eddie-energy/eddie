@@ -2,8 +2,8 @@ package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisAcceptedState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisPendingAcknowledgmentState;
@@ -24,7 +24,7 @@ class PermissionRequestServiceTest {
     @Autowired
     private PermissionRequestService permissionRequestService;
     @Autowired
-    private PermissionRequestRepository<TimeframedPermissionRequest> repository;
+    private PermissionRequestRepository<FrEnedisPermissionRequest> repository;
 
     @Test
     void testCreatePermissionRequest_createsPermissionRequest() throws StateTransitionException {

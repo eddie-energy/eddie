@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.fr.enedis;
 
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
@@ -17,6 +16,7 @@ import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.request.InMemoryPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.providers.agnostic.IdentifiableMeterReading;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
@@ -69,7 +69,7 @@ public class FrEnedisSpringConfig {
     }
 
     @Bean
-    public PermissionRequestRepository<TimeframedPermissionRequest> permissionRequestRepository() {
+    public PermissionRequestRepository<FrEnedisPermissionRequest> permissionRequestRepository() {
         return new InMemoryPermissionRequestRepository();
     }
 
@@ -96,11 +96,11 @@ public class FrEnedisSpringConfig {
     }
 
     @Bean
-    public Set<Extension<TimeframedPermissionRequest>> extensions(PermissionRequestRepository<TimeframedPermissionRequest> repository,
-                                                                  Sinks.Many<ConnectionStatusMessage> messages,
-                                                                  Sinks.Many<ConsentMarketDocument> cmds,
-                                                                  EnedisConfiguration config,
-                                                                  CommonInformationModelConfiguration cimConfig) {
+    public Set<Extension<FrEnedisPermissionRequest>> extensions(PermissionRequestRepository<FrEnedisPermissionRequest> repository,
+                                                                Sinks.Many<ConnectionStatusMessage> messages,
+                                                                Sinks.Many<ConsentMarketDocument> cmds,
+                                                                EnedisConfiguration config,
+                                                                CommonInformationModelConfiguration cimConfig) {
         return Set.of(
                 new SavingExtension<>(repository),
                 new MessagingExtension<>(messages),
@@ -113,7 +113,7 @@ public class FrEnedisSpringConfig {
     }
 
     @Bean
-    public PermissionRequestFactory factory(Set<Extension<TimeframedPermissionRequest>> extensions) {
+    public PermissionRequestFactory factory(Set<Extension<FrEnedisPermissionRequest>> extensions) {
         return new PermissionRequestFactory(extensions);
     }
 

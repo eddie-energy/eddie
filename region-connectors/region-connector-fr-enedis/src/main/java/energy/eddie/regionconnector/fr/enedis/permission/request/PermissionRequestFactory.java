@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.shared.permission.requests.PermissionRequestProxy;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
@@ -10,10 +10,10 @@ import java.util.Set;
 
 @Component
 public class PermissionRequestFactory {
-    private final Set<Extension<TimeframedPermissionRequest>> extensions;
+    private final Set<Extension<FrEnedisPermissionRequest>> extensions;
 
     public PermissionRequestFactory(
-            Set<Extension<TimeframedPermissionRequest>> extensions
+            Set<Extension<FrEnedisPermissionRequest>> extensions
     ) {
         this.extensions = extensions;
     }
@@ -24,8 +24,8 @@ public class PermissionRequestFactory {
      * @param permissionRequestForCreation the DTO that is used for creating the PermissionRequest
      * @return new PermissionRequest
      */
-    public TimeframedPermissionRequest create(PermissionRequestForCreation permissionRequestForCreation) {
-        TimeframedPermissionRequest permissionRequest = new EnedisPermissionRequest(
+    public FrEnedisPermissionRequest create(PermissionRequestForCreation permissionRequestForCreation) {
+        FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest(
                 permissionRequestForCreation.connectionId(),
                 permissionRequestForCreation.dataNeedId(),
                 permissionRequestForCreation.start(),
@@ -34,7 +34,7 @@ public class PermissionRequestFactory {
         return PermissionRequestProxy.createProxy(
                 permissionRequest,
                 extensions,
-                TimeframedPermissionRequest.class,
+                FrEnedisPermissionRequest.class,
                 PermissionRequestProxy.CreationInfo.NEWLY_CREATED
         );
     }
@@ -46,11 +46,11 @@ public class PermissionRequestFactory {
      * @param permissionRequest PermissionRequest to be wrapped and recreated
      * @return recreated PermissionRequest
      */
-    public TimeframedPermissionRequest create(TimeframedPermissionRequest permissionRequest) {
+    public FrEnedisPermissionRequest create(FrEnedisPermissionRequest permissionRequest) {
         return PermissionRequestProxy.createProxy(
                 permissionRequest,
                 extensions,
-                TimeframedPermissionRequest.class,
+                FrEnedisPermissionRequest.class,
                 PermissionRequestProxy.CreationInfo.RECREATED
         );
     }

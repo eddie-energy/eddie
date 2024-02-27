@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +33,7 @@ class PermissionRequestFactoryTest {
         ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
         ZonedDateTime end = start.plusDays(1);
         PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(Set.of());
-        TimeframedPermissionRequest original = new EnedisPermissionRequest("cid", "dnid", start, end);
+        FrEnedisPermissionRequest original = new EnedisPermissionRequest("cid", "dnid", start, end);
 
         // When
         PermissionRequest permissionRequest = permissionRequestFactory.create(original);

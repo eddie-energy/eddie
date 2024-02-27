@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
 import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisAcceptedState;
 import energy.eddie.regionconnector.fr.enedis.providers.agnostic.IdentifiableMeterReading;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ class PollingServiceTest {
         PollingService pollingService = new PollingService(enedisApiService, sink);
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(20);
         ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
-        TimeframedPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
 
         // When
         pollingService.requestData(request, "usagePointId");
@@ -60,7 +60,7 @@ class PollingServiceTest {
         PollingService pollingService = new PollingService(enedisApiService, sink);
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(20);
         ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
-        TimeframedPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
         request.changeState(new FrEnedisAcceptedState(request));
 
         // When
@@ -83,7 +83,7 @@ class PollingServiceTest {
         PollingService pollingService = new PollingService(enedisApiService, sink);
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(20);
         ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
-        TimeframedPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
         request.changeState(new FrEnedisAcceptedState(request));
 
         // When
@@ -106,7 +106,7 @@ class PollingServiceTest {
         PollingService pollingService = new PollingService(enedisApiService, sink);
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(20);
         ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
-        TimeframedPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
 
         // When
         pollingService.requestData(request, "usagePointId");
