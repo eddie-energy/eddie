@@ -343,7 +343,14 @@ class EddieConnectButton extends LitElement {
     }
 
     if (this.isAiida()) {
-      this.selectAiida();
+      if (this.isAiidaEnabled()) {
+        this.selectAiida();
+      } else {
+        console.error(
+          "Cannot create an EDDIE connect button for near real-time date because the AIIDA region connector is disabled"
+        );
+        return false;
+      }
     }
 
     return true;
@@ -351,6 +358,10 @@ class EddieConnectButton extends LitElement {
 
   isAiida() {
     return this._dataNeedAttributes?.type === "AIIDA_NEAR_REALTIME_DATA";
+  }
+
+  isAiidaEnabled() {
+    return this._availableConnectors.hasOwnProperty("aiida");
   }
 
   selectAiida() {
