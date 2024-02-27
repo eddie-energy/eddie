@@ -74,7 +74,6 @@ tasks.register("run-core", JavaExec::class) {
     environment["JDBC_USER"] = "test"
     environment["JDBC_PASSWORD"] = "test"
     environment["JDBC_URL"] = "jdbc:postgresql://localhost:5432/eddie"
-    environment["SPRING_JPA_DATABASE_PLATFORM"] = "org.hibernate.dialect.PostgreSQLDialect"
 }
 
 tasks.withType<JavaCompile>().configureEach {
