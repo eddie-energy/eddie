@@ -1,35 +1,38 @@
 package energy.eddie.regionconnector.fr.enedis.providers.v0;
 
-import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveIntervalReading;
-import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
-import energy.eddie.regionconnector.fr.enedis.providers.agnostic.IdentifiableMeterReading;
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.regionconnector.fr.enedis.dto.IntervalReading;
+import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import org.junit.jupiter.api.Test;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class EnedisMvp1ConsumptionRecordProviderTest {
 
     @Test
     void testGetConsumptionRecordStream_returnsMappedRecords() throws Exception {
         // Given
-        var intervalReading = new ConsumptionLoadCurveIntervalReading();
-        intervalReading.setIntervalLength(ConsumptionLoadCurveIntervalReading.IntervalLengthEnum.PT5M);
-        intervalReading.setValue("100");
-        intervalReading.setMeasureType(ConsumptionLoadCurveIntervalReading.MeasureTypeEnum.B);
-        var clcMeterReading = new ConsumptionLoadCurveMeterReading();
-        clcMeterReading.setUsagePointId("uid");
-        var start = ZonedDateTime.now(ZoneOffset.UTC);
-        clcMeterReading.setStart(start.format(DateTimeFormatter.ISO_DATE));
-        clcMeterReading.setIntervalReading(List.of(intervalReading));
-        var meterReading = new IdentifiableMeterReading("pid", "cid", "dnid", clcMeterReading);
+        var intervalReading = new IntervalReading("100", "2024-02-26 00:30:00", Optional.of("B"), Optional.of(Granularity.PT30M.name()));
+        var clcMeterReading = new MeterReading("uid", LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC), "BRUT", null, List.of(intervalReading));
+        var permissionRequest = mock(FrEnedisPermissionRequest.class);
+        when(permissionRequest.connectionId()).thenReturn("cid");
+        when(permissionRequest.permissionId()).thenReturn("pid");
+        when(permissionRequest.dataNeedId()).thenReturn("dnid");
+        when(permissionRequest.granularity()).thenReturn(Granularity.PT30M);
+
+        var meterReading = new IdentifiableMeterReading(permissionRequest, clcMeterReading);
         TestPublisher<IdentifiableMeterReading> testPublisher = TestPublisher.create();
 
         // When

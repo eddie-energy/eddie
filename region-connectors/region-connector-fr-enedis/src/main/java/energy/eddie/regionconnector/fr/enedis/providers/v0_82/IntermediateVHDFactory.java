@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
-import energy.eddie.regionconnector.fr.enedis.providers.agnostic.IdentifiableMeterReading;
+import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import org.springframework.stereotype.Component;
 
 @Component

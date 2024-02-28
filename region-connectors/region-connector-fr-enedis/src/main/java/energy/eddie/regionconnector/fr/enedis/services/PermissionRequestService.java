@@ -52,7 +52,8 @@ public class PermissionRequestService {
             permissionRequest.reject();
         } else {
             permissionRequest.accept();
-            pollingService.requestData(permissionRequest, usagePointId);
+            permissionRequest.setUsagePointId(usagePointId);
+            pollingService.fetchHistoricalMeterReadings(permissionRequest);
         }
     }
 

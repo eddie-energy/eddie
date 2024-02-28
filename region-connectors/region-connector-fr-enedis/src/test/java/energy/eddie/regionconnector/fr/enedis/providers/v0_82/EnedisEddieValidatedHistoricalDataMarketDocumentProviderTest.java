@@ -1,47 +1,33 @@
 package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
+import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
-import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveIntervalReading;
-import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
-import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveReadingType;
-import energy.eddie.regionconnector.fr.enedis.providers.agnostic.IdentifiableMeterReading;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import org.junit.jupiter.api.Test;
 import reactor.adapter.JdkFlowAdapter;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class EnedisEddieValidatedHistoricalDataMarketDocumentProviderTest {
     @Test
     void testGetEddieValidatedHistoricalDataMarketDocumentStream_publishesDocuments() throws Exception {
         // Given
-        var intervalReading = new ConsumptionLoadCurveIntervalReading();
-        intervalReading.setIntervalLength(ConsumptionLoadCurveIntervalReading.IntervalLengthEnum.PT5M);
-        intervalReading.setValue("100");
-        intervalReading.setMeasureType(ConsumptionLoadCurveIntervalReading.MeasureTypeEnum.B);
-        String date = LocalDate.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE);
-        intervalReading.setDate(date);
-        var clcMeterReading = new ConsumptionLoadCurveMeterReading();
-        clcMeterReading.setUsagePointId("uid");
-        var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10).format(IntermediateValidatedHistoricalDocument.ENEDIS_DATE_FORMAT);
-        var end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1).format(IntermediateValidatedHistoricalDocument.ENEDIS_DATE_FORMAT);
-        clcMeterReading.setStart(start);
-        clcMeterReading.setEnd(end);
-        ConsumptionLoadCurveReadingType readingType = new ConsumptionLoadCurveReadingType();
-        readingType.setMeasurementKind("power");
-        readingType.setAggregate("sum");
-        clcMeterReading.setReadingType(readingType);
-        var meterReading = new IdentifiableMeterReading("pid", "cid", "dnid", clcMeterReading);
-        clcMeterReading.setIntervalReading(List.of(intervalReading));
+        var meterReading = TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK);
+        var permissionRequest = mock(FrEnedisPermissionRequest.class);
+        when(permissionRequest.connectionId()).thenReturn("cid");
+        when(permissionRequest.permissionId()).thenReturn("pid");
+        when(permissionRequest.dataNeedId()).thenReturn("dnid");
+        when(permissionRequest.granularity()).thenReturn(Granularity.PT30M);
+
+        var identifiableMeterReading = new IdentifiableMeterReading(permissionRequest, meterReading);
         TestPublisher<IdentifiableMeterReading> testPublisher = TestPublisher.create();
         PlainEnedisConfiguration enedisConfiguration = new PlainEnedisConfiguration(
                 "clientId",
@@ -57,7 +43,7 @@ class EnedisEddieValidatedHistoricalDataMarketDocumentProviderTest {
         // When
         StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(provider.getEddieValidatedHistoricalDataMarketDocumentStream()))
                 .then(() -> {
-                    testPublisher.emit(meterReading);
+                    testPublisher.emit(identifiableMeterReading);
                     testPublisher.complete();
                 })
                 .assertNext(vhd -> {

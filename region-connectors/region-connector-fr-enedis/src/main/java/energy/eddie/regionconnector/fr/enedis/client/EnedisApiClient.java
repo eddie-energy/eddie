@@ -1,110 +1,66 @@
 package energy.eddie.regionconnector.fr.enedis.client;
 
-import energy.eddie.regionconnector.fr.enedis.api.AuthorizationApi;
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
-import energy.eddie.regionconnector.fr.enedis.api.MeteringDataApi;
-import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
-import energy.eddie.regionconnector.fr.enedis.invoker.ApiClient;
-import energy.eddie.regionconnector.fr.enedis.invoker.ApiException;
-import energy.eddie.regionconnector.fr.enedis.model.*;
+import energy.eddie.regionconnector.fr.enedis.dto.EnedisDataApiResponse;
+import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
-import java.time.DateTimeException;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Objects;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
+public class EnedisApiClient implements EnedisApi {
 
-public class EnedisApiClient extends ApiClient implements EnedisApi {
-    private static final String APPLICATION_JSON = "application/json";
-    private static final String USER_AGENT = "eddie";
-    private final AuthorizationApi authApi;
-    private final MeteringDataApi meterApi;
-    private final EnedisConfiguration configuration;
-    private String bearerToken = "";
+    static final String AUTHENTICATION_API = "AuthenticationAPI";
+    static final String METERING_POINT_API = "MeteringPointAPI";
+    private final EnedisTokenProvider tokenProvider;
+    private final Map<String, HealthState> healthChecks = new HashMap<>();
+    private final WebClient webClient;
 
-    public EnedisApiClient(EnedisConfiguration configuration) {
-        this.configuration = configuration;
 
-        this.updateBaseUri(configuration.basePath());
-        this.authApi = new AuthorizationApi(this);
-        this.meterApi = new MeteringDataApi(this);
+    public EnedisApiClient(EnedisTokenProvider tokenProvider, WebClient webClient) {
+        this.tokenProvider = tokenProvider;
+        this.webClient = webClient;
+        healthChecks.put(AUTHENTICATION_API, HealthState.UP);
+        healthChecks.put(METERING_POINT_API, HealthState.UP);
     }
 
-    /**
-     * Request a bearer token and write it to the file
-     *
-     * @throws ApiException Something went wrong while retrieving data from the API
-     */
+    private String granularityToPath(Granularity granularity) {
+        return switch (granularity) {
+            case PT30M -> "metering_data_clc/v5/consumption_load_curve";
+            case P1D -> "metering_data_dc/v5/daily_consumption";
+            default -> throw new IllegalArgumentException("Unsupported granularity: " + granularity);
+        };
+    }
+
     @Override
-    public void postToken() throws ApiException {
-        String grantType = "client_credentials";
-        String clientId = configuration.clientId();
-        String clientSecret = configuration.clientSecret();
-        String contentType = "application/x-www-form-urlencoded";
-        String authorization = "No auth";
-
-        TokenGenerationResponse tokenGenerationResponse = authApi
-                .oauth2V3TokenPost(contentType, authorization, grantType, USER_AGENT, clientId, clientSecret);
-
-        bearerToken = Objects.requireNonNull(tokenGenerationResponse.getAccessToken());
+    public Mono<MeterReading> getConsumptionMeterReading(String usagePointId, LocalDate start, LocalDate end, Granularity granularity) {
+        return tokenProvider.getToken()
+                .doOnSuccess(token -> healthChecks.put(AUTHENTICATION_API, HealthState.UP))
+                .doOnError(throwable -> healthChecks.put(AUTHENTICATION_API, HealthState.DOWN))
+                .flatMap(token ->
+                        webClient
+                                .get()
+                                .uri(uriBuilder -> uriBuilder.path(granularityToPath(granularity))
+                                        .queryParam("usage_point_id", usagePointId)
+                                        .queryParam("start", start.format(DateTimeFormatter.ISO_DATE))
+                                        .queryParam("end", end.format(DateTimeFormatter.ISO_DATE))
+                                        .build())
+                                .headers(headers -> headers.setBearerAuth(token))
+                                .retrieve()
+                                .bodyToMono(EnedisDataApiResponse.class)
+                                .map(EnedisDataApiResponse::meterReading)
+                                .doOnSuccess(o -> healthChecks.put(METERING_POINT_API, HealthState.UP))
+                                .doOnError(throwable -> healthChecks.put(METERING_POINT_API, HealthState.DOWN))
+                );
     }
 
-    /**
-     * Request daily consumption metering data
-     * TODO: Fix null value
-     *
-     * @return Response with metering data
-     * @throws ApiException Something went wrong while retrieving data from the API
-     */
     @Override
-    public DailyConsumptionMeterReading getDailyConsumption(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
-        throwIfInvalidTimeframe(start, end);
-        // The end date is not in the response when requesting data, increment +1 day to prevent confusion
-        end = end.plusDays(1);
-        String authorization = "Bearer " + bearerToken;
-        DailyConsumptionResponse dcResponse = meterApi.meteringDataDcV5DailyConsumptionGet(authorization, usagePointId, start.toLocalDate().toString(), end.toLocalDate().toString(), APPLICATION_JSON, APPLICATION_JSON, USER_AGENT, "");
-        return dcResponse.getMeterReading();
-    }
-
-    /**
-     * Request consumption load curve metering data
-     * TODO: Fix null value
-     *
-     * @return Response with metering data
-     * @throws ApiException Something went wrong while retrieving data from the API
-     */
-    @Override
-    @SuppressWarnings("NullAway")
-    public ConsumptionLoadCurveMeterReading getConsumptionLoadCurve(String usagePointId, ZonedDateTime start, ZonedDateTime end) throws ApiException {
-        throwIfInvalidTimeframe(start, end);
-        // The end date is not in the response when requesting data, increment +1 day to prevent confusion
-        end = end.plusDays(1);
-
-        String authorization = "Bearer " + bearerToken;
-        ConsumptionLoadCurveResponse clcResponse = meterApi.meteringDataClcV5ConsumptionLoadCurveGet(
-                authorization,
-                usagePointId,
-                start.toLocalDate().toString(),
-                end.toLocalDate().toString(),
-                APPLICATION_JSON,
-                APPLICATION_JSON,
-                USER_AGENT,
-                null
-        );
-
-        return clcResponse.getMeterReading();
-    }
-
-    private void throwIfInvalidTimeframe(ZonedDateTime start, ZonedDateTime end) throws DateTimeException {
-        LocalDate currentDate = LocalDate.ofInstant(Instant.now(), ZONE_ID_FR);
-
-        if (start.isAfter(end)) {
-            throw new DateTimeException("Start date should be before end date.");
-        }
-        if (end.toLocalDate().isEqual(currentDate) || end.toLocalDate().isAfter(currentDate)) {
-            throw new DateTimeException("The end date parameter must be earlier than the current date.");
-        }
+    public Map<String, HealthState> health() {
+        return healthChecks;
     }
 }
