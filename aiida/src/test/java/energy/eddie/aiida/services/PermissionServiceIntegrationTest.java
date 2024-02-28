@@ -90,10 +90,10 @@ public class PermissionServiceIntegrationTest {
         assertEquals(PermissionStatus.STREAMING_DATA, permission.status());
 
         permission = repository.findById("9609a9b3-0718-4082-935d-6a98c0f8c5a2").orElseThrow();
-        assertEquals(PermissionStatus.TIME_LIMIT, permission.status());
+        assertEquals(PermissionStatus.FULFILLED, permission.status());
 
         permission = repository.findById("0b3b6f6d-d878-49dd-9dfd-62156b5cdc37").orElseThrow();
-        assertEquals(PermissionStatus.TIME_LIMIT, permission.status());
+        assertEquals(PermissionStatus.FULFILLED, permission.status());
 
         verify(streamerManager).createNewStreamerForPermission(argThat(arg ->
                 arg.permissionId().equals("25ee5365-5d71-4b01-b21f-9c61f76a5cc9")));

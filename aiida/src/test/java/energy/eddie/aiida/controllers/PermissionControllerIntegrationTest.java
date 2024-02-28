@@ -114,8 +114,6 @@ class PermissionControllerIntegrationTest {
 
     @Test
     void givenInvalidInput_setupNewPermission_returnsBadRequest(TestInfo testInfo) {
-        String expected = "{\"errors\":[{\"message\":\"permissionDto: expirationTime has to be after startTime.\"}]}";
-
         var start = Instant.now().plusSeconds(100_000);
         var expiration = start.minusSeconds(200_000);
         var dto = getPermissionDto(start, expiration, testInfo);
@@ -124,7 +122,9 @@ class PermissionControllerIntegrationTest {
                 dto, String.class);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals(expected, responseEntity.getBody());
+        assertNotNull(responseEntity.getBody());
+        assertTrue(responseEntity.getBody().contains("permissionDto: expirationTime has to be after startTime."));
+        assertTrue(responseEntity.getBody().contains("permissionDto: expirationTime must not lie in the past."));
     }
 
     /**
@@ -134,7 +134,7 @@ class PermissionControllerIntegrationTest {
      */
     @Test
     void givenValidInput_setupNewPermission_asExpected_andGetPermissionsReturnsOnlyThisPermission(TestInfo testInfo) {
-        var start = Instant.now().plusSeconds(100_000);
+        var start = Instant.now().minusSeconds(100_000);
         var expiration = start.plusSeconds(200_000);
         var dto = getPermissionDto(start, expiration, testInfo);
 
@@ -167,6 +167,35 @@ class PermissionControllerIntegrationTest {
         assertDtoAndPermission(dto, permissions.getFirst());
     }
 
+    @Test
+    void givenPermissionStartInFuture_returnsWaitingForStart(TestInfo testInfo) {
+        // Given
+        var start = Instant.now().plusSeconds(100_000);
+        var expiration = start.plusSeconds(200_000);
+        var dto = getPermissionDto(start, expiration, testInfo);
+
+        // When
+        ResponseEntity<Permission> responseEntity = restTemplate.postForEntity(getPermissionsUrl(),
+                dto, Permission.class);
+        var permission = responseEntity.getBody();
+
+        assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
+
+        assertNotNull(permission);
+        assertEquals(PermissionStatus.WAITING_FOR_START, permission.status());
+
+        // get all permissions should now return only one result
+        ResponseEntity<List<Permission>> getResponseEntity = restTemplate.exchange(getPermissionsUrl(),
+                HttpMethod.GET, null, new ParameterizedTypeReference<>() {
+                }, new Object[]{});
+
+        List<Permission> permissions = getResponseEntity.getBody();
+
+        assertNotNull(permissions);
+        assertEquals(1, permissions.size());
+        assertEquals(PermissionStatus.WAITING_FOR_START, permissions.getFirst().status());
+    }
+
     /**
      * Tests that
      * <li> a new permission is set up successfully
@@ -177,7 +206,7 @@ class PermissionControllerIntegrationTest {
     @Test
     @Timeout(10)
     void givenValidInput_setupNewPermission_andRevokePermission_asExpected(TestInfo testInfo) {
-        var start = Instant.now().plusSeconds(100_000);
+        var start = Instant.now().minusSeconds(100_000);
         var expiration = start.plusSeconds(200_000);
         var dto = getPermissionDto(start, expiration, testInfo);
 

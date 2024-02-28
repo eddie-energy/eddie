@@ -3,10 +3,10 @@ package energy.eddie.aiida.controllers;
 import api.EddieApiError;
 import api.ValidationErrors;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.errors.InvalidPatchOperationException;
 import energy.eddie.aiida.errors.InvalidPermissionRevocationException;
 import energy.eddie.aiida.errors.PermissionNotFoundException;
+import energy.eddie.aiida.errors.PermissionStartFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -85,9 +85,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errors);
     }
 
-    @ExceptionHandler(value = {ConnectionStatusMessageSendFailedException.class})
-    protected ResponseEntity<Map<String, List<EddieApiError>>> handleConnectionStatusMessageSendFailedException(ConnectionStatusMessageSendFailedException ignored) {
-        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError("Failed to setup permission, please try again later.")));
+    @ExceptionHandler(value = {PermissionStartFailedException.class})
+    protected ResponseEntity<Object> handlePermissionStartFailedException(PermissionStartFailedException ignored) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError("Failed to start permission, please try again later.")));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
     }
 }

@@ -4,6 +4,7 @@ import energy.eddie.aiida.dtos.PermissionDto;
 import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.errors.InvalidPermissionRevocationException;
 import energy.eddie.aiida.errors.PermissionNotFoundException;
+import energy.eddie.aiida.errors.PermissionStartFailedException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
@@ -20,7 +21,6 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.lang.NonNull;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Sinks;
 
 import java.time.Clock;
@@ -35,7 +35,11 @@ import static energy.eddie.aiida.models.permission.PermissionStatus.*;
 @Service
 public class PermissionService implements ApplicationListener<ContextRefreshedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
-    private final ConcurrentMap<String, ScheduledFuture<?>> expirationFutures;
+    /**
+     * The same map can be used for futures from scheduled permission starts and expirations. There will never be a
+     * runnable for start and expiration scheduled for the same permissionId at the same time.
+     */
+    private final ConcurrentMap<String, ScheduledFuture<?>> permissionFutures;
     private final PermissionRepository repository;
     private final Clock clock;
     private final StreamerManager streamerManager;
@@ -43,12 +47,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
     @Autowired
     public PermissionService(PermissionRepository repository, Clock clock, StreamerManager streamerManager,
-                             TaskScheduler scheduler, ConcurrentMap<String, ScheduledFuture<?>> expirationFutures) {
+                             TaskScheduler scheduler, ConcurrentMap<String, ScheduledFuture<?>> permissionFutures) {
         this.repository = repository;
         this.clock = clock;
         this.streamerManager = streamerManager;
         this.scheduler = scheduler;
-        this.expirationFutures = expirationFutures;
+        this.permissionFutures = permissionFutures;
 
         streamerManager.terminationRequestsFlux().subscribe(this::terminationRequestReceived);
     }
@@ -58,16 +62,22 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         Permission permission = findById(permissionId);
 
-        var future = expirationFutures.get(permissionId);
+        var future = permissionFutures.get(permissionId);
         if (future != null) {
-            LOGGER.info("Cancelling expiration future for permission {}", permissionId);
+            LOGGER.info("Cancelling permissionExpiration/permissionStart future for permission {}", permissionId);
             future.cancel(true);
         }
+
+        var previousStatus = permission.status();
 
         Instant terminateTime = clock.instant();
         permission.revokeTime(terminateTime);
         permission.updateStatus(TERMINATED);
         repository.save(permission);
+
+        if (previousStatus == WAITING_FOR_START)
+            // if permission has never sent data, we also don't send the TERMINATED status message
+            return;
 
         try {
             var terminated = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), terminateTime, TERMINATED, permissionId);
@@ -82,32 +92,67 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     /**
      * Saves a new permission in the database and sends the {@link PermissionStatus#ACCEPTED} status message to
      * the EDDIE framework. If any error occurs, the permission is not saved in the database.
-     * As of current implementation, streaming is started right away, even if the permission's start time lies in the future.
+     * If the permission's startTime is in the future, it will be scheduled to start then, and the status message will
+     * also just be sent when the permission's start time has been reached.
      *
      * @param dto Data transfer object containing the information for the new permission.
      * @return Permission object as returned by the database.
-     * @throws ConnectionStatusMessageSendFailedException Thrown when the connection status message couldn't be sent.
-     *                                                    This will result in a rollback and the permission will not be saved.
+     * @throws PermissionStartFailedException If the permission couldn't be started.
      */
-    @Transactional(rollbackFor = ConnectionStatusMessageSendFailedException.class)
-    public Permission setupNewPermission(PermissionDto dto) throws ConnectionStatusMessageSendFailedException {
+    public Permission setupNewPermission(PermissionDto dto) throws PermissionStartFailedException {
         Permission newPermission = new Permission(dto.permissionId(), dto.serviceName(), dto.dataNeedId(),
                 dto.startTime(), dto.expirationTime(), dto.grantTime(), dto.connectionId(),
                 dto.requestedCodes(), dto.kafkaStreamingConfig());
         newPermission = repository.save(newPermission);
 
-        var acceptedMessage = new ConnectionStatusMessage(newPermission.connectionId(), newPermission.dataNeedId(),
-                clock.instant(), ACCEPTED, newPermission.permissionId());
-        streamerManager.createNewStreamerForPermission(newPermission);
-        streamerManager.sendConnectionStatusMessageForPermission(acceptedMessage, newPermission.permissionId());
+        var now = Instant.now(clock);
+        if (now.isAfter(newPermission.startTime())) {
+            return startPermission(newPermission);
+        } else {
+            return schedulePermissionStart(newPermission);
+        }
+    }
 
-        schedulePermissionExpirationRunnable(newPermission);
+    private Permission schedulePermissionStart(Permission permission) {
+        LOGGER.info("Scheduling permission start for permission {}", permission.permissionId());
+        permission.updateStatus(WAITING_FOR_START);
+        Permission finalPermission = repository.save(permission);
 
-        // scheduled start will be implemented later, for now, streaming is started right away and should be reflected in db
-        newPermission.updateStatus(PermissionStatus.STREAMING_DATA);
-        newPermission = repository.save(newPermission);
+        var future = scheduler.schedule(() -> permissionStartRunnable(finalPermission), finalPermission.startTime());
 
-        return newPermission;
+        permissionFutures.put(finalPermission.permissionId(), future);
+
+        return finalPermission;
+    }
+
+    private void permissionStartRunnable(Permission permission) {
+        try {
+            startPermission(permission);
+        } catch (PermissionStartFailedException exception) {
+            // status is already updated, nothing left to process here
+            LOGGER.error("Scheduled start of permission {} failed", permission.permissionId(), exception);
+        }
+    }
+
+    private Permission startPermission(Permission permission) throws PermissionStartFailedException {
+        LOGGER.info("Starting permission {}", permission.permissionId());
+        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(),
+                clock.instant(), ACCEPTED, permission.permissionId());
+
+        try {
+            streamerManager.createNewStreamerForPermission(permission);
+            streamerManager.sendConnectionStatusMessageForPermission(acceptedMessage, permission.permissionId());
+
+            schedulePermissionExpirationRunnable(permission);
+
+            permission.updateStatus(PermissionStatus.STREAMING_DATA);
+            return repository.save(permission);
+        } catch (ConnectionStatusMessageSendFailedException exception) {
+            LOGGER.error("Failed to start permission {}", permission.permissionId(), exception);
+            permission.updateStatus(FAILED_TO_START);
+            permission = repository.save(permission);
+            throw new PermissionStartFailedException(permission);
+        }
     }
 
     private void schedulePermissionExpirationRunnable(Permission permission) {
@@ -119,7 +164,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                 permission.expirationTime(), expirationSink);
         ScheduledFuture<?> future = scheduler.schedule(expirationRunnable, permission.expirationTime());
 
-        expirationFutures.put(permission.permissionId(), future);
+        permissionFutures.put(permission.permissionId(), future);
     }
 
     /**
@@ -140,13 +185,23 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         if (!isEligibleForRevocation(permission))
             throw new InvalidPermissionRevocationException(permissionId);
 
-        var future = expirationFutures.get(permissionId);
+        var future = permissionFutures.get(permissionId);
         if (future != null) {
-            LOGGER.info("Cancelling expiration future for permission {}", permissionId);
+            LOGGER.info("Cancelling permissionExpiration/permissionStart future for permission {}", permissionId);
             future.cancel(true);
         }
 
+        var previousStatus = permission.status();
+
         Instant revocationTime = clock.instant();
+        permission.updateStatus(REVOKED);
+        permission.revokeTime(revocationTime);
+        permission = repository.save(permission);
+
+        if (previousStatus == WAITING_FOR_START)
+            // if permission has never sent data, we also don't send the REVOKED status messages
+            return permission;
+
         var revocationReceivedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), revocationTime, REVOCATION_RECEIVED, permissionId);
         var revokeMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), revocationTime, REVOKED, permissionId);
 
@@ -158,10 +213,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             LOGGER.error("Error while sending connection status messages while revoking permission {}", permissionId, ex);
         }
 
-        permission.updateStatus(REVOKED);
-        permission.revokeTime(revocationTime);
-
-        return repository.save(permission);
+        return permission;
     }
 
     /**
@@ -185,8 +237,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     /**
-     * Sends the {@link PermissionStatus#TIME_LIMIT} status message to the EDDIE framework for the permission with
-     * {@code permissionId} , stops the associated streamer, sets the permission's status to TIME_LIMIT and
+     * Sends the {@link PermissionStatus#FULFILLED} status message to the EDDIE framework for the permission with
+     * {@code permissionId} , stops the associated streamer, sets the permission's status to FULFILLED and
      * updates the database.
      *
      * @param permissionId ID of the permission which has reached its expiration time.
@@ -212,16 +264,16 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             LOGGER.warn("Permission {} has status {}, meaning it was never started. Will expire it anyway.", permissionId, permission.status());
         }
 
-        var statusMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), clock.instant(), PermissionStatus.TIME_LIMIT, permissionId);
+        var statusMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), clock.instant(), PermissionStatus.FULFILLED, permissionId);
 
         try {
             streamerManager.sendConnectionStatusMessageForPermission(statusMessage, permissionId);
         } catch (ConnectionStatusMessageSendFailedException ex) {
-            LOGGER.error("Error while sending TIME_LIMIT ConnectionStatusMessage", ex);
+            LOGGER.error("Error while sending FULFILLED ConnectionStatusMessage", ex);
         }
         streamerManager.stopStreamer(permissionId);
 
-        permission.updateStatus(PermissionStatus.TIME_LIMIT);
+        permission.updateStatus(PermissionStatus.FULFILLED);
         repository.save(permission);
     }
 
@@ -260,7 +312,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                 repository.save(permission);
             } else {
                 LOGGER.info("Permission {} has expired but AIIDA was not running at that time, will expire it now", permission.permissionId());
-                permission.updateStatus(PermissionStatus.TIME_LIMIT);
+                permission.updateStatus(PermissionStatus.FULFILLED);
                 repository.save(permission);
             }
         }
