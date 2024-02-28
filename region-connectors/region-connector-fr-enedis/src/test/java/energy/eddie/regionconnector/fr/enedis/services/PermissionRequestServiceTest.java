@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
@@ -31,7 +32,7 @@ class PermissionRequestServiceTest {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC);
         var end = ZonedDateTime.now(ZoneOffset.UTC).plusDays(10);
-        var request = new PermissionRequestForCreation("cid", "dnid", start, end);
+        var request = new PermissionRequestForCreation("cid", "dnid", start, end, Granularity.P1D);
 
         // When
         var res = permissionRequestService.createPermissionRequest(request);
@@ -49,7 +50,7 @@ class PermissionRequestServiceTest {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
         var end = ZonedDateTime.now(ZoneOffset.UTC);
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
+        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
         request.changeState(new FrEnedisPendingAcknowledgmentState(request));
         repository.save(request);
 
@@ -66,7 +67,7 @@ class PermissionRequestServiceTest {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
         var end = ZonedDateTime.now(ZoneOffset.UTC);
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
+        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
         request.changeState(new FrEnedisPendingAcknowledgmentState(request));
         repository.save(request);
 
@@ -89,7 +90,7 @@ class PermissionRequestServiceTest {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
         var end = ZonedDateTime.now(ZoneOffset.UTC);
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
+        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
         repository.save(request);
 
         // When
@@ -106,7 +107,7 @@ class PermissionRequestServiceTest {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
         var end = ZonedDateTime.now(ZoneOffset.UTC);
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
+        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
         repository.save(request);
 
         // When
@@ -122,7 +123,7 @@ class PermissionRequestServiceTest {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
         var end = ZonedDateTime.now(ZoneOffset.UTC);
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
+        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
         repository.save(request);
 
         // When
@@ -139,7 +140,7 @@ class PermissionRequestServiceTest {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
         var end = ZonedDateTime.now(ZoneOffset.UTC);
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
+        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
         repository.save(request);
 
         // When

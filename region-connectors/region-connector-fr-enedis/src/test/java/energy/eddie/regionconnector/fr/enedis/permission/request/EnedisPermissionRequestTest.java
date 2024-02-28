@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisMalformedState;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,7 @@ class EnedisPermissionRequestTest {
         ZonedDateTime end = start.plusDays(1);
 
         // When
-        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end);
+        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end, Granularity.P1D);
 
         // Then
         assertEquals(permissionId, request.permissionId());
@@ -35,7 +36,7 @@ class EnedisPermissionRequestTest {
         ZonedDateTime end = start.plusDays(1);
 
         // When
-        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end);
+        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end, Granularity.P1D);
 
         // Then
         assertEquals(connectionId, request.connectionId());
@@ -49,7 +50,7 @@ class EnedisPermissionRequestTest {
         ZonedDateTime end = start.plusDays(1);
 
         // When
-        EnedisPermissionRequest request = new EnedisPermissionRequest(connectionId, "dnid", start, end);
+        EnedisPermissionRequest request = new EnedisPermissionRequest(connectionId, "dnid", start, end, Granularity.P1D);
 
         // Then
         assertNotNull(request.permissionId());
@@ -64,7 +65,7 @@ class EnedisPermissionRequestTest {
         ZonedDateTime end = start.plusDays(1);
 
         // When
-        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end);
+        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end, Granularity.P1D);
 
         // Then
         assertEquals(start, request.start());
@@ -79,7 +80,7 @@ class EnedisPermissionRequestTest {
         ZonedDateTime end = start.plusDays(1);
 
         // When
-        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end);
+        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end, Granularity.P1D);
 
         // Then
         assertEquals(end, request.end());
@@ -94,7 +95,7 @@ class EnedisPermissionRequestTest {
         ZonedDateTime end = start.plusDays(1);
 
         // When
-        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end);
+        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end, Granularity.P1D);
 
         // Then
         assertEquals("testConnectionId", request.connectionId());
@@ -107,7 +108,7 @@ class EnedisPermissionRequestTest {
         String connectionId = "testConnectionId";
         ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
         ZonedDateTime end = start.plusDays(1);
-        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end);
+        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end, Granularity.P1D);
         PermissionRequestState newState = new FrEnedisMalformedState(request, List.of());
 
         // When
@@ -125,7 +126,7 @@ class EnedisPermissionRequestTest {
         String connectionId = "testConnectionId";
         ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
         ZonedDateTime end = start.plusDays(1);
-        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end);
+        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end, Granularity.P1D);
         String usagePointId = "testUsagePointId";
 
         // When
@@ -142,7 +143,7 @@ class EnedisPermissionRequestTest {
         String connectionId = "testConnectionId";
         ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
         ZonedDateTime end = start.plusDays(1);
-        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end);
+        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end, Granularity.P1D);
 
         // Then
         assertFalse(request.usagePointId().isPresent());

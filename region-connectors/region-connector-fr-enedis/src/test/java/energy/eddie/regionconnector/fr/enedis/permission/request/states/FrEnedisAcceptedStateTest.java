@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.states;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.states.TerminatedPermissionRequestState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import org.junit.jupiter.api.Test;
@@ -18,8 +19,8 @@ class FrEnedisAcceptedStateTest {
                 "cid",
                 "dnid",
                 ZonedDateTime.now(ZoneOffset.UTC),
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+                ZonedDateTime.now(ZoneOffset.UTC),
+                Granularity.P1D);
         FrEnedisAcceptedState acceptedState = new FrEnedisAcceptedState(request);
 
         // When

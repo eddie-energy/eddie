@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.states.TerminatedPermissionRequestState;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.HealthState;
@@ -82,7 +83,8 @@ class EnedisRegionConnectorTest {
                 "cid",
                 "dnid",
                 ZonedDateTime.now(ZoneOffset.UTC),
-                ZonedDateTime.now(ZoneOffset.UTC)
+                ZonedDateTime.now(ZoneOffset.UTC),
+                Granularity.P1D
         );
         request.changeState(new FrEnedisAcceptedState(request));
         when(permissionRequestService.findPermissionRequestByPermissionId(anyString()))
@@ -112,7 +114,8 @@ class EnedisRegionConnectorTest {
                 Optional.of("upId"),
                 ZonedDateTime.now(Clock.systemUTC()),
                 ZonedDateTime.now(Clock.systemUTC()),
-                new FrEnedisInvalidState(null)
+                new FrEnedisInvalidState(null),
+                Granularity.P1D
         );
         when(permissionRequestService.findPermissionRequestByPermissionId(anyString())).thenReturn(Optional.of(request));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
