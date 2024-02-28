@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
@@ -20,6 +21,7 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
     private final ZonedDateTime start;
     private final ZonedDateTime end;
     private final String dataNeedId;
+    private final Granularity granularity;
     private PermissionRequestState state;
     @Nullable
     private String usagePointId;
@@ -29,8 +31,8 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
             String connectionId,
             String dataNeedId,
             ZonedDateTime start,
-            ZonedDateTime end
-    ) {
+            ZonedDateTime end,
+            Granularity granularity) {
         super(ZONE_ID_FR);
         this.permissionId = permissionId;
         this.connectionId = connectionId;
@@ -38,15 +40,16 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
         this.dataNeedId = dataNeedId;
         this.start = start;
         this.end = end;
+        this.granularity = granularity;
     }
 
     public EnedisPermissionRequest(
             String connectionId,
             String dataNeedId,
             ZonedDateTime start,
-            ZonedDateTime end
-    ) {
-        this(UUID.randomUUID().toString(), connectionId, dataNeedId, start, end);
+            ZonedDateTime end,
+            Granularity granularity) {
+        this(UUID.randomUUID().toString(), connectionId, dataNeedId, start, end, granularity);
     }
 
     @Override
@@ -98,5 +101,10 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
     @Override
     public void setUsagePointId(String usagePointId) {
         this.usagePointId = usagePointId;
+    }
+
+    @Override
+    public Granularity granularity() {
+        return granularity;
     }
 }

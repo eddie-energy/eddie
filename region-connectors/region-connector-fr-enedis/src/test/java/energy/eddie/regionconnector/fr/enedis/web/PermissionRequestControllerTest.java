@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
@@ -42,19 +43,6 @@ class PermissionRequestControllerTest {
     @MockBean
     private PermissionRequestService permissionRequestService;
 
-    /**
-     * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
-     * whole core is started. To be able to properly test the controller's error responses, manually add the advice
-     * to this test class.
-     */
-    @TestConfiguration
-    static class ControllerTestConfiguration {
-        @Bean
-        public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
-            return new RegionConnectorsCommonControllerAdvice();
-        }
-    }
-
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {
         // Given
@@ -93,7 +81,8 @@ class PermissionRequestControllerTest {
                 "cid",
                 "dnid",
                 ZonedDateTime.now(ZoneOffset.UTC),
-                ZonedDateTime.now(ZoneOffset.UTC).plusDays(10)
+                ZonedDateTime.now(ZoneOffset.UTC).plusDays(10),
+                Granularity.P1D
         );
 
         // When
@@ -156,5 +145,18 @@ class PermissionRequestControllerTest {
                         hasItem("start: must not be null"),
                         hasItem("end: must not be null")
                 )));
+    }
+
+    /**
+     * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
+     * whole core is started. To be able to properly test the controller's error responses, manually add the advice
+     * to this test class.
+     */
+    @TestConfiguration
+    static class ControllerTestConfiguration {
+        @Bean
+        public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
+            return new RegionConnectorsCommonControllerAdvice();
+        }
     }
 }

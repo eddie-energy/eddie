@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.validation;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
@@ -17,7 +18,7 @@ class NotFurtherThanValidatorTest {
     @Test
     void test_validate_when_endDateIsWithinLimit() {
         // Given
-        TimeframedPermissionRequest request = new EnedisPermissionRequest("cid", "dnid", ZonedDateTime.now(ZoneOffset.UTC), ZonedDateTime.now(ZoneOffset.UTC).plusHours(1));
+        TimeframedPermissionRequest request = new EnedisPermissionRequest("cid", "dnid", ZonedDateTime.now(ZoneOffset.UTC), ZonedDateTime.now(ZoneOffset.UTC).plusHours(1), Granularity.P1D);
         NotFurtherThanValidator validator = new NotFurtherThanValidator(ChronoUnit.DAYS, 1);
 
         // When
@@ -30,7 +31,7 @@ class NotFurtherThanValidatorTest {
     @Test
     void test_validate_when_endDateIsOutOfBounds() {
         // Given
-        TimeframedPermissionRequest request = new EnedisPermissionRequest("cid", "dnid", ZonedDateTime.now(ZoneOffset.UTC), ZonedDateTime.now(ZoneOffset.UTC).plusDays(2));
+        TimeframedPermissionRequest request = new EnedisPermissionRequest("cid", "dnid", ZonedDateTime.now(ZoneOffset.UTC), ZonedDateTime.now(ZoneOffset.UTC).plusDays(2), Granularity.P1D);
         NotFurtherThanValidator validator = new NotFurtherThanValidator(ChronoUnit.DAYS, 1);
 
         // When

@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.states;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ class FrEnedisPendingAcknowledgmentStateTest {
         // Given
         ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
         ZonedDateTime end = start.plusDays(1);
-        FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("pid", "cid", "dnid", start, end);
+        FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
         FrEnedisPendingAcknowledgmentState state = new FrEnedisPendingAcknowledgmentState(permissionRequest);
 
         // When

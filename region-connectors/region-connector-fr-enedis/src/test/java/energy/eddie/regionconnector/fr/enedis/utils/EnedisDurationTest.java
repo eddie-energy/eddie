@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.utils;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ class EnedisDurationTest {
         // Given
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
         ZonedDateTime end = start.plusDays(3);
-        TimeframedPermissionRequest permissionRequest = new EnedisPermissionRequest("cid", "dnid", start, end);
+        TimeframedPermissionRequest permissionRequest = new EnedisPermissionRequest("cid", "dnid", start, end, Granularity.P1D);
         EnedisDuration duration = new EnedisDuration(permissionRequest);
 
         // When
@@ -42,7 +43,7 @@ class EnedisDurationTest {
     @MethodSource("testEnedisDuration_returnsISODuration_ifEndIsInFuture_methodSource")
     void testEnedisDuration_returnsISODuration_ifEndIsInFuture(ZonedDateTime start, ZonedDateTime end, String expected) {
         // Given
-        TimeframedPermissionRequest permissionRequest = new EnedisPermissionRequest("cid", "dnid", start, end);
+        TimeframedPermissionRequest permissionRequest = new EnedisPermissionRequest("cid", "dnid", start, end, Granularity.P1D);
         EnedisDuration duration = new EnedisDuration(permissionRequest);
 
         // When

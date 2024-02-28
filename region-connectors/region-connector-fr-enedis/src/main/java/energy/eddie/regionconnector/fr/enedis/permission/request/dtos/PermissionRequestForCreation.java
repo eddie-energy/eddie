@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.dtos;
 
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.regionconnector.shared.validation.SupportedGranularities;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -13,6 +15,8 @@ public record PermissionRequestForCreation(
         @NotNull(message = "must not be null")
         ZonedDateTime start,
         @NotNull(message = "must not be null")
-        ZonedDateTime end
+        ZonedDateTime end,
+        @SupportedGranularities({Granularity.P1D, Granularity.PT30M})
+        Granularity granularity
 ) {
 }

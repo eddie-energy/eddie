@@ -29,7 +29,8 @@ public class PermissionRequestFactory {
                 permissionRequestForCreation.connectionId(),
                 permissionRequestForCreation.dataNeedId(),
                 permissionRequestForCreation.start(),
-                permissionRequestForCreation.end()
+                permissionRequestForCreation.end(),
+                permissionRequestForCreation.granularity()
         );
         return PermissionRequestProxy.createProxy(
                 permissionRequest,
