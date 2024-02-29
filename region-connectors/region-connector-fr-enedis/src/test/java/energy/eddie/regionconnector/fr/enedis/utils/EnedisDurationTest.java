@@ -19,7 +19,7 @@ class EnedisDurationTest {
     private static Stream<Arguments> testEnedisDuration_returnsISODuration_ifEndIsInFuture_methodSource() {
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
         return Stream.of(
-                Arguments.of(start, start.plusDays(3), "P2D"),
+                Arguments.of(start, start.plusDays(3), "P3D"),
                 Arguments.of(start, start.plusYears(3), "P1095D")
         );
     }

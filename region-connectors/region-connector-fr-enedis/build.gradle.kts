@@ -7,7 +7,6 @@ plugins {
     id("energy.eddie.java-conventions")
     id("energy.eddie.pnpm-build")
 
-    alias(libs.plugins.openapi.generator)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
@@ -26,6 +25,7 @@ dependencies {
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
+    implementation(libs.spring.boot.starter.webflux)
     implementation(libs.hibernate.validator)
     implementation(libs.spring.retry)
     implementation(libs.spring.aspects)
@@ -44,53 +44,11 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.okhttp3.mockwebserver)
 }
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
-}
-
-// Directory for generated java files
-val generatedSwaggerJavaDir = "${project.layout.buildDirectory.asFile.get()}/generated/sources/swagger/main/java"
-
-// Add generated sources to the main source set
-sourceSets {
-    main {
-        java {
-            srcDir(generatedSwaggerJavaDir)
-        }
-    }
-    test {
-        java {
-            srcDir(generatedSwaggerJavaDir)
-        }
-    }
-}
-
-openApiGenerate {
-    generatorName.set("java")
-    inputSpec.set("${projectDir}/src/main/resources/enedis-api-client-v3.json")
-    outputDir.set(generatedSwaggerJavaDir)
-    ignoreFileOverride.set("${projectDir}/src/main/resources/.openapi-generator-ignore")
-
-    apiPackage.set("energy.eddie.regionconnector.fr.enedis.api")
-    invokerPackage.set("energy.eddie.regionconnector.fr.enedis.invoker")
-    modelPackage.set("energy.eddie.regionconnector.fr.enedis.model")
-
-    generateApiTests.set(false)
-    generateModelTests.set(false)
-    configOptions.set(mapOf(
-            "sourceFolder" to "/",
-            "useJakartaEe" to "true",
-            "dateLibrary" to "java8",
-    ))
-
-    library.set("native")
-    cleanupOutput.set(true)
-}
-
-tasks.named("compileJava").configure {
-    dependsOn(tasks.named("openApiGenerate"))
 }
 
 tasks.withType<JavaCompile>().configureEach {

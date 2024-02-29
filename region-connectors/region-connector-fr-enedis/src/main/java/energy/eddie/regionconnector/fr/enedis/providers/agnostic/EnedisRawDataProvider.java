@@ -2,11 +2,8 @@ package energy.eddie.regionconnector.fr.enedis.providers.agnostic;
 
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
-import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
-import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import reactor.adapter.JdkFlowAdapter;
@@ -19,36 +16,21 @@ import java.util.concurrent.Flow;
 @Component
 @ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
 public class EnedisRawDataProvider implements RawDataProvider {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRawDataProvider.class);
-    private final Flux<IdentifiableMeterReading> identifiableMeterReadingFlux;
-    private final PermissionRequestRepository<FrEnedisPermissionRequest> repository;
+    private final Flux<RawDataMessage> rawDataMessageFlux;
 
-    public EnedisRawDataProvider(Flux<IdentifiableMeterReading> identifiableMeterReadingFlux,
-                                 PermissionRequestRepository<FrEnedisPermissionRequest> repository
-    ) {
-        this.identifiableMeterReadingFlux = identifiableMeterReadingFlux;
-        this.repository = repository;
+    public EnedisRawDataProvider(Flux<IdentifiableMeterReading> identifiableMeterReadingFlux) {
+        this.rawDataMessageFlux = identifiableMeterReadingFlux.map(this::createRawDataMessage);
     }
 
     @Override
     public Flow.Publisher<RawDataMessage> getRawDataStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(
-                identifiableMeterReadingFlux
-                        .map(this::createRawDataMessage));
+        return JdkFlowAdapter.publisherToFlowPublisher(rawDataMessageFlux);
     }
 
     private RawDataMessage createRawDataMessage(IdentifiableMeterReading meterReading) {
-        var permissionRequest = repository.findByPermissionId(meterReading.permissionId());
-        DataSourceInformation dataSourceInfo = null;
-
-        if (permissionRequest.isEmpty())
-            LOGGER.error("No permission with ID {} found in repository.", meterReading.permissionId());
-        else {
-            dataSourceInfo = permissionRequest.get().dataSourceInformation();
-        }
-
-        return new RawDataMessage(meterReading.permissionId(), meterReading.connectionId(), meterReading.dataNeedId(),
-                dataSourceInfo, ZonedDateTime.now(ZoneId.of("UTC")), meterReading.payload().toString());
+        FrEnedisPermissionRequest permissionRequest = meterReading.permissionRequest();
+        return new RawDataMessage(permissionRequest.permissionId(), permissionRequest.connectionId(), permissionRequest.dataNeedId(),
+                permissionRequest.dataSourceInformation(), ZonedDateTime.now(ZoneId.of("UTC")), meterReading.meterReading().toString());
     }
 
     @Override

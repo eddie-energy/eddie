@@ -6,12 +6,12 @@ import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiVersion;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
-import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveIntervalReading;
-import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveMeterReading;
-import energy.eddie.regionconnector.fr.enedis.providers.agnostic.IdentifiableMeterReading;
+import energy.eddie.regionconnector.fr.enedis.dto.IntervalReading;
+import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
-import jakarta.annotation.Nullable;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
@@ -40,20 +40,20 @@ public final class IntermediateValidatedHistoricalDocument {
             );
     private final CommonInformationModelConfiguration cimConfig;
     private final EnedisConfiguration enedisConfig;
-    private final IdentifiableMeterReading meterReading;
+    private final IdentifiableMeterReading identifiableMeterReading;
 
     IntermediateValidatedHistoricalDocument(IdentifiableMeterReading identifiableMeterReading,
                                             CommonInformationModelConfiguration cimConfig,
                                             EnedisConfiguration enedisConfig) {
-        this.meterReading = identifiableMeterReading;
+        this.identifiableMeterReading = identifiableMeterReading;
         this.cimConfig = cimConfig;
         this.enedisConfig = enedisConfig;
     }
 
     public EddieValidatedHistoricalDataMarketDocument eddieValidatedHistoricalDataMarketDocument() {
         var timeframe = new EsmpTimeInterval(
-                consumptionLoadCurveMeterReading().getStart(),
-                consumptionLoadCurveMeterReading().getEnd(),
+                meterReading().start().format(ENEDIS_DATE_FORMAT),
+                meterReading().end().format(ENEDIS_DATE_FORMAT),
                 ENEDIS_DATE_FORMAT,
                 ECT
         );
@@ -70,10 +70,11 @@ public final class IntermediateValidatedHistoricalDocument {
                                 .withEnd(timeframe.end())
                 )
                 .withTimeSeriesList(timeSeriesList());
+        FrEnedisPermissionRequest permissionRequest = identifiableMeterReading.permissionRequest();
         return new EddieValidatedHistoricalDataMarketDocument(
-                Optional.of(meterReading.connectionId()),
-                Optional.of(meterReading.permissionId()),
-                Optional.of(meterReading.dataNeedId()),
+                Optional.of(permissionRequest.connectionId()),
+                Optional.of(permissionRequest.permissionId()),
+                Optional.of(permissionRequest.dataNeedId()),
                 vhd
         );
     }
@@ -91,7 +92,7 @@ public final class IntermediateValidatedHistoricalDocument {
                 .withMarketEvaluationPointMRID(
                         new MeasurementPointIDStringComplexType()
                                 .withCodingScheme(CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME)
-                                .withValue(consumptionLoadCurveMeterReading().getUsagePointId())
+                                .withValue(meterReading().usagePointId())
                 )
                 .withReasonList(REASON_LIST)
                 .withSeriesPeriodList(
@@ -102,45 +103,35 @@ public final class IntermediateValidatedHistoricalDocument {
                 .withTimeSeries(List.of(reading));
     }
 
-    @Nullable
     private EnergyProductTypeList energyProductTypeList() {
-        if (consumptionLoadCurveMeterReading().getReadingType() == null) {
-            return null;
-        }
-        String measurementKind = consumptionLoadCurveMeterReading().getReadingType().getMeasurementKind();
-        if (measurementKind == null) {
-            return null;
-        }
-        if (measurementKind.equals("power")) {
-            return EnergyProductTypeList.ACTIVE_POWER;
-        }
-        throw new IllegalStateException("Unknown measurement kind '%s'".formatted(measurementKind));
+        return switch (meterReading().readingType().measurementKind()) {
+            case "power" -> EnergyProductTypeList.ACTIVE_POWER;
+            case "energy" -> EnergyProductTypeList.ACTIVE_ENERGY;
+            default ->
+                    throw new IllegalStateException("Unknown measurement kind '%s'".formatted(meterReading().readingType().measurementKind()));
+        };
     }
 
-    @Nullable
     private AggregateKind aggregateKind() {
-        if (consumptionLoadCurveMeterReading().getReadingType() == null ||
-                consumptionLoadCurveMeterReading().getReadingType().getAggregate() == null) {
-            return null;
-        }
-        String aggregate = consumptionLoadCurveMeterReading().getReadingType().getAggregate();
+        String aggregate = meterReading().readingType().aggregate();
         return AggregateKind.valueOf(aggregate.toUpperCase(Locale.ROOT));
     }
 
     private List<SeriesPeriodComplexType> seriesPeriods() {
         var interval = new EsmpTimeInterval(
-                consumptionLoadCurveMeterReading().getStart(),
-                consumptionLoadCurveMeterReading().getEnd(),
+                meterReading().start().format(ENEDIS_DATE_FORMAT),
+                meterReading().end().format(ENEDIS_DATE_FORMAT),
                 ENEDIS_DATE_FORMAT,
                 ECT
         );
-        var consumptionLoadCurveMeterReading = consumptionLoadCurveMeterReading();
+        var meterReading = meterReading();
+        String resolution = identifiableMeterReading.permissionRequest().granularity().name();
         List<SeriesPeriodComplexType> seriesPeriods = new ArrayList<>();
         int position = 0;
-        for (ConsumptionLoadCurveIntervalReading intervalReading
-                : consumptionLoadCurveMeterReading.getIntervalReading()) {
+        for (IntervalReading intervalReading
+                : meterReading.intervalReadings()) {
             var seriesPeriod = new SeriesPeriodComplexType()
-                    .withResolution(intervalReading.getIntervalLength().getValue())
+                    .withResolution(resolution)
                     .withTimeInterval(new ESMPDateTimeIntervalComplexType()
                             .withStart(interval.start())
                             .withEnd(interval.end())
@@ -150,7 +141,7 @@ public final class IntermediateValidatedHistoricalDocument {
                                     .withPoints(List.of(
                                             new PointComplexType()
                                                     .withPosition("%d".formatted(position))
-                                                    .withEnergyQuantityQuantity(new BigDecimal(intervalReading.getValue()))
+                                                    .withEnergyQuantityQuantity(new BigDecimal(intervalReading.value()))
                                                     .withEnergyQuantityQuality(QualityTypeList.AS_PROVIDED)
                                     ))
                     );
@@ -160,7 +151,7 @@ public final class IntermediateValidatedHistoricalDocument {
         return seriesPeriods;
     }
 
-    private ConsumptionLoadCurveMeterReading consumptionLoadCurveMeterReading() {
-        return this.meterReading.payload();
+    private MeterReading meterReading() {
+        return this.identifiableMeterReading.meterReading();
     }
 }

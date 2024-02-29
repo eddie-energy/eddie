@@ -2,13 +2,15 @@ package energy.eddie.regionconnector.fr.enedis.providers.v0;
 
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.api.v0.ConsumptionRecord;
-import energy.eddie.regionconnector.fr.enedis.model.ConsumptionLoadCurveIntervalReading;
-import energy.eddie.regionconnector.fr.enedis.providers.agnostic.IdentifiableMeterReading;
+import energy.eddie.regionconnector.fr.enedis.dto.IntervalReading;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.fr.enedis.utils.DateTimeConverter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+
+import static energy.eddie.regionconnector.fr.enedis.providers.v0_82.IntermediateValidatedHistoricalDocument.ENEDIS_DATE_FORMAT;
 
 class IntermediateConsumptionRecord {
     private final IdentifiableMeterReading meterReading;
@@ -18,37 +20,36 @@ class IntermediateConsumptionRecord {
     }
 
     public ConsumptionRecord consumptionRecord() throws IllegalStateException {
-        var clcMeterReading = meterReading.payload();
-        if (clcMeterReading.getIntervalReading().isEmpty()) {
+        var clcMeterReading = meterReading.meterReading();
+        if (clcMeterReading.intervalReadings().isEmpty()) {
             throw new IllegalStateException("No data available");
         }
         ConsumptionRecord consumptionRecord = new ConsumptionRecord();
 
-        consumptionRecord.setMeteringPoint(clcMeterReading.getUsagePointId());
-        consumptionRecord.setStartDateTime(DateTimeConverter.isoDateToZonedDateTime(clcMeterReading.getStart()));
-        ConsumptionLoadCurveIntervalReading intervalReading = clcMeterReading.getIntervalReading().getFirst();
-        consumptionRecord.setMeteringInterval(intervalReading.getIntervalLength().getValue());
+        consumptionRecord.setMeteringPoint(clcMeterReading.usagePointId());
+        consumptionRecord.setStartDateTime(DateTimeConverter.isoDateToZonedDateTime(clcMeterReading.start().format(ENEDIS_DATE_FORMAT)));
+        consumptionRecord.setMeteringInterval(meterReading.permissionRequest().granularity().name());
 
 
         List<ConsumptionPoint> consumptionPoints = new ArrayList<>();
-        for (ConsumptionLoadCurveIntervalReading clcInterval : clcMeterReading.getIntervalReading()) {
+        for (IntervalReading clcInterval : clcMeterReading.intervalReadings()) {
             ConsumptionPoint consumptionPoint = new ConsumptionPoint();
-            consumptionPoint.setConsumption(Double.valueOf(clcInterval.getValue()));
+            consumptionPoint.setConsumption(Double.valueOf(clcInterval.value()));
             consumptionPoint.setMeteringType(
-                    Objects.requireNonNull(clcInterval.getMeasureType()) == ConsumptionLoadCurveIntervalReading.MeasureTypeEnum.B
-                            ? ConsumptionPoint.MeteringType.MEASURED_VALUE
-                            : ConsumptionPoint.MeteringType.EXTRAPOLATED_VALUE
+                    clcInterval.measureType()
+                            .filter(measureType -> measureType.equals("B"))
+                            .map(measureType -> ConsumptionPoint.MeteringType.MEASURED_VALUE)
+                            .orElse(ConsumptionPoint.MeteringType.EXTRAPOLATED_VALUE)
             );
 
             consumptionPoints.add(consumptionPoint);
         }
 
         consumptionRecord.setConsumptionPoints(consumptionPoints);
-        consumptionRecord.setPermissionId(meterReading.permissionId());
-        consumptionRecord.setConnectionId(meterReading.connectionId());
-        consumptionRecord.setDataNeedId(meterReading.dataNeedId());
+        FrEnedisPermissionRequest permissionRequest = meterReading.permissionRequest();
+        consumptionRecord.setPermissionId(permissionRequest.permissionId());
+        consumptionRecord.setConnectionId(permissionRequest.connectionId());
+        consumptionRecord.setDataNeedId(permissionRequest.dataNeedId());
         return consumptionRecord;
-
     }
 }
-
