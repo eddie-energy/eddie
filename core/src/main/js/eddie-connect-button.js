@@ -81,6 +81,10 @@ class EddieConnectButton extends LitElement {
       type: String,
     },
     accountingPointId: { attribute: "accounting-point-id", type: String },
+    rememberPermissionAdministrator: {
+      attribute: "remember-permission-administrator",
+      type: Object,
+    },
 
     _dataNeedIds: { type: Array },
     _selectedCountry: { type: String },
@@ -143,6 +147,13 @@ class EddieConnectButton extends LitElement {
 
   async connect() {
     this.dialogRef.value.show();
+
+    if (
+      !this.permissionAdministratorId &&
+      this.rememberPermissionAdministrator
+    ) {
+      this.loadPermissionAdministratorFromLocalStorage();
+    }
   }
 
   closePopup() {
@@ -211,11 +222,27 @@ class EddieConnectButton extends LitElement {
     const companyId = event.target.value;
     this._selectedPermissionAdministrator =
       this.getPermissionAdministratorByCompanyId(companyId);
+
+    if (this.rememberPermissionAdministrator) {
+      localStorage.setItem("permissionAdministrator", companyId);
+    }
   }
 
   selectPermissionAdministrator(permissionAdministrator) {
     this._selectedPermissionAdministrator = permissionAdministrator;
     this.selectCountry(permissionAdministrator?.country);
+  }
+
+  loadPermissionAdministratorFromLocalStorage() {
+    const id = localStorage.getItem("permissionAdministrator");
+
+    if (id) {
+      const pa = this.getPermissionAdministratorByCompanyId(id);
+
+      if (pa) {
+        this.selectPermissionAdministrator(pa);
+      }
+    }
   }
 
   async handleDataNeedSelect(event) {
@@ -521,7 +548,9 @@ class EddieConnectButton extends LitElement {
                 label="Country"
                 placeholder="Select your country"
                 @sl-change="${this.handleCountrySelect}"
-                value="${this._selectedPermissionAdministrator?.country ?? ""}"
+                value="${this._selectedPermissionAdministrator?.country ??
+                this._selectedCountry ??
+                ""}"
                 ?disabled="${!!this._presetPermissionAdministrator}"
               >
                 ${this._availableCountries.map(
@@ -554,7 +583,9 @@ class EddieConnectButton extends LitElement {
               >
                 ${this._filteredPermissionAdministrators.map(
                   (pa) => html`
-                    <sl-option value="${pa.companyId}"> ${pa.company} </sl-option>
+                    <sl-option value="${pa.companyId}">
+                      ${pa.company}
+                    </sl-option>
                   `
                 )}
               </sl-select>
