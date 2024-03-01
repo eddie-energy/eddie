@@ -1,7 +1,9 @@
 package energy.eddie.regionconnector.at.eda;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 
@@ -17,7 +19,7 @@ public record SimplePermissionRequest(String permissionId,
                                       Optional<String> meteringPointId,
                                       ZonedDateTime start,
                                       ZonedDateTime end,
-                                      PermissionRequestState state
+                                      PermissionProcessStatus status
 ) implements AtPermissionRequest {
 
     public SimplePermissionRequest(String permissionId, String connectionId) {
@@ -28,13 +30,20 @@ public record SimplePermissionRequest(String permissionId,
         this(permissionId, connectionId, dataNeedId, null, null, null, Optional.empty(), null, null, null);
     }
 
-    public SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId, String cmRequestId, String conversationId, PermissionRequestState state) {
-        this(permissionId, connectionId, dataNeedId, cmRequestId, conversationId, null, Optional.empty(), null, null, state);
+    public SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId, String cmRequestId,
+                                   String conversationId, PermissionProcessStatus status) {
+        this(permissionId, connectionId, dataNeedId, cmRequestId, conversationId, null, Optional.empty(), null, null,
+             status);
     }
 
     @Override
     public Optional<String> consentId() {
         return Optional.empty();
+    }
+
+    @Override
+    public PermissionRequestState state() {
+        return null;
     }
 
     @Override
@@ -53,64 +62,21 @@ public record SimplePermissionRequest(String permissionId,
     }
 
     @Override
-    public void validate() {
-
-    }
-
-    @Override
-    public void sendToPermissionAdministrator() {
-
-    }
-
-    @Override
-    public void receivedPermissionAdministratorResponse() {
-
-    }
-
-    @Override
-    public void terminate() {
-
-    }
-
-    @Override
-    public void accept() {
-
-    }
-
-    @Override
-    public void invalid() {
-
-    }
-
-    @Override
-    public void reject() {
-
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AtPermissionRequest that)) return false;
-        return permissionId.equals(that.permissionId()) && connectionId.equals(that.connectionId()) && cmRequestId.equals(that.cmRequestId()) && conversationId.equals(that.conversationId()) && state == that.state();
+        return permissionId.equals(that.permissionId()) && connectionId.equals(
+                that.connectionId()) && cmRequestId.equals(that.cmRequestId()) && conversationId.equals(
+                that.conversationId()) && status == that.status();
     }
 
     @Override
-    public String stateTransitionMessage() {
+    public String message() {
         return null;
     }
 
     @Override
-    public void setStateTransitionMessage(String message) {
-
-    }
-
-    @Override
-    public void setMeteringPointId(String meteringPointId) {
-
-    }
-
-    @Override
-    public void setConsentId(String consentId) {
-        // No-Op
+    public Granularity granularity() {
+        return Granularity.PT15M;
     }
 }

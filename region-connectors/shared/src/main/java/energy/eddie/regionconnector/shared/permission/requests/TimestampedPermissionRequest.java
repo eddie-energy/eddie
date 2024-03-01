@@ -13,6 +13,10 @@ public abstract class TimestampedPermissionRequest implements PermissionRequest 
         created = ZonedDateTime.now(zone);
     }
 
+    protected TimestampedPermissionRequest(ZonedDateTime created) {
+        this.created = created;
+    }
+
     @Override
     public ZonedDateTime created() {
         return created;

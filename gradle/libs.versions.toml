@@ -66,6 +66,11 @@ junit-mockito = { module = "org.mockito:mockito-junit-jupiter", version.ref = "m
 # dependencies required by region-connector-api
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 
+# shared dependencies
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+
+
 # dependencies required by region-connector-at
 jaxb-xjc = { module = "org.glassfish.jaxb:jaxb-xjc", version.ref = "jaxb" }
 jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "jaxb" }
@@ -95,9 +100,6 @@ slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
 
 # FR Enedis region connector
-testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
-testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
-
 
 # dependencies required by kafka-outbound
 kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients" }

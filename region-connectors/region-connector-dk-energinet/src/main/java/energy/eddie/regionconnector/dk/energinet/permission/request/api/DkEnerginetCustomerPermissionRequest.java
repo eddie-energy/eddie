@@ -23,8 +23,6 @@ public interface DkEnerginetCustomerPermissionRequest extends TimeframedPermissi
 
     ZonedDateTime lastPolled();
 
-    PermissionProcessStatus status();
-
     @InvokeExtensions
     void updateLastPolled(ZonedDateTime lastPolled);
 }

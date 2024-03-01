@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.lang.NonNull;
@@ -17,8 +16,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
 @EnableConfigurationProperties(DataNeedsConfig.class)
-// required that JPA repositories in child context will be initialized correctly
-@EntityScan(basePackages = "energy.eddie")
 public class CoreSpringConfig implements WebMvcConfigurer {
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreSpringConfig.class);
 

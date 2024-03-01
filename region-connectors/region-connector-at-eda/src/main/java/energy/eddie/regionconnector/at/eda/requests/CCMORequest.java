@@ -1,7 +1,9 @@
 package energy.eddie.regionconnector.at.eda.requests;
 
 import at.ebutilities.schemata.customerconsent.cmrequest._01p10.*;
+import at.ebutilities.schemata.customerprocesses.common.types._01p20.AddressType;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMode;
+import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingAddress;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.at.eda.EdaSchemaVersion;
@@ -12,13 +14,11 @@ import energy.eddie.regionconnector.at.eda.utils.CMRequestId;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
-import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
@@ -68,13 +68,23 @@ public class CCMORequest {
                 requestDataType, granularity, transmissionCycle, ZonedDateTime.now(ZoneOffset.UTC));
     }
 
+    private static RoutingAddress toRoutingAddress(String address) {
+        requireNonNull(address);
+        if (address.isBlank()) {
+            throw new IllegalArgumentException("Address must not be null");
+        }
+        return new RoutingAddress()
+                .withAddressType(AddressType.EC_NUMBER)
+                .withMessageAddress(address);
+    }
+
     /**
      * The messageId also known as conversation id.
      *
      * @return the messageId, also known as conversation id.
      */
     public String messageId() {
-        return new MessageId(new CCMOAddress(configuration.eligiblePartyId()).toRoutingAddress(), timestamp).toString();
+        return new MessageId(toRoutingAddress(configuration.eligiblePartyId()), timestamp).toString();
     }
 
     public String cmRequestId() {
@@ -97,7 +107,7 @@ public class CCMORequest {
         return timeframe.end();
     }
 
-    public CMRequest toCMRequest() throws InvalidDsoIdException {
+    public CMRequest toCMRequest() {
         return new CMRequest()
                 .withMarketParticipantDirectory(makeMarketParticipantDirectory())
                 .withProcessDirectory(makeProcessDirectory());
@@ -111,15 +121,15 @@ public class CCMORequest {
                 .withDuplicate(false)
                 .withSchemaVersion(EdaSchemaVersion.CM_REQUEST_01_10.value())
                 .withRoutingHeader(new RoutingHeader()
-                        .withSender(new CCMOAddress(configuration.eligiblePartyId()).toRoutingAddress())
-                        .withReceiver(new CCMOAddress(dsoIdAndMeteringPoint.dsoId()).toRoutingAddress())
+                                           .withSender(toRoutingAddress(configuration.eligiblePartyId()))
+                                           .withReceiver(toRoutingAddress(dsoIdAndMeteringPoint.dsoId()))
                         .withDocumentCreationDateTime(
                                 DateTimeConverter.dateTimeToXml(LocalDateTime.now(DateTimeConstants.AT_ZONE_ID))
                         )
                 );
     }
 
-    private ProcessDirectory makeProcessDirectory() throws InvalidDsoIdException {
+    private ProcessDirectory makeProcessDirectory() {
         var messageId = messageId();
         String prefixedConversationId = configuration.conversationIdPrefix()
                 .map(prefix -> prefix + messageId)
@@ -130,21 +140,7 @@ public class CCMORequest {
                 .withMessageId(messageId)
                 .withConversationId(prefixedConversationId)
                 .withProcessDate(DateTimeConverter.dateToXml(LocalDate.now(DateTimeConstants.AT_ZONE_ID)))
-                .withMeteringPoint(meteringPointOrThrow());
-    }
-
-    @Nullable
-    private String meteringPointOrThrow() throws InvalidDsoIdException {
-        var meteringPointOptional = dsoIdAndMeteringPoint.meteringPoint();
-
-        if (meteringPointOptional.isEmpty()) {
-            return null;
-        }
-
-        return dsoIdAndMeteringPoint.meteringPoint()
-                .filter(meteringPoint ->
-                        Objects.equals(dsoIdAndMeteringPoint.dsoId(), meteringPoint.substring(0, DSO_ID_LENGTH)))
-                .orElseThrow(() -> new InvalidDsoIdException("The dsoId does not match the dsoId of the metering point"));
+                .withMeteringPoint(meteringPointId().orElse(null));
     }
 
     private ReqType makeReqType() {

@@ -1,55 +1,94 @@
 package energy.eddie.regionconnector.at.eda.permission.request;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
-import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
 import jakarta.annotation.Nullable;
+import jakarta.persistence.*;
 
 import java.time.ZonedDateTime;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.at.eda.utils.DateTimeConstants.AT_ZONE_ID;
 
-public class EdaPermissionRequest extends TimestampedPermissionRequest implements AtPermissionRequest {
-    private final String connectionId;
+@SuppressWarnings("NullAway") // Needed for JPA
+@Entity
+@Table(schema = "at_eda", name = "eda_permission_request")
+public class EdaPermissionRequest implements AtPermissionRequest {
+    @Id
     private final String permissionId;
+    private final String connectionId;
     private final String cmRequestId;
     private final String conversationId;
+    @Column(name = "permission_start")
     private final ZonedDateTime start;
     @Nullable
+    @Column(name = "permission_end")
     private final ZonedDateTime end;
     private final String dataNeedId;
+    @Embedded
     private final EdaDataSourceInformation dataSourceInformation;
     @Nullable
-    private String meteringPointId;
-    private PermissionRequestState state;
-    private String statusTransitionMessage = "";
+    private final String meteringPointId;
+    private final String message;
     @Nullable
-    private String consentId;
+    @Column(name = "cm_consent_id")
+    private final String consentId;
 
-    public EdaPermissionRequest(String connectionId, String dataNeedId, CCMORequest ccmoRequest, StateBuilderFactory factory) {
-        this(connectionId, UUID.randomUUID().toString(), dataNeedId, ccmoRequest, factory);
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "text")
+    private final Granularity granularity;
+
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "text")
+    private final PermissionProcessStatus status;
+    private final ZonedDateTime created;
+
+    public EdaPermissionRequest(String connectionId, String dataNeedId, CCMORequest ccmoRequest,
+                                Granularity granularity, PermissionProcessStatus status, String message,
+                                String consentId) {
+        this(connectionId, UUID.randomUUID().toString(), dataNeedId, ccmoRequest, granularity, status, message,
+             consentId);
     }
 
-    public EdaPermissionRequest(String connectionId, String permissionId, String dataNeedId, CCMORequest ccmoRequest, StateBuilderFactory factory) {
-        super(AT_ZONE_ID);
+    public EdaPermissionRequest(String connectionId, String permissionId, String dataNeedId, CCMORequest ccmoRequest,
+                                Granularity granularity, PermissionProcessStatus status, String message,
+                                @Nullable String consentId) {
+        this(connectionId, permissionId, dataNeedId, ccmoRequest.cmRequestId(), ccmoRequest.messageId(),
+             ccmoRequest.meteringPointId()
+                     .orElse(null), ccmoRequest.dsoId(), ccmoRequest.start(), ccmoRequest.end().orElse(null),
+             granularity, status, message, consentId, ZonedDateTime.now(AT_ZONE_ID));
+    }
+
+    public EdaPermissionRequest(String connectionId, String permissionId, String dataNeedId, String cmRequestId,
+                                String conversationId, @Nullable String meteringPointId, String dsoId,
+                                ZonedDateTime start, @Nullable ZonedDateTime end, Granularity granularity,
+                                PermissionProcessStatus status, String message, @Nullable String consentId,
+                                ZonedDateTime created) {
         this.connectionId = connectionId;
         this.permissionId = permissionId;
         this.dataNeedId = dataNeedId;
-        this.cmRequestId = ccmoRequest.cmRequestId();
-        this.conversationId = ccmoRequest.messageId();
-        this.meteringPointId = ccmoRequest.meteringPointId().orElse(null);
-        this.dataSourceInformation = new EdaDataSourceInformation(ccmoRequest.dsoId());
-        this.start = ccmoRequest.start();
-        this.end = ccmoRequest.end().orElse(null);
-        this.state = factory.create(this, PermissionProcessStatus.CREATED)
-                .withCCMORequest(ccmoRequest)
-                .build();
+        this.cmRequestId = cmRequestId;
+        this.conversationId = conversationId;
+        this.meteringPointId = meteringPointId;
+        this.dataSourceInformation = new EdaDataSourceInformation(dsoId);
+        this.start = start;
+        this.end = end;
+        this.granularity = granularity;
+        this.status = status;
+        this.message = message;
+        this.consentId = consentId;
+        this.created = created;
+    }
+
+    // protected no-args ctor needed for JPA and reflections
+    protected EdaPermissionRequest() {
+        this(null, null, null, null, null, null,
+             null, null, null, null, null, null, null, null);
     }
 
     @Override
@@ -88,16 +127,6 @@ public class EdaPermissionRequest extends TimestampedPermissionRequest implement
     }
 
     @Override
-    public void setMeteringPointId(String meteringPointId) {
-        this.meteringPointId = meteringPointId;
-    }
-
-    @Override
-    public void setConsentId(String consentId) {
-        this.consentId = consentId;
-    }
-
-    @Override
     public ZonedDateTime start() {
         return start;
     }
@@ -110,7 +139,7 @@ public class EdaPermissionRequest extends TimestampedPermissionRequest implement
 
     @Override
     public PermissionRequestState state() {
-        return state;
+        return null;
     }
 
     @Override
@@ -119,49 +148,27 @@ public class EdaPermissionRequest extends TimestampedPermissionRequest implement
     }
 
     @Override
-    public String stateTransitionMessage() {
-        return statusTransitionMessage;
+    public ZonedDateTime created() {
+        return created;
     }
 
     @Override
-    public void setStateTransitionMessage(String message) {
-        this.statusTransitionMessage = message;
+    public String message() {
+        return message;
+    }
+
+    @Override
+    public Granularity granularity() {
+        return granularity;
     }
 
     @Override
     public void changeState(PermissionRequestState state) {
-        this.state = state;
+        // NoOp
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof EdaPermissionRequest that)) return false;
-        return Objects.equals(connectionId, that.connectionId) &&
-                Objects.equals(permissionId, that.permissionId) &&
-                Objects.equals(cmRequestId, that.cmRequestId) &&
-                Objects.equals(conversationId, that.conversationId) &&
-                Objects.equals(start, that.start) &&
-                Objects.equals(end, that.end) &&
-                Objects.equals(dataNeedId, that.dataNeedId) &&
-                Objects.equals(meteringPointId, that.meteringPointId) &&
-                Objects.equals(state.getClass(), that.state.getClass()) &&
-                Objects.equals(statusTransitionMessage, that.statusTransitionMessage) &&
-                Objects.equals(dataSourceInformation, that.dataSourceInformation);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(connectionId,
-                permissionId,
-                cmRequestId,
-                conversationId,
-                start,
-                end,
-                dataNeedId,
-                meteringPointId,
-                state.getClass().hashCode(),
-                statusTransitionMessage,
-                dataSourceInformation.hashCode());
+    public PermissionProcessStatus status() {
+        return status;
     }
 }

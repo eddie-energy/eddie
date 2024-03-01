@@ -1,109 +1,118 @@
 package energy.eddie.regionconnector.at.eda;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.HealthState;
-import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
+import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
+import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import jakarta.xml.bind.JAXBException;
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Flux;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class EdaRegionConnectorTest {
-
-    @Test
-    void connectorThrows_ifEdaAdapterNull() {
-        // given
-        var requestService = mock(PermissionRequestService.class);
-        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-
-        // when
-        // then
-        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(null, requestService, sink));
-    }
-
-    @Test
-    void connectorThrows_ifPermissionRequestRepoNull() {
-        // given
-        var adapter = mock(EdaAdapter.class);
-        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-
-        // when
-        // then
-        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(adapter, null, sink));
-    }
-
-    @Test
-    void connectorThrows_ifConsumptionRecordProcessorNull() {
-        // given
-        var adapter = mock(EdaAdapter.class);
-        var requestService = mock(PermissionRequestService.class);
-        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-
-        // when
-        // then
-        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(adapter, requestService, sink));
-    }
-
-    @Test
-    void connectorThrows_ifConnectionStatusMessageSinkNull() {
-        // given
-        var adapter = mock(EdaAdapter.class);
-        var requestService = mock(PermissionRequestService.class);
-
-        // when
-        // then
-        assertThrows(NullPointerException.class, () -> new EdaRegionConnector(adapter, requestService, null));
-    }
+    @Mock
+    private EdaAdapter edaAdapter;
+    @Mock
+    private AtPermissionRequestRepository repository;
+    @Mock
+    private Outbox outbox;
 
     @Test
     void connectorConstructs() {
         // given
-        var adapter = mock(EdaAdapter.class);
-        when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
-        var requestService = mock(PermissionRequestService.class);
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
 
         // when
         // then
-        assertDoesNotThrow(() -> new EdaRegionConnector(adapter, requestService, sink));
+        assertDoesNotThrow(() -> new EdaRegionConnector(edaAdapter, repository, sink, outbox, null));
     }
 
     @Test
     void terminateNonExistingPermission_doesNothing() throws TransmissionException, JAXBException {
         // given
-        var adapter = mock(EdaAdapter.class);
-        when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
-        var requestService = mock(PermissionRequestService.class);
-        when(requestService.findByPermissionId("permissionId")).thenReturn(Optional.empty());
+        when(repository.findByPermissionId("permissionId")).thenReturn(Optional.empty());
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        var connector = new EdaRegionConnector(adapter, requestService, sink);
+        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, null, null);
 
         // when
         // then
-        assertDoesNotThrow(() -> connector.terminatePermission("permissionId"));
+        assertDoesNotThrow(() -> regionConnector.terminatePermission("permissionId"));
 
-        verify(adapter, never()).sendCMRevoke(any());
+        verify(edaAdapter, never()).sendCMRevoke(any());
+    }
+
+    @Test
+    void terminateExistingPermission_sendsCmRevoke() throws TransmissionException, JAXBException {
+        // given
+        var start = ZonedDateTime.now(ZoneOffset.UTC);
+        var end = start.plusDays(10);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
+                                                         "conversationId", "mid", "dsoId", start, end,
+                                                         Granularity.PT15M,
+                                                         PermissionProcessStatus.ACCEPTED, "",
+                                                         "consentId", start);
+        when(repository.findByPermissionId("permissionId")).thenReturn(Optional.of(permissionRequest));
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
+        var epId = new PlainAtConfiguration("epId", null);
+        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox, epId);
+
+        // when
+        regionConnector.terminatePermission("permissionId");
+
+        // then
+        verify(edaAdapter).sendCMRevoke(any());
+        verify(outbox).commit(any());
+    }
+
+    @Test
+    void terminatePermission_edaThrows_terminatesOnEPSide() throws TransmissionException, JAXBException {
+        // given
+        var start = ZonedDateTime.now(ZoneOffset.UTC);
+        var end = start.plusDays(10);
+        doThrow(new TransmissionException(null)).when(edaAdapter).sendCMRevoke(any());
+        var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
+                                                         "conversationId", "mid", "dsoId", start, end,
+                                                         Granularity.PT15M,
+                                                         PermissionProcessStatus.ACCEPTED, "",
+                                                         "consentId", start);
+        when(repository.findByPermissionId("permissionId")).thenReturn(Optional.of(permissionRequest));
+        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
+        var epId = new PlainAtConfiguration("epId", null);
+        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox, epId);
+
+        // when
+        regionConnector.terminatePermission("permissionId");
+
+        // then
+        verify(outbox).commit(any());
     }
 
     @Test
     void getMetadata_returnExpectedMetadata() throws TransmissionException {
         // given
-        var adapter = mock(EdaAdapter.class);
-        when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
-        var requestService = mock(PermissionRequestService.class);
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        var connector = new EdaRegionConnector(adapter, requestService, sink);
+        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox, null);
 
         // when
-        var result = connector.getMetadata();
+        var result = regionConnector.getMetadata();
 
         // then
         assertEquals(EdaRegionConnectorMetadata.getInstance(), result);
@@ -111,31 +120,25 @@ class EdaRegionConnectorTest {
 
     @Test
     void close_ClosesRelatedResources() throws Exception {
-        var adapter = mock(EdaAdapter.class);
-        when(adapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
-        var requestService = mock(PermissionRequestService.class);
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
 
-        var connector = new EdaRegionConnector(adapter, requestService, sink);
+        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox, null);
 
-        connector.close();
+        regionConnector.close();
 
-        verify(adapter).close();
+        verify(edaAdapter).close();
     }
 
     @Test
     void health_returnsHealthChecks() throws TransmissionException {
         // Given
-        var edaAdapter = mock(EdaAdapter.class);
-        var requestService = mock(PermissionRequestService.class);
         when(edaAdapter.health()).thenReturn(Map.of("service", HealthState.UP));
-        when(edaAdapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
 
-        var rc = new EdaRegionConnector(edaAdapter, requestService, sink);
+        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox, null);
 
         // When
-        var res = rc.health();
+        var res = regionConnector.health();
 
         // Then
         assertEquals(Map.of("service", HealthState.UP), res);
@@ -144,17 +147,14 @@ class EdaRegionConnectorTest {
     @Test
     void close_emitsCompleteOnPublisherForConnectionStatusMessages() throws Exception {
         // Given
-        var edaAdapter = mock(EdaAdapter.class);
-        when(edaAdapter.getCMRequestStatusStream()).thenReturn(Flux.empty());
-        var requestService = mock(PermissionRequestService.class);
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        var rc = new EdaRegionConnector(edaAdapter, requestService, sink);
-        StepVerifier stepVerifier = StepVerifier.create(rc.getConnectionStatusMessageStream())
+        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox, null);
+        StepVerifier stepVerifier = StepVerifier.create(regionConnector.getConnectionStatusMessageStream())
                 .expectComplete()
                 .verifyLater();
 
         // When
-        rc.close();
+        regionConnector.close();
 
         // Then
         stepVerifier.verify(Duration.ofSeconds(2));

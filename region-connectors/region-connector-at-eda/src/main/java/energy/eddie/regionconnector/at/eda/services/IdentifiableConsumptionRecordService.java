@@ -4,6 +4,7 @@ import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.Consum
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.Energy;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import jakarta.annotation.Nullable;
@@ -19,12 +20,13 @@ import java.util.Optional;
 @Component
 public class IdentifiableConsumptionRecordService {
     private static final Logger LOGGER = LoggerFactory.getLogger(IdentifiableConsumptionRecordService.class);
-    private final PermissionRequestService permissionRequestService;
+    private final AtPermissionRequestRepository repository;
 
     private final Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux;
 
-    public IdentifiableConsumptionRecordService(Flux<ConsumptionRecord> consumptionRecordFlux, PermissionRequestService permissionRequestService) {
-        this.permissionRequestService = permissionRequestService;
+    public IdentifiableConsumptionRecordService(Flux<ConsumptionRecord> consumptionRecordFlux,
+                                                AtPermissionRequestRepository repository) {
+        this.repository = repository;
 
         this.identifiableConsumptionRecordFlux = consumptionRecordFlux
                 .mapNotNull(this::mapToIdentifiableConsumptionRecord)
@@ -44,13 +46,14 @@ public class IdentifiableConsumptionRecordService {
         }
 
         LocalDate date = getMeteringPeriodStartDate(energyOptional.get());
-        List<AtPermissionRequest> permissionRequests = permissionRequestService
+        String meteringPoint = consumptionRecord.getProcessDirectory().getMeteringPoint();
+        List<AtPermissionRequest> permissionRequests = repository
                 .findByMeteringPointIdAndDate(
-                        consumptionRecord.getProcessDirectory().getMeteringPoint(),
+                        meteringPoint,
                         date
                 )
                 .stream()
-                .filter(atPermissionRequest -> atPermissionRequest.state().status() == PermissionProcessStatus.ACCEPTED)
+                .filter(atPermissionRequest -> atPermissionRequest.status() == PermissionProcessStatus.ACCEPTED)
                 .toList();
         
         if (permissionRequests.isEmpty()) {

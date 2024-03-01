@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.api;
 
 
-
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 
 import java.util.Optional;
@@ -40,31 +40,16 @@ public interface AtPermissionRequest extends TimeframedPermissionRequest {
     Optional<String> consentId();
 
     /**
-     * Message that describes why the state transition happened.
+     * Message that was sent by EDA in their CCMO messages.
      *
-     * @return stateTransitionMessage
+     * @return message
      */
-    String stateTransitionMessage();
+    String message();
 
     /**
-     * Sets the state transition message.
+     * The granularity of the energy data that is requested by this permission request.
      *
-     * @param message Message that describes why the state transition happened.
+     * @return granularity
      */
-    void setStateTransitionMessage(String message);
-
-    /**
-     * Sets the metering point id.
-     * Needed, when the request is performed with only the dsoId.
-     *
-     * @param meteringPointId The metering point id.
-     */
-    void setMeteringPointId(String meteringPointId);
-
-    /**
-     * Method to set the consentId once it is available.
-     *
-     * @param consentId The consentId of the accepted request.
-     */
-    void setConsentId(String consentId);
+    Granularity granularity();
 }

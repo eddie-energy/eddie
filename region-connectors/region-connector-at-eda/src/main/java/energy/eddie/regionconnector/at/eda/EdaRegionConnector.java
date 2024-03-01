@@ -1,10 +1,13 @@
 package energy.eddie.regionconnector.at.eda;
 
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
+import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
 import energy.eddie.api.v0.*;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
-import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
-import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import energy.eddie.regionconnector.at.eda.permission.request.events.TerminationEvent;
+import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +19,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.REGION_CONNECTOR_ID;
-import static java.util.Objects.requireNonNull;
 
 @Component
 public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider {
@@ -26,7 +28,9 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
     public static final int MAXIMUM_MONTHS_IN_THE_PAST = 36;
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
     private final EdaAdapter edaAdapter;
-    private final PermissionRequestService permissionRequestService;
+    private final AtPermissionRequestRepository repository;
+    private final Outbox outbox;
+    private final AtConfiguration atConfiguration;
 
     /**
      * Used to send permission state messages.
@@ -36,66 +40,16 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
     @Autowired
     public EdaRegionConnector(
             EdaAdapter edaAdapter,
-            PermissionRequestService permissionRequestService,
-            Sinks.Many<ConnectionStatusMessage> permissionStateMessages
+            AtPermissionRequestRepository repository,
+            Sinks.Many<ConnectionStatusMessage> permissionStateMessages,
+            Outbox outbox, AtConfiguration atConfiguration
     ) throws TransmissionException {
-        requireNonNull(edaAdapter);
-        requireNonNull(permissionRequestService);
-        requireNonNull(permissionStateMessages);
-
         this.edaAdapter = edaAdapter;
-        this.permissionRequestService = permissionRequestService;
+        this.repository = repository;
         this.permissionStateMessages = permissionStateMessages;
-
-        edaAdapter.getCMRequestStatusStream()
-                .subscribe(this::processIncomingCmStatusMessages);
-
+        this.outbox = outbox;
+        this.atConfiguration = atConfiguration;
         edaAdapter.start();
-    }
-
-    private static void transitionPermissionRequest(CMRequestStatus cmRequestStatus, AtPermissionRequest request)
-            throws StateTransitionException {
-        request.setStateTransitionMessage(cmRequestStatus.getMessage());
-        switch (cmRequestStatus.getStatus()) {
-            case ACCEPTED -> {
-                if (request.meteringPointId().isEmpty()) {
-                    cmRequestStatus.getMeteringPoint()
-                            .ifPresentOrElse(
-                                    request::setMeteringPointId,
-                                    () -> {
-                                        throw new IllegalStateException("Metering point id is missing in ACCEPTED CMRequestStatus message for CMRequest: " + request.cmRequestId());
-                                    }
-                            );
-                }
-                Optional<String> cmConsentId = cmRequestStatus.getCMConsentId();
-                if (cmConsentId.isPresent()) {
-                    request.setConsentId(cmConsentId.get());
-                } else if (LOGGER.isWarnEnabled()) {
-                    LOGGER.warn("Got accept message without consent id for permission request with permission id {}",
-                            request.permissionId());
-                }
-                request.accept();
-            }
-            case ERROR -> {
-                // If the DSO does not exist EDA will respond with an error without sending a received-message.
-                // In that case the error message is an implicit received-message.
-                if (request.state().status() == PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT) {
-                    request.receivedPermissionAdministratorResponse();
-                }
-                request.invalid();
-            }
-            case REJECTED -> request.reject();
-            case RECEIVED -> {
-                // we will also receive a received message if we sent a terminate message to the DSO, so we need to make sure not to change the state in that case
-                if (request.state().status() == PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT) {
-                    request.receivedPermissionAdministratorResponse();
-                }
-            }
-            default -> {
-                // Other CMRequestStatus do not change the state of the permission request,
-                // because they have no matching state in the consent process model
-            }
-        }
     }
 
     @Override
@@ -122,39 +76,18 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
     @Override
     public void terminatePermission(String permissionId) {
         LOGGER.info("{} got termination request for permission {}", REGION_CONNECTOR_ID, permissionId);
-        var request = permissionRequestService.findByPermissionId(permissionId);
+        var request = repository.findByPermissionId(permissionId);
         if (request.isEmpty()) {
             LOGGER.warn("No permission with this id found: {}", permissionId);
             return;
         }
+        AtPermissionRequest permissionRequest = request.get();
+        CMRevoke revoke = new CCMORevoke(permissionRequest, atConfiguration.eligiblePartyId()).toCMRevoke();
         try {
-            request.get().terminate();
-        } catch (StateTransitionException e) {
-            LOGGER.warn("Unexpected exception occured while terminating", e);
+            edaAdapter.sendCMRevoke(revoke);
+        } catch (Exception e) {
+            LOGGER.warn("Error trying to terminate permission request.", e);
         }
-    }
-
-    /**
-     * Process a CMRequestStatus and emit a ConnectionStatusMessage if possible,
-     * also adds connectionId and permissionId for identification
-     *
-     * @param cmRequestStatus the CMRequestStatus to process
-     */
-    private void processIncomingCmStatusMessages(CMRequestStatus cmRequestStatus) {
-        var optionalPermissionRequest = permissionRequestService.findByConversationIdOrCMRequestId(
-                cmRequestStatus.getConversationId(),
-                cmRequestStatus.getCMRequestId().orElse(null)
-        );
-        if (optionalPermissionRequest.isEmpty()) {
-            // should not happen if a persistent mapping is used, or if an invalid termination request was sent.
-            LOGGER.warn("Received CMRequestStatus for unknown conversationId {} or requestId {} with payload: {}",
-                    cmRequestStatus.getConversationId(), cmRequestStatus.getCMRequestId(), cmRequestStatus);
-            return;
-        }
-        try {
-            transitionPermissionRequest(cmRequestStatus, optionalPermissionRequest.get());
-        } catch (IllegalStateException | StateTransitionException e) {
-            permissionStateMessages.tryEmitError(e);
-        }
+        outbox.commit(new TerminationEvent(permissionId, revoke.getProcessDirectory().getReason()));
     }
 }

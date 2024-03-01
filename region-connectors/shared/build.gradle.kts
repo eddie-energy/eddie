@@ -27,7 +27,6 @@ dependencies {
     implementation(project(mapOf("path" to ":api")))
     implementation(libs.jakarta.annotation.api)
     implementation(libs.spring.boot.starter.web)
-    testImplementation(libs.spring.boot.starter.test)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.hibernate.validator)
     implementation(libs.jakarta.validation.api)
@@ -38,6 +37,7 @@ dependencies {
     testImplementation(libs.reactor.test)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
+    testImplementation(libs.spring.boot.starter.test)
 }
 
 tasks.test {
