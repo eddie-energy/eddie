@@ -39,7 +39,7 @@ public class StateBuilderFactory {
                 case UNABLE_TO_SEND -> new EnerginetCustomerUnableToSendState(permissionRequest, cause);
                 case SENT_TO_PERMISSION_ADMINISTRATOR ->
                         new EnerginetCustomerSentToPermissionAdministratorState(permissionRequest, factory);
-                case ACCEPTED -> new EnerginetCustomerAcceptedState(permissionRequest);
+                case ACCEPTED -> new EnerginetCustomerAcceptedState(permissionRequest, factory);
                 case INVALID -> new EnerginetCustomerInvalidState(permissionRequest);
                 case REJECTED -> new EnerginetCustomerRejectedState(permissionRequest);
                 case TERMINATED -> new EnerginetCustomerTerminatedState(permissionRequest);

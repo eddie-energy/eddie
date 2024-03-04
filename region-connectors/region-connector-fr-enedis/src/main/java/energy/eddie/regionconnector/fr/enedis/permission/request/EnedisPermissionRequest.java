@@ -3,10 +3,11 @@ package energy.eddie.regionconnector.fr.enedis.permission.request;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisCreatedState;
 import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
 import jakarta.annotation.Nullable;
+import jakarta.persistence.*;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -14,17 +15,38 @@ import java.util.UUID;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
 
+@Entity
+@Table(schema = "fr_enedis")
 public class EnedisPermissionRequest extends TimestampedPermissionRequest implements FrEnedisPermissionRequest {
     private static final EnedisDataSourceInformation dataSourceInformation = new EnedisDataSourceInformation();
-    private final String permissionId;
-    private final String connectionId;
-    private final ZonedDateTime start;
-    private final ZonedDateTime end;
-    private final String dataNeedId;
-    private final Granularity granularity;
+    @Id
+    @Column(name = "permission_id")
+    private String permissionId;
+    @Column(name = "connection_id")
+    private String connectionId;
+    @Column(name = "start_timestamp")
+    private ZonedDateTime start;
+    @Column(name = "end_timestamp")
+    private ZonedDateTime end;
+    @Column(name = "data_need_id")
+    private String dataNeedId;
+    @Transient
     private PermissionRequestState state;
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private PermissionProcessStatus status;
+    @Column(name = "granularity")
+    @Enumerated(EnumType.STRING)
+    private Granularity granularity;
+    @Column(name = "usage_point_id")
     @Nullable
     private String usagePointId;
+
+    // just for JPA
+    @SuppressWarnings("NullAway.Init")
+    protected EnedisPermissionRequest() {
+        super(ZONE_ID_FR);
+    }
 
     public EnedisPermissionRequest(
             String permissionId,
@@ -32,14 +54,17 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
             String dataNeedId,
             ZonedDateTime start,
             ZonedDateTime end,
-            Granularity granularity) {
+            Granularity granularity,
+            StateBuilderFactory factory
+    ) {
         super(ZONE_ID_FR);
         this.permissionId = permissionId;
         this.connectionId = connectionId;
-        this.state = new FrEnedisCreatedState(this);
+        this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
         this.dataNeedId = dataNeedId;
         this.start = start;
         this.end = end;
+        this.status = state.status();
         this.granularity = granularity;
     }
 
@@ -48,8 +73,18 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
             String dataNeedId,
             ZonedDateTime start,
             ZonedDateTime end,
-            Granularity granularity) {
-        this(UUID.randomUUID().toString(), connectionId, dataNeedId, start, end, granularity);
+            Granularity granularity,
+            StateBuilderFactory factory
+    ) {
+        this(UUID.randomUUID().toString(), connectionId, dataNeedId, start, end, granularity, factory);
+    }
+
+    @Override
+    public FrEnedisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
+        this.state = factory
+                .create(this, status)
+                .build();
+        return this;
     }
 
     @Override
@@ -80,6 +115,7 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
     @Override
     public void changeState(PermissionRequestState state) {
         this.state = state;
+        this.status = state.status();
     }
 
     @Override
@@ -90,6 +126,11 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
     @Override
     public ZonedDateTime end() {
         return end;
+    }
+
+    @Override
+    public PermissionProcessStatus status() {
+        return status;
     }
 
     @Override

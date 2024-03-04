@@ -72,8 +72,9 @@ class EnerginetRegionConnectorTest {
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
         ZonedDateTime end = start.plusDays(10);
         var creation = new PermissionRequestForCreation("cid", start, end, "token", Granularity.PT15M, "mpid", "dnid");
-        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", creation, mock(EnerginetCustomerApi.class), new StateBuilderFactory());
-        EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(permissionRequest);
+        StateBuilderFactory factory = new StateBuilderFactory();
+        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", creation, mock(EnerginetCustomerApi.class), factory);
+        EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(permissionRequest, factory);
         permissionRequest.changeState(state);
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
         when(permissionRequestService.findByPermissionId(anyString())).thenReturn(Optional.of(permissionRequest));

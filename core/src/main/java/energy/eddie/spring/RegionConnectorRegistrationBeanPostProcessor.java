@@ -121,13 +121,13 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         Set<BeanDefinition> regionConnectorBeanDefinitions = findAllSpringRegionConnectorBeanDefinitions();
         List<Class<?>> regionConnectorProcessorClasses = findAllRegionConnectorProcessorClasses(environment);
 
-        List<String> enabledRegionConnectorNames = new ArrayList<>();
+        List<String> regionConnectorNames = new ArrayList<>();
 
         for (BeanDefinition rcDefinition : regionConnectorBeanDefinitions) {
             try {
                 Class<?> regionConnectorConfigClass = Class.forName(rcDefinition.getBeanClassName());
                 String regionConnectorName = regionConnectorConfigClass.getAnnotation(RegionConnector.class).name();
-
+                regionConnectorNames.add(regionConnectorName);
                 var propertyName = "region-connector.%s.enabled".formatted(regionConnectorName.replace('-', '.'));
 
                 if (Boolean.FALSE.equals(environment.getProperty(propertyName, Boolean.class, false))) {
@@ -137,18 +137,17 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
                     var beanDefinition = createBeanDefinition(applicationContext, regionConnectorName);
 
                     registry.registerBeanDefinition(regionConnectorName, beanDefinition);
-                    enabledRegionConnectorNames.add(regionConnectorName);
                 }
             } catch (ClassNotFoundException e) {
                 LOGGER.error("Found a region connector bean definition {}, but couldn't get the class for it", rcDefinition, e);
             }
         }
 
-        registerFlywayStrategy(registry, enabledRegionConnectorNames);
+        registerFlywayStrategy(registry, regionConnectorNames);
     }
 
     /**
-     * Creates a {@link FlywayMigrationStrategy} that creates the schemas for all enabled region connectors and
+     * Creates a {@link FlywayMigrationStrategy} that creates the schemas for all region connectors and
      * the {@code core}, as well as executing any migration scripts found in the respective folders on the classpath.
      * The folder pattern is: "db/migration/&lt;region-connector-name&gt;".
      * Any minus ('-') in the region connector's name will be replaced by an underscore ('_') for the schema name.

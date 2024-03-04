@@ -1,27 +1,26 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.states;
 
 import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
-import energy.eddie.api.agnostic.process.model.states.MalformedPermissionRequestState;
-import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
-
-import java.util.List;
+import energy.eddie.api.agnostic.process.model.states.MalformedPermissionRequestState;
+import jakarta.annotation.Nullable;
 
 
 public class FrEnedisMalformedState
         extends ContextualizedPermissionRequestState<FrEnedisPermissionRequest>
         implements MalformedPermissionRequestState {
-    private final List<AttributeError> errors;
+    @Nullable
+    private final Throwable cause;
 
-    public FrEnedisMalformedState(FrEnedisPermissionRequest permissionRequest, List<AttributeError> errors) {
+    public FrEnedisMalformedState(FrEnedisPermissionRequest permissionRequest, @Nullable Throwable cause) {
         super(permissionRequest);
-        this.errors = errors;
+        this.cause = cause;
     }
 
     @Override
     public String toString() {
         return "MalformedState{" +
-                "errors=" + errors +
+                "cause=" + cause +
                 '}';
     }
 }

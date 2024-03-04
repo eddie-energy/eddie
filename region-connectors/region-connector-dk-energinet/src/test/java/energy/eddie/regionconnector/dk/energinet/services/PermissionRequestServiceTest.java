@@ -100,7 +100,7 @@ class PermissionRequestServiceTest {
         var creation = new PermissionRequestForCreation(connectionId, start, end, "token", Granularity.PT15M, "mpid", dataNeedId);
         StateBuilderFactory factory = new StateBuilderFactory();
         var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, creation, customerApi, factory);
-        var state = new EnerginetCustomerAcceptedState(permissionRequest);
+        var state = new EnerginetCustomerAcceptedState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
         when(repository.findByPermissionId(permissionId))
@@ -130,7 +130,7 @@ class PermissionRequestServiceTest {
         var creation = new PermissionRequestForCreation(connectionId, start, end, "token", Granularity.PT15M, "mpid", dataNeedId);
         StateBuilderFactory factory = new StateBuilderFactory();
         var permissionRequest1 = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(), creation, customerApi, factory);
-        permissionRequest1.changeState(new EnerginetCustomerAcceptedState(permissionRequest1));
+        permissionRequest1.changeState(new EnerginetCustomerAcceptedState(permissionRequest1, factory));
         var permissionRequest2 = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(), creation, customerApi, factory);
         when(requestFactory.create(permissionRequest1))
                 .thenReturn(permissionRequest1);

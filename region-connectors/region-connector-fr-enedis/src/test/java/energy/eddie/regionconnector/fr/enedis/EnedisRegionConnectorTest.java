@@ -7,6 +7,7 @@ import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.SimplePermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisAcceptedState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisInvalidState;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
@@ -79,14 +80,16 @@ class EnedisRegionConnectorTest {
         var enedisApi = mock(EnedisApi.class);
         when(enedisApi.health()).thenReturn(Map.of("service", HealthState.UP));
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
+        var factory = new StateBuilderFactory();
         var request = new EnedisPermissionRequest(
                 "cid",
                 "dnid",
                 ZonedDateTime.now(ZoneOffset.UTC),
                 ZonedDateTime.now(ZoneOffset.UTC),
-                Granularity.P1D
+                Granularity.P1D,
+                factory
         );
-        request.changeState(new FrEnedisAcceptedState(request));
+        request.changeState(new FrEnedisAcceptedState(request, factory));
         when(permissionRequestService.findPermissionRequestByPermissionId(anyString()))
                 .thenReturn(Optional.of(request));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();

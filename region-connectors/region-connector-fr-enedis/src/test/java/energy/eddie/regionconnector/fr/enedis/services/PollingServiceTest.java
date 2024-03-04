@@ -5,6 +5,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisAcceptedState;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
@@ -38,7 +39,8 @@ class PollingServiceTest {
         PollingService pollingService = new PollingService(enedisApi, sink);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start.atStartOfDay(ZoneOffset.UTC), end.atStartOfDay(ZoneOffset.UTC), Granularity.PT30M);
+        StateBuilderFactory factory = new StateBuilderFactory();
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start.atStartOfDay(ZoneOffset.UTC), end.atStartOfDay(ZoneOffset.UTC), Granularity.PT30M, factory);
         request.setUsagePointId("usagePointId");
 
         when(enedisApi.getConsumptionMeterReading(anyString(), eq(start), eq(start.plusWeeks(1)), any()))
@@ -74,7 +76,8 @@ class PollingServiceTest {
         PollingService pollingService = new PollingService(enedisApi, sink);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(30);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start.atStartOfDay(ZoneOffset.UTC), end.atStartOfDay(ZoneOffset.UTC), Granularity.PT30M);
+        StateBuilderFactory factory = new StateBuilderFactory();
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start.atStartOfDay(ZoneOffset.UTC), end.atStartOfDay(ZoneOffset.UTC), Granularity.PT30M, factory);
         request.setUsagePointId("usagePointId");
 
         when(enedisApi.getConsumptionMeterReading(anyString(), eq(start), eq(start.plusWeeks(1)), any()))
@@ -109,7 +112,8 @@ class PollingServiceTest {
         PollingService pollingService = new PollingService(enedisApi, sink);
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(20);
         ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).plusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
+        StateBuilderFactory factory = new StateBuilderFactory();
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         request.setUsagePointId("usagePointId");
         // When
         pollingService.fetchHistoricalMeterReadings(request);
@@ -135,8 +139,9 @@ class PollingServiceTest {
         PollingService pollingService = new PollingService(enedisApi, sink);
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(20);
         ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
-        request.changeState(new FrEnedisAcceptedState(request));
+        StateBuilderFactory factory = new StateBuilderFactory();
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
+        request.changeState(new FrEnedisAcceptedState(request, factory));
         request.setUsagePointId("usagePointId");
 
         // When
@@ -160,8 +165,9 @@ class PollingServiceTest {
         PollingService pollingService = new PollingService(enedisApi, sink);
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(20);
         ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
-        request.changeState(new FrEnedisAcceptedState(request));
+        StateBuilderFactory factory = new StateBuilderFactory();
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
+        request.changeState(new FrEnedisAcceptedState(request, factory));
         request.setUsagePointId("usagePointId");
 
         // When
@@ -186,8 +192,9 @@ class PollingServiceTest {
         PollingService pollingService = new PollingService(enedisApi, sink);
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
         ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
-        request.changeState(new FrEnedisAcceptedState(request));
+        StateBuilderFactory factory = new StateBuilderFactory();
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
+        request.changeState(new FrEnedisAcceptedState(request, factory));
         request.setUsagePointId("usagePointId");
 
         VirtualTimeScheduler.getOrSet(); // yes, this is necessary
@@ -220,7 +227,8 @@ class PollingServiceTest {
         PollingService pollingService = new PollingService(enedisApi, sink);
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(20);
         ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
+        StateBuilderFactory factory = new StateBuilderFactory();
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         request.setUsagePointId("usagePointId");
 
         // When
@@ -242,7 +250,8 @@ class PollingServiceTest {
         PollingService pollingService = new PollingService(enedisApi, sink);
         ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(20);
         ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.PT15M);
+        StateBuilderFactory factory = new StateBuilderFactory();
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.PT15M, factory);
         request.setUsagePointId("usagePointId");
 
         // When

@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.fr.enedis.permission.request;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 
 import java.time.ZonedDateTime;
@@ -30,6 +31,16 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     @Override
     public void changeState(PermissionRequestState state) {
 
+    }
+
+    @Override
+    public FrEnedisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
+        return this;
+    }
+
+    @Override
+    public PermissionProcessStatus status() {
+        return state.status();
     }
 
     @Override

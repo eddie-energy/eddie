@@ -4,8 +4,8 @@ import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestSt
 import energy.eddie.api.agnostic.process.model.states.RevokedPermissionRequestState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 
-class FrEnedisRevokedState extends ContextualizedPermissionRequestState<FrEnedisPermissionRequest> implements RevokedPermissionRequestState {
-    protected FrEnedisRevokedState(FrEnedisPermissionRequest permissionRequest) {
+public class FrEnedisRevokedState extends ContextualizedPermissionRequestState<FrEnedisPermissionRequest> implements RevokedPermissionRequestState {
+    public FrEnedisRevokedState(FrEnedisPermissionRequest permissionRequest) {
         super(permissionRequest);
     }
 }

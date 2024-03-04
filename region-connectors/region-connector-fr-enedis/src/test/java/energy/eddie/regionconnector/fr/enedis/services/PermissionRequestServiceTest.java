@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisAcceptedState;
@@ -12,16 +13,27 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedis
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.annotation.DirtiesContext;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Testcontainers
 class PermissionRequestServiceTest {
+    @Container
+    @ServiceConnection
+    private static final PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:15-alpine");
+
     @Autowired
     private PermissionRequestService permissionRequestService;
     @Autowired
@@ -50,15 +62,17 @@ class PermissionRequestServiceTest {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
         var end = ZonedDateTime.now(ZoneOffset.UTC);
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
-        request.changeState(new FrEnedisPendingAcknowledgmentState(request));
+        StateBuilderFactory factory = new StateBuilderFactory();
+        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
+        request.changeState(new FrEnedisPendingAcknowledgmentState(request, factory));
         repository.save(request);
 
 
         // When
         permissionRequestService.authorizePermissionRequest("pid", "upid");
         // Then
-        assertEquals(FrEnedisAcceptedState.class, request.state().getClass());
+        FrEnedisPermissionRequest updatedRequest = repository.findByPermissionId("pid").orElseThrow();
+        assertEquals(FrEnedisAcceptedState.class, updatedRequest.state().getClass());
     }
 
     @Test
@@ -67,21 +81,23 @@ class PermissionRequestServiceTest {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
         var end = ZonedDateTime.now(ZoneOffset.UTC);
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
-        request.changeState(new FrEnedisPendingAcknowledgmentState(request));
+        StateBuilderFactory factory = new StateBuilderFactory();
+        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
+        request.changeState(new FrEnedisPendingAcknowledgmentState(request, factory));
         repository.save(request);
 
 
         // When
         permissionRequestService.authorizePermissionRequest("pid", null);
         // Then
-        assertEquals(FrEnedisRejectedState.class, request.state().getClass());
+        FrEnedisPermissionRequest updatedRequest = repository.findByPermissionId("pid").orElseThrow();
+        assertEquals(FrEnedisRejectedState.class, updatedRequest.state().getClass());
     }
 
     @Test
     void testAuthorizePermissionRequest_withNonExistingPermissionRequest_throws() {
         // Given, When, Then
-        assertThrows(PermissionNotFoundException.class, () -> permissionRequestService.authorizePermissionRequest("pid", "upid"));
+        assertThrows(PermissionNotFoundException.class, () -> permissionRequestService.authorizePermissionRequest("NonExistingPid", "upid"));
     }
 
     @Test
@@ -90,7 +106,8 @@ class PermissionRequestServiceTest {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
         var end = ZonedDateTime.now(ZoneOffset.UTC);
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
+        StateBuilderFactory factory = new StateBuilderFactory();
+        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         repository.save(request);
 
         // When
@@ -107,7 +124,8 @@ class PermissionRequestServiceTest {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
         var end = ZonedDateTime.now(ZoneOffset.UTC);
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
+        StateBuilderFactory factory = new StateBuilderFactory();
+        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         repository.save(request);
 
         // When
@@ -123,7 +141,8 @@ class PermissionRequestServiceTest {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
         var end = ZonedDateTime.now(ZoneOffset.UTC);
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
+        StateBuilderFactory factory = new StateBuilderFactory();
+        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         repository.save(request);
 
         // When
@@ -140,7 +159,8 @@ class PermissionRequestServiceTest {
         // Given
         var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
         var end = ZonedDateTime.now(ZoneOffset.UTC);
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D);
+        StateBuilderFactory factory = new StateBuilderFactory();
+        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         repository.save(request);
 
         // When

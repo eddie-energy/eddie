@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.fr.enedis.permission.request.states;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.states.TerminatedPermissionRequestState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
@@ -15,13 +16,15 @@ class FrEnedisAcceptedStateTest {
     @Test
     void terminate_transitionsToTerminated() {
         // Given
+        StateBuilderFactory factory = new StateBuilderFactory();
         var request = new EnedisPermissionRequest(
                 "cid",
                 "dnid",
                 ZonedDateTime.now(ZoneOffset.UTC),
                 ZonedDateTime.now(ZoneOffset.UTC),
-                Granularity.P1D);
-        FrEnedisAcceptedState acceptedState = new FrEnedisAcceptedState(request);
+                Granularity.P1D,
+                factory);
+        FrEnedisAcceptedState acceptedState = new FrEnedisAcceptedState(request, factory);
 
         // When
         acceptedState.terminate();
