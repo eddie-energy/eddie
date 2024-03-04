@@ -1,21 +1,23 @@
 package energy.eddie.core;
 
-import energy.eddie.core.dataneeds.DataNeedsConfig;
+import energy.eddie.api.agnostic.DataNeed;
+import energy.eddie.api.agnostic.DataNeedsService;
 import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.Optional;
+import java.util.Set;
+
 @SpringBootApplication
-@EnableConfigurationProperties(DataNeedsConfig.class)
 public class CoreSpringConfig implements WebMvcConfigurer {
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreSpringConfig.class);
 
@@ -61,5 +63,20 @@ public class CoreSpringConfig implements WebMvcConfigurer {
     @Bean
     public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
         return new RegionConnectorsCommonControllerAdvice();
+    }
+
+    @Bean
+    public DataNeedsService temporaryService() {
+        return new DataNeedsService() {
+            @Override
+            public Optional<DataNeed> getDataNeed(String id) {
+                return Optional.empty();
+            }
+
+            @Override
+            public Set<String> getAllDataNeedIds() {
+                return Set.of();
+            }
+        };
     }
 }
