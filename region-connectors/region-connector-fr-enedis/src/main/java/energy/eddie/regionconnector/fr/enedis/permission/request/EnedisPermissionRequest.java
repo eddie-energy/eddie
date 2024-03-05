@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermis
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,7 +17,7 @@ import java.util.UUID;
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
 
 @Entity
-@Table(schema = "fr_enedis")
+@Table(schema = "fr_enedis", name = "enedis_permission_request")
 public class EnedisPermissionRequest extends TimestampedPermissionRequest implements FrEnedisPermissionRequest {
     private static final EnedisDataSourceInformation dataSourceInformation = new EnedisDataSourceInformation();
     @Id
@@ -38,9 +39,12 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
     @Column(name = "granularity")
     @Enumerated(EnumType.STRING)
     private Granularity granularity;
-    @Column(name = "usage_point_id")
     @Nullable
+    @Column(name = "usage_point_id")
     private String usagePointId;
+    @Nullable
+    @Column(name = "latest_meter_reading")
+    private LocalDate latestMeterReading;
 
     // just for JPA
     @SuppressWarnings("NullAway.Init")
@@ -147,5 +151,15 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
     @Override
     public Granularity granularity() {
         return granularity;
+    }
+
+    @Override
+    public Optional<LocalDate> latestMeterReading() {
+        return Optional.ofNullable(latestMeterReading);
+    }
+
+    @Override
+    public void updateLatestMeterReading(LocalDate latestMeterReading) {
+        this.latestMeterReading = latestMeterReading;
     }
 }

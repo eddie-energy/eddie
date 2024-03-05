@@ -6,6 +6,7 @@ import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -45,6 +46,16 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
 
     @Override
     public void setUsagePointId(String usagePointId) {
+
+    }
+
+    @Override
+    public Optional<LocalDate> latestMeterReading() {
+        return Optional.empty();
+    }
+
+    @Override
+    public void updateLatestMeterReading(LocalDate latestMeterReading) {
 
     }
 }
