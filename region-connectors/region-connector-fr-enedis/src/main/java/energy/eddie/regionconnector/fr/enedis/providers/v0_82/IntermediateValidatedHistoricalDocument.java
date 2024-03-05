@@ -126,29 +126,29 @@ public final class IntermediateValidatedHistoricalDocument {
         );
         var meterReading = meterReading();
         String resolution = identifiableMeterReading.permissionRequest().granularity().name();
-        List<SeriesPeriodComplexType> seriesPeriods = new ArrayList<>();
+        List<PointComplexType> points = new ArrayList<>();
         int position = 0;
         for (IntervalReading intervalReading
                 : meterReading.intervalReadings()) {
-            var seriesPeriod = new SeriesPeriodComplexType()
-                    .withResolution(resolution)
-                    .withTimeInterval(new ESMPDateTimeIntervalComplexType()
-                            .withStart(interval.start())
-                            .withEnd(interval.end())
-                    )
-                    .withPointList(
-                            new SeriesPeriodComplexType.PointList()
-                                    .withPoints(List.of(
-                                            new PointComplexType()
-                                                    .withPosition("%d".formatted(position))
-                                                    .withEnergyQuantityQuantity(new BigDecimal(intervalReading.value()))
-                                                    .withEnergyQuantityQuality(QualityTypeList.AS_PROVIDED)
-                                    ))
-                    );
-            seriesPeriods.add(seriesPeriod);
+            PointComplexType point = new PointComplexType()
+                    .withPosition("%d".formatted(position))
+                    .withEnergyQuantityQuantity(new BigDecimal(intervalReading.value()))
+                    .withEnergyQuantityQuality(QualityTypeList.AS_PROVIDED);
+            points.add(point);
             position++;
         }
-        return seriesPeriods;
+
+        var seriesPeriod = new SeriesPeriodComplexType()
+                .withResolution(resolution)
+                .withTimeInterval(new ESMPDateTimeIntervalComplexType()
+                        .withStart(interval.start())
+                        .withEnd(interval.end())
+                )
+                .withPointList(
+                        new SeriesPeriodComplexType.PointList()
+                                .withPoints(points)
+                );
+        return new ArrayList<>(List.of(seriesPeriod));
     }
 
     private MeterReading meterReading() {
