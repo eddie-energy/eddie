@@ -2,15 +2,14 @@ package energy.eddie.regionconnector.fr.enedis.permission.request.states;
 
 import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
 import energy.eddie.api.agnostic.process.model.states.AcceptedPermissionRequestState;
-import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 
 public class FrEnedisAcceptedState
         extends ContextualizedPermissionRequestState<FrEnedisPermissionRequest>
         implements AcceptedPermissionRequestState {
 
-    public static final String NOT_IMPLEMENTED_YET = "Not implemented yet";
     private final StateBuilderFactory factory;
 
     public FrEnedisAcceptedState(FrEnedisPermissionRequest permissionRequest, StateBuilderFactory factory) {
@@ -36,6 +35,9 @@ public class FrEnedisAcceptedState
 
     @Override
     public void fulfill() {
-        throw new UnsupportedOperationException(NOT_IMPLEMENTED_YET);
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.FULFILLED)
+                        .build()
+        );
     }
 }
