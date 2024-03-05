@@ -3,10 +3,6 @@ import { css, html, LitElement } from "https://esm.sh/lit";
 class SimulationConnectorButtonCe extends LitElement {
   static properties = {
     connectionId: { attribute: "connection-id" },
-    allowDataNeedModifications: {
-      type: Boolean,
-      attribute: "allow-data-need-modifications",
-    },
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
   };
   /**
@@ -61,10 +57,6 @@ class SimulationConnectorButtonCe extends LitElement {
             <tr>
               <td>connectionId (ce parameter)</td>
               <td>${this.connectionId}</td>
-            </tr>
-            <tr>
-              <td>allowDataNeedModifications (ce parameter)</td>
-              <td>${this.allowDataNeedModifications}</td>
             </tr>
             <tr>
               <td>id</td>
