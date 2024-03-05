@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.util.List;
 import java.util.Map;
 
-import static energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice.ERRORS_PROPERTY_NAME;
+import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
 
 @ControllerAdvice
 @ConditionalOnProperty(value = "eddie.data-needs-config.data-need-source", havingValue = "DATABASE")
