@@ -5,10 +5,13 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import org.apache.kafka.common.serialization.Deserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class CustomDeserializer implements Deserializer<ConsentMarketDocument> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomDeserializer.class);
     private final ObjectMapper mapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .registerModule(new Jdk8Module());
@@ -18,13 +21,8 @@ public class CustomDeserializer implements Deserializer<ConsentMarketDocument> {
         try {
             return mapper.readValue(data, ConsentMarketDocument.class);
         } catch (IOException e) {
-            throw new ConsentMarketDocumentDeserializationException(e);
-        }
-    }
-
-    public static class ConsentMarketDocumentDeserializationException extends RuntimeException {
-        public ConsentMarketDocumentDeserializationException(Throwable cause) {
-            super(cause);
+            LOGGER.info("Got invalid termination document", e);
+            return null;
         }
     }
 }
