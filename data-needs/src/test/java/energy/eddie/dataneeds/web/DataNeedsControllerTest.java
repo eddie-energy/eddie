@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.persistence.DataNeedsNameAndIdProjection;
+import energy.eddie.dataneeds.persistence.DataNeedsNameAndIdProjectionRecord;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -48,28 +48,8 @@ public class DataNeedsControllerTest {
     @Test
     void givenDataNeeds_getDataNeedIdsAndNames_returnsNameAndIds() throws Exception {
         // Given
-        var first = new DataNeedsNameAndIdProjection() {
-            @Override
-            public String getId() {
-                return "123";
-            }
-
-            @Override
-            public String getName() {
-                return "Name";
-            }
-        };
-        var second = new DataNeedsNameAndIdProjection() {
-            @Override
-            public String getId() {
-                return "fooBar";
-            }
-
-            @Override
-            public String getName() {
-                return "Accounting Point Need";
-            }
-        };
+        var first = new DataNeedsNameAndIdProjectionRecord("123", "Name");
+        var second = new DataNeedsNameAndIdProjectionRecord("fooBar", "Accounting Point Need");
         when(mockDataNeedsService.getDataNeedIdsAndNames()).thenReturn(List.of(first, second));
 
         // When
