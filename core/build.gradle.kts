@@ -19,6 +19,7 @@ repositories {
 
 dependencies {
     implementation(project(":api"))
+    implementation(project(":data-needs"))
     implementation(project(":outbound-kafka"))
     implementation(project(":region-connectors:shared"))
     implementation(project(":region-connectors:region-connector-aiida"))
