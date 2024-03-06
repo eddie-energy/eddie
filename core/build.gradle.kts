@@ -71,7 +71,6 @@ tasks.register("run-core", JavaExec::class) {
     description = "run EDDIE with Spring"
 
     environment["CORE_PORT"] = 8080
-    environment["IMPORT_CONFIG_FILE"] = "file:./core/src/test/resources/data-needs.yml"
 
     // when using PostgreSQL
     environment["JDBC_USER"] = "test"

@@ -1,0 +1,34 @@
+[
+  {
+    "type": "validated",
+    "id": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
+    "name": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
+    "description": "Historical validated consumption data for the last three months, one measurement per day",
+    "purpose": "Some purpose",
+    "policyLink": "https://example.com/toc",
+    "duration": {
+      "type": "relativeDuration",
+      "start": "-P3M",
+      "end": "P0D"
+    },
+    "energyType": "ELECTRICITY",
+    "minGranularity": "P1D",
+    "maxGranularity": "P1D"
+  },
+  {
+    "type": "validated",
+    "id": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
+    "name": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
+    "description": "Historical validated consumption data for the last three months, one measurement per day",
+    "purpose": "Some purpose",
+    "policyLink": "https://example.com/toc",
+    "duration": {
+      "type": "relativeDuration",
+      "start": "-P3M",
+      "end": "P0D"
+    },
+    "energyType": "ELECTRICITY",
+    "minGranularity": "P1D",
+    "maxGranularity": "P1D"
+  }
+]
