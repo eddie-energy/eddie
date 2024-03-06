@@ -18,10 +18,8 @@ import reactor.test.StepVerifier;
 import reactor.test.scheduler.VirtualTimeScheduler;
 
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,104 +28,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class PollingServiceTest {
-
-    @Test
-    void fetchHistoricalMeterReadings_requestDataFor11Days_batchesFetchCallsInto2_andEmitsMeterReading() throws Exception {
-        // Given
-        EnedisApi enedisApi = mock(EnedisApi.class);
-        Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, sink);
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
-        LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        StateBuilderFactory factory = new StateBuilderFactory();
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start.atStartOfDay(ZoneOffset.UTC), end.atStartOfDay(ZoneOffset.UTC), Granularity.PT30M, factory);
-        request.setUsagePointId("usagePointId");
-
-        when(enedisApi.getConsumptionMeterReading(anyString(), eq(start), eq(start.plusWeeks(1)), any()))
-                .thenReturn(Mono.just(new MeterReading("usagePointId", start, start.plusWeeks(1), "BRUT", null, List.of())));
-        when(enedisApi.getConsumptionMeterReading(anyString(), eq(start.plusWeeks(1)), eq(end.plusDays(1)), any()))
-                .thenReturn(Mono.just(new MeterReading("usagePointId", start.plusWeeks(1), end, "BRUT", null, List.of())));
-        // When
-        pollingService.fetchHistoricalMeterReadings(request);
-
-        // Then
-        StepVerifier.create(sink.asFlux())
-                .assertNext(cr -> {
-                    assertEquals(start, cr.meterReading().start());
-                    assertEquals(start.plusWeeks(1), cr.meterReading().end());
-                })
-                .assertNext(cr -> {
-                    assertEquals(start.plusWeeks(1), cr.meterReading().start());
-                    assertEquals(end, cr.meterReading().end());
-                })
-                .then(sink::tryEmitComplete)
-                .expectComplete()
-                .verify(Duration.ofSeconds(5));
-
-        // Clean-Up
-        pollingService.close();
-    }
-
-    @Test
-    void fetchHistoricalMeterReadings_requestDataFor20Days_SecondBatchFails_callsApiForOnlyFirst2Batch() throws Exception {
-        // Given
-        EnedisApi enedisApi = mock(EnedisApi.class);
-        Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, sink);
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(30);
-        LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        StateBuilderFactory factory = new StateBuilderFactory();
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start.atStartOfDay(ZoneOffset.UTC), end.atStartOfDay(ZoneOffset.UTC), Granularity.PT30M, factory);
-        request.setUsagePointId("usagePointId");
-
-        when(enedisApi.getConsumptionMeterReading(anyString(), eq(start), eq(start.plusWeeks(1)), any()))
-                .thenReturn(Mono.just(new MeterReading("usagePointId", start, start.plusWeeks(1), "BRUT", null, List.of())));
-        when(enedisApi.getConsumptionMeterReading(anyString(), eq(start.plusWeeks(1)), eq(start.plusWeeks(2)), any()))
-                .thenReturn(Mono.error(WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR, "", null, null, null, null)));
-        // When
-        pollingService.fetchHistoricalMeterReadings(request);
-
-        // Then
-        StepVerifier.create(sink.asFlux())
-                .assertNext(cr -> {
-                    assertEquals(start, cr.meterReading().start());
-                    assertEquals(start.plusWeeks(1), cr.meterReading().end());
-                })
-                .then(sink::tryEmitComplete)
-                .expectComplete()
-                .verify(Duration.ofSeconds(5));
-        verify(enedisApi, times(1)).getConsumptionMeterReading(anyString(), eq(start), eq(start.plusWeeks(1)), any());
-        verify(enedisApi, times(1)).getConsumptionMeterReading(anyString(), eq(start.plusWeeks(1)), eq(start.plusWeeks(2)), any());
-        verifyNoMoreInteractions(enedisApi);
-
-        // Clean-Up
-        pollingService.close();
-    }
-
-    @Test
-    void fetchHistoricalMeterReadings_doesNothing_IfPermissionIsNotActive() throws Exception {
-        // Given
-        EnedisApi enedisApi = mock(EnedisApi.class);
-        Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, sink);
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(20);
-        ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).plusDays(10);
-        StateBuilderFactory factory = new StateBuilderFactory();
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
-        request.setUsagePointId("usagePointId");
-        // When
-        pollingService.fetchHistoricalMeterReadings(request);
-
-        // Then
-        StepVerifier.create(sink.asFlux())
-                .then(sink::tryEmitComplete)
-                .verifyComplete();
-        verifyNoInteractions(enedisApi);
-
-        // Clean-Up
-        pollingService.close();
-    }
-
     @Test
     void fetchHistoricalMeterReadingsThrowsForbidden_revokesPermissionRequest() throws Exception {
         // Given
@@ -145,7 +45,7 @@ class PollingServiceTest {
         request.setUsagePointId("usagePointId");
 
         // When
-        pollingService.fetchHistoricalMeterReadings(request);
+        pollingService.fetchMeterReadings(request, start.toLocalDate(), end.toLocalDate());
 
         // Then
         assertEquals(PermissionProcessStatus.REVOKED, request.state().status());
@@ -171,7 +71,7 @@ class PollingServiceTest {
         request.setUsagePointId("usagePointId");
 
         // When
-        pollingService.fetchHistoricalMeterReadings(request);
+        pollingService.fetchMeterReadings(request, start.toLocalDate(), end.toLocalDate());
 
         // Then
         assertEquals(PermissionProcessStatus.ACCEPTED, request.state().status());
@@ -200,7 +100,7 @@ class PollingServiceTest {
         VirtualTimeScheduler.getOrSet(); // yes, this is necessary
 
         // When
-        pollingService.fetchHistoricalMeterReadings(request);
+        pollingService.fetchMeterReadings(request, start.toLocalDate(), end.toLocalDate());
 
         // Then
         StepVerifier.withVirtualTime(sink::asFlux)
@@ -232,7 +132,7 @@ class PollingServiceTest {
         request.setUsagePointId("usagePointId");
 
         // When
-        pollingService.fetchHistoricalMeterReadings(request);
+        pollingService.fetchMeterReadings(request, start.toLocalDate(), end.toLocalDate());
 
         // Then
         assertEquals(PermissionProcessStatus.CREATED, request.state().status());
@@ -255,7 +155,9 @@ class PollingServiceTest {
         request.setUsagePointId("usagePointId");
 
         // When
-        assertThrows(IllegalStateException.class, () -> pollingService.fetchHistoricalMeterReadings(request));
+        var startDate = start.toLocalDate();
+        var endDate = end.toLocalDate();
+        assertThrows(IllegalStateException.class, () -> pollingService.fetchMeterReadings(request, startDate, endDate));
         verifyNoInteractions(enedisApi);
 
         // Clean-Up

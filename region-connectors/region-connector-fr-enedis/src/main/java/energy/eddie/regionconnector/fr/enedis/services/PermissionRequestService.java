@@ -22,13 +22,16 @@ public class PermissionRequestService {
     private final PermissionRequestRepository<FrEnedisPermissionRequest> repository;
     private final PermissionRequestFactory factory;
     private final EnedisConfiguration configuration;
-    private final PollingService pollingService;
+    private final HistoricalDataService historicalDataService;
 
-    public PermissionRequestService(PermissionRequestRepository<FrEnedisPermissionRequest> repository, PermissionRequestFactory factory, EnedisConfiguration configuration, PollingService pollingService) {
+    public PermissionRequestService(PermissionRequestRepository<FrEnedisPermissionRequest> repository,
+                                    PermissionRequestFactory factory,
+                                    EnedisConfiguration configuration,
+                                    HistoricalDataService historicalDataService) {
         this.repository = repository;
         this.factory = factory;
         this.configuration = configuration;
-        this.pollingService = pollingService;
+        this.historicalDataService = historicalDataService;
     }
 
     public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation permissionRequestForCreation) throws StateTransitionException {
@@ -53,7 +56,7 @@ public class PermissionRequestService {
         } else {
             permissionRequest.accept();
             permissionRequest.setUsagePointId(usagePointId);
-            pollingService.fetchHistoricalMeterReadings(permissionRequest);
+            historicalDataService.fetchHistoricalMeterReadings(permissionRequest);
         }
     }
 

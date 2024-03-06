@@ -6,7 +6,6 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPer
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
@@ -17,11 +16,7 @@ import reactor.util.retry.RetryBackoffSpec;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
-
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
 
 @Service
 public class PollingService implements AutoCloseable {
@@ -57,51 +52,38 @@ public class PollingService implements AutoCloseable {
         }
     }
 
-    @Async
-    public void fetchHistoricalMeterReadings(FrEnedisPermissionRequest permissionRequest) {
-        LocalDate permissionStart = permissionRequest.start().toLocalDate();
-        LocalDate permissionEnd = Optional.ofNullable(permissionRequest.end())
-                .map(ZonedDateTime::toLocalDate)
-                .orElse(permissionStart.plusYears(MAXIMUM_PERMISSION_DURATION));
-
-        LocalDate now = LocalDate.now(ZONE_ID_FR);
+    public void fetchMeterReadings(FrEnedisPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
         String permissionId = permissionRequest.permissionId();
-        if (!permissionStart.isBefore(now)) {
-            LOGGER.info("Permission request '{}' is not yet active, skipping data fetch", permissionId);
-            return;
-        }
-
-        var end = now.isAfter(permissionEnd) ? permissionEnd.plusDays(1) : now;
-        LOGGER.info("Preparing to fetch data from ENEDIS for permission request '{}' from '{}' to '{}' (inclusive)", permissionId, permissionStart, end);
+        LOGGER.info("Preparing to fetch data from ENEDIS for permission request '{}' from '{}' to '{}' (inclusive)", permissionId, start, end);
 
         // If the granularity is PT30M, we need to fetch the data in batches
         switch (permissionRequest.granularity()) {
-            case PT30M -> fetchDataInBatches(permissionRequest, permissionStart, end, permissionId)
-                    .subscribe(meterReadings::tryEmitNext);
-            case P1D -> fetchData(permissionRequest, end, permissionId, permissionStart)
-                    .subscribe(meterReadings::tryEmitNext);
+            case PT30M -> fetchDataInBatches(permissionRequest, start, end).subscribe(meterReadings::tryEmitNext);
+            case P1D -> fetchData(permissionRequest, start, end).subscribe(meterReadings::tryEmitNext);
             default -> throw new IllegalStateException("Unsupported granularity: " + permissionRequest.granularity());
         }
     }
 
-    private Flux<IdentifiableMeterReading> fetchDataInBatches(FrEnedisPermissionRequest permissionRequest, LocalDate permissionStart, LocalDate end, String permissionId) {
-        return calculateBatchDates(permissionStart, end)
+    private Mono<IdentifiableMeterReading> fetchData(FrEnedisPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
+        String permissionId = permissionRequest.permissionId();
+        LOGGER.info("Fetching data from ENEDIS for permissionId '{}' from '{}' to '{}'", permissionId, start, end);
+        // Make the API call for this batch
+        return Mono.defer(() -> enedisApi.getConsumptionMeterReading(permissionRequest.usagePointId().orElseThrow(), start, end, permissionRequest.granularity()))
+                .retryWhen(RETRY_BACKOFF_SPEC)
+                .doOnError(e -> handleError(permissionRequest, start, permissionId, e, end))
+                .map(meterReading -> new IdentifiableMeterReading(permissionRequest, meterReading));
+    }
+
+
+    private Flux<IdentifiableMeterReading> fetchDataInBatches(FrEnedisPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
+        return calculateBatchDates(start, end)
                 .flatMap(batchStart -> {
                     // Calculate the end date for this batch, ensuring it's within the overall end date and not in the future
                     LocalDate batchEnd = batchStart.plusWeeks(1);
                     batchEnd = batchEnd.isAfter(end) ? end : batchEnd; // Ensure not to exceed the end date
-                    return fetchData(permissionRequest, batchEnd, permissionId, batchStart);
+                    return fetchData(permissionRequest, batchStart, batchEnd);
                 })
                 .onErrorComplete(); // stop the stream if an error occurs
-    }
-
-    private Mono<IdentifiableMeterReading> fetchData(FrEnedisPermissionRequest permissionRequest, LocalDate end, String permissionId, LocalDate batchStart) {
-        LOGGER.info("Fetching data from ENEDIS for permissionId '{}' from '{}' to '{}'", permissionId, batchStart, end);
-        // Make the API call for this batch
-        return Mono.defer(() -> enedisApi.getConsumptionMeterReading(permissionRequest.usagePointId().orElseThrow(), batchStart, end, permissionRequest.granularity()))
-                .retryWhen(RETRY_BACKOFF_SPEC)
-                .doOnError(e -> handleError(permissionRequest, batchStart, permissionId, e, end))
-                .map(meterReading -> new IdentifiableMeterReading(permissionRequest, meterReading));
     }
 
     private Flux<LocalDate> calculateBatchDates(LocalDate start, LocalDate end) {
@@ -111,7 +93,6 @@ public class PollingService implements AutoCloseable {
                 .map(start::plusWeeks)
                 .takeWhile(batchStart -> !batchStart.isAfter(end)); // Ensure not to exceed the end date
     }
-
 
     @Override
     public void close() throws Exception {
