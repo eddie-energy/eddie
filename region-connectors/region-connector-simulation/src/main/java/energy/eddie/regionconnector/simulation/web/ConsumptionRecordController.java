@@ -5,10 +5,8 @@ import energy.eddie.api.v0.Mvp1ConsumptionRecordProvider;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
-
-import java.util.concurrent.Flow;
 
 @RestController
 public class ConsumptionRecordController implements Mvp1ConsumptionRecordProvider, AutoCloseable {
@@ -20,8 +18,8 @@ public class ConsumptionRecordController implements Mvp1ConsumptionRecordProvide
     }
 
     @Override
-    public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(consumptionRecordStreamSink.asFlux());
+    public Flux<ConsumptionRecord> getConsumptionRecordStream() {
+        return consumptionRecordStreamSink.asFlux();
     }
 
     @Override

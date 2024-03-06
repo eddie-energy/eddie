@@ -6,12 +6,10 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPer
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.concurrent.Flow;
 
 @Component
 @ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
@@ -23,8 +21,8 @@ public class EnedisRawDataProvider implements RawDataProvider {
     }
 
     @Override
-    public Flow.Publisher<RawDataMessage> getRawDataStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(rawDataMessageFlux);
+    public Flux<RawDataMessage> getRawDataStream() {
+        return rawDataMessageFlux;
     }
 
     private RawDataMessage createRawDataMessage(IdentifiableMeterReading meterReading) {

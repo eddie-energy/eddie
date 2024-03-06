@@ -5,14 +5,13 @@ import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.v0.DataSourceInformation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.concurrent.Flow;
 
 import static org.mockito.Mockito.mock;
 
@@ -20,6 +19,20 @@ class RawDataServiceTest {
     @BeforeAll
     static void beforeAll() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(2));
+    }
+
+    private static RawDataProvider createProvider(Sinks.Many<RawDataMessage> sink) {
+        return new RawDataProvider() {
+            @Override
+            public Flux<RawDataMessage> getRawDataStream() {
+                return sink.asFlux();
+            }
+
+            @Override
+            public void close() {
+                sink.tryEmitComplete();
+            }
+        };
     }
 
     @Test
@@ -33,7 +46,7 @@ class RawDataServiceTest {
         RawDataProvider provider2 = createProvider(sink2);
 
         // When
-        var flux = JdkFlowAdapter.flowPublisherToFlux(rawDataService.getRawDataStream());
+        var flux = rawDataService.getRawDataStream();
         StepVerifier.create(flux)
                 .then(() -> {
                     rawDataService.registerProvider(provider1);
@@ -55,19 +68,5 @@ class RawDataServiceTest {
 
         provider1.close();
         provider2.close();
-    }
-
-    private static RawDataProvider createProvider(Sinks.Many<RawDataMessage> sink) {
-        return new RawDataProvider() {
-            @Override
-            public Flow.Publisher<RawDataMessage> getRawDataStream() {
-                return JdkFlowAdapter.publisherToFlowPublisher(sink.asFlux());
-            }
-
-            @Override
-            public void close() {
-                sink.tryEmitComplete();
-            }
-        };
     }
 }

@@ -8,12 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.concurrent.Flow;
 
 @Component
 @ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
@@ -28,10 +26,9 @@ public class EnerginetRawDataProvider implements RawDataProvider {
     }
 
     @Override
-    public Flow.Publisher<RawDataMessage> getRawDataStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(
-                identifiableApiResponseFlux
-                        .map(this::createRawDataMessage));
+    public Flux<RawDataMessage> getRawDataStream() {
+        return identifiableApiResponseFlux
+                .map(this::createRawDataMessage);
     }
 
     private RawDataMessage createRawDataMessage(IdentifiableApiResponse response) {

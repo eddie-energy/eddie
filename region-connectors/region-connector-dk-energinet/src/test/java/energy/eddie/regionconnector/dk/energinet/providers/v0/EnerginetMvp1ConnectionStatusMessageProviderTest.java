@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.dk.energinet.providers.v0;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
@@ -14,7 +13,8 @@ class EnerginetMvp1ConnectionStatusMessageProviderTest {
         // Given
         Sinks.Many<ConnectionStatusMessage> permissionStateMessages = Sinks.many().unicast().onBackpressureBuffer();
         var connectionStatusMessageProvider = new EnerginetMvp1ConnectionStatusMessageProvider(permissionStateMessages);
-        StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(connectionStatusMessageProvider.getConnectionStatusMessageStream()))
+        StepVerifier stepVerifier = StepVerifier.create(
+                        connectionStatusMessageProvider.getConnectionStatusMessageStream())
                 .expectComplete()
                 .verifyLater();
 

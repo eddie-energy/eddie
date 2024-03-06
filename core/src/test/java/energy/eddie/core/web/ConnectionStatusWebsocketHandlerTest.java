@@ -7,11 +7,10 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.core.services.PermissionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.socket.WebSocketSession;
-import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.io.IOException;
-import java.util.concurrent.Flow;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -24,8 +23,8 @@ class ConnectionStatusWebsocketHandlerTest {
         PermissionService permissionService = new PermissionService();
         permissionService.registerProvider(new Mvp1ConnectionStatusMessageProvider() {
             @Override
-            public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-                return JdkFlowAdapter.publisherToFlowPublisher(statusMessageSink.asFlux());
+            public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+                return statusMessageSink.asFlux();
             }
 
             @Override

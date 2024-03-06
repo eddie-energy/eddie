@@ -5,10 +5,7 @@ import energy.eddie.api.v0.Mvp1ConsumptionRecordProvider;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.dk.energinet.utils.ConsumptionRecordMapper;
 import org.springframework.stereotype.Component;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
-
-import java.util.concurrent.Flow;
 
 @Component
 public class EnerginetMvp1ConsumptionRecordProvider implements Mvp1ConsumptionRecordProvider {
@@ -19,9 +16,9 @@ public class EnerginetMvp1ConsumptionRecordProvider implements Mvp1ConsumptionRe
     }
 
     @Override
-    public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(identifiableApiResponseFlux
-                .map(ConsumptionRecordMapper::timeSeriesToConsumptionRecord));
+    public Flux<ConsumptionRecord> getConsumptionRecordStream() {
+        return identifiableApiResponseFlux
+                .map(ConsumptionRecordMapper::timeSeriesToConsumptionRecord);
     }
 
     @Override

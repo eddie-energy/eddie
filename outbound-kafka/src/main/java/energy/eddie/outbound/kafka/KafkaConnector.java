@@ -15,12 +15,11 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 
 import java.io.Closeable;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Flow;
 
 public class KafkaConnector implements
         Mvp1ConnectionStatusMessageOutboundConnector,
@@ -37,30 +36,27 @@ public class KafkaConnector implements
     }
 
     @Override
-    public void setConnectionStatusMessageStream(Flow.Publisher<ConnectionStatusMessage> statusMessageStream) {
-        JdkFlowAdapter
-                .flowPublisherToFlux(statusMessageStream)
+    public void setConnectionStatusMessageStream(Flux<ConnectionStatusMessage> statusMessageStream) {
+        statusMessageStream
                 .subscribe(this::produceStatusMessage);
     }
 
     @Override
-    public void setEddieValidatedHistoricalDataMarketDocumentStream(Flow.Publisher<EddieValidatedHistoricalDataMarketDocument> marketDocumentStream) {
-        JdkFlowAdapter
-                .flowPublisherToFlux(marketDocumentStream)
+    public void setEddieValidatedHistoricalDataMarketDocumentStream(
+            Flux<EddieValidatedHistoricalDataMarketDocument> marketDocumentStream) {
+        marketDocumentStream
                 .subscribe(this::produceEddieValidatedHistoricalDataMarketDocument);
     }
 
     @Override
-    public void setConsumptionRecordStream(Flow.Publisher<ConsumptionRecord> consumptionRecordStream) {
-        JdkFlowAdapter
-                .flowPublisherToFlux(consumptionRecordStream)
+    public void setConsumptionRecordStream(Flux<ConsumptionRecord> consumptionRecordStream) {
+        consumptionRecordStream
                 .subscribe(this::produceConsumptionRecord);
     }
 
     @Override
-    public void setConsentMarketDocumentStream(Flow.Publisher<ConsentMarketDocument> consentMarketDocumentStream) {
-        JdkFlowAdapter
-                .flowPublisherToFlux(consentMarketDocumentStream)
+    public void setConsentMarketDocumentStream(Flux<ConsentMarketDocument> consentMarketDocumentStream) {
+        consentMarketDocumentStream
                 .subscribe(this::produceConsentMarketDocument);
     }
 
@@ -68,10 +64,11 @@ public class KafkaConnector implements
         try {
             kafkaProducer
                     .send(new ProducerRecord<>(
-                                    "consent-market-document",
-                                    consentMarketDocument.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID().getValue(),
-                                    consentMarketDocument
-                            )
+                                  "consent-market-document",
+                                  consentMarketDocument.getPermissionList().getPermissions().getFirst()
+                                          .getMarketEvaluationPointMRID().getValue(),
+                                  consentMarketDocument
+                          )
                     ).get();
         } catch (ExecutionException e) {
             LOGGER.warn("Could not produce consent market document");
@@ -101,7 +98,8 @@ public class KafkaConnector implements
     private void produceConsumptionRecord(ConsumptionRecord consumptionRecord) {
         try {
             kafkaProducer
-                    .send(new ProducerRecord<>("consumption-records", consumptionRecord.getConnectionId(), consumptionRecord))
+                    .send(new ProducerRecord<>("consumption-records", consumptionRecord.getConnectionId(),
+                                               consumptionRecord))
                     .get();
             LOGGER.info("Produced consumption record message");
         } catch (RuntimeException | ExecutionException e) {
@@ -111,10 +109,12 @@ public class KafkaConnector implements
         }
     }
 
-    private void produceEddieValidatedHistoricalDataMarketDocument(EddieValidatedHistoricalDataMarketDocument marketDocument) {
+    private void produceEddieValidatedHistoricalDataMarketDocument(
+            EddieValidatedHistoricalDataMarketDocument marketDocument) {
         try {
             kafkaProducer
-                    .send(new ProducerRecord<>("validated-historical-data", marketDocument.connectionId().orElse(null), marketDocument))
+                    .send(new ProducerRecord<>("validated-historical-data", marketDocument.connectionId().orElse(null),
+                                               marketDocument))
                     .get();
             LOGGER.info("Produced validated historical data market document message");
         } catch (RuntimeException | ExecutionException e) {
@@ -130,9 +130,8 @@ public class KafkaConnector implements
     }
 
     @Override
-    public void setRawDataStream(Flow.Publisher<RawDataMessage> rawDataStream) {
-        JdkFlowAdapter
-                .flowPublisherToFlux(rawDataStream)
+    public void setRawDataStream(Flux<RawDataMessage> rawDataStream) {
+        rawDataStream
                 .subscribe(this::produceRawDataMessage);
     }
 

@@ -1,8 +1,7 @@
 package energy.eddie.api.v0_82;
 
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
-
-import java.util.concurrent.Flow;
+import reactor.core.publisher.Flux;
 
 /**
  * An outbound connector delivers data to the eligible party. All messages from the region connectors
@@ -14,5 +13,6 @@ public interface EddieValidatedHistoricalDataMarketDocumentOutboundConnector {
      *
      * @param marketDocumentStream stream of validated historical data market documents
      */
-    void setEddieValidatedHistoricalDataMarketDocumentStream(Flow.Publisher<EddieValidatedHistoricalDataMarketDocument> marketDocumentStream);
+    void setEddieValidatedHistoricalDataMarketDocumentStream(
+            Flux<EddieValidatedHistoricalDataMarketDocument> marketDocumentStream);
 }

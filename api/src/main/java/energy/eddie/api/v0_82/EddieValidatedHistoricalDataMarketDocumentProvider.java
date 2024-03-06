@@ -2,8 +2,7 @@ package energy.eddie.api.v0_82;
 
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
-
-import java.util.concurrent.Flow;
+import reactor.core.publisher.Flux;
 
 /**
  * Used to extend a {@link RegionConnector} by making a Flux of
@@ -15,7 +14,7 @@ public interface EddieValidatedHistoricalDataMarketDocumentProvider extends Auto
      *
      * @return EddieValidatedHistoricalDataMarketDocument stream
      */
-    Flow.Publisher<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream();
+    Flux<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream();
 
     /**
      * Emit a complete signal on the Flow in this method.

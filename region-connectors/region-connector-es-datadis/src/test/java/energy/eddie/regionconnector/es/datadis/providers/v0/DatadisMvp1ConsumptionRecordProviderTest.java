@@ -9,7 +9,6 @@ import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFa
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
@@ -45,7 +44,7 @@ class DatadisMvp1ConsumptionRecordProviderTest {
         //noinspection resource StepVerifier closes provider
         var provider = new DatadisMvp1ConsumptionRecordProvider(publisher.flux());
 
-        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(provider.getConsumptionRecordStream()))
+        StepVerifier.create(provider.getConsumptionRecordStream())
                 // When
                 .then(() -> publisher.next(reading))
                 // Then

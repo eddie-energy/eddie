@@ -7,12 +7,10 @@ import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.Validat
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.Flow;
 
 @Component
 public class EnerginetEddieValidatedHistoricalDataMarketDocumentProvider implements EddieValidatedHistoricalDataMarketDocumentProvider {
@@ -49,8 +47,8 @@ public class EnerginetEddieValidatedHistoricalDataMarketDocumentProvider impleme
     }
 
     @Override
-    public Flow.Publisher<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(eddieValidatedHistoricalDataMarketDocumentFlux);
+    public Flux<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
+        return eddieValidatedHistoricalDataMarketDocumentFlux;
     }
 
     @Override

@@ -4,7 +4,6 @@ import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
@@ -20,7 +19,7 @@ class EnedisRawDataProviderTest {
         //noinspection resource StepVerifier closes provider
         var provider = new EnedisRawDataProvider(publisher.flux());
 
-        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(provider.getRawDataStream()))
+        StepVerifier.create(provider.getRawDataStream())
                 .then(publisher::complete)
                 .expectComplete()
                 .verify(Duration.ofSeconds(2));
@@ -35,7 +34,7 @@ class EnedisRawDataProviderTest {
         //noinspection resource StepVerifier closes provider
         var provider = new EnedisRawDataProvider(publisher.flux());
 
-        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(provider.getRawDataStream()).log())
+        StepVerifier.create(provider.getRawDataStream().log())
                 // When
                 .then(() -> publisher.next(reading))
                 // Then

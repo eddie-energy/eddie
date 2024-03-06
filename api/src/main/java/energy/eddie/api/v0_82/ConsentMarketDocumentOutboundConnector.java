@@ -1,9 +1,8 @@
 package energy.eddie.api.v0_82;
 
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
-
-import java.util.concurrent.Flow;
+import reactor.core.publisher.Flux;
 
 public interface ConsentMarketDocumentOutboundConnector {
-    void setConsentMarketDocumentStream(Flow.Publisher<ConsentMarketDocument> consentMarketDocumentStream);
+    void setConsentMarketDocumentStream(Flux<ConsentMarketDocument> consentMarketDocumentStream);
 }

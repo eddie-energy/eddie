@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
-import reactor.adapter.JdkFlowAdapter;
 
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
@@ -37,7 +36,7 @@ class TerminationKafkaConnectorTest {
         producer.send(new ProducerRecord<>("termination-topic", "id", new ConsentMarketDocument().withMRID("permissionId"))).get();
 
         // Then
-        var pair = JdkFlowAdapter.flowPublisherToFlux(terminationConnector.getTerminationMessages())
+        var pair = terminationConnector.getTerminationMessages()
                 .blockFirst();
         assertAll(
                 () -> assertNotNull(pair),

@@ -18,11 +18,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.util.Optional;
-import java.util.concurrent.Flow;
 
 @Service
 public class AiidaRegionConnectorService implements Mvp1ConnectionStatusMessageProvider {
@@ -58,8 +57,8 @@ public class AiidaRegionConnectorService implements Mvp1ConnectionStatusMessageP
      * @return Flow of status messages.
      */
     @Override
-    public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(statusMessageSink.asFlux());
+    public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+        return statusMessageSink.asFlux();
     }
 
     /**

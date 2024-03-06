@@ -7,7 +7,6 @@ import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.processing.mvp1.Mvp1ConsumptionRecordMapper;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
@@ -37,7 +36,7 @@ class EdaMvp1ConsumptionRecordProviderTest {
 
         try (EdaMvp1ConsumptionRecordProvider edaMvp1ConsumptionRecordProvider = new EdaMvp1ConsumptionRecordProvider(mockConsumptionRecordMapper, testPublisher.flux())) {
 
-            var source = JdkFlowAdapter.flowPublisherToFlux(edaMvp1ConsumptionRecordProvider.getConsumptionRecordStream());
+            var source = edaMvp1ConsumptionRecordProvider.getConsumptionRecordStream();
 
             StepVerifier.create(source)
                     .then(() -> {
@@ -80,7 +79,7 @@ class EdaMvp1ConsumptionRecordProviderTest {
 
         try (EdaMvp1ConsumptionRecordProvider edaMvp1ConsumptionRecordProvider = new EdaMvp1ConsumptionRecordProvider(mockConsumptionRecordMapper, testPublisher.flux())) {
 
-            var source = JdkFlowAdapter.flowPublisherToFlux(edaMvp1ConsumptionRecordProvider.getConsumptionRecordStream());
+            var source = edaMvp1ConsumptionRecordProvider.getConsumptionRecordStream();
 
             StepVerifier.create(source)
                     .then(() -> testPublisher.next(new IdentifiableConsumptionRecord(mockConsumptionRecord, permissionRequests)))

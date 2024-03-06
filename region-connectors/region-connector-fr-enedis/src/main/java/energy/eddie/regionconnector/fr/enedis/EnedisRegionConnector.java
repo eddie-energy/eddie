@@ -7,12 +7,11 @@ import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.time.ZoneId;
 import java.util.Map;
-import java.util.concurrent.Flow;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
@@ -40,8 +39,8 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
     }
 
     @Override
-    public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(connectionStatusSink.asFlux());
+    public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+        return connectionStatusSink.asFlux();
     }
 
     @Override

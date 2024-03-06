@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.es.datadis.providers.agnostic;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
@@ -19,7 +18,7 @@ class DatadisRawDataProviderTest {
         //noinspection resource StepVerifier closes provider
         var provider = new DatadisRawDataProvider(publisher.flux());
 
-        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(provider.getRawDataStream()))
+        StepVerifier.create(provider.getRawDataStream())
                 .then(publisher::complete)
                 .expectComplete()
                 .verify(Duration.ofSeconds(2));
@@ -34,7 +33,7 @@ class DatadisRawDataProviderTest {
         //noinspection resource StepVerifier closes provider
         var provider = new DatadisRawDataProvider(publisher.flux());
 
-        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(provider.getRawDataStream()))
+        StepVerifier.create(provider.getRawDataStream())
                 // When
                 .then(() -> publisher.next(reading))
                 // Then

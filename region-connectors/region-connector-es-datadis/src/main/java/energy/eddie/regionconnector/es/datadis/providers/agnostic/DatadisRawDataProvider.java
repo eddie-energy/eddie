@@ -5,12 +5,10 @@ import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.concurrent.Flow;
 
 @Component
 @ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
@@ -22,17 +20,16 @@ public class DatadisRawDataProvider implements RawDataProvider {
     }
 
     @Override
-    public Flow.Publisher<RawDataMessage> getRawDataStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(
-                meteringDataFlux
-                        .map(this::createRawDataMessage));
+    public Flux<RawDataMessage> getRawDataStream() {
+        return meteringDataFlux
+                .map(this::createRawDataMessage);
     }
 
     private RawDataMessage createRawDataMessage(IdentifiableMeteringData meteringData) {
         PermissionRequest request = meteringData.permissionRequest();
         return new RawDataMessage(request.permissionId(), request.connectionId(), request.dataNeedId(),
-                request.dataSourceInformation(), ZonedDateTime.now(ZoneId.of("UTC")),
-                meteringData.meteringData().toString());
+                                  request.dataSourceInformation(), ZonedDateTime.now(ZoneId.of("UTC")),
+                                  meteringData.meteringData().toString());
     }
 
     @Override

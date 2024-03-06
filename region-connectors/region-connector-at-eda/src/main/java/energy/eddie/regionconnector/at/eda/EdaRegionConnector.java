@@ -9,12 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Flow;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.REGION_CONNECTOR_ID;
 import static java.util.Objects.requireNonNull;
@@ -100,8 +99,8 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
     }
 
     @Override
-    public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(permissionStateMessages.asFlux());
+    public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+        return permissionStateMessages.asFlux();
     }
 
     @Override

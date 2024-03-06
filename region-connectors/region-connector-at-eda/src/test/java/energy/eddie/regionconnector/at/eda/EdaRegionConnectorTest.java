@@ -5,7 +5,6 @@ import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
 import jakarta.xml.bind.JAXBException;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
@@ -150,7 +149,7 @@ class EdaRegionConnectorTest {
         var requestService = mock(PermissionRequestService.class);
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
         var rc = new EdaRegionConnector(edaAdapter, requestService, sink);
-        StepVerifier stepVerifier = StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(rc.getConnectionStatusMessageStream()))
+        StepVerifier stepVerifier = StepVerifier.create(rc.getConnectionStatusMessageStream())
                 .expectComplete()
                 .verifyLater();
 

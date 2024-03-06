@@ -5,13 +5,12 @@ import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocument;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.util.Optional;
-import java.util.concurrent.Flow;
 
 import static org.mockito.Mockito.mock;
 
@@ -24,8 +23,8 @@ class EddieValidatedHistoricalDataMarketDocumentServiceTest {
     private static EddieValidatedHistoricalDataMarketDocumentProvider createProvider(Sinks.Many<EddieValidatedHistoricalDataMarketDocument> sink) {
         return new EddieValidatedHistoricalDataMarketDocumentProvider() {
             @Override
-            public Flow.Publisher<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
-                return JdkFlowAdapter.publisherToFlowPublisher(sink.asFlux());
+            public Flux<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
+                return sink.asFlux();
             }
 
             @Override
@@ -50,7 +49,7 @@ class EddieValidatedHistoricalDataMarketDocumentServiceTest {
         var three = new EddieValidatedHistoricalDataMarketDocument(Optional.of("three"), Optional.empty(), Optional.empty(), mock(ValidatedHistoricalDataMarketDocument.class));
 
         // When
-        var flux = JdkFlowAdapter.flowPublisherToFlux(service.getEddieValidatedHistoricalDataMarketDocumentStream());
+        var flux = service.getEddieValidatedHistoricalDataMarketDocumentStream();
         StepVerifier.create(flux)
                 .then(() -> {
                     service.registerProvider(provider1);

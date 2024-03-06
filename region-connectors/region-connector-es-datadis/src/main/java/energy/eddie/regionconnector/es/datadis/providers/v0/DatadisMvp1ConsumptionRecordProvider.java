@@ -9,10 +9,7 @@ import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
-
-import java.util.concurrent.Flow;
 
 @Component
 public class DatadisMvp1ConsumptionRecordProvider implements Mvp1ConsumptionRecordProvider {
@@ -24,10 +21,9 @@ public class DatadisMvp1ConsumptionRecordProvider implements Mvp1ConsumptionReco
     }
 
     @Override
-    public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(
-                meteringDataFlux
-                        .mapNotNull(this::createMvp1ConsumptionRecord));
+    public Flux<ConsumptionRecord> getConsumptionRecordStream() {
+        return meteringDataFlux
+                .mapNotNull(this::createMvp1ConsumptionRecord);
     }
 
     private @Nullable ConsumptionRecord createMvp1ConsumptionRecord(IdentifiableMeteringData identifiableMeteringData) {

@@ -7,7 +7,6 @@ import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
@@ -41,7 +40,7 @@ class EnedisEddieValidatedHistoricalDataMarketDocumentProviderTest {
         var provider = new EnedisEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(), factory);
 
         // When
-        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(provider.getEddieValidatedHistoricalDataMarketDocumentStream()))
+        StepVerifier.create(provider.getEddieValidatedHistoricalDataMarketDocumentStream())
                 .then(() -> {
                     testPublisher.emit(identifiableMeterReading);
                     testPublisher.complete();

@@ -12,10 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
-
-import java.util.concurrent.Flow;
 
 @RestController
 public class ConnectionStatusController implements Mvp1ConnectionStatusMessageProvider {
@@ -49,8 +47,8 @@ public class ConnectionStatusController implements Mvp1ConnectionStatusMessagePr
     }
 
     @Override
-    public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(connectionStatusStreamSink.asFlux());
+    public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+        return connectionStatusStreamSink.asFlux();
     }
 
     @Override

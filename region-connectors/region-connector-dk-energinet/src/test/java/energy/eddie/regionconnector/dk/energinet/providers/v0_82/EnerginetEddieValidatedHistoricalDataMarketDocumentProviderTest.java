@@ -14,7 +14,6 @@ import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.Validat
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.openapitools.jackson.nullable.JsonNullableModule;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
@@ -67,7 +66,7 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
         var provider = new EnerginetEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(), validatedHistoricalDataMarketDocumentBuilderFactory);
 
         // Act & Assert
-        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(provider.getEddieValidatedHistoricalDataMarketDocumentStream()))
+        StepVerifier.create(provider.getEddieValidatedHistoricalDataMarketDocumentStream())
                 .then(() -> {
                     testPublisher.emit(apiResponse);
                     testPublisher.complete();
@@ -99,7 +98,7 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
         try (var provider = new EnerginetEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(), factory)) {
 
             // Act & Assert
-            StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(provider.getEddieValidatedHistoricalDataMarketDocumentStream()))
+            StepVerifier.create(provider.getEddieValidatedHistoricalDataMarketDocumentStream())
                     .then(() -> {
                         testPublisher.emit(apiResponse);
                         testPublisher.complete();

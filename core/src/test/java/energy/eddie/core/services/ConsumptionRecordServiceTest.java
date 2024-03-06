@@ -4,17 +4,30 @@ import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordProvider;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
-import java.util.concurrent.Flow;
 
 class ConsumptionRecordServiceTest {
     @BeforeAll
     static void beforeAll() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(2));
+    }
+
+    private static Mvp1ConsumptionRecordProvider createProvider(Sinks.Many<ConsumptionRecord> sink) {
+        return new Mvp1ConsumptionRecordProvider() {
+            @Override
+            public Flux<ConsumptionRecord> getConsumptionRecordStream() {
+                return sink.asFlux();
+            }
+
+            @Override
+            public void close() {
+                sink.tryEmitComplete();
+            }
+        };
     }
 
     @Test
@@ -28,7 +41,7 @@ class ConsumptionRecordServiceTest {
         Mvp1ConsumptionRecordProvider provider2 = createProvider(sink2);
 
         // When
-        var flux = JdkFlowAdapter.flowPublisherToFlux(consumptionRecordService.getConsumptionRecordStream());
+        var flux = consumptionRecordService.getConsumptionRecordStream();
         StepVerifier.create(flux)
                 .then(() -> {
                     consumptionRecordService.registerProvider(provider1);
@@ -50,19 +63,5 @@ class ConsumptionRecordServiceTest {
 
         provider1.close();
         provider2.close();
-    }
-
-    private static Mvp1ConsumptionRecordProvider createProvider(Sinks.Many<ConsumptionRecord> sink) {
-        return new Mvp1ConsumptionRecordProvider() {
-            @Override
-            public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
-                return JdkFlowAdapter.publisherToFlowPublisher(sink.asFlux());
-            }
-
-            @Override
-            public void close() {
-                sink.tryEmitComplete();
-            }
-        };
     }
 }

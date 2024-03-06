@@ -6,7 +6,6 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.cim.v0_82.cmd.*;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.test.publisher.TestPublisher;
 
 import java.util.Optional;
@@ -20,7 +19,7 @@ class TerminationRouterTest {
         // Given
         TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
         var connector = mock(TerminationConnector.class);
-        when(connector.getTerminationMessages()).thenReturn(JdkFlowAdapter.publisherToFlowPublisher(publisher));
+        when(connector.getTerminationMessages()).thenReturn(publisher.flux());
         var router = new TerminationRouter(Optional.of(connector));
 
         var metadata1 = mock(RegionConnectorMetadata.class);
@@ -61,7 +60,7 @@ class TerminationRouterTest {
         // Given
         TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
         var connector = mock(TerminationConnector.class);
-        when(connector.getTerminationMessages()).thenReturn(JdkFlowAdapter.publisherToFlowPublisher(publisher));
+        when(connector.getTerminationMessages()).thenReturn(publisher.flux());
         var router = new TerminationRouter(Optional.of(connector));
 
         var metadata1 = mock(RegionConnectorMetadata.class);
@@ -107,7 +106,7 @@ class TerminationRouterTest {
         // Given
         TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
         var connector = mock(TerminationConnector.class);
-        when(connector.getTerminationMessages()).thenReturn(JdkFlowAdapter.publisherToFlowPublisher(publisher));
+        when(connector.getTerminationMessages()).thenReturn(publisher.flux());
         var router = new TerminationRouter(Optional.of(connector));
 
         var metadata1 = mock(RegionConnectorMetadata.class);

@@ -7,7 +7,6 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 import reactor.kafka.receiver.KafkaReceiver;
 import reactor.kafka.receiver.ReceiverOptions;
@@ -15,7 +14,6 @@ import reactor.kafka.receiver.ReceiverRecord;
 
 import java.util.Collections;
 import java.util.Properties;
-import java.util.concurrent.Flow;
 
 import static org.apache.kafka.common.requests.FetchMetadata.log;
 
@@ -50,7 +48,7 @@ public class TerminationKafkaConnector implements TerminationConnector {
     }
 
     @Override
-    public Flow.Publisher<Pair<String, ConsentMarketDocument>> getTerminationMessages() {
-        return JdkFlowAdapter.publisherToFlowPublisher(flux);
+    public Flux<Pair<String, ConsentMarketDocument>> getTerminationMessages() {
+        return flux;
     }
 }

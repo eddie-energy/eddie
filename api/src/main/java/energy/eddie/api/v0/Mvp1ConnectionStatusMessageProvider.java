@@ -1,9 +1,9 @@
 package energy.eddie.api.v0;
 
-import java.util.concurrent.Flow;
+import reactor.core.publisher.Flux;
 
 /**
- * Used to extend a {@link RegionConnector} by making a Flow.Publisher of
+ * Used to extend a {@link RegionConnector} by making a Flux of
  * {@link ConnectionStatusMessage}s available.
  */
 public interface Mvp1ConnectionStatusMessageProvider extends AutoCloseable {
@@ -12,7 +12,7 @@ public interface Mvp1ConnectionStatusMessageProvider extends AutoCloseable {
      *
      * @return connection status message stream
      */
-    Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream();
+    Flux<ConnectionStatusMessage> getConnectionStatusMessageStream();
 
     /**
      * Emit a complete signal on the Flow in this method.
