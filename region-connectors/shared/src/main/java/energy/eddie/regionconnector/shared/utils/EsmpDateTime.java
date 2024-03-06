@@ -1,9 +1,6 @@
 package energy.eddie.regionconnector.shared.utils;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
@@ -42,8 +39,13 @@ public class EsmpDateTime {
     }
 
     public static EsmpDateTime now() {
-        return new EsmpDateTime(ZonedDateTime.now(ZoneOffset.UTC));
+        return now(Clock.systemUTC());
     }
+
+    public static EsmpDateTime now(Clock clock) {
+        return new EsmpDateTime(ZonedDateTime.now(clock));
+    }
+
 
     @Override
     public String toString() {

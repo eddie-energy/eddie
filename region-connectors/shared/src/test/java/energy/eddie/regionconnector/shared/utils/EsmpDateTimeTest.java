@@ -2,13 +2,11 @@ package energy.eddie.regionconnector.shared.utils;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class EsmpDateTimeTest {
 
@@ -52,5 +50,29 @@ class EsmpDateTimeTest {
 
         // Then
         assertEquals(expected, result);
+    }
+
+    @Test
+    void esmpDateTimeNow_returns() {
+        // Given
+        // When
+        var res = EsmpDateTime.now();
+
+        // Then
+        assertNotNull(res);
+    }
+
+    @Test
+    void esmpDateTimeNow_producesExpectedOutput() {
+        // Given
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(2023, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
+        Clock clock = Clock.fixed(zonedDateTime.toInstant(), ZoneOffset.UTC);
+        String expected = "2023-01-01T01:01:01Z";
+
+        // When
+        var res = EsmpDateTime.now(clock).toString();
+
+        // Then
+        assertEquals(expected, res);
     }
 }
