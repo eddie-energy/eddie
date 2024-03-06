@@ -2,6 +2,7 @@ package energy.eddie.core;
 
 import energy.eddie.api.agnostic.DataNeed;
 import energy.eddie.api.agnostic.DataNeedsService;
+import energy.eddie.dataneeds.DataNeedsSpringConfig;
 import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.slf4j.Logger;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -18,6 +20,8 @@ import java.util.Optional;
 import java.util.Set;
 
 @SpringBootApplication
+// add data needs beans, repositories, controllers
+@Import(DataNeedsSpringConfig.class)
 public class CoreSpringConfig implements WebMvcConfigurer {
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreSpringConfig.class);
 
@@ -49,8 +53,8 @@ public class CoreSpringConfig implements WebMvcConfigurer {
     }
 
     /**
-     * Beans returning a {@link org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor}
-     * need to be static for Spring to be able to "enhance @Configuration bean definition".
+     * Beans returning a {@link org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor} need to
+     * be static for Spring to be able to "enhance @Configuration bean definition".
      */
     @Bean
     static RegionConnectorRegistrationBeanPostProcessor regionConnectorRegistrationBeanPostProcessor() {

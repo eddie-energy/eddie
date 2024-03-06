@@ -22,9 +22,11 @@ dependencies {
 
     implementation(libs.jackson.annotations)
     implementation(libs.jakarta.annotation.api)
+    implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)
 
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.spring.boot.starter.test)
 }
 
 tasks.test {
