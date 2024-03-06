@@ -8,6 +8,7 @@ import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Locale;
@@ -33,7 +34,11 @@ class IntermediateConsentMarketDocument<T extends TimeframedPermissionRequest> {
     }
 
     ConsentMarketDocument toConsentMarketDocument() {
-        EsmpDateTime now = EsmpDateTime.now();
+        return toConsentMarketDocument(Clock.systemUTC());
+    }
+
+    ConsentMarketDocument toConsentMarketDocument(Clock clock) {
+        EsmpDateTime now = EsmpDateTime.now(clock);
         EsmpDateTime created = new EsmpDateTime(permissionRequest.created());
         EsmpTimeInterval interval = new EsmpTimeInterval(permissionRequest.start(), permissionRequest.end());
 
