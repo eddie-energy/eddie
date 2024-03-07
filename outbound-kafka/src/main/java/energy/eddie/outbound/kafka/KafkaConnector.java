@@ -90,7 +90,7 @@ public class KafkaConnector implements
             kafkaProducer
                     .send(new ProducerRecord<>("status-messages", statusMessage))
                     .get();
-            LOGGER.info("Produced connection status message");
+            LOGGER.info("Produced connection status {} message for permission request {}", statusMessage.status(), statusMessage.permissionId());
         } catch (RuntimeException | ExecutionException e) {
             LOGGER.warn("Could not produce connection status message", e);
         } catch (InterruptedException e) {
@@ -103,7 +103,7 @@ public class KafkaConnector implements
             kafkaProducer
                     .send(new ProducerRecord<>("consumption-records", consumptionRecord.getConnectionId(), consumptionRecord))
                     .get();
-            LOGGER.info("Produced consumption record message");
+            LOGGER.info("Produced consumption record message for permission request {}", consumptionRecord.getConnectionId());
         } catch (RuntimeException | ExecutionException e) {
             LOGGER.warn("Could not produce consumption record message", e);
         } catch (InterruptedException e) {
@@ -116,7 +116,7 @@ public class KafkaConnector implements
             kafkaProducer
                     .send(new ProducerRecord<>("validated-historical-data", marketDocument.connectionId().orElse(null), marketDocument))
                     .get();
-            LOGGER.info("Produced validated historical data market document message");
+            LOGGER.info("Produced validated historical data market document message for permission request {}", marketDocument.permissionId());
         } catch (RuntimeException | ExecutionException e) {
             LOGGER.warn("Could not produce validated historical data market document message", e);
         } catch (InterruptedException e) {
@@ -141,7 +141,7 @@ public class KafkaConnector implements
             kafkaProducer
                     .send(new ProducerRecord<>("raw-data-in-proprietary-format", message.connectionId(), message))
                     .get();
-            LOGGER.debug("Produced raw data message");
+            LOGGER.debug("Produced raw data message for permission request {}", message.permissionId());
         } catch (RuntimeException | ExecutionException e) {
             LOGGER.warn("Could not produce raw data message", e);
         } catch (InterruptedException e) {
