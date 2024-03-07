@@ -66,8 +66,8 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
         this.connectionId = connectionId;
         this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
         this.dataNeedId = dataNeedId;
-        this.start = start;
-        this.end = end;
+        this.start = start.withZoneSameInstant(ZONE_ID_FR);
+        this.end = end.withZoneSameInstant(ZONE_ID_FR);
         this.status = state.status();
         this.granularity = granularity;
     }
