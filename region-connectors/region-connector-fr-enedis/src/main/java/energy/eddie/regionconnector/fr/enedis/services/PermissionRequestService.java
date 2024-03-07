@@ -1,13 +1,14 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
-import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.fr.enedis.permission.request.persistence.JpaPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.utils.EnedisDuration;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.apache.http.client.utils.URIBuilder;
@@ -15,16 +16,18 @@ import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
 public class PermissionRequestService {
-    private final PermissionRequestRepository<FrEnedisPermissionRequest> repository;
+    private final JpaPermissionRequestRepository repository;
     private final PermissionRequestFactory factory;
     private final EnedisConfiguration configuration;
     private final HistoricalDataService historicalDataService;
 
-    public PermissionRequestService(PermissionRequestRepository<FrEnedisPermissionRequest> repository,
+    public PermissionRequestService(JpaPermissionRequestRepository repository,
                                     PermissionRequestFactory factory,
                                     EnedisConfiguration configuration,
                                     HistoricalDataService historicalDataService) {
@@ -77,7 +80,7 @@ public class PermissionRequestService {
     }
 
     public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
-        return repository.findByPermissionId(permissionId)
+        return repository.findById(permissionId)
                 .map(request -> new ConnectionStatusMessage(
                         request.connectionId(),
                         request.permissionId(),
@@ -87,7 +90,15 @@ public class PermissionRequestService {
     }
 
     public Optional<FrEnedisPermissionRequest> findPermissionRequestByPermissionId(String permissionId) {
-        return repository.findByPermissionId(permissionId)
+        return repository.findById(permissionId)
                 .map(factory::create);
+    }
+
+    public List<FrEnedisPermissionRequest> findAllAcceptedPermissionRequests() {
+        return repository.findAllByStatusIs(PermissionProcessStatus.ACCEPTED)
+                .stream()
+                .map(factory::create)
+                .filter(Objects::nonNull)
+                .toList();
     }
 }

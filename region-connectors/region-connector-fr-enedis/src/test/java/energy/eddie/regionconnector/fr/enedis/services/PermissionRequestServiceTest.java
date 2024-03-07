@@ -3,13 +3,12 @@ package energy.eddie.regionconnector.fr.enedis.services;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisAcceptedState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisPendingAcknowledgmentState;
-import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisRejectedState;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 class PermissionRequestServiceTest {
+    @SuppressWarnings("unused")
     @Container
     @ServiceConnection
     private static final PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:15-alpine");
@@ -56,7 +56,7 @@ class PermissionRequestServiceTest {
         // Then
         assertTrue(permissionRequest.isPresent());
         assertEquals("cid", permissionRequest.get().connectionId());
-        assertEquals(FrEnedisPendingAcknowledgmentState.class, permissionRequest.get().state().getClass());
+        assertEquals(PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT, permissionRequest.get().status());
     }
 
     @Test
@@ -75,7 +75,7 @@ class PermissionRequestServiceTest {
         permissionRequestService.authorizePermissionRequest("pid", "upid");
         // Then
         FrEnedisPermissionRequest updatedRequest = repository.findByPermissionId("pid").orElseThrow();
-        assertEquals(FrEnedisAcceptedState.class, updatedRequest.state().getClass());
+        assertEquals(PermissionProcessStatus.ACCEPTED, updatedRequest.status());
     }
 
     @Test
@@ -94,7 +94,7 @@ class PermissionRequestServiceTest {
         permissionRequestService.authorizePermissionRequest("pid", null);
         // Then
         FrEnedisPermissionRequest updatedRequest = repository.findByPermissionId("pid").orElseThrow();
-        assertEquals(FrEnedisRejectedState.class, updatedRequest.state().getClass());
+        assertEquals(PermissionProcessStatus.REJECTED, updatedRequest.status());
     }
 
     @Test
