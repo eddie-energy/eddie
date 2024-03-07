@@ -39,6 +39,7 @@ public class TerminationKafkaConnector implements TerminationConnector {
 
         flux = KafkaReceiver.create(options)
                 .receive()
+                .filter(rec -> rec.value() != null)
                 .map(this::process)
                 .retry();
     }

@@ -20,9 +20,10 @@ class CustomDeserializerTest {
         var deserializer = new CustomDeserializer();
 
         // When
+        var res = deserializer.deserialize("anyTopic", json);
+
         // Then
-        assertThrows(CustomDeserializer.ConsentMarketDocumentDeserializationException.class,
-                () -> deserializer.deserialize("anyTopic", json));
+        assertNull(res);
 
         // Clean-Up
         deserializer.close();
@@ -97,27 +98,44 @@ class CustomDeserializerTest {
                 () -> assertEquals(MessageTypeList.PERMISSION_ADMINISTRATION_DOCUMENT, res.getType()),
                 () -> assertEquals("2024-01-25T09:09Z", res.getCreatedDateTime()),
                 () -> assertEquals("LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY", res.getDescription()),
-                () -> assertEquals(RoleTypeList.PARTY_CONNECTED_TO_GRID, res.getSenderMarketParticipantMarketRoleType()),
-                () -> assertEquals(RoleTypeList.PERMISSION_ADMINISTRATOR, res.getReceiverMarketParticipantMarketRoleType()),
+                () -> assertEquals(RoleTypeList.PARTY_CONNECTED_TO_GRID,
+                                   res.getSenderMarketParticipantMarketRoleType()),
+                () -> assertEquals(RoleTypeList.PERMISSION_ADMINISTRATOR,
+                                   res.getReceiverMarketParticipantMarketRoleType()),
                 () -> assertEquals(ProcessTypeList.ACCESS_TO_METERED_DATA, res.getProcessProcessType()),
-                () -> assertEquals(CodingSchemeTypeList.DENMARK_NATIONAL_CODING_SCHEME, res.getSenderMarketParticipantMRID().getCodingScheme()),
+                () -> assertEquals(CodingSchemeTypeList.DENMARK_NATIONAL_CODING_SCHEME,
+                                   res.getSenderMarketParticipantMRID().getCodingScheme()),
                 () -> assertEquals("epId", res.getSenderMarketParticipantMRID().getValue()),
-                () -> assertEquals(CodingSchemeTypeList.DENMARK_NATIONAL_CODING_SCHEME, res.getReceiverMarketParticipantMRID().getCodingScheme()),
+                () -> assertEquals(CodingSchemeTypeList.DENMARK_NATIONAL_CODING_SCHEME,
+                                   res.getReceiverMarketParticipantMRID().getCodingScheme()),
                 () -> assertEquals("Energinet", res.getReceiverMarketParticipantMRID().getValue()),
                 () -> assertEquals("2023-10-27T00:00Z", res.getPeriodTimeInterval().getStart()),
                 () -> assertEquals("2024-01-24T00:00Z", res.getPeriodTimeInterval().getEnd()),
-                () -> assertEquals("permissionId", res.getPermissionList().getPermissions().getFirst().getPermissionMRID()),
-                () -> assertEquals("2024-01-25T10:09Z", res.getPermissionList().getPermissions().getFirst().getCreatedDateTime()),
+                () -> assertEquals("permissionId",
+                                   res.getPermissionList().getPermissions().getFirst().getPermissionMRID()),
+                () -> assertEquals("2024-01-25T10:09Z",
+                                   res.getPermissionList().getPermissions().getFirst().getCreatedDateTime()),
                 () -> assertNull(res.getPermissionList().getPermissions().getFirst().getTransmissionSchedule()),
-                () -> assertEquals(CodingSchemeTypeList.DENMARK_NATIONAL_CODING_SCHEME, res.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID().getCodingScheme()),
-                () -> assertEquals("cid", res.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID().getValue()),
+                () -> assertEquals(CodingSchemeTypeList.DENMARK_NATIONAL_CODING_SCHEME,
+                                   res.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID()
+                                           .getCodingScheme()),
+                () -> assertEquals("cid",
+                                   res.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID()
+                                           .getValue()),
                 () -> assertNull(res.getPermissionList().getPermissions().getFirst().getReasonList()),
                 () -> assertNull(res.getPermissionList().getPermissions().getFirst().getTransmissionSchedule()),
-                () -> assertNotNull(res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList().getMktActivityRecords().getFirst().getMRID()),
-                () -> assertNotNull(res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList().getMktActivityRecords().getFirst().getCreatedDateTime()),
-                () -> assertEquals("", res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList().getMktActivityRecords().getFirst().getDescription()),
-                () -> assertEquals("dk-energinet", res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList().getMktActivityRecords().getFirst().getType()),
-                () -> assertEquals(StatusTypeList.A112, res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList().getMktActivityRecords().getFirst().getStatus())
+                () -> assertNotNull(res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
+                                            .getMktActivityRecords().getFirst().getMRID()),
+                () -> assertNotNull(res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
+                                            .getMktActivityRecords().getFirst().getCreatedDateTime()),
+                () -> assertEquals("", res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
+                        .getMktActivityRecords().getFirst().getDescription()),
+                () -> assertEquals("dk-energinet",
+                                   res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
+                                           .getMktActivityRecords().getFirst().getType()),
+                () -> assertEquals(StatusTypeList.A112,
+                                   res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
+                                           .getMktActivityRecords().getFirst().getStatus())
         );
 
 
