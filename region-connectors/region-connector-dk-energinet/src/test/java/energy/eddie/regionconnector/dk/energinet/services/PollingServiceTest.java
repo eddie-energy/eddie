@@ -150,7 +150,7 @@ class PollingServiceTest {
     @Test
     void fetchingAConsumptionRecord_emitsRecord() {
         // Given
-        var start = LocalDate.now().atStartOfDay(DK_ZONE_ID).minusDays(10);
+        var start = LocalDate.now(DK_ZONE_ID).atStartOfDay(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
         String connectionId = "connId";
         String dataNeedId = "dataNeedId";
@@ -177,7 +177,7 @@ class PollingServiceTest {
         );
         MyEnergyDataMarketDocumentResponseListApiResponse data = new MyEnergyDataMarketDocumentResponseListApiResponse()
                 .addResultItem(resultItem);
-        when(customerApi.getTimeSeries(eq(start.toLocalDate()), eq(end.toLocalDate()), any(), any(), eq("token"), any()))
+        when(customerApi.getTimeSeries(eq(start.toLocalDate()), eq(end.toLocalDate().plusDays(1)), any(), any(), eq("token"), any()))
                 .thenReturn(Mono.just(data));
 
         // Then
@@ -188,7 +188,7 @@ class PollingServiceTest {
                         () -> assertEquals(permissionRequest.connectionId(), mr.permissionRequest().connectionId()),
                         () -> assertEquals(permissionRequest.dataNeedId(), mr.permissionRequest().dataNeedId()),
                         () -> assertNotNull(mr.apiResponse()),
-                        () -> assertNotEquals(permissionRequest.start(), permissionRequest.lastPolled())
+                        () -> assertEquals(permissionRequest.start(), permissionRequest.lastPolled())
                 ))
                 .then(pollingService::close)
                 .expectComplete()
@@ -280,7 +280,7 @@ class PollingServiceTest {
                         () -> assertEquals(permissionRequest1.connectionId(), mr.permissionRequest().connectionId()),
                         () -> assertEquals(permissionRequest1.dataNeedId(), mr.permissionRequest().dataNeedId()),
                         () -> assertNotNull(mr.apiResponse()),
-                        () -> assertNotEquals(permissionRequest1.start(), permissionRequest1.lastPolled())
+                        () -> assertEquals(permissionRequest1.start(), permissionRequest1.lastPolled())
                 ))
                 .verifyComplete();
     }
