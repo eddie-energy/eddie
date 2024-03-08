@@ -4,12 +4,12 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMark
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.PeriodtimeInterval;
 import energy.eddie.regionconnector.dk.energinet.exceptions.ApiResponseException;
+import energy.eddie.regionconnector.dk.energinet.permission.request.SimplePermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.List;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.DK_ZONE_ID;
@@ -20,18 +20,19 @@ class IdentifiableApiResponseFilterTest {
 
     @Test
     void filter_returnsError_whenResponseContainsError() {
-        // Arrange
-        var permissionRequest = mock(DkEnerginetCustomerPermissionRequest.class);
-        var response = mock(MyEnergyDataMarketDocumentResponse.class);
-        when(response.getSuccess()).thenReturn(false);
-        when(response.getErrorCode()).thenReturn(30000);
-        when(response.getErrorText()).thenReturn("FromDateIsGreaterThanToday");
+        // Given
+        var permissionRequest = new SimplePermissionRequest();
+        new MyEnergyDataMarketDocumentResponse(30000);
+
+        var response = new MyEnergyDataMarketDocumentResponse(30000);
+        response.success(false);
+        response.errorText("FromDateIsGreaterThanToday");
 
         LocalDate from = LocalDate.now(DK_ZONE_ID).minusDays(1);
         LocalDate to = from.plusDays(1);
         var filter = new IdentifiableApiResponseFilter(permissionRequest, from, to);
 
-        // Act
+        // When & Then
         StepVerifier.create(filter.filter(List.of(response)))
                 .expectError(ApiResponseException.class)
                 .verify();
@@ -39,67 +40,42 @@ class IdentifiableApiResponseFilterTest {
 
     @Test
     void filter_returnEmpty_whenTimeIntervalNull() {
-        // Arrange
-        var permissionRequest = mock(DkEnerginetCustomerPermissionRequest.class);
-        var response = mock(MyEnergyDataMarketDocumentResponse.class);
-        when(response.getSuccess()).thenReturn(true);
-        var document = mock(MyEnergyDataMarketDocument.class);
-        when(document.getPeriodTimeInterval()).thenReturn(null);
-        when(response.getMyEnergyDataMarketDocument()).thenReturn(document);
+        // Given
+        var permissionRequest = new SimplePermissionRequest();
+        var response = new MyEnergyDataMarketDocumentResponse(0);
+        response.success(true);
+        var document = new MyEnergyDataMarketDocument();
+        response.setMyEnergyDataMarketDocument(document);
 
         LocalDate from = LocalDate.now(DK_ZONE_ID).minusDays(1);
         LocalDate to = from.plusDays(1);
         var filter = new IdentifiableApiResponseFilter(permissionRequest, from, to);
 
-        // Act
+        // When & Then
         StepVerifier.create(filter.filter(List.of(response)))
                 .expectNextCount(0)
                 .verifyComplete();
     }
 
     @Test
-    void filter_updatesLastPolled_whenDateAfterLastPolled() {
-        // Arrange
-        var start = LocalDate.now().atStartOfDay(ZoneOffset.UTC);
-        var end = start.plusDays(1);
-        var permissionRequest = mock(DkEnerginetCustomerPermissionRequest.class);
-        when(permissionRequest.lastPolled()).thenReturn(start.minusDays(1).withZoneSameInstant(DK_ZONE_ID));
-        var response = mock(MyEnergyDataMarketDocumentResponse.class);
-        when(response.getSuccess()).thenReturn(true);
-        var document = mock(MyEnergyDataMarketDocument.class);
-        when(document.getPeriodTimeInterval()).thenReturn(new PeriodtimeInterval().start(start.toString()).end(end.toString()));
-        when(response.getMyEnergyDataMarketDocument()).thenReturn(document);
-        when(response.getMyEnergyDataMarketDocument()).thenReturn(document);
-
-        var filter = new IdentifiableApiResponseFilter(permissionRequest, start.toLocalDate(), end.toLocalDate());
-
-        // Act
-        StepVerifier.create(filter.filter(List.of(response)))
-                .assertNext(apiResponse -> assertEquals(response, apiResponse.apiResponse()))
-                .verifyComplete();
-        verify(permissionRequest).updateLastPolled(end.withZoneSameInstant(DK_ZONE_ID));
-    }
-
-    @Test
     void filter_doesNotUpdateLastPolled_whenDateBeforeLastPolled() {
-        // Arrange
-        var start = LocalDate.now().atStartOfDay(ZoneOffset.UTC);
+        // Given
+        var start = LocalDate.now(DK_ZONE_ID).atStartOfDay(DK_ZONE_ID);
         var end = start.plusDays(1);
-        var permissionRequest = mock(DkEnerginetCustomerPermissionRequest.class);
-        when(permissionRequest.lastPolled()).thenReturn(start.plusDays(1).withZoneSameInstant(DK_ZONE_ID));
-        var response = mock(MyEnergyDataMarketDocumentResponse.class);
-        when(response.getSuccess()).thenReturn(true);
-        var document = mock(MyEnergyDataMarketDocument.class);
-        when(document.getPeriodTimeInterval()).thenReturn(new PeriodtimeInterval().start(start.toString()).end(end.toString()));
-        when(response.getMyEnergyDataMarketDocument()).thenReturn(document);
-        when(response.getMyEnergyDataMarketDocument()).thenReturn(document);
+        var permissionRequest = new SimplePermissionRequest(start, end, start.plusDays(1));
+        DkEnerginetCustomerPermissionRequest spy = spy(permissionRequest);
+        var response = new MyEnergyDataMarketDocumentResponse(0);
+        response.success(true);
+        var document = new MyEnergyDataMarketDocument();
+        document.setPeriodTimeInterval(new PeriodtimeInterval().start(start.toString()).end(end.toString()));
+        response.setMyEnergyDataMarketDocument(document);
 
-        var filter = new IdentifiableApiResponseFilter(permissionRequest, start.toLocalDate(), end.toLocalDate());
+        var filter = new IdentifiableApiResponseFilter(spy, start.toLocalDate(), end.toLocalDate());
 
-        // Act
+        // When & Then
         StepVerifier.create(filter.filter(List.of(response)))
                 .assertNext(apiResponse -> assertEquals(response, apiResponse.apiResponse()))
                 .verifyComplete();
-        verify(permissionRequest, never()).updateLastPolled(any());
+        verify(spy, never()).updateLastPolled(any());
     }
 }

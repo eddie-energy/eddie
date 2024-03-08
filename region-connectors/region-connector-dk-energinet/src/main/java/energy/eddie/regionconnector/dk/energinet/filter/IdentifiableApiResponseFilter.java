@@ -10,20 +10,13 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public record IdentifiableApiResponseFilter(DkEnerginetCustomerPermissionRequest permissionRequest,
                                             LocalDate dateFrom,
                                             LocalDate dateTo) {
     private static final Logger LOGGER = LoggerFactory.getLogger(IdentifiableApiResponseFilter.class);
-
-    private static ZonedDateTime parseZonedDateTime(String zonedDateTime) {
-        return ZonedDateTime.parse(zonedDateTime, DateTimeFormatter.ISO_DATE_TIME).withZoneSameInstant(DK_ZONE_ID);
-    }
 
     public Mono<IdentifiableApiResponse> filter(List<MyEnergyDataMarketDocumentResponse> response) {
         var marketDocumentResponse = response.getFirst();
@@ -37,14 +30,8 @@ public record IdentifiableApiResponseFilter(DkEnerginetCustomerPermissionRequest
             return Mono.empty();
         }
 
-        var timeIntervalEnd = parseZonedDateTime(Objects.requireNonNull(timeInterval.get().getEnd()));
-        if (permissionRequest.lastPolled().isBefore(timeIntervalEnd)) {
-            permissionRequest.updateLastPolled(timeIntervalEnd);
-        }
-
         if (LOGGER.isInfoEnabled()) {
-            var timeIntervalStart = parseZonedDateTime(Objects.requireNonNull(timeInterval.get().getStart()));
-            LOGGER.info("Fetched metering data for permissionId {} from {} to {}, received data from {} to {}", permissionId, dateFrom, dateTo, timeIntervalStart, timeIntervalEnd);
+            LOGGER.info("Fetched metering data for permissionId {} from {} to {}, received data from {} to {}", permissionId, dateFrom, dateTo, timeInterval.get().getStart(), timeInterval.get().getEnd());
         }
 
         return Mono.just(
