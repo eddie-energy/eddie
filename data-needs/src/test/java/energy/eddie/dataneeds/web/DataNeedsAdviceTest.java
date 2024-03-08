@@ -1,7 +1,7 @@
 package energy.eddie.dataneeds.web;
 
 import energy.eddie.api.agnostic.EddieApiError;
-import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

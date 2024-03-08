@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.aiida.services;
 
-import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.regionconnector.aiida.AiidaFactory;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnector;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;

@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.aiida;
 
 import energy.eddie.api.agnostic.DataNeed;
 import energy.eddie.api.agnostic.DataNeedsService;
-import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,8 +47,8 @@ class AiidaFactoryTest {
 
         // Then
         assertThrows(DataNeedNotFoundException.class,
-                // When
-                () -> aiidaFactory.createPermissionRequest("testConnId", dataNeedId));
+                     // When
+                     () -> aiidaFactory.createPermissionRequest("testConnId", dataNeedId));
     }
 
     @Test
@@ -115,6 +115,5 @@ class AiidaFactoryTest {
                 () -> assertEquals(expectedStart, dto.startTime().atZone(ZoneOffset.UTC)),
                 () -> assertEquals(expectedExpiration, dto.expirationTime().atZone(ZoneOffset.UTC))
         );
-
     }
 }

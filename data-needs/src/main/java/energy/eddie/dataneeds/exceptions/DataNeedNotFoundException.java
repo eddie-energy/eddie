@@ -1,10 +1,10 @@
-package energy.eddie.api.agnostic.exceptions;
+package energy.eddie.dataneeds.exceptions;
 
 public class DataNeedNotFoundException extends Exception {
     private final boolean isBadRequest;
 
     /**
-     * Creates a new {@link DataNeedNotFoundException} that results in a HTTP status code 400.
+     * Creates a new {@link DataNeedNotFoundException} that results in an HTTP status code 400.
      *
      * @param dataNeedId ID of the dataNeed that couldn't be found.
      */
