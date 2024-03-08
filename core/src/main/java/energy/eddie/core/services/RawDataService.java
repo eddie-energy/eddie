@@ -6,10 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
-
-import java.util.concurrent.Flow;
 
 @Service
 @ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
@@ -20,13 +18,13 @@ public class RawDataService {
 
     public void registerProvider(RawDataProvider rawDataProvider) {
         LOGGER.info("RawDataService: Registering {}", rawDataProvider.getClass().getName());
-        JdkFlowAdapter.flowPublisherToFlux(rawDataProvider.getRawDataStream())
+        rawDataProvider.getRawDataStream()
                 .doOnNext(rawDataSink::tryEmitNext)
                 .doOnError(rawDataSink::tryEmitError)
                 .subscribe();
     }
 
-    public Flow.Publisher<RawDataMessage> getRawDataStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(rawDataSink.asFlux());
+    public Flux<RawDataMessage> getRawDataStream() {
+        return rawDataSink.asFlux();
     }
 }

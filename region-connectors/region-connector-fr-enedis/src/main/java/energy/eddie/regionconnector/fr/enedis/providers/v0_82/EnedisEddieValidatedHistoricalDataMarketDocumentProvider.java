@@ -4,10 +4,7 @@ import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentProvider
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import org.springframework.stereotype.Component;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
-
-import java.util.concurrent.Flow;
 
 @Component
 public class EnedisEddieValidatedHistoricalDataMarketDocumentProvider implements EddieValidatedHistoricalDataMarketDocumentProvider {
@@ -15,19 +12,18 @@ public class EnedisEddieValidatedHistoricalDataMarketDocumentProvider implements
     private final Flux<IdentifiableMeterReading> identifiableMeterReadings;
     private final IntermediateVHDFactory intermediateVHDFactory;
 
-    public EnedisEddieValidatedHistoricalDataMarketDocumentProvider(Flux<IdentifiableMeterReading> identifiableMeterReadings,
-                                                                    IntermediateVHDFactory intermediateVHDFactory) {
+    public EnedisEddieValidatedHistoricalDataMarketDocumentProvider(
+            Flux<IdentifiableMeterReading> identifiableMeterReadings,
+            IntermediateVHDFactory intermediateVHDFactory) {
         this.identifiableMeterReadings = identifiableMeterReadings;
         this.intermediateVHDFactory = intermediateVHDFactory;
     }
 
     @Override
-    public Flow.Publisher<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(
-                identifiableMeterReadings
-                        .map(intermediateVHDFactory::create)
-                        .map(IntermediateValidatedHistoricalDocument::eddieValidatedHistoricalDataMarketDocument)
-        );
+    public Flux<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
+        return identifiableMeterReadings
+                .map(intermediateVHDFactory::create)
+                .map(IntermediateValidatedHistoricalDocument::eddieValidatedHistoricalDataMarketDocument);
     }
 
     @Override

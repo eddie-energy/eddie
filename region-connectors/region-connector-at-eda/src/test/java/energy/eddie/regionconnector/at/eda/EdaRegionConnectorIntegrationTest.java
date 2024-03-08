@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
@@ -80,7 +79,7 @@ class EdaRegionConnectorIntegrationTest {
         permissionRequest.changeState(new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest, factory));
         repository.save(permissionRequest);
 
-        var source = JdkFlowAdapter.flowPublisherToFlux(((Mvp1ConnectionStatusMessageProvider) rc).getConnectionStatusMessageStream());
+        var source = ((Mvp1ConnectionStatusMessageProvider) rc).getConnectionStatusMessageStream();
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "messageId");
 
         StepVerifier.create(source)
@@ -117,7 +116,7 @@ class EdaRegionConnectorIntegrationTest {
         permissionRequest.changeState(new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest, factory));
         repository.save(permissionRequest);
 
-        var source = JdkFlowAdapter.flowPublisherToFlux(((Mvp1ConnectionStatusMessageProvider) rc).getConnectionStatusMessageStream());
+        var source = ((Mvp1ConnectionStatusMessageProvider) rc).getConnectionStatusMessageStream();
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "messageId");
         cmRequestStatus.setCmConsentId("consentId");
 
@@ -154,7 +153,7 @@ class EdaRegionConnectorIntegrationTest {
         permissionRequest.changeState(new AtSentToPermissionAdministratorPermissionRequestState(permissionRequest, factory));
         repository.save(permissionRequest);
 
-        var source = JdkFlowAdapter.flowPublisherToFlux(((Mvp1ConnectionStatusMessageProvider) rc).getConnectionStatusMessageStream());
+        var source = ((Mvp1ConnectionStatusMessageProvider) rc).getConnectionStatusMessageStream();
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "messageId");
 
         StepVerifier.create(source)
@@ -182,7 +181,7 @@ class EdaRegionConnectorIntegrationTest {
 
         var uut = new EdaRegionConnector(adapter, requestService, sink);
 
-        var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
+        var source = uut.getConnectionStatusMessageStream();
 
         var unmapableCMRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "");
 
@@ -215,7 +214,7 @@ class EdaRegionConnectorIntegrationTest {
 
         var uut = new EdaRegionConnector(adapter, requestService, messages);
 
-        var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
+        var source = uut.getConnectionStatusMessageStream();
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ERROR, "", "messageId");
 
         StepVerifier.create(source)
@@ -250,7 +249,7 @@ class EdaRegionConnectorIntegrationTest {
 
         var uut = new EdaRegionConnector(adapter, requestService, messages);
 
-        var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
+        var source = uut.getConnectionStatusMessageStream();
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ERROR, "", "messageId");
 
         StepVerifier.create(source)
@@ -290,7 +289,7 @@ class EdaRegionConnectorIntegrationTest {
 
         var uut = new EdaRegionConnector(adapter, requestService, messages);
 
-        var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
+        var source = uut.getConnectionStatusMessageStream();
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.REJECTED, "", "messageId");
 
         StepVerifier.create(source)
@@ -326,7 +325,7 @@ class EdaRegionConnectorIntegrationTest {
 
         var uut = new EdaRegionConnector(adapter, requestService, messages);
 
-        var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
+        var source = uut.getConnectionStatusMessageStream();
         var cmRequestStatusSent = new CMRequestStatus(CMRequestStatus.Status.SENT, "", "messageId");
         var cmRequestStatusDelivered = new CMRequestStatus(CMRequestStatus.Status.DELIVERED, "", "messageId");
 
@@ -360,7 +359,7 @@ class EdaRegionConnectorIntegrationTest {
 
         var uut = new EdaRegionConnector(adapter, requestService, messages);
 
-        var source = JdkFlowAdapter.flowPublisherToFlux(uut.getConnectionStatusMessageStream());
+        var source = uut.getConnectionStatusMessageStream();
         var cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.RECEIVED, "", "messageId");
 
         StepVerifier.create(source)

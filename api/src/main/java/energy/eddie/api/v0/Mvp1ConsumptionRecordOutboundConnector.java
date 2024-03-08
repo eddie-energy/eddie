@@ -1,6 +1,6 @@
 package energy.eddie.api.v0;
 
-import java.util.concurrent.Flow;
+import reactor.core.publisher.Flux;
 
 /**
  * An outbound connector delivers data to the eligible party. All messages from the region connectors
@@ -12,5 +12,5 @@ public interface Mvp1ConsumptionRecordOutboundConnector {
      *
      * @param consumptionRecordStream stream of consumption records
      */
-    void setConsumptionRecordStream(Flow.Publisher<ConsumptionRecord> consumptionRecordStream);
+    void setConsumptionRecordStream(Flux<ConsumptionRecord> consumptionRecordStream);
 }

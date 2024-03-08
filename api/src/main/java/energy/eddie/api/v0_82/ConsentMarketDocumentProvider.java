@@ -1,8 +1,7 @@
 package energy.eddie.api.v0_82;
 
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
-
-import java.util.concurrent.Flow;
+import reactor.core.publisher.Flux;
 
 public interface ConsentMarketDocumentProvider extends AutoCloseable {
     /**
@@ -11,5 +10,5 @@ public interface ConsentMarketDocumentProvider extends AutoCloseable {
      *
      * @return ConsentMarketDocument stream that can be consumed only once
      */
-    Flow.Publisher<ConsentMarketDocument> getConsentMarketDocumentStream();
+    Flux<ConsentMarketDocument> getConsentMarketDocumentStream();
 }

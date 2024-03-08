@@ -6,12 +6,11 @@ import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
-import java.util.concurrent.Flow;
 
 import static org.mockito.Mockito.mock;
 
@@ -20,6 +19,20 @@ class PermissionServiceTest {
     @BeforeAll
     static void beforeAll() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(2));
+    }
+
+    private static Mvp1ConnectionStatusMessageProvider createProvider(Sinks.Many<ConnectionStatusMessage> sink) {
+        return new Mvp1ConnectionStatusMessageProvider() {
+            @Override
+            public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+                return sink.asFlux();
+            }
+
+            @Override
+            public void close() throws Exception {
+                sink.tryEmitComplete();
+            }
+        };
     }
 
     @Test
@@ -33,7 +46,7 @@ class PermissionServiceTest {
         Mvp1ConnectionStatusMessageProvider provider2 = createProvider(sink2);
 
         // When
-        var flux = JdkFlowAdapter.flowPublisherToFlux(service.getConnectionStatusMessageStream());
+        var flux = service.getConnectionStatusMessageStream();
         StepVerifier.create(flux)
                 .then(() -> {
                     service.registerProvider(provider1);
@@ -54,19 +67,5 @@ class PermissionServiceTest {
                 // Then
                 .thenCancel()
                 .verify();
-    }
-
-    private static Mvp1ConnectionStatusMessageProvider createProvider(Sinks.Many<ConnectionStatusMessage> sink) {
-        return new Mvp1ConnectionStatusMessageProvider() {
-            @Override
-            public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-                return JdkFlowAdapter.publisherToFlowPublisher(sink.asFlux());
-            }
-
-            @Override
-            public void close() throws Exception {
-                sink.tryEmitComplete();
-            }
-        };
     }
 }

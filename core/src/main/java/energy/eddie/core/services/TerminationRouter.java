@@ -9,7 +9,6 @@ import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import reactor.adapter.JdkFlowAdapter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +30,7 @@ public class TerminationRouter {
         }
 
         var terminationConnector = terminationConnectorOptional.get();
-        JdkFlowAdapter.flowPublisherToFlux(terminationConnector.getTerminationMessages())
+        terminationConnector.getTerminationMessages()
                 .filter(TerminationRouter::isTerminationMessage)
                 .log()
                 .doOnError(e -> LOGGER.error("Error in TerminationRouter", e))

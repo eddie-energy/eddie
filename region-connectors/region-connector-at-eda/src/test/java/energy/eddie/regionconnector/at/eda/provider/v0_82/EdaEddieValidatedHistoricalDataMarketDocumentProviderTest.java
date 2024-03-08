@@ -8,7 +8,6 @@ import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
@@ -40,7 +39,7 @@ class EdaEddieValidatedHistoricalDataMarketDocumentProviderTest {
         when(director.createValidatedHistoricalDataMarketDocument(consumptionRecord)).thenReturn(validatedHistoricalDataMarketDocument);
 
         try (EdaEddieValidatedHistoricalDataMarketDocumentProvider uut = new EdaEddieValidatedHistoricalDataMarketDocumentProvider(director, testPublisher.flux())) {
-            StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(uut.getEddieValidatedHistoricalDataMarketDocumentStream()))
+            StepVerifier.create(uut.getEddieValidatedHistoricalDataMarketDocumentStream())
                     .then(() -> {
                         testPublisher.next(new IdentifiableConsumptionRecord(consumptionRecord, permissionRequests));
                         testPublisher.complete();
@@ -78,7 +77,7 @@ class EdaEddieValidatedHistoricalDataMarketDocumentProviderTest {
 
 
         try (EdaEddieValidatedHistoricalDataMarketDocumentProvider uut = new EdaEddieValidatedHistoricalDataMarketDocumentProvider(director, testPublisher.flux())) {
-            StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(uut.getEddieValidatedHistoricalDataMarketDocumentStream()))
+            StepVerifier.create(uut.getEddieValidatedHistoricalDataMarketDocumentStream())
                     .then(() -> {
                         testPublisher.next(new IdentifiableConsumptionRecord(consumptionRecord, List.of()));
                         testPublisher.complete();

@@ -4,12 +4,11 @@ import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
-import java.util.concurrent.Flow;
 
 class ConsentMarketDocumentServiceTest {
     @BeforeAll
@@ -20,8 +19,8 @@ class ConsentMarketDocumentServiceTest {
     private static ConsentMarketDocumentProvider createProvider(Sinks.Many<ConsentMarketDocument> sink) {
         return new ConsentMarketDocumentProvider() {
             @Override
-            public Flow.Publisher<ConsentMarketDocument> getConsentMarketDocumentStream() {
-                return JdkFlowAdapter.publisherToFlowPublisher(sink.asFlux());
+            public Flux<ConsentMarketDocument> getConsentMarketDocumentStream() {
+                return sink.asFlux();
             }
 
             @Override
@@ -46,7 +45,7 @@ class ConsentMarketDocumentServiceTest {
         var three = new ConsentMarketDocument();
 
         // When
-        var flux = JdkFlowAdapter.flowPublisherToFlux(service.getConsentMarketDocumentStream());
+        var flux = service.getConsentMarketDocumentStream();
         StepVerifier.create(flux)
                 .then(() -> {
                     service.registerProvider(provider1);

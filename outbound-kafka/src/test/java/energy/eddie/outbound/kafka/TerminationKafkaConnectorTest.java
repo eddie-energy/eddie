@@ -14,7 +14,6 @@ import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import org.testcontainers.utility.DockerImageName;
-import reactor.adapter.JdkFlowAdapter;
 
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
@@ -52,7 +51,7 @@ class TerminationKafkaConnectorTest {
                 .get();
 
         // Then
-        var pair = JdkFlowAdapter.flowPublisherToFlux(terminationConnector.getTerminationMessages())
+        var pair = terminationConnector.getTerminationMessages()
                 .blockFirst();
         assertAll(
                 () -> assertNotNull(pair),

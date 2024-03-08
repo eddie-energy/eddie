@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 
 import java.util.Map;
@@ -97,28 +96,28 @@ class OutboundKafkaConfigTest {
         @Bean
         public PermissionService permissionService() {
             PermissionService mock = Mockito.mock(PermissionService.class);
-            when(mock.getConnectionStatusMessageStream()).thenReturn(JdkFlowAdapter.publisherToFlowPublisher(Flux.empty()));
+            when(mock.getConnectionStatusMessageStream()).thenReturn(Flux.empty());
             return mock;
         }
 
         @Bean
         public ConsumptionRecordService consumptionRecordService() {
             ConsumptionRecordService mock = Mockito.mock(ConsumptionRecordService.class);
-            when(mock.getConsumptionRecordStream()).thenReturn(JdkFlowAdapter.publisherToFlowPublisher(Flux.empty()));
+            when(mock.getConsumptionRecordStream()).thenReturn((Flux.empty()));
             return mock;
         }
 
         @Bean
         public EddieValidatedHistoricalDataMarketDocumentService eddieValidatedHistoricalDataMarketDocumentService() {
             EddieValidatedHistoricalDataMarketDocumentService mock = Mockito.mock(EddieValidatedHistoricalDataMarketDocumentService.class);
-            when(mock.getEddieValidatedHistoricalDataMarketDocumentStream()).thenReturn(JdkFlowAdapter.publisherToFlowPublisher(Flux.empty()));
+            when(mock.getEddieValidatedHistoricalDataMarketDocumentStream()).thenReturn(Flux.empty());
             return mock;
         }
 
         @Bean
         public ConsentMarketDocumentService consentMarketDocumentService() {
             ConsentMarketDocumentService mock = Mockito.mock(ConsentMarketDocumentService.class);
-            when(mock.getConsentMarketDocumentStream()).thenReturn(JdkFlowAdapter.publisherToFlowPublisher(Flux.empty()));
+            when(mock.getConsentMarketDocumentStream()).thenReturn(Flux.empty());
             return mock;
         }
     }

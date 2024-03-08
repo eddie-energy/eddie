@@ -2,7 +2,6 @@ package energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd;
 
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
@@ -15,7 +14,7 @@ class CommonConsentMarketDocumentProviderTest {
         var cmdProvider = new CommonConsentMarketDocumentProvider(cmdSink);
 
         // When
-        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(cmdProvider.getConsentMarketDocumentStream()))
+        StepVerifier.create(cmdProvider.getConsentMarketDocumentStream())
                 .then(() -> {
                     cmdSink.tryEmitNext(new ConsentMarketDocument());
                     cmdProvider.close();

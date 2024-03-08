@@ -7,7 +7,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import reactor.adapter.JdkFlowAdapter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,7 +17,7 @@ public class ConnectionStatusWebsocketHandler extends TextWebSocketHandler {
     private final List<WebSocketSession> webSocketSessions = new ArrayList<>();
 
     public ConnectionStatusWebsocketHandler(PermissionService permissionService) {
-        var connectionStatusMessageStream = JdkFlowAdapter.flowPublisherToFlux(permissionService.getConnectionStatusMessageStream());
+        var connectionStatusMessageStream = permissionService.getConnectionStatusMessageStream();
         connectionStatusMessageStream.subscribe(message -> {
             LOGGER.debug("Incoming messages: {}", message);
             webSocketSessions.forEach(session -> {

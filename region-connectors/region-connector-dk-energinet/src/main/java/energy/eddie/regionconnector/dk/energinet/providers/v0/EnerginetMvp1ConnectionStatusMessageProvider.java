@@ -3,10 +3,8 @@ package energy.eddie.regionconnector.dk.energinet.providers.v0;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import org.springframework.stereotype.Component;
-import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
-
-import java.util.concurrent.Flow;
 
 @Component
 public class EnerginetMvp1ConnectionStatusMessageProvider implements Mvp1ConnectionStatusMessageProvider {
@@ -17,8 +15,8 @@ public class EnerginetMvp1ConnectionStatusMessageProvider implements Mvp1Connect
     }
 
     @Override
-    public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(connectionStatusSink.asFlux());
+    public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+        return connectionStatusSink.asFlux();
     }
 
     @Override

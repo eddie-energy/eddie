@@ -2,11 +2,10 @@ package energy.eddie.api.agnostic;
 
 
 import energy.eddie.api.v0.RegionConnector;
-
-import java.util.concurrent.Flow;
+import reactor.core.publisher.Flux;
 
 /**
- * Used to extend a {@link RegionConnector} by making a Flow.Publisher of
+ * Used to extend a {@link RegionConnector} by making a Flux of
  * {@link RawDataMessage}s available.
  */
 public interface RawDataProvider extends AutoCloseable {
@@ -15,7 +14,7 @@ public interface RawDataProvider extends AutoCloseable {
      *
      * @return RawDataMessage stream.
      */
-    Flow.Publisher<RawDataMessage> getRawDataStream();
+    Flux<RawDataMessage> getRawDataStream();
 
     /**
      * Emit a complete signal on the Flow returned by {@link #getRawDataStream()} in this method.

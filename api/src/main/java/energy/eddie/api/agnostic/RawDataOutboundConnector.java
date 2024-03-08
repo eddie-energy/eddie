@@ -1,7 +1,7 @@
 package energy.eddie.api.agnostic;
 
-import java.util.concurrent.Flow;
+import reactor.core.publisher.Flux;
 
 public interface RawDataOutboundConnector {
-    void setRawDataStream(Flow.Publisher<RawDataMessage> rawDataStream);
+    void setRawDataStream(Flux<RawDataMessage> rawDataStream);
 }

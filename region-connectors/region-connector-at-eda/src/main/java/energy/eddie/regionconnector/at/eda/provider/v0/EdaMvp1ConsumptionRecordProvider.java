@@ -8,10 +8,7 @@ import energy.eddie.regionconnector.at.eda.processing.mvp1.Mvp1ConsumptionRecord
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
-
-import java.util.concurrent.Flow;
 
 @Component
 public class EdaMvp1ConsumptionRecordProvider implements Mvp1ConsumptionRecordProvider {
@@ -28,8 +25,8 @@ public class EdaMvp1ConsumptionRecordProvider implements Mvp1ConsumptionRecordPr
     }
 
     @Override
-    public Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(mvp1ConsumptionRecordFlux);
+    public Flux<ConsumptionRecord> getConsumptionRecordStream() {
+        return mvp1ConsumptionRecordFlux;
     }
 
     private Flux<ConsumptionRecord> mapEdaConsumptionRecordToMvp1ConsumptionRecord(IdentifiableConsumptionRecord identifiableConsumptionRecord) {

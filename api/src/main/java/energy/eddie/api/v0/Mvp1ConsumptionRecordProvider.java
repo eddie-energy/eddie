@@ -1,9 +1,9 @@
 package energy.eddie.api.v0;
 
-import java.util.concurrent.Flow;
+import reactor.core.publisher.Flux;
 
 /**
- * Used to extend a {@link RegionConnector} by making a Flow.Publisher of
+ * Used to extend a {@link RegionConnector} by making a Flux of
  * {@link ConsumptionRecord}s available.
  */
 public interface Mvp1ConsumptionRecordProvider extends AutoCloseable {
@@ -12,7 +12,7 @@ public interface Mvp1ConsumptionRecordProvider extends AutoCloseable {
      *
      * @return consumption record stream
      */
-    Flow.Publisher<ConsumptionRecord> getConsumptionRecordStream();
+    Flux<ConsumptionRecord> getConsumptionRecordStream();
 
     /**
      * Emit a complete signal on the Flow in this method.

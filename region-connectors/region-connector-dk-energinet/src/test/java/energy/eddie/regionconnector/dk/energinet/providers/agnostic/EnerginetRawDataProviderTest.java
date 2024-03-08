@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
@@ -28,7 +27,7 @@ class EnerginetRawDataProviderTest {
         //noinspection resource StepVerifier closes provider
         var provider = new EnerginetRawDataProvider(publisher.flux(), mockRepo);
 
-        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(provider.getRawDataStream()).log())
+        StepVerifier.create(provider.getRawDataStream().log())
                 // When
                 .then(() -> publisher.next(reading))
                 // Then

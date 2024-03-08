@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.dk.energinet.providers.v0;
 import energy.eddie.regionconnector.dk.energinet.customer.model.*;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
@@ -46,7 +45,7 @@ class EnerginetMvp1ConsumptionRecordProviderTest {
         var apiResponse = new IdentifiableApiResponse("pId", "conId", "dId", responseDocument);
 
 
-        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(provider.getConsumptionRecordStream()))
+        StepVerifier.create(provider.getConsumptionRecordStream())
                 // When
                 .then(() -> publisher.next(apiResponse))
                 // Then

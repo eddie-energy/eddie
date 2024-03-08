@@ -6,7 +6,6 @@ import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
@@ -39,7 +38,7 @@ class EnedisMvp1ConsumptionRecordProviderTest {
         var provider = new EnedisMvp1ConsumptionRecordProvider(testPublisher.flux());
 
         // Then
-        StepVerifier.create(JdkFlowAdapter.flowPublisherToFlux(provider.getConsumptionRecordStream()))
+        StepVerifier.create(provider.getConsumptionRecordStream())
                 .then(() -> {
                     testPublisher.emit(meterReading);
                     testPublisher.complete();

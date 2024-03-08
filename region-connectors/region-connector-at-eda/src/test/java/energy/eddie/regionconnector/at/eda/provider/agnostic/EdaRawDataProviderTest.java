@@ -6,7 +6,6 @@ import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import jakarta.xml.bind.JAXBException;
 import org.junit.jupiter.api.Test;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
@@ -34,7 +33,7 @@ class EdaRawDataProviderTest {
 
         try (var provider = new EdaRawDataProvider(testPublisher.flux())) {
 
-            var source = JdkFlowAdapter.flowPublisherToFlux(provider.getRawDataStream());
+            var source = provider.getRawDataStream();
 
             StepVerifier.create(source)
                     .then(() -> {

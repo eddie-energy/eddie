@@ -7,11 +7,9 @@ import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
 
 import java.util.Optional;
-import java.util.concurrent.Flow;
 
 import static java.util.Objects.requireNonNull;
 
@@ -38,8 +36,8 @@ public class EdaEddieValidatedHistoricalDataMarketDocumentProvider implements Ed
 
 
     @Override
-    public Flow.Publisher<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(eddieValidatedHistoricalDataMarketDocumentFlux);
+    public Flux<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
+        return eddieValidatedHistoricalDataMarketDocumentFlux;
     }
 
     @Override

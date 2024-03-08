@@ -7,12 +7,11 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import energy.eddie.regionconnector.shared.permission.requests.PermissionRequestProxy;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import org.springframework.stereotype.Component;
-import reactor.adapter.JdkFlowAdapter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Flow;
 
 @Component
 public class PermissionRequestFactory implements Mvp1ConnectionStatusMessageProvider {
@@ -54,8 +53,8 @@ public class PermissionRequestFactory implements Mvp1ConnectionStatusMessageProv
     }
 
     @Override
-    public Flow.Publisher<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-        return JdkFlowAdapter.publisherToFlowPublisher(connectionStatusMessageSink.asFlux());
+    public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+        return connectionStatusMessageSink.asFlux();
     }
 
     @Override
