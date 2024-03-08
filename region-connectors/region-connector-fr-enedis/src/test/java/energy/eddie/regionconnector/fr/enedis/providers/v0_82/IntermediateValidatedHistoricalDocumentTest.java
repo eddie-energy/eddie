@@ -41,7 +41,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         var intermediateVHD = new IntermediateValidatedHistoricalDocument(
                 identifiableMeterReading,
                 () -> CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
-                new PlainEnedisConfiguration("clientId", "clientSecret", "basepath")
+                new PlainEnedisConfiguration("clientId", "clientSecret", "basepath", 24)
         );
         var esmpTimeInterval = new EsmpTimeInterval(
                 LocalDate.of(2024, 2, 1).atStartOfDay(ZONE_ID_FR),
@@ -95,7 +95,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         var intermediateVHD = new IntermediateValidatedHistoricalDocument(
                 identifiableMeterReading,
                 () -> CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
-                new PlainEnedisConfiguration("clientId", "clientSecret", "basepath")
+                new PlainEnedisConfiguration("clientId", "clientSecret", "basepath", 24)
         );
         var esmpTimeInterval = new EsmpTimeInterval(
                 LocalDate.of(2024, 2, 26).atStartOfDay(ZONE_ID_FR),

@@ -22,6 +22,7 @@ import reactor.test.StepVerifier;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doReturn;
@@ -108,7 +109,8 @@ class EnedisApiClientTest {
         EnedisApi enedisApi = new EnedisApiClient(tokenProvider, webClient);
 
         // Act & Assert
-        enedisApi.getConsumptionMeterReading("usagePointId", LocalDate.now(), LocalDate.now(), Granularity.PT15M)
+        enedisApi.getConsumptionMeterReading("usagePointId", LocalDate.now(ZoneOffset.UTC),
+                                             LocalDate.now(ZoneOffset.UTC), Granularity.PT15M)
                 .as(StepVerifier::create)
                 .expectError(IllegalArgumentException.class)
                 .verify(Duration.ofSeconds(5));
@@ -133,7 +135,8 @@ class EnedisApiClientTest {
         EnedisApi enedisApi = new EnedisApiClient(tokenProvider, webClient);
 
         // Act
-        enedisApi.getConsumptionMeterReading("usagePointId", LocalDate.now(), LocalDate.now(), Granularity.PT30M)
+        enedisApi.getConsumptionMeterReading("usagePointId", LocalDate.now(ZoneOffset.UTC),
+                                             LocalDate.now(ZoneOffset.UTC), Granularity.PT30M)
                 .as(StepVerifier::create)
                 .expectError()
                 .verify(Duration.ofSeconds(5));
@@ -153,7 +156,8 @@ class EnedisApiClientTest {
         mockBackEnd.enqueue(new MockResponse().setResponseCode(500));
 
         // Act
-        enedisApi.getConsumptionMeterReading("usagePointId", LocalDate.now(), LocalDate.now(), Granularity.PT30M)
+        enedisApi.getConsumptionMeterReading("usagePointId", LocalDate.now(ZoneOffset.UTC),
+                                             LocalDate.now(ZoneOffset.UTC), Granularity.PT30M)
                 .as(StepVerifier::create)
                 .expectError()
                 .verify(Duration.ofSeconds(5));

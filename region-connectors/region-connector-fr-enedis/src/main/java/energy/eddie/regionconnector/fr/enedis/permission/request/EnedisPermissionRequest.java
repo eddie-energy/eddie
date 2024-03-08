@@ -5,7 +5,6 @@ import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
-import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
@@ -18,7 +17,7 @@ import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_
 
 @Entity
 @Table(schema = "fr_enedis", name = "enedis_permission_request")
-public class EnedisPermissionRequest extends TimestampedPermissionRequest implements FrEnedisPermissionRequest {
+public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
     private static final EnedisDataSourceInformation dataSourceInformation = new EnedisDataSourceInformation();
     @Id
     @Column(name = "permission_id")
@@ -46,10 +45,12 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
     @Column(name = "latest_meter_reading")
     private LocalDate latestMeterReading;
 
+    @Column(name = "created")
+    private ZonedDateTime created;
+
     // just for JPA
     @SuppressWarnings("NullAway.Init")
     protected EnedisPermissionRequest() {
-        super(ZONE_ID_FR);
     }
 
     public EnedisPermissionRequest(
@@ -61,7 +62,7 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
             Granularity granularity,
             StateBuilderFactory factory
     ) {
-        super(ZONE_ID_FR);
+        this.created = ZonedDateTime.now(ZONE_ID_FR);
         this.permissionId = permissionId;
         this.connectionId = connectionId;
         this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
@@ -114,6 +115,11 @@ public class EnedisPermissionRequest extends TimestampedPermissionRequest implem
     @Override
     public DataSourceInformation dataSourceInformation() {
         return dataSourceInformation;
+    }
+
+    @Override
+    public ZonedDateTime created() {
+        return created;
     }
 
     @Override

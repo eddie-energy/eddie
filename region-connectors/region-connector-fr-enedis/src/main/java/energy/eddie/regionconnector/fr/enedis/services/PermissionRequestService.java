@@ -101,4 +101,10 @@ public class PermissionRequestService {
                 .filter(Objects::nonNull)
                 .toList();
     }
+
+    public List<FrEnedisPermissionRequest> findTimedOutPermissionRequests(int timeoutDuration) {
+        return repository.findTimedOutPermissionRequests(timeoutDuration).stream()
+                .map(factory::create)
+                .toList();
+    }
 }

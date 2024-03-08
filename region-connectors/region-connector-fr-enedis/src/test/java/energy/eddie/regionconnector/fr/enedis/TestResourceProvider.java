@@ -9,6 +9,7 @@ import okhttp3.mockwebserver.MockResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public class TestResourceProvider {
@@ -25,7 +26,7 @@ public class TestResourceProvider {
     public static MockResponse readMockResponseFromFile(String resource) throws IOException {
         try (InputStream is = TestResourceProvider.class.getClassLoader().getResourceAsStream(resource)) {
             return new MockResponse()
-                    .setBody(new String(Objects.requireNonNull(is).readAllBytes()))
+                    .setBody(new String(Objects.requireNonNull(is).readAllBytes(), StandardCharsets.UTF_8))
                     .addHeader("Content-Type", "application/json");
         }
     }

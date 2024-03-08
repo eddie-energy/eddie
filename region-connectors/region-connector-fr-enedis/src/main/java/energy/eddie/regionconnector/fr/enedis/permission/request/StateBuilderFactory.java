@@ -45,6 +45,7 @@ public class StateBuilderFactory {
                 case TERMINATED -> new FrEnedisTerminatedState(permissionRequest);
                 case REVOKED -> new FrEnedisRevokedState(permissionRequest);
                 case FULFILLED -> new FrEnedisFulfilledState(permissionRequest);
+                case TIMED_OUT -> new FrEnedisTimedOutState(permissionRequest);
                 default -> throw new UnsupportedOperationException();
             };
         }

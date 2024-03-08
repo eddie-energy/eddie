@@ -2,9 +2,9 @@ package energy.eddie.regionconnector.fr.enedis.permission.request.states;
 
 import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
 import energy.eddie.api.agnostic.process.model.states.SentToPermissionAdministratorPermissionRequestState;
-import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
+import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 
 public class FrEnedisSentToPermissionAdministratorState
         extends ContextualizedPermissionRequestState<FrEnedisPermissionRequest>
@@ -46,6 +46,9 @@ public class FrEnedisSentToPermissionAdministratorState
 
     @Override
     public void timeOut() {
-        throw new IllegalStateException("Not implemented yet");
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.TIMED_OUT)
+                        .build()
+        );
     }
 }
