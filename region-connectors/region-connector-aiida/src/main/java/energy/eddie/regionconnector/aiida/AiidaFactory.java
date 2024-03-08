@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.aiida;
 
 import energy.eddie.api.agnostic.DataNeed;
 import energy.eddie.api.agnostic.DataNeedsService;
-import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.KafkaStreamingConfig;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;

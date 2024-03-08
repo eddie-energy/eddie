@@ -1,6 +1,6 @@
 package energy.eddie.dataneeds.web;
 
-import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsDbService;
 import org.springframework.beans.factory.annotation.Value;
