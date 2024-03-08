@@ -77,7 +77,7 @@ class TerminationKafkaConnectorTest {
         producer.send(new ProducerRecord<>("termination-topic", "id", "INVALID JSON")).get();
         ConsentMarketDocument cmd = new ConsentMarketDocument().withMRID("permissionId");
         producer.send(new ProducerRecord<>("termination-topic", "id", mapper.writeValueAsString(cmd))).get();
-        var pair = JdkFlowAdapter.flowPublisherToFlux(terminationConnector.getTerminationMessages())
+        var pair = terminationConnector.getTerminationMessages()
                 .blockFirst();
 
         // Then
