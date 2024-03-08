@@ -37,7 +37,6 @@ content = @`
         <eddie-connect-button
                 class="uk-display-block"
                 connection-id="${nextConnectionId}"
-                allow-data-need-modifications="true"
                 allow-data-need-selection="true"
         ></eddie-connect-button>
     </div>
@@ -47,7 +46,6 @@ content = @`
                 class="uk-display-block"
                 connection-id="${nextConnectionId}"
                 data-need-id="LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY"
-                allow-data-need-modifications="true"
         ></eddie-connect-button>
     </div>
     <div class="uk-flex uk-margin uk-flex-middle">
@@ -56,7 +54,6 @@ content = @`
                 class="uk-display-block"
                 connection-id="${nextConnectionId}"
                 data-need-id="NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY"
-                allow-data-need-modifications="true"
         ></eddie-connect-button>
     </div>
     <div class="uk-flex uk-margin uk-flex-middle">
