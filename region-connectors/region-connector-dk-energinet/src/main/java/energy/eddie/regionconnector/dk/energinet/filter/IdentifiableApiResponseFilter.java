@@ -16,10 +16,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.DK_ZONE_ID;
-
-public record IdentifiableApiResponseFilter(DkEnerginetCustomerPermissionRequest permissionRequest, String permissionId,
-                                            LocalDate dateFrom, LocalDate dateTo) {
+public record IdentifiableApiResponseFilter(DkEnerginetCustomerPermissionRequest permissionRequest,
+                                            LocalDate dateFrom,
+                                            LocalDate dateTo) {
     private static final Logger LOGGER = LoggerFactory.getLogger(IdentifiableApiResponseFilter.class);
 
     private static ZonedDateTime parseZonedDateTime(String zonedDateTime) {
@@ -32,6 +31,7 @@ public record IdentifiableApiResponseFilter(DkEnerginetCustomerPermissionRequest
             return Mono.error(new ApiResponseException(marketDocumentResponse.getErrorCode(), marketDocumentResponse.getErrorText()));
         }
         var timeInterval = Optional.ofNullable(marketDocumentResponse.getMyEnergyDataMarketDocument()).map(MyEnergyDataMarketDocument::getPeriodTimeInterval);
+        var permissionId = permissionRequest.permissionId();
         if (timeInterval.isEmpty()) {
             LOGGER.warn("No metering data present in request for permissionId {} from {} to {}", permissionId, dateFrom, dateTo);
             return Mono.empty();
@@ -47,7 +47,9 @@ public record IdentifiableApiResponseFilter(DkEnerginetCustomerPermissionRequest
             LOGGER.info("Fetched metering data for permissionId {} from {} to {}, received data from {} to {}", permissionId, dateFrom, dateTo, timeIntervalStart, timeIntervalEnd);
         }
 
-        return Mono.just(new IdentifiableApiResponse(permissionId,
-                permissionRequest.connectionId(), permissionRequest.dataNeedId(), marketDocumentResponse));
+        return Mono.just(
+                new IdentifiableApiResponse(
+                        permissionRequest,
+                        marketDocumentResponse));
     }
 }

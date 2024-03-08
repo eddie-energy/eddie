@@ -55,9 +55,9 @@ public class ConsumptionRecordMapper {
         }
 
         consumptionRecord.setConsumptionPoints(consumptionPoints);
-        consumptionRecord.setConnectionId(response.connectionId());
-        consumptionRecord.setPermissionId(response.permissionId());
-        consumptionRecord.setDataNeedId(response.dataNeedId());
+        consumptionRecord.setConnectionId(response.permissionRequest().connectionId());
+        consumptionRecord.setPermissionId(response.permissionRequest().permissionId());
+        consumptionRecord.setDataNeedId(response.permissionRequest().dataNeedId());
         return consumptionRecord;
     }
 

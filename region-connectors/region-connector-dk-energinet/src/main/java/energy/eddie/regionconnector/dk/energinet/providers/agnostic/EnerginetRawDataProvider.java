@@ -32,18 +32,19 @@ public class EnerginetRawDataProvider implements RawDataProvider {
     }
 
     private RawDataMessage createRawDataMessage(IdentifiableApiResponse response) {
-        var permissionRequest = repository.findByPermissionId(response.permissionId());
+        String permissionId = response.permissionRequest().permissionId();
+        var permissionRequest = repository.findByPermissionId(permissionId);
         DataSourceInformation dataSourceInfo = null;
 
         if (permissionRequest.isEmpty())
-            LOGGER.error("No permission with ID {} found in repository.", response.permissionId());
+            LOGGER.error("No permission with ID {} found in repository.", permissionId);
         else {
             dataSourceInfo = permissionRequest.get().dataSourceInformation();
         }
 
         var rawString = response.apiResponse().toString();
 
-        return new RawDataMessage(response.permissionId(), response.connectionId(), response.dataNeedId(),
+        return new RawDataMessage(permissionId, response.permissionRequest().connectionId(), response.permissionRequest().dataNeedId(),
                 dataSourceInfo, ZonedDateTime.now(ZoneId.of("UTC")), rawString);
     }
 

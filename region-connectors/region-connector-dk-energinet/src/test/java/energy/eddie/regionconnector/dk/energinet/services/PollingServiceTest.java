@@ -184,9 +184,9 @@ class PollingServiceTest {
         StepVerifier.create(pollingService.identifiableMeterReadings())
                 .then(() -> pollingService.fetchHistoricalMeterReadings(permissionRequest))
                 .assertNext(mr -> assertAll(
-                        () -> assertEquals(permissionRequest.permissionId(), mr.permissionId()),
-                        () -> assertEquals(permissionRequest.connectionId(), mr.connectionId()),
-                        () -> assertEquals(permissionRequest.dataNeedId(), mr.dataNeedId()),
+                        () -> assertEquals(permissionRequest.permissionId(), mr.permissionRequest().permissionId()),
+                        () -> assertEquals(permissionRequest.connectionId(), mr.permissionRequest().connectionId()),
+                        () -> assertEquals(permissionRequest.dataNeedId(), mr.permissionRequest().dataNeedId()),
                         () -> assertNotNull(mr.apiResponse()),
                         () -> assertNotEquals(permissionRequest.start(), permissionRequest.lastPolled())
                 ))
@@ -276,9 +276,9 @@ class PollingServiceTest {
                 .then(() -> pollingService.fetchFutureMeterReadings())
                 .then(pollingService::close)
                 .assertNext(mr -> assertAll(
-                        () -> assertEquals(permissionRequest1.permissionId(), mr.permissionId()),
-                        () -> assertEquals(permissionRequest1.connectionId(), mr.connectionId()),
-                        () -> assertEquals(permissionRequest1.dataNeedId(), mr.dataNeedId()),
+                        () -> assertEquals(permissionRequest1.permissionId(), mr.permissionRequest().permissionId()),
+                        () -> assertEquals(permissionRequest1.connectionId(), mr.permissionRequest().connectionId()),
+                        () -> assertEquals(permissionRequest1.dataNeedId(), mr.permissionRequest().dataNeedId()),
                         () -> assertNotNull(mr.apiResponse()),
                         () -> assertNotEquals(permissionRequest1.start(), permissionRequest1.lastPolled())
                 ))

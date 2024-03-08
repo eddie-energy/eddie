@@ -29,7 +29,7 @@ class IdentifiableApiResponseFilterTest {
 
         LocalDate from = LocalDate.now(DK_ZONE_ID).minusDays(1);
         LocalDate to = from.plusDays(1);
-        var filter = new IdentifiableApiResponseFilter(permissionRequest, "permissionId", from, to);
+        var filter = new IdentifiableApiResponseFilter(permissionRequest, from, to);
 
         // Act
         StepVerifier.create(filter.filter(List.of(response)))
@@ -49,7 +49,7 @@ class IdentifiableApiResponseFilterTest {
 
         LocalDate from = LocalDate.now(DK_ZONE_ID).minusDays(1);
         LocalDate to = from.plusDays(1);
-        var filter = new IdentifiableApiResponseFilter(permissionRequest, "permissionId", from, to);
+        var filter = new IdentifiableApiResponseFilter(permissionRequest, from, to);
 
         // Act
         StepVerifier.create(filter.filter(List.of(response)))
@@ -71,7 +71,7 @@ class IdentifiableApiResponseFilterTest {
         when(response.getMyEnergyDataMarketDocument()).thenReturn(document);
         when(response.getMyEnergyDataMarketDocument()).thenReturn(document);
 
-        var filter = new IdentifiableApiResponseFilter(permissionRequest, "permissionId", start.toLocalDate(), end.toLocalDate());
+        var filter = new IdentifiableApiResponseFilter(permissionRequest, start.toLocalDate(), end.toLocalDate());
 
         // Act
         StepVerifier.create(filter.filter(List.of(response)))
@@ -94,7 +94,7 @@ class IdentifiableApiResponseFilterTest {
         when(response.getMyEnergyDataMarketDocument()).thenReturn(document);
         when(response.getMyEnergyDataMarketDocument()).thenReturn(document);
 
-        var filter = new IdentifiableApiResponseFilter(permissionRequest, "permissionId", start.toLocalDate(), end.toLocalDate());
+        var filter = new IdentifiableApiResponseFilter(permissionRequest, start.toLocalDate(), end.toLocalDate());
 
         // Act
         StepVerifier.create(filter.filter(List.of(response)))

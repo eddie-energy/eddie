@@ -107,7 +107,7 @@ public class PollingService implements AutoCloseable {
                 .doOnError(error -> revokePermissionRequest(permissionRequest, error))
                 .mapNotNull(MyEnergyDataMarketDocumentResponseListApiResponse::getResult)
                 .flatMap(myEnergyDataMarketDocumentResponses ->
-                        new IdentifiableApiResponseFilter(permissionRequest, permissionId, dateFrom, dateTo)
+                        new IdentifiableApiResponseFilter(permissionRequest, dateFrom, dateTo)
                                 .filter(myEnergyDataMarketDocumentResponses))
                 .doOnError(error -> LOGGER.error("Something went wrong while fetching data from Energinet:", error))
                 .onErrorComplete()
