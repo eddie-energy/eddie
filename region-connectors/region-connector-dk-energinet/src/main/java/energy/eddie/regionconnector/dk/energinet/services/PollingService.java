@@ -73,7 +73,8 @@ public class PollingService implements AutoCloseable {
      */
     public void fetchHistoricalMeterReadings(DkEnerginetCustomerPermissionRequest permissionRequest) {
         ZonedDateTime end = permissionRequest.end();
-        if (end != null && end.isBefore(ZonedDateTime.now(DK_ZONE_ID))) {
+        ZonedDateTime now = ZonedDateTime.now(DK_ZONE_ID);
+        if (end != null && (end.isBefore(now) || end.isEqual(now))) {
             fetch(permissionRequest);
         }
     }
@@ -85,8 +86,10 @@ public class PollingService implements AutoCloseable {
         LocalDate now = LocalDate.now(DK_ZONE_ID);
 
         LocalDate dateFrom = permissionRequest.lastPolled().toLocalDate();
-        var endDate = Optional.ofNullable(permissionRequest.end()).flatMap(end -> Optional.of(end.toLocalDate()));
-        LocalDate dateTo = endDate.filter(d -> d.isBefore(now)).orElse(now);
+        LocalDate dateTo = Optional.ofNullable(permissionRequest.end())
+                .map(ZonedDateTime::toLocalDate)
+                .filter(d -> d.isBefore(now))
+                .orElse(now);
         String permissionId = permissionRequest.permissionId();
 
         LOGGER.info("Fetching metering data from Energinet for permission request {} from {} to {}", permissionId, dateFrom, dateTo);
