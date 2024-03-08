@@ -103,7 +103,7 @@ class OutboundKafkaConfigTest {
         @Bean
         public ConsumptionRecordService consumptionRecordService() {
             ConsumptionRecordService mock = Mockito.mock(ConsumptionRecordService.class);
-            when(mock.getConsumptionRecordStream()).thenReturn((Flux.empty()));
+            when(mock.getConsumptionRecordStream()).thenReturn(Flux.empty());
             return mock;
         }
 
