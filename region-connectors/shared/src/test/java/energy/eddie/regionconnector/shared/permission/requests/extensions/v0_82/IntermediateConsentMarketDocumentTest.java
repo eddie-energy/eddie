@@ -36,7 +36,7 @@ class IntermediateConsentMarketDocumentTest {
     @Test
     void toConsentMarkDocument_returns() {
         // Given
-        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         ZonedDateTime start = now.minusDays(10);
         ZonedDateTime end = now.minusDays(5);
 
@@ -118,9 +118,9 @@ class IntermediateConsentMarketDocumentTest {
                 () -> assertEquals(new EsmpDateTime(now).toString(), res.getCreatedDateTime()),
                 () -> assertEquals("dnid", res.getDescription()),
                 () -> assertEquals(RoleTypeList.PARTY_CONNECTED_TO_GRID,
-                                   res.getSenderMarketParticipantMarketRoleType()),
+                        res.getSenderMarketParticipantMarketRoleType()),
                 () -> assertEquals(RoleTypeList.PERMISSION_ADMINISTRATOR,
-                                   res.getReceiverMarketParticipantMarketRoleType()),
+                        res.getReceiverMarketParticipantMarketRoleType()),
                 () -> assertEquals(ProcessTypeList.ACCESS_TO_METERED_DATA, res.getProcessProcessType()),
                 () -> assertEquals(codingScheme, res.getSenderMarketParticipantMRID().getCodingScheme()),
                 () -> assertEquals("customerId", res.getSenderMarketParticipantMRID().getValue()),
@@ -130,28 +130,27 @@ class IntermediateConsentMarketDocumentTest {
                 () -> assertEquals(timeInterval.end(), res.getPeriodTimeInterval().getEnd()),
                 () -> assertEquals("pid", res.getPermissionList().getPermissions().getFirst().getPermissionMRID()),
                 () -> assertEquals(new EsmpDateTime(now).toString(),
-                                   res.getPermissionList().getPermissions().getFirst().getCreatedDateTime()),
+                        res.getPermissionList().getPermissions().getFirst().getCreatedDateTime()),
                 () -> assertNull(res.getPermissionList().getPermissions().getFirst().getTransmissionSchedule()),
                 () -> assertEquals(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
-                                   res.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID()
-                                           .getCodingScheme()),
+                        res.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID()
+                                .getCodingScheme()),
                 () -> assertEquals("cid",
-                                   res.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID()
-                                           .getValue()),
+                        res.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID()
+                                .getValue()),
                 () -> assertNull(res.getPermissionList().getPermissions().getFirst().getReasonList()),
                 () -> assertNull(res.getPermissionList().getPermissions().getFirst().getTransmissionSchedule()),
                 () -> assertNotNull(res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
-                                            .getMktActivityRecords().getFirst().getMRID()),
+                        .getMktActivityRecords().getFirst().getMRID()),
                 () -> assertNotNull(res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
-                                            .getMktActivityRecords().getFirst().getCreatedDateTime()),
+                        .getMktActivityRecords().getFirst().getCreatedDateTime()),
                 () -> assertEquals("", res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
                         .getMktActivityRecords().getFirst().getDescription()),
                 () -> assertEquals("rc", res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
                         .getMktActivityRecords().getFirst().getType()),
                 () -> assertEquals(StatusTypeList.A107,
-                                   res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
-                                           .getMktActivityRecords().getFirst().getStatus())
+                        res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
+                                .getMktActivityRecords().getFirst().getStatus())
         );
     }
-
 }
