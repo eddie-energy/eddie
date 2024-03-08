@@ -26,7 +26,7 @@ class IdentifiableMeteringDataServiceTest {
         EsPermissionRequest permissionRequest = mock(EsPermissionRequest.class);
         when(permissionRequest.lastPulledMeterReading()).thenReturn(Optional.empty());
 
-        MeteringData meteringData = new MeteringData("", ZonedDateTime.of(LocalDate.now(), LocalTime.MIN, ZONE_ID_SPAIN), 0.0, "REAL", 0.0);
+        MeteringData meteringData = new MeteringData("", ZonedDateTime.of(LocalDate.now(ZONE_ID_SPAIN), LocalTime.MIN, ZONE_ID_SPAIN), 0.0, "REAL", 0.0);
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
         IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(testPublisher.flux());
@@ -83,7 +83,7 @@ class IdentifiableMeteringDataServiceTest {
     void ifMeteringDataDateBeforePermissionEndDate_doesNotCallFulfill() throws StateTransitionException {
         // Arrange
         EsPermissionRequest permissionRequest = mock(EsPermissionRequest.class);
-        ZonedDateTime now = LocalDate.now().atStartOfDay(ZONE_ID_SPAIN);
+        ZonedDateTime now = LocalDate.now(ZONE_ID_SPAIN).atStartOfDay(ZONE_ID_SPAIN);
         when(permissionRequest.end()).thenReturn(now.plusDays(1));
 
         MeteringData meteringData = new MeteringData("", ZonedDateTime.of(now.minusDays(1).toLocalDate(), LocalTime.MIN, ZONE_ID_SPAIN), 0.0, "REAL", 0.0);
@@ -123,7 +123,7 @@ class IdentifiableMeteringDataServiceTest {
     void ifMeteringDataDateEqualsPermissionEndDate_callsFulfill() throws StateTransitionException {
         // Arrange
         EsPermissionRequest permissionRequest = mock(EsPermissionRequest.class);
-        ZonedDateTime now = LocalDate.now().atStartOfDay(ZONE_ID_SPAIN);
+        ZonedDateTime now = LocalDate.now(ZONE_ID_SPAIN).atStartOfDay(ZONE_ID_SPAIN);
         when(permissionRequest.end()).thenReturn(now);
 
         MeteringData meteringData = new MeteringData("", now, 0.0, "REAL", 0.0);

@@ -33,7 +33,7 @@ class PermissionRequestConsumerTest {
         permissionRequestConsumer.acceptPermission(permissionRequest, supply);
 
         // Assert
-        verify(permissionRequest).setDistributorCodeAndPointType(DistributorCode.fromCode(supply.distributorCode()), supply.pointType());
+        verify(permissionRequest).setDistributorCodeAndPointType(DistributorCode.fromCode("1"), 1);
         verify(permissionRequest).accept();
         verify(historicalDataService).fetchAvailableHistoricalData(permissionRequest);
     }

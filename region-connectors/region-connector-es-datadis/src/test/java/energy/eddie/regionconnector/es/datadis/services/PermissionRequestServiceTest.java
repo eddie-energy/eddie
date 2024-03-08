@@ -118,7 +118,7 @@ class PermissionRequestServiceTest {
         // Given
         var permissionId = "Existing";
         var permissionRequest = mock(DatadisPermissionRequest.class);
-        Supply supply = new Supply("", "", "", "", "", "1", LocalDate.now(), null, 1, "1");
+        Supply supply = new Supply("", "", "", "", "", "1", LocalDate.now(ZONE_ID_SPAIN), null, 1, "1");
         when(permissionRequest.permissionId()).thenReturn(permissionId);
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
         when(factory.create(permissionRequest)).thenReturn(permissionRequest);
