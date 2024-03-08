@@ -64,13 +64,22 @@ class EnerginetCustomerAcceptedStateTest {
     }
 
     @Test
-    void timeLimit_notImplemented() {
+    void fulfill_changesToFulfilledState() {
         // Given
-        EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(null, null);
+        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
+        ZonedDateTime end = start.plusDays(10);
+        var creation = new PermissionRequestForCreation("cid", start, end, "token", Granularity.PT15M, "mpid", "dnid");
+        StateBuilderFactory factory = new StateBuilderFactory();
+        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", creation, mock(EnerginetCustomerApi.class), factory);
+        EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(permissionRequest, factory);
+        permissionRequest.changeState(state);
+
 
         // When
+        state.fulfill();
+
         // Then
-        assertThrows(UnsupportedOperationException.class, state::fulfill);
+        assertEquals(PermissionProcessStatus.FULFILLED, permissionRequest.state().status());
     }
 
     @Test

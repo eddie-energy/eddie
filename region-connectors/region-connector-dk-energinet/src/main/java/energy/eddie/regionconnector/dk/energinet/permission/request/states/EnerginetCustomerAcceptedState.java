@@ -36,6 +36,9 @@ public class EnerginetCustomerAcceptedState extends ContextualizedPermissionRequ
 
     @Override
     public void fulfill() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        permissionRequest.changeState(
+                factory.create(permissionRequest, PermissionProcessStatus.FULFILLED)
+                        .build()
+        );
     }
 }
