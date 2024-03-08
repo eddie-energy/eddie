@@ -3,6 +3,8 @@ package energy.eddie.regionconnector.fr.enedis.permission.request.persistence;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -11,4 +13,10 @@ import java.util.List;
  */
 public interface JpaPermissionRequestRepository extends JpaRepository<EnedisPermissionRequest, String> {
     List<EnedisPermissionRequest> findAllByStatusIs(PermissionProcessStatus status);
+
+    @Query(
+            value = "select permission_id, connection_id, start_timestamp, end_timestamp, data_need_id, status, granularity, usage_point_id, latest_meter_reading, created from fr_enedis.enedis_permission_request where status = 'PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT' and created <= NOW() - :hours * INTERVAL '1 hour'",
+            nativeQuery = true
+    )
+    List<EnedisPermissionRequest> findTimedOutPermissionRequests(@Param("hours") int timeoutDuration);
 }

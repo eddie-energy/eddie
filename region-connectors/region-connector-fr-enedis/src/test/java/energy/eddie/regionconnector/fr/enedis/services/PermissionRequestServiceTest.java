@@ -172,4 +172,25 @@ class PermissionRequestServiceTest {
         // Then
         assertTrue(res.isEmpty());
     }
+
+    @Test
+    @DirtiesContext
+    void testFindTimedOutPermissionRequests_returnsPermissionRequests() throws StateTransitionException {
+        // Given
+        var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
+        var end = ZonedDateTime.now(ZoneOffset.UTC);
+        StateBuilderFactory factory = new StateBuilderFactory();
+        var request1 = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
+        var request2 = new EnedisPermissionRequest("pid2", "cid2", "dnid", start, end, Granularity.P1D, factory);
+        request1.validate();
+        request1.sendToPermissionAdministrator();
+        repository.save(request1);
+        repository.save(request2);
+
+        // When
+        var res = permissionRequestService.findTimedOutPermissionRequests(0);
+
+        // Then
+        assertEquals(1, res.size());
+    }
 }
