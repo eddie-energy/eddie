@@ -43,12 +43,12 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     }
 
     @Override
-    public EnerginetCustomerPermissionRequest withApiClient(EnerginetCustomerApi client) {
+    public DkEnerginetCustomerPermissionRequest withApiClient(EnerginetCustomerApi client) {
         return null;
     }
 
     @Override
-    public EnerginetCustomerPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
+    public DkEnerginetCustomerPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
         return null;
     }
 
