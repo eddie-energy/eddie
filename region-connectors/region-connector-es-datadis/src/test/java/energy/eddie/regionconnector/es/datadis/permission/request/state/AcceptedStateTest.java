@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.es.datadis.permission.request.state;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.states.RevokedPermissionRequestState;
 import energy.eddie.api.agnostic.process.model.states.TerminatedPermissionRequestState;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
@@ -25,7 +25,7 @@ class AcceptedStateTest {
         ZonedDateTime end = start.plusDays(10);
         var permissionRequest = new DatadisPermissionRequest(
                 "pid",
-                new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, MeasurementType.QUARTER_HOURLY),
+                new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, Granularity.PT15M),
                 factory
         );
         AcceptedState state = new AcceptedState(permissionRequest, factory);
@@ -44,7 +44,7 @@ class AcceptedStateTest {
         ZonedDateTime end = start.plusDays(10);
         var permissionRequest = new DatadisPermissionRequest(
                 "pid",
-                new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, MeasurementType.QUARTER_HOURLY),
+                new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, Granularity.PT15M),
                 factory
         );
         AcceptedState state = new AcceptedState(permissionRequest, factory);
@@ -63,7 +63,7 @@ class AcceptedStateTest {
         ZonedDateTime end = start.plusDays(10);
         var permissionRequest = new DatadisPermissionRequest(
                 "pid",
-                new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, MeasurementType.QUARTER_HOURLY),
+                new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, Granularity.PT15M),
                 factory
         );
         AcceptedState state = new AcceptedState(permissionRequest, factory);

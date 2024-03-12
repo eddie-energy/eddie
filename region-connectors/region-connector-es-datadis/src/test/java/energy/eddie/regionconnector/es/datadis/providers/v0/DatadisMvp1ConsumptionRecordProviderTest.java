@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.providers.v0;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
@@ -28,7 +28,7 @@ class DatadisMvp1ConsumptionRecordProviderTest {
     void givenValueOnFlux_publishesConsumptionRecordOnFlow() {
         // Given
         var now = ZonedDateTime.now(ZoneId.systemDefault());
-        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation("conId", "dId", "nif", "mip", now, now, MeasurementType.HOURLY);
+        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation("conId", "dId", "nif", "mip", now, now, Granularity.PT1H);
         new DatadisPermissionRequest("pId", requestForCreation, new StateBuilderFactory(mock(AuthorizationApi.class)));
         TestPublisher<IdentifiableMeteringData> publisher = TestPublisher.create();
         EsPermissionRequest mockRequest = mock(EsPermissionRequest.class);

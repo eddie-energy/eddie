@@ -11,7 +11,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 class EsDatadisTest extends E2eTestSetup {
     @Test
     void givenInvalidNif_showsNifDoesNotExist() {
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(1).click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(4).click();
         page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Country")).click();
         page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("Spain")).locator("slot").nth(1).click();
         page.getByLabel("DNI/Nif").click();

@@ -28,3 +28,10 @@ eddie:
           - "1-0:1.7.0"
           - "1-0:1.8.0"
         service-name: "My awesome energy service"
+      - id: LAST_3_MONTHS_HOURLY_MEASUREMENTS_PER_DAY
+        description: Historical validated consumption data for the last three months, one measurement per hour
+        type: HISTORICAL_VALIDATED_CONSUMPTION_DATA
+        granularity: PT1H
+        duration-start: -90
+        duration-open-end: false
+        duration-end: 0

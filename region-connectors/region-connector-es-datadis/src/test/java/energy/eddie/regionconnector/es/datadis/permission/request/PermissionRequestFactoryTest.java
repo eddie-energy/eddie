@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.permission.request;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
@@ -45,12 +46,11 @@ class PermissionRequestFactoryTest {
         String nif = "123456";
         String dataNeedId = "dataNeed";
         String connectionId = "connId";
-        MeasurementType measurementType = MeasurementType.QUARTER_HOURLY;
         ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
         ZonedDateTime requestDataFrom = now.minusDays(10);
         ZonedDateTime requestDataTo = now.minusDays(5);
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif,
-                meteringPointId, requestDataFrom, requestDataTo, measurementType);
+                meteringPointId, requestDataFrom, requestDataTo, Granularity.PT15M);
 
         // When
         EsPermissionRequest createdRequest = factory.create(requestForCreation);
@@ -61,7 +61,7 @@ class PermissionRequestFactoryTest {
         assertEquals(dataNeedId, createdRequest.dataNeedId());
         assertEquals(nif, createdRequest.nif());
         assertEquals(meteringPointId, createdRequest.meteringPointId());
-        assertEquals(measurementType, createdRequest.measurementType());
+        assertEquals(MeasurementType.QUARTER_HOURLY, createdRequest.measurementType());
         assertEquals(requestDataFrom, createdRequest.start());
         assertEquals(requestDataTo.plusDays(1), createdRequest.end());
         assertTrue(createdRequest.distributorCode().isEmpty());

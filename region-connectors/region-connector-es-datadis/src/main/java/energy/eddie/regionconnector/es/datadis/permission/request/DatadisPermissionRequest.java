@@ -70,7 +70,12 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
         this.dataNeedId = requestForCreation.dataNeedId();
         this.nif = requestForCreation.nif();
         this.meteringPointId = requestForCreation.meteringPointId();
-        this.measurementType = requestForCreation.measurementType();
+        this.measurementType = switch (requestForCreation.granularity()) {
+            case PT15M -> MeasurementType.QUARTER_HOURLY;
+            case PT1H -> MeasurementType.HOURLY;
+            default ->
+                    throw new IllegalArgumentException("Unsupported granularity: " + requestForCreation.granularity());
+        };
         this.requestDataFrom = requestForCreation.requestDataFrom().withZoneSameLocal(ZONE_ID_SPAIN);
         this.requestDataTo = Optional.ofNullable(requestForCreation.requestDataTo())
                 .map(toDate -> toDate.withZoneSameLocal(ZONE_ID_SPAIN).plusDays(1))

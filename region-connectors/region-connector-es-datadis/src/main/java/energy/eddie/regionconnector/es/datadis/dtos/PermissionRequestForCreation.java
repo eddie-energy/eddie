@@ -1,8 +1,9 @@
 package energy.eddie.regionconnector.es.datadis.dtos;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.shared.utils.StartOfDayZonedDateTimeDeserializer;
+import energy.eddie.regionconnector.shared.validation.SupportedGranularities;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -24,6 +25,7 @@ public record PermissionRequestForCreation(
         @NotNull(message = "must not be null")
         ZonedDateTime requestDataTo,
         @NotNull(message = "must not be null")
-        MeasurementType measurementType
+        @SupportedGranularities({Granularity.PT1H, Granularity.PT15M})
+        Granularity granularity
 ) {
 }
