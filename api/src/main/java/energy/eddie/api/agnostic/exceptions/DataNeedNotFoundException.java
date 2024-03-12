@@ -20,7 +20,7 @@ public class DataNeedNotFoundException extends Exception {
      * @param isBadRequest If true, HTTP status code 400 is returned, otherwise 404.
      */
     public DataNeedNotFoundException(String dataNeedId, boolean isBadRequest) {
-        super("No dataNeed with ID '%s' found.".formatted(dataNeedId));
+        super("No data need with ID '%s' found.".formatted(dataNeedId));
         this.isBadRequest = isBadRequest;
     }
 
