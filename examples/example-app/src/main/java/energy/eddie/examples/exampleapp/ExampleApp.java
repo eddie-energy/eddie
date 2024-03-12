@@ -52,7 +52,8 @@ public class ExampleApp {
 
         var kafkaListener = new KafkaListener(injector.getInstance(Jdbi.class), injector.getInstance(ObjectMapper.class));
         var executor = Executors.newSingleThreadExecutor();
-        executor.submit(kafkaListener);
+        //noinspection unused
+        var unused = executor.submit(kafkaListener);
 
         // Using try-with-resources with the Javalin instance isn't really intuitive, but: Sonar considers using
         // an AutoClosable without ensuring a close to be a major issue. To keep Javalin running the current thread

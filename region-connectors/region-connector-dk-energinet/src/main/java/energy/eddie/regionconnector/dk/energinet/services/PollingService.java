@@ -45,24 +45,36 @@ public class PollingService implements AutoCloseable {
                 .share();
     }
 
-    private static boolean isActiveAndNeedsToBePolled(DkEnerginetCustomerPermissionRequest pr) {
-        ZonedDateTime now = ZonedDateTime.now(DK_ZONE_ID);
-        return pr.lastPolled().toLocalDate().isBefore(now.toLocalDate())
-                && (now.isAfter(pr.start()) || now.isEqual(pr.start()))
-                && (now.isBefore(pr.end()) || now.isEqual(pr.end()));
+    private static boolean isActiveAndNeedsToBePolled(DkEnerginetCustomerPermissionRequest permissionRequest, LocalDate today) {
+        LocalDate permissionStart = permissionRequest.start().toLocalDate();
+        var lastPolled = permissionRequest.lastPolled().toLocalDate();
+        return permissionStart.isBefore(today)
+                && (lastPolled.isBefore(today) || lastPolled.isEqual(today));
     }
 
     /**
      * Fetches future meter readings for all accepted active permission requests.
      */
+    @SuppressWarnings("java:S6857") // Sonar thinks this is malformed, but it's not
     @Scheduled(cron = "${region-connector.dk.energinet.polling:0 0 17 * * *}", zone = "Europe/Copenhagen")
     public void fetchFutureMeterReadings() {
-        List<DkEnerginetCustomerPermissionRequest> prs = permissionRequestService.findAllAcceptedPermissionRequests();
-        LOGGER.info("Fetching metering data for {} permission requests", prs.size());
-        prs
-                .stream()
-                .filter(PollingService::isActiveAndNeedsToBePolled)
-                .forEach(this::fetch);
+        List<DkEnerginetCustomerPermissionRequest> acceptedPermissionRequests = permissionRequestService.findAllAcceptedPermissionRequests();
+        if (acceptedPermissionRequests.isEmpty()) {
+            LOGGER.info("Found no permission requests to fetch meter readings for");
+            return;
+        }
+
+        LOGGER.info("Trying to fetch meter readings for {} permission requests", acceptedPermissionRequests.size());
+        LocalDate today = LocalDate.now(DK_ZONE_ID);
+
+        for (DkEnerginetCustomerPermissionRequest acceptedPermissionRequest : acceptedPermissionRequests) {
+            if (isActiveAndNeedsToBePolled(acceptedPermissionRequest, today)) {
+                fetch(acceptedPermissionRequest, today);
+            } else {
+                var permissionId = acceptedPermissionRequest.permissionId();
+                LOGGER.info("Permission request {} is not active or data is already up to date", permissionId);
+            }
+        }
     }
 
     /**
@@ -75,21 +87,21 @@ public class PollingService implements AutoCloseable {
         ZonedDateTime end = permissionRequest.end();
         ZonedDateTime now = ZonedDateTime.now(DK_ZONE_ID);
         if (end != null && (end.isBefore(now) || end.isEqual(now))) {
-            fetch(permissionRequest);
+            fetch(permissionRequest, now.toLocalDate());
         }
     }
 
-    private void fetch(DkEnerginetCustomerPermissionRequest permissionRequest) {
+    private void fetch(DkEnerginetCustomerPermissionRequest permissionRequest, LocalDate today) {
         MeteringPoints meteringPoints = new MeteringPoints();
         meteringPoints.addMeteringPointItem(permissionRequest.meteringPoint());
         MeteringPointsRequest meteringPointsRequest = new MeteringPointsRequest().meteringPoints(meteringPoints);
-        LocalDate now = LocalDate.now(DK_ZONE_ID);
 
         LocalDate dateFrom = permissionRequest.lastPolled().toLocalDate();
         LocalDate dateTo = Optional.ofNullable(permissionRequest.end())
                 .map(ZonedDateTime::toLocalDate)
-                .filter(d -> d.isBefore(now))
-                .orElse(now);
+                .filter(d -> d.isBefore(today))
+                .map(d -> d.plusDays(1)) // The Energinet API is inclusive on the start date and exclusive on the end date so we need to add one day if the end date is before today
+                .orElse(today);
         String permissionId = permissionRequest.permissionId();
 
         LOGGER.info("Fetching metering data from Energinet for permission request {} from {} to {}", permissionId, dateFrom, dateTo);
@@ -107,11 +119,14 @@ public class PollingService implements AutoCloseable {
                 .doOnError(error -> revokePermissionRequest(permissionRequest, error))
                 .mapNotNull(MyEnergyDataMarketDocumentResponseListApiResponse::getResult)
                 .flatMap(myEnergyDataMarketDocumentResponses ->
-                        new IdentifiableApiResponseFilter(permissionRequest, permissionId, dateFrom, dateTo)
+                        new IdentifiableApiResponseFilter(permissionRequest, dateFrom, dateTo)
                                 .filter(myEnergyDataMarketDocumentResponses))
-                .doOnError(error -> LOGGER.error("Something went wrong while fetching data from Energinet:", error))
+                .doOnError(error -> LOGGER.error("Something went wrong while fetching data for permission request {} from Energinet:", permissionId, error))
                 .onErrorComplete()
-                .subscribe(sink::tryEmitNext);
+                .subscribe(identifiableApiResponse -> {
+                    LOGGER.info("Fetched metering data from Energinet for permission request {} from {} to {}", permissionId, dateFrom, dateTo);
+                    sink.emitNext(identifiableApiResponse, Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
+                });
     }
 
     private void revokePermissionRequest(DkEnerginetCustomerPermissionRequest permissionRequest,

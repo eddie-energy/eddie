@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.utils;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.dk.energinet.customer.model.*;
 import energy.eddie.regionconnector.dk.energinet.enums.PointQualityEnum;
+import energy.eddie.regionconnector.dk.energinet.permission.request.SimplePermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import org.junit.jupiter.api.Test;
 
@@ -10,35 +11,34 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class ConsumptionRecordMapperTest {
     @Test
     void timeSeriesToConsumptionRecord_mapsEnerginetConsumptionRecord_asExpected() {
-        //when
-        var myEnergyMarketDocumentResponse = mock(MyEnergyDataMarketDocumentResponse.class);
-        var myEnergyMarketDocument = mock(MyEnergyDataMarketDocument.class);
-        var periodtimeInterval = mock(PeriodtimeInterval.class);
-        var timeSeries = mock(TimeSeries.class);
-        var period = mock(Period.class);
-        var point = mock(Point.class);
-        IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse("foo",
-                "bar", "dId", myEnergyMarketDocumentResponse);
+        // Given
+        var point = new Point();
+        point.setOutQuantityQuality(PointQualityEnum.A04.name());
+        point.setOutQuantityQuantity("5.42");
+        var period = new Period();
+        period.setResolution(Granularity.P1D.name());
+        period.setPoint(List.of(point));
+        var timeSeries = new TimeSeries();
+        timeSeries.setPeriod(List.of(period));
+        var periodtimeInterval = new PeriodtimeInterval();
+        periodtimeInterval.setStart("2022-03-31T22:00:00Z");
+        var myEnergyMarketDocument = new MyEnergyDataMarketDocument();
+        myEnergyMarketDocument.setPeriodTimeInterval(periodtimeInterval);
+        myEnergyMarketDocument.setTimeSeries(List.of(timeSeries));
+        var myEnergyMarketDocumentResponse = new MyEnergyDataMarketDocumentResponse();
+        myEnergyMarketDocumentResponse.setMyEnergyDataMarketDocument(myEnergyMarketDocument);
 
-        when(myEnergyMarketDocumentResponse.getMyEnergyDataMarketDocument()).thenReturn(myEnergyMarketDocument);
-        when(myEnergyMarketDocument.getPeriodTimeInterval()).thenReturn(periodtimeInterval);
-        when(myEnergyMarketDocument.getTimeSeries()).thenReturn(List.of(timeSeries));
-        when(periodtimeInterval.getStart()).thenReturn("2022-03-31T22:00:00Z");
-        when(timeSeries.getPeriod()).thenReturn(List.of(period));
-        when(period.getResolution()).thenReturn(Granularity.P1D.name());
-        when(period.getPoint()).thenReturn(List.of(point));
-        when(point.getOutQuantityQuality()).thenReturn(PointQualityEnum.A04.name());
-        when(point.getOutQuantityQuantity()).thenReturn("5.42");
+        var permissionRequest = new SimplePermissionRequest("foo", "bar", "dId");
+        IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse(permissionRequest, myEnergyMarketDocumentResponse);
 
-        //when
+        // When
         var consumptionRecord = ConsumptionRecordMapper.timeSeriesToConsumptionRecord(identifiableResponse);
 
+        // Then
         assertEquals("foo", consumptionRecord.getPermissionId());
         assertEquals("bar", consumptionRecord.getConnectionId());
         assertEquals("dId", consumptionRecord.getDataNeedId());
@@ -46,46 +46,49 @@ class ConsumptionRecordMapperTest {
 
     @Test
     void timeSeriesToConsumptionRecord_mapsEnerginetConsumptionRecord_illegalPointQuality() {
-        //given
+        // Given
         var illegalPointQualityEnum = PointQualityEnum.A02;
 
-        var myEnergyMarketDocumentResponse = mock(MyEnergyDataMarketDocumentResponse.class);
-        var myEnergyMarketDocument = mock(MyEnergyDataMarketDocument.class);
-        var periodtimeInterval = mock(PeriodtimeInterval.class);
-        var timeSeries = mock(TimeSeries.class);
-        var period = mock(Period.class);
-        var point = mock(Point.class);
-        IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse("foo",
-                "bar", "dId", myEnergyMarketDocumentResponse);
+        var point = new Point();
+        point.setOutQuantityQuality(illegalPointQualityEnum.name());
+        point.setOutQuantityQuantity("5.42");
+        var permissionRequest = new SimplePermissionRequest();
+        var period = new Period();
+        period.setResolution(Granularity.P1D.name());
+        period.setPoint(List.of(point));
+        var timeSeries = new TimeSeries();
+        timeSeries.setPeriod(List.of(period));
+        var periodtimeInterval = new PeriodtimeInterval();
+        periodtimeInterval.setStart("2022-03-31T22:00:00Z");
+        var myEnergyMarketDocument = new MyEnergyDataMarketDocument();
+        myEnergyMarketDocument.setPeriodTimeInterval(periodtimeInterval);
+        myEnergyMarketDocument.setTimeSeries(List.of(timeSeries));
+        var myEnergyMarketDocumentResponse = new MyEnergyDataMarketDocumentResponse();
+        myEnergyMarketDocumentResponse.setMyEnergyDataMarketDocument(myEnergyMarketDocument);
 
-        when(myEnergyMarketDocumentResponse.getMyEnergyDataMarketDocument()).thenReturn(myEnergyMarketDocument);
-        when(myEnergyMarketDocument.getPeriodTimeInterval()).thenReturn(periodtimeInterval);
-        when(myEnergyMarketDocument.getTimeSeries()).thenReturn(List.of(timeSeries));
-        when(periodtimeInterval.getStart()).thenReturn("2022-03-31T22:00:00Z");
-        when(timeSeries.getPeriod()).thenReturn(List.of(period));
-        when(period.getResolution()).thenReturn(Granularity.P1D.name());
-        when(period.getPoint()).thenReturn(List.of(point));
-        when(point.getOutQuantityQuality()).thenReturn(illegalPointQualityEnum.name());
-        when(point.getOutQuantityQuantity()).thenReturn("5.42");
+        IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse(permissionRequest, myEnergyMarketDocumentResponse);
 
         try {
-            //when
+            // When
             ConsumptionRecordMapper.timeSeriesToConsumptionRecord(identifiableResponse);
         } catch (IllegalStateException exception) {
-            //then
+            // Then
             assertEquals("Illegal Quality: " + illegalPointQualityEnum, exception.getMessage());
         }
     }
 
     @Test
     void timeSeriesToConsumptionRecord_mapsEnerginetConsumptionRecord_energyMarketDocument_isNull() {
-        //given
-        var myEnergyMarketDocumentResponse = mock(MyEnergyDataMarketDocumentResponse.class);
-        IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse("foo",
-                "bar", "dId", myEnergyMarketDocumentResponse);
+        // Given
+        var myEnergyMarketDocumentResponse = new MyEnergyDataMarketDocumentResponse();
+        var permissionRequest = new SimplePermissionRequest();
+        IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse(permissionRequest, myEnergyMarketDocumentResponse);
 
+        // When
         IllegalStateException exception = assertThrows(IllegalStateException.class,
                 () -> ConsumptionRecordMapper.timeSeriesToConsumptionRecord(identifiableResponse));
+
+        // Then
         assertEquals("No data available", exception.getMessage());
     }
 }

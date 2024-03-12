@@ -35,9 +35,9 @@ public class EnerginetEddieValidatedHistoricalDataMarketDocumentProvider impleme
 
             return Flux.just(
                     new EddieValidatedHistoricalDataMarketDocument(
-                            Optional.of(response.connectionId()),
-                            Optional.of(response.permissionId()),
-                            Optional.of(response.dataNeedId()),
+                            Optional.of(response.permissionRequest().connectionId()),
+                            Optional.of(response.permissionRequest().permissionId()),
+                            Optional.of(response.permissionRequest().dataNeedId()),
                             validatedHistoricalDataMarketDocument)
             );
         } catch (Exception e) {

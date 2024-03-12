@@ -47,20 +47,6 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
         super(DK_ZONE_ID);
     }
 
-    @Override
-    public EnerginetCustomerPermissionRequest withApiClient(EnerginetCustomerApi client) {
-        this.credentials = new ApiCredentials(client, refreshToken);
-        return this;
-    }
-
-    @Override
-    public EnerginetCustomerPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
-        this.state = factory
-                .create(this, status)
-                .build();
-        return this;
-    }
-
     public EnerginetCustomerPermissionRequest(
             String permissionId,
             PermissionRequestForCreation request,
@@ -84,6 +70,20 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
         this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
         this.lastPolled = start;
         this.status = state.status();
+    }
+
+    @Override
+    public DkEnerginetCustomerPermissionRequest withApiClient(EnerginetCustomerApi client) {
+        this.credentials = new ApiCredentials(client, refreshToken);
+        return this;
+    }
+
+    @Override
+    public DkEnerginetCustomerPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
+        this.state = factory
+                .create(this, status)
+                .build();
+        return this;
     }
 
     @Override

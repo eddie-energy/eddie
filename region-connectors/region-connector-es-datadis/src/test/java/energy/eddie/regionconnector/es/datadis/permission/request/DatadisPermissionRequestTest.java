@@ -80,7 +80,7 @@ class DatadisPermissionRequestTest {
 
     @Test
     void permissionEnd_whenRequestingTodaysData_isOneDayGraterThanPermissionStart() {
-        var today = LocalDate.now().atStartOfDay(ZoneOffset.UTC);
+        var today = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC);
         requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 today, today, measurementType);
 

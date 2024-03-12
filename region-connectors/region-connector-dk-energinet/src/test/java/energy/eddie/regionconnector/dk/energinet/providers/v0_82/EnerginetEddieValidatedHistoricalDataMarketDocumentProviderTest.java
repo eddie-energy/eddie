@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocument;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
+import energy.eddie.regionconnector.dk.energinet.permission.request.SimplePermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.SeriesPeriodBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.TimeSeriesBuilderFactory;
@@ -48,10 +49,9 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
 
         MyEnergyDataMarketDocumentResponse myEnergyDataMarketDocumentResponse = new MyEnergyDataMarketDocumentResponse();
         myEnergyDataMarketDocumentResponse.setMyEnergyDataMarketDocument(myEnergyDataMarketDocument);
+        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", "dataNeedId");
         apiResponse = new IdentifiableApiResponse(
-                "permissionId",
-                "connectionId",
-                "dataNeedId",
+                permissionRequest,
                 myEnergyDataMarketDocumentResponse
         );
     }
@@ -59,22 +59,22 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
     @SuppressWarnings("DataFlowIssue")
     @Test
     void getEddieValidatedHistoricalDataMarketDocumentStream_producesDocumentWhenTestJsonIsUsed() {
-        // Arrange
+        // Given
 
         TestPublisher<IdentifiableApiResponse> testPublisher = TestPublisher.create();
 
         var provider = new EnerginetEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(), validatedHistoricalDataMarketDocumentBuilderFactory);
 
-        // Act & Assert
+        // When & Then
         StepVerifier.create(provider.getEddieValidatedHistoricalDataMarketDocumentStream())
                 .then(() -> {
                     testPublisher.emit(apiResponse);
                     testPublisher.complete();
                 })
                 .assertNext(document -> {
-                    assertEquals(apiResponse.permissionId(), document.permissionId().get());
-                    assertEquals(apiResponse.connectionId(), document.connectionId().get());
-                    assertEquals(apiResponse.dataNeedId(), document.dataNeedId().get());
+                    assertEquals(apiResponse.permissionRequest().permissionId(), document.permissionId().get());
+                    assertEquals(apiResponse.permissionRequest().connectionId(), document.connectionId().get());
+                    assertEquals(apiResponse.permissionRequest().dataNeedId(), document.dataNeedId().get());
 
                     assertEquals(myEnergyDataMarketDocument.getPeriodTimeInterval().getStart(), document.marketDocument().getPeriodTimeInterval().getStart());
                     assertEquals(myEnergyDataMarketDocument.getPeriodTimeInterval().getEnd(), document.marketDocument().getPeriodTimeInterval().getEnd());
@@ -87,7 +87,7 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
 
     @Test
     void getEddieValidatedHistoricalDataMarketDocumentStream_producesNothingIfMappingFails() throws Exception {
-        // Arrange
+        // Given
         ValidatedHistoricalDataMarketDocumentBuilder builder = mock(ValidatedHistoricalDataMarketDocumentBuilder.class);
         doThrow(new RuntimeException("Test exception")).when(builder).withMyEnergyDataMarketDocument(any());
         ValidatedHistoricalDataMarketDocumentBuilderFactory factory = mock(ValidatedHistoricalDataMarketDocumentBuilderFactory.class);
@@ -97,7 +97,7 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
 
         try (var provider = new EnerginetEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(), factory)) {
 
-            // Act & Assert
+            // When & Then
             StepVerifier.create(provider.getEddieValidatedHistoricalDataMarketDocumentStream())
                     .then(() -> {
                         testPublisher.emit(apiResponse);

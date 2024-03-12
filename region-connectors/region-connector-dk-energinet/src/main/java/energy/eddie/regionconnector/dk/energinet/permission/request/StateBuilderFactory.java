@@ -44,6 +44,7 @@ public class StateBuilderFactory {
                 case REJECTED -> new EnerginetCustomerRejectedState(permissionRequest);
                 case TERMINATED -> new EnerginetCustomerTerminatedState(permissionRequest);
                 case REVOKED -> new EnerginetCustomerRevokedState(permissionRequest);
+                case FULFILLED -> new EnerginetCustomerFulfilledState(permissionRequest);
                 default -> throw new UnsupportedOperationException();
             };
         }

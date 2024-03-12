@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0;
 
 import energy.eddie.regionconnector.dk.energinet.customer.model.*;
+import energy.eddie.regionconnector.dk.energinet.permission.request.SimplePermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
@@ -42,7 +43,8 @@ class EnerginetMvp1ConsumptionRecordProviderTest {
         var responseDocument = new MyEnergyDataMarketDocumentResponse();
         responseDocument.setId("ID");
         responseDocument.setMyEnergyDataMarketDocument(document);
-        var apiResponse = new IdentifiableApiResponse("pId", "conId", "dId", responseDocument);
+        var permissionRequest = new SimplePermissionRequest("pId", "conId", "dId");
+        var apiResponse = new IdentifiableApiResponse(permissionRequest, responseDocument);
 
 
         StepVerifier.create(provider.getConsumptionRecordStream())

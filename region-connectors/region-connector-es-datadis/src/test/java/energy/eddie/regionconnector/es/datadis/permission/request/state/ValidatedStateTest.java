@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.es.datadis.permission.request.state;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
-import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
@@ -27,8 +26,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith({MockitoExtension.class})
 class ValidatedStateTest {
-    @Mock
-    private AuthorizationRequest authorizationRequest;
     @Mock
     private AuthorizationApi authorizationApi;
     private final StateBuilderFactory factory = new StateBuilderFactory(authorizationApi);

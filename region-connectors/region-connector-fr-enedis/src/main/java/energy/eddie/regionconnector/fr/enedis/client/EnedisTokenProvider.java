@@ -24,10 +24,12 @@ public class EnedisTokenProvider {
     }
 
     /**
+     * Retrieves and caches a token. If the token is expired, a new token is fetched.
+     *
      * @return a valid token
      * @throws TokenProviderException if the token could not be fetched (e.g. due to network issues or invalid credentials)
      */
-    @SuppressWarnings("JavadocDeclaration")
+    @SuppressWarnings({"InvalidThrows", "JavadocDeclaration"})
     public synchronized Mono<String> getToken() {
         if (token == null || System.currentTimeMillis() > expiryTime) {
             return fetchAndUpdateToken();
