@@ -72,5 +72,13 @@ content = @`
                 data-need-id="INVALID_ID"
         ></eddie-connect-button>
     </div>
+    <div class="uk-flex uk-margin uk-flex-middle">
+        <div class="uk-width-medium">Connect with historical data:</div>
+        <eddie-connect-button
+                class="uk-display-block"
+                connection-id="${nextConnectionId}"
+                data-need-id="LAST_3_MONTHS_HOURLY_MEASUREMENTS_PER_DAY"
+        ></eddie-connect-button>
+    </div>
 `
 )

@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.es.datadis.permission.request.state;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
@@ -35,7 +35,7 @@ class ValidatedStateTest {
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
 
-        var requestForCreation = new PermissionRequestForCreation("bar", "luu", "muh", "kuh", requestDataFrom, requestDataTo, MeasurementType.QUARTER_HOURLY);
+        var requestForCreation = new PermissionRequestForCreation("bar", "luu", "muh", "kuh", requestDataFrom, requestDataTo, Granularity.PT15M);
         var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
         var validatedState = new ValidatedState(permissionRequest, authorizationApi, factory);
         permissionRequest.changeState(validatedState);

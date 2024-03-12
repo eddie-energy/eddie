@@ -1,11 +1,11 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
-import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
@@ -85,9 +85,8 @@ class PermissionRequestServiceTest {
         var now = ZonedDateTime.now(ZONE_ID_SPAIN);
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
-        var measurementType = MeasurementType.QUARTER_HOURLY;
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
-                requestDataFrom, requestDataTo, measurementType);
+                requestDataFrom, requestDataTo, Granularity.PT15M);
         var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, new StateBuilderFactory(mock(AuthorizationApi.class)));
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
 

@@ -64,7 +64,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
     let jsonData = {};
     jsonData.connectionId = this.connectionId;
-    jsonData.measurementType = "HOURLY";
+    jsonData.granularity = this.dataNeedAttributes.granularity;
     jsonData.meteringPointId = formData.get("meteringPointId");
     jsonData.nif = formData.get("nif");
     jsonData.requestDataFrom = startDate.toISOString().substring(0, 10);
@@ -244,8 +244,12 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             id="meteringPointId"
             type="text"
             name="meteringPointId"
-            .helpText=${this.accountingPointId ? "The service has already provided a CUPS value. If this value is incorrect, please contact the service provider." : nothing}
-            .value="${this.accountingPointId ? this.accountingPointId : nothing}"
+            .helpText=${this.accountingPointId
+              ? "The service has already provided a CUPS value. If this value is incorrect, please contact the service provider."
+              : nothing}
+            .value="${this.accountingPointId
+              ? this.accountingPointId
+              : nothing}"
             .disabled="${!!this.accountingPointId}"
             required
           ></sl-input>

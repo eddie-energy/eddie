@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.es.datadis.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisDataSourceInformation;
@@ -148,14 +149,14 @@ class PermissionControllerTest {
                         hasItem("nif: must not be null or blank"),
                         hasItem("meteringPointId: must not be null or blank"),
                         hasItem("dataNeedId: must not be null or blank"),
-                        hasItem("measurementType: must not be null"),
+                        hasItem("granularity: must not be null"),
                         hasItem("requestDataFrom: must not be null"),
                         hasItem("requestDataTo: must not be null")
                 )));
     }
 
     @Test
-    void requestPermission_missingMeasurementType_returnsBadRequest() throws Exception {
+    void requestPermission_missingGranularity_returnsBadRequest() throws Exception {
         ObjectNode jsonNode = mapper.createObjectNode()
                 .put("connectionId", "foo")
                 .put("meteringPointId", "bar")
@@ -170,11 +171,11 @@ class PermissionControllerTest {
                 // Then
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("measurementType: must not be null")));
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("granularity: must not be null")));
     }
 
     @Test
-    void requestPermission_invalidMeasurementType_returnsBadRequest() throws Exception {
+    void requestPermission_invalidGranularity_returnsBadRequest() throws Exception {
         ObjectNode jsonNode = mapper.createObjectNode()
                 .put("connectionId", "foo")
                 .put("meteringPointId", "bar")
@@ -182,7 +183,7 @@ class PermissionControllerTest {
                 .put("nif", "muh")
                 .put("requestDataFrom", "2023-09-09")
                 .put("requestDataTo", "2023-10-10")
-                .put("measurementType", "INVALID");
+                .put("granularity", "INVALID");
 
 
         mockMvc.perform(post("/permission-request")
@@ -192,7 +193,31 @@ class PermissionControllerTest {
                 // Then
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", org.hamcrest.Matchers.startsWith("measurementType: Invalid enum value: 'INVALID'. Valid values: [")));
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", org.hamcrest.Matchers.startsWith("granularity: Invalid enum value: 'INVALID'. Valid values: [")));
+    }
+
+    @Test
+    void requestPermission_unsupportedGranularity_returnsBadRequest() throws Exception {
+        ObjectNode jsonNode = mapper.createObjectNode()
+                .put("connectionId", "foo")
+                .put("meteringPointId", "bar")
+                .put("dataNeedId", "du")
+                .put("nif", "muh")
+                .put("requestDataFrom", "2023-09-09")
+                .put("requestDataTo", "2023-10-10")
+                .put("granularity", "PT30M");
+
+
+        mockMvc.perform(post("/permission-request")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(jsonNode))
+                        .accept(MediaType.APPLICATION_JSON))
+                // Then
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", org.hamcrest.Matchers.startsWith("granularity: Unsupported granularity: 'PT30M'. Supported granularities are:")))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", org.hamcrest.Matchers.containsString(Granularity.PT15M.name())))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", org.hamcrest.Matchers.containsString(Granularity.PT1H.name())));
     }
 
     @Test
@@ -222,7 +247,7 @@ class PermissionControllerTest {
                 .put("meteringPointId", "   ")
                 .put("dataNeedId", "")
                 .put("nif", "")
-                .put("measurementType", "QUARTER_HOURLY");
+                .put("granularity", "PT15M");
 
         mockMvc.perform(post("/permission-request")
                         .content(mapper.writeValueAsString(jsonNode))
@@ -255,7 +280,7 @@ class PermissionControllerTest {
                 .put("meteringPointId", "SomeId")
                 .put("dataNeedId", "BLA_BLU_BLE")
                 .put("nif", "NOICE")
-                .put("measurementType", "QUARTER_HOURLY")
+                .put("granularity", "PT15M")
                 .put("requestDataFrom", "2023-09-09")
                 .put("requestDataTo", "2023-10-10");
 

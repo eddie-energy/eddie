@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.es.datadis.permission.request.state;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
@@ -54,7 +54,7 @@ class CreatedStateTest {
         var nif = "muh";
         var meteringPointId = "kuh";
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
-                requestDataFrom, requestDataTo, MeasurementType.QUARTER_HOURLY);
+                requestDataFrom, requestDataTo, Granularity.PT15M);
         var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
 
         CreatedState createdState = new CreatedState(permissionRequest, factory);
@@ -78,7 +78,7 @@ class CreatedStateTest {
         var meteringPointId = "kuh";
 
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
-                requestDataFrom, requestDataTo, MeasurementType.QUARTER_HOURLY);
+                requestDataFrom, requestDataTo, Granularity.PT15M);
         var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
         CreatedState createdState = new CreatedState(permissionRequest, factory);
 

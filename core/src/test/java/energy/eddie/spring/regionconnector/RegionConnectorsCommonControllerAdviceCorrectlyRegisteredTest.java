@@ -100,7 +100,7 @@ class RegionConnectorsCommonControllerAdviceCorrectlyRegisteredTest {
                 .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItems(
                         "nif: must not be null or blank",
                         "meteringPointId: must not be null or blank",
-                        "measurementType: must not be null",
+                        "granularity: must not be null",
                         "dataNeedId: must not be null or blank",
                         "connectionId: must not be null or blank",
                         "requestDataTo: must not be null",

@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.es.datadis.permission.request;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -26,7 +26,7 @@ class DatadisPermissionRequestTest {
     private final String dataNeedId = "dataNeed";
     private final String nif = "123456";
     private final String meteringPointId = "7890";
-    private final MeasurementType measurementType = MeasurementType.QUARTER_HOURLY;
+    private final Granularity granularity = Granularity.PT15M;
     private final ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
     private final ZonedDateTime requestDataFrom = now.minusDays(10);
     private final ZonedDateTime requestDataTo = now.minusDays(5);
@@ -37,7 +37,7 @@ class DatadisPermissionRequestTest {
     void setUp() {
         factory = new StateBuilderFactory(mock(AuthorizationApi.class));
         requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
-                requestDataFrom, requestDataTo, measurementType);
+                requestDataFrom, requestDataTo, granularity);
     }
 
     @Test
@@ -61,7 +61,7 @@ class DatadisPermissionRequestTest {
     void permissionEnd_whenRequestingFutureData_IsTheSameAsRequestDataTo() {
         var futureDate = ZonedDateTime.now(ZoneOffset.UTC).plusMonths(1);
         requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
-                requestDataFrom, futureDate, measurementType);
+                requestDataFrom, futureDate, granularity);
 
         var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
         assertEquals(request.end(), request.permissionEnd());
@@ -71,7 +71,7 @@ class DatadisPermissionRequestTest {
     void permissionEnd_whenRequestingPastData_isOneDayGraterThanPermissionStart() {
         var pastDate = ZonedDateTime.now(ZoneOffset.UTC).minusMonths(1);
         requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
-                requestDataFrom, pastDate, measurementType);
+                requestDataFrom, pastDate, granularity);
 
         var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
 
@@ -82,7 +82,7 @@ class DatadisPermissionRequestTest {
     void permissionEnd_whenRequestingTodaysData_isOneDayGraterThanPermissionStart() {
         var today = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC);
         requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
-                today, today, measurementType);
+                today, today, granularity);
 
         var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
 

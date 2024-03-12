@@ -2,8 +2,8 @@ package energy.eddie.regionconnector.es.datadis.filter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
@@ -47,7 +47,7 @@ class MeteringDataFilterTest {
     private static EsPermissionRequest setupPermissionRequest(LocalDate requestedStartDate, @Nullable LocalDate requestedEndDate) {
         return new DatadisPermissionRequest("1",
                 new PermissionRequestForCreation("1", "1", "1", "1", requestedStartDate.atStartOfDay(ZONE_ID_SPAIN),
-                        requestedEndDate == null ? null : requestedEndDate.atStartOfDay(ZONE_ID_SPAIN), MeasurementType.HOURLY),
+                        requestedEndDate == null ? null : requestedEndDate.atStartOfDay(ZONE_ID_SPAIN), Granularity.PT1H),
                 new StateBuilderFactory(mock(AuthorizationApi.class)));
     }
 
