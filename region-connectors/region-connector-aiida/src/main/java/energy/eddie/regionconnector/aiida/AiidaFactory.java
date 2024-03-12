@@ -90,7 +90,7 @@ public class AiidaFactory {
      *
      * @param dataNeedId ID of the dataNeed to get.
      * @return DataNeed
-     * @throws DataNeedNotFoundException If there is no DataNeed with the specified ID in the service.
+     * @throws DataNeedNotFoundException If there is no data need with the specified ID in the service.
      */
     private DataNeed getDataNeed(String dataNeedId) throws DataNeedNotFoundException {
         Optional<DataNeed> optionalDataNeed = dataNeedsService.getDataNeed(dataNeedId);

@@ -227,7 +227,8 @@ class RegionConnectorsCommonControllerAdviceTest {
         assertNotNull(responseBody);
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertEquals("No dataNeed with ID 'some-non-existing-id' found.", responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+        assertEquals("No data need with ID 'some-non-existing-id' found.",
+                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 
     @Test
@@ -244,6 +245,7 @@ class RegionConnectorsCommonControllerAdviceTest {
         assertNotNull(responseBody);
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertEquals("No dataNeed with ID 'some-non-existing-id' found.", responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+        assertEquals("No data need with ID 'some-non-existing-id' found.",
+                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 }
