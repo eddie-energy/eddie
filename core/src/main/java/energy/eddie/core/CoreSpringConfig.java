@@ -5,6 +5,14 @@ import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springdoc.core.configuration.SpringDocConfiguration;
+import org.springdoc.core.properties.SpringDocConfigProperties;
+import org.springdoc.core.properties.SwaggerUiConfigParameters;
+import org.springdoc.core.properties.SwaggerUiConfigProperties;
+import org.springdoc.core.properties.SwaggerUiOAuthProperties;
+import org.springdoc.webmvc.core.configuration.MultipleOpenApiSupportConfiguration;
+import org.springdoc.webmvc.core.configuration.SpringDocWebMvcConfiguration;
+import org.springdoc.webmvc.ui.SwaggerConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -15,7 +23,20 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@SpringBootApplication
+@SpringBootApplication(
+        // do not automatically register these beans, as otherwise they are duplicate in the child context
+        // and each child context needs their own instance of them to provide openAPI doc
+        exclude = {
+                SpringDocWebMvcConfiguration.class,
+                MultipleOpenApiSupportConfiguration.class,
+                SwaggerConfig.class,
+                SwaggerUiConfigProperties.class,
+                SwaggerUiConfigParameters.class,
+                SwaggerUiOAuthProperties.class,
+                SpringDocConfiguration.class,
+                SpringDocConfigProperties.class,
+        }
+)
 @EnableConfigurationProperties(DataNeedsConfig.class)
 // required that JPA repositories in child context will be initialized correctly
 @EntityScan(basePackages = "energy.eddie")

@@ -5,6 +5,15 @@ import energy.eddie.api.agnostic.RegionConnectorExtension;
 import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springdoc.core.configuration.SpringDocConfiguration;
+import org.springdoc.core.properties.SpringDocConfigProperties;
+import org.springdoc.core.properties.SwaggerUiConfigParameters;
+import org.springdoc.core.properties.SwaggerUiConfigProperties;
+import org.springdoc.core.properties.SwaggerUiOAuthProperties;
+import org.springdoc.webmvc.core.configuration.MultipleOpenApiSupportConfiguration;
+import org.springdoc.webmvc.core.configuration.SpringDocWebMvcConfiguration;
+import org.springdoc.webmvc.ui.SwaggerConfig;
+import org.springdoc.webmvc.ui.SwaggerController;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -13,6 +22,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -31,6 +41,10 @@ import java.util.stream.Collectors;
 
 public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, Ordered, EnvironmentAware {
     public static final String ALL_REGION_CONNECTORS_BASE_URL_PATH = "region-connectors";
+    /**
+     * Name of the Bean registered in the core context that holds a list of the IDs of the enabled region connectors.
+     */
+    public static final String ENABLED_REGION_CONNECTOR_BEAN_NAME = "enabledRegionConnectors";
     private static final String REGION_CONNECTORS_SCAN_BASE_PACKAGE = "energy.eddie.regionconnector";
     private static final String REGION_CONNECTOR_PROCESSORS_SCAN_BASE_PACKAGE = "energy.eddie.spring.regionconnector.extensions";
     private static final Logger LOGGER = LoggerFactory.getLogger(RegionConnectorRegistrationBeanPostProcessor.class);
@@ -86,6 +100,8 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         applicationContext.setId(regionConnectorName);
         applicationContext.register(regionConnectorConfigClass);
 
+        enableSpringDoc(applicationContext);
+
         // register any region connector processor
         regionConnectorProcessorClasses.forEach(applicationContext::register);
         return applicationContext;
@@ -122,6 +138,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         List<Class<?>> regionConnectorProcessorClasses = findAllRegionConnectorProcessorClasses(environment);
 
         List<String> regionConnectorNames = new ArrayList<>();
+        List<String> enabledRegionConnectorNames = new ArrayList<>();
 
         for (BeanDefinition rcDefinition : regionConnectorBeanDefinitions) {
             try {
@@ -133,6 +150,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
                 if (Boolean.FALSE.equals(environment.getProperty(propertyName, Boolean.class, false))) {
                     LOGGER.info("Region connector {} not explicitly enabled by property, will not load it.", regionConnectorName);
                 } else {
+                    enabledRegionConnectorNames.add(regionConnectorName);
                     var applicationContext = createWebContext(regionConnectorConfigClass, regionConnectorName, regionConnectorProcessorClasses);
                     var beanDefinition = createBeanDefinition(applicationContext, regionConnectorName);
 
@@ -143,6 +161,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
             }
         }
 
+        registerEnabledRegionConnectorsBeanDefinition(registry, enabledRegionConnectorNames);
         registerFlywayStrategy(registry, regionConnectorNames);
     }
 
@@ -204,6 +223,38 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
                 throw new InitializationException("Couldn't find class for RegionConnectorExtension. %s".formatted(e.getMessage()));
             }
         }).collect(Collectors.toList());
+    }
+
+    private void registerEnabledRegionConnectorsBeanDefinition(
+            BeanDefinitionRegistry registry,
+            List<String> enabledRegionConnectorNames
+    ) {
+        AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
+                .genericBeanDefinition(List.class, () -> enabledRegionConnectorNames)
+                .getBeanDefinition();
+        registry.registerBeanDefinition(ENABLED_REGION_CONNECTOR_BEAN_NAME, beanDefinition);
+    }
+
+    /**
+     * Enables SpringDoc OpenAPI in the specified {@code applicationContext} by in registering the necessary Spring and
+     * Swagger Beans. The documentation will be available at the {@code urlMapping} of the context's dispatcher servlet,
+     * e.g. "/region-connectors/dk-energinet/v3/api-docs".
+     *
+     * @param applicationContext Context for which to enable the SpringDoc support.
+     */
+    public static void enableSpringDoc(AnnotationConfigWebApplicationContext applicationContext) {
+        applicationContext.register(
+                SwaggerConfig.class,
+                SwaggerUiConfigProperties.class,
+                SwaggerUiConfigParameters.class,
+                SwaggerUiOAuthProperties.class,
+                SpringDocWebMvcConfiguration.class,
+                MultipleOpenApiSupportConfiguration.class,
+                SpringDocConfiguration.class,
+                SpringDocConfigProperties.class,
+                JacksonAutoConfiguration.class,
+                SwaggerController.class
+        );
     }
 
     @Override

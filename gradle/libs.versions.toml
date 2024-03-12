@@ -43,6 +43,7 @@ flyway = "10.8.1"
 
 swagger-codegen-version = "3.0.45"
 openapi-generator = "7.3.0"
+openapi-webmvc-ui = "2.3.0"
 apache-httpcomponents-version = "4.5.14"
 apache-httpcomponents-client-version = "5.2.1"
 jackson-databind-nullable-version = "0.2.6"
@@ -137,6 +138,7 @@ spring-kafka = { module = "org.springframework.kafka:spring-kafka", version.ref 
 spring-websocket = { module = "org.springframework:spring-websocket", version.ref = "spring-websocket" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "spring-retry" }
 spring-aspects = { module = "org.springframework:spring-aspects", version.ref = "spring-aspects" }
+spring-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "openapi-webmvc-ui" }
 
 hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", version.ref = "hibernate-validator" }
 

@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.websocket)
+    implementation(libs.spring.openapi.webmvc.ui)
     implementation(libs.reactor.core)
     implementation(libs.flyway.core)
 
