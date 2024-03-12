@@ -36,6 +36,7 @@ class TerminationRouterTest {
         router.registerRegionConnector(regionConnector2);
         ConsentMarketDocument cmd = new ConsentMarketDocument()
                 .withMRID("pid")
+                .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
                 .withPermissionList(new ConsentMarketDocument.PermissionList()
                         .withPermissions(new PermissionComplexType()
                                 .withReasonList(new PermissionComplexType.ReasonList()
@@ -79,6 +80,7 @@ class TerminationRouterTest {
         router.registerRegionConnector(regionConnector2);
         ConsentMarketDocument cmd = new ConsentMarketDocument()
                 .withMRID("pid")
+                .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
                 .withPermissionList(new ConsentMarketDocument.PermissionList()
                         .withPermissions(new PermissionComplexType()
                                 .withReasonList(new PermissionComplexType.ReasonList()
@@ -125,6 +127,7 @@ class TerminationRouterTest {
         router.registerRegionConnector(regionConnector2);
         ConsentMarketDocument cmd = new ConsentMarketDocument()
                 .withMRID("pid")
+                .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
                 .withSenderMarketParticipantMRID(new PartyIDStringComplexType()
                         .withCodingScheme(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
                 )

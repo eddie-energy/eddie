@@ -60,11 +60,12 @@ page. It can be integrated into a frontend based application (e.g. a single-page
 web application as it's implemented using standard HTML custom elements.
 
 ```html
+
 <script type="module" src="${eddieUrl}/lib/eddie-components.js"></script>
 <!-- ... -->
 <eddie-connect-button
-  connection-id="1"
-  data-need-id="LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY"
+        connection-id="1"
+        data-need-id="LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY"
 ></eddie-connect-button>
 ```
 
@@ -252,11 +253,14 @@ kafka.bootstrap.servers=localhost:9093
 To terminate permission requests, a consent market document in json format has to be sent to
 the `kafka.termination.topic`.
 The key should be the ID of the region connector, from which the request originated.
-The consent market document can look like this:
+The consent market document for termination can look like the following JSON message.
+**Keep in mind that some kafka clients use newlines as message separator, in that case minimize the message, or change
+the message separator!**
 
 ```json
 {
   "mrid": "REPLACE_ME",
+  "type": "Z01",
   "permissionList": {
     "permissions": [
       {
@@ -280,6 +284,7 @@ The consent market document can look like this:
 }
 ```
 
-The MRID should be replaced by the permission ID, the code `Z03` stands for „cancelled by eligible party“.
+The MRID should be replaced by the permission ID, the code `Z03` stands for „cancelled by eligible party“ and the
+type `Z01` identifies this document as a termination document.
 If the kafka message key is unknown, the type of the mktActivityRecord is used, which is identical to the region
 connector id.
