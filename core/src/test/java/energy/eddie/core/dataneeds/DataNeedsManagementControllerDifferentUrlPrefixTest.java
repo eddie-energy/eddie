@@ -12,9 +12,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
 
+import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
 import static energy.eddie.core.dataneeds.DataNeedEntityTest.EXAMPLE_DATA_NEED;
 import static energy.eddie.core.dataneeds.DataNeedEntityTest.EXAMPLE_DATA_NEED_KEY;
-import static energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice.ERRORS_JSON_PATH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
