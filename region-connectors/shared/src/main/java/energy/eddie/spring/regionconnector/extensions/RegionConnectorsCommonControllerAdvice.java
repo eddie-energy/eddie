@@ -30,7 +30,6 @@ import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
 @RegionConnectorExtension
 @RestControllerAdvice
 public class RegionConnectorsCommonControllerAdvice {
-    public static final String ERRORS_JSON_PATH = "$." + ERRORS_PROPERTY_NAME;
     private static final Logger LOGGER = LoggerFactory.getLogger(RegionConnectorsCommonControllerAdvice.class);
 
     /**
