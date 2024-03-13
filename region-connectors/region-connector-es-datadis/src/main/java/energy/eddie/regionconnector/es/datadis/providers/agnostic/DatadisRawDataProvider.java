@@ -27,9 +27,14 @@ public class DatadisRawDataProvider implements RawDataProvider {
 
     private RawDataMessage createRawDataMessage(IdentifiableMeteringData meteringData) {
         PermissionRequest request = meteringData.permissionRequest();
-        return new RawDataMessage(request.permissionId(), request.connectionId(), request.dataNeedId(),
-                                  request.dataSourceInformation(), ZonedDateTime.now(ZoneId.of("UTC")),
-                                  meteringData.meteringData().toString());
+        return new RawDataMessage(
+                request.permissionId(),
+                request.connectionId(),
+                request.dataNeedId(),
+                request.dataSourceInformation(),
+                ZonedDateTime.now(ZoneId.of("UTC")),
+                meteringData.intermediateMeteringData().meteringData().toString()
+        );
     }
 
     @Override

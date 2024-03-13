@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 /**
  * This service updates the last pulled meter reading and checks for fulfillment of the permission request.
@@ -24,38 +25,43 @@ public class IdentifiableMeteringDataService {
 
     private static void updateLastPulledMeterReadingAndCheckForFulfillment(IdentifiableMeteringData identifiableMeteringData) {
         var permissionRequest = identifiableMeteringData.permissionRequest();
-        var lastMeterReading = identifiableMeteringData.meteringData().getLast();
-        ZonedDateTime meteringDataDate = lastMeterReading.dateTime();
+        var permissionId = permissionRequest.permissionId();
+        ZonedDateTime meteringDataDate = identifiableMeteringData.intermediateMeteringData().end();
 
-        updateLastPulledMeterReading(permissionRequest, meteringDataDate);
-        checkForFulfillment(permissionRequest, meteringDataDate);
-    }
+        if (isLatestMeterReading(permissionRequest, meteringDataDate)) {
+            LOGGER.info("Updating latest meter reading for permission request {} from {} to {}", permissionId, permissionRequest.lastPulledMeterReading(), meteringDataDate);
+            permissionRequest.setLastPulledMeterReading(identifiableMeteringData.intermediateMeteringData().end());
 
-    private static void checkForFulfillment(EsPermissionRequest permissionRequest, ZonedDateTime meteringDataDate) {
-        var permissionEnd = permissionRequest.end();
-        if (permissionEnd == null) {
-            return;
-        }
-
-        // the last metering data date is always at 00:00 the next day, so if we get data for the 24.01.2024 the last metering data date will be 25.01.2024T00:00:00
-        // this check makes sure that the permission request is fulfilled if the last metering data date is equal or after the permission end date
-        if (!meteringDataDate.isBefore(permissionEnd)) {
-            try {
-                permissionRequest.fulfill();
-            } catch (StateTransitionException e) {
-                LOGGER.error("Error while fulfilling permission request", e);
+            if (isFulfilled(permissionRequest, meteringDataDate)) {
+                LOGGER.info("Fulfilling permission request {}", permissionId);
+                try {
+                    permissionRequest.fulfill();
+                    LOGGER.info("Permission request {} fulfilled", permissionId);
+                } catch (StateTransitionException e) {
+                    LOGGER.error("Error while fulfilling permission request {}", permissionId, e);
+                }
             }
         }
     }
 
-    private static void updateLastPulledMeterReading(EsPermissionRequest permissionRequest, ZonedDateTime meteringDataDate) {
-        permissionRequest.lastPulledMeterReading().ifPresentOrElse(
-                lastPulledMeterReading -> {
-                    if (meteringDataDate.isAfter(lastPulledMeterReading)) {
-                        permissionRequest.setLastPulledMeterReading(meteringDataDate);
-                    }
-                },
-                () -> permissionRequest.setLastPulledMeterReading(meteringDataDate)
-        );
+    private static boolean isLatestMeterReading(EsPermissionRequest permissionRequest, ZonedDateTime meteringDataDate) {
+        return permissionRequest
+                .lastPulledMeterReading()
+                .map(meteringDataDate::isAfter)
+                .orElse(true);
+    }
+
+    /**
+     * Checks if the permission request is fulfilled.
+     *
+     * @param permissionRequest   the permission request
+     * @param meterReadingEndDate the end date of the meter reading
+     * @return true if {@code meterReadingEndDate} is >= {@link EsPermissionRequest#end()}. The {@link EsPermissionRequest#end()} is already inclusive, so we check >= instead of >.
+     */
+    private static boolean isFulfilled(EsPermissionRequest permissionRequest, ZonedDateTime meterReadingEndDate) {
+        return Optional.ofNullable(permissionRequest.end())
+                .map(ZonedDateTime::toLocalDate)
+                .map(end -> !meterReadingEndDate.toLocalDate().isBefore(end))
+                .orElse(false);
     }
 }

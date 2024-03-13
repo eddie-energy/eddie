@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.es.datadis.services;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
+import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import energy.eddie.regionconnector.es.datadis.filter.MeteringDataFilter;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
@@ -22,12 +23,12 @@ import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConst
 public class DataApiService implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataApiService.class);
     private final DataApi dataApi;
-    private final Sinks.Many<IdentifiableMeteringData> meteringDataSink;
+    private final Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink;
 
 
-    public DataApiService(DataApi dataApi, Sinks.Many<IdentifiableMeteringData> meteringDataSink) {
+    public DataApiService(DataApi dataApi, Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink) {
         this.dataApi = dataApi;
-        this.meteringDataSink = meteringDataSink;
+        this.identifiableMeteringDataSink = identifiableMeteringDataSink;
     }
 
     public void fetchDataForPermissionRequest(EsPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
@@ -42,10 +43,11 @@ public class DataApiService implements AutoCloseable {
 
     private void tryGetConsumptionKwh(MeteringDataRequest request, EsPermissionRequest permissionRequest) {
         dataApi.getConsumptionKwh(request)
+                .map(IntermediateMeteringData::fromMeteringData)
                 .flatMap(result -> new MeteringDataFilter(result, permissionRequest).filter())
                 .map(result -> new IdentifiableMeteringData(permissionRequest, result))
                 .doOnError(e -> retryOrRevoke(request, permissionRequest, e))
-                .subscribe(meteringDataSink::tryEmitNext);
+                .subscribe(identifiableMeteringDataSink::tryEmitNext);
     }
 
     private void retryOrRevoke(MeteringDataRequest request, EsPermissionRequest permissionRequest, Throwable e) {
@@ -77,6 +79,6 @@ public class DataApiService implements AutoCloseable {
 
     @Override
     public void close() {
-        meteringDataSink.tryEmitComplete();
+        identifiableMeteringDataSink.tryEmitComplete();
     }
 }
