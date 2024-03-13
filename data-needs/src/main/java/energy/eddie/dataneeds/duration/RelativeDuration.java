@@ -2,19 +2,26 @@ package energy.eddie.dataneeds.duration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nullable;
+import jakarta.persistence.*;
 
 import java.time.Period;
 import java.util.Optional;
 
+@Entity
+@Table(name = "relative_duration", schema = "data_needs")
 public class RelativeDuration extends DataNeedDuration {
     public static final String DISCRIMINATOR_VALUE = "relativeDuration";
 
+    @Column(name = "relative_start")
     @Nullable
     @JsonProperty
     private Period start;
+    @Column(name = "relative_end")
     @Nullable
     @JsonProperty
     private Period end;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "calendar_unit")
     @Nullable
     @JsonProperty
     private CalendarUnit stickyStartCalendarUnit;

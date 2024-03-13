@@ -6,7 +6,14 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.SmartMeterAiidaDataNeed;
+import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.Instant;
+
+@Entity
+@Table(schema = "data_needs")
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         property = "type")
@@ -18,16 +25,26 @@ import energy.eddie.dataneeds.needs.aiida.SmartMeterAiidaDataNeed;
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class DataNeed {
+    @Id
+    @Column(name = "data_need_id")
     @JsonProperty(required = true)
     private String id;
+    @Column(name = "name", nullable = false)
     @JsonProperty(required = true)
     private String name;
+    @Column(name = "description", nullable = false)
     @JsonProperty(required = true)
     private String description;
+    @Column(name = "purpose", nullable = false)
     @JsonProperty(required = true)
     private String purpose;
+    @Column(name = "policy_link", nullable = false)
     @JsonProperty(required = true)
     private String policyLink;
+    @Column(name = "created_at")
+    @CreationTimestamp
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Instant createdAt;
 
     @SuppressWarnings("NullAway.Init")
     protected DataNeed() {
@@ -55,5 +72,15 @@ public abstract class DataNeed {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    /**
+     * Returns the timestamp that this data need was created at. This timestamp is only available if data needs are
+     * stored in the database, when reading from a config file it will be null.
+     *
+     * @return Timestamp of creation.
+     */
+    public Instant createdAt() {
+        return createdAt;
     }
 }

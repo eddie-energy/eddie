@@ -1,9 +1,13 @@
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 import java.util.*
 
 plugins {
     id("energy.eddie.java-conventions")
+
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
 }
 
 group = "energy.eddie"
@@ -18,6 +22,7 @@ dependencies {
 
     implementation(libs.jackson.annotations)
     implementation(libs.jakarta.annotation.api)
+    implementation(libs.spring.boot.starter.data.jpa)
 
     testImplementation(libs.junit.jupiter)
 }
@@ -33,4 +38,13 @@ tasks.withType<JavaCompile>().configureEach {
             option("NullAway:AnnotatedPackages", "energy.eddie")
         }
     }
+}
+
+// disable bootJar task as it needs a main class and data-needs does not have one
+tasks.getByName<BootJar>("bootJar") {
+    enabled = false
+}
+
+tasks.getByName<Jar>("jar") {
+    enabled = true
 }

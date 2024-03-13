@@ -3,18 +3,27 @@ package energy.eddie.dataneeds.needs;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.dataneeds.EnergyType;
+import jakarta.persistence.*;
 
 /**
  * A data need designed to request validated historical data from the MDA. If the {@link #duration()} ends in the
  * future, new data should be fetched daily.
  */
+@Entity
+@Table(name = "validated_consumption_data_need", schema = "data_needs")
 public class ValidatedHistoricalDataDataNeed extends TimeframedDataNeed {
     public static final String DISCRIMINATOR_VALUE = "validated";
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "energy_type", nullable = false)
     @JsonProperty(required = true)
     private EnergyType energyType;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "min_granularity", nullable = false)
     @JsonProperty(required = true)
     private Granularity minGranularity;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "max_granularity", nullable = false)
     @JsonProperty(required = true)
     private Granularity maxGranularity;
 
