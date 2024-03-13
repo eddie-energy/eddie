@@ -87,6 +87,31 @@ class RegionConnectorsCommonControllerAdviceTest {
     }
 
     @Test
+    void givenInvalidParseException_returnsErrorMessage() {
+        InvalidFormatException mockInvalidFormatEx = mock(InvalidFormatException.class);
+        when(mockInvalidFormatEx.getValue()).thenReturn("foo");
+        when(mockInvalidFormatEx.getPath()).thenReturn(List.of(new JsonMappingException.Reference(null, "duration"),
+                                                               new JsonMappingException.Reference(null, "start")));
+
+        // Given
+        var exception = new HttpMessageNotReadableException("", mockInvalidFormatEx, mock(HttpInputMessage.class));
+
+        // When
+        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleHttpMessageNotReadableException(
+                exception);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        var responseBody = response.getBody();
+        assertNotNull(responseBody);
+        assertEquals(1, responseBody.size());
+        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
+        // Only the annotated values are included in the valid values array
+        assertEquals("duration.start: Cannot parse value 'foo'.",
+                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+    }
+
+    @Test
     void givenSendToPermissionAdministratorException_returnsBadRequestIfUserFault() {
         // Given
         var exception = new SendToPermissionAdministratorException(mock(PermissionRequestState.class), "Test message", true);
