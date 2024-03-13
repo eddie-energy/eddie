@@ -27,6 +27,8 @@ dependencies {
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.spring.boot.starter.test)
+    // needed to have access to RegionConnectorsCommonControllerAdvice that formats error responses correctly
+    testImplementation(project(":region-connectors:shared"))
 }
 
 tasks.test {
