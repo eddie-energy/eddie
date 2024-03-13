@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
-import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
 import energy.eddie.api.agnostic.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
@@ -150,16 +149,5 @@ public class RegionConnectorsCommonControllerAdvice {
             (PermissionNotFoundException exception) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
-    }
-
-    @ExceptionHandler(DataNeedNotFoundException.class)
-    public ResponseEntity<Map<String, List<EddieApiError>>> handleDataNeedNotFoundException
-            (DataNeedNotFoundException exception) {
-        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
-
-        if (exception.isBadRequest())
-            return ResponseEntity.badRequest().body(errors);
-        else
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
     }
 }
