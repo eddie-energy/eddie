@@ -4,6 +4,7 @@ import energy.eddie.api.utils.Pair;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.cim.v0_82.cmd.MessageTypeList;
 import energy.eddie.cim.v0_82.cmd.ReasonCodeTypeList;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
@@ -38,7 +39,9 @@ public class TerminationRouter {
     }
 
     private static boolean isTerminationMessage(Pair<String, ConsentMarketDocument> pair) {
-        return pair.value().getPermissionList().getPermissions().getFirst().getReasonList().getReasons().getFirst().getCode() == ReasonCodeTypeList.CANCELLED_EP;
+        return pair.value().getPermissionList().getPermissions().getFirst().getReasonList().getReasons().getFirst()
+                .getCode() == ReasonCodeTypeList.CANCELLED_EP
+                && pair.value().getType() == MessageTypeList.PERMISSION_TERMINATION_DOCUMENT;
     }
 
     private static String getRegionConnectorId(Pair<String, ConsentMarketDocument> cmd) {
