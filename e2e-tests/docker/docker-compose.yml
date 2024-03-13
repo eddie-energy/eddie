@@ -80,9 +80,6 @@ services:
       kafka-topics.sh --bootstrap-server kafka:9092 --list
       "
 
-volumes:
-  postgres_data:
-
 networks:
   default:
     external: true
