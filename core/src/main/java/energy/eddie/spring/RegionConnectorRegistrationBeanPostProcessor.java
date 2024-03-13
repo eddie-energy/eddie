@@ -147,19 +147,22 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
     }
 
     /**
-     * Creates a {@link FlywayMigrationStrategy} that creates the schemas for all region connectors and
-     * the {@code core}, as well as executing any migration scripts found in the respective folders on the classpath.
+     * Creates a {@link FlywayMigrationStrategy} for each region connector, as well as for the {@code core} and
+     * {@code data-needs} module. The migration strategy creates the schema for the module and executes any migration
+     * scripts found in the respective folders on the classpath.
      * The folder pattern is: "db/migration/&lt;region-connector-name&gt;".
      * Any minus ('-') in the region connector's name will be replaced by an underscore ('_') for the schema name.
      *
      * @param registry                    BeanDefinitionRegistry where the {@link FlywayMigrationStrategy} is registered.
-     * @param enabledRegionConnectorNames List of the names of the enabled region connectors for which the migrations will be run.
+     * @param enabledRegionConnectorNames List of all the region connector names.
      */
     private void registerFlywayStrategy(BeanDefinitionRegistry registry, List<String> enabledRegionConnectorNames) {
         FlywayMigrationStrategy strategy = flyway -> {
             // also execute flyway migration for core
             enabledRegionConnectorNames.add("core");
+            enabledRegionConnectorNames.add("data-needs");
             enabledRegionConnectorNames.forEach(regionConnectorName -> {
+                LOGGER.info("Starting Flyway migration for '{}'", regionConnectorName);
                 var schemaName = regionConnectorName.replace('-', '_');
                 Flyway.configure()
                         .configuration(flyway.getConfiguration())

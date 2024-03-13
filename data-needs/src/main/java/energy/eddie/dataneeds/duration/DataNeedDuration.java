@@ -4,7 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import jakarta.persistence.*;
 
+@Entity
+@Table(schema = "data_needs")
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         property = "type")
@@ -14,6 +18,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class DataNeedDuration {
+    @Id
+    @Column(name = "data_need_id")
     @JsonIgnore
     private String dataNeedId;
 
