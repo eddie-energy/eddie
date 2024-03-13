@@ -27,7 +27,7 @@ public class SimulationConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public String countryCode() {
-        return "de";
+        return "DE";
     }
 
     @Override

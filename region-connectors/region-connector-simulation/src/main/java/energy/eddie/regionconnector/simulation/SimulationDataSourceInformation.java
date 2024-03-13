@@ -5,7 +5,7 @@ import energy.eddie.api.v0.DataSourceInformation;
 public class SimulationDataSourceInformation implements DataSourceInformation {
     @Override
     public String countryCode() {
-        return "sim";
+        return "DE";
     }
 
     @Override

@@ -16,7 +16,7 @@ import java.util.UUID;
 
 import static energy.eddie.api.CommonInformationModelVersions.V0_82;
 
-class IntermediateConsentMarketDocument<T extends TimeframedPermissionRequest> {
+public class IntermediateConsentMarketDocument<T extends TimeframedPermissionRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(IntermediateConsentMarketDocument.class);
     private final T permissionRequest;
     private final String customerIdentifier;
@@ -33,7 +33,7 @@ class IntermediateConsentMarketDocument<T extends TimeframedPermissionRequest> {
         this.countryCode = countryCode;
     }
 
-    ConsentMarketDocument toConsentMarketDocument() {
+    public ConsentMarketDocument toConsentMarketDocument() {
         return toConsentMarketDocument(Clock.systemUTC());
     }
 
