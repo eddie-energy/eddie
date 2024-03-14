@@ -1,24 +1,34 @@
 package energy.eddie.regionconnector.aiida.services;
 
-import energy.eddie.api.agnostic.DataNeed;
-import energy.eddie.api.agnostic.DataNeedsService;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.TransmissionScheduleProvider;
 import jakarta.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 
 public record AiidaTransmissionScheduleProvider(DataNeedsService dataNeedsService)
         implements TransmissionScheduleProvider<AiidaPermissionRequestInterface> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiidaTransmissionScheduleProvider.class);
 
     @Nullable
     @Override
     public String findTransmissionSchedule(AiidaPermissionRequestInterface pr) {
         return dataNeedsService
-                .getDataNeed(pr.dataNeedId())
-                .map(DataNeed::transmissionInterval)
-                .map(ti -> Duration.of(ti, ChronoUnit.SECONDS).toString())
+                .findById(pr.dataNeedId())
+                .map(dataNeed -> {
+                    if (dataNeed instanceof AiidaDataNeed aiidaDataNeed)
+                        return Duration.ofSeconds(aiidaDataNeed.transmissionInterval()).toString();
+
+                    LOGGER.warn(
+                            "Finding transmission schedule for non-AIIDA data need with ID {} is not possible. Permission ID was {}",
+                            dataNeed.id(),
+                            pr.permissionId());
+                    return null;
+                })
                 .orElse(null);
     }
 }

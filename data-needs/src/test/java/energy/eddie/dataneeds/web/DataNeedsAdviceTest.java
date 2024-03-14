@@ -2,6 +2,7 @@ package energy.eddie.dataneeds.web;
 
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,26 @@ class DataNeedsAdviceTest {
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
         assertEquals("No data need with ID 'some-non-existing-id' found.",
+                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+    }
+
+    @Test
+    void givenUnsupportedDataNeedException_returnsBadRequest() {
+        // Given
+        var exception = new UnsupportedDataNeedException("RC-ID",
+                                                         "test ID",
+                                                         "Test error message.");
+
+        // When
+        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleUnsupportedDataNeedException(exception);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        var responseBody = response.getBody();
+        assertNotNull(responseBody);
+        assertEquals(1, responseBody.size());
+        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
+        assertEquals("Region connector 'RC-ID' does not support data need with ID 'test ID': Test error message.",
                      responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 }

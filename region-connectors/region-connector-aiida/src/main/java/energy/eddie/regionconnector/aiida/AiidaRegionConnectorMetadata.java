@@ -3,9 +3,11 @@ package energy.eddie.regionconnector.aiida;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 
 import javax.annotation.Nullable;
+import java.time.ZoneId;
 
 public class AiidaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "aiida";
+    public static final ZoneId REGION_CONNECTOR_ZONE_ID = ZoneId.of("Etc/UTC");
 
     @Nullable
     private static AiidaRegionConnectorMetadata instance = null;

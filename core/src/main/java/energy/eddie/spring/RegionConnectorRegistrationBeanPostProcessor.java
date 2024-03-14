@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, Ordered, EnvironmentAware {
     public static final String ALL_REGION_CONNECTORS_BASE_URL_PATH = "region-connectors";
     private static final String REGION_CONNECTORS_SCAN_BASE_PACKAGE = "energy.eddie.regionconnector";
-    private static final String REGION_CONNECTOR_PROCESSORS_SCAN_BASE_PACKAGE = "energy.eddie.spring.regionconnector.extensions";
     private static final Logger LOGGER = LoggerFactory.getLogger(RegionConnectorRegistrationBeanPostProcessor.class);
     @Nullable
     private Environment environment;
@@ -193,7 +192,8 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         // use environment of parent to properly evaluate @Conditional annotations
         scanner.setEnvironment(scannerEnvironment);
 
-        var beanDefinitions = scanner.findCandidateComponents(REGION_CONNECTOR_PROCESSORS_SCAN_BASE_PACKAGE);
+        // scan in all packages for extensions (e.g. data needs controller advice is in a different package than the other extensions)
+        var beanDefinitions = scanner.findCandidateComponents("energy.eddie");
 
         if (LOGGER.isInfoEnabled()) {
             String[] processorNames = beanDefinitions.stream().map(BeanDefinition::getBeanClassName).toArray(String[]::new);

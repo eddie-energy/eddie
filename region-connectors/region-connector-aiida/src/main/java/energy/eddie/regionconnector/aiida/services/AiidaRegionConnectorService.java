@@ -5,6 +5,7 @@ import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.aiida.AiidaFactory;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnector;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
@@ -78,7 +79,7 @@ public class AiidaRegionConnectorService implements Mvp1ConnectionStatusMessageP
      * @param creationRequest Request containing necessary information for creating a new permission.
      * @return Necessary data that should be displayed to the customer.
      */
-    public PermissionDto createNewPermission(PermissionRequestForCreation creationRequest) throws StateTransitionException, DataNeedNotFoundException {
+    public PermissionDto createNewPermission(PermissionRequestForCreation creationRequest) throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
         var permissionRequest = aiidaFactory.createPermissionRequest(creationRequest.connectionId(),
                 creationRequest.dataNeedId());
 

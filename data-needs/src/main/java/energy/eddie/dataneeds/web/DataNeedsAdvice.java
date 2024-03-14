@@ -3,6 +3,7 @@ package energy.eddie.dataneeds.web;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,5 +25,13 @@ public class DataNeedsAdvice {
 
         return (exception.isBadRequest() ? ResponseEntity.badRequest() : ResponseEntity.status(HttpStatus.NOT_FOUND))
                 .body(errors);
+    }
+
+    @ExceptionHandler(UnsupportedDataNeedException.class)
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleUnsupportedDataNeedException
+            (UnsupportedDataNeedException exception) {
+        @SuppressWarnings("NullAway")  // UnsupportedDataNeedException always has a message
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.badRequest().body(errors);
     }
 }
