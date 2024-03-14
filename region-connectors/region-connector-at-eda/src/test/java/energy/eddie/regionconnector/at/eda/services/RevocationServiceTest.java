@@ -2,14 +2,20 @@ package energy.eddie.regionconnector.at.eda.services;
 
 import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
 import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.ProcessDirectory;
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
-import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
-import energy.eddie.regionconnector.at.eda.permission.request.StateBuilderFactory;
-import energy.eddie.regionconnector.at.eda.permission.request.states.AtAcceptedPermissionRequestState;
+import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.publisher.TestPublisher;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -22,31 +28,35 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class RevocationServiceTest {
+    @Mock
+    private Outbox outbox;
+    @Captor
+    private ArgumentCaptor<SimpleEvent> captor;
 
     @Test
     void revokeWithConsentId_revokesPermissionRequest() {
         // Given
         var edaAdapter = mock(EdaAdapter.class);
-        var factory = new StateBuilderFactory(mock(AtConfiguration.class), edaAdapter);
-        var permissionRequest = new EdaPermissionRequest("cid", "dnid", mock(CCMORequest.class), factory);
-        permissionRequest.changeState(new AtAcceptedPermissionRequestState(permissionRequest, edaAdapter, null, factory));
+        var permissionRequest = new EdaPermissionRequest("cid", "dnid", mock(CCMORequest.class), Granularity.PT15M,
+                                                         PermissionProcessStatus.ACCEPTED, null, null);
         TestPublisher<CMRevoke> revocationStream = TestPublisher.create();
         when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());
-        var permissionRequestService = mock(PermissionRequestService.class);
-        when(permissionRequestService.findByConsentId("consentId")).thenReturn(Optional.of(permissionRequest));
+        var repository = mock(AtPermissionRequestRepository.class);
+        when(repository.findByConsentId("consentId")).thenReturn(Optional.of(permissionRequest));
         CMRevoke cmRevoke = new CMRevoke();
         cmRevoke.setProcessDirectory(new ProcessDirectory().withConsentId("consentId"));
-        new RevocationService(edaAdapter, permissionRequestService);
+        new RevocationService(edaAdapter, repository, outbox);
 
         // When
         revocationStream.emit(cmRevoke);
 
         // Then
-        assertEquals(PermissionProcessStatus.REVOKED, permissionRequest.state().status());
+        verify(outbox).commit(captor.capture());
+        assertEquals(PermissionProcessStatus.REVOKED, captor.getValue().status());
     }
 
     @Test
@@ -57,16 +67,14 @@ class RevocationServiceTest {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         when(ccmoRequest.start()).thenReturn(now);
         when(ccmoRequest.end()).thenReturn(Optional.of(now.plusDays(10)));
-        var factory = new StateBuilderFactory(mock(AtConfiguration.class), edaAdapter);
-        var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, factory);
-        permissionRequest.setMeteringPointId("mpid");
-        permissionRequest.changeState(new AtAcceptedPermissionRequestState(permissionRequest, null, null, factory));
+        var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, Granularity.PT15M,
+                                                         PermissionProcessStatus.ACCEPTED, null, null);
         TestPublisher<CMRevoke> revocationStream = TestPublisher.create();
         when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());
-        var permissionRequestService = mock(PermissionRequestService.class);
-        when(permissionRequestService.findByConsentId("consentId")).thenReturn(Optional.empty());
+        var repository = mock(AtPermissionRequestRepository.class);
+        when(repository.findByConsentId("consentId")).thenReturn(Optional.empty());
 
-        when(permissionRequestService.findByMeteringPointIdAndDate(anyString(), any()))
+        when(repository.findByMeteringPointIdAndDate(anyString(), any()))
                 .thenReturn(List.of(permissionRequest));
         CMRevoke cmRevoke = new CMRevoke();
         cmRevoke.setProcessDirectory(
@@ -75,13 +83,14 @@ class RevocationServiceTest {
                         .withConsentEnd(DatatypeFactory.newInstance().newXMLGregorianCalendar(now.toString()))
                         .withMeteringPoint("mpid")
         );
-        new RevocationService(edaAdapter, permissionRequestService);
+        new RevocationService(edaAdapter, repository, outbox);
 
         // When
         revocationStream.emit(cmRevoke);
 
         // Then
-        assertEquals(PermissionProcessStatus.REVOKED, permissionRequest.state().status());
+        verify(outbox).commit(captor.capture());
+        assertEquals(PermissionProcessStatus.REVOKED, captor.getValue().status());
     }
 
     @Test
@@ -92,15 +101,14 @@ class RevocationServiceTest {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         when(ccmoRequest.start()).thenReturn(now);
         when(ccmoRequest.end()).thenReturn(Optional.of(now.plusDays(10)));
-        var factory = new StateBuilderFactory(mock(AtConfiguration.class), edaAdapter);
-        var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, factory);
-        permissionRequest.setMeteringPointId("mpid");
+        var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, Granularity.PT15M,
+                                                         PermissionProcessStatus.CREATED, null, null);
         TestPublisher<CMRevoke> revocationStream = TestPublisher.create();
         when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());
-        var permissionRequestService = mock(PermissionRequestService.class);
-        when(permissionRequestService.findByConsentId("consentId")).thenReturn(Optional.empty());
+        var repository = mock(AtPermissionRequestRepository.class);
+        when(repository.findByConsentId("consentId")).thenReturn(Optional.empty());
 
-        when(permissionRequestService.findByMeteringPointIdAndDate(anyString(), any()))
+        when(repository.findByMeteringPointIdAndDate(anyString(), any()))
                 .thenReturn(List.of(permissionRequest));
         CMRevoke cmRevoke = new CMRevoke();
         cmRevoke.setProcessDirectory(
@@ -109,12 +117,12 @@ class RevocationServiceTest {
                         .withConsentEnd(DatatypeFactory.newInstance().newXMLGregorianCalendar(now.toString()))
                         .withMeteringPoint("mpid")
         );
-        new RevocationService(edaAdapter, permissionRequestService);
+        new RevocationService(edaAdapter, repository, outbox);
 
         // When
         revocationStream.emit(cmRevoke);
 
         // Then
-        assertEquals(PermissionProcessStatus.CREATED, permissionRequest.state().status());
+        verify(outbox, never()).commit(any());
     }
 }

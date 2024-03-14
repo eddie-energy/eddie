@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82;
 
 import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.cmd.*;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
@@ -16,24 +17,35 @@ import java.util.UUID;
 
 import static energy.eddie.api.CommonInformationModelVersions.V0_82;
 
-class IntermediateConsentMarketDocument<T extends TimeframedPermissionRequest> {
+public class IntermediateConsentMarketDocument<T extends TimeframedPermissionRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(IntermediateConsentMarketDocument.class);
     private final T permissionRequest;
     private final String customerIdentifier;
     private final TransmissionScheduleProvider<T> transmissionScheduleProvider;
     private final String countryCode;
+    private final PermissionProcessStatus status;
 
     public IntermediateConsentMarketDocument(T permissionRequest,
                                              String customerIdentifier,
                                              TransmissionScheduleProvider<T> transmissionScheduleProvider,
                                              String countryCode) {
+        this(permissionRequest, permissionRequest.status(), customerIdentifier, transmissionScheduleProvider,
+             countryCode);
+    }
+
+    public IntermediateConsentMarketDocument(T permissionRequest,
+                                             PermissionProcessStatus status,
+                                             String customerIdentifier,
+                                             TransmissionScheduleProvider<T> transmissionScheduleProvider,
+                                             String countryCode) {
+        this.status = status;
         this.permissionRequest = permissionRequest;
         this.customerIdentifier = customerIdentifier;
         this.transmissionScheduleProvider = transmissionScheduleProvider;
         this.countryCode = countryCode;
     }
 
-    ConsentMarketDocument toConsentMarketDocument() {
+    public ConsentMarketDocument toConsentMarketDocument() {
         return toConsentMarketDocument(Clock.systemUTC());
     }
 
@@ -107,10 +119,10 @@ class IntermediateConsentMarketDocument<T extends TimeframedPermissionRequest> {
     }
 
     private StatusTypeList getStatusTypeList() {
-        String permissionRequestStatus = permissionRequest.state().status().toString().toUpperCase(Locale.ROOT);
-        for (var status : StatusTypeList.values()) {
-            if (status.value().toUpperCase(Locale.ROOT).equals(permissionRequestStatus)) {
-                return status;
+        String permissionRequestStatus = status.toString().toUpperCase(Locale.ROOT);
+        for (var statusType : StatusTypeList.values()) {
+            if (statusType.value().toUpperCase(Locale.ROOT).equals(permissionRequestStatus)) {
+                return statusType;
             }
         }
         throw new IllegalArgumentException("Unknown enum value for StatusTypeList " + permissionRequestStatus);

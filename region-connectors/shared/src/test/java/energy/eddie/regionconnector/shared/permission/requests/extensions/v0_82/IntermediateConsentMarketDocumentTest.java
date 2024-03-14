@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
@@ -45,9 +44,6 @@ class IntermediateConsentMarketDocumentTest {
         when(dataSourceInformation.permissionAdministratorId()).thenReturn("paID");
         when(dataSourceInformation.regionConnectorId()).thenReturn("rc");
 
-        var state = mock(PermissionRequestState.class);
-        when(state.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
-
         var permissionRequest = mock(TimeframedPermissionRequest.class);
         when(permissionRequest.permissionId()).thenReturn("pid", "pid");
         when(permissionRequest.connectionId()).thenReturn("cid");
@@ -56,7 +52,7 @@ class IntermediateConsentMarketDocumentTest {
         when(permissionRequest.dataSourceInformation()).thenReturn(dataSourceInformation);
         when(permissionRequest.start()).thenReturn(start);
         when(permissionRequest.end()).thenReturn(end);
-        when(permissionRequest.state()).thenReturn(state);
+        when(permissionRequest.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
         IntermediateConsentMarketDocument<TimeframedPermissionRequest> csm = new IntermediateConsentMarketDocument<>(
                 permissionRequest,
                 "customerId",
@@ -88,9 +84,6 @@ class IntermediateConsentMarketDocumentTest {
         when(dataSourceInformation.permissionAdministratorId()).thenReturn("paID");
         when(dataSourceInformation.regionConnectorId()).thenReturn("rc");
 
-        var state = mock(PermissionRequestState.class);
-        when(state.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
-
         var permissionRequest = mock(TimeframedPermissionRequest.class);
         when(permissionRequest.permissionId()).thenReturn("pid", "pid");
         when(permissionRequest.connectionId()).thenReturn("cid");
@@ -99,7 +92,7 @@ class IntermediateConsentMarketDocumentTest {
         when(permissionRequest.dataSourceInformation()).thenReturn(dataSourceInformation);
         when(permissionRequest.start()).thenReturn(start);
         when(permissionRequest.end()).thenReturn(end);
-        when(permissionRequest.state()).thenReturn(state);
+        when(permissionRequest.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
         IntermediateConsentMarketDocument<TimeframedPermissionRequest> csm = new IntermediateConsentMarketDocument<>(
                 permissionRequest,
                 "customerId",

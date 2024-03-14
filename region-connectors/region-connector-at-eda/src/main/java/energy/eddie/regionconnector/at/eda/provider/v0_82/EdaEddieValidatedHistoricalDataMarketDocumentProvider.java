@@ -24,13 +24,13 @@ public class EdaEddieValidatedHistoricalDataMarketDocumentProvider implements Ed
 
     public EdaEddieValidatedHistoricalDataMarketDocumentProvider(
             ValidatedHistoricalDataMarketDocumentDirector validatedHistoricalDataMarketDocumentDirector,
-            Flux<IdentifiableConsumptionRecord> identfiableConsumptionRecordFlux) {
+            Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux) {
         requireNonNull(validatedHistoricalDataMarketDocumentDirector);
-        requireNonNull(identfiableConsumptionRecordFlux);
+        requireNonNull(identifiableConsumptionRecordFlux);
 
         this.director = validatedHistoricalDataMarketDocumentDirector;
 
-        this.eddieValidatedHistoricalDataMarketDocumentFlux = identfiableConsumptionRecordFlux
+        this.eddieValidatedHistoricalDataMarketDocumentFlux = identifiableConsumptionRecordFlux
                 .flatMap(this::mapToValidatedHistoricalMarketDocument);  // the mapping method is called for each element for each subscriber if we at some point have multiple subscribers, consider using publish().refCount()
     }
 

@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.at.eda.services;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
-import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
@@ -32,23 +32,22 @@ class IdentifiableConsumptionRecordServiceTest {
         var unidentifiableConsumptionRecord = createConsumptionRecord(unidentifiableMeteringPoint);
 
         TestPublisher<ConsumptionRecord> testPublisher = TestPublisher.create();
-        PermissionRequestState state = mock(PermissionRequestState.class);
-        when(state.status())
-                .thenReturn(PermissionProcessStatus.ACCEPTED)
-                .thenReturn(PermissionProcessStatus.ACCEPTED)
-                .thenReturn(PermissionProcessStatus.REJECTED);
-        var requestService = mock(PermissionRequestService.class);
-        when(requestService.findByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any()))
+        var repository = mock(AtPermissionRequestRepository.class);
+        when(repository.findByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any()))
                 .thenReturn(List.of(
-                                new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1", state),
-                                new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2", state),
-                                new SimplePermissionRequest("pmId3", "connId3", "dataNeedId3", "test3", "any3", state)
+                        new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1",
+                                                    PermissionProcessStatus.ACCEPTED),
+                        new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2",
+                                                    PermissionProcessStatus.ACCEPTED),
+                        new SimplePermissionRequest("pmId3", "connId3", "dataNeedId3", "test3", "any3",
+                                                    PermissionProcessStatus.REJECTED)
                         )
                 );
-        when(requestService.findByMeteringPointIdAndDate(eq(unidentifiableMeteringPoint), any()))
+        when(repository.findByMeteringPointIdAndDate(eq(unidentifiableMeteringPoint), any()))
                 .thenReturn(List.of());
 
-        IdentifiableConsumptionRecordService identifiableConsumptionRecordService = new IdentifiableConsumptionRecordService(testPublisher.flux(), requestService);
+        IdentifiableConsumptionRecordService identifiableConsumptionRecordService = new IdentifiableConsumptionRecordService(
+                testPublisher.flux(), repository);
 
         StepVerifier.create(identifiableConsumptionRecordService.getIdentifiableConsumptionRecordStream())
                 .then(() -> testPublisher.emit(identifiableConsumptionRecord, unidentifiableConsumptionRecord))
@@ -66,16 +65,17 @@ class IdentifiableConsumptionRecordServiceTest {
         var identifiableConsumptionRecord = createConsumptionRecord(identifiableMeteringPoint);
 
         Sinks.Many<ConsumptionRecord> testPublisher = Sinks.many().unicast().onBackpressureBuffer();
-        PermissionRequestState state = mock(PermissionRequestState.class);
-        when(state.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
-        var requestService = mock(PermissionRequestService.class);
-        when(requestService.findByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any()))
+        var repository = mock(AtPermissionRequestRepository.class);
+        when(repository.findByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any()))
                 .thenReturn(List.of(
-                        new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1", state),
-                        new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2", state))
+                        new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1",
+                                                    PermissionProcessStatus.ACCEPTED),
+                        new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2",
+                                                    PermissionProcessStatus.ACCEPTED))
                 );
 
-        IdentifiableConsumptionRecordService identifiableConsumptionRecordService = new IdentifiableConsumptionRecordService(testPublisher.asFlux(), requestService);
+        IdentifiableConsumptionRecordService identifiableConsumptionRecordService = new IdentifiableConsumptionRecordService(
+                testPublisher.asFlux(), repository);
 
         var first = StepVerifier.create(identifiableConsumptionRecordService.getIdentifiableConsumptionRecordStream())
                 .then(() -> {
@@ -99,7 +99,7 @@ class IdentifiableConsumptionRecordServiceTest {
 
         first.verify(Duration.ofSeconds(2));
         second.verify(Duration.ofSeconds(2));
-        verify(requestService, times(1)).findByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any());
+        verify(repository, times(1)).findByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any());
     }
 
     private ConsumptionRecord createConsumptionRecord(String meteringPoint) {

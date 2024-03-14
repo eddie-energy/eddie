@@ -2,6 +2,7 @@ package energy.eddie.api.agnostic.process.model;
 
 
 import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.v0.PermissionProcessStatus;
 
 import java.time.ZonedDateTime;
 
@@ -43,6 +44,10 @@ public interface PermissionRequest {
      * @return the current state of the permission request.
      */
     PermissionRequestState state();
+
+    default PermissionProcessStatus status() {
+        return state().status();
+    }
 
     /**
      * Information about the data source associated with the permission request.

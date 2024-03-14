@@ -3,12 +3,11 @@ package energy.eddie.regionconnector.at.eda.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
-import energy.eddie.regionconnector.at.eda.permission.request.states.AtAcceptedPermissionRequestState;
-import energy.eddie.regionconnector.at.eda.services.PermissionRequestCreationService;
-import energy.eddie.regionconnector.at.eda.services.PermissionRequestService;
+import energy.eddie.regionconnector.at.eda.services.ConnectionStatusService;
+import energy.eddie.regionconnector.at.eda.services.PermissionRequestCreationAndValidationService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -45,9 +44,9 @@ class PermissionRequestControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @MockBean
-    private PermissionRequestService permissionRequestService;
+    private ConnectionStatusService connectionStatusService;
     @MockBean
-    private PermissionRequestCreationService permissionRequestCreationService;
+    private PermissionRequestCreationAndValidationService permissionRequestCreationAndValidationService;
 
     private static Stream<Arguments> permissionRequestArguments() {
         return Stream.of(
@@ -63,15 +62,14 @@ class PermissionRequestControllerTest {
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {
         // Given
-        var state = new AtAcceptedPermissionRequestState(null, null, null, null);
         String permissionId = "permissionId";
-        when(permissionRequestService.findConnectionStatusMessageById(permissionId))
+        when(connectionStatusService.findConnectionStatusMessageById(permissionId))
                 .thenReturn(Optional.of(new ConnectionStatusMessage(
                         "cid",
                         permissionId,
                         "dnid",
                         new EdaDataSourceInformation("dsoId"),
-                        state.status(),
+                        PermissionProcessStatus.ACCEPTED,
                         ""
                 )));
         // When
@@ -87,9 +85,8 @@ class PermissionRequestControllerTest {
     @Test
     void permissionStatus_permissionDoesNotExist_returnsNotFound() throws Exception {
         // Given
-        var state = new AtAcceptedPermissionRequestState(null, null, null, null);
-        when(permissionRequestService.findByPermissionId("pid"))
-                .thenReturn(Optional.of(new SimplePermissionRequest("pid", "cid", "dnid", "cmId", "conid", state)));
+        when(connectionStatusService.findConnectionStatusMessageById("pid"))
+                .thenReturn(Optional.empty());
         // When
         mockMvc.perform(
                         MockMvcRequestBuilders.get("/permission-status/{permissionId}", "123")
@@ -168,7 +165,7 @@ class PermissionRequestControllerTest {
         // Given
         var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand("pid").toString();
         CreatedPermissionRequest expected = new CreatedPermissionRequest("pid", "cmRequestId");
-        when(permissionRequestCreationService.createAndSendPermissionRequest(any()))
+        when(permissionRequestCreationAndValidationService.createAndValidatePermissionRequest(any()))
                 .thenReturn(expected);
         var end = LocalDate.now(ZoneOffset.UTC).minusDays(1);
         var start = end.minusDays(1);
@@ -198,7 +195,7 @@ class PermissionRequestControllerTest {
     void createPermissionRequest_givenUnsupportedGranularity_returnsBadRequest() throws Exception {
         // Given
         CreatedPermissionRequest expected = new CreatedPermissionRequest("pid", "cmRequestId");
-        when(permissionRequestCreationService.createAndSendPermissionRequest(any()))
+        when(permissionRequestCreationAndValidationService.createAndValidatePermissionRequest(any()))
                 .thenReturn(expected);
         var end = LocalDate.now(ZoneOffset.UTC).minusDays(1);
         var start = end.minusDays(1);
@@ -238,7 +235,7 @@ class PermissionRequestControllerTest {
                 .put("granularity", "PT15M");
 
         // When
-        when(permissionRequestCreationService.createAndSendPermissionRequest(any()))
+        when(permissionRequestCreationAndValidationService.createAndValidatePermissionRequest(any()))
                 .thenReturn(new CreatedPermissionRequest("pid", "cmRequestId"));
         mockMvc.perform(
                         MockMvcRequestBuilders.post("/permission-request")

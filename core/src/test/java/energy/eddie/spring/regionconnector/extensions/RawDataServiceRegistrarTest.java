@@ -65,7 +65,7 @@ class RawDataServiceRegistrarTest {
 @SpringBootTest(classes = CoreSpringConfig.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 // We can reuse this basic properties file as it just enables the DK and ES region connector
 @ActiveProfiles("common-controller-advice")
-@TestPropertySource(properties = "eddie.raw.data.output.enabled=false")
+@TestPropertySource(properties = {"eddie.raw.data.output.enabled=false", "spring.jpa.hibernate.ddl-auto=none"})
 class RawDataServiceRegistrarDisabledTest {
     @Autowired
     private WebApplicationContext applicationContext;
@@ -84,7 +84,7 @@ class RawDataServiceRegistrarDisabledTest {
 
 @SpringBootTest(classes = CoreSpringConfig.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("common-controller-advice")
-@TestPropertySource(properties = "eddie.raw.data.output.enabled=true")
+@TestPropertySource(properties = {"eddie.raw.data.output.enabled=true", "spring.jpa.hibernate.ddl-auto=none"})
 class RawDataServiceRegistrarEnabledTest {
     @Autowired
     private WebApplicationContext applicationContext;

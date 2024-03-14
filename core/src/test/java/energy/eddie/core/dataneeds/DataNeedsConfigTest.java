@@ -24,34 +24,41 @@ class DataNeedsConfigTest {
     @Test
     void testDataNeedsFromConfig() {
         app = new SpringApplicationBuilder(CoreSpringConfig.class)
-                .properties("eddie.data-needs-config.data-need-source=CONFIG")
+                .properties("eddie.data-needs-config.data-need-source=CONFIG",
+                            "spring.jpa.hibernate.ddl-auto=none")
                 .build()
                 .run();
         assertThat(app.getBean(DataNeedsService.class)).isNotNull();
         assertThat(app.getBean(DataNeedsConfigService.class)).isNotNull();
         assertThat(app.getBean(DataNeedsConfig.class)).isNotNull().hasFieldOrProperty("dataNeedForId");
-        assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(() -> app.getBean(DataNeedsDbService.class));
-        assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(() -> app.getBean(DataNeedsDbRepository.class));
+        assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(
+                () -> app.getBean(DataNeedsDbService.class));
+        assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(
+                () -> app.getBean(DataNeedsDbRepository.class));
     }
 
     @Test
     void testDataNeedsFromDb() {
         app = new SpringApplicationBuilder(CoreSpringConfig.class)
-                .properties("eddie.data-needs-config.data-need-source=DATABASE")
+                .properties("eddie.data-needs-config.data-need-source=DATABASE",
+                            "spring.jpa.hibernate.ddl-auto=none")
                 .build()
                 .run();
         assertThat(app.getBean(DataNeedsService.class)).isNotNull();
         assertThat(app.getBean(DataNeedsDbService.class)).isNotNull();
         assertThat(app.getBean(DataNeedsDbRepository.class)).isNotNull();
-        assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(() -> app.getBean(DataNeedsConfigService.class));
+        assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(
+                () -> app.getBean(DataNeedsConfigService.class));
     }
 
     @Test
     void testDataNeedsFromDbWithDataNeedInConfiguration() {
         var unstartedApp = new SpringApplicationBuilder(CoreSpringConfig.class)
                 .properties("eddie.data-needs-config.data-need-source=DATABASE",
-                        "eddie.data-needs-config.data-needs[0].id=DATA_NEED_ID")
+                            "eddie.data-needs-config.data-needs[0].id=DATA_NEED_ID",
+                            "spring.jpa.hibernate.ddl-auto=none")
                 .build();
-        assertThatException().isThrownBy(unstartedApp::run).withRootCauseExactlyInstanceOf(DataNeedsConfig.IllegalConfigurationException.class);
+        assertThatException().isThrownBy(unstartedApp::run)
+                .withRootCauseExactlyInstanceOf(DataNeedsConfig.IllegalConfigurationException.class);
     }
 }

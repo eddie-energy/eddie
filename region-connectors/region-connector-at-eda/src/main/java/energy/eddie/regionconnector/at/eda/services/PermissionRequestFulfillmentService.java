@@ -2,11 +2,11 @@ package energy.eddie.regionconnector.at.eda.services;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.Energy;
-import energy.eddie.api.agnostic.process.model.PermissionRequestState;
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
-import energy.eddie.api.agnostic.process.model.TerminalPermissionRequestState;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -18,8 +18,11 @@ import java.util.Optional;
 @Component
 public class PermissionRequestFulfillmentService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestFulfillmentService.class);
+    private final Outbox outbox;
 
-    public PermissionRequestFulfillmentService(Flux<IdentifiableConsumptionRecord> consumptionRecordStream) {
+    public PermissionRequestFulfillmentService(Flux<IdentifiableConsumptionRecord> consumptionRecordStream,
+                                               Outbox outbox) {
+        this.outbox = outbox;
         consumptionRecordStream.subscribe(this::checkForFulfillment);
     }
 
@@ -33,7 +36,7 @@ public class PermissionRequestFulfillmentService {
 
     private void checkForFulfillment(IdentifiableConsumptionRecord identifiableConsumptionRecord) {
         identifiableConsumptionRecord.permissionRequests().forEach(permissionRequest -> {
-            if (isTerminalState(permissionRequest.state())) {
+            if (isTerminalState(permissionRequest.status())) {
                 return;
             }
             var consumptionRecord = identifiableConsumptionRecord.consumptionRecord();
@@ -54,16 +57,16 @@ public class PermissionRequestFulfillmentService {
             // if we request quarter hourly data up to the 24.01.2024, the last consumption record we get will have an meteringPeriodStart of 24.01.2024T23:45:00 and an meteringPeriodEnd of 25.01.2024T00:00:00
             // so if the permissionEnd is before the meteringPeriodEnd the permission request is fulfilled
             if (permissionEnd.toLocalDate().isBefore(meteringPeriodEnd)) {
-                try {
-                    permissionRequest.fulfill();
-                } catch (StateTransitionException e) {
-                    LOGGER.error("Error while fulfilling permission request", e);
-                }
+                outbox.commit(new SimpleEvent(permissionRequest.permissionId(), PermissionProcessStatus.FULFILLED));
             }
         });
     }
 
-    private boolean isTerminalState(PermissionRequestState state) {
-        return state instanceof TerminalPermissionRequestState;
+    private boolean isTerminalState(PermissionProcessStatus status) {
+        return status == PermissionProcessStatus.TERMINATED
+                || status == PermissionProcessStatus.REVOKED
+                || status == PermissionProcessStatus.FULFILLED
+                || status == PermissionProcessStatus.INVALID
+                || status == PermissionProcessStatus.MALFORMED;
     }
 }

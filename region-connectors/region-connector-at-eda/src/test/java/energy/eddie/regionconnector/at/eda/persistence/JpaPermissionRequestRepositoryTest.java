@@ -1,0 +1,151 @@
+package energy.eddie.regionconnector.at.eda.persistence;
+
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
+import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
+import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Testcontainers
+class JpaPermissionRequestRepositoryTest {
+    @Container
+    @ServiceConnection
+    private static final PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:15-alpine");
+
+    @Autowired
+    private EdaPermissionEventRepository permissionEventRepository;
+    @Autowired
+    private JpaPermissionRequestRepository permissionRequestRepository;
+
+    @Test
+    void findByPermissionId_returnsEmptyOptional_forNonExistentId() {
+        // Given
+        PermissionEvent event = new SimpleEvent("pid", PermissionProcessStatus.CREATED);
+        permissionEventRepository.saveAndFlush(event);
+
+        // When
+        var res = permissionRequestRepository.findByPermissionId("otherId");
+
+        // Then
+        assertThat(res).isEmpty();
+    }
+
+    @Test
+    void findByPermissionId_returnsPresentOptional_forExistingId() {
+        // Given
+        PermissionEvent event = new SimpleEvent("pid", PermissionProcessStatus.CREATED);
+        permissionEventRepository.saveAndFlush(event);
+
+        // When
+        var res = permissionRequestRepository.findByPermissionId("pid");
+
+        // Then
+        assertThat(res).isPresent();
+    }
+
+    @Test
+    void findByConversationIdOrCMRequestId_returnsPresentOptional_forConversationIdAndNullRequestId() {
+        // Given
+        var start = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var end = ZonedDateTime.of(2024, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
+        String conversationId = "convId";
+        PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
+                                                 end, "mid", Granularity.PT15M, "cmRequestId",
+                                                 conversationId);
+        permissionEventRepository.saveAndFlush(event);
+
+        // When
+        var res = permissionRequestRepository.findByConversationIdOrCMRequestId(conversationId, null);
+
+        // Then
+        assertThat(res).isPresent();
+    }
+
+    @Test
+    void findByConversationIdOrCMRequestId_returnsPresentOptional_forConversationIdAndNonExistingRequestId() {
+        // Given
+        var start = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var end = ZonedDateTime.of(2024, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
+        String conversationId = "convId";
+        PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
+                                                 end, "mid", Granularity.PT15M, "cmRequestId",
+                                                 conversationId);
+        permissionEventRepository.saveAndFlush(event);
+
+        // When
+        var res = permissionRequestRepository.findByConversationIdOrCMRequestId(conversationId, "otherId");
+
+        // Then
+        assertThat(res).isPresent();
+    }
+
+    @Test
+    void findByConversationIdOrCMRequestId_returnsEmptyOptional_forNonExistingConversationIdAndNullRequestId() {
+        // Given
+        var start = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var end = ZonedDateTime.of(2024, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
+        String conversationId = "convId";
+        PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
+                                                 end, "mid", Granularity.PT15M, "cmRequestId",
+                                                 "otherId");
+        permissionEventRepository.saveAndFlush(event);
+
+        // When
+        var res = permissionRequestRepository.findByConversationIdOrCMRequestId(conversationId, null);
+
+        // Then
+        assertThat(res).isEmpty();
+    }
+
+    @Test
+    void findByConversationIdOrCMRequestId_returnsEmptyOptional_forNonExistingConversationIdAndNonExistingRequestId() {
+        // Given
+        var start = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var end = ZonedDateTime.of(2024, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
+        String conversationId = "convId";
+        PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
+                                                 end, "mid", Granularity.PT15M, "cmRequestId",
+                                                 conversationId);
+        permissionEventRepository.saveAndFlush(event);
+
+        // When
+        var res = permissionRequestRepository.findByConversationIdOrCMRequestId("otherId", "otherId");
+
+        // Then
+        assertThat(res).isEmpty();
+    }
+
+    @Test
+    void findByConversationIdOrCMRequestId_returnsEmptyOptional_forNonExistingConversationIdAndExistingRequestId() {
+        // Given
+        var start = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var end = ZonedDateTime.of(2024, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
+        String cmRequestId = "cmRequestId";
+        PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
+                                                 end, "mid", Granularity.PT15M, cmRequestId,
+                                                 "convId");
+        permissionEventRepository.saveAndFlush(event);
+
+        // When
+        var res = permissionRequestRepository.findByConversationIdOrCMRequestId("otherId", cmRequestId);
+
+        // Then
+        assertThat(res).isPresent();
+    }
+}

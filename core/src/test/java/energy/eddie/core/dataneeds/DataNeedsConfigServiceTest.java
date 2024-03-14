@@ -4,8 +4,10 @@ import energy.eddie.api.agnostic.DataNeed;
 import energy.eddie.api.agnostic.DataType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.Optional;
 import java.util.Set;
@@ -16,6 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @ActiveProfiles("dataneeds-from-config")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@TestPropertySource(properties = "spring.jpa.hibernate.ddl-auto=none")
 class DataNeedsConfigServiceTest {
 
     private static final String HISTORICAL_DATA_NEED_KEY = "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY";
