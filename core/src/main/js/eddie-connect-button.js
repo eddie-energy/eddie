@@ -38,7 +38,7 @@ function getRegionConnectors() {
 }
 
 function getDataNeedAttributes(dataNeedId) {
-  return fetchJson(`/api/data-needs/${dataNeedId}`);
+  return fetchJson(`/data-needs/api/${dataNeedId}`);
 }
 
 function shortISOString(date) {
@@ -76,7 +76,7 @@ class EddieConnectButton extends LitElement {
       type: Object,
     },
 
-    _dataNeedIds: { type: Array },
+    _dataNeedIdsAndNames: { type: Array },
     _selectedCountry: { type: String },
     _selectedPermissionAdministrator: { type: Object },
     _availablePermissionAdministrators: { type: Array },
@@ -125,7 +125,7 @@ class EddieConnectButton extends LitElement {
     this._availableCountries = [];
     this._filteredPermissionAdministrators = [];
     this._dataNeedAttributes = {};
-    this._dataNeedIds = [];
+    this._dataNeedIdsAndNames = [];
   }
 
   connectedCallback() {
@@ -283,7 +283,7 @@ class EddieConnectButton extends LitElement {
     }
 
     if (this.allowDataNeedSelection) {
-      this._dataNeedIds = await fetchJson("/api/data-needs");
+      this._dataNeedIdsAndNames = await fetchJson("/data-needs/api");
     }
 
     if (this.dataNeedId) {
@@ -336,7 +336,10 @@ class EddieConnectButton extends LitElement {
   }
 
   isAiida() {
-    return this._dataNeedAttributes?.type === "AIIDA_NEAR_REALTIME_DATA";
+    return (
+      this._dataNeedAttributes?.type === "genericAiida" ||
+      this._dataNeedAttributes?.type === "smartMeterAiida"
+    );
   }
 
   isAiidaEnabled() {
@@ -390,8 +393,12 @@ class EddieConnectButton extends LitElement {
                 @sl-change="${this.handleDataNeedSelect}"
                 help-text="The service allows the selection of a data need. This feature is meant for development purposes only."
               >
-                ${this._dataNeedIds.map(
-                  (id) => html` <sl-option value="${id}">${id}</sl-option> `
+                ${this._dataNeedIdsAndNames.map(
+                  (dataNeed) => html`
+                    <sl-option value="${dataNeed.id}"
+                      >${dataNeed.name}
+                    </sl-option>
+                  `
                 )}
               </sl-select>
               <br />
