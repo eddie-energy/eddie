@@ -1,4 +1,4 @@
-package energy.eddie.dataneeds.web;
+package energy.eddie.dataneeds.web.management;
 
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
