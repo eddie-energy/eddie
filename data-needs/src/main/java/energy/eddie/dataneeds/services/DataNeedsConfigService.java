@@ -3,9 +3,12 @@ package energy.eddie.dataneeds.services;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.dataneeds.exceptions.DataNeedAlreadyExistsException;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.persistence.DataNeedsNameAndIdProjection;
 import energy.eddie.dataneeds.persistence.DataNeedsNameAndIdProjectionRecord;
+import energy.eddie.dataneeds.utils.DataNeedUtils;
+import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Path;
 import jakarta.validation.ValidationException;
@@ -19,6 +22,8 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -103,5 +108,20 @@ public class DataNeedsConfigService implements DataNeedsService {
     @Override
     public Optional<DataNeed> findById(String id) {
         return Optional.ofNullable(dataNeeds.get(id));
+    }
+
+    @Override
+    public DataNeedWrapper findDataNeedAndCalculateStartAndEnd(
+            String id,
+            LocalDate referenceDate,
+            Period earliestStart,
+            Period latestEnd
+    ) throws DataNeedNotFoundException {
+        DataNeed dataNeed = dataNeeds.get(id);
+
+        if (dataNeed == null)
+            throw new DataNeedNotFoundException(id);
+
+        return DataNeedUtils.calculateRelativeStartAndEnd(dataNeed, referenceDate, earliestStart, latestEnd);
     }
 }
