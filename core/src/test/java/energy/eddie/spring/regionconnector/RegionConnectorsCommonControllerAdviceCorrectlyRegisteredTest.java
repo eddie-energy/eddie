@@ -1,7 +1,7 @@
 package energy.eddie.spring.regionconnector;
 
-import energy.eddie.api.agnostic.DataNeedsService;
 import energy.eddie.core.CoreSpringConfig;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
