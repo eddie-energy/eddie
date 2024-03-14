@@ -1,5 +1,6 @@
 package energy.eddie.core;
 
+import energy.eddie.RegionConnectorsOpenApiConfig;
 import energy.eddie.api.utils.Shared;
 import energy.eddie.dataneeds.DataNeedsSpringConfig;
 import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;
@@ -94,6 +95,7 @@ public class CoreSpringConfig implements WebMvcConfigurer {
         context.register(SharedBeansRegistrar.class);
         context.register(RegionConnectorsCommonControllerAdvice.class);
         enableSpringDoc(context);
+        context.register(RegionConnectorsOpenApiConfig.class);
 
         DispatcherServlet dispatcherServlet = new DispatcherServlet(context);
         String urlMapping = DATA_NEEDS_URL_MAPPING_PREFIX + "/*";
