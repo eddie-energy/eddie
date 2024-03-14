@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.es.datadis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
@@ -56,7 +57,7 @@ public class DatadisSpringConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
-        return new ObjectMapper().registerModule(new JavaTimeModule());
+        return new ObjectMapper().registerModule(new Jdk8Module()).registerModule(new JavaTimeModule());
     }
 
     @Bean

@@ -1,8 +1,10 @@
 package energy.eddie.regionconnector.es.datadis.providers.v0;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
+import energy.eddie.regionconnector.es.datadis.dtos.ObtainMethod;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
@@ -13,33 +15,20 @@ import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
 import java.time.Duration;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class DatadisMvp1ConsumptionRecordProviderTest {
     @Test
     void givenValueOnFlux_publishesConsumptionRecordOnFlow() {
         // Given
-        var now = ZonedDateTime.now(ZoneId.systemDefault());
-        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation("conId", "dId", "nif", "mip", now, now, Granularity.PT1H);
-        new DatadisPermissionRequest("pId", requestForCreation, new StateBuilderFactory(mock(AuthorizationApi.class)));
+        var reading = createReading();
         TestPublisher<IdentifiableMeteringData> publisher = TestPublisher.create();
-        EsPermissionRequest mockRequest = mock(EsPermissionRequest.class);
-        when(mockRequest.start()).thenReturn(now);
-        when(mockRequest.end()).thenReturn(now);
-        when(mockRequest.connectionId()).thenReturn("conId");
-        when(mockRequest.dataNeedId()).thenReturn("dId");
-        when(mockRequest.permissionId()).thenReturn("pId");
-        List<MeteringData> list = new ArrayList<>();
-        list.add(new MeteringData("CUPS", now, 123.123, "foo", 456.456));
-        var reading = new IdentifiableMeteringData(mockRequest, list);
 
         //noinspection resource StepVerifier closes provider
         var provider = new DatadisMvp1ConsumptionRecordProvider(publisher.flux());
@@ -49,12 +38,31 @@ class DatadisMvp1ConsumptionRecordProviderTest {
                 .then(() -> publisher.next(reading))
                 // Then
                 .assertNext(consumptionRecord -> assertAll(
-                        () -> assertEquals("conId", consumptionRecord.getConnectionId()),
-                        () -> assertEquals("pId", consumptionRecord.getPermissionId()),
-                        () -> assertEquals("dId", consumptionRecord.getDataNeedId()),
+                        () -> assertEquals(reading.permissionRequest().connectionId(), consumptionRecord.getConnectionId()),
+                        () -> assertEquals(reading.permissionRequest().permissionId(), consumptionRecord.getPermissionId()),
+                        () -> assertEquals(reading.permissionRequest().dataNeedId(), consumptionRecord.getDataNeedId()),
                         () -> assertEquals(1, consumptionRecord.getConsumptionPoints().size())
                 ))
                 .thenCancel()
                 .verify(Duration.ofSeconds(2));
+    }
+
+    private IdentifiableMeteringData createReading() {
+        var today = LocalDate.now(ZONE_ID_SPAIN).atStartOfDay(ZONE_ID_SPAIN);
+        var end = today.plusDays(1);
+        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
+        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
+                "connectionId",
+                "dataNeedId",
+                "nif",
+                "meteringPointId",
+                today,
+                end,
+                Granularity.PT1H);
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
+        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
+
+        var meteringData = new MeteringData("CUPS", end.toLocalDate().plusDays(1).format(DateTimeFormatter.ofPattern("yyyy/MM/dd")), "00:00", 123.123, ObtainMethod.REAL, 0);
+        return new IdentifiableMeteringData(permissionRequest, IntermediateMeteringData.fromMeteringData(List.of(meteringData)));
     }
 }
