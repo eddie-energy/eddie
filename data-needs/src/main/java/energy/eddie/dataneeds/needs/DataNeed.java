@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.SmartMeterAiidaDataNeed;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.annotations.CreationTimestamp;
@@ -27,6 +28,7 @@ import java.time.Instant;
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class DataNeed {
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     @Id
     @Column(name = "data_need_id")
     @JsonProperty(required = true)
@@ -39,15 +41,18 @@ public abstract class DataNeed {
     @JsonProperty(required = true)
     @NotBlank(message = "must not be blank")
     private String description;
+    @Schema(description = "Description of the data need which is presented to the user. Supports Markdown formatting.")
     @Column(name = "purpose", nullable = false)
     @JsonProperty(required = true)
     @NotBlank(message = "must not be blank")
     private String purpose;
+    @Schema(description = "URL to a document describing the data policy.", example = "https://example.com/your-terms")
     @Column(name = "policy_link", nullable = false)
     @JsonProperty(required = true)
     @NotBlank(message = "must not be blank")
     @URL(message = "must be a valid URL")
     private String policyLink;
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     @Column(name = "created_at")
     @CreationTimestamp
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

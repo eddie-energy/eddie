@@ -1,8 +1,24 @@
 package energy.eddie.dataneeds.web;
 
+import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.SmartMeterAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsDbService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
@@ -17,6 +33,7 @@ import java.util.List;
 @RestController
 @RequestMapping(path = DataNeedsManagementController.BASE_PATH_KEY, produces = MediaType.APPLICATION_JSON_VALUE)
 @ConditionalOnProperty(value = "eddie.data-needs-config.data-need-source", havingValue = "DATABASE")
+@Tag(name = "Data needs management controller", description = "Only available when data needs are loaded from the database!")
 public class DataNeedsManagementController {
     public static final String BASE_PATH_KEY = "${management.server.urlprefix}";
     private final DataNeedsDbService service;
@@ -27,6 +44,41 @@ public class DataNeedsManagementController {
         this.basePath = basePath;
     }
 
+    @Operation(summary = "Create a new data need")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true,
+            description = "If the id field is not supplied, a UUID will be generated.",
+            content = @Content(
+                    examples = {
+                            @ExampleObject(name = "Validated consumption in absolute timeframe",
+                                    description = "Example request body to create a new data need that requests validated consumption data for an absolute timeframe",
+                                    value = "{\"type\":\"VALIDATED_HISTORICAL_CONSUMPTION_DATA\",\"description\":\"Description what this data need is about.\",\"purpose\":\"Purpose of this data need.\",\"policyLink\":\"https://example.com/toc\",\"name\":\"My awesome data need\",\"duration\":{\"type\":\"absolute\",\"durationStart\":\"2023-01-01\",\"durationEnd\":\"2025-12-31\"},\"energyType\":\"ELECTRICITY\",\"granularity\":\"PT15M\"}"),
+                            @ExampleObject(name = "Validated consumption in relative timeframe",
+                                    description = "Example request body to create a new data need that requests validated consumption data for an relative timeframe",
+                                    value = "{\"type\":\"VALIDATED_HISTORICAL_CONSUMPTION_DATA\",\"description\":\"Description what this data need is about.\",\"purpose\":\"Purpose of this data need.\",\"policyLink\":\"https://example.com/toc\",\"name\":\"My awesome data need\",\"duration\":{\"type\":\"relative\",\"durationStart\":-12,\"durationEnd\":12,\"durationType\":\"MONTH\"},\"energyType\":\"ELECTRICITY\",\"granularity\":\"PT15M\"}"
+                            )
+                    }
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Created the data need",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(oneOf = {AccountingPointDataNeed.class, ValidatedHistoricalDataDataNeed.class, SmartMeterAiidaDataNeed.class, GenericAiidaDataNeed.class}), examples = {
+                                    @ExampleObject(
+                                            description = "Full data need object",
+                                            value = "{\"type\":\"VALIDATED_HISTORICAL_CONSUMPTION_DATA\",\"id\":\"7f57cf16-5121-42a6-919e-7f7335826e64\",\"name\":\"My awesome data need\",\"description\":\"Some description.\",\"purpose\":\"My purpose.\",\"policyLink\":\"https://example.com/toc\",\"duration\":{\"type\":\"relative\",\"durationStart\":-12,\"durationEnd\":12,\"durationType\":\"MONTH\"},\"createdAt\":\"2024-03-04T12:55:13.014024Z\",\"energyType\":\"ELECTRICITY\",\"granularity\":\"PT15M\"}"
+                                    )
+                            }
+                            )
+                    },
+                    headers = {@Header(name = "Location", description = "Relative URL of the created data need", schema = @Schema(type = "string", example = "/dataNeed/7f57cf16-5121-42a6-919e-7f7335826e64"))}
+            ),
+            @ApiResponse(responseCode = "400", description = "Bad request body supplied or validation of values failed",
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = EddieApiError.class)),
+                            examples = @ExampleObject("{\"errors\":[{\"message\":\"description: must not be blank\"},{\"message\":\"purpose: must not be blank\"}]}")
+                    ))
+    })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DataNeed> createNewDataNeed(@Validated @RequestBody DataNeed newDataNeed) {
         DataNeed savedDataNeed = service.saveNewDataNeed(newDataNeed);
@@ -36,12 +88,32 @@ public class DataNeedsManagementController {
                 .body(savedDataNeed);
     }
 
+    @Operation(summary = "Get details of all existing data needs")
     @GetMapping
     // Cannot use Page<DataNeed> because then the type information is not serialized; see https://github.com/FasterXML/jackson-databind/issues/2710#issuecomment-624839647
     public ResponseEntity<List<DataNeed>> getAllDataNeeds() {
         return ResponseEntity.ok(service.findAll());
     }
 
+    @Operation(summary = "Get details of an existing data need")
+    @Parameter(in = ParameterIn.PATH, name = "id", example = "7f57cf16-5121-42a6-919e-7f7335826e64", schema = @Schema(type = "String"))
+    @ApiResponse(responseCode = "200",
+            description = "OK",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(oneOf = {AccountingPointDataNeed.class, ValidatedHistoricalDataDataNeed.class, SmartMeterAiidaDataNeed.class, GenericAiidaDataNeed.class}),
+                    examples = {
+                            @ExampleObject(
+                                    description = "Full data need object",
+                                    value = "{\"type\":\"vhcd\",\"id\":\"7f57cf16-5121-42a6-919e-7f7335826e64\",\"name\":\"My awesome data need\",\"description\":\"Some description.\",\"purpose\":\"My purpose.\",\"policyLink\":\"https://example.com/toc\",\"duration\":{\"type\":\"relative\",\"durationStart\":-12,\"durationEnd\":12,\"durationType\":\"MONTH\"},\"createdAt\":\"2024-03-04T12:55:13.014024Z\",\"energyType\":\"ELECTRICITY\",\"granularity\":\"PT15M\"}"
+                            )
+                    }
+            ))
+    @ApiResponse(responseCode = "404",
+            description = "No data need with the supplied id was found",
+            content = @Content(mediaType = "application/json",
+                    array = @ArraySchema(schema = @Schema(implementation = EddieApiError.class)),
+                    examples = @ExampleObject("{\"errors\":[{\"message\":\"No data need with ID '7f57cf16-5121-42a6-919e-7f7335826e64' found.\"}]}")
+            ))
     @GetMapping("/{id}")
     public ResponseEntity<DataNeed> getDataNeed(@PathVariable String id) throws DataNeedNotFoundException {
         return service.findById(id)
@@ -49,6 +121,17 @@ public class DataNeedsManagementController {
                       .orElseThrow(() -> new DataNeedNotFoundException(id, false));
     }
 
+    @Operation(summary = "Delete an existing data need")
+    @Parameter(in = ParameterIn.PATH, name = "id", example = "7f57cf16-5121-42a6-919e-7f7335826e64", schema = @Schema(type = "String"))
+    @ApiResponse(responseCode = "200",
+            description = "OK",
+            content = @Content(schema = @Schema))
+    @ApiResponse(responseCode = "404",
+            description = "No data need with the supplied id was found",
+            content = @Content(mediaType = "application/json",
+                    array = @ArraySchema(schema = @Schema(implementation = EddieApiError.class)),
+                    examples = @ExampleObject("{\"errors\":[{\"message\":\"No data need with ID '7f57cf16-5121-42a6-919e-7f7335826e64' found.\"}]}")
+            ))
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteDataNeed(@PathVariable String id) throws DataNeedNotFoundException {
         if (!service.existsById(id)) {
