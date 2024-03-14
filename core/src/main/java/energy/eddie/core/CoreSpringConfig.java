@@ -1,28 +1,27 @@
 package energy.eddie.core;
 
-import energy.eddie.api.agnostic.DataNeed;
-import energy.eddie.api.agnostic.DataNeedsService;
+import energy.eddie.api.utils.Shared;
 import energy.eddie.dataneeds.DataNeedsSpringConfig;
 import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;
+import energy.eddie.spring.SharedBeansRegistrar;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
 import org.springframework.lang.NonNull;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.Optional;
-import java.util.Set;
-
 @SpringBootApplication
 // add data needs beans, repositories, controllers
-@Import(DataNeedsSpringConfig.class)
 public class CoreSpringConfig implements WebMvcConfigurer {
+    public static final String DATA_NEEDS_URL_MAPPING_PREFIX = "/data-needs";
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreSpringConfig.class);
 
     private final String allowedCorsOrigins;
@@ -62,25 +61,28 @@ public class CoreSpringConfig implements WebMvcConfigurer {
     }
 
     /**
-     * Explicitly register the common controller advice as it's only automatically registered for region connectors.
+     * Data needs related services have their own context, to be able to properly create and serve JavaDoc. Beans that
+     * may be required by other region connectors should be annotated with {@link Shared}, so they will be automatically
+     * registered in this core context by {@link SharedBeansRegistrar}.
      */
     @Bean
-    public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
-        return new RegionConnectorsCommonControllerAdvice();
-    }
+    public ServletRegistrationBean<DispatcherServlet> dataNeedsDispatcherServlet() {
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        context.register(DataNeedsSpringConfig.class);
+        context.register(SharedBeansRegistrar.class);
+        context.register(RegionConnectorsCommonControllerAdvice.class);
 
-    @Bean
-    public DataNeedsService temporaryService() {
-        return new DataNeedsService() {
-            @Override
-            public Optional<DataNeed> getDataNeed(String id) {
-                return Optional.empty();
-            }
+        DispatcherServlet dispatcherServlet = new DispatcherServlet(context);
+        String urlMapping = DATA_NEEDS_URL_MAPPING_PREFIX + "/*";
+        ServletRegistrationBean<DispatcherServlet> connectorServletBean = new ServletRegistrationBean<>(
+                dispatcherServlet,
+                urlMapping
+        );
 
-            @Override
-            public Set<String> getAllDataNeedIds() {
-                return Set.of();
-            }
-        };
+        connectorServletBean.setName("data-needs");
+        connectorServletBean.setLoadOnStartup(2);
+
+        LOGGER.info("Created ServletRegistrationBean for data needs, urlMapping is {}", urlMapping);
+        return connectorServletBean;
     }
 }

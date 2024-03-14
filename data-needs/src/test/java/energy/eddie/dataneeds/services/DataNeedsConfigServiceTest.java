@@ -7,11 +7,11 @@ import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.persistence.DataNeedsNameAndIdProjection;
 import jakarta.validation.ValidationException;
-import jakarta.validation.Validator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
@@ -26,15 +26,16 @@ class DataNeedsConfigServiceTest {
     @MockBean
     private DataNeedsService mockService;
     @Autowired
-    private Validator validator;
+    private ApplicationContext context;
     private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @Test
     void givenValidADataNeeds_addsAll() throws IOException {
+        // Given
         String file = new ClassPathResource("test-valid-data-needs.json").getFile().getAbsolutePath();
 
         // When
-        DataNeedsConfigService service = assertDoesNotThrow(() -> new DataNeedsConfigService(file, mapper, validator));
+        DataNeedsConfigService service = assertDoesNotThrow(() -> new DataNeedsConfigService(file, mapper, context));
 
         // Then
         assertThat(service.getDataNeedIdsAndNames())
@@ -55,7 +56,7 @@ class DataNeedsConfigServiceTest {
         String file = new ClassPathResource("test-invalid-data-needs.json").getFile().getAbsolutePath();
 
         // When, Then
-        var thrown = assertThrows(ValidationException.class, () -> new DataNeedsConfigService(file, mapper, validator));
+        var thrown = assertThrows(ValidationException.class, () -> new DataNeedsConfigService(file, mapper, context));
         assertThat(thrown.getMessage()).startsWith("Failed to validate data need with ID 'INVALID'");
     }
 
@@ -65,7 +66,7 @@ class DataNeedsConfigServiceTest {
 
         // When, Then
         var thrown = assertThrows(DataNeedAlreadyExistsException.class,
-                                  () -> new DataNeedsConfigService(file, mapper, validator));
+                                  () -> new DataNeedsConfigService(file, mapper, context));
         assertEquals("Data need with ID 'LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY' already exists.", thrown.getMessage());
     }
 }

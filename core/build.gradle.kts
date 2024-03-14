@@ -30,7 +30,6 @@ dependencies {
     implementation(project(":region-connectors:region-connector-simulation"))
 
     implementation(libs.spring.boot.starter.web)
-    implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.websocket)
     implementation(libs.reactor.core)
     implementation(libs.flyway.core)
