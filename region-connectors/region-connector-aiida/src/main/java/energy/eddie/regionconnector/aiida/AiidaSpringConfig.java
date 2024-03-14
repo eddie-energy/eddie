@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.aiida;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import energy.eddie.api.agnostic.DataNeedsService;
 import energy.eddie.api.agnostic.ConnectionStatusMessageMixin;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
@@ -11,6 +10,7 @@ import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
@@ -52,7 +52,7 @@ public class AiidaSpringConfig {
             @Value("${" + CUSTOMER_ID + "}") String customerId
     ) {
         return new PlainAiidaConfiguration(kafkaBootstrapServers, kafkaDataTopic,
-                kafkaStatusMessagesTopic, kafkaTerminationTopicPrefix, customerId);
+                                           kafkaStatusMessagesTopic, kafkaTerminationTopicPrefix, customerId);
     }
 
     @Bean

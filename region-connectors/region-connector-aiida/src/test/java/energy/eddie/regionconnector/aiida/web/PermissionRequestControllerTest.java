@@ -1,8 +1,11 @@
 package energy.eddie.regionconnector.aiida.web;
 
-import energy.eddie.api.agnostic.DataNeedsService;
 import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.web.DataNeedsAdvice;
+import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestRepository;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
@@ -46,15 +49,20 @@ class PermissionRequestControllerTest {
         public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
             return new RegionConnectorsCommonControllerAdvice();
         }
+
+        @Bean
+        public DataNeedsAdvice dataNeedsAdvice() {
+            return new DataNeedsAdvice();
+        }
     }
 
     @Test
     void givenNoRequestBody_returnsBadRequest() throws Exception {
         mockMvc.perform(post("/permission-request")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
     }
 
     @Test
@@ -62,11 +70,11 @@ class PermissionRequestControllerTest {
         var json = "{\"dataNeedId\":\"1\"}";
 
         mockMvc.perform(post("/permission-request")
-                        .content(json)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("connectionId: must not be blank")));
+                                .content(json)
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("connectionId: must not be blank")));
     }
 
     @Test
@@ -76,11 +84,12 @@ class PermissionRequestControllerTest {
         when(service.createNewPermission(any())).thenThrow(new PastStateException(mock(PermissionRequestState.class)));
 
         mockMvc.perform(post("/permission-request")
-                        .content(json)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("An error occurred while trying to transition a permission request to a new state.")));
+                                .content(json)
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isInternalServerError())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
+                                   is("An error occurred while trying to transition a permission request to a new state.")));
     }
 
     @Test
@@ -91,16 +100,17 @@ class PermissionRequestControllerTest {
         when(service.createNewPermission(any())).thenReturn(mockDto);
         when(mockDto.permissionId()).thenReturn(permissionId);
         var requestJson = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"11\",\"extra\":\"information\"}";
-        var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId).toString();
+        var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId)
+                                                                                            .toString();
 
         // When
         mockMvc.perform(post("/permission-request")
-                        .content(requestJson)
-                        .contentType(MediaType.APPLICATION_JSON))
-                // Then
-                .andExpect(status().isCreated())
-                .andExpect(header().string("Location", is(expectedLocationHeader)))
-                .andExpect(jsonPath("$.permissionId", is(permissionId)));
+                                .content(requestJson)
+                                .contentType(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isCreated())
+               .andExpect(header().string("Location", is(expectedLocationHeader)))
+               .andExpect(jsonPath("$.permissionId", is(permissionId)));
         verify(service).createNewPermission(any());
     }
 
@@ -112,17 +122,36 @@ class PermissionRequestControllerTest {
         when(service.createNewPermission(any())).thenReturn(mockDto);
         when(mockDto.permissionId()).thenReturn(permissionId);
         var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\"}";
-        var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId).toString();
+        var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId)
+                                                                                            .toString();
 
         // When
         mockMvc.perform(post("/permission-request")
-                        .content(json)
-                        .contentType(MediaType.APPLICATION_JSON))
-                // Then
-                .andExpect(status().isCreated())
-                .andExpect(header().string("Location", is(expectedLocationHeader)))
-                .andExpect(jsonPath("$.permissionId", is(permissionId)));
+                                .content(json)
+                                .contentType(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isCreated())
+               .andExpect(header().string("Location", is(expectedLocationHeader)))
+               .andExpect(jsonPath("$.permissionId", is(permissionId)));
 
         verify(service).createNewPermission(any());
+    }
+
+    @Test
+    void givenUnsupportedDataNeedId_returnsBadRequest() throws Exception {
+        // Given
+        when(service.createNewPermission(any())).thenThrow(new UnsupportedDataNeedException(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                                                            "test",
+                                                                                            "Is a test reason."));
+        var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"UNSUPPORTED\"}";
+
+        // When
+        mockMvc.perform(post("/permission-request")
+                                .content(json)
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
+                                   is("Region connector 'aiida' does not support data need with ID 'test': Is a test reason.")));
     }
 }

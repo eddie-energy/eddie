@@ -1,9 +1,14 @@
 package energy.eddie.regionconnector.aiida;
 
-import energy.eddie.api.agnostic.DataNeed;
-import energy.eddie.api.agnostic.DataNeedsService;
+import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,13 +23,23 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AiidaFactoryTest {
     @Mock
-    private DataNeedsService mockDataNeedsService;
+    private DataNeedsService mockService;
+    @Mock
+    private GenericAiidaDataNeed mockDataNeed;
+    @Mock
+    private ValidatedHistoricalDataDataNeed unsupportedDataNeed;
+    @Mock
+    private RelativeDuration mockRelativeDuration;
     private AiidaFactory aiidaFactory;
+    private final String connectionId = "testConnId";
+    private final String dataNeedId = "testDataNeedId";
 
     @BeforeEach
     void setUp() {
@@ -35,15 +50,17 @@ class AiidaFactoryTest {
                 "testTerminationPrefix",
                 "customerId"
         );
-        var fixedClock = Clock.fixed(Instant.parse("2023-10-15T15:00:00Z"), ZoneId.of("UTC"));
-        aiidaFactory = new AiidaFactory(config, mockDataNeedsService, fixedClock, Set.of());
+        var fixedClock = Clock.fixed(Instant.parse("2023-10-15T15:00:00Z"),
+                                     AiidaRegionConnectorMetadata.REGION_CONNECTOR_ZONE_ID);
+        aiidaFactory = new AiidaFactory(config, mockService, fixedClock, Set.of());
     }
 
     @Test
-    void givenNonExistingDataNeedId_createPermissionRequest_throws() {
+    void givenNonExistingDataNeedId_createPermissionRequest_throwsException() throws DataNeedNotFoundException {
         // Given
         var dataNeedId = "NonExisting";
-        when(mockDataNeedsService.getDataNeed(dataNeedId)).thenReturn(Optional.empty());
+        when(mockService.findDataNeedAndCalculateStartAndEnd(anyString(), any(), any(), any())).thenThrow(
+                DataNeedNotFoundException.class);
 
         // Then
         assertThrows(DataNeedNotFoundException.class,
@@ -52,18 +69,48 @@ class AiidaFactoryTest {
     }
 
     @Test
-    void givenValidInput_createPermissionRequest_returnsAsExpected() throws DataNeedNotFoundException {
+    void givenUnsupportedDataNeed_createPermissionRequest_throwsException() throws DataNeedNotFoundException {
         // Given
-        var connectionId = "testConnId";
-        var dataNeedId = "testDataNeedId";
-        var mockDataNeed = mock(DataNeed.class);
-        when(mockDataNeed.durationStart()).thenReturn(-5);
-        when(mockDataNeed.durationOpenEnd()).thenReturn(false);
-        when(mockDataNeed.durationEnd()).thenReturn(10);
-        when(mockDataNeedsService.getDataNeed(dataNeedId)).thenReturn(Optional.of(mockDataNeed));
+        DataNeedWrapper wrapper = new DataNeedWrapper(unsupportedDataNeed,
+                                                      LocalDate.now(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ZONE_ID),
+                                                      LocalDate.now(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ZONE_ID));
+        when(mockService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any())).thenReturn(wrapper);
 
-        var expectedStart = ZonedDateTime.parse("2023-10-10T00:00Z");
-        var expectedExpiration = ZonedDateTime.parse("2023-10-25T23:59:59Z");
+        // When, Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> aiidaFactory.createPermissionRequest(connectionId, dataNeedId));
+    }
+
+    @Test
+    void givenOpenStartEndDataNeed_createPermissionRequest_usesFixedValues() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+        // Given
+        when(mockDataNeed.duration()).thenReturn(mockRelativeDuration);
+        when(mockRelativeDuration.start()).thenReturn(Optional.empty());
+        when(mockRelativeDuration.end()).thenReturn(Optional.empty());
+        DataNeedWrapper wrapper = new DataNeedWrapper(mockDataNeed,
+                                                      LocalDate.now(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ZONE_ID),
+                                                      LocalDate.now(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ZONE_ID));
+        when(mockService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any())).thenReturn(wrapper);
+
+        // When
+        var request = aiidaFactory.createPermissionRequest(connectionId, dataNeedId);
+
+        // Then
+        assertEquals(ZonedDateTime.parse("2000-01-01T00:00:00Z[Etc/UTC]"), request.start());
+        assertEquals(ZonedDateTime.parse("9999-12-31T23:59:59Z[Etc/UTC]"), request.end());
+    }
+
+    @Test
+    void givenRelativeDuration_createPermissionRequest_usesCalculatedStartAndEnd() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+        // Given
+        when(mockDataNeed.duration()).thenReturn(mockRelativeDuration);
+        when(mockRelativeDuration.start()).thenReturn(Optional.of(Period.parse("P-5D")));
+        when(mockRelativeDuration.end()).thenReturn(Optional.of(Period.parse("P10D")));
+        DataNeedWrapper wrapper = new DataNeedWrapper(mockDataNeed, LocalDate.of(2024, 4, 1), LocalDate.of(2024, 4, 4));
+        when(mockService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any())).thenReturn(wrapper);
+
+        var expectedStart = ZonedDateTime.parse("2024-04-01T00:00Z[Etc/UTC]");
+        var expectedExpiration = ZonedDateTime.parse("2024-04-04T23:59:59Z[Etc/UTC]");
 
 
         // When
@@ -75,45 +122,40 @@ class AiidaFactoryTest {
         assertEquals(dataNeedId, request.dataNeedId());
         assertEquals(expectedStart, request.start());
         assertEquals(expectedExpiration, request.end());
-        verify(mockDataNeedsService).getDataNeed(dataNeedId);
     }
 
     @Test
-    void givenValidInput_createPermissionDto_returnsAsExpected() throws DataNeedNotFoundException {
+    void givenValidInput_createPermissionDto_returnsAsExpected() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
-        var connectionId = "testConnId";
-        var dataNeedId = "testDataNeedId";
-        var mockDataNeed = mock(DataNeed.class);
-        when(mockDataNeed.durationStart()).thenReturn(3);
-        when(mockDataNeed.durationOpenEnd()).thenReturn(true);
-        when(mockDataNeed.serviceName()).thenReturn("Test Service");
-        when(mockDataNeed.sharedDataIds()).thenReturn(Set.of("1-0:1.8.0", "1-0:1.7.0"));
-        when(mockDataNeedsService.getDataNeed(dataNeedId)).thenReturn(Optional.of(mockDataNeed));
-
-        var expectedStart = ZonedDateTime.parse("2023-10-18T00:00:00Z");
-        // when open end, 1000 years get added to now()
-        var expectedExpiration = ZonedDateTime.parse("3023-10-15T23:59:59Z");
-
-        AiidaPermissionRequestInterface request = aiidaFactory.createPermissionRequest(connectionId, dataNeedId);
+        when(mockDataNeed.name()).thenReturn("Test Service");
+        when(mockDataNeed.dataTags()).thenReturn(Set.of("1-0:1.8.0", "1-0:1.7.0"));
+        when(mockService.findById(anyString())).thenReturn(Optional.of(mockDataNeed));
+        var start = ZonedDateTime.parse("2023-01-01T00:00:00Z[Etc/UTC]");
+        var end = ZonedDateTime.parse("2023-01-25T23:59:59Z[Etc/UTC]");
 
 
+        String permissionId = "8390505d-2bb1-4321-bad2-396897cad525";
+        AiidaPermissionRequest request = new AiidaPermissionRequest(permissionId,
+                                                                    connectionId,
+                                                                    dataNeedId,
+                                                                    "foo",
+                                                                    start,
+                                                                    end);
         // When
         var dto = aiidaFactory.createPermissionDto(request);
 
 
         // Then
         assertAll(
-                () -> assertEquals(expectedStart, request.start()),
-                () -> assertEquals(expectedExpiration, request.end()),
                 () -> assertDoesNotThrow(() -> UUID.fromString(dto.permissionId())),
+                () -> assertEquals(request.start().toInstant(), dto.startTime()),
+                () -> assertEquals(request.end().toInstant(), dto.expirationTime()),
                 () -> assertEquals(request.permissionId(), dto.permissionId()),
                 () -> assertEquals(connectionId, dto.connectionId()),
                 () -> assertEquals(dataNeedId, dto.dataNeedId()),
                 () -> assertEquals("Test Service", dto.serviceName()),
                 () -> assertThat(dto.requestedCodes()).hasSameElementsAs(Set.of("1-0:1.8.0", "1-0:1.7.0")),
-                () -> assertNotNull(dto.kafkaStreamingConfig()),
-                () -> assertEquals(expectedStart, dto.startTime().atZone(ZoneOffset.UTC)),
-                () -> assertEquals(expectedExpiration, dto.expirationTime().atZone(ZoneOffset.UTC))
+                () -> assertNotNull(dto.kafkaStreamingConfig())
         );
     }
 }
