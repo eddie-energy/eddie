@@ -1,22 +1,34 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
+import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import jakarta.annotation.Nullable;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
+@ExtendWith(MockitoExtension.class)
 class HistoricalDataServiceTest {
+    @Mock
+    private DataApiService dataApiService;
 
     private static Stream<Arguments> pastTimeRanges() {
-        ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
+        LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
         return Stream.of(
                 Arguments.of(now.minusDays(20), now.minusDays(10), "10 days: 20 days ago"),
                 Arguments.of(now.minusMonths(10), now.minusMonths(9), "1 month: 10 months ago"),
@@ -25,7 +37,7 @@ class HistoricalDataServiceTest {
     }
 
     private static Stream<Arguments> pastToFutureTimeRanges() {
-        ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
+        LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
         return Stream.of(
                 Arguments.of(now.minusDays(10), now.plusDays(10), "10 days: 10 days ago to 10 days in the future"),
                 Arguments.of(now.minusMonths(9), now.plusMonths(9), "1 month: 9 months ago to 9 months in the future"),
@@ -35,7 +47,7 @@ class HistoricalDataServiceTest {
     }
 
     private static Stream<Arguments> futureTimeRanges() {
-        ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
+        LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
         return Stream.of(
                 Arguments.of(now, now.plusDays(20), "20 days: now to 20 days in the future"),
                 Arguments.of(now.plusDays(10), now.plusDays(20), "10 days: 10 days in the future"),
@@ -44,58 +56,63 @@ class HistoricalDataServiceTest {
         );
     }
 
+    @SuppressWarnings("DataFlowIssue")
+    private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, @Nullable LocalDate end) {
+        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
+        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
+                "connectionId",
+                "dataNeedId",
+                "nif",
+                "meteringPointId",
+                start.atStartOfDay(ZONE_ID_SPAIN),
+                end == null ? null : end.atStartOfDay(ZONE_ID_SPAIN),
+                Granularity.PT1H);
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
+        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
+        permissionRequest.setDistributorCodeAndPointType(DistributorCode.ASEME, 1);
+        return permissionRequest;
+    }
+
 
     @ParameterizedTest(name = "{2}")
     @MethodSource("pastTimeRanges")
-    void fetchAvailableHistoricalData_callsFetchDataForPermissionRequest_withExpectedParams(ZonedDateTime start, ZonedDateTime end, String description) {
-        // Arrange
-        DataApiService dataApiService = mock(DataApiService.class);
-        EsPermissionRequest permissionRequest = mock(EsPermissionRequest.class);
-        when(permissionRequest.start()).thenReturn(start);
-        when(permissionRequest.end()).thenReturn(end);
-
+    void fetchAvailableHistoricalData_callsFetchDataForPermissionRequest_withExpectedParams(LocalDate start, LocalDate end, String description) {
+        // Given
+        EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end.minusDays(1));
         HistoricalDataService historicalDataService = new HistoricalDataService(dataApiService);
 
-        // Act
+        // When
         historicalDataService.fetchAvailableHistoricalData(permissionRequest);
 
-        // Assert
-        verify(dataApiService).fetchDataForPermissionRequest(permissionRequest, start.toLocalDate(), end.toLocalDate());
+        // Then
+        verify(dataApiService).fetchDataForPermissionRequest(permissionRequest, start, end);
     }
 
     @ParameterizedTest(name = "{2}")
     @MethodSource("futureTimeRanges")
-    void fetchAvailableHistoricalData_doesNotCallFetchDataForPermissionRequest_withFutureTimeRanges(ZonedDateTime start, ZonedDateTime end, String description) {
-        // Arrange
-        DataApiService dataApiService = mock(DataApiService.class);
-        EsPermissionRequest permissionRequest = mock(EsPermissionRequest.class);
-        when(permissionRequest.start()).thenReturn(start);
-        when(permissionRequest.end()).thenReturn(end);
-
+    void fetchAvailableHistoricalData_doesNotCallFetchDataForPermissionRequest_withFutureTimeRanges(LocalDate start, LocalDate end, String description) {
+        // Given
+        EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
         HistoricalDataService historicalDataService = new HistoricalDataService(dataApiService);
 
-        // Act
+        // When
         historicalDataService.fetchAvailableHistoricalData(permissionRequest);
 
-        // Assert
+        // Then
         verifyNoInteractions(dataApiService);
     }
 
     @ParameterizedTest(name = "{2}")
     @MethodSource("pastToFutureTimeRanges")
-    void fetchAvailableHistoricalData_withPermissionRequestFromPastToFuture(ZonedDateTime start, @Nullable ZonedDateTime end, String description) {
-        // Arrange
-        DataApiService dataApiService = mock(DataApiService.class);
-        EsPermissionRequest permissionRequest = mock(EsPermissionRequest.class);
-        when(permissionRequest.start()).thenReturn(start);
-        when(permissionRequest.end()).thenReturn(end);
-
+    void fetchAvailableHistoricalData_withPermissionRequestFromPastToFuture(LocalDate start, @Nullable LocalDate end, String description) {
+        // Given
+        EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
         HistoricalDataService historicalDataService = new HistoricalDataService(dataApiService);
 
-        // Act
+        // When
         historicalDataService.fetchAvailableHistoricalData(permissionRequest);
 
-        // Assert
-        verify(dataApiService).fetchDataForPermissionRequest(permissionRequest, start.toLocalDate(), LocalDate.now(ZONE_ID_SPAIN).minusDays(1));
+        // Then
+        verify(dataApiService).fetchDataForPermissionRequest(permissionRequest, start, LocalDate.now(ZONE_ID_SPAIN).minusDays(1));
     }
 }
