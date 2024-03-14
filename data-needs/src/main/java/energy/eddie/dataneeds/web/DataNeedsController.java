@@ -14,7 +14,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/api/data-needs")
+@RequestMapping("/api")
 public class DataNeedsController {
     private final DataNeedsService dataNeedsService;
 

@@ -1,10 +1,10 @@
 ### GET all data needs
-GET http://localhost:9090/management/data-needs
+GET http://localhost:9090/data-needs/management
 Accept: application/json
 
 
 ### Create a new data need with open start and open end for validated consumption data
-POST http://localhost:9090/management/data-needs
+POST http://localhost:9090/data-needs/management
 Content-Type: application/json
 
 {
@@ -22,7 +22,7 @@ Content-Type: application/json
 }
 
 ### Create a new account point data need
-POST http://localhost:9090/management/data-needs
+POST http://localhost:9090/data-needs/management
 Content-Type: application/json
 
 {
@@ -35,7 +35,7 @@ Content-Type: application/json
 
 
 ### Create a new data need for generic AIIDA data with an absolute duration
-POST http://localhost:9090/management/data-needs
+POST http://localhost:9090/data-needs/management
 Content-Type: application/json
 
 {
@@ -58,9 +58,9 @@ Content-Type: application/json
 
 
 ### GET details of a data need
-GET http://localhost:9090/management/data-needs/{id}
+GET http://localhost:9090/data-needs/management/{id}
 Accept: application/json
 
 
 ### DELETE a data need
-DELETE http://localhost:9090/management/data-needs/{id}
+DELETE http://localhost:9090/data-needs/management/{id}

@@ -3,6 +3,7 @@ package energy.eddie.dataneeds.web;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.dataneeds.DataNeedsSpringConfig;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
@@ -17,20 +18,27 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
 import static energy.eddie.dataneeds.web.DataNeedsControllerTest.EXAMPLE_ACCOUNTING_POINT_DATA_NEED;
 import static energy.eddie.dataneeds.web.DataNeedsControllerTest.EXAMPLE_VHD_DATA_NEED;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -115,7 +123,7 @@ class DataNeedsManagementControllerTest {
             String json,
             List<String> expectedErrors
     ) throws Exception {
-        mockMvc.perform(post("/management/data-needs")
+        mockMvc.perform(post("/management")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json))
                .andExpect(status().isBadRequest())
@@ -130,7 +138,7 @@ class DataNeedsManagementControllerTest {
         when(mockService.findAll()).thenReturn(List.of(exampleAccount, exampleVhd));
 
         // When
-        mockMvc.perform(get("/management/data-needs")
+        mockMvc.perform(get("/management")
                                 .contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isOk())
@@ -144,7 +152,7 @@ class DataNeedsManagementControllerTest {
     @Test
     void givenNonExistingId_getDataNeed_returnsNotFound() throws Exception {
         // When
-        mockMvc.perform(get("/management/data-needs/{dataNeedId}", "nonExisting")
+        mockMvc.perform(get("/management/{dataNeedId}", "nonExisting")
                                 .accept(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isNotFound())
@@ -161,7 +169,7 @@ class DataNeedsManagementControllerTest {
         when(mockService.findById(id)).thenReturn(Optional.of(dataNeed));
 
         // When
-        mockMvc.perform(get("/management/data-needs/{dataNeedId}", id)
+        mockMvc.perform(get("/management/{dataNeedId}", id)
                                 .accept(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isOk())
@@ -174,7 +182,7 @@ class DataNeedsManagementControllerTest {
     @Test
     void givenNonExistingId_deleteDataNeed_returnsNotFound() throws Exception {
         // When
-        mockMvc.perform(delete("/management/data-needs/{dataNeedId}", "nonExisting2")
+        mockMvc.perform(delete("/management/{dataNeedId}", "nonExisting2")
                                 .accept(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isNotFound())
@@ -191,7 +199,7 @@ class DataNeedsManagementControllerTest {
         doNothing().when(mockService).deleteById(id);
 
         // When
-        mockMvc.perform(delete("/management/data-needs/{dataNeedId}", id)
+        mockMvc.perform(delete("/management/{dataNeedId}", id)
                                 .accept(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isNoContent());
@@ -211,5 +219,54 @@ class DataNeedsManagementControllerTest {
         public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
             return new RegionConnectorsCommonControllerAdvice();
         }
+    }
+}
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = DataNeedsSpringConfig.class)
+@ActiveProfiles("test-data-needs-management-api")
+@Sql(scripts = "/test-data-needs-management-api.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+class DataNeedsManagementFullTest {
+    @LocalServerPort
+    private int port;
+    @Autowired
+    private TestRestTemplate restTemplate;
+
+    public static Stream<Arguments> validDataNeedRequests() {
+        return Stream.of(
+                Arguments.of(
+                        "{\"type\":\"validated\",\"name\":\"My awesome data need\",\"description\":\"descr\",\"purpose\":\"purpose\",\"policyLink\":\"https://example.com/toc\",\"duration\":{\"type\":\"relativeDuration\"},\"energyType\":\"ELECTRICITY\",\"minGranularity\":\"PT1H\",\"maxGranularity\":\"P1D\"}"),
+                Arguments.of(
+                        "{\"type\":\"genericAiida\",\"name\":\"name\",\"description\":\"foo\",\"purpose\":\"purpose\",\"policyLink\":\"https://example.com/toc\",\"transmissionInterval\":2,\"duration\":{\"type\":\"relativeDuration\",\"durationStart\":\"-P10D\",\"durationEnd\":\"P10D\"},\"dataTags\":[\"1.8.0\",\"1.7.0\"]}"),
+                Arguments.of(
+                        "{\"type\":\"validated\",\"id\":\"NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY\",\"name\":\"NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY\",\"description\":\"Historical validated consumption data for the next 10 days, one measurement per day\",\"purpose\":\"Some purpose\",\"policyLink\":\"https://example.com/toc\",\"duration\":{\"type\":\"absoluteDuration\",\"start\":\"2024-04-01\",\"end\":\"2024-04-05\"},\"energyType\":\"ELECTRICITY\",\"minGranularity\":\"P1D\",\"maxGranularity\":\"P1D\"}"),
+                Arguments.of(
+                        "{\"type\":\"account\",\"policyLink\":\"https://example.com/toc\",\"name\":\"My Account Point Data Need\",\"description\":\"Some longtext\",\"purpose\":\"A purpose\"}")
+        );
+    }
+
+    @ParameterizedTest
+    @DisplayName("Valid new data need request")
+    @MethodSource("validDataNeedRequests")
+    void givenValidDataNeed_returnsCreated(String json) throws JsonProcessingException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");
+
+        HttpEntity<String> entity = new HttpEntity<>(json, headers);
+
+        ResponseEntity<DataNeed> response = restTemplate.exchange(
+                "http://localhost:" + port + "/management",
+                HttpMethod.POST,
+                entity,
+                DataNeed.class);
+
+        ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        System.out.println(mapper.writeValueAsString(response.getBody()));
+
+        assertEquals(201, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+        assertDoesNotThrow(() -> UUID.fromString(response.getBody().id()));
+        String expectedLocationHeader = "management/" + response.getBody().id();
+        assertNotNull(response.getHeaders().getLocation());
+        assertEquals(expectedLocationHeader, response.getHeaders().getLocation().toString());
     }
 }

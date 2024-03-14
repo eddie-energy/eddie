@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping(path = DataNeedsManagementController.BASE_PATH_KEY, produces = MediaType.APPLICATION_JSON_VALUE)
 @ConditionalOnProperty(value = "eddie.data-needs-config.data-need-source", havingValue = "DATABASE")
 public class DataNeedsManagementController {
-    public static final String BASE_PATH_KEY = "${management.server.urlprefix}/data-needs";
+    public static final String BASE_PATH_KEY = "${management.server.urlprefix}";
     private final DataNeedsDbService service;
     public final String basePath;
 

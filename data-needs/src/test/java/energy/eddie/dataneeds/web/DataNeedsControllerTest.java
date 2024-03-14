@@ -38,7 +38,7 @@ public class DataNeedsControllerTest {
     @Test
     void givenNoDataNeeds_getDataNeedIdsAndNames_returnsEmptyResponse() throws Exception {
         // When
-        mockMvc.perform(get("/api/data-needs")
+        mockMvc.perform(get("/api")
                                 .contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isOk())
@@ -53,7 +53,7 @@ public class DataNeedsControllerTest {
         when(mockDataNeedsService.getDataNeedIdsAndNames()).thenReturn(List.of(first, second));
 
         // When
-        mockMvc.perform(get("/api/data-needs")
+        mockMvc.perform(get("/api")
                                 .contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isOk())
@@ -68,7 +68,7 @@ public class DataNeedsControllerTest {
         String nonExistingId = "123";
 
         // When
-        mockMvc.perform(get("/api/data-needs/{dataNeedId}", nonExistingId)
+        mockMvc.perform(get("/api/{dataNeedId}", nonExistingId)
                                 .accept(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isNotFound())
@@ -85,7 +85,7 @@ public class DataNeedsControllerTest {
         when(mockDataNeedsService.findById(id)).thenReturn(Optional.of(dataNeed));
 
         // When
-        mockMvc.perform(get("/api/data-needs/{dataNeedId}", id)
+        mockMvc.perform(get("/api/{dataNeedId}", id)
                                 .accept(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isOk())

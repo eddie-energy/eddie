@@ -9,12 +9,13 @@ import energy.eddie.dataneeds.persistence.DataNeedsNameAndIdProjectionRecord;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Path;
 import jakarta.validation.ValidationException;
-import jakarta.validation.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,13 +35,24 @@ public class DataNeedsConfigService implements DataNeedsService {
     private final Map<String, DataNeed> dataNeeds = new ConcurrentHashMap<>();
 
     public DataNeedsConfigService(
-            @Value("${eddie.data-needs-config.file}") String dataNeedsFile,
+            @Value("${eddie.data-needs-config.file}") String dataNeedsFilePath,
             ObjectMapper mapper,
-            Validator validator
+            ApplicationContext context
+    ) throws DataNeedAlreadyExistsException, IOException {
+        // if declared as constructor dependency, validator.validate(dataNeed) fails because of an unresolved
+        // dependency, but getting the validator directly from the context somehow works?
+        var validator = context.getBean("validator", LocalValidatorFactoryBean.class);
+
+        readDataNeedsFromFile(dataNeedsFilePath, mapper, validator);
+    }
+
+    private void readDataNeedsFromFile(
+            String dataNeedsFilePath,
+            ObjectMapper mapper,
+            LocalValidatorFactoryBean validator
     ) throws IOException, DataNeedAlreadyExistsException {
-        File file = new File(dataNeedsFile);
-        TypeReference<List<DataNeed>> listOfDataNeedsTypeReference = new TypeReference<>() {
-        };
+        File file = new File(dataNeedsFilePath);
+        TypeReference<List<DataNeed>> listOfDataNeedsTypeReference = new TypeReference<>() {};
         List<DataNeed> dataNeedsFromFile = mapper.readValue(file, listOfDataNeedsTypeReference);
 
         for (DataNeed dataNeed : dataNeedsFromFile) {
