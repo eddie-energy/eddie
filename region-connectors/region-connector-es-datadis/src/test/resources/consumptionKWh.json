@@ -84,7 +84,7 @@
     "date": "2023/12/01",
     "time": "11:00",
     "consumptionKWh": 4.875,
-    "obtainMethod": "",
+    "obtainMethod": "Real",
     "surplusEnergyKWh": null
   },
   {
@@ -92,7 +92,7 @@
     "date": "2023/12/01",
     "time": "12:00",
     "consumptionKWh": 5.543,
-    "obtainMethod": "",
+    "obtainMethod": "Estimada",
     "surplusEnergyKWh": null
   },
   {
