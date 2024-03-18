@@ -35,3 +35,5 @@ findProject(":examples:example-app")?.name = "example-app"
 
 include("e2e-tests")
 findProject("e2e-tests")?.name = "e2e-tests"
+
+include("data-needs")

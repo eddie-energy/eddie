@@ -1,0 +1,68 @@
+@startuml
+abstract DataNeed {
+    id String
+    name String
+    description String
+    purpose String
+    policyLink URL
+}
+
+class AccountingPointDataNeed {
+}
+
+abstract TimeframedDataNeed {
+    duration DataNeedDuration
+}
+
+class ValidatedHistoricalDataDataNeed {
+    minGranularity Granularity
+    maxGranularity Granularity
+    energyType EnergyType
+}
+
+enum EnergyType {
+    ELECTRICITY
+    NATURAL_GAS
+    HYDROGEN
+    HEAT
+}
+
+abstract DataNeedDuration
+
+abstract RelativeDuration {
+    start Duration<ISO8601>
+    end Duration<ISO8601>
+    stickToStartOfCalendarUnit boolean
+    stickyStartCalendarUnit CalendarUnit
+}
+
+abstract AbsoluteDuration {
+    start Date
+    end Date
+}
+
+abstract AiidaDataNeed {
+    transmissionInterval int<seconds>
+}
+
+class GenericAiidaDataNeed {
+    dataTags Set<String>
+}
+
+DataNeed <|-- AccountingPointDataNeed
+DataNeed <|-- TimeframedDataNeed
+
+TimeframedDataNeed -- DataNeedDuration
+
+TimeframedDataNeed <|-- ValidatedHistoricalDataDataNeed
+
+ValidatedHistoricalDataDataNeed -- EnergyType
+
+DataNeedDuration <|-- AbsoluteDuration
+DataNeedDuration <|-- RelativeDuration
+
+TimeframedDataNeed <|-- AiidaDataNeed
+AiidaDataNeed <|-- GenericAiidaDataNeed
+AiidaDataNeed <|-- SmartMeterAiidaDataNeed
+
+@enduml
