@@ -1,10 +1,16 @@
 package energy.eddie.regionconnector.simulation.web;
 
+import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
+import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.IntermediateConsentMarketDocument;
+import energy.eddie.regionconnector.simulation.SimulationConnectorMetadata;
 import energy.eddie.regionconnector.simulation.SimulationDataSourceInformation;
 import energy.eddie.regionconnector.simulation.dtos.SetConnectionStatusRequest;
+import energy.eddie.regionconnector.simulation.permission.request.SimulationPermissionRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +22,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 @RestController
-public class ConnectionStatusController implements Mvp1ConnectionStatusMessageProvider {
+public class ConnectionStatusController implements Mvp1ConnectionStatusMessageProvider, ConsentMarketDocumentProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusController.class);
-    private final Sinks.Many<ConnectionStatusMessage> connectionStatusStreamSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<ConnectionStatusMessage> connectionStatusStreamSink = Sinks.many().multicast()
+            .onBackpressureBuffer();
+    private final Sinks.Many<ConsentMarketDocument> cmdSink = Sinks.many().multicast().onBackpressureBuffer();
 
     @GetMapping(value = "/api/connection-status-values")
     public ResponseEntity<PermissionProcessStatus[]> connectionStatusValues() {
@@ -39,10 +47,21 @@ public class ConnectionStatusController implements Mvp1ConnectionStatusMessagePr
                             req.connectionStatus.toString()
                     )
             );
+            cmdSink.tryEmitNext(
+                    new IntermediateConsentMarketDocument<TimeframedPermissionRequest>(
+                            new SimulationPermissionRequest(req),
+                            SimulationConnectorMetadata.REGION_CONNECTOR_ID,
+                            ignored -> null,
+                            "N" + SimulationConnectorMetadata.getInstance().countryCode()
+                    ).toConsentMarketDocument()
+            );
             return ResponseEntity.ok(req.connectionId);
         } else {
-            LOGGER.error("Mandatory attribute missing (connectionId,connectionStatus,dataNeedId) on ConnectionStatusMessage from frontend: {}", req);
-            return ResponseEntity.badRequest().body("Mandatory attribute missing (connectionId,connectionStatus,dataNeedId) on ConnectionStatusMessage");
+            LOGGER.error(
+                    "Mandatory attribute missing (connectionId,connectionStatus,dataNeedId) on ConnectionStatusMessage from frontend: {}",
+                    req);
+            return ResponseEntity.badRequest()
+                    .body("Mandatory attribute missing (connectionId,connectionStatus,dataNeedId) on ConnectionStatusMessage");
         }
     }
 
@@ -52,7 +71,13 @@ public class ConnectionStatusController implements Mvp1ConnectionStatusMessagePr
     }
 
     @Override
+    public Flux<ConsentMarketDocument> getConsentMarketDocumentStream() {
+        return cmdSink.asFlux();
+    }
+
+    @Override
     public void close() {
         connectionStatusStreamSink.tryEmitComplete();
+        cmdSink.tryEmitComplete();
     }
 }

@@ -20,6 +20,7 @@ repositories {
 
 dependencies {
     implementation(project(":api"))
+    implementation(project(":region-connectors:shared"))
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
@@ -49,4 +50,8 @@ tasks.getByName<BootJar>("bootJar") {
 
 tasks.getByName<Jar>("jar") {
     enabled = true
+}
+
+sonar {
+    isSkipProject = true
 }
