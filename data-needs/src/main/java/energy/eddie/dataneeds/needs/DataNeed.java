@@ -7,7 +7,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.SmartMeterAiidaDataNeed;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.validator.constraints.URL;
 
 import java.time.Instant;
 
@@ -31,15 +33,20 @@ public abstract class DataNeed {
     private String id;
     @Column(name = "name", nullable = false)
     @JsonProperty(required = true)
+    @NotBlank(message = "must not be blank")
     private String name;
     @Column(name = "description", nullable = false)
     @JsonProperty(required = true)
+    @NotBlank(message = "must not be blank")
     private String description;
     @Column(name = "purpose", nullable = false)
     @JsonProperty(required = true)
+    @NotBlank(message = "must not be blank")
     private String purpose;
     @Column(name = "policy_link", nullable = false)
     @JsonProperty(required = true)
+    @NotBlank(message = "must not be blank")
+    @URL(message = "must be a valid URL")
     private String policyLink;
     @Column(name = "created_at")
     @CreationTimestamp

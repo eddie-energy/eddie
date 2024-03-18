@@ -3,6 +3,8 @@ package energy.eddie.dataneeds.needs;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.dataneeds.duration.DataNeedDuration;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 
 @Entity
@@ -12,6 +14,8 @@ public abstract class TimeframedDataNeed extends DataNeed {
     @JsonProperty(required = true)
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
+    @Valid
+    @NotNull(message = "must not be null")
     private DataNeedDuration duration;
 
     @SuppressWarnings("NullAway.Init")

@@ -3,6 +3,7 @@ package energy.eddie.dataneeds.needs.aiida;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 
 @Entity
 @Table(schema = "data_needs")
@@ -10,6 +11,7 @@ import jakarta.persistence.*;
 public abstract class AiidaDataNeed extends TimeframedDataNeed {
     @Column(name = "transmission_interval", nullable = false)
     @JsonProperty(required = true)
+    @Min(value = 1, message = "Must not be less than 1")
     private int transmissionInterval;
 
     @SuppressWarnings("NullAway.Init")
