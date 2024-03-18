@@ -1,6 +1,7 @@
 package energy.eddie.dataneeds.duration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.dataneeds.validation.duration.IsValidRelativeDuration;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
@@ -9,6 +10,7 @@ import java.util.Optional;
 
 @Entity
 @Table(name = "relative_duration", schema = "data_needs")
+@IsValidRelativeDuration
 public class RelativeDuration extends DataNeedDuration {
     public static final String DISCRIMINATOR_VALUE = "relativeDuration";
 

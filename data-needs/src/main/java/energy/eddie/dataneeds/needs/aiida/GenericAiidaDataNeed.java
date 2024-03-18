@@ -2,6 +2,7 @@ package energy.eddie.dataneeds.needs.aiida;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 
 import java.util.Set;
 
@@ -21,6 +22,7 @@ public class GenericAiidaDataNeed extends AiidaDataNeed {
             schema = "data_needs")
     @Column(name = "data_tags")
     @JsonProperty(required = true)
+    @NotEmpty(message = "must contain at least one data tag")
     private Set<String> dataTags;
 
     @SuppressWarnings("NullAway.Init")
