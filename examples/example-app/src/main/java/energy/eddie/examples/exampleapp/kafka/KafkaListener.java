@@ -6,6 +6,7 @@ import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.cmd.MktActivityRecordComplexType;
 import energy.eddie.cim.v0_82.cmd.PermissionComplexType;
 import energy.eddie.cim.v0_82.vhd.PointComplexType;
+import energy.eddie.cim.v0_82.vhd.SeriesPeriodComplexType;
 import energy.eddie.cim.v0_82.vhd.TimeSeriesComplexType;
 import energy.eddie.examples.exampleapp.Env;
 import energy.eddie.examples.exampleapp.kafka.serdes.ConsentMarketDocumentSerde;
@@ -125,22 +126,23 @@ public class KafkaListener implements Runnable {
                     .executeAndReturnGeneratedKeys("id")
                     .mapTo(Integer.class)
                     .first();
+            int order = 0;
+            for (SeriesPeriodComplexType period : seriesPeriods.getSeriesPeriods()) {
+                for (PointComplexType point : period.getPointList().getPoints()) {
+                    BigDecimal consumption = point.getEnergyQuantityQuantity();
+                    String type = point.getEnergyQuantityQuality().value();
 
-            seriesPeriods.getSeriesPeriods().forEach(period -> {
-                PointComplexType first = period.getPointList().getPoints().getFirst();
-                BigDecimal consumption = first.getEnergyQuantityQuantity();
-                Integer order = Integer.valueOf(first.getPosition());
-                String type = first.getEnergyQuantityQuality().value();
-
-                h.createUpdate("""
-                                INSERT INTO consumption_points(consumption_record_id, ord, consumption, metering_type) VALUES (?, ?, ?, ?)
-                                """)
-                        .bind(0, id)
-                        .bind(1, order)
-                        .bind(2, consumption)
-                        .bind(3, type)
-                        .execute();
-            });
+                    h.createUpdate("""
+                                           INSERT INTO consumption_points(consumption_record_id, ord, consumption, metering_type) VALUES (?, ?, ?, ?)
+                                           """)
+                            .bind(0, id)
+                            .bind(1, order)
+                            .bind(2, consumption)
+                            .bind(3, type)
+                            .execute();
+                    order++;
+                }
+            }
             return null;
         });
     }
