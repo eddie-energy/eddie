@@ -23,13 +23,15 @@ public interface AtPermissionRequestRepository extends PermissionRequestReposito
     Optional<AtPermissionRequest> findByConversationIdOrCMRequestId(String conversationId, @Nullable String cmRequestId);
 
     /**
-     * This method returns all permission requests that are associated with the given metering point, and where the date is between start and end of the permission request
+     * This method returns all {@link energy.eddie.api.v0.PermissionProcessStatus#ACCEPTED} and
+     * {@link energy.eddie.api.v0.PermissionProcessStatus#FULFILLED} permission requests that are associated with the
+     * given metering point and where the date is between start and end of the permission request
      *
      * @param meteringPointId for which to get permission requests
      * @param date            to filter time relevant permission requests
      * @return a list of matching permission requests
      */
-    List<AtPermissionRequest> findByMeteringPointIdAndDate(String meteringPointId, LocalDate date);
+    List<AtPermissionRequest> findAcceptedAndFulfilledByMeteringPointIdAndDate(String meteringPointId, LocalDate date);
 
     Optional<AtPermissionRequest> findByConsentId(String consentId);
 }

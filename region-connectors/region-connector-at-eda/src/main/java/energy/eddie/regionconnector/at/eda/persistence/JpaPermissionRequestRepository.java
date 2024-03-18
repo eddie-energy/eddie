@@ -27,11 +27,16 @@ public interface JpaPermissionRequestRepository extends PagingAndSortingReposito
                                                                     @Param("cmRequestId") @Nullable String cmRequestId);
 
     @Override
-    @Query("SELECT pr FROM EdaPermissionRequest pr WHERE pr.meteringPointId = :meteringPointId AND cast(pr.start as date) < :date AND (cast(pr.end as date) > :date OR pr.end IS NULL)")
-    List<AtPermissionRequest> findByMeteringPointIdAndDate(@Param("meteringPointId") String meteringPointId,
-                                                           @Param("date") LocalDate date);
+    @Query("""
+            SELECT pr FROM EdaPermissionRequest pr
+            WHERE pr.meteringPointId = :meteringPointId
+                AND (pr.status = energy.eddie.api.v0.PermissionProcessStatus.ACCEPTED OR pr.status = energy.eddie.api.v0.PermissionProcessStatus.FULFILLED)
+                AND cast(pr.start as date) <= :date
+                AND (cast(pr.end as date) >= :date OR pr.end IS NULL)
+            """)
+    List<AtPermissionRequest> findAcceptedAndFulfilledByMeteringPointIdAndDate(@Param("meteringPointId") String meteringPointId,
+                                                                               @Param("date") LocalDate date);
 
     @Override
     Optional<AtPermissionRequest> findByConsentId(@Param("consentId") String consentId);
-
 }
