@@ -33,28 +33,13 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
     const formData = new FormData(event.target);
 
-    const startDate = new Date();
-    startDate.setDate(
-      startDate.getDate() + this.dataNeedAttributes.durationStart
-    );
-
-    const endDate = new Date();
-    if (this.dataNeedAttributes.durationEnd === 0) {
-      endDate.setDate(endDate.getDate() - 1); // subtract one day by default
-    } else {
-      endDate.setDate(endDate.getDate() + this.dataNeedAttributes.durationEnd);
-    }
-
     const jsonData = {
       meteringPointId: formData.get("meteringPointId")
         ? formData.get("meteringPointId")
         : null,
       dsoId: this.companyId,
       connectionId: this.connectionId,
-      start: startDate.toISOString().substring(0, 10),
-      end: endDate.toISOString().substring(0, 10),
       dataNeedId: this.dataNeedAttributes.id,
-      granularity: this.dataNeedAttributes.granularity,
     };
 
     this.createPermissionRequest(jsonData)
