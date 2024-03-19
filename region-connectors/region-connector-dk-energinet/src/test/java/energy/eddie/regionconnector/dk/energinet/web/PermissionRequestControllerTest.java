@@ -36,7 +36,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
-import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.DK_ZONE_ID;
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
