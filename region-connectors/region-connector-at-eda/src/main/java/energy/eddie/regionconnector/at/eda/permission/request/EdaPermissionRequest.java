@@ -13,7 +13,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static energy.eddie.regionconnector.at.eda.utils.DateTimeConstants.AT_ZONE_ID;
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 
 @SuppressWarnings("NullAway") // Needed for JPA
 @Entity

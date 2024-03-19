@@ -21,10 +21,6 @@ import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.REG
 
 @Component
 public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider {
-    /**
-     * DSOs in Austria are only allowed to store data for the last 36 months
-     */
-    public static final int MAXIMUM_MONTHS_IN_THE_PAST = 36;
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
     private final EdaAdapter edaAdapter;
     private final AtPermissionRequestRepository repository;

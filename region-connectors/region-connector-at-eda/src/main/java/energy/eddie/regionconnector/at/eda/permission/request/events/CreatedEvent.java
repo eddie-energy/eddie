@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 
 import java.time.ZonedDateTime;
 
-import static energy.eddie.regionconnector.at.eda.utils.DateTimeConstants.AT_ZONE_ID;
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 
 @Entity
 @SuppressWarnings("NullAway") // Needed for JPA

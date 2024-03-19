@@ -5,8 +5,8 @@ import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.Energy
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
+import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
-import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class IdentifiableConsumptionRecordService {
                 .stream()
                 .filter(atPermissionRequest -> atPermissionRequest.status() == PermissionProcessStatus.ACCEPTED)
                 .toList();
-        
+
         if (permissionRequests.isEmpty()) {
             LOGGER.warn("No permission requests found for consumption record with date {}", date);
             return null;
@@ -71,6 +71,7 @@ public class IdentifiableConsumptionRecordService {
     }
 
     private LocalDate getMeteringPeriodStartDate(Energy energy) {
-        return energy.getMeteringPeriodStart().toGregorianCalendar().toZonedDateTime().withZoneSameLocal(DateTimeConstants.AT_ZONE_ID).toLocalDate();
+        return energy.getMeteringPeriodStart().toGregorianCalendar().toZonedDateTime().withZoneSameLocal(
+                EdaRegionConnectorMetadata.AT_ZONE_ID).toLocalDate();
     }
 }
