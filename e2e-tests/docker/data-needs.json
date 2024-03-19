@@ -1,0 +1,68 @@
+[
+  {
+    "type": "validated",
+    "id": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
+    "name": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
+    "description": "Historical validated consumption data for the last three months, one measurement per day",
+    "purpose": "Some purpose",
+    "policyLink": "https://example.com/toc",
+    "duration": {
+      "type": "relativeDuration",
+      "start": "-P3M",
+      "end": "P0D"
+    },
+    "energyType": "ELECTRICITY",
+    "minGranularity": "P1D",
+    "maxGranularity": "P1D"
+  },
+  {
+    "type": "validated",
+    "id": "NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY",
+    "name": "NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY",
+    "description": "Historical validated consumption data for the next 10 days, one measurement per day",
+    "purpose": "Some purpose",
+    "policyLink": "https://example.com/toc",
+    "duration": {
+      "type": "relativeDuration",
+      "start": "P1D",
+      "end": "P10D"
+    },
+    "energyType": "ELECTRICITY",
+    "minGranularity": "P1D",
+    "maxGranularity": "P1D"
+  },
+  {
+    "type": "genericAiida",
+    "id": "FUTURE_NEAR_REALTIME_DATA",
+    "name": "FUTURE_NEAR_REALTIME_DATA",
+    "description": "Near realtime consumption data from the smart meter",
+    "purpose": "purpose",
+    "policyLink": "https://example.com/toc",
+    "duration": {
+      "type": "absoluteDuration",
+      "start": "2024-04-01",
+      "end": "2024-04-05"
+    },
+    "transmissionInterval": 5,
+    "dataTags": [
+      "1.8.0",
+      "1.7.0"
+    ]
+  },
+  {
+    "type": "validated",
+    "id": "LAST_3_MONTHS_HOURLY_MEASUREMENTS_PER_DAY",
+    "name": "LAST_3_MONTHS_HOURLY_MEASUREMENTS_PER_DAY",
+    "description": "Historical validated consumption data for the last three months, one measurement per hour",
+    "purpose": "Some purpose",
+    "policyLink": "https://example.com/toc",
+    "duration": {
+      "type": "relativeDuration",
+      "start": "-P3M",
+      "end": "P0D"
+    },
+    "energyType": "ELECTRICITY",
+    "minGranularity": "PT1H",
+    "maxGranularity": "PT1H"
+  }
+]
