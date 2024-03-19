@@ -50,6 +50,8 @@ class PermissionRequestServiceTest {
     @Autowired
     private PermissionRequestRepository<FrEnedisPermissionRequest> repository;
     @MockBean
+    private HistoricalDataService historicalDataService;
+    @MockBean
     private DataNeedsService dataNeedsService;
     @Mock
     private ValidatedHistoricalDataDataNeed mockVhdDataNeed;
