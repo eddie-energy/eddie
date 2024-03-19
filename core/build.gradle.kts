@@ -19,6 +19,7 @@ repositories {
 
 dependencies {
     implementation(project(":api"))
+    implementation(project(":data-needs"))
     implementation(project(":outbound-kafka"))
     implementation(project(":region-connectors:shared"))
     implementation(project(":region-connectors:region-connector-aiida"))
@@ -29,8 +30,8 @@ dependencies {
     implementation(project(":region-connectors:region-connector-simulation"))
 
     implementation(libs.spring.boot.starter.web)
-    implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.websocket)
+    implementation(libs.spring.openapi.webmvc.ui)
     implementation(libs.reactor.core)
     implementation(libs.flyway.core)
 
@@ -70,7 +71,6 @@ tasks.register("run-core", JavaExec::class) {
     description = "run EDDIE with Spring"
 
     environment["CORE_PORT"] = 8080
-    environment["IMPORT_CONFIG_FILE"] = "file:./core/src/test/resources/data-needs.yml"
 
     // when using PostgreSQL
     environment["JDBC_USER"] = "test"

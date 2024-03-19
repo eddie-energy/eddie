@@ -21,7 +21,6 @@ services:
       - .env_secrets
     volumes:
       - ./ponton:/ponton # mount a folder to store ponton files
-      - ./data-needs.yml:/opt/core/config/data-needs.yml
     depends_on:
       - kafka
       - db

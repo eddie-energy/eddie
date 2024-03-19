@@ -5,6 +5,15 @@ import energy.eddie.api.agnostic.RegionConnectorExtension;
 import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springdoc.core.configuration.SpringDocConfiguration;
+import org.springdoc.core.properties.SpringDocConfigProperties;
+import org.springdoc.core.properties.SwaggerUiConfigParameters;
+import org.springdoc.core.properties.SwaggerUiConfigProperties;
+import org.springdoc.core.properties.SwaggerUiOAuthProperties;
+import org.springdoc.webmvc.core.configuration.MultipleOpenApiSupportConfiguration;
+import org.springdoc.webmvc.core.configuration.SpringDocWebMvcConfiguration;
+import org.springdoc.webmvc.ui.SwaggerConfig;
+import org.springdoc.webmvc.ui.SwaggerController;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -13,6 +22,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -31,65 +41,14 @@ import java.util.stream.Collectors;
 
 public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, Ordered, EnvironmentAware {
     public static final String ALL_REGION_CONNECTORS_BASE_URL_PATH = "region-connectors";
+    /**
+     * Name of the Bean registered in the core context that holds a list of the IDs of the enabled region connectors.
+     */
+    public static final String ENABLED_REGION_CONNECTOR_BEAN_NAME = "enabledRegionConnectors";
     private static final String REGION_CONNECTORS_SCAN_BASE_PACKAGE = "energy.eddie.regionconnector";
-    private static final String REGION_CONNECTOR_PROCESSORS_SCAN_BASE_PACKAGE = "energy.eddie.spring.regionconnector.extensions";
     private static final Logger LOGGER = LoggerFactory.getLogger(RegionConnectorRegistrationBeanPostProcessor.class);
     @Nullable
     private Environment environment;
-
-    /**
-     * Creates a {@link DispatcherServlet} for the region connector which will be mapped to {@code regionConnectorName}
-     * and returns an {@link AbstractBeanDefinition} that wraps this servlet and which can be used to register the
-     * servlet in the root context.
-     *
-     * @param regionConnectorContext Context of the region connector.
-     * @param regionConnectorName    Unique name of the region connector, as defined in {@link RegionConnector}.
-     * @return AbstractBeanDefinition that can be registered in the root context (i.e. the EDDIE core context).
-     */
-    @NonNull
-    private static AbstractBeanDefinition createBeanDefinition(
-            AnnotationConfigWebApplicationContext regionConnectorContext,
-            String regionConnectorName
-    ) {
-        String urlMapping = "/%s/%s/*".formatted(ALL_REGION_CONNECTORS_BASE_URL_PATH, regionConnectorName);
-        LOGGER.info("Registering new region connector with URL mapping {}", urlMapping);
-        DispatcherServlet dispatcherServlet = new DispatcherServlet(regionConnectorContext);
-
-        ServletRegistrationBean<DispatcherServlet> connectorServletBean = new ServletRegistrationBean<>(dispatcherServlet, urlMapping);
-        // use unique name
-        connectorServletBean.setName(regionConnectorName);
-        // start all region connector servlets with same priority
-        connectorServletBean.setLoadOnStartup(2);
-
-        return BeanDefinitionBuilder
-                .genericBeanDefinition(ServletRegistrationBean.class, () -> connectorServletBean)
-                .getBeanDefinition();
-    }
-
-    /**
-     * Creates a separate application web context for the region connector using the passed configuration class.
-     * This context won't explicitly have a parent set, this will be done by the {@link DispatcherServlet}.
-     *
-     * @param regionConnectorConfigClass      Configuration class containing bean definitions of the region connector.
-     * @param regionConnectorName             Unique name of the region connector, as defined in {@link RegionConnector}.
-     * @param regionConnectorProcessorClasses List of classes that should be registered in the newly created WebContext.
-     * @return AnnotationConfigWebApplicationContext for the region connector.
-     */
-    @NonNull
-    private static AnnotationConfigWebApplicationContext createWebContext(
-            Class<?> regionConnectorConfigClass,
-            String regionConnectorName,
-            List<Class<?>> regionConnectorProcessorClasses) {
-        // DispatcherServlet will set the parent automatically and do initialization work like calling refresh
-        // see https://web.archive.org/web/20231207072642/https://ccbill.com/blog/spring-boot-and-context-handling
-        AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
-        applicationContext.setId(regionConnectorName);
-        applicationContext.register(regionConnectorConfigClass);
-
-        // register any region connector processor
-        regionConnectorProcessorClasses.forEach(applicationContext::register);
-        return applicationContext;
-    }
 
     @Override
     public void setEnvironment(@NonNull Environment environment) {
@@ -97,11 +56,12 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
     }
 
     /**
-     * Scans the {@value REGION_CONNECTORS_SCAN_BASE_PACKAGE} package for any classes that are annotated with {@link RegionConnector}
-     * and creates a separate context and {@link DispatcherServlet} for each found class,
-     * which will be registered with the registry passed to this processor.
+     * Scans the {@value REGION_CONNECTORS_SCAN_BASE_PACKAGE} package for any classes that are annotated with
+     * {@link RegionConnector} and creates a separate context and {@link DispatcherServlet} for each found class, which
+     * will be registered with the registry passed to this processor.
      * <p>
-     * <b>Important:</b> Only region connectors that have their property <i>region-connector.RC-NAME.enabled</i> explicitly set to <i>true</i> are loaded.
+     * <b>Important:</b> Only region connectors that have their property <i>region-connector.RC-NAME.enabled</i>
+     * explicitly set to <i>true</i> are loaded.
      * </p>
      * <p>
      * The DispatcherServlet has its URL mapping set to "/{@link #ALL_REGION_CONNECTORS_BASE_URL_PATH}/{RC-NAME}/*"
@@ -109,7 +69,8 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
      * </p>
      *
      * @param registry the bean definition registry used by the application context
-     * @throws InitializationException If no region connector has been enabled in the {@code application.properties} file or any other unexpected initialization error occurs.
+     * @throws InitializationException If no region connector has been enabled in the {@code application.properties}
+     *                                 file or any other unexpected initialization error occurs.
      */
     @Override
     public void postProcessBeanDefinitionRegistry(@NonNull BeanDefinitionRegistry registry) throws InitializationException {
@@ -122,6 +83,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         List<Class<?>> regionConnectorProcessorClasses = findAllRegionConnectorProcessorClasses(environment);
 
         List<String> regionConnectorNames = new ArrayList<>();
+        List<String> enabledRegionConnectorNames = new ArrayList<>();
 
         for (BeanDefinition rcDefinition : regionConnectorBeanDefinitions) {
             try {
@@ -131,48 +93,26 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
                 var propertyName = "region-connector.%s.enabled".formatted(regionConnectorName.replace('-', '.'));
 
                 if (Boolean.FALSE.equals(environment.getProperty(propertyName, Boolean.class, false))) {
-                    LOGGER.info("Region connector {} not explicitly enabled by property, will not load it.", regionConnectorName);
+                    LOGGER.info("Region connector {} not explicitly enabled by property, will not load it.",
+                                regionConnectorName);
                 } else {
-                    var applicationContext = createWebContext(regionConnectorConfigClass, regionConnectorName, regionConnectorProcessorClasses);
-                    var beanDefinition = createBeanDefinition(applicationContext, regionConnectorName);
+                    enabledRegionConnectorNames.add(regionConnectorName);
+                    var applicationContext = createWebContext(regionConnectorConfigClass,
+                                                              regionConnectorName,
+                                                              regionConnectorProcessorClasses);
+                    var beanDefinition = createRegionConnectorBeanDefinition(applicationContext, regionConnectorName);
 
                     registry.registerBeanDefinition(regionConnectorName, beanDefinition);
                 }
             } catch (ClassNotFoundException e) {
-                LOGGER.error("Found a region connector bean definition {}, but couldn't get the class for it", rcDefinition, e);
+                LOGGER.error("Found a region connector bean definition {}, but couldn't get the class for it",
+                             rcDefinition,
+                             e);
             }
         }
 
+        registerEnabledRegionConnectorsBeanDefinition(registry, enabledRegionConnectorNames);
         registerFlywayStrategy(registry, regionConnectorNames);
-    }
-
-    /**
-     * Creates a {@link FlywayMigrationStrategy} that creates the schemas for all region connectors and
-     * the {@code core}, as well as executing any migration scripts found in the respective folders on the classpath.
-     * The folder pattern is: "db/migration/&lt;region-connector-name&gt;".
-     * Any minus ('-') in the region connector's name will be replaced by an underscore ('_') for the schema name.
-     *
-     * @param registry                    BeanDefinitionRegistry where the {@link FlywayMigrationStrategy} is registered.
-     * @param enabledRegionConnectorNames List of the names of the enabled region connectors for which the migrations will be run.
-     */
-    private void registerFlywayStrategy(BeanDefinitionRegistry registry, List<String> enabledRegionConnectorNames) {
-        FlywayMigrationStrategy strategy = flyway -> {
-            // also execute flyway migration for core
-            enabledRegionConnectorNames.add("core");
-            enabledRegionConnectorNames.forEach(regionConnectorName -> {
-                var schemaName = regionConnectorName.replace('-', '_');
-                Flyway.configure()
-                        .configuration(flyway.getConfiguration())
-                        .schemas(schemaName)
-                        .locations("db/migration/" + regionConnectorName)
-                        .load()
-                        .migrate();
-            });
-        };
-
-        registry.registerBeanDefinition("flywayMigrationStrategy", BeanDefinitionBuilder
-                .genericBeanDefinition(FlywayMigrationStrategy.class, () -> strategy)
-                .getBeanDefinition());
     }
 
     private Set<BeanDefinition> findAllSpringRegionConnectorBeanDefinitions() {
@@ -190,11 +130,17 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         // use environment of parent to properly evaluate @Conditional annotations
         scanner.setEnvironment(scannerEnvironment);
 
-        var beanDefinitions = scanner.findCandidateComponents(REGION_CONNECTOR_PROCESSORS_SCAN_BASE_PACKAGE);
+        // scan in all packages for extensions (e.g. data needs controller advice is in a different package than the other extensions)
+        var beanDefinitions = scanner.findCandidateComponents("energy.eddie");
 
         if (LOGGER.isInfoEnabled()) {
-            String[] processorNames = beanDefinitions.stream().map(BeanDefinition::getBeanClassName).toArray(String[]::new);
-            LOGGER.info("Found {} region connector processors which will be registered for each region connector individually: {}", beanDefinitions.size(), processorNames);
+            String[] processorNames = beanDefinitions.stream()
+                                                     .map(BeanDefinition::getBeanClassName)
+                                                     .toArray(String[]::new);
+            LOGGER.info(
+                    "Found {} region connector processors which will be registered for each region connector individually: {}",
+                    beanDefinitions.size(),
+                    processorNames);
         }
 
         return beanDefinitions.stream().map(beanDefinition -> {
@@ -206,14 +152,140 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         }).collect(Collectors.toList());
     }
 
+    /**
+     * Creates a separate application web context for the region connector using the passed configuration class. This
+     * context won't explicitly have a parent set, this will be done by the {@link DispatcherServlet}.
+     *
+     * @param regionConnectorConfigClass      Configuration class containing bean definitions of the region connector.
+     * @param regionConnectorName             Unique name of the region connector, as defined in
+     *                                        {@link RegionConnector}.
+     * @param regionConnectorProcessorClasses List of classes that should be registered in the newly created
+     *                                        WebContext.
+     * @return AnnotationConfigWebApplicationContext for the region connector.
+     */
+    @NonNull
+    private static AnnotationConfigWebApplicationContext createWebContext(
+            Class<?> regionConnectorConfigClass,
+            String regionConnectorName,
+            List<Class<?>> regionConnectorProcessorClasses
+    ) {
+        // DispatcherServlet will set the parent automatically and do initialization work like calling refresh
+        // see https://web.archive.org/web/20231207072642/https://ccbill.com/blog/spring-boot-and-context-handling
+        AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
+        applicationContext.setId(regionConnectorName);
+        applicationContext.register(regionConnectorConfigClass);
+
+        enableSpringDoc(applicationContext);
+
+        // register any region connector processor
+        regionConnectorProcessorClasses.forEach(applicationContext::register);
+        return applicationContext;
+    }
+
+    /**
+     * Creates a {@link DispatcherServlet} for the region connector which will be mapped to {@code regionConnectorName}
+     * and returns an {@link AbstractBeanDefinition} that wraps this servlet and which can be used to register the
+     * servlet in the root context.
+     *
+     * @param regionConnectorContext Context of the region connector.
+     * @param regionConnectorName    Unique name of the region connector, as defined in {@link RegionConnector}.
+     * @return AbstractBeanDefinition that can be registered in the root context (i.e. the EDDIE core context).
+     */
+    @NonNull
+    private static AbstractBeanDefinition createRegionConnectorBeanDefinition(
+            AnnotationConfigWebApplicationContext regionConnectorContext,
+            String regionConnectorName
+    ) {
+        String urlMapping = "/%s/%s/*".formatted(ALL_REGION_CONNECTORS_BASE_URL_PATH, regionConnectorName);
+        LOGGER.info("Registering new region connector with URL mapping {}", urlMapping);
+        DispatcherServlet dispatcherServlet = new DispatcherServlet(regionConnectorContext);
+
+        ServletRegistrationBean<DispatcherServlet> connectorServletBean = new ServletRegistrationBean<>(
+                dispatcherServlet,
+                urlMapping);
+        // use unique name
+        connectorServletBean.setName(regionConnectorName);
+        // start all region connector servlets with same priority
+        connectorServletBean.setLoadOnStartup(2);
+
+        return BeanDefinitionBuilder
+                .genericBeanDefinition(ServletRegistrationBean.class, () -> connectorServletBean)
+                .getBeanDefinition();
+    }
+
+    /**
+     * Creates a {@link FlywayMigrationStrategy} for each region connector, as well as for the {@code core} and
+     * {@code data-needs} module. The migration strategy creates the schema for the module and executes any migration
+     * scripts found in the respective folders on the classpath. The folder pattern is:
+     * "db/migration/&lt;region-connector-name&gt;". Any minus ('-') in the region connector's name will be replaced by
+     * an underscore ('_') for the schema name.
+     *
+     * @param registry                    BeanDefinitionRegistry where the {@link FlywayMigrationStrategy} is
+     *                                    registered.
+     * @param enabledRegionConnectorNames List of all the region connector names.
+     */
+    private void registerFlywayStrategy(BeanDefinitionRegistry registry, List<String> enabledRegionConnectorNames) {
+        FlywayMigrationStrategy strategy = flyway -> {
+            // also execute flyway migration for core
+            enabledRegionConnectorNames.add("core");
+            enabledRegionConnectorNames.add("data-needs");
+            enabledRegionConnectorNames.forEach(regionConnectorName -> {
+                LOGGER.info("Starting Flyway migration for '{}'", regionConnectorName);
+                var schemaName = regionConnectorName.replace('-', '_');
+                Flyway.configure()
+                      .configuration(flyway.getConfiguration())
+                      .schemas(schemaName)
+                      .locations("db/migration/" + regionConnectorName)
+                      .load()
+                      .migrate();
+            });
+        };
+
+        registry.registerBeanDefinition("flywayMigrationStrategy", BeanDefinitionBuilder
+                .genericBeanDefinition(FlywayMigrationStrategy.class, () -> strategy)
+                .getBeanDefinition());
+    }
+
+    private void registerEnabledRegionConnectorsBeanDefinition(
+            BeanDefinitionRegistry registry,
+            List<String> enabledRegionConnectorNames
+    ) {
+        AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
+                .genericBeanDefinition(List.class, () -> enabledRegionConnectorNames)
+                .getBeanDefinition();
+        registry.registerBeanDefinition(ENABLED_REGION_CONNECTOR_BEAN_NAME, beanDefinition);
+    }
+
+    /**
+     * Enables SpringDoc OpenAPI in the specified {@code applicationContext} by in registering the necessary Spring and
+     * Swagger Beans. The documentation will be available at the {@code urlMapping} of the context's dispatcher servlet,
+     * e.g. "/region-connectors/dk-energinet/v3/api-docs".
+     *
+     * @param applicationContext Context for which to enable the SpringDoc support.
+     */
+    public static void enableSpringDoc(AnnotationConfigWebApplicationContext applicationContext) {
+        applicationContext.register(
+                SwaggerConfig.class,
+                SwaggerUiConfigProperties.class,
+                SwaggerUiConfigParameters.class,
+                SwaggerUiOAuthProperties.class,
+                SpringDocWebMvcConfiguration.class,
+                MultipleOpenApiSupportConfiguration.class,
+                SpringDocConfiguration.class,
+                SpringDocConfigProperties.class,
+                JacksonAutoConfiguration.class,
+                SwaggerController.class
+        );
+    }
+
     @Override
     public void postProcessBeanFactory(@NonNull ConfigurableListableBeanFactory unusedBeanFactory) throws BeansException {
         // not needed by this processor
     }
 
     /**
-     * Run this processor as the last one.
-     * Spring documentation recommends to implement {@link Ordered} interface for bean post processors.
+     * Run this processor as the last one. Spring documentation recommends to implement {@link Ordered} interface for
+     * bean post processors.
      *
      * @return Integer.MAX_VALUE
      */

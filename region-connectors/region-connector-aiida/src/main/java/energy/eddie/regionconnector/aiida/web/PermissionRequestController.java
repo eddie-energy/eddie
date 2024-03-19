@@ -1,7 +1,8 @@
 package energy.eddie.regionconnector.aiida.web;
 
-import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
@@ -30,8 +31,9 @@ public class PermissionRequestController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PermissionDto> createPermissionRequest(
-            @Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation)
-            throws StateTransitionException, DataNeedNotFoundException {
+            @Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation
+    )
+            throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
         var permissionDto = aiidaService.createNewPermission(permissionRequestForCreation);
         var permissionId = permissionDto.permissionId();
 

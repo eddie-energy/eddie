@@ -1,13 +1,16 @@
 package energy.eddie.regionconnector.aiida.services;
 
-import energy.eddie.api.agnostic.DataNeed;
-import energy.eddie.api.agnostic.DataNeedsService;
-import energy.eddie.api.agnostic.DataType;
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.TimeframedDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.regionconnector.aiida.AiidaFactory;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
@@ -29,10 +32,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
-import java.time.Clock;
-import java.time.Duration;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -64,9 +64,13 @@ class AiidaRegionConnectorServiceTest {
 
         Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().unicast().onBackpressureBuffer();
         Set<Extension<AiidaPermissionRequestInterface>> extensions = Set.of(new MessagingExtension<>(statusMessageSink),
-                new SavingExtension<>(mockRepository));
+                                                                            new SavingExtension<>(mockRepository));
 
-        var configuration = new PlainAiidaConfiguration(bootstrapServers, dataTopic, statusTopic, terminationPrefix, "customerId");
+        var configuration = new PlainAiidaConfiguration(bootstrapServers,
+                                                        dataTopic,
+                                                        statusTopic,
+                                                        terminationPrefix,
+                                                        "customerId");
         var factory = new AiidaFactory(configuration, dataNeedsService, Clock.systemUTC(), extensions);
 
         service = new AiidaRegionConnectorService(factory, mockRepository, statusMessageSink, terminationSink);
@@ -76,31 +80,37 @@ class AiidaRegionConnectorServiceTest {
     void verify_close_emitsCompleteOnConnectionStatusMessageFlux() {
         // Given
         StepVerifier.create(service.getConnectionStatusMessageStream())
-                // When
-                .then(service::close)
-                // Then
-                .expectComplete()
-                .verify(Duration.ofSeconds(2));
+                    // When
+                    .then(service::close)
+                    // Then
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(2));
     }
 
     @Test
-    void verify_createNewPermission_validatesAndSendsToPa_andCallsExtensions() throws StateTransitionException, DataNeedNotFoundException {
+    void verify_createNewPermission_validatesAndSendsToPa_andCallsExtensions() throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException, JsonProcessingException {
         // Given
-        String dataNeedId = "1";
-        var request = new PermissionRequestForCreation(connectionId, dataNeedId);
-        when(dataNeedsService.getDataNeed(dataNeedId)).thenReturn(Optional.of(new TestDataNeed(dataNeedId)));
+        String json = "{\"type\":\"genericAiida\",\"name\":\"Test service name\",\"description\":\"foo\",\"purpose\":\"purpose\",\"policyLink\":\"https://example.com/toc\",\"transmissionInterval\":2,\"duration\":{\"type\":\"relativeDuration\",\"start\":\"P0D\",\"end\":\"P10D\"},\"dataTags\":[\"1-0:1.8.0\",\"1-0:1.7.0\"]}";
+        ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        TimeframedDataNeed dataNeed = mapper.readValue(json, TimeframedDataNeed.class);
+
+        String dataNeedId = dataNeed.id();
+        var creationRequest = new PermissionRequestForCreation(connectionId, dataNeedId);
+        when(dataNeedsService.findById(dataNeedId)).thenReturn(Optional.of(dataNeed));
+        DataNeedWrapper wrapper = new DataNeedWrapper(dataNeed, LocalDate.of(2024, 4, 1), LocalDate.of(2024, 4, 4));
+        when(dataNeedsService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any())).thenReturn(wrapper);
 
         StepVerifier stepVerifier = StepVerifier.create(service.getConnectionStatusMessageStream())
-                .expectNextMatches(msg -> msg.status() == PermissionProcessStatus.CREATED)
-                .expectNextMatches(msg -> msg.status() == PermissionProcessStatus.VALIDATED)
-                .expectNextMatches(msg -> msg.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
-                .then(service::close)
-                .expectComplete()
-                .verifyLater();
+                                                .expectNextMatches(msg -> msg.status() == PermissionProcessStatus.CREATED)
+                                                .expectNextMatches(msg -> msg.status() == PermissionProcessStatus.VALIDATED)
+                                                .expectNextMatches(msg -> msg.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
+                                                .then(service::close)
+                                                .expectComplete()
+                                                .verifyLater();
 
 
         // When
-        PermissionDto newPermission = service.createNewPermission(request);
+        PermissionDto newPermission = service.createNewPermission(creationRequest);
 
         // Then
         assertEquals(connectionId, newPermission.connectionId());
@@ -124,7 +134,7 @@ class AiidaRegionConnectorServiceTest {
         var start = ZonedDateTime.now(ZoneOffset.UTC);
         var expiration = start.plusSeconds(1000);
         AiidaPermissionRequest request = new AiidaPermissionRequest(permissionId, connectionId,
-                "dataNeedId", "SomeTopic", start, expiration);
+                                                                    "dataNeedId", "SomeTopic", start, expiration);
         request.changeState(new AiidaAcceptedPermissionRequestState(request));
 
         when(mockRepository.findByPermissionId(permissionId)).thenReturn(Optional.of(request));
@@ -132,13 +142,14 @@ class AiidaRegionConnectorServiceTest {
         service.terminatePermission(permissionId);
 
         StepVerifier stepVerifier = StepVerifier.create(terminationSink.asFlux())
-                .expectNextMatches(next -> next.connectionId().equals(connectionId))
-                .then(service::close)
-                .expectComplete()
-                .verifyLater();
+                                                .expectNextMatches(next -> next.connectionId().equals(connectionId))
+                                                .then(service::close)
+                                                .expectComplete()
+                                                .verifyLater();
 
         verify(mockRepository).findByPermissionId(permissionId);
-        verify(mockRepository).save(argThat(argument -> argument.state().status() == PermissionProcessStatus.TERMINATED));
+        verify(mockRepository).save(argThat(argument -> argument.state()
+                                                                .status() == PermissionProcessStatus.TERMINATED));
         stepVerifier.verify();
     }
 
@@ -153,9 +164,9 @@ class AiidaRegionConnectorServiceTest {
 
         // Then
         StepVerifier.create(terminationSink.asFlux())
-                .then(service::close)
-                .expectComplete()
-                .verify();
+                    .then(service::close)
+                    .expectComplete()
+                    .verify();
 
         verify(mockRepository).findByPermissionId(permissionId);
         verifyNoMoreInteractions(mockRepository);
@@ -174,61 +185,10 @@ class AiidaRegionConnectorServiceTest {
     void givenExistingPermissionId_getPermissionRequestById_returnsRequest() throws PermissionNotFoundException {
         // Given
         String permissionId = "MyId";
-        when(mockRepository.findByPermissionId(permissionId)).thenReturn(Optional.of(mock(AiidaPermissionRequestInterface.class)));
+        when(mockRepository.findByPermissionId(permissionId)).thenReturn(Optional.of(mock(
+                AiidaPermissionRequestInterface.class)));
 
         // When, Then
         assertDoesNotThrow(() -> service.getPermissionRequestById(permissionId));
-    }
-
-    private record TestDataNeed(String dataNeedId) implements DataNeed {
-        @Override
-        public String id() {
-            return dataNeedId;
-        }
-
-        @Override
-        public String description() {
-            return "Test description";
-        }
-
-        @Override
-        public DataType type() {
-            return DataType.AIIDA_NEAR_REALTIME_DATA;
-        }
-
-        @Override
-        public Granularity granularity() {
-            return Granularity.P1M;
-        }
-
-        @Override
-        public Integer durationStart() {
-            return 0;
-        }
-
-        @Override
-        public Boolean durationOpenEnd() {
-            return false;
-        }
-
-        @Override
-        public Integer durationEnd() {
-            return 5;
-        }
-
-        @Override
-        public Integer transmissionInterval() {
-            return 12;
-        }
-
-        @Override
-        public Set<String> sharedDataIds() {
-            return Set.of("1-0:1.8.0", "1-0:1.7.0");
-        }
-
-        @Override
-        public String serviceName() {
-            return "Test service name";
-        }
     }
 }
