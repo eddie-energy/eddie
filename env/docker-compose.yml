@@ -1,14 +1,6 @@
 version: "3.9"
 name: eddie-test
 services:
-  # Use either H2 or postgresql as database
-  #h2:
-  #  image: "pcarmona/h2database"
-  #  environment:
-  #    H2_DBNAME: demo-db
-  #    H2_USER: "test"
-  #    H2_PASSWORD: "test"
-
   db:
     image: postgres
     ports:
@@ -33,6 +25,7 @@ services:
       # See the accompanying .env file
     volumes:
       - ./ponton:/ponton # mount a folder to store ponton files
+      - ./data-needs.json:/opt/core/config/data-needs.json
     depends_on:
       - kafka
       - db

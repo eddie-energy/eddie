@@ -16,6 +16,11 @@
         reverse_proxy eddie:8080
     }
 
+    handle_path {$PUBLIC_CONTEXT_PATH:}/data-needs/* {
+        rewrite * /data-needs{path}
+        reverse_proxy eddie:8080
+    }
+
     # There is intentionally no slash (/) between the context path and the asterix (*) on
     # the next rule's matcher, because that was also the base path is proxied.
     reverse_proxy {$PUBLIC_CONTEXT_PATH:}* eddie-example-app:8081
