@@ -27,22 +27,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   handleSubmit(event) {
     event.preventDefault();
 
-    const startDate = new Date();
-    startDate.setDate(
-      startDate.getDate() + this.dataNeedAttributes.durationStart
-    );
-
-    const endDate = new Date();
-    if (this.dataNeedAttributes.durationEnd === 0) {
-      endDate.setDate(endDate.getDate() - 1); // subtract one day by default
-    } else {
-      endDate.setDate(endDate.getDate() + this.dataNeedAttributes.durationEnd);
-    }
-
     const jsonData = {};
     jsonData.connectionId = this.connectionId;
-    jsonData.start = startDate.toISOString();
-    jsonData.end = endDate.toISOString();
     jsonData.dataNeedId = this.dataNeedAttributes.id;
     jsonData.granularity = this.dataNeedAttributes.granularity;
 

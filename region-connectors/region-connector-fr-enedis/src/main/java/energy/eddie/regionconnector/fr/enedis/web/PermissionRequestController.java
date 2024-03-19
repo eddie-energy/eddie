@@ -2,6 +2,8 @@ package energy.eddie.regionconnector.fr.enedis.web;
 
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
@@ -48,7 +50,7 @@ public class PermissionRequestController {
             @RequestBody
             @Valid
             PermissionRequestForCreation permissionRequest
-    ) throws StateTransitionException {
+    ) throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
         CreatedPermissionRequest createdPermissionRequest = permissionRequestService.createPermissionRequest(permissionRequest);
         URI location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
                 .expand(createdPermissionRequest.permissionId());
