@@ -47,8 +47,8 @@ public class RevocationService {
 
     private List<AtPermissionRequest> fallback(CMRevoke cmRevoke) {
         ZonedDateTime dateTime = XmlGregorianCalenderUtils.toUtcZonedDateTime(cmRevoke.getProcessDirectory().getConsentEnd());
-        return repository.findByMeteringPointIdAndDate(cmRevoke.getProcessDirectory().getMeteringPoint(),
-                                                       dateTime.toLocalDate());
+        return repository.findAcceptedAndFulfilledByMeteringPointIdAndDate(cmRevoke.getProcessDirectory().getMeteringPoint(),
+                dateTime.toLocalDate());
     }
 
     private void revoke(AtPermissionRequest permissionRequest) {
@@ -60,5 +60,4 @@ public class RevocationService {
             LOGGER.info("Revoking permission for permission id {}", permissionRequest.permissionId());
         }
     }
-
 }

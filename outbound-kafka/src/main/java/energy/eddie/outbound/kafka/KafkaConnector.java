@@ -101,7 +101,7 @@ public class KafkaConnector implements
                     .send(new ProducerRecord<>("consumption-records", consumptionRecord.getConnectionId(),
                                                consumptionRecord))
                     .get();
-            LOGGER.info("Produced consumption record message for permission request {}", consumptionRecord.getConnectionId());
+            LOGGER.info("Produced consumption record message for permission request {}", consumptionRecord.getPermissionId());
         } catch (RuntimeException | ExecutionException e) {
             LOGGER.warn("Could not produce consumption record message", e);
         } catch (InterruptedException e) {

@@ -33,17 +33,14 @@ class IdentifiableConsumptionRecordServiceTest {
 
         TestPublisher<ConsumptionRecord> testPublisher = TestPublisher.create();
         var repository = mock(AtPermissionRequestRepository.class);
-        when(repository.findByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any()))
+        when(repository.findAcceptedAndFulfilledByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any()))
                 .thenReturn(List.of(
                         new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1",
-                                                    PermissionProcessStatus.ACCEPTED),
+                                PermissionProcessStatus.ACCEPTED),
                         new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2",
-                                                    PermissionProcessStatus.ACCEPTED),
-                        new SimplePermissionRequest("pmId3", "connId3", "dataNeedId3", "test3", "any3",
-                                                    PermissionProcessStatus.REJECTED)
-                        )
-                );
-        when(repository.findByMeteringPointIdAndDate(eq(unidentifiableMeteringPoint), any()))
+                                PermissionProcessStatus.ACCEPTED)
+                ));
+        when(repository.findAcceptedAndFulfilledByMeteringPointIdAndDate(eq(unidentifiableMeteringPoint), any()))
                 .thenReturn(List.of());
 
         IdentifiableConsumptionRecordService identifiableConsumptionRecordService = new IdentifiableConsumptionRecordService(
@@ -66,12 +63,12 @@ class IdentifiableConsumptionRecordServiceTest {
 
         Sinks.Many<ConsumptionRecord> testPublisher = Sinks.many().unicast().onBackpressureBuffer();
         var repository = mock(AtPermissionRequestRepository.class);
-        when(repository.findByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any()))
+        when(repository.findAcceptedAndFulfilledByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any()))
                 .thenReturn(List.of(
                         new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1",
-                                                    PermissionProcessStatus.ACCEPTED),
+                                PermissionProcessStatus.ACCEPTED),
                         new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2",
-                                                    PermissionProcessStatus.ACCEPTED))
+                                PermissionProcessStatus.ACCEPTED))
                 );
 
         IdentifiableConsumptionRecordService identifiableConsumptionRecordService = new IdentifiableConsumptionRecordService(
@@ -99,7 +96,7 @@ class IdentifiableConsumptionRecordServiceTest {
 
         first.verify(Duration.ofSeconds(2));
         second.verify(Duration.ofSeconds(2));
-        verify(repository, times(1)).findByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any());
+        verify(repository, times(1)).findAcceptedAndFulfilledByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any());
     }
 
     private ConsumptionRecord createConsumptionRecord(String meteringPoint) {

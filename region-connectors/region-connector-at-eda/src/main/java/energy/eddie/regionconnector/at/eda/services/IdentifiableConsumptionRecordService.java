@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.at.eda.services;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.Energy;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
@@ -48,14 +47,13 @@ public class IdentifiableConsumptionRecordService {
         LocalDate date = getMeteringPeriodStartDate(energyOptional.get());
         String meteringPoint = consumptionRecord.getProcessDirectory().getMeteringPoint();
         List<AtPermissionRequest> permissionRequests = repository
-                .findByMeteringPointIdAndDate(
+                .findAcceptedAndFulfilledByMeteringPointIdAndDate(
                         meteringPoint,
                         date
                 )
                 .stream()
-                .filter(atPermissionRequest -> atPermissionRequest.status() == PermissionProcessStatus.ACCEPTED)
                 .toList();
-        
+
         if (permissionRequests.isEmpty()) {
             LOGGER.warn("No permission requests found for consumption record with date {}", date);
             return null;

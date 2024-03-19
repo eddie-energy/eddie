@@ -42,7 +42,7 @@ class RevocationServiceTest {
         // Given
         var edaAdapter = mock(EdaAdapter.class);
         var permissionRequest = new EdaPermissionRequest("cid", "dnid", mock(CCMORequest.class), Granularity.PT15M,
-                                                         PermissionProcessStatus.ACCEPTED, null, null);
+                PermissionProcessStatus.ACCEPTED, null, null);
         TestPublisher<CMRevoke> revocationStream = TestPublisher.create();
         when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());
         var repository = mock(AtPermissionRequestRepository.class);
@@ -68,13 +68,13 @@ class RevocationServiceTest {
         when(ccmoRequest.start()).thenReturn(now);
         when(ccmoRequest.end()).thenReturn(Optional.of(now.plusDays(10)));
         var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, Granularity.PT15M,
-                                                         PermissionProcessStatus.ACCEPTED, null, null);
+                PermissionProcessStatus.ACCEPTED, null, null);
         TestPublisher<CMRevoke> revocationStream = TestPublisher.create();
         when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());
         var repository = mock(AtPermissionRequestRepository.class);
         when(repository.findByConsentId("consentId")).thenReturn(Optional.empty());
 
-        when(repository.findByMeteringPointIdAndDate(anyString(), any()))
+        when(repository.findAcceptedAndFulfilledByMeteringPointIdAndDate(anyString(), any()))
                 .thenReturn(List.of(permissionRequest));
         CMRevoke cmRevoke = new CMRevoke();
         cmRevoke.setProcessDirectory(
@@ -102,13 +102,13 @@ class RevocationServiceTest {
         when(ccmoRequest.start()).thenReturn(now);
         when(ccmoRequest.end()).thenReturn(Optional.of(now.plusDays(10)));
         var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, Granularity.PT15M,
-                                                         PermissionProcessStatus.CREATED, null, null);
+                PermissionProcessStatus.CREATED, null, null);
         TestPublisher<CMRevoke> revocationStream = TestPublisher.create();
         when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());
         var repository = mock(AtPermissionRequestRepository.class);
         when(repository.findByConsentId("consentId")).thenReturn(Optional.empty());
 
-        when(repository.findByMeteringPointIdAndDate(anyString(), any()))
+        when(repository.findAcceptedAndFulfilledByMeteringPointIdAndDate(anyString(), any()))
                 .thenReturn(List.of(permissionRequest));
         CMRevoke cmRevoke = new CMRevoke();
         cmRevoke.setProcessDirectory(
