@@ -11,7 +11,7 @@ import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCus
 import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
 import org.junit.jupiter.api.Test;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,7 +21,9 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void status_returnsSentToPermissionAdministrator() {
         // Given
-        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(null, new StateBuilderFactory());
+        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(
+                null,
+                new StateBuilderFactory());
 
         // When
         // Then
@@ -31,8 +33,8 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void accept_changesToAcceptedState() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
-        ZonedDateTime end = start.plusDays(10);
+        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
+        LocalDate end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
         String meteringPoint = "meteringPoint";
@@ -40,10 +42,19 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
-        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
+        var forCreation = new PermissionRequestForCreation(connectionId,
+                                                           refreshToken,
+                                                           meteringPoint,
+                                                           dataNeedId);
 
         StateBuilderFactory factory = new StateBuilderFactory();
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, factory);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId,
+                                                                       forCreation,
+                                                                       apiClient,
+                                                                       start,
+                                                                       end,
+                                                                       granularity,
+                                                                       factory);
         var state = new EnerginetCustomerSentToPermissionAdministratorState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
@@ -57,8 +68,8 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void invalid_changesToInvalidState() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
-        ZonedDateTime end = start.plusDays(10);
+        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
+        LocalDate end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
         String meteringPoint = "meteringPoint";
@@ -66,10 +77,19 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
-        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
+        var forCreation = new PermissionRequestForCreation(connectionId,
+                                                           refreshToken,
+                                                           meteringPoint,
+                                                           dataNeedId);
 
         StateBuilderFactory factory = new StateBuilderFactory();
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, factory);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId,
+                                                                       forCreation,
+                                                                       apiClient,
+                                                                       start,
+                                                                       end,
+                                                                       granularity,
+                                                                       factory);
         var state = new EnerginetCustomerSentToPermissionAdministratorState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
@@ -83,8 +103,8 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void reject_changesToRejectedState() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
-        ZonedDateTime end = start.plusDays(10);
+        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
+        LocalDate end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
         String meteringPoint = "meteringPoint";
@@ -92,10 +112,16 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
-        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
+        var forCreation = new PermissionRequestForCreation(connectionId,
+                                                           refreshToken,
+                                                           meteringPoint,
+                                                           dataNeedId);
 
         StateBuilderFactory factory = new StateBuilderFactory();
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, factory);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient,
+                                                                       start,
+                                                                       end,
+                                                                       granularity, factory);
         var state = new EnerginetCustomerSentToPermissionAdministratorState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
@@ -109,7 +135,9 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void timeOut_notImplemented() {
         // Given
-        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(null, new StateBuilderFactory());
+        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(
+                null,
+                new StateBuilderFactory());
 
         // When
         // Then
@@ -119,7 +147,9 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void validate_throws() {
         // Given
-        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(null, new StateBuilderFactory());
+        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(
+                null,
+                new StateBuilderFactory());
 
         // When
         // Then
@@ -129,7 +159,9 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void sendToPermissionAdministrator_throws() {
         // Given
-        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(null, new StateBuilderFactory());
+        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(
+                null,
+                new StateBuilderFactory());
 
         // When
         // Then
@@ -139,7 +171,9 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void receivedPermissionAdministratorResponse_throws() {
         // Given
-        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(null, new StateBuilderFactory());
+        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(
+                null,
+                new StateBuilderFactory());
 
         // When
         // Then
@@ -149,7 +183,9 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void terminate_throws() {
         // Given
-        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(null, new StateBuilderFactory());
+        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(
+                null,
+                new StateBuilderFactory());
 
         // When
         // Then
@@ -159,7 +195,9 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void revoke_throws() {
         // Given
-        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(null, new StateBuilderFactory());
+        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(
+                null,
+                new StateBuilderFactory());
 
         // When
         // Then
@@ -169,7 +207,9 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void timeLimit_throws() {
         // Given
-        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(null, new StateBuilderFactory());
+        EnerginetCustomerSentToPermissionAdministratorState state = new EnerginetCustomerSentToPermissionAdministratorState(
+                null,
+                new StateBuilderFactory());
 
         // When
         // Then

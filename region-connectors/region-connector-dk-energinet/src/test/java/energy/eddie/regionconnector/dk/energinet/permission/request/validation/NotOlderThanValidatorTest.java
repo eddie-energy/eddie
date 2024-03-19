@@ -11,7 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.DK_ZONE_ID;
@@ -27,7 +27,7 @@ class NotOlderThanValidatorTest {
 
     @Test
     void givenOlderStart_returnsError() {
-        var now = ZonedDateTime.now(DK_ZONE_ID);
+        var now = LocalDate.now(DK_ZONE_ID);
         var start = now.minusMonths(30);
         var end = now.minusDays(10);
 
@@ -37,9 +37,9 @@ class NotOlderThanValidatorTest {
     }
 
     @Test
-    @Disabled("Will always fail, because the validator creates a ZonedDateTime.now(), which will always be newer than the passed now value")
+    @Disabled("Will always fail, because the validator creates a LocalDate.now(), which will always be newer than the passed now value")
     void givenStartEqualToLimit_passes() {
-        var now = ZonedDateTime.now(DK_ZONE_ID);
+        var now = LocalDate.now(DK_ZONE_ID);
         var start = now.minusMonths(24);
         var end = now.minusDays(10);
 
@@ -50,7 +50,7 @@ class NotOlderThanValidatorTest {
 
     @Test
     void givenStartBelowLimit_passes() {
-        var now = ZonedDateTime.now(DK_ZONE_ID);
+        var now = LocalDate.now(DK_ZONE_ID);
         var start = now.minusMonths(10);
         var end = now.minusDays(10);
 
@@ -59,8 +59,14 @@ class NotOlderThanValidatorTest {
         assertEquals(0, violations.size());
     }
 
-    private EnerginetCustomerPermissionRequest createTestRequest(ZonedDateTime start, ZonedDateTime end) {
-        var forCreation = new PermissionRequestForCreation("bar", start, end, "too", Granularity.PT1H, "laa", "luu");
-        return new EnerginetCustomerPermissionRequest("foo", forCreation, mockApiClient, new StateBuilderFactory());
+    private EnerginetCustomerPermissionRequest createTestRequest(LocalDate start, LocalDate end) {
+        var forCreation = new PermissionRequestForCreation("bar", "too", "laa", "luu");
+        return new EnerginetCustomerPermissionRequest("foo",
+                                                      forCreation,
+                                                      mockApiClient,
+                                                      start,
+                                                      end,
+                                                      Granularity.PT1H,
+                                                      new StateBuilderFactory());
     }
 }
