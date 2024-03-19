@@ -1,6 +1,7 @@
 package energy.eddie.dataneeds.needs.aiida;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 
@@ -13,6 +14,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "generic_aiida_data_need", schema = "data_needs")
+@Schema(description = "Data need for an AIIDA instance to share all values that are identified by one of the specified data tags, e.g. an OBIS-code.")
 public class GenericAiidaDataNeed extends AiidaDataNeed {
     public static final String DISCRIMINATOR_VALUE = "genericAiida";
 

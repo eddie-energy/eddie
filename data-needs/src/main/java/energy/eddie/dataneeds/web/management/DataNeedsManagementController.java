@@ -46,15 +46,15 @@ public class DataNeedsManagementController {
 
     @Operation(summary = "Create a new data need")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true,
-            description = "If the id field is not supplied, a UUID will be generated.",
             content = @Content(
                     examples = {
-                            @ExampleObject(name = "Validated consumption in absolute timeframe",
-                                    description = "Example request body to create a new data need that requests validated consumption data for an absolute timeframe",
-                                    value = "{\"type\":\"VALIDATED_HISTORICAL_CONSUMPTION_DATA\",\"description\":\"Description what this data need is about.\",\"purpose\":\"Purpose of this data need.\",\"policyLink\":\"https://example.com/toc\",\"name\":\"My awesome data need\",\"duration\":{\"type\":\"absolute\",\"durationStart\":\"2023-01-01\",\"durationEnd\":\"2025-12-31\"},\"energyType\":\"ELECTRICITY\",\"granularity\":\"PT15M\"}"),
-                            @ExampleObject(name = "Validated consumption in relative timeframe",
-                                    description = "Example request body to create a new data need that requests validated consumption data for an relative timeframe",
-                                    value = "{\"type\":\"VALIDATED_HISTORICAL_CONSUMPTION_DATA\",\"description\":\"Description what this data need is about.\",\"purpose\":\"Purpose of this data need.\",\"policyLink\":\"https://example.com/toc\",\"name\":\"My awesome data need\",\"duration\":{\"type\":\"relative\",\"durationStart\":-12,\"durationEnd\":12,\"durationType\":\"MONTH\"},\"energyType\":\"ELECTRICITY\",\"granularity\":\"PT15M\"}"
+                            @ExampleObject(name = "Validated historical consumption data with open start/end",
+                                    description = "Create a new data need for validated historical consumption data with the earliest possible start date and latest possible end date for electricity and accept data with a granularity between quarter-hourly and hourly.",
+                                    value = "{\"type\":\"validated\",\"policyLink\":\"https://example.com/toc\",\"name\":\"My awesome data need\",\"description\":\"# This is a description\",\"purpose\":\"A text explaining the purpose of this data need.\",\"duration\":{\"type\":\"relativeDuration\"},\"energyType\":\"ELECTRICITY\",\"minGranularity\":\"PT15M\",\"maxGranularity\":\"P1D\"}"
+                            ),
+                            @ExampleObject(name = "Generic AIIDA data need for the next 10 days",
+                                    description = "Create a new data need to get the generic AIIDA data tags '1.7.0' and '1.8.0' in a two second interval for the next ten days including today",
+                                    value = "{\"type\":\"genericAiida\",\"name\":\"Generic AIIDA data need\",\"description\":\"Please describe the data need.\",\"purpose\":\"And also its purpose.\",\"policyLink\":\"https://example.com/toc\",\"transmissionInterval\":2,\"duration\":{\"type\":\"relativeDuration\",\"start\":\"P0D\",\"end\":\"P10D\"},\"dataTags\":[\"1.8.0\",\"1.7.0\"]}"
                             )
                     }
             )
@@ -73,7 +73,7 @@ public class DataNeedsManagementController {
                     },
                     headers = {@Header(name = "Location", description = "Relative URL of the created data need", schema = @Schema(type = "string", example = "/dataNeed/7f57cf16-5121-42a6-919e-7f7335826e64"))}
             ),
-            @ApiResponse(responseCode = "400", description = "Bad request body supplied or validation of values failed",
+            @ApiResponse(responseCode = "400", description = "Bad request body supplied or validation of values failed.",
                     content = @Content(mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = EddieApiError.class)),
                             examples = @ExampleObject("{\"errors\":[{\"message\":\"description: must not be blank\"},{\"message\":\"purpose: must not be blank\"}]}")
@@ -103,8 +103,7 @@ public class DataNeedsManagementController {
                     schema = @Schema(oneOf = {AccountingPointDataNeed.class, ValidatedHistoricalDataDataNeed.class, SmartMeterAiidaDataNeed.class, GenericAiidaDataNeed.class}),
                     examples = {
                             @ExampleObject(
-                                    description = "Full data need object",
-                                    value = "{\"type\":\"vhcd\",\"id\":\"7f57cf16-5121-42a6-919e-7f7335826e64\",\"name\":\"My awesome data need\",\"description\":\"Some description.\",\"purpose\":\"My purpose.\",\"policyLink\":\"https://example.com/toc\",\"duration\":{\"type\":\"relative\",\"durationStart\":-12,\"durationEnd\":12,\"durationType\":\"MONTH\"},\"createdAt\":\"2024-03-04T12:55:13.014024Z\",\"energyType\":\"ELECTRICITY\",\"granularity\":\"PT15M\"}"
+                                    value = "{\"type\":\"validated\",\"id\":\"5dc53107-144b-406f-a689-74fb50729271\",\"name\":\"My awesome data need\",\"description\":\"Some description.\",\"purpose\":\"My purpose.\",\"policyLink\":\"https://example.com/toc\",\"createdAt\":\"2024-03-18T06:33:45.205489Z\",\"duration\":{\"type\":\"relativeDuration\"},\"energyType\":\"ELECTRICITY\",\"minGranularity\":\"PT15M\",\"maxGranularity\":\"PT15M\"}"
                             )
                     }
             ))
