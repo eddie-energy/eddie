@@ -1,95 +1,106 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
+import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class FutureDataServiceTest {
 
+    private final LocalDate today = LocalDate.now(ZONE_ID_SPAIN);
+    private final LocalDate yesterday = today.minusDays(1);
+    @Mock
+    private PermissionRequestService permissionRequestService;
+    @Mock
+    private DataApiService dataApiService;
+
+    private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
+        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
+        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
+                "connectionId",
+                "dataNeedId",
+                "nif",
+                "meteringPointId",
+                start.atStartOfDay(ZONE_ID_SPAIN),
+                end.atStartOfDay(ZONE_ID_SPAIN),
+                Granularity.PT1H);
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
+        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
+        permissionRequest.setDistributorCodeAndPointType(DistributorCode.ASEME, 1);
+        return permissionRequest;
+    }
+
     @Test
-    void fetchMeteringData_callsFetchDataForPermissionRequest_forActivePermissionRequest() {
-        // Arrange
-        EsPermissionRequest activePermissionRequest1 = mock(EsPermissionRequest.class);
-        ZonedDateTime yesterday = ZonedDateTime.now(ZONE_ID_SPAIN).minusDays(1);
-        when(activePermissionRequest1.start()).thenReturn(yesterday);
-        when(activePermissionRequest1.lastPulledMeterReading()).thenReturn(Optional.empty());
-        EsPermissionRequest activePermissionRequest2 = mock(EsPermissionRequest.class);
-        when(activePermissionRequest2.start()).thenReturn(yesterday);
-        when(activePermissionRequest2.lastPulledMeterReading()).thenReturn(Optional.empty());
-        EsPermissionRequest inactivePermissionRequest = mock(EsPermissionRequest.class);
-        when(inactivePermissionRequest.start()).thenReturn(yesterday.plusDays(1));
+    void fetchMeteringData_callsFetchDataForPermissionRequest_forWhenivePermissionRequest() {
+        // Given
+        EsPermissionRequest activePermissionRequest1 = acceptedPermissionRequest(yesterday, today);
+        EsPermissionRequest activePermissionRequest2 = acceptedPermissionRequest(yesterday, today);
+        EsPermissionRequest inactivePermissionRequest = acceptedPermissionRequest(today, today);
 
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
         when(permissionRequestService.getAllAcceptedPermissionRequests()).thenReturn(Stream.of(activePermissionRequest1, activePermissionRequest2, inactivePermissionRequest));
 
 
-        DataApiService dataApiService = mock(DataApiService.class);
-
         FutureDataService futureDataService = new FutureDataService(permissionRequestService, dataApiService);
 
-        // Act
+        // When
         futureDataService.fetchMeteringData();
 
-        // Assert
-        LocalDate expectedYesterday = yesterday.toLocalDate();
-        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest1, expectedYesterday, expectedYesterday);
-        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest2, expectedYesterday, expectedYesterday);
+        // Then
+        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest1, yesterday, yesterday);
+        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest2, yesterday, yesterday);
         verifyNoMoreInteractions(dataApiService);
     }
 
     @Test
     void fetchMeteringData_usesLastPulledMeterReading_ifBeforeYesterday() {
-        // Arrange
-        EsPermissionRequest activePermissionRequest = mock(EsPermissionRequest.class);
-        ZonedDateTime yesterday = ZonedDateTime.now(ZONE_ID_SPAIN).minusDays(1);
-        ZonedDateTime lastPulledMeterReading = yesterday.minusDays(2);
-        when(activePermissionRequest.start()).thenReturn(yesterday.minusDays(2));
-        when(activePermissionRequest.lastPulledMeterReading()).thenReturn(Optional.of(lastPulledMeterReading));
+        // Given
+        LocalDate lastPulledMeterReading = yesterday.minusDays(2);
+        EsPermissionRequest activePermissionRequest = acceptedPermissionRequest(lastPulledMeterReading.minusDays(2), yesterday);
+        activePermissionRequest.setLastPulledMeterReading(lastPulledMeterReading.atStartOfDay(ZONE_ID_SPAIN));
 
-        PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
         when(permissionRequestService.getAllAcceptedPermissionRequests()).thenReturn(Stream.of(activePermissionRequest));
-
-        DataApiService dataApiService = mock(DataApiService.class);
 
         FutureDataService futureDataService = new FutureDataService(permissionRequestService, dataApiService);
 
-        // Act
+        // When
         futureDataService.fetchMeteringData();
 
-        // Assert
-        LocalDate expectedYesterday = yesterday.toLocalDate();
-        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest, lastPulledMeterReading.toLocalDate(), expectedYesterday);
+        // Then
+        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest, lastPulledMeterReading, yesterday);
         verifyNoMoreInteractions(dataApiService);
     }
 
     @Test
     void fetchMeteringData_usesYesterday_ifLastPulledMeterReadingEqualYesterday() {
-        // Arrange
-        EsPermissionRequest activePermissionRequest = mock(EsPermissionRequest.class);
-        ZonedDateTime yesterday = ZonedDateTime.now(ZONE_ID_SPAIN).minusDays(1);
-        when(activePermissionRequest.start()).thenReturn(yesterday.minusDays(2));
-        when(activePermissionRequest.lastPulledMeterReading()).thenReturn(Optional.of(yesterday));
+        // Given
+        EsPermissionRequest activePermissionRequest = acceptedPermissionRequest(yesterday.minusDays(2), yesterday);
+        activePermissionRequest.setLastPulledMeterReading(yesterday.atStartOfDay(ZONE_ID_SPAIN));
 
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
         when(permissionRequestService.getAllAcceptedPermissionRequests()).thenReturn(Stream.of(activePermissionRequest));
 
-        DataApiService dataApiService = mock(DataApiService.class);
-
         FutureDataService futureDataService = new FutureDataService(permissionRequestService, dataApiService);
 
-        // Act
+        // When
         futureDataService.fetchMeteringData();
 
-        // Assert
-        LocalDate expectedYesterday = yesterday.toLocalDate();
-        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest, expectedYesterday, expectedYesterday);
+        // Then
+        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest, yesterday, yesterday);
         verifyNoMoreInteractions(dataApiService);
     }
 }

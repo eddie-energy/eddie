@@ -14,7 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Sinks;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.MAXIMUM_MONTHS_IN_THE_PAST;
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
@@ -24,17 +26,25 @@ public class DataApiService implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataApiService.class);
     private final DataApi dataApi;
     private final Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink;
+    private final DatadisFulfillmentService fulfillmentService;
+    private final LastPulledMeterReadingService lastPulledMeterReadingService;
 
 
-    public DataApiService(DataApi dataApi, Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink) {
+    public DataApiService(DataApi dataApi, Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink, DatadisFulfillmentService fulfillmentService, LastPulledMeterReadingService lastPulledMeterReadingService) {
         this.dataApi = dataApi;
         this.identifiableMeteringDataSink = identifiableMeteringDataSink;
+        this.fulfillmentService = fulfillmentService;
+        this.lastPulledMeterReadingService = lastPulledMeterReadingService;
     }
 
+
     public void fetchDataForPermissionRequest(EsPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Polling metering data for permission request {} from {} to {}", permissionRequest.permissionId(), start, end);
-        }
+        LOGGER.atInfo()
+                .addArgument(permissionRequest::permissionId)
+                .addArgument(start)
+                .addArgument(end)
+                .log("Polling metering data for permission request {} from {} to {}");
+
         tryGetConsumptionKwh(
                 MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end),
                 permissionRequest
@@ -47,7 +57,18 @@ public class DataApiService implements AutoCloseable {
                 .flatMap(result -> new MeteringDataFilter(result, permissionRequest).filter())
                 .map(result -> new IdentifiableMeteringData(permissionRequest, result))
                 .doOnError(e -> retryOrRevoke(request, permissionRequest, e))
-                .subscribe(identifiableMeteringDataSink::tryEmitNext);
+                .onErrorComplete() // The error is handled by doOnError, so we can complete the stream here
+                .subscribe(identifiableMeteringData -> handleIdentifiableMeteringData(permissionRequest, identifiableMeteringData));
+    }
+
+    private void handleIdentifiableMeteringData(EsPermissionRequest permissionRequest, IdentifiableMeteringData identifiableMeteringData) {
+        ZonedDateTime meteringDataEndDate = identifiableMeteringData.intermediateMeteringData().end();
+        if (lastPulledMeterReadingService.updateLastPulledMeterReading(permissionRequest, meteringDataEndDate)
+                && fulfillmentService.isPermissionRequestFulfilledByDate(permissionRequest, meteringDataEndDate)) {
+            fulfillmentService.tryFulfillPermissionRequest(permissionRequest);
+        }
+
+        identifiableMeteringDataSink.emitNext(identifiableMeteringData, Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
     }
 
     private void retryOrRevoke(MeteringDataRequest request, EsPermissionRequest permissionRequest, Throwable e) {
@@ -56,9 +77,10 @@ public class DataApiService implements AutoCloseable {
             cause = cause.getCause();
         }
 
-        if (LOGGER.isWarnEnabled()) {
-            LOGGER.warn("Error polling for metering data for permission request {}", permissionRequest.permissionId(), cause);
-        }
+        LOGGER.atError()
+                .addArgument(permissionRequest::permissionId)
+                .setCause(e)
+                .log("Something went wrong while fetching data for permission request {} from Datadis:");
 
         if (cause instanceof DatadisApiException exception) {
             if (exception.statusCode() == HttpStatus.FORBIDDEN.value()) {
