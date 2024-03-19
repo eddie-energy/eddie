@@ -9,7 +9,6 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.at.eda.EdaRegionConnector;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
@@ -38,12 +37,11 @@ import java.util.Set;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.*;
-import static energy.eddie.regionconnector.at.eda.utils.DateTimeConstants.AT_ZONE_ID;
 
 @Component
 public class PermissionRequestCreationAndValidationService {
     private static final Set<Validator<CreatedEvent>> VALIDATORS = Set.of(
-            new NotOlderThanValidator(ChronoUnit.MONTHS, EdaRegionConnector.MAXIMUM_MONTHS_IN_THE_PAST),
+            new NotOlderThanValidator(ChronoUnit.MONTHS, MAXIMUM_MONTHS_IN_THE_PAST),
             new CompletelyInThePastOrInTheFutureEventValidator(),
             new StartIsBeforeOrEqualEndValidator(),
             new MeteringPointMatchesDsoIdValidator()
