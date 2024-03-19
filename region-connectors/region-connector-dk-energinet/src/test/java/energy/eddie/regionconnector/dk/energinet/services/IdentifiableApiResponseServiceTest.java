@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
-import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.DK_ZONE_ID;
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings("DataFlowIssue") // suppress null pointer warning

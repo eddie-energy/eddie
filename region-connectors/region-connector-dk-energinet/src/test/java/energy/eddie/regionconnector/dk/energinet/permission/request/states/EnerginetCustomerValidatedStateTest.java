@@ -6,7 +6,6 @@ import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
@@ -23,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -55,7 +55,7 @@ class EnerginetCustomerValidatedStateTest {
     @Test
     void sendToPermissionAdministrator_changesToSentToPermissionAdministrator() {
         // Given
-        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
+        LocalDate start = LocalDate.now(DK_ZONE_ID).minusDays(30);
         LocalDate end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
@@ -161,7 +161,7 @@ class EnerginetCustomerValidatedStateTest {
     }
 
     private PermissionRequest createPermissionRequestInValidatedState(EnerginetCustomerApi apiClient) {
-        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
+        LocalDate start = LocalDate.now(DK_ZONE_ID).minusDays(30);
         LocalDate end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";

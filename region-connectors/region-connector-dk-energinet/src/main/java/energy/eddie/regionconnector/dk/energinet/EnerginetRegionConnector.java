@@ -10,8 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.time.Period;
-import java.time.ZoneId;
 import java.util.Map;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID;
@@ -19,10 +17,6 @@ import static java.util.Objects.requireNonNull;
 
 @Component
 public class EnerginetRegionConnector implements RegionConnector {
-    public static final ZoneId DK_ZONE_ID = ZoneId.of("Europe/Copenhagen");
-    public static final Period PERIOD_EARLIEST_START = Period.ofYears(-2);
-    public static final Period PERIOD_LATEST_END = Period.ofYears(2);
-    public static final long MAXIMUM_MONTHS_IN_THE_PAST = PERIOD_EARLIEST_START.toTotalMonths();
     private static final Logger LOGGER = LoggerFactory.getLogger(EnerginetRegionConnector.class);
     private final EnerginetCustomerApi energinetCustomerApi;
     private final PermissionRequestService permissionRequestService;

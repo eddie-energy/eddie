@@ -4,7 +4,6 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.FutureStateException;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
@@ -14,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -22,7 +22,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void validate_changesToValidatedState_whenValid() {
         // Given
-        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
+        LocalDate start = LocalDate.now(DK_ZONE_ID).minusDays(30);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
         String meteringPoint = "meteringPoint";
@@ -50,7 +50,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void validate_changesToMalformedState_whenEndBeforeStart() {
         // Given
-        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID);
+        LocalDate start = LocalDate.now(DK_ZONE_ID);
         var end = start.minusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
@@ -83,7 +83,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void validate_changesToMalformedState_whenStartIsOlderThan24Months() {
         // Given
-        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID).minusMonths(30);
+        LocalDate start = LocalDate.now(DK_ZONE_ID).minusMonths(30);
         LocalDate end = start.plusDays(1);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
@@ -116,7 +116,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void validate_changesToMalformedState_whenNotCompletelyInPast() {
         // Given
-        LocalDate now = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID);
+        LocalDate now = LocalDate.now(DK_ZONE_ID);
         LocalDate start = now.minusDays(5);
         LocalDate end = now.plusDays(5);
         String permissionId = UUID.randomUUID().toString();

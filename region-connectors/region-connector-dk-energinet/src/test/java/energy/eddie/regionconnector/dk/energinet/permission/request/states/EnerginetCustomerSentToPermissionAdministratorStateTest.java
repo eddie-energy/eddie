@@ -4,7 +4,6 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.FutureStateException;
 import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
@@ -14,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -33,7 +33,7 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void accept_changesToAcceptedState() {
         // Given
-        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
+        LocalDate start = LocalDate.now(DK_ZONE_ID).minusDays(30);
         LocalDate end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
@@ -68,7 +68,7 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void invalid_changesToInvalidState() {
         // Given
-        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
+        LocalDate start = LocalDate.now(DK_ZONE_ID).minusDays(30);
         LocalDate end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
@@ -103,7 +103,7 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
     @Test
     void reject_changesToRejectedState() {
         // Given
-        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
+        LocalDate start = LocalDate.now(DK_ZONE_ID).minusDays(30);
         LocalDate end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";

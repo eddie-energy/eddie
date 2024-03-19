@@ -18,7 +18,7 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
-import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.*;
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.*;
 
 @Component
 public class PermissionRequestFactory {
