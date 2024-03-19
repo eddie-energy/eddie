@@ -6,6 +6,7 @@ import energy.eddie.dataneeds.EnergyType;
 import energy.eddie.dataneeds.validation.BasicValidationsGroup;
 import energy.eddie.dataneeds.validation.CustomValidationsGroup;
 import energy.eddie.dataneeds.validation.IsValidValidatedHistoricalDataDataNeed;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.GroupSequence;
 import jakarta.validation.constraints.NotNull;
@@ -18,6 +19,7 @@ import jakarta.validation.constraints.NotNull;
 @Table(name = "validated_consumption_data_need", schema = "data_needs")
 @GroupSequence({BasicValidationsGroup.class, CustomValidationsGroup.class, ValidatedHistoricalDataDataNeed.class})
 @IsValidValidatedHistoricalDataDataNeed
+@Schema(description = "Data need for validated historical consumption data. For most MDAs, data for the previous day is made available sometime during the current day (e.g. at noon).")
 public class ValidatedHistoricalDataDataNeed extends TimeframedDataNeed {
     public static final String DISCRIMINATOR_VALUE = "validated";
 
