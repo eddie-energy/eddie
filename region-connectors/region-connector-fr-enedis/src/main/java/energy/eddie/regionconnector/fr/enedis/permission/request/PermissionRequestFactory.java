@@ -1,12 +1,18 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.shared.permission.requests.PermissionRequestProxy;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.Set;
+
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
 
 @Component
 public class PermissionRequestFactory {
@@ -22,18 +28,23 @@ public class PermissionRequestFactory {
     }
 
     /**
-     * Creates a new PermissionReques, using a Proxy to handle persistence and ConnectionStatusMessages when changed.
+     * Creates a new PermissionRequest, using a Proxy to handle persistence and ConnectionStatusMessages when changed.
      *
      * @param permissionRequestForCreation the DTO that is used for creating the PermissionRequest
      * @return new PermissionRequest
      */
-    public FrEnedisPermissionRequest create(PermissionRequestForCreation permissionRequestForCreation) {
+    public FrEnedisPermissionRequest create(
+            PermissionRequestForCreation permissionRequestForCreation,
+            LocalDate start,
+            LocalDate end,
+            Granularity granularity
+    ) {
         FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest(
                 permissionRequestForCreation.connectionId(),
                 permissionRequestForCreation.dataNeedId(),
-                permissionRequestForCreation.start(),
-                permissionRequestForCreation.end(),
-                permissionRequestForCreation.granularity(),
+                ZonedDateTime.of(start, LocalTime.MIN, ZONE_ID_FR),
+                ZonedDateTime.of(end, LocalTime.MIN, ZONE_ID_FR),
+                granularity,
                 stateBuilderFactory
         );
         return PermissionRequestProxy.createProxy(
@@ -45,8 +56,8 @@ public class PermissionRequestFactory {
     }
 
     /**
-     * Recreates a PermissionRequest.
-     * The PermissionRequest is wrapped with a proxy to handle persistence and ConnectionStatusMessages when changed.
+     * Recreates a PermissionRequest. The PermissionRequest is wrapped with a proxy to handle persistence and
+     * ConnectionStatusMessages when changed.
      *
      * @param permissionRequest PermissionRequest to be wrapped and recreated
      * @return recreated PermissionRequest

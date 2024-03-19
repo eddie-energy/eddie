@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPer
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Set;
@@ -16,13 +17,17 @@ class PermissionRequestFactoryTest {
     @Test
     void testCreatePermissionRequest() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
-        ZonedDateTime end = start.plusDays(1);
-        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(Set.of(), new StateBuilderFactory());
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "dnid", start, end, Granularity.P1D);
+        LocalDate start = LocalDate.now(ZoneId.systemDefault());
+        LocalDate end = start.plusDays(1);
+        PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(Set.of(),
+                                                                                         new StateBuilderFactory());
+        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation("cid", "dnid");
 
         // When
-        PermissionRequest permissionRequest = permissionRequestFactory.create(permissionRequestForCreation);
+        PermissionRequest permissionRequest = permissionRequestFactory.create(permissionRequestForCreation,
+                                                                              start,
+                                                                              end,
+                                                                              Granularity.P1D);
 
         // Then
         assertNotNull(permissionRequest);
@@ -35,7 +40,12 @@ class PermissionRequestFactoryTest {
         ZonedDateTime end = start.plusDays(1);
         StateBuilderFactory factory = new StateBuilderFactory();
         PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(Set.of(), factory);
-        FrEnedisPermissionRequest original = new EnedisPermissionRequest("cid", "dnid", start, end, Granularity.P1D, factory);
+        FrEnedisPermissionRequest original = new EnedisPermissionRequest("cid",
+                                                                         "dnid",
+                                                                         start,
+                                                                         end,
+                                                                         Granularity.P1D,
+                                                                         factory);
 
         // When
         PermissionRequest permissionRequest = permissionRequestFactory.create(original);

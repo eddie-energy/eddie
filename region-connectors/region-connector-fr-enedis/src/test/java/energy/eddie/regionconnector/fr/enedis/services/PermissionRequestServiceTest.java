@@ -4,6 +4,11 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
@@ -11,6 +16,7 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.Permission
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisPendingAcknowledgmentState;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,10 +27,14 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -41,13 +51,23 @@ class PermissionRequestServiceTest {
     private PermissionRequestRepository<FrEnedisPermissionRequest> repository;
     @MockBean
     private HistoricalDataService historicalDataService;
+    @MockBean
+    private DataNeedsService dataNeedsService;
+    @Mock
+    private ValidatedHistoricalDataDataNeed mockVhdDataNeed;
 
     @Test
-    void testCreatePermissionRequest_createsPermissionRequest() throws StateTransitionException {
+    void testCreatePermissionRequest_createsPermissionRequest() throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
-        var start = ZonedDateTime.now(ZoneOffset.UTC);
-        var end = ZonedDateTime.now(ZoneOffset.UTC).plusDays(10);
-        var request = new PermissionRequestForCreation("cid", "dnid", start, end, Granularity.P1D);
+        var request = new PermissionRequestForCreation("cid", "dnid");
+        var wrapper = new DataNeedWrapper(mockVhdDataNeed,
+                                          LocalDate.now(ZONE_ID_FR),
+                                          LocalDate.now(ZONE_ID_FR).plusDays(10));
+        when(dataNeedsService.findDataNeedAndCalculateStartAndEnd(any(),
+                                                                  any(),
+                                                                  any(),
+                                                                  any())).thenReturn(wrapper);
+        when(mockVhdDataNeed.minGranularity()).thenReturn(Granularity.P1D);
 
         // When
         var res = permissionRequestService.createPermissionRequest(request);
@@ -56,7 +76,8 @@ class PermissionRequestServiceTest {
         // Then
         assertTrue(permissionRequest.isPresent());
         assertEquals("cid", permissionRequest.get().connectionId());
-        assertEquals(PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT, permissionRequest.get().status());
+        assertEquals(PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT,
+                     permissionRequest.get().status());
     }
 
     @Test
@@ -100,7 +121,8 @@ class PermissionRequestServiceTest {
     @Test
     void testAuthorizePermissionRequest_withNonExistingPermissionRequest_throws() {
         // Given, When, Then
-        assertThrows(PermissionNotFoundException.class, () -> permissionRequestService.authorizePermissionRequest("NonExistingPid", "upid"));
+        assertThrows(PermissionNotFoundException.class,
+                     () -> permissionRequestService.authorizePermissionRequest("NonExistingPid", "upid"));
     }
 
     @Test
@@ -192,5 +214,23 @@ class PermissionRequestServiceTest {
 
         // Then
         assertEquals(1, res.size());
+    }
+
+    @Test
+    void givenUnsupportedGranularity_throws() throws DataNeedNotFoundException {
+        // Given
+        var wrapper = new DataNeedWrapper(mockVhdDataNeed,
+                                          LocalDate.now(ZONE_ID_FR),
+                                          LocalDate.now(ZONE_ID_FR).plusDays(10));
+        when(dataNeedsService.findDataNeedAndCalculateStartAndEnd(any(),
+                                                                  any(),
+                                                                  any(),
+                                                                  any())).thenReturn(wrapper);
+        when(mockVhdDataNeed.minGranularity()).thenReturn(Granularity.P1Y);
+        PermissionRequestForCreation create = new PermissionRequestForCreation("foo", "bar");
+
+        // When, Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> permissionRequestService.createPermissionRequest(create));
     }
 }
