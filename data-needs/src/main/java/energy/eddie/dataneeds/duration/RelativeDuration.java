@@ -12,6 +12,7 @@ import java.util.Optional;
 @Entity
 @Table(name = "relative_duration", schema = "data_needs")
 @IsValidRelativeDuration
+@Schema(description = "Describes a duration with a relative start/end date. A date-period is specified which will be added/subtracted from the current date at the creation time of a permission request, i.e. when the customer clicks 'Connect' in the pop-up.")
 public class RelativeDuration extends DataNeedDuration {
     public static final String DISCRIMINATOR_VALUE = "relativeDuration";
 
@@ -25,7 +26,7 @@ public class RelativeDuration extends DataNeedDuration {
     @Nullable
     @JsonProperty
     private Period end;
-    @Schema(description = "The CalendarUnit to which the start of the relative duration should stick to. E.g., assume today is the 17.04., the relative start is -25 days and CalendarUnit is MONTH, then, for a permission request that is created today, the start date should not be 23.03, but it should stick to the start of the CalendarUnit, and therefore be 01.03. Furthermore, for a permission request that is created on the 26.04, the start date should be 01.04 and so forth. For the CalendarUnit WEEK, it will stick to Mondays. Note that this may lead to an earlier start date than what is passed via the start period.")
+    @Schema(description = "The CalendarUnit to which the start of the relative duration should stick to. E.g., assume today is the 17.04., the relative start is -25 days and CalendarUnit is MONTH, then, for a permission request that is created today, the start date should not be the 23.03, but it should stick to the start of the CalendarUnit, and therefore be 01.03. Furthermore, for a permission request that is created on the 26.04, the start date should be the 01.04 and so forth. For the CalendarUnit WEEK, it will stick to Mondays. Note that this may lead to an earlier start date than what is passed via the start period.")
     @Enumerated(EnumType.STRING)
     @Column(name = "calendar_unit")
     @Nullable

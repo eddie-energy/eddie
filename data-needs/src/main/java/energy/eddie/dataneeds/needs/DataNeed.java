@@ -37,11 +37,12 @@ public abstract class DataNeed {
     @JsonProperty(required = true)
     @NotBlank(message = "must not be blank")
     private String name;
+    @Schema(description = "Description of the data need for internal use. It is not displayed to the user.")
     @Column(name = "description", nullable = false)
     @JsonProperty(required = true)
     @NotBlank(message = "must not be blank")
     private String description;
-    @Schema(description = "Description of the data need which is presented to the user. Supports Markdown formatting.")
+    @Schema(description = "Purpose and description of this data need that will be displayed to the user in the popup. Supports markdown formatting.")
     @Column(name = "purpose", nullable = false)
     @JsonProperty(required = true)
     @NotBlank(message = "must not be blank")

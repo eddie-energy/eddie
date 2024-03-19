@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.dataneeds.validation.BasicValidationsGroup;
 import energy.eddie.dataneeds.validation.CustomValidationsGroup;
 import energy.eddie.dataneeds.validation.duration.IsValidAbsoluteDuration;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 @IsValidAbsoluteDuration(groups = CustomValidationsGroup.class)
 // when using custom sequence, the class itself has to be included (it is the "Default" group)
 @GroupSequence({BasicValidationsGroup.class, CustomValidationsGroup.class, AbsoluteDuration.class})
+@Schema(description = "Describes a duration with a fixed start/end date. When using an absolute duration, consider that most MDAs limit the timeframe for data requests (e.g. 2 years into the past), therefore at some point, it will not be possible anymore to fulfill the data need.")
 public class AbsoluteDuration extends DataNeedDuration {
     public static final String DISCRIMINATOR_VALUE = "absoluteDuration";
 
