@@ -41,26 +41,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       return;
     }
 
-    const startDate = new Date();
-    startDate.setDate(
-      startDate.getDate() + this.dataNeedAttributes.durationStart
-    );
-
-    const endDate = new Date();
-    if (this.dataNeedAttributes.durationEnd === 0) {
-      endDate.setDate(endDate.getDate() - 1); // subtract one day by default
-    } else {
-      endDate.setDate(endDate.getDate() + this.dataNeedAttributes.durationEnd);
-    }
-
     const jsonData = {};
     jsonData.refreshToken = formData.get("refreshToken");
     jsonData.meteringPoint = formData.get("meteringPoint");
     jsonData.connectionId = this.connectionId;
-    jsonData.start = startDate.toISOString().substring(0, 10);
-    jsonData.end = endDate.toISOString().substring(0, 10);
     jsonData.dataNeedId = this.dataNeedAttributes.id;
-    jsonData.granularity = this.dataNeedAttributes.granularity;
 
     this.createPermissionRequest(jsonData)
       .then()

@@ -4,6 +4,8 @@ import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
@@ -31,7 +33,7 @@ public class PermissionCreationService {
      * @throws SendToPermissionAdministratorException When an error occurs while sending the request to the PA.
      *                                                If {@link SendToPermissionAdministratorException#userFault()} is true, the customer provided an invalid refresh token.
      */
-    public PermissionRequest createAndSendPermissionRequest(PermissionRequestForCreation requestForCreation) throws StateTransitionException {
+    public PermissionRequest createAndSendPermissionRequest(PermissionRequestForCreation requestForCreation) throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
         DkEnerginetCustomerPermissionRequest permissionRequest = requestFactory.create(requestForCreation);
         permissionRequest.validate();
         permissionRequest.sendToPermissionAdministrator();

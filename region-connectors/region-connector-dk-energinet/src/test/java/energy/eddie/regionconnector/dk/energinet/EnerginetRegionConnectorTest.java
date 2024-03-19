@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -69,11 +70,17 @@ class EnerginetRegionConnectorTest {
     void terminatePermission_withExistingPermissionId_terminates() {
         // Given
         var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime end = start.plusDays(10);
-        var creation = new PermissionRequestForCreation("cid", start, end, "token", Granularity.PT15M, "mpid", "dnid");
+        LocalDate start = LocalDate.now(ZoneOffset.UTC);
+        LocalDate end = start.plusDays(10);
+        var creation = new PermissionRequestForCreation("cid", "token", "mpid", "dnid");
         StateBuilderFactory factory = new StateBuilderFactory();
-        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", creation, mock(EnerginetCustomerApi.class), factory);
+        var permissionRequest = new EnerginetCustomerPermissionRequest("pid",
+                                                                       creation,
+                                                                       mock(EnerginetCustomerApi.class),
+                                                                       start,
+                                                                       end,
+                                                                       Granularity.PT15M,
+                                                                       factory);
         EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(permissionRequest, factory);
         permissionRequest.changeState(state);
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);

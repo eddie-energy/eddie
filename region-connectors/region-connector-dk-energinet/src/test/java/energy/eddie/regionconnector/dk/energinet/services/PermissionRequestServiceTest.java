@@ -17,8 +17,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -95,11 +95,17 @@ class PermissionRequestServiceTest {
         var permissionId = "a0ec0288-7eaf-4aa2-8387-77c6413cfd31";
         String connectionId = "connId";
         String dataNeedId = "dataNeedId";
-        var start = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
-        var creation = new PermissionRequestForCreation(connectionId, start, end, "token", Granularity.PT15M, "mpid", dataNeedId);
+        var creation = new PermissionRequestForCreation(connectionId, "token", "mpid", dataNeedId);
         StateBuilderFactory factory = new StateBuilderFactory();
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, creation, customerApi, factory);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId,
+                                                                       creation,
+                                                                       customerApi,
+                                                                       start,
+                                                                       end,
+                                                                       Granularity.PT15M,
+                                                                       factory);
         var state = new EnerginetCustomerAcceptedState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
@@ -125,13 +131,28 @@ class PermissionRequestServiceTest {
         // Given
         String connectionId = "connId";
         String dataNeedId = "dataNeedId";
-        var start = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
-        var creation = new PermissionRequestForCreation(connectionId, start, end, "token", Granularity.PT15M, "mpid", dataNeedId);
+        var creation = new PermissionRequestForCreation(connectionId,
+                                                        "token",
+                                                        "mpid",
+                                                        dataNeedId);
         StateBuilderFactory factory = new StateBuilderFactory();
-        var permissionRequest1 = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(), creation, customerApi, factory);
+        var permissionRequest1 = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(),
+                                                                        creation,
+                                                                        customerApi,
+                                                                        start,
+                                                                        end,
+                                                                        Granularity.PT15M,
+                                                                        factory);
         permissionRequest1.changeState(new EnerginetCustomerAcceptedState(permissionRequest1, factory));
-        var permissionRequest2 = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(), creation, customerApi, factory);
+        var permissionRequest2 = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(),
+                                                                        creation,
+                                                                        customerApi,
+                                                                        start,
+                                                                        end,
+                                                                        Granularity.PT15M,
+                                                                        factory);
         when(requestFactory.create(permissionRequest1))
                 .thenReturn(permissionRequest1);
 
