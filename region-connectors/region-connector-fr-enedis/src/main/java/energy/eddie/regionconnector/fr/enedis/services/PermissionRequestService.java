@@ -26,9 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.PERIOD_EARLIEST_START;
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.PERIOD_LATEST_END;
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.*;
 
 @Service
 public class PermissionRequestService {

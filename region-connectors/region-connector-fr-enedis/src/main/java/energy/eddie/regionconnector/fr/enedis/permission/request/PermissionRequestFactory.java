@@ -12,7 +12,7 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Set;
 
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 
 @Component
 public class PermissionRequestFactory {

@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 import static energy.eddie.regionconnector.fr.enedis.services.PollingService.MAXIMUM_PERMISSION_DURATION;
 
 @Service
