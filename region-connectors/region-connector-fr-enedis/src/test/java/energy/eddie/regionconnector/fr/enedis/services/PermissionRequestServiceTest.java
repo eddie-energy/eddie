@@ -31,7 +31,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -49,8 +49,6 @@ class PermissionRequestServiceTest {
     private PermissionRequestService permissionRequestService;
     @Autowired
     private PermissionRequestRepository<FrEnedisPermissionRequest> repository;
-    @MockBean
-    private HistoricalDataService historicalDataService;
     @MockBean
     private DataNeedsService dataNeedsService;
     @Mock
