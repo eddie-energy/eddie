@@ -20,7 +20,7 @@ import org.springframework.web.client.RestClientException;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -55,8 +55,8 @@ class EnerginetCustomerValidatedStateTest {
     @Test
     void sendToPermissionAdministrator_changesToSentToPermissionAdministrator() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
-        ZonedDateTime end = start.plusDays(10);
+        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
+        LocalDate end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
         String meteringPoint = "meteringPoint";
@@ -66,9 +66,18 @@ class EnerginetCustomerValidatedStateTest {
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         doReturn(Mono.just("token")).when(apiClient).accessToken(anyString());
         StateBuilderFactory factory = new StateBuilderFactory();
-        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
+        var forCreation = new PermissionRequestForCreation(connectionId,
+                                                           refreshToken,
+                                                           meteringPoint,
+                                                           dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, factory);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId,
+                                                                       forCreation,
+                                                                       apiClient,
+                                                                       start,
+                                                                       end,
+                                                                       granularity,
+                                                                       factory);
         var state = new EnerginetCustomerValidatedState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
@@ -86,12 +95,17 @@ class EnerginetCustomerValidatedStateTest {
         var permissionRequest = createPermissionRequestInValidatedState(mockApiClient);
 
 
-        RestClientException exception = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "Foo", HttpHeaders.EMPTY, "foo".getBytes(StandardCharsets.UTF_8), null);
+        RestClientException exception = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED,
+                                                                        "Foo",
+                                                                        HttpHeaders.EMPTY,
+                                                                        "foo".getBytes(StandardCharsets.UTF_8),
+                                                                        null);
         doReturn(Mono.error(exception)).when(mockApiClient).accessToken(anyString());
 
 
         // When
-        SendToPermissionAdministratorException thrown = assertThrows(SendToPermissionAdministratorException.class, permissionRequest::sendToPermissionAdministrator);
+        SendToPermissionAdministratorException thrown = assertThrows(SendToPermissionAdministratorException.class,
+                                                                     permissionRequest::sendToPermissionAdministrator);
 
         // Then
         assertEquals(EnerginetCustomerUnableToSendState.class, permissionRequest.state().getClass());
@@ -102,18 +116,24 @@ class EnerginetCustomerValidatedStateTest {
     @Test
     void givenRateLimit_sendToPermissionAdministrator_changesToSentToUnableToSend_andThrows() {
         // Given
-        RestClientException exception = HttpClientErrorException.create(HttpStatus.TOO_MANY_REQUESTS, "Foo", HttpHeaders.EMPTY, "foo".getBytes(StandardCharsets.UTF_8), null);
+        RestClientException exception = HttpClientErrorException.create(HttpStatus.TOO_MANY_REQUESTS,
+                                                                        "Foo",
+                                                                        HttpHeaders.EMPTY,
+                                                                        "foo".getBytes(StandardCharsets.UTF_8),
+                                                                        null);
         EnerginetCustomerApiClient mockApiClient = mock(EnerginetCustomerApiClient.class);
         doReturn(Mono.error(exception)).when(mockApiClient).accessToken(anyString());
         var permissionRequest = createPermissionRequestInValidatedState(mockApiClient);
 
         // When
-        SendToPermissionAdministratorException thrown = assertThrows(SendToPermissionAdministratorException.class, permissionRequest::sendToPermissionAdministrator);
+        SendToPermissionAdministratorException thrown = assertThrows(SendToPermissionAdministratorException.class,
+                                                                     permissionRequest::sendToPermissionAdministrator);
 
         // Then
         assertEquals(EnerginetCustomerUnableToSendState.class, permissionRequest.state().getClass());
         assertFalse(thrown.userFault());
-        assertThat(thrown.getMessage()).contains("Energinet is refusing to process the request at the moment, please try again later");
+        assertThat(thrown.getMessage()).contains(
+                "Energinet is refusing to process the request at the moment, please try again later");
     }
 
     @Test
@@ -122,12 +142,17 @@ class EnerginetCustomerValidatedStateTest {
         EnerginetCustomerApiClient mockApiClient = mock(EnerginetCustomerApiClient.class);
         var permissionRequest = createPermissionRequestInValidatedState(mockApiClient);
 
-        RestClientException exception = HttpClientErrorException.create(HttpStatus.BAD_GATEWAY, "Foo", HttpHeaders.EMPTY, "foo".getBytes(StandardCharsets.UTF_8), null);
+        RestClientException exception = HttpClientErrorException.create(HttpStatus.BAD_GATEWAY,
+                                                                        "Foo",
+                                                                        HttpHeaders.EMPTY,
+                                                                        "foo".getBytes(StandardCharsets.UTF_8),
+                                                                        null);
         doReturn(Mono.error(exception)).when(mockApiClient).accessToken(anyString());
 
 
         // When
-        SendToPermissionAdministratorException thrown = assertThrows(SendToPermissionAdministratorException.class, permissionRequest::sendToPermissionAdministrator);
+        SendToPermissionAdministratorException thrown = assertThrows(SendToPermissionAdministratorException.class,
+                                                                     permissionRequest::sendToPermissionAdministrator);
 
         // Then
         assertEquals(EnerginetCustomerUnableToSendState.class, permissionRequest.state().getClass());
@@ -136,8 +161,8 @@ class EnerginetCustomerValidatedStateTest {
     }
 
     private PermissionRequest createPermissionRequestInValidatedState(EnerginetCustomerApi apiClient) {
-        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
-        ZonedDateTime end = start.plusDays(10);
+        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
+        LocalDate end = start.plusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
         String meteringPoint = "meteringPoint";
@@ -145,9 +170,18 @@ class EnerginetCustomerValidatedStateTest {
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
         StateBuilderFactory factory = new StateBuilderFactory();
-        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
+        var forCreation = new PermissionRequestForCreation(connectionId,
+                                                           refreshToken,
+                                                           meteringPoint,
+                                                           dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, factory);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId,
+                                                                       forCreation,
+                                                                       apiClient,
+                                                                       start,
+                                                                       end,
+                                                                       granularity,
+                                                                       factory);
         var state = new EnerginetCustomerValidatedState(permissionRequest, factory);
         permissionRequest.changeState(state);
         return permissionRequest;

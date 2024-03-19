@@ -10,13 +10,28 @@ import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCus
 import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 class EnerginetCustomerAcceptedStateTest {
+    private final LocalDate start = LocalDate.now(ZoneOffset.UTC);
+    private final LocalDate end = start.plusDays(10);
+    private final PermissionRequestForCreation creation = new PermissionRequestForCreation("cid",
+                                                                                           "token",
+                                                                                           "mpid",
+                                                                                           "dnid");
+    private final StateBuilderFactory factory = new StateBuilderFactory();
+    private final EnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest("pid",
+                                                                                                                creation,
+                                                                                                                mock(EnerginetCustomerApi.class),
+                                                                                                                start,
+                                                                                                                end,
+                                                                                                                Granularity.PT15M,
+                                                                                                                factory);
+
     @Test
     void status_returnsAccepted() {
         // Given
@@ -30,11 +45,6 @@ class EnerginetCustomerAcceptedStateTest {
     @Test
     void terminate_changesToTerminated() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime end = start.plusDays(10);
-        var creation = new PermissionRequestForCreation("cid", start, end, "token", Granularity.PT15M, "mpid", "dnid");
-        StateBuilderFactory factory = new StateBuilderFactory();
-        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", creation, mock(EnerginetCustomerApi.class), factory);
         EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
@@ -48,11 +58,6 @@ class EnerginetCustomerAcceptedStateTest {
     @Test
     void revoke_changesToRevokeState() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime end = start.plusDays(10);
-        var creation = new PermissionRequestForCreation("cid", start, end, "token", Granularity.PT15M, "mpid", "dnid");
-        StateBuilderFactory factory = new StateBuilderFactory();
-        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", creation, mock(EnerginetCustomerApi.class), factory);
         EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
@@ -66,11 +71,6 @@ class EnerginetCustomerAcceptedStateTest {
     @Test
     void fulfill_changesToFulfilledState() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime end = start.plusDays(10);
-        var creation = new PermissionRequestForCreation("cid", start, end, "token", Granularity.PT15M, "mpid", "dnid");
-        StateBuilderFactory factory = new StateBuilderFactory();
-        var permissionRequest = new EnerginetCustomerPermissionRequest("pid", creation, mock(EnerginetCustomerApi.class), factory);
         EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(permissionRequest, factory);
         permissionRequest.changeState(state);
 

@@ -11,7 +11,7 @@ import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCus
 import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
 import org.junit.jupiter.api.Test;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,7 +22,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void validate_changesToValidatedState_whenValid() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
+        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(30);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
         String meteringPoint = "meteringPoint";
@@ -30,9 +30,15 @@ class EnerginetCustomerCreatedStateTest {
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
-        var forCreation = new PermissionRequestForCreation(connectionId, start, start.plusDays(5), refreshToken, granularity, meteringPoint, dataNeedId);
+        var forCreation = new PermissionRequestForCreation(connectionId, refreshToken, meteringPoint, dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, new StateBuilderFactory());
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId,
+                                                                       forCreation,
+                                                                       apiClient,
+                                                                       start,
+                                                                       start.plusDays(5),
+                                                                       granularity,
+                                                                       new StateBuilderFactory());
 
         // When
         assertDoesNotThrow(permissionRequest::validate);
@@ -44,7 +50,7 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void validate_changesToMalformedState_whenEndBeforeStart() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID);
+        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID);
         var end = start.minusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
@@ -53,9 +59,18 @@ class EnerginetCustomerCreatedStateTest {
         Granularity granularity = Granularity.PT1H;
         String dataNeedId = "dataNeedId";
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
-        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
+        var forCreation = new PermissionRequestForCreation(connectionId,
+                                                           refreshToken,
+                                                           meteringPoint,
+                                                           dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, new StateBuilderFactory());
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId,
+                                                                       forCreation,
+                                                                       apiClient,
+                                                                       start,
+                                                                       end,
+                                                                       granularity,
+                                                                       new StateBuilderFactory());
 
         // When
         var thrown = assertThrows(ValidationException.class, permissionRequest::validate);
@@ -68,8 +83,8 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void validate_changesToMalformedState_whenStartIsOlderThan24Months() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusMonths(30);
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID).minusMonths(30);
+        LocalDate end = start.plusDays(1);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
         Granularity granularity = Granularity.PT1H;
@@ -77,9 +92,18 @@ class EnerginetCustomerCreatedStateTest {
         String dataNeedId = "dataNeedId";
         String meteringPoint = "meteringPoint";
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
-        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
+        var forCreation = new PermissionRequestForCreation(connectionId,
+                                                           refreshToken,
+                                                           meteringPoint,
+                                                           dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, new StateBuilderFactory());
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId,
+                                                                       forCreation,
+                                                                       apiClient,
+                                                                       start,
+                                                                       end,
+                                                                       granularity,
+                                                                       new StateBuilderFactory());
 
         // When
         var thrown = assertThrows(ValidationException.class, permissionRequest::validate);
@@ -92,9 +116,9 @@ class EnerginetCustomerCreatedStateTest {
     @Test
     void validate_changesToMalformedState_whenNotCompletelyInPast() {
         // Given
-        ZonedDateTime now = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID);
-        ZonedDateTime start = now.minusDays(5);
-        ZonedDateTime end = now.plusDays(5);
+        LocalDate now = LocalDate.now(EnerginetRegionConnector.DK_ZONE_ID);
+        LocalDate start = now.minusDays(5);
+        LocalDate end = now.plusDays(5);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
         Granularity granularity = Granularity.PT1H;
@@ -102,13 +126,23 @@ class EnerginetCustomerCreatedStateTest {
         String dataNeedId = "dataNeedId";
         String meteringPoint = "meteringPoint";
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
-        var forCreation = new PermissionRequestForCreation(connectionId, start, end, refreshToken, granularity, meteringPoint, dataNeedId);
+        var forCreation = new PermissionRequestForCreation(connectionId,
+                                                           refreshToken,
+                                                           meteringPoint,
+                                                           dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, new StateBuilderFactory());
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId,
+                                                                       forCreation,
+                                                                       apiClient,
+                                                                       start,
+                                                                       end,
+                                                                       granularity,
+                                                                       new StateBuilderFactory());
 
         // When
         var thrown = assertThrows(ValidationException.class, permissionRequest::validate);
-        assertThat(thrown.getMessage()).contains("start and end must lie completely in the past or completely in the future");
+        assertThat(thrown.getMessage()).contains(
+                "start and end must lie completely in the past or completely in the future");
 
         // Then
         assertEquals(EnerginetCustomerMalformedState.class, permissionRequest.state().getClass());

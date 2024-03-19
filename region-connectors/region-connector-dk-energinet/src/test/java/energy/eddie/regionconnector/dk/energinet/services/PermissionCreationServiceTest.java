@@ -1,8 +1,9 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.DK_ZONE_ID;
@@ -32,16 +34,18 @@ class PermissionCreationServiceTest {
     }
 
     @Test
-    void createAndSendPermissionRequest_doesNotCallApiOnDeniedPermissionRequest() throws StateTransitionException {
+    void createAndSendPermissionRequest_doesNotCallApiOnDeniedPermissionRequest() throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
-        var start = ZonedDateTime.now(DK_ZONE_ID).minusDays(10);
+        var start = LocalDate.now(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
         String connectionId = "connId";
         String dataNeedId = "dataNeedId";
         String refreshToken = "token";
         String meteringPoint = "meteringPoint";
-        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId, start, end,
-                refreshToken, Granularity.PT1H, meteringPoint, dataNeedId);
+        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId,
+                                                                                           refreshToken,
+                                                                                           meteringPoint,
+                                                                                           dataNeedId);
 
         DkEnerginetCustomerPermissionRequest mockRequest = mock(DkEnerginetCustomerPermissionRequest.class);
         when(requestFactory.create(requestForCreation)).thenReturn(mockRequest);
@@ -58,7 +62,7 @@ class PermissionCreationServiceTest {
     }
 
     @Test
-    void createAndSendPermissionRequest_callsApiOnAcceptedPermissionRequest() throws StateTransitionException {
+    void createAndSendPermissionRequest_callsApiOnAcceptedPermissionRequest() throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
         var start = ZonedDateTime.now(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
@@ -66,8 +70,10 @@ class PermissionCreationServiceTest {
         String dataNeedId = "dataNeedId";
         String refreshToken = "token";
         String meteringPoint = "meteringPoint";
-        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId, start, end,
-                refreshToken, Granularity.PT1H, meteringPoint, dataNeedId);
+        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId,
+                                                                                           refreshToken,
+                                                                                           meteringPoint,
+                                                                                           dataNeedId);
 
         DkEnerginetCustomerPermissionRequest mockRequest = mock(DkEnerginetCustomerPermissionRequest.class);
         when(requestFactory.create(requestForCreation)).thenReturn(mockRequest);

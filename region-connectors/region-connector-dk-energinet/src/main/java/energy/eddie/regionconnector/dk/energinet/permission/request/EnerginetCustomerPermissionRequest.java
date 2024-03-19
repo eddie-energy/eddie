@@ -11,6 +11,8 @@ import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermis
 import jakarta.persistence.*;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector.DK_ZONE_ID;
@@ -51,7 +53,11 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
             String permissionId,
             PermissionRequestForCreation request,
             EnerginetCustomerApi apiClient,
-            StateBuilderFactory factory) {
+            LocalDate start,
+            LocalDate end,
+            Granularity granularity,
+            StateBuilderFactory factory
+    ) {
         super(DK_ZONE_ID);
         requireNonNull(permissionId);
         requireNonNull(request);
@@ -59,16 +65,16 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
 
         this.permissionId = requireNonNull(permissionId);
         this.connectionId = requireNonNull(request.connectionId());
-        this.start = requireNonNull(request.start()).withZoneSameInstant(DK_ZONE_ID);
-        this.end = requireNonNull(request.end()).withZoneSameInstant(DK_ZONE_ID);
         this.credentials = new ApiCredentials(apiClient, requireNonNull(request.refreshToken()));
         this.meteringPoint = requireNonNull(request.meteringPoint());
         this.dataNeedId = requireNonNull(request.dataNeedId());
-        this.granularity = requireNonNull(request.granularity());
         this.refreshToken = request.refreshToken();
+        this.start = ZonedDateTime.of(start, LocalTime.MIN, DK_ZONE_ID);
+        this.end = ZonedDateTime.of(end, LocalTime.MIN, DK_ZONE_ID);
+        this.granularity = granularity;
 
         this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
-        this.lastPolled = start;
+        this.lastPolled = this.start;
         this.status = state.status();
     }
 
