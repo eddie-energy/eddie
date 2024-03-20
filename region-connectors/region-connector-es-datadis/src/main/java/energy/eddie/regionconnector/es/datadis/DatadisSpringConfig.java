@@ -40,6 +40,7 @@ import reactor.netty.http.client.HttpClient;
 import java.util.Set;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID;
+import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 
 
 @EnableWebMvc
@@ -124,7 +125,8 @@ public class DatadisSpringConfig {
                 new ConsentMarketDocumentExtension<>(
                         cmds,
                         config.username(),
-                        cimConfig.eligiblePartyNationalCodingScheme().value()
+                        cimConfig.eligiblePartyNationalCodingScheme().value(),
+                        ZONE_ID_SPAIN
                 )
         );
     }

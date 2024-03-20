@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermis
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -19,8 +20,10 @@ import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConst
 import static java.util.Objects.requireNonNull;
 
 @Entity
-@Table(schema = "es_datadis")
+@Table(schema = "es_datadis", name = "datadis_permission_request")
 public class DatadisPermissionRequest extends TimestampedPermissionRequest implements EsPermissionRequest {
+    @Transient
+    private final DatadisDataSourceInformation dataSourceInformation = new DatadisDataSourceInformation(this);
     @Id
     private String permissionId;
     private String connectionId;
@@ -33,8 +36,6 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     @Enumerated(EnumType.STRING)
     private MeasurementType measurementType;
     private String dataNeedId;
-    @Transient
-    private final DatadisDataSourceInformation dataSourceInformation = new DatadisDataSourceInformation(this);
     @Transient
     private PermissionRequestState state;
     @Nullable
@@ -214,18 +215,20 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     }
 
     @Override
-    public ZonedDateTime start() {
-        return requestDataFrom;
+    public LocalDate start() {
+        return requestDataFrom.withZoneSameInstant(ZONE_ID_SPAIN).toLocalDate();
     }
 
     @Override
-    public ZonedDateTime end() {
-        return requestDataTo;
+    public LocalDate end() {
+        return requestDataTo.withZoneSameInstant(ZONE_ID_SPAIN).toLocalDate();
     }
 
     @Override
-    public Optional<ZonedDateTime> lastPulledMeterReading() {
-        return Optional.ofNullable(this.lastPulledMeterReading);
+    public Optional<LocalDate> lastPulledMeterReading() {
+        return Optional.ofNullable(this.lastPulledMeterReading)
+                .map(date -> date.withZoneSameInstant(ZONE_ID_SPAIN))
+                .map(ZonedDateTime::toLocalDate);
     }
 
     @Override
@@ -234,8 +237,8 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     }
 
     @Override
-    public void setLastPulledMeterReading(ZonedDateTime lastPulledMeterReading) {
-        this.lastPulledMeterReading = lastPulledMeterReading;
+    public void updateLastPulledMeterReading(LocalDate lastPulledMeterReading) {
+        this.lastPulledMeterReading = lastPulledMeterReading.atStartOfDay(ZONE_ID_SPAIN);
     }
 
     @Override

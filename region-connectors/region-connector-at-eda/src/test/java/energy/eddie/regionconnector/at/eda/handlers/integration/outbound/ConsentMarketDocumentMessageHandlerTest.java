@@ -47,8 +47,7 @@ class ConsentMarketDocumentMessageHandlerTest {
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
                 CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME);
         EventBus eventBus = new EventBusImpl();
-        new ConsentMarketDocumentMessageHandler(eventBus, repository, messages, atConfig,
-                                                cimConfig);
+        new ConsentMarketDocumentMessageHandler(eventBus, repository, messages, atConfig, cimConfig);
 
         // When
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.VALIDATED));
@@ -69,8 +68,7 @@ class ConsentMarketDocumentMessageHandlerTest {
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
                 CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME);
         EventBus eventBus = new EventBusImpl();
-        new ConsentMarketDocumentMessageHandler(eventBus, repository, messages, atConfig,
-                                                cimConfig);
+        new ConsentMarketDocumentMessageHandler(eventBus, repository, messages, atConfig, cimConfig);
 
         // When
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.VALIDATED));

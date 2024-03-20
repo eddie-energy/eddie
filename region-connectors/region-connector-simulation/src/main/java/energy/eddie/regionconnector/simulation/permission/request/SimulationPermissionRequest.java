@@ -8,20 +8,20 @@ import energy.eddie.regionconnector.simulation.SimulationDataSourceInformation;
 import energy.eddie.regionconnector.simulation.dtos.SetConnectionStatusRequest;
 import jakarta.annotation.Nullable;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 public record SimulationPermissionRequest(SetConnectionStatusRequest req) implements TimeframedPermissionRequest {
 
     @Override
-    public ZonedDateTime start() {
-        return ZonedDateTime.ofInstant(Instant.ofEpochSecond(0), ZoneOffset.UTC);
+    public LocalDate start() {
+        return LocalDate.of(2021, 1, 1);
     }
 
     @Override
-    public ZonedDateTime end() {
-        return ZonedDateTime.of(9999, 12, 31, 23, 59, 59, 0, ZoneOffset.UTC);
+    public LocalDate end() {
+        return LocalDate.of(9999, 12, 31);
     }
 
     @Nullable

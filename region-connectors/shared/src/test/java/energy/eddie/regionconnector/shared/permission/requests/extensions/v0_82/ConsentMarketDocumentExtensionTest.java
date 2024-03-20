@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -21,8 +22,9 @@ class ConsentMarketDocumentExtensionTest {
     void accept_emitsConsentMarketDocument() {
         // Given
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime start = now.minusDays(10);
-        ZonedDateTime end = now.minusDays(5);
+        LocalDate today = LocalDate.now(ZoneOffset.UTC);
+        LocalDate start = today.minusDays(10);
+        LocalDate end = today.minusDays(5);
 
         var dataSourceInformation = mock(DataSourceInformation.class);
         when(dataSourceInformation.countryCode()).thenReturn("AT");
@@ -41,7 +43,7 @@ class ConsentMarketDocumentExtensionTest {
         when(permissionRequest.status()).thenReturn(PermissionProcessStatus.CREATED);
 
         Sinks.Many<ConsentMarketDocument> sink = Sinks.many().multicast().onBackpressureBuffer();
-        var extension = new ConsentMarketDocumentExtension<>(sink, "customerId", "NAT");
+        var extension = new ConsentMarketDocumentExtension<>(sink, "customerId", "NAT", ZoneOffset.UTC);
 
         // When
         extension.accept(permissionRequest);
@@ -60,7 +62,7 @@ class ConsentMarketDocumentExtensionTest {
         when(permissionRequest.permissionId()).thenThrow(new RuntimeException());
 
         Sinks.Many<ConsentMarketDocument> sink = Sinks.many().multicast().onBackpressureBuffer();
-        var extension = new ConsentMarketDocumentExtension<>(sink, "customerId", "NAT");
+        var extension = new ConsentMarketDocumentExtension<>(sink, "customerId", "NAT", ZoneOffset.UTC);
 
         // When
         extension.accept(permissionRequest);
@@ -71,5 +73,4 @@ class ConsentMarketDocumentExtensionTest {
                 .expectError(RuntimeException.class)
                 .verify();
     }
-
 }

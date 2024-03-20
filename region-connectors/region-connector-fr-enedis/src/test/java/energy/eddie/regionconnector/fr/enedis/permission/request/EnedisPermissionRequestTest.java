@@ -71,10 +71,9 @@ class EnedisPermissionRequestTest {
         EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end, Granularity.P1D, factory);
 
         // Then
-        assertEquals(start, request.start().toLocalDate());
+        assertEquals(start, request.start());
     }
 
-    @SuppressWarnings("DataFlowIssue")
     @Test
     void constructorWithContextEnd_setsEnd() {
         // Given
@@ -88,7 +87,7 @@ class EnedisPermissionRequestTest {
         EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end, Granularity.P1D, factory);
 
         // Then
-        assertEquals(end, request.end().toLocalDate());
+        assertEquals(end, request.end());
     }
 
     @Test

@@ -8,7 +8,6 @@ import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermis
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 public class AiidaPermissionRequest extends TimestampedPermissionRequest implements AiidaPermissionRequestInterface {
     private static final AiidaDataSourceInformation dataSourceInformation = new AiidaDataSourceInformation();
@@ -49,13 +48,13 @@ public class AiidaPermissionRequest extends TimestampedPermissionRequest impleme
     }
 
     @Override
-    public ZonedDateTime start() {
-        return startDate.atStartOfDay(ZoneOffset.UTC);
+    public LocalDate start() {
+        return startDate;
     }
 
     @Override
-    public ZonedDateTime end() {
-        return expirationDate.atStartOfDay(ZoneOffset.UTC);
+    public LocalDate end() {
+        return expirationDate;
     }
 
     @Override

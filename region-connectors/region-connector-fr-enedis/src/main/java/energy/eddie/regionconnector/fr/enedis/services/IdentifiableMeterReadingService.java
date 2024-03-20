@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Optional;
 
 /**
  * This service updates the latest meter reading and checks for fulfillment of the permission request.
@@ -60,9 +58,6 @@ public class IdentifiableMeterReadingService {
      * @return true if {@code meterReadingEndDate} is after {@code permissionRequest.end()}
      */
     private static boolean isFulfilled(FrEnedisPermissionRequest permissionRequest, LocalDate meterReadingEndDate) {
-        return Optional.ofNullable(permissionRequest.end())
-                .map(ZonedDateTime::toLocalDate)
-                .map(meterReadingEndDate::isAfter) // we also want data for the end date of the permission request, so we use isAfter instead of !isBefore
-                .orElse(false);
+        return meterReadingEndDate.isAfter(permissionRequest.end()); // we also want data for the end date of the permission request, so we use isAfter instead of !isBefore
     }
 }

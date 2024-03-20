@@ -7,6 +7,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -17,28 +18,24 @@ public record SimplePermissionRequest(String permissionId,
                                       String conversationId,
                                       String dsoId,
                                       Optional<String> meteringPointId,
-                                      ZonedDateTime start,
-                                      ZonedDateTime end,
-                                      PermissionProcessStatus status
-) implements AtPermissionRequest {
-
-    public SimplePermissionRequest(String permissionId, String connectionId) {
-        this(permissionId, connectionId, null, null, null, null, Optional.empty(), null, null, null);
-    }
+                                      LocalDate start,
+                                      LocalDate end,
+                                      PermissionProcessStatus status,
+                                      Optional<String> consentId) implements AtPermissionRequest {
 
     public SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId) {
-        this(permissionId, connectionId, dataNeedId, null, null, null, Optional.empty(), null, null, null);
+        this(permissionId, connectionId, dataNeedId, null, null, null, Optional.empty(), null, null, null, Optional.empty());
     }
 
     public SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId, String cmRequestId,
                                    String conversationId, PermissionProcessStatus status) {
         this(permissionId, connectionId, dataNeedId, cmRequestId, conversationId, null, Optional.empty(), null, null,
-             status);
+                status, Optional.empty());
     }
 
     @Override
     public Optional<String> consentId() {
-        return Optional.empty();
+        return consentId;
     }
 
     @Override

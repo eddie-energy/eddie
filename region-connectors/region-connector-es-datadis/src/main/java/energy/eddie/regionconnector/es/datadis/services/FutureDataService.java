@@ -34,11 +34,11 @@ public class FutureDataService {
     }
 
     private boolean isActive(EsPermissionRequest permissionRequest, LocalDate today) {
-        return permissionRequest.start().toLocalDate().isBefore(today);
+        return permissionRequest.start().isBefore(today);
     }
 
     private void fetchMeteringDataForRequest(EsPermissionRequest permissionRequest, LocalDate yesterday) {
-        LocalDate lastPulledOrStart = permissionRequest.lastPulledMeterReading().orElse(permissionRequest.start()).toLocalDate();
+        LocalDate lastPulledOrStart = permissionRequest.lastPulledMeterReading().orElse(permissionRequest.start());
         LocalDate startDate = lastPulledOrStart.isBefore(yesterday) ? lastPulledOrStart : yesterday;
 
         dataApiService.fetchDataForPermissionRequest(permissionRequest, startDate, yesterday);

@@ -99,8 +99,8 @@ class AiidaFactoryTest {
         var request = aiidaFactory.createPermissionRequest(connectionId, dataNeedId);
 
         // Then
-        assertEquals(LocalDate.parse("2000-01-01"), request.start().toLocalDate());
-        assertEquals(LocalDate.parse("9999-12-31"), request.end().toLocalDate());
+        assertEquals(LocalDate.parse("2000-01-01"), request.start());
+        assertEquals(LocalDate.parse("9999-12-31"), request.end());
     }
 
     @Test
@@ -123,8 +123,8 @@ class AiidaFactoryTest {
         assertDoesNotThrow(() -> UUID.fromString(request.permissionId()));
         assertEquals(connectionId, request.connectionId());
         assertEquals(dataNeedId, request.dataNeedId());
-        assertEquals(expectedStart, request.start().toLocalDate());
-        assertEquals(expectedExpiration, request.end().toLocalDate());
+        assertEquals(expectedStart, request.start());
+        assertEquals(expectedExpiration, request.end());
     }
 
     @Test
@@ -151,8 +151,8 @@ class AiidaFactoryTest {
         // Then
         assertAll(
                 () -> assertDoesNotThrow(() -> UUID.fromString(dto.permissionId())),
-                () -> assertEquals(request.start().toInstant(), dto.startTime()),
-                () -> assertEquals(request.end().toInstant(), dto.expirationTime()),
+                () -> assertEquals(request.start(), dto.startDate()),
+                () -> assertEquals(request.end(), dto.expirationDate()),
                 () -> assertEquals(request.permissionId(), dto.permissionId()),
                 () -> assertEquals(connectionId, dto.connectionId()),
                 () -> assertEquals(dataNeedId, dto.dataNeedId()),

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Locale;
 import java.util.UUID;
@@ -23,26 +24,28 @@ public class IntermediateConsentMarketDocument<T extends TimeframedPermissionReq
     private final String customerIdentifier;
     private final TransmissionScheduleProvider<T> transmissionScheduleProvider;
     private final String countryCode;
+    private final ZoneId zoneId;
     private final PermissionProcessStatus status;
 
     public IntermediateConsentMarketDocument(T permissionRequest,
                                              String customerIdentifier,
                                              TransmissionScheduleProvider<T> transmissionScheduleProvider,
-                                             String countryCode) {
+                                             String countryCode, ZoneId zoneId) {
         this(permissionRequest, permissionRequest.status(), customerIdentifier, transmissionScheduleProvider,
-             countryCode);
+                countryCode, zoneId);
     }
 
     public IntermediateConsentMarketDocument(T permissionRequest,
                                              PermissionProcessStatus status,
                                              String customerIdentifier,
                                              TransmissionScheduleProvider<T> transmissionScheduleProvider,
-                                             String countryCode) {
+                                             String countryCode, ZoneId zoneId) {
         this.status = status;
         this.permissionRequest = permissionRequest;
         this.customerIdentifier = customerIdentifier;
         this.transmissionScheduleProvider = transmissionScheduleProvider;
         this.countryCode = countryCode;
+        this.zoneId = zoneId;
     }
 
     public ConsentMarketDocument toConsentMarketDocument() {
@@ -52,7 +55,7 @@ public class IntermediateConsentMarketDocument<T extends TimeframedPermissionReq
     ConsentMarketDocument toConsentMarketDocument(Clock clock) {
         EsmpDateTime now = EsmpDateTime.now(clock);
         EsmpDateTime created = new EsmpDateTime(permissionRequest.created());
-        EsmpTimeInterval interval = new EsmpTimeInterval(permissionRequest.start(), permissionRequest.end());
+        EsmpTimeInterval interval = new EsmpTimeInterval(permissionRequest.start(), permissionRequest.end(), zoneId);
 
         return new ConsentMarketDocument()
                 .withMRID(permissionRequest.permissionId())
@@ -130,7 +133,7 @@ public class IntermediateConsentMarketDocument<T extends TimeframedPermissionReq
 
     @Nullable
     private String transmissionSchedule() {
-        if (!permissionRequest.start().toLocalDate().isAfter(LocalDate.now(ZoneOffset.UTC))) {
+        if (!permissionRequest.start().isAfter(LocalDate.now(ZoneOffset.UTC))) {
             return null;
         }
         return transmissionScheduleProvider.findTransmissionSchedule(permissionRequest);

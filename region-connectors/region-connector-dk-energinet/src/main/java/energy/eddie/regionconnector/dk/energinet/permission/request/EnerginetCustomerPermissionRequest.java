@@ -12,7 +12,6 @@ import jakarta.persistence.*;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static java.util.Objects.requireNonNull;
@@ -128,13 +127,13 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
     }
 
     @Override
-    public ZonedDateTime start() {
-        return start.atStartOfDay(DK_ZONE_ID);
+    public LocalDate start() {
+        return start;
     }
 
     @Override
-    public ZonedDateTime end() {
-        return end.atStartOfDay(DK_ZONE_ID);
+    public LocalDate end() {
+        return end;
     }
 
     @Override

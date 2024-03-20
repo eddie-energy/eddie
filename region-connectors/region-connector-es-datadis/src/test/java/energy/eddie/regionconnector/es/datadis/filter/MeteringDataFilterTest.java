@@ -27,7 +27,6 @@ import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConst
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
-@SuppressWarnings("DataFlowIssue")
 class MeteringDataFilterTest {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd");
@@ -87,7 +86,7 @@ class MeteringDataFilterTest {
     @EnumSource(MeasurementType.class)
     void filter_reducesDataFrom1Month_to3Days(MeasurementType measurementType) {
         var intermediateMeteringData = setupIntermediateMeteringData(measurementType);
-        LocalDate requestedStartDate = intermediateMeteringData.start().plusWeeks(2).toLocalDate();
+        LocalDate requestedStartDate = intermediateMeteringData.start().plusWeeks(2);
         LocalDate requestedEndDate = requestedStartDate.plusDays(2);
         ZonedDateTime expectedEnd = requestedEndDate.atStartOfDay(ZONE_ID_SPAIN).plusDays(1);
         EsPermissionRequest permissionRequest = setupPermissionRequest(requestedStartDate, requestedEndDate, measurementType);
@@ -103,10 +102,10 @@ class MeteringDataFilterTest {
 
         assertAll(
                 () -> assertEquals(expectedSize, result.meteringData().size()),
-                () -> assertEquals(expectedStart, result.start()),
+                () -> assertEquals(expectedStart.toLocalDate(), result.start()),
                 () -> assertEquals(expectedStart.toLocalDate().format(DATE_FORMAT), result.meteringData().getFirst().date()),
                 () -> assertEquals(expectedStart.toLocalTime().toString(), result.meteringData().getFirst().time()),
-                () -> assertEquals(expectedEnd, result.end()),
+                () -> assertEquals(expectedEnd.toLocalDate(), result.end()),
                 () -> assertEquals(expectedEnd.toLocalDate().minusDays(1).format(DATE_FORMAT), result.meteringData().getLast().date()),
                 () -> assertEquals("24:00", result.meteringData().getLast().time())
         );
@@ -123,8 +122,8 @@ class MeteringDataFilterTest {
     @EnumSource(MeasurementType.class)
     void filter_ifEndNull_OnlyReducesStartDate(MeasurementType measurementType) {
         var intermediateMeteringData = setupIntermediateMeteringData(measurementType);
-        LocalDate requestedStartDate = intermediateMeteringData.end().minusDays(5).toLocalDate();
-        ZonedDateTime expectedEnd = intermediateMeteringData.end();
+        LocalDate requestedStartDate = intermediateMeteringData.end().minusDays(5);
+        LocalDate expectedEnd = intermediateMeteringData.end();
         EsPermissionRequest permissionRequest = setupPermissionRequest(requestedStartDate, null, measurementType);
 
         ZonedDateTime expectedStart = expectedStart(measurementType, requestedStartDate);
@@ -138,11 +137,11 @@ class MeteringDataFilterTest {
 
         assertAll(
                 () -> assertEquals(expectedSize, result.meteringData().size()),
-                () -> assertEquals(expectedStart, result.start()),
-                () -> assertEquals(expectedStart.toLocalDate().format(DATE_FORMAT), result.meteringData().getFirst().date()),
+                () -> assertEquals(expectedStart.toLocalDate(), result.start()),
+                () -> assertEquals(expectedStart.format(DATE_FORMAT), result.meteringData().getFirst().date()),
                 () -> assertEquals(expectedStart.toLocalTime().toString(), result.meteringData().getFirst().time()),
                 () -> assertEquals(expectedEnd, result.end()),
-                () -> assertEquals(expectedEnd.toLocalDate().minusDays(1).format(DATE_FORMAT), result.meteringData().getLast().date()),
+                () -> assertEquals(expectedEnd.minusDays(1).format(DATE_FORMAT), result.meteringData().getLast().date()),
                 () -> assertEquals("24:00", result.meteringData().getLast().time())
         );
     }
@@ -167,7 +166,7 @@ class MeteringDataFilterTest {
     @EnumSource(MeasurementType.class)
     void filter_ifDataAfterPermission_returnsEmptyList(MeasurementType measurementType) {
         var intermediateMeteringData = setupIntermediateMeteringData(measurementType);
-        LocalDate requestedStartDate = intermediateMeteringData.start().minusDays(2).toLocalDate();
+        LocalDate requestedStartDate = intermediateMeteringData.start().minusDays(2);
         LocalDate requestedEndDate = requestedStartDate.plusDays(1);
         EsPermissionRequest permissionRequest = setupPermissionRequest(requestedStartDate, requestedEndDate, measurementType);
 

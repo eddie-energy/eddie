@@ -46,13 +46,11 @@ public class CCMORevoke {
                                 .withMeteringPoint(permissionRequest.meteringPointId().orElse(null))
                                 .withConsentId(permissionRequest.consentId().orElse(null))
                                 .withMessageId(new MessageId(new CCMOAddress(eligiblePartyId).toRoutingAddress(),
-                                                             ZonedDateTime.now(
-                                                                     EdaRegionConnectorMetadata.AT_ZONE_ID)).toString())
+                                        ZonedDateTime.now(
+                                                EdaRegionConnectorMetadata.AT_ZONE_ID)).toString())
                                 .withConversationId(permissionRequest.conversationId())
                                 .withConsentEnd(
-                                        permissionRequest.end() == null
-                                                ? null
-                                                : DateTimeConverter.dateTimeToXml(permissionRequest.end())
+                                        DateTimeConverter.dateTimeToXml(ZonedDateTime.now(EdaRegionConnectorMetadata.AT_ZONE_ID))
                                 )
                                 .withReason("Terminated by EP")
                 );

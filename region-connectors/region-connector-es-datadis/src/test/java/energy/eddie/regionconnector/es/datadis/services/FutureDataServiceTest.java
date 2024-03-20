@@ -4,7 +4,6 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -17,7 +16,7 @@ class FutureDataServiceTest {
     void fetchMeteringData_callsFetchDataForPermissionRequest_forActivePermissionRequest() {
         // Arrange
         EsPermissionRequest activePermissionRequest1 = mock(EsPermissionRequest.class);
-        ZonedDateTime yesterday = ZonedDateTime.now(ZONE_ID_SPAIN).minusDays(1);
+        LocalDate yesterday = LocalDate.now(ZONE_ID_SPAIN).minusDays(1);
         when(activePermissionRequest1.start()).thenReturn(yesterday);
         when(activePermissionRequest1.lastPulledMeterReading()).thenReturn(Optional.empty());
         EsPermissionRequest activePermissionRequest2 = mock(EsPermissionRequest.class);
@@ -38,9 +37,8 @@ class FutureDataServiceTest {
         futureDataService.fetchMeteringData();
 
         // Assert
-        LocalDate expectedYesterday = yesterday.toLocalDate();
-        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest1, expectedYesterday, expectedYesterday);
-        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest2, expectedYesterday, expectedYesterday);
+        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest1, yesterday, yesterday);
+        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest2, yesterday, yesterday);
         verifyNoMoreInteractions(dataApiService);
     }
 
@@ -48,8 +46,8 @@ class FutureDataServiceTest {
     void fetchMeteringData_usesLastPulledMeterReading_ifBeforeYesterday() {
         // Arrange
         EsPermissionRequest activePermissionRequest = mock(EsPermissionRequest.class);
-        ZonedDateTime yesterday = ZonedDateTime.now(ZONE_ID_SPAIN).minusDays(1);
-        ZonedDateTime lastPulledMeterReading = yesterday.minusDays(2);
+        LocalDate yesterday = LocalDate.now(ZONE_ID_SPAIN).minusDays(1);
+        LocalDate lastPulledMeterReading = yesterday.minusDays(2);
         when(activePermissionRequest.start()).thenReturn(yesterday.minusDays(2));
         when(activePermissionRequest.lastPulledMeterReading()).thenReturn(Optional.of(lastPulledMeterReading));
 
@@ -64,8 +62,7 @@ class FutureDataServiceTest {
         futureDataService.fetchMeteringData();
 
         // Assert
-        LocalDate expectedYesterday = yesterday.toLocalDate();
-        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest, lastPulledMeterReading.toLocalDate(), expectedYesterday);
+        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest, lastPulledMeterReading, yesterday);
         verifyNoMoreInteractions(dataApiService);
     }
 
@@ -73,7 +70,7 @@ class FutureDataServiceTest {
     void fetchMeteringData_usesYesterday_ifLastPulledMeterReadingEqualYesterday() {
         // Arrange
         EsPermissionRequest activePermissionRequest = mock(EsPermissionRequest.class);
-        ZonedDateTime yesterday = ZonedDateTime.now(ZONE_ID_SPAIN).minusDays(1);
+        LocalDate yesterday = LocalDate.now(ZONE_ID_SPAIN).minusDays(1);
         when(activePermissionRequest.start()).thenReturn(yesterday.minusDays(2));
         when(activePermissionRequest.lastPulledMeterReading()).thenReturn(Optional.of(yesterday));
 
@@ -88,8 +85,7 @@ class FutureDataServiceTest {
         futureDataService.fetchMeteringData();
 
         // Assert
-        LocalDate expectedYesterday = yesterday.toLocalDate();
-        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest, expectedYesterday, expectedYesterday);
+        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest, yesterday, yesterday);
         verifyNoMoreInteractions(dataApiService);
     }
 }

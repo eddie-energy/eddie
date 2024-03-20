@@ -14,8 +14,6 @@ import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
@@ -23,17 +21,17 @@ import static org.mockito.Mockito.*;
 
 class IdentifiableMeteringDataServiceTest {
 
-    private static final ZonedDateTime today = LocalDate.now(ZONE_ID_SPAIN).atStartOfDay(ZONE_ID_SPAIN);
+    private static final LocalDate today = LocalDate.now(ZONE_ID_SPAIN);
 
-    private static EsPermissionRequest acceptedPermissionRequest(ZonedDateTime start, ZonedDateTime end) {
+    private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
         StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
         PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
                 "connectionId",
                 "dataNeedId",
                 "nif",
                 "meteringPointId",
-                start,
-                end,
+                start.atStartOfDay(ZONE_ID_SPAIN),
+                end.atStartOfDay(ZONE_ID_SPAIN),
                 Granularity.PT1H);
         EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
         permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
@@ -43,7 +41,7 @@ class IdentifiableMeteringDataServiceTest {
     @Test
     void ifLastPulledEmpty_callsSetLastPulledMeterReading() {
         // Given
-        ZonedDateTime end = today.plusDays(1);
+        LocalDate end = today.plusDays(1);
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(today, end);
         EsPermissionRequest spy = spy(permissionRequest);
 
@@ -58,18 +56,18 @@ class IdentifiableMeteringDataServiceTest {
                 .expectNextCount(1)
                 .verifyComplete();
         // Then
-        verify(spy).setLastPulledMeterReading(end);
+        verify(spy).updateLastPulledMeterReading(end);
     }
 
     @Test
     void ifLastPulledPresent_callsSetLastPulledMeterReading_ifMeterReadingNewer() {
         // Given
-        ZonedDateTime start = ZonedDateTime.of(today.toLocalDate().minusDays(2), LocalTime.MIN, ZONE_ID_SPAIN);
+        LocalDate start = today.minusDays(2);
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, today);
-        permissionRequest.setLastPulledMeterReading(today.minusDays(1));
+        permissionRequest.updateLastPulledMeterReading(today.minusDays(1));
         EsPermissionRequest spy = spy(permissionRequest);
 
-        ZonedDateTime end = ZonedDateTime.of(today.toLocalDate(), LocalTime.MIN, ZONE_ID_SPAIN);
+        LocalDate end = today;
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
         //noinspection unused
@@ -81,18 +79,17 @@ class IdentifiableMeteringDataServiceTest {
                 .expectNextCount(1)
                 .verifyComplete();
         // Then
-        verify(spy).setLastPulledMeterReading(end);
+        verify(spy).updateLastPulledMeterReading(end);
     }
 
     @Test
     void ifLastPulledPresent_doesNotCallSetLastPulledMeterReading_ifMeterReadingOlder() {
         // Given
-        ZonedDateTime start = ZonedDateTime.of(today.toLocalDate().minusDays(2), LocalTime.MIN, ZONE_ID_SPAIN);
+        LocalDate start = today.minusDays(2);
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, today);
-        permissionRequest.setLastPulledMeterReading(today);
+        permissionRequest.updateLastPulledMeterReading(today);
         EsPermissionRequest spy = spy(permissionRequest);
 
-        ZonedDateTime end = ZonedDateTime.of(today.toLocalDate(), LocalTime.MIN, ZONE_ID_SPAIN);
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
         //noinspection unused
@@ -100,11 +97,11 @@ class IdentifiableMeteringDataServiceTest {
 
         // When
         StepVerifier.create(testPublisher)
-                .then(() -> testPublisher.emit(new IdentifiableMeteringData(spy, new IntermediateMeteringData(List.of(), start, end))))
+                .then(() -> testPublisher.emit(new IdentifiableMeteringData(spy, new IntermediateMeteringData(List.of(), start, today))))
                 .expectNextCount(1)
                 .verifyComplete();
         // Then
-        verify(spy, never()).setLastPulledMeterReading(any());
+        verify(spy, never()).updateLastPulledMeterReading(any());
     }
 
     @Test
@@ -113,8 +110,8 @@ class IdentifiableMeteringDataServiceTest {
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(today.minusDays(2), today.minusDays(1));
         EsPermissionRequest spy = spy(permissionRequest);
 
-        ZonedDateTime start = today.minusDays(2);
-        ZonedDateTime end = today.minusDays(1);
+        LocalDate start = today.minusDays(2);
+        LocalDate end = today.minusDays(1);
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
         //noinspection unused
@@ -154,7 +151,7 @@ class IdentifiableMeteringDataServiceTest {
     @Test
     void ifMeteringDataDateEqualsPermissionEndDate_callsFulfill() throws StateTransitionException {
         // Given
-        ZonedDateTime start = today.minusDays(2);
+        LocalDate start = today.minusDays(2);
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, today.minusDays(1));
         EsPermissionRequest spy = spy(permissionRequest);
 

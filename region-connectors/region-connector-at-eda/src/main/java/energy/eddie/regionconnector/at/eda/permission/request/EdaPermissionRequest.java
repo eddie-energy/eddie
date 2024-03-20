@@ -114,31 +114,6 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     }
 
     @Override
-    public PermissionRequestState state() {
-        return null;
-    }
-
-    @Override
-    public PermissionProcessStatus status() {
-        return status;
-    }
-
-    @Override
-    public DataSourceInformation dataSourceInformation() {
-        return dataSourceInformation;
-    }
-
-    @Override
-    public ZonedDateTime created() {
-        return created;
-    }
-
-    @Override
-    public void changeState(PermissionRequestState state) {
-        // NoOp
-    }
-
-    @Override
     public String cmRequestId() {
         return cmRequestId;
     }
@@ -159,6 +134,31 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     }
 
     @Override
+    public LocalDate start() {
+        return start;
+    }
+
+    @Override
+    public LocalDate end() {
+        return end;
+    }
+
+    @Override
+    public PermissionRequestState state() {
+        return null;
+    }
+
+    @Override
+    public DataSourceInformation dataSourceInformation() {
+        return dataSourceInformation;
+    }
+
+    @Override
+    public ZonedDateTime created() {
+        return created;
+    }
+
+    @Override
     public String message() {
         return message;
     }
@@ -169,13 +169,12 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     }
 
     @Override
-    public ZonedDateTime start() {
-        return start.atStartOfDay(AT_ZONE_ID);
+    public void changeState(PermissionRequestState state) {
+        // NoOp
     }
 
     @Override
-    @Nullable
-    public ZonedDateTime end() {
-        return end == null ? null : end.atStartOfDay(AT_ZONE_ID);
+    public PermissionProcessStatus status() {
+        return status;
     }
 }

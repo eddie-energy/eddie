@@ -64,7 +64,7 @@ class DatadisPermissionRequestTest {
                 requestDataFrom, futureDate, granularity);
 
         var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
-        assertEquals(request.end(), request.permissionEnd());
+        assertEquals(request.end(), request.permissionEnd().toLocalDate());
     }
 
     @Test
@@ -113,10 +113,10 @@ class DatadisPermissionRequestTest {
     void setLastPulledMeterReading_worksAsExpected() {
         // Given
         var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
-        ZonedDateTime expected = ZonedDateTime.now(ZoneOffset.UTC);
+        LocalDate expected = LocalDate.now(ZoneOffset.UTC);
 
         // When
-        request.setLastPulledMeterReading(expected);
+        request.updateLastPulledMeterReading(expected);
 
         // Then
         assertTrue(request.lastPulledMeterReading().isPresent());

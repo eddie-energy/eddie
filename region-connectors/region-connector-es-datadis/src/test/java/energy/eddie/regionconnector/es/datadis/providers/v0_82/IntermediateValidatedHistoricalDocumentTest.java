@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.math.BigDecimal;
 
+import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -32,8 +33,8 @@ class IntermediateValidatedHistoricalDocumentTest {
                 "dataNeedId",
                 "nif",
                 "meteringPointId",
-                intermediateMeteringData.start(),
-                intermediateMeteringData.end(),
+                intermediateMeteringData.start().atStartOfDay(ZONE_ID_SPAIN),
+                intermediateMeteringData.end().atStartOfDay(ZONE_ID_SPAIN),
                 Granularity.PT1H);
         EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
         permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
@@ -58,7 +59,8 @@ class IntermediateValidatedHistoricalDocumentTest {
 
         var timeframe = new EsmpTimeInterval(
                 identifiableMeteringData.intermediateMeteringData().start(),
-                identifiableMeteringData.intermediateMeteringData().end()
+                identifiableMeteringData.intermediateMeteringData().end(),
+                ZONE_ID_SPAIN
         );
         var timeSeries = marketDocument.getTimeSeriesList().getTimeSeries().getFirst();
         var seriesPeriod = timeSeries.getSeriesPeriodList().getSeriesPeriods().getFirst();

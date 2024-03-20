@@ -9,6 +9,8 @@ import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
+import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+
 public class ConsumptionRecordMapper {
     public static final int CONVERSION_FACTOR = 1000;
 
@@ -25,7 +27,7 @@ public class ConsumptionRecordMapper {
         var firstMeteringData = meteringData.meteringData().getFirst();
 
         consumptionRecord.setMeteringPoint(firstMeteringData.cups());
-        consumptionRecord.setStartDateTime(meteringData.start());
+        consumptionRecord.setStartDateTime(meteringData.start().atStartOfDay(ZONE_ID_SPAIN));
 
         var consumptionPoints = meteringData.meteringData().stream().map(reading -> {
             ConsumptionPoint consumptionPoint = new ConsumptionPoint();

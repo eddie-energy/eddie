@@ -62,8 +62,8 @@ class PermissionRequestFactoryTest {
         assertEquals(nif, createdRequest.nif());
         assertEquals(meteringPointId, createdRequest.meteringPointId());
         assertEquals(MeasurementType.QUARTER_HOURLY, createdRequest.measurementType());
-        assertEquals(requestDataFrom, createdRequest.start());
-        assertEquals(requestDataTo.plusDays(1), createdRequest.end());
+        assertEquals(requestDataFrom.toLocalDate(), createdRequest.start());
+        assertEquals(requestDataTo.plusDays(1).toLocalDate(), createdRequest.end());
         assertTrue(createdRequest.distributorCode().isEmpty());
         assertTrue(createdRequest.lastPulledMeterReading().isEmpty());
         assertTrue(createdRequest.pointType().isEmpty());

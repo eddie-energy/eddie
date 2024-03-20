@@ -12,10 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,8 +33,9 @@ class IntermediateConsentMarketDocumentTest {
     void toConsentMarkDocument_returns() {
         // Given
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime start = now.minusDays(10);
-        ZonedDateTime end = now.minusDays(5);
+        LocalDate today = LocalDate.now(ZoneOffset.UTC);
+        LocalDate start = today.minusDays(10);
+        LocalDate end = today.minusDays(5);
 
         var dataSourceInformation = mock(DataSourceInformation.class);
         when(dataSourceInformation.countryCode()).thenReturn("AT");
@@ -57,7 +55,8 @@ class IntermediateConsentMarketDocumentTest {
                 permissionRequest,
                 "customerId",
                 ignored -> Granularity.PT15M.name(),
-                "NAT"
+                "NAT",
+                ZoneOffset.UTC
         );
 
         // When
@@ -75,9 +74,10 @@ class IntermediateConsentMarketDocumentTest {
         // Given
         Clock clock = Clock.fixed(Instant.now(Clock.systemUTC()), ZoneOffset.UTC);
         ZonedDateTime now = ZonedDateTime.now(clock);
-        ZonedDateTime start = now.minusDays(10);
-        ZonedDateTime end = now.minusDays(5);
-        var timeInterval = new EsmpTimeInterval(start, end);
+        LocalDate today = LocalDate.now(clock);
+        LocalDate start = today.minusDays(10);
+        LocalDate end = today.minusDays(5);
+        var timeInterval = new EsmpTimeInterval(start, end, ZoneOffset.UTC);
 
         var dataSourceInformation = mock(DataSourceInformation.class);
         when(dataSourceInformation.countryCode()).thenReturn(countryCode);
@@ -97,7 +97,8 @@ class IntermediateConsentMarketDocumentTest {
                 permissionRequest,
                 "customerId",
                 ignored -> Granularity.PT15M.name(),
-                "NAT"
+                "NAT",
+                ZoneOffset.UTC
         );
 
         // When

@@ -5,7 +5,7 @@ import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -28,8 +28,8 @@ public class NotOlderThanValidator implements Validator<EsPermissionRequest> {
 
     @Override
     public List<AttributeError> validate(EsPermissionRequest value) {
-        var earliestAllowedStart = ZonedDateTime.now(DatadisSpecificConstants.ZONE_ID_SPAIN).minus(limit, unit);
-        if (value.start().isBefore(earliestAllowedStart)) {
+        var earliestAllowedStart = LocalDate.now(DatadisSpecificConstants.ZONE_ID_SPAIN).minus(limit, unit);
+        if (!value.start().isAfter(earliestAllowedStart)) {
             return List.of(new AttributeError("requestDataFrom", "requestDataFrom must not be older than %s %s".formatted(limit, unit)));
         }
         return List.of();

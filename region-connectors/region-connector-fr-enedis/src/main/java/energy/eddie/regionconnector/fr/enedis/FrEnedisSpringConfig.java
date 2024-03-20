@@ -40,6 +40,7 @@ import java.util.Set;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID;
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 import static energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration.*;
 
 @EnableWebMvc
@@ -119,7 +120,8 @@ public class FrEnedisSpringConfig {
                 new ConsentMarketDocumentExtension<>(
                         cmds,
                         config.clientId(),
-                        cimConfig.eligiblePartyNationalCodingScheme().value()
+                        cimConfig.eligiblePartyNationalCodingScheme().value(),
+                        ZONE_ID_FR
                 )
         );
     }

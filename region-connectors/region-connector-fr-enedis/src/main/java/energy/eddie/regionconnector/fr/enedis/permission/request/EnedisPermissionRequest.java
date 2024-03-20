@@ -54,17 +54,6 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
     }
 
     public EnedisPermissionRequest(
-            String connectionId,
-            String dataNeedId,
-            LocalDate start,
-            LocalDate end,
-            Granularity granularity,
-            StateBuilderFactory factory
-    ) {
-        this(UUID.randomUUID().toString(), connectionId, dataNeedId, start, end, granularity, factory);
-    }
-
-    public EnedisPermissionRequest(
             String permissionId,
             String connectionId,
             String dataNeedId,
@@ -84,12 +73,74 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
         this.granularity = granularity;
     }
 
+    public EnedisPermissionRequest(
+            String connectionId,
+            String dataNeedId,
+            LocalDate start,
+            LocalDate end,
+            Granularity granularity,
+            StateBuilderFactory factory
+    ) {
+        this(UUID.randomUUID().toString(), connectionId, dataNeedId, start, end, granularity, factory);
+    }
+
     @Override
     public FrEnedisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
         this.state = factory
                 .create(this, status)
                 .build();
         return this;
+    }
+
+    @Override
+    public String permissionId() {
+        return permissionId;
+    }
+
+    @Override
+    public String connectionId() {
+        return connectionId;
+    }
+
+    @Override
+    public String dataNeedId() {
+        return dataNeedId;
+    }
+
+    @Override
+    public PermissionRequestState state() {
+        return state;
+    }
+
+    @Override
+    public DataSourceInformation dataSourceInformation() {
+        return dataSourceInformation;
+    }
+
+    @Override
+    public ZonedDateTime created() {
+        return created;
+    }
+
+    @Override
+    public void changeState(PermissionRequestState state) {
+        this.state = state;
+        this.status = state.status();
+    }
+
+    @Override
+    public LocalDate start() {
+        return start;
+    }
+
+    @Override
+    public LocalDate end() {
+        return end;
+    }
+
+    @Override
+    public PermissionProcessStatus status() {
+        return status;
     }
 
     @Override
@@ -116,56 +167,5 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
     @Override
     public void updateLatestMeterReading(LocalDate latestMeterReading) {
         this.latestMeterReading = latestMeterReading;
-    }
-
-    @Override
-    public String permissionId() {
-        return permissionId;
-    }
-
-    @Override
-    public String connectionId() {
-        return connectionId;
-    }
-
-    @Override
-    public String dataNeedId() {
-        return dataNeedId;
-    }
-
-    @Override
-    public PermissionRequestState state() {
-        return state;
-    }
-
-    @Override
-    public PermissionProcessStatus status() {
-        return status;
-    }
-
-    @Override
-    public DataSourceInformation dataSourceInformation() {
-        return dataSourceInformation;
-    }
-
-    @Override
-    public ZonedDateTime created() {
-        return created;
-    }
-
-    @Override
-    public void changeState(PermissionRequestState state) {
-        this.state = state;
-        this.status = state.status();
-    }
-
-    @Override
-    public ZonedDateTime start() {
-        return start.atStartOfDay(ZONE_ID_FR);
-    }
-
-    @Override
-    public ZonedDateTime end() {
-        return end.atStartOfDay(ZONE_ID_FR);
     }
 }

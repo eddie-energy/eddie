@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
+import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
@@ -54,7 +55,8 @@ public class ConsentMarketDocumentMessageHandler implements EventHandler<Permiss
                             permissionEvent.status(),
                             customerIdentifier,
                             pr -> TRANSMISSION_CYCLE.name(),
-                            countryCode
+                            countryCode,
+                            EdaRegionConnectorMetadata.AT_ZONE_ID
                     ).toConsentMarketDocument()
             );
         } catch (RuntimeException exception) {

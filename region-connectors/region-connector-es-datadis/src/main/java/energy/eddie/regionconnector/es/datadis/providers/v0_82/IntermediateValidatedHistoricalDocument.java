@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+
 public final class IntermediateValidatedHistoricalDocument {
     private static final TimeSeriesComplexType.ReasonList REASON_LIST = new TimeSeriesComplexType.ReasonList()
             .withReasons(
@@ -61,7 +63,8 @@ public final class IntermediateValidatedHistoricalDocument {
     public EddieValidatedHistoricalDataMarketDocument eddieValidatedHistoricalDataMarketDocument() {
         var timeframe = new EsmpTimeInterval(
                 identifiableMeteringData.intermediateMeteringData().start(),
-                identifiableMeteringData.intermediateMeteringData().end()
+                identifiableMeteringData.intermediateMeteringData().end(),
+                ZONE_ID_SPAIN
         );
 
         vhd
