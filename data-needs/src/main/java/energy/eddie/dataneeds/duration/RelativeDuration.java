@@ -1,6 +1,7 @@
 package energy.eddie.dataneeds.duration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.dataneeds.persistence.PeriodConverter;
 import energy.eddie.dataneeds.validation.duration.IsValidRelativeDuration;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
@@ -20,11 +21,13 @@ public class RelativeDuration extends DataNeedDuration {
     @Column(name = "relative_start")
     @Nullable
     @JsonProperty
+    @Convert(converter = PeriodConverter.class)
     private Period start;
     @Schema(description = "ISO8601 duration string representing the period that should be added or subtracted from the current date to get the permission end date, when a new permission request for this data need is created. If not supplied, a region connector will use the latest possible date as permission request end date.", example = "P1Y4M12D", type = "string")
     @Column(name = "relative_end")
     @Nullable
     @JsonProperty
+    @Convert(converter = PeriodConverter.class)
     private Period end;
     @Schema(description = "The CalendarUnit to which the start of the relative duration should stick to. E.g., assume today is the 17.04., the relative start is -25 days and CalendarUnit is MONTH, then, for a permission request that is created today, the start date should not be the 23.03, but it should stick to the start of the CalendarUnit, and therefore be 01.03. Furthermore, for a permission request that is created on the 26.04, the start date should be the 01.04 and so forth. For the CalendarUnit WEEK, it will stick to Mondays. Note that this may lead to an earlier start date than what is passed via the start period.")
     @Enumerated(EnumType.STRING)
