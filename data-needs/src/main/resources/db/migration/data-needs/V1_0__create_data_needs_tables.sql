@@ -36,8 +36,8 @@ CREATE TABLE generic_aiida_data_need_data_tags
 CREATE TABLE relative_duration
 (
     data_need_id   varchar(36) NOT NULL PRIMARY KEY,
-    relative_end   bytea,
-    relative_start bytea,
+    relative_end   text,
+    relative_start text,
     calendar_unit  varchar(5)
 );
 
