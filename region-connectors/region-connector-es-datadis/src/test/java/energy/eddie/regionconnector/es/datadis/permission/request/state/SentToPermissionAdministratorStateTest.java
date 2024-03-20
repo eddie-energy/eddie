@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -29,8 +29,13 @@ class SentToPermissionAdministratorStateTest {
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
 
-        var requestForCreation = new PermissionRequestForCreation("bar", "luu", "muh", "kuh", requestDataFrom, requestDataTo, Granularity.PT15M);
-        return new DatadisPermissionRequest("SomeId", requestForCreation, factory);
+        var requestForCreation = new PermissionRequestForCreation("bar", "luu", "muh", "kuh");
+        return new DatadisPermissionRequest("SomeId",
+                                            requestForCreation,
+                                            requestDataFrom.toLocalDate(),
+                                            requestDataTo.toLocalDate(),
+                                            Granularity.PT15M,
+                                            factory);
     }
 
     private DatadisPermissionRequest makeSentPermissionRequest() {

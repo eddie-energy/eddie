@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.permission.request;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
@@ -29,11 +31,18 @@ public class PermissionRequestFactory implements Mvp1ConnectionStatusMessageProv
         this.stateBuilderFactory = stateBuilderFactory;
     }
 
-    public EsPermissionRequest create(PermissionRequestForCreation requestForCreation) {
-        var permissionId = UUID.randomUUID().toString();
-        var permissionRequest = new DatadisPermissionRequest(permissionId,
+    public EsPermissionRequest create(PermissionRequestForCreation requestForCreation,
+                                      LocalDate start,
+                                      LocalDate end,
+                                      Granularity granularity) {
+        var permissionRequest = new DatadisPermissionRequest(
+                UUID.randomUUID().toString(),
                 requestForCreation,
-                stateBuilderFactory);
+                start,
+                end,
+                granularity,
+                stateBuilderFactory
+        );
 
         return PermissionRequestProxy.createProxy(
                 permissionRequest,

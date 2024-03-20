@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
@@ -29,8 +29,12 @@ class PendingAcknowledgementStateTest {
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
 
-        var requestForCreation = new PermissionRequestForCreation("bar", "luu", "muh", "kuh", requestDataFrom, requestDataTo, Granularity.PT15M);
-        var permissionRequest = new DatadisPermissionRequest("SomeId", requestForCreation, factory);
+        var requestForCreation = new PermissionRequestForCreation("bar", "luu", "muh", "kuh");
+        var permissionRequest = new DatadisPermissionRequest("SomeId",
+                                                             requestForCreation,
+                                                             requestDataFrom.toLocalDate(),
+                                                             requestDataTo.toLocalDate(),
+                                                             Granularity.PT15M, factory);
         var pendingAcknowledgementState = new PendingAcknowledgementState(permissionRequest, response, factory);
         permissionRequest.changeState(pendingAcknowledgementState);
         return permissionRequest;

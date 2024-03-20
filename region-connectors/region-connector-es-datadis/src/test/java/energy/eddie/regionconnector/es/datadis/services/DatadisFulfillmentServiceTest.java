@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DatadisFulfillmentServiceTest {
@@ -23,11 +23,12 @@ class DatadisFulfillmentServiceTest {
                 "connectionId",
                 "dataNeedId",
                 "nif",
-                "meteringPointId",
-                start,
-                end,
-                Granularity.PT1H);
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
+                "meteringPointId");
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation,
+                                                                             start.toLocalDate(),
+                                                                             end.toLocalDate(),
+                                                                             Granularity.PT1H ,
+                                                                             stateBuilderFactory);
         permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, permissionProcessStatus).build());
         return permissionRequest;
     }
@@ -35,7 +36,7 @@ class DatadisFulfillmentServiceTest {
     @Test
     void isPermissionRequestFulfilledByDate_ifEndBeforePermissionEnd_returnsFalse() {
         // Given
-        EsPermissionRequest permissionRequest = permissionRequest(today.minusDays(2), today.minusDays(1), PermissionProcessStatus.ACCEPTED); // DatadisPermissionRequest adds 1 day to the end date
+        EsPermissionRequest permissionRequest = permissionRequest(today.minusDays(2), today, PermissionProcessStatus.ACCEPTED);
         ZonedDateTime end = today.minusDays(1);
 
         DatadisFulfillmentService fulfillmentService = new DatadisFulfillmentService();

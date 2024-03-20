@@ -31,8 +31,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.MAXIMUM_MONTHS_IN_THE_PAST;
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.MAXIMUM_MONTHS_IN_THE_PAST;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,9 +40,10 @@ import static org.mockito.Mockito.*;
 
 @SuppressWarnings("resource")
 class DataApiServiceTest {
-
     private final DataApi dataApi = mock(DataApi.class);
-    private final Sinks.Many<IdentifiableMeteringData> meteringDataSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<IdentifiableMeteringData> meteringDataSink = Sinks.many()
+                                                                               .multicast()
+                                                                               .onBackpressureBuffer();
 
     private static Stream<Arguments> variousTimeRanges() {
         LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
@@ -61,12 +62,15 @@ class DataApiServiceTest {
                 "connectionId",
                 "dataNeedId",
                 "nif",
-                "meteringPointId",
-                start.atStartOfDay(ZONE_ID_SPAIN),
-                end.atStartOfDay(ZONE_ID_SPAIN),
-                Granularity.PT1H);
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
-        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
+                "meteringPointId");
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
+                                                                             permissionRequestForCreation,
+                                                                             start,
+                                                                             end,
+                                                                             Granularity.PT1H,
+                                                                             stateBuilderFactory);
+        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
+                                                         .build());
         permissionRequest.setDistributorCodeAndPointType(DistributorCode.ASEME, 1);
         return permissionRequest;
     }
@@ -82,7 +86,10 @@ class DataApiServiceTest {
 
         var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end);
 
-        var dataApiService = new DataApiService(dataApi, meteringDataSink, new DatadisFulfillmentService(), new LastPulledMeterReadingService());
+        var dataApiService = new DataApiService(dataApi,
+                                                meteringDataSink,
+                                                new DatadisFulfillmentService(),
+                                                new LastPulledMeterReadingService());
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
@@ -92,43 +99,14 @@ class DataApiServiceTest {
         verifyNoMoreInteractions(dataApi);
 
         StepVerifier.create(meteringDataSink.asFlux())
-                .then(dataApiService::close)
-                .expectComplete()
-                .verify(Duration.ofSeconds(2));
+                    .then(dataApiService::close)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(2));
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     void fetchDataForPermissionRequest_dataEndDateEqualPermissionEndDate_fulfillsPermissionRequest() throws IOException {
-        // Given
-        List<MeteringData> meteringData = MeteringDataProvider.loadMeteringData();
-        var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData);
-        LocalDate start = intermediateMeteringData.start().toLocalDate();
-        LocalDate end = intermediateMeteringData.end().minusDays(1).toLocalDate();
-        EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
-
-        var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end);
-        when(dataApi.getConsumptionKwh(expectedMeteringDataRequest)).thenReturn(Mono.just(meteringData));
-
-        var dataApiService = new DataApiService(dataApi, meteringDataSink, new DatadisFulfillmentService(), new LastPulledMeterReadingService());
-
-        // When
-        dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
-
-        // Then
-        StepVerifier.create(meteringDataSink.asFlux())
-                .assertNext(identifiableMeteringData -> assertAll(
-                        () -> assertEquals(PermissionProcessStatus.FULFILLED, permissionRequest.status()),
-                        () -> assertEquals(intermediateMeteringData.end(), permissionRequest.lastPulledMeterReading().get())
-                ))
-                .then(dataApiService::close)
-                .expectComplete()
-                .verify(Duration.ofSeconds(2));
-    }
-
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
-    @Test
-    void fetchDataForPermissionRequest_dataEndDateBeforePermissionEndDate_doesNotFulfillPermissionRequest() throws IOException {
         // Given
         List<MeteringData> meteringData = MeteringDataProvider.loadMeteringData();
         var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData);
@@ -139,35 +117,77 @@ class DataApiServiceTest {
         var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end);
         when(dataApi.getConsumptionKwh(expectedMeteringDataRequest)).thenReturn(Mono.just(meteringData));
 
+        var dataApiService = new DataApiService(dataApi,
+                                                meteringDataSink,
+                                                new DatadisFulfillmentService(),
+                                                new LastPulledMeterReadingService());
+
+        // When
+        dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
+
+        // Then
+        StepVerifier.create(meteringDataSink.asFlux())
+                    .assertNext(identifiableMeteringData -> assertAll(
+                            () -> assertEquals(PermissionProcessStatus.FULFILLED, permissionRequest.status()),
+                            () -> assertEquals(intermediateMeteringData.end(),
+                                               permissionRequest.lastPulledMeterReading().get())
+                    ))
+                    .then(dataApiService::close)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(2));
+    }
+
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    @Test
+    void fetchDataForPermissionRequest_dataEndDateBeforePermissionEndDate_doesNotFulfillPermissionRequest() throws IOException {
+        // Given
+        List<MeteringData> meteringData = MeteringDataProvider.loadMeteringData();
+        var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData);
+        LocalDate start = intermediateMeteringData.start().toLocalDate();
+        LocalDate end = intermediateMeteringData.end().toLocalDate();
+        EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end.plusDays(1));
+
+        var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end);
+        when(dataApi.getConsumptionKwh(expectedMeteringDataRequest)).thenReturn(Mono.just(meteringData));
+
         Sinks.Many<IdentifiableMeteringData> sink = Sinks.many().multicast().onBackpressureBuffer();
-        var dataApiService = new DataApiService(dataApi, sink, new DatadisFulfillmentService(), new LastPulledMeterReadingService());
+        var dataApiService = new DataApiService(dataApi,
+                                                sink,
+                                                new DatadisFulfillmentService(),
+                                                new LastPulledMeterReadingService());
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
 
         // Then
         StepVerifier.create(sink.asFlux())
-                .assertNext(identifiableMeteringData -> assertAll(
-                        () -> assertEquals(PermissionProcessStatus.ACCEPTED, permissionRequest.status()),
-                        () -> assertEquals(intermediateMeteringData.end(), permissionRequest.lastPulledMeterReading().get())
-                ))
-                .then(dataApiService::close)
-                .expectComplete()
-                .verify(Duration.ofSeconds(2));
+                    .assertNext(identifiableMeteringData -> assertAll(
+                            () -> assertEquals(PermissionProcessStatus.ACCEPTED, permissionRequest.status()),
+                            () -> assertEquals(intermediateMeteringData.end(),
+                                               permissionRequest.lastPulledMeterReading().get())
+                    ))
+                    .then(dataApiService::close)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(2));
     }
 
 
     @Test
     void fetchDataForPermissionRequest_dataApiReturnsForbidden_revokesPermission() {
         // Given
-        when(dataApi.getConsumptionKwh(any())).thenReturn(Mono.error(new DatadisApiException("", HttpResponseStatus.FORBIDDEN, "")));
+        when(dataApi.getConsumptionKwh(any())).thenReturn(Mono.error(new DatadisApiException("",
+                                                                                             HttpResponseStatus.FORBIDDEN,
+                                                                                             "")));
 
         LocalDate start = LocalDate.now(ZONE_ID_SPAIN);
         LocalDate end = start.plusDays(1);
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
         var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end);
 
-        var dataApiService = new DataApiService(dataApi, meteringDataSink, new DatadisFulfillmentService(), new LastPulledMeterReadingService());
+        var dataApiService = new DataApiService(dataApi,
+                                                meteringDataSink,
+                                                new DatadisFulfillmentService(),
+                                                new LastPulledMeterReadingService());
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
@@ -178,22 +198,26 @@ class DataApiServiceTest {
         verifyNoMoreInteractions(dataApi);
 
         StepVerifier.create(meteringDataSink.asFlux())
-                .then(dataApiService::close)
-                .expectComplete()
-                .verify(Duration.ofSeconds(2));
+                    .then(dataApiService::close)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(2));
     }
 
     @Test
     void fetchDataForPermissionRequest_dataApiReturnsUnexpectedError_doesNothing() {
         // Given
-        when(dataApi.getConsumptionKwh(any())).thenReturn(Mono.error(new RuntimeException(new RuntimeException("Unexpected error"))));
+        when(dataApi.getConsumptionKwh(any())).thenReturn(Mono.error(new RuntimeException(new RuntimeException(
+                "Unexpected error"))));
 
         LocalDate start = LocalDate.now(ZONE_ID_SPAIN);
         LocalDate end = start.plusDays(1);
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
         var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end);
 
-        var dataApiService = new DataApiService(dataApi, meteringDataSink, new DatadisFulfillmentService(), new LastPulledMeterReadingService());
+        var dataApiService = new DataApiService(dataApi,
+                                                meteringDataSink,
+                                                new DatadisFulfillmentService(),
+                                                new LastPulledMeterReadingService());
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
@@ -203,24 +227,33 @@ class DataApiServiceTest {
         verifyNoMoreInteractions(dataApi);
 
         StepVerifier.create(meteringDataSink.asFlux())
-                .then(dataApiService::close)
-                .expectComplete()
-                .verify(Duration.ofSeconds(2));
+                    .then(dataApiService::close)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(2));
     }
 
 
     @ParameterizedTest(name = "{2}")
     @MethodSource("variousTimeRanges")
-    void fetchDataForPermissionRequest_retries_withUpdatedMeteringDataRequest(LocalDate start, LocalDate end, String description) {
+    void fetchDataForPermissionRequest_retries_withUpdatedMeteringDataRequest(
+            LocalDate start,
+            LocalDate end,
+            String description
+    ) {
         // Given
-        when(dataApi.getConsumptionKwh(any())).thenReturn(Mono.error(new DatadisApiException("", HttpResponseStatus.TOO_MANY_REQUESTS, "")));
+        when(dataApi.getConsumptionKwh(any())).thenReturn(Mono.error(new DatadisApiException("",
+                                                                                             HttpResponseStatus.TOO_MANY_REQUESTS,
+                                                                                             "")));
 
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
 
         ArgumentCaptor<MeteringDataRequest> captor = ArgumentCaptor.forClass(MeteringDataRequest.class);
         var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end);
 
-        var dataApiService = new DataApiService(dataApi, meteringDataSink, new DatadisFulfillmentService(), new LastPulledMeterReadingService());
+        var dataApiService = new DataApiService(dataApi,
+                                                meteringDataSink,
+                                                new DatadisFulfillmentService(),
+                                                new LastPulledMeterReadingService());
         var now = LocalDate.now(ZONE_ID_SPAIN);
         var expectedNrOfRetries = ChronoUnit.MONTHS.between(now.minusMonths(MAXIMUM_MONTHS_IN_THE_PAST), start);
         // When
@@ -237,8 +270,8 @@ class DataApiServiceTest {
         verifyNoMoreInteractions(dataApi);
 
         StepVerifier.create(meteringDataSink.asFlux())
-                .then(dataApiService::close)
-                .expectComplete()
-                .verify(Duration.ofSeconds(2));
+                    .then(dataApiService::close)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(2));
     }
 }

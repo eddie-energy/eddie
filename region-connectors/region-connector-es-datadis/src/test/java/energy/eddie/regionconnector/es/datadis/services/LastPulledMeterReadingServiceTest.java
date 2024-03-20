@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -25,12 +25,15 @@ class LastPulledMeterReadingServiceTest {
                 "connectionId",
                 "dataNeedId",
                 "nif",
-                "meteringPointId",
-                start,
-                end,
-                Granularity.PT1H);
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
-        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
+                "meteringPointId");
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
+                                                                             permissionRequestForCreation,
+                                                                             start.toLocalDate(),
+                                                                             end.toLocalDate(),
+                                                                             Granularity.PT1H,
+                                                                             stateBuilderFactory);
+        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
+                                                         .build());
         return permissionRequest;
     }
 

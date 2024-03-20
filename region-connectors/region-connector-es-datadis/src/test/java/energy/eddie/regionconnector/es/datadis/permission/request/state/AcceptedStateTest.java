@@ -25,7 +25,10 @@ class AcceptedStateTest {
         ZonedDateTime end = start.plusDays(10);
         var permissionRequest = new DatadisPermissionRequest(
                 "pid",
-                new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, Granularity.PT15M),
+                new PermissionRequestForCreation("cid", "dnid", "nif", "mpid"),
+                start.toLocalDate(),
+                end.toLocalDate(),
+                Granularity.PT15M,
                 factory
         );
         AcceptedState state = new AcceptedState(permissionRequest, factory);
@@ -44,7 +47,10 @@ class AcceptedStateTest {
         ZonedDateTime end = start.plusDays(10);
         var permissionRequest = new DatadisPermissionRequest(
                 "pid",
-                new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, Granularity.PT15M),
+                new PermissionRequestForCreation("cid", "dnid", "nif", "mpid"),
+                start.toLocalDate(),
+                end.toLocalDate(),
+                Granularity.PT15M,
                 factory
         );
         AcceptedState state = new AcceptedState(permissionRequest, factory);
@@ -63,7 +69,10 @@ class AcceptedStateTest {
         ZonedDateTime end = start.plusDays(10);
         var permissionRequest = new DatadisPermissionRequest(
                 "pid",
-                new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, Granularity.PT15M),
+                new PermissionRequestForCreation("cid", "dnid", "nif", "mpid"),
+                start.toLocalDate(),
+                end.toLocalDate(),
+                Granularity.PT15M,
                 factory
         );
         AcceptedState state = new AcceptedState(permissionRequest, factory);
