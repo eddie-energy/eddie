@@ -4,13 +4,13 @@ import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 public class StartIsBeforeOrEqualEndValidator implements Validator<CreatedEvent> {
     @Override
     public List<AttributeError> validate(CreatedEvent value) {
-        ZonedDateTime dataTo = value.end();
+        LocalDate dataTo = value.end();
         if (dataTo == null || !dataTo.isBefore(value.start())) {
             return List.of();
         }

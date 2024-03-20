@@ -4,8 +4,8 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -23,7 +23,7 @@ class NotOlderThanValidatorTest {
                 "cid",
                 "dnid",
                 null,
-                ZonedDateTime.now(ZoneOffset.UTC).minusDays(15),
+                LocalDate.now(ZoneOffset.UTC).minusDays(15),
                 null,
                 "mpid",
                 Granularity.PT15M,
@@ -50,7 +50,7 @@ class NotOlderThanValidatorTest {
                 "cid",
                 "dnid",
                 null,
-                ZonedDateTime.now(ZoneOffset.UTC).minusDays(5),
+                LocalDate.now(ZoneOffset.UTC).minusDays(5),
                 null,
                 "mpid",
                 Granularity.PT15M,
@@ -74,7 +74,7 @@ class NotOlderThanValidatorTest {
                 "cid",
                 "dnid",
                 null,
-                ZonedDateTime.now(ZoneOffset.UTC).plusDays(15),
+                LocalDate.now(ZoneOffset.UTC).plusDays(15),
                 null,
                 "mpid",
                 Granularity.PT15M,
@@ -98,7 +98,7 @@ class NotOlderThanValidatorTest {
                 "cid",
                 "dnid",
                 null,
-                ZonedDateTime.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
                 null,
                 "mpid",
                 Granularity.PT15M,
