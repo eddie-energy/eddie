@@ -6,12 +6,12 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMod
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingAddress;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.EdaSchemaVersion;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import energy.eddie.regionconnector.at.eda.utils.CMRequestId;
-import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
 
@@ -124,7 +124,7 @@ public class CCMORequest {
                                            .withSender(toRoutingAddress(configuration.eligiblePartyId()))
                                            .withReceiver(toRoutingAddress(dsoIdAndMeteringPoint.dsoId()))
                         .withDocumentCreationDateTime(
-                                DateTimeConverter.dateTimeToXml(LocalDateTime.now(DateTimeConstants.AT_ZONE_ID))
+                                DateTimeConverter.dateTimeToXml(LocalDateTime.now(EdaRegionConnectorMetadata.AT_ZONE_ID))
                         )
                 );
     }
@@ -139,7 +139,7 @@ public class CCMORequest {
                 .withCMRequestId(cmRequestId())
                 .withMessageId(messageId)
                 .withConversationId(prefixedConversationId)
-                .withProcessDate(DateTimeConverter.dateToXml(LocalDate.now(DateTimeConstants.AT_ZONE_ID)))
+                .withProcessDate(DateTimeConverter.dateToXml(LocalDate.now(EdaRegionConnectorMetadata.AT_ZONE_ID)))
                 .withMeteringPoint(meteringPointId().orElse(null));
     }
 

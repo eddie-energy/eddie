@@ -3,9 +3,9 @@ package energy.eddie.regionconnector.at.eda.services;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.Energy;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
-import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,8 @@ public class PermissionRequestFulfillmentService {
     }
 
     private LocalDate getMeteringPeriodEndDate(Energy energy) {
-        return energy.getMeteringPeriodEnd().toGregorianCalendar().toZonedDateTime().withZoneSameLocal(DateTimeConstants.AT_ZONE_ID).toLocalDate();
+        return energy.getMeteringPeriodEnd().toGregorianCalendar().toZonedDateTime().withZoneSameLocal(
+                EdaRegionConnectorMetadata.AT_ZONE_ID).toLocalDate();
     }
 
     private void checkForFulfillment(IdentifiableConsumptionRecord identifiableConsumptionRecord) {

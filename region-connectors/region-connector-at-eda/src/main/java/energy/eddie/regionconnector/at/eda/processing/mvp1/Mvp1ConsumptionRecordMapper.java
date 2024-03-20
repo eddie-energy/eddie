@@ -2,9 +2,9 @@ package energy.eddie.regionconnector.at.eda.processing.mvp1;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import energy.eddie.api.v0.ConsumptionPoint;
+import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
-import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import energy.eddie.regionconnector.at.eda.utils.MeteringIntervalUtil;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +25,7 @@ public class Mvp1ConsumptionRecordMapper {
     private ZonedDateTime toZonedDateTime(XMLGregorianCalendar xmlGregorianCalendar) {
         // Convert XMLGregorianCalendar to GregorianCalendar
         GregorianCalendar gregorianCalendar = xmlGregorianCalendar.toGregorianCalendar();
-        return gregorianCalendar.toZonedDateTime().withZoneSameLocal(DateTimeConstants.AT_ZONE_ID);
+        return gregorianCalendar.toZonedDateTime().withZoneSameLocal(EdaRegionConnectorMetadata.AT_ZONE_ID);
     }
 
     /**

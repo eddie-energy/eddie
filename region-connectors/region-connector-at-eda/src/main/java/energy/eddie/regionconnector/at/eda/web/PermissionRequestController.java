@@ -2,6 +2,8 @@ package energy.eddie.regionconnector.at.eda.web;
 
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.services.ConnectionStatusService;
@@ -42,7 +44,7 @@ public class PermissionRequestController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedPermissionRequest> createPermissionRequest(
             @RequestBody @Valid PermissionRequestForCreation permissionRequestForCreation
-    ) throws ValidationException {
+    ) throws ValidationException, DataNeedNotFoundException, UnsupportedDataNeedException {
         LOGGER.info("Creating new permission request");
         var createdRequest = creationService.createAndValidatePermissionRequest(permissionRequestForCreation);
         var location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)

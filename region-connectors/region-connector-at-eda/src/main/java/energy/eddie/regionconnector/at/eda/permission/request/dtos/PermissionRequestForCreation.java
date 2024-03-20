@@ -1,13 +1,7 @@
 package energy.eddie.regionconnector.at.eda.permission.request.dtos;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.regionconnector.shared.utils.StartOfDayZonedDateTimeDeserializer;
-import energy.eddie.regionconnector.shared.validation.SupportedGranularities;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-
-import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.at.eda.requests.CCMORequest.DSO_ID_LENGTH;
 
@@ -28,12 +22,5 @@ public record PermissionRequestForCreation(
                 max = DSO_ID_LENGTH,
                 message = "needs to be exactly " + DSO_ID_LENGTH + " characters long"
         )
-        String dsoId,
-        @JsonDeserialize(using = StartOfDayZonedDateTimeDeserializer.class)
-        ZonedDateTime start,
-        @JsonDeserialize(using = StartOfDayZonedDateTimeDeserializer.class)
-        ZonedDateTime end,
-        @SupportedGranularities({Granularity.PT15M, Granularity.P1D})
-        Granularity granularity
-) {
-}
+        String dsoId
+) {}
