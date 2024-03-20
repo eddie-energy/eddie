@@ -8,8 +8,8 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissio
 import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
@@ -22,8 +22,8 @@ class FrEnedisAcceptedStateTest {
         var request = new EnedisPermissionRequest(
                 "cid",
                 "dnid",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                ZonedDateTime.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
                 Granularity.P1D,
                 factory);
         FrEnedisAcceptedState acceptedState = new FrEnedisAcceptedState(request, factory);
@@ -42,8 +42,8 @@ class FrEnedisAcceptedStateTest {
         var request = new EnedisPermissionRequest(
                 "cid",
                 "dnid",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                ZonedDateTime.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
                 Granularity.P1D,
                 factory);
         FrEnedisAcceptedState acceptedState = new FrEnedisAcceptedState(request, factory);
@@ -62,8 +62,8 @@ class FrEnedisAcceptedStateTest {
         var request = new EnedisPermissionRequest(
                 "cid",
                 "dnid",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                ZonedDateTime.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
                 Granularity.P1D,
                 factory);
         FrEnedisAcceptedState acceptedState = new FrEnedisAcceptedState(request, factory);

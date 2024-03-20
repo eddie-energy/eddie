@@ -12,7 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
@@ -28,8 +28,8 @@ class TimeoutServiceTest {
     @Test
     void testTimeoutPendingPermissionRequests_transitionsRequests() throws StateTransitionException {
         // Given
-        var start = ZonedDateTime.now(ZONE_ID_FR);
-        var end = ZonedDateTime.now(ZONE_ID_FR).plusDays(10);
+        var start = LocalDate.now(ZONE_ID_FR);
+        var end = LocalDate.now(ZONE_ID_FR).plusDays(10);
         EnedisConfiguration config = new PlainEnedisConfiguration("clientId", "clientSecret", "/path", 24);
         StateBuilderFactory factory = new StateBuilderFactory();
         EnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end,
@@ -51,8 +51,8 @@ class TimeoutServiceTest {
     @Test
     void testTimeoutPendingPermissionRequests_doesNotThrow() {
         // Given
-        var start = ZonedDateTime.now(ZONE_ID_FR);
-        var end = ZonedDateTime.now(ZONE_ID_FR).plusDays(10);
+        var start = LocalDate.now(ZONE_ID_FR);
+        var end = LocalDate.now(ZONE_ID_FR).plusDays(10);
         EnedisConfiguration config = new PlainEnedisConfiguration("clientId", "clientSecret", "/path", 24);
         StateBuilderFactory factory = new StateBuilderFactory();
         EnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end,
@@ -66,5 +66,4 @@ class TimeoutServiceTest {
         // Then
         assertDoesNotThrow(timeoutService::timeoutPendingPermissionRequests);
     }
-
 }

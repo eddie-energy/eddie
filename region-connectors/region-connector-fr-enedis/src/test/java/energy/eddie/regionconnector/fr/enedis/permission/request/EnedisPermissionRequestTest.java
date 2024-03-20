@@ -5,7 +5,7 @@ import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisMalformedState;
 import org.junit.jupiter.api.Test;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,8 +16,8 @@ class EnedisPermissionRequestTest {
         // Given
         String permissionId = "testPermissionId";
         String connectionId = "testConnectionId";
-        ZonedDateTime start = ZonedDateTime.now(ZONE_ID_FR);
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(ZONE_ID_FR);
+        LocalDate end = start.plusDays(1);
         StateBuilderFactory factory = new StateBuilderFactory();
 
         // When
@@ -32,8 +32,8 @@ class EnedisPermissionRequestTest {
         // Given
         String permissionId = "testPermissionId";
         String connectionId = "testConnectionId";
-        ZonedDateTime start = ZonedDateTime.now(ZONE_ID_FR);
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(ZONE_ID_FR);
+        LocalDate end = start.plusDays(1);
         StateBuilderFactory factory = new StateBuilderFactory();
 
         // When
@@ -47,8 +47,8 @@ class EnedisPermissionRequestTest {
     void constructorWithoutPermissionId_generatesPermissionId() {
         // Given
         String connectionId = "testConnectionId";
-        ZonedDateTime start = ZonedDateTime.now(ZONE_ID_FR);
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(ZONE_ID_FR);
+        LocalDate end = start.plusDays(1);
         StateBuilderFactory factory = new StateBuilderFactory();
 
         // When
@@ -63,31 +63,32 @@ class EnedisPermissionRequestTest {
         // Given
         String permissionId = "testPermissionId";
         String connectionId = "testConnectionId";
-        ZonedDateTime start = ZonedDateTime.now(ZONE_ID_FR);
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(ZONE_ID_FR);
+        LocalDate end = start.plusDays(1);
         StateBuilderFactory factory = new StateBuilderFactory();
 
         // When
         EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end, Granularity.P1D, factory);
 
         // Then
-        assertEquals(start, request.start());
+        assertEquals(start, request.start().toLocalDate());
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Test
     void constructorWithContextEnd_setsEnd() {
         // Given
         String permissionId = "testPermissionId";
         String connectionId = "testConnectionId";
-        ZonedDateTime start = ZonedDateTime.now(ZONE_ID_FR);
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(ZONE_ID_FR);
+        LocalDate end = start.plusDays(1);
         StateBuilderFactory factory = new StateBuilderFactory();
 
         // When
         EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end, Granularity.P1D, factory);
 
         // Then
-        assertEquals(end, request.end());
+        assertEquals(end, request.end().toLocalDate());
     }
 
     @Test
@@ -95,8 +96,8 @@ class EnedisPermissionRequestTest {
         // Given
         String permissionId = "testPermissionId";
         String connectionId = "testConnectionId";
-        ZonedDateTime start = ZonedDateTime.now(ZONE_ID_FR);
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(ZONE_ID_FR);
+        LocalDate end = start.plusDays(1);
         StateBuilderFactory factory = new StateBuilderFactory();
 
         // When
@@ -111,8 +112,8 @@ class EnedisPermissionRequestTest {
         // Given
         String permissionId = "testPermissionId";
         String connectionId = "testConnectionId";
-        ZonedDateTime start = ZonedDateTime.now(ZONE_ID_FR);
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(ZONE_ID_FR);
+        LocalDate end = start.plusDays(1);
         StateBuilderFactory factory = new StateBuilderFactory();
         EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end, Granularity.P1D, factory);
         PermissionRequestState newState = new FrEnedisMalformedState(request, null);
@@ -130,8 +131,8 @@ class EnedisPermissionRequestTest {
         // Given
         String permissionId = "testPermissionId";
         String connectionId = "testConnectionId";
-        ZonedDateTime start = ZonedDateTime.now(ZONE_ID_FR);
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(ZONE_ID_FR);
+        LocalDate end = start.plusDays(1);
         StateBuilderFactory factory = new StateBuilderFactory();
         EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end, Granularity.P1D, factory);
         String usagePointId = "testUsagePointId";
@@ -148,8 +149,8 @@ class EnedisPermissionRequestTest {
         // Given
         String permissionId = "testPermissionId";
         String connectionId = "testConnectionId";
-        ZonedDateTime start = ZonedDateTime.now(ZONE_ID_FR);
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(ZONE_ID_FR);
+        LocalDate end = start.plusDays(1);
         StateBuilderFactory factory = new StateBuilderFactory();
         EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end, Granularity.P1D, factory);
 

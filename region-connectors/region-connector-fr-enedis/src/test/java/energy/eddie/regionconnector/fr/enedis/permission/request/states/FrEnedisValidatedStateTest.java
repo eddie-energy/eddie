@@ -6,8 +6,8 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFac
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -15,7 +15,7 @@ class FrEnedisValidatedStateTest {
     @Test
     void sendToPermissionAdministrator_transitionsStatePendingAcknowledgmentState() {
         // Given
-        ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
+        LocalDate now = LocalDate.now(ZoneId.systemDefault());
         StateBuilderFactory factory = new StateBuilderFactory();
         FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("pid", "cid", "dnid", now, now.plusDays(1), Granularity.P1D, factory);
         FrEnedisValidatedState state = new FrEnedisValidatedState(permissionRequest, factory);

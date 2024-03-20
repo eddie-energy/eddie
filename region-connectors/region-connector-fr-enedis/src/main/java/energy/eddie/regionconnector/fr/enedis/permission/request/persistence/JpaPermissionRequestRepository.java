@@ -9,13 +9,14 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 /**
- * Should only be used by {@link EnedisPermissionRequestRepository}. Other classes should use {@link EnedisPermissionRequestRepository}.
+ * Should only be used by {@link EnedisPermissionRequestRepository}. Other classes should use
+ * {@link EnedisPermissionRequestRepository}.
  */
 public interface JpaPermissionRequestRepository extends JpaRepository<EnedisPermissionRequest, String> {
     List<EnedisPermissionRequest> findAllByStatusIs(PermissionProcessStatus status);
 
     @Query(
-            value = "select permission_id, connection_id, start_timestamp, end_timestamp, data_need_id, status, granularity, usage_point_id, latest_meter_reading, created from fr_enedis.enedis_permission_request where status = 'PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT' and created <= NOW() - :hours * INTERVAL '1 hour'",
+            value = "SELECT permission_id, connection_id, start_date, end_date, data_need_id, status, granularity, usage_point_id, latest_meter_reading, created FROM fr_enedis.enedis_permission_request WHERE status = 'PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT' AND created <= NOW() - :hours * INTERVAL '1 hour'",
             nativeQuery = true
     )
     List<EnedisPermissionRequest> findTimedOutPermissionRequests(@Param("hours") int timeoutDuration);
