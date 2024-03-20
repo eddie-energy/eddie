@@ -30,7 +30,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -94,13 +93,15 @@ class PermissionRequestServiceTest {
         var dataNeedId = "luu";
         var nif = "muh";
         var meteringPointId = "kuh";
-        var now = ZonedDateTime.now(ZONE_ID_SPAIN);
+        var now = LocalDate.now(ZONE_ID_SPAIN);
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId
         );
-        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation,
-                                                             requestDataFrom.toLocalDate(), requestDataTo.toLocalDate(),
+        var permissionRequest = new DatadisPermissionRequest(permissionId,
+                                                             requestForCreation,
+                                                             requestDataFrom,
+                                                             requestDataTo,
                                                              Granularity.PT15M,
                                                              new StateBuilderFactory(mock(AuthorizationApi.class)));
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
@@ -153,7 +154,10 @@ class PermissionRequestServiceTest {
         when(permissionRequest.permissionId()).thenReturn(permissionId);
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
         when(factory.create(permissionRequest)).thenReturn(permissionRequest);
-        when(supplyApiService.fetchSupplyForPermissionRequest(permissionRequest)).thenReturn(Mono.error(new DatadisApiException("", HttpResponseStatus.FORBIDDEN, "")));
+        when(supplyApiService.fetchSupplyForPermissionRequest(permissionRequest)).thenReturn(Mono.error(new DatadisApiException(
+                "",
+                HttpResponseStatus.FORBIDDEN,
+                "")));
 
         // When
         assertDoesNotThrow(() -> service.acceptPermission(permissionId));

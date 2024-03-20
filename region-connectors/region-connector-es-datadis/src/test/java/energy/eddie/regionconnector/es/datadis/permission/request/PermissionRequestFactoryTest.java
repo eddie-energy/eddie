@@ -49,9 +49,7 @@ class PermissionRequestFactoryTest {
         LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
         LocalDate requestDataFrom = now.minusDays(10);
         LocalDate requestDataTo = now.minusDays(5);
-        var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif,
-                                                                  meteringPointId
-        );
+        var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId);
 
         // When
         EsPermissionRequest createdRequest = factory.create(requestForCreation,
@@ -81,8 +79,8 @@ class PermissionRequestFactoryTest {
         var factory = new PermissionRequestFactory(Sinks.many().multicast().onBackpressureBuffer(), Set.of(),
                                                    new StateBuilderFactory(authorizationApi));
         StepVerifier stepVerifier = StepVerifier.create(factory.getConnectionStatusMessageStream())
-                .expectComplete()
-                .verifyLater();
+                                                .expectComplete()
+                                                .verifyLater();
 
         // When
         factory.close();

@@ -6,7 +6,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
+
 
 @Service
 public class HistoricalDataService {
@@ -26,9 +27,9 @@ public class HistoricalDataService {
             return;
         }
 
-        LocalDate end = Optional.ofNullable(permissionRequest.end())
-                .filter(permissionRequestEnd -> !permissionRequestEnd.isAfter(now))
-                .orElse(now.minusDays(1));
+        LocalDate end = Optional.of(permissionRequest.end())
+                                .filter(permissionRequestEnd -> !permissionRequestEnd.isAfter(now))
+                                .orElse(now.minusDays(1));
 
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
     }

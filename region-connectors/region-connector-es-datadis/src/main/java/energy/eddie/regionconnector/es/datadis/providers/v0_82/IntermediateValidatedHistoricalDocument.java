@@ -19,7 +19,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
+
 
 public final class IntermediateValidatedHistoricalDocument {
     private static final TimeSeriesComplexType.ReasonList REASON_LIST = new TimeSeriesComplexType.ReasonList()
@@ -38,26 +39,14 @@ public final class IntermediateValidatedHistoricalDocument {
     private final DatadisConfig datadisConfig;
     private final IdentifiableMeteringData identifiableMeteringData;
 
-    IntermediateValidatedHistoricalDocument(IdentifiableMeteringData identifiableMeteringData,
-                                            CommonInformationModelConfiguration cimConfig,
-                                            DatadisConfig datadisConfig) {
+    IntermediateValidatedHistoricalDocument(
+            IdentifiableMeteringData identifiableMeteringData,
+            CommonInformationModelConfiguration cimConfig,
+            DatadisConfig datadisConfig
+    ) {
         this.identifiableMeteringData = identifiableMeteringData;
         this.cimConfig = cimConfig;
         this.datadisConfig = datadisConfig;
-    }
-
-    /**
-     * Maps the metering data obtain method to a {@link QualityTypeList}.
-     *
-     * @param meteringData the metering data
-     * @return {@link QualityTypeList#ESTIMATED} if the obtain method is "Estimada", otherwise {@link QualityTypeList#AS_PROVIDED}
-     */
-    private static QualityTypeList qualityTypeList(MeteringData meteringData) {
-        return switch (meteringData.obtainMethod()) {
-            case ESTIMATED -> QualityTypeList.ESTIMATED;
-            case REAL -> QualityTypeList.AS_PROVIDED;
-            case UNKNOWN -> QualityTypeList.NOT_AVAILABLE;
-        };
     }
 
     public EddieValidatedHistoricalDataMarketDocument eddieValidatedHistoricalDataMarketDocument() {
@@ -71,7 +60,10 @@ public final class IntermediateValidatedHistoricalDocument {
                 .withSenderMarketParticipantMRID(
                         new PartyIDStringComplexType()
                                 .withCodingScheme(CodingSchemeTypeList.SPAIN_NATIONAL_CODING_SCHEME)
-                                .withValue(identifiableMeteringData.permissionRequest().distributorCode().map(DistributorCode::name).orElse("Datadis"))
+                                .withValue(identifiableMeteringData.permissionRequest()
+                                                                   .distributorCode()
+                                                                   .map(DistributorCode::name)
+                                                                   .orElse("Datadis"))
                 )
                 .withCreatedDateTime(EsmpDateTime.now().toString())
                 .withReceiverMarketParticipantMRID(
@@ -141,13 +133,28 @@ public final class IntermediateValidatedHistoricalDocument {
                     case MeasurementType.HOURLY -> Granularity.PT1H.name();
                 })
                 .withTimeInterval(new ESMPDateTimeIntervalComplexType()
-                        .withStart(timeInterval.start())
-                        .withEnd(timeInterval.end())
+                                          .withStart(timeInterval.start())
+                                          .withEnd(timeInterval.end())
                 )
                 .withPointList(
                         new SeriesPeriodComplexType.PointList()
                                 .withPoints(consumptionPoints)
                 );
         return new ArrayList<>(List.of(seriesPeriod));
+    }
+
+    /**
+     * Maps the metering data obtain method to a {@link QualityTypeList}.
+     *
+     * @param meteringData the metering data
+     * @return {@link QualityTypeList#ESTIMATED} if the obtain method is "Estimada", otherwise
+     * {@link QualityTypeList#AS_PROVIDED}
+     */
+    private static QualityTypeList qualityTypeList(MeteringData meteringData) {
+        return switch (meteringData.obtainMethod()) {
+            case ESTIMATED -> QualityTypeList.ESTIMATED;
+            case REAL -> QualityTypeList.AS_PROVIDED;
+            case UNKNOWN -> QualityTypeList.NOT_AVAILABLE;
+        };
     }
 }

@@ -14,7 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,23 +22,7 @@ import static org.mockito.Mockito.mock;
 
 @ExtendWith({MockitoExtension.class})
 class PendingAcknowledgementStateTest {
-    StateBuilderFactory factory = new StateBuilderFactory(mock(AuthorizationApi.class));
-
-    private DatadisPermissionRequest makePendingPermissionRequest(AuthorizationRequestResponse response) {
-        var now = ZonedDateTime.now(ZONE_ID_SPAIN);
-        var requestDataFrom = now.minusDays(10);
-        var requestDataTo = now.minusDays(5);
-
-        var requestForCreation = new PermissionRequestForCreation("bar", "luu", "muh", "kuh");
-        var permissionRequest = new DatadisPermissionRequest("SomeId",
-                                                             requestForCreation,
-                                                             requestDataFrom.toLocalDate(),
-                                                             requestDataTo.toLocalDate(),
-                                                             Granularity.PT15M, factory);
-        var pendingAcknowledgementState = new PendingAcknowledgementState(permissionRequest, response, factory);
-        permissionRequest.changeState(pendingAcknowledgementState);
-        return permissionRequest;
-    }
+    final StateBuilderFactory factory = new StateBuilderFactory(mock(AuthorizationApi.class));
 
     @Test
     void receivedPermissionAdministratorResponse_withOkResponse_changesStateToSentToPA() throws StateTransitionException {
@@ -46,6 +30,22 @@ class PendingAcknowledgementStateTest {
 
         permissionRequest.receivedPermissionAdministratorResponse();
         assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, permissionRequest.state().status());
+    }
+
+    private DatadisPermissionRequest makePendingPermissionRequest(AuthorizationRequestResponse response) {
+        var now = LocalDate.now(ZONE_ID_SPAIN);
+        var requestDataFrom = now.minusDays(10);
+        var requestDataTo = now.minusDays(5);
+
+        var requestForCreation = new PermissionRequestForCreation("bar", "luu", "muh", "kuh");
+        var permissionRequest = new DatadisPermissionRequest("SomeId",
+                                                             requestForCreation,
+                                                             requestDataFrom,
+                                                             requestDataTo,
+                                                             Granularity.PT15M, factory);
+        var pendingAcknowledgementState = new PendingAcknowledgementState(permissionRequest, response, factory);
+        permissionRequest.changeState(pendingAcknowledgementState);
+        return permissionRequest;
     }
 
     @ParameterizedTest

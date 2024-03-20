@@ -12,7 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,18 +24,13 @@ class SentToPermissionAdministratorStateTest {
     private AuthorizationApi authorizationApi;
     private final StateBuilderFactory factory = new StateBuilderFactory(authorizationApi);
 
-    private DatadisPermissionRequest makePermissionRequest() {
-        var now = ZonedDateTime.now(ZONE_ID_SPAIN);
-        var requestDataFrom = now.minusDays(10);
-        var requestDataTo = now.minusDays(5);
+    @Test
+    void creatingState_withOkResponse_doesNotChangeState() {
+        var permissionRequest = makeSentPermissionRequest();
 
-        var requestForCreation = new PermissionRequestForCreation("bar", "luu", "muh", "kuh");
-        return new DatadisPermissionRequest("SomeId",
-                                            requestForCreation,
-                                            requestDataFrom.toLocalDate(),
-                                            requestDataTo.toLocalDate(),
-                                            Granularity.PT15M,
-                                            factory);
+        new SentToPermissionAdministratorState(permissionRequest, factory);
+
+        assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, permissionRequest.state().status());
     }
 
     private DatadisPermissionRequest makeSentPermissionRequest() {
@@ -44,13 +39,18 @@ class SentToPermissionAdministratorStateTest {
         return permissionRequest;
     }
 
-    @Test
-    void creatingState_withOkResponse_doesNotChangeState() {
-        var permissionRequest = makeSentPermissionRequest();
+    private DatadisPermissionRequest makePermissionRequest() {
+        var now = LocalDate.now(ZONE_ID_SPAIN);
+        var requestDataFrom = now.minusDays(10);
+        var requestDataTo = now.minusDays(5);
 
-        new SentToPermissionAdministratorState(permissionRequest, factory);
-
-        assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, permissionRequest.state().status());
+        var requestForCreation = new PermissionRequestForCreation("bar", "luu", "muh", "kuh");
+        return new DatadisPermissionRequest("SomeId",
+                                            requestForCreation,
+                                            requestDataFrom,
+                                            requestDataTo,
+                                            Granularity.PT15M,
+                                            factory);
     }
 
     @Test

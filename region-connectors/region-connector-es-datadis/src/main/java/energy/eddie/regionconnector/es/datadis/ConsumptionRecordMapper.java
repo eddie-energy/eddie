@@ -9,7 +9,8 @@ import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
+
 
 public class ConsumptionRecordMapper {
     public static final int CONVERSION_FACTOR = 1000;
@@ -17,7 +18,13 @@ public class ConsumptionRecordMapper {
     private ConsumptionRecordMapper() {
     }
 
-    public static ConsumptionRecord mapToMvp1ConsumptionRecord(IntermediateMeteringData meteringData, @Nullable String permissionId, @Nullable String connectionId, MeasurementType measurementType, @Nullable String dataNeedId) {
+    public static ConsumptionRecord mapToMvp1ConsumptionRecord(
+            IntermediateMeteringData meteringData,
+            @Nullable String permissionId,
+            @Nullable String connectionId,
+            MeasurementType measurementType,
+            @Nullable String dataNeedId
+    ) {
         ConsumptionRecord consumptionRecord = new ConsumptionRecord();
         consumptionRecord.setPermissionId(permissionId);
         consumptionRecord.setConnectionId(connectionId);
