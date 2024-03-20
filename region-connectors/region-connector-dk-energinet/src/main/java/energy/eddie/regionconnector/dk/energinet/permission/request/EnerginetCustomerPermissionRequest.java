@@ -12,23 +12,22 @@ import jakarta.persistence.*;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static java.util.Objects.requireNonNull;
 
 @Entity
-@Table(schema = "dk_energinet")
+@Table(schema = "dk_energinet", name = "energinet_customer_permission_request")
 public class EnerginetCustomerPermissionRequest extends TimestampedPermissionRequest implements DkEnerginetCustomerPermissionRequest {
     private static final EnerginetDataSourceInformation dataSourceInformation = new EnerginetDataSourceInformation();
     @Id
     private String permissionId;
     private String connectionId;
-    @Column(name = "start_timestamp")
-    private ZonedDateTime start;
-    @Column(name = "end_timestamp")
-    private ZonedDateTime end;
+    @Column(name = "start_date")
+    private LocalDate start;
+    @Column(name = "end_date")
+    private LocalDate end;
     @Transient
     private ApiCredentials credentials;
     private String meteringPoint;
@@ -37,7 +36,7 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
     private Granularity granularity;
     @Transient
     private PermissionRequestState state;
-    private ZonedDateTime lastPolled;
+    private LocalDate lastPolled;
     @Column(columnDefinition = "TEXT")
     private String refreshToken;
     @Enumerated(EnumType.STRING)
@@ -69,8 +68,8 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
         this.meteringPoint = requireNonNull(request.meteringPoint());
         this.dataNeedId = requireNonNull(request.dataNeedId());
         this.refreshToken = request.refreshToken();
-        this.start = ZonedDateTime.of(start, LocalTime.MIN, DK_ZONE_ID);
-        this.end = ZonedDateTime.of(end, LocalTime.MIN, DK_ZONE_ID);
+        this.start = start;
+        this.end = end;
         this.granularity = granularity;
 
         this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
@@ -130,12 +129,12 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
 
     @Override
     public ZonedDateTime start() {
-        return start;
+        return start.atStartOfDay(DK_ZONE_ID);
     }
 
     @Override
     public ZonedDateTime end() {
-        return end;
+        return end.atStartOfDay(DK_ZONE_ID);
     }
 
     @Override
@@ -154,12 +153,12 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
     }
 
     @Override
-    public ZonedDateTime lastPolled() {
+    public LocalDate lastPolled() {
         return lastPolled;
     }
 
     @Override
-    public void updateLastPolled(ZonedDateTime lastPolled) {
+    public void updateLastPolled(LocalDate lastPolled) {
         this.lastPolled = lastPolled;
     }
 }

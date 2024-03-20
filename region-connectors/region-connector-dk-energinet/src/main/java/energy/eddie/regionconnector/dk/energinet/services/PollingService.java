@@ -46,8 +46,8 @@ public class PollingService implements AutoCloseable {
     }
 
     private static boolean isActiveAndNeedsToBePolled(DkEnerginetCustomerPermissionRequest permissionRequest, LocalDate today) {
-        LocalDate permissionStart = permissionRequest.start().withZoneSameInstant(DK_ZONE_ID).toLocalDate();
-        var lastPolled = permissionRequest.lastPolled().withZoneSameInstant(DK_ZONE_ID).toLocalDate();
+        LocalDate permissionStart = permissionRequest.start().toLocalDate();
+        var lastPolled = permissionRequest.lastPolled();
         return permissionStart.isBefore(today)
                 && (lastPolled.isBefore(today) || lastPolled.isEqual(today));
     }
@@ -96,7 +96,7 @@ public class PollingService implements AutoCloseable {
         meteringPoints.addMeteringPointItem(permissionRequest.meteringPoint());
         MeteringPointsRequest meteringPointsRequest = new MeteringPointsRequest().meteringPoints(meteringPoints);
 
-        LocalDate dateFrom = permissionRequest.lastPolled().withZoneSameInstant(DK_ZONE_ID).toLocalDate();
+        LocalDate dateFrom = permissionRequest.lastPolled();
         LocalDate dateTo = Optional.ofNullable(permissionRequest.end())
                 .map(end -> end.withZoneSameInstant(DK_ZONE_ID))
                 .map(ZonedDateTime::toLocalDate)
