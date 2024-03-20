@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
 
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 import static org.junit.jupiter.api.Assertions.*;
 
 class EnedisPermissionRequestTest {

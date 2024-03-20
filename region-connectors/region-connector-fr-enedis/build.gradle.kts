@@ -21,6 +21,7 @@ repositories {
 
 dependencies {
     implementation(project(":api"))
+    implementation(project(":data-needs"))
     implementation(project(":region-connectors:shared"))
 
     implementation(libs.spring.boot.starter.web)
