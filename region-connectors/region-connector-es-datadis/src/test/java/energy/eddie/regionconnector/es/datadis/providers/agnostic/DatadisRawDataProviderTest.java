@@ -12,10 +12,10 @@ import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
 import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 
 class DatadisRawDataProviderTest {
     @Test
@@ -54,11 +54,14 @@ class DatadisRawDataProviderTest {
                 "connectionId",
                 "dataNeedId",
                 "nif",
-                "meteringPointId",
-                ZonedDateTime.now(ZONE_ID_SPAIN),
-                ZonedDateTime.now(ZONE_ID_SPAIN).plusDays(1),
-                Granularity.PT1H);
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
+                "meteringPointId"
+        );
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
+                                                                             permissionRequestForCreation,
+                                                                             LocalDate.now(ZONE_ID_SPAIN),
+                                                                             LocalDate.now(ZONE_ID_SPAIN).plusDays(1),
+                                                                             Granularity.PT15M,
+                                                                             stateBuilderFactory);
         permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
 
         return new IdentifiableMeteringData(permissionRequest, new IntermediateMeteringData(List.of(), permissionRequest.start(), permissionRequest.end()));

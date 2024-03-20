@@ -4,6 +4,12 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
@@ -28,7 +34,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -42,6 +48,12 @@ class PermissionRequestServiceTest {
     private SupplyApiService supplyApiService;
     @Mock
     private PermissionRequestConsumer permissionRequestConsumer;
+    @Mock
+    private DataNeedsService dataNeedsService;
+    @Mock
+    private ValidatedHistoricalDataDataNeed validatedHistoricalDataDataNeed;
+    @Mock
+    private AiidaDataNeed aiidaDataNeed;
     @InjectMocks
     private PermissionRequestService service;
 
@@ -85,9 +97,12 @@ class PermissionRequestServiceTest {
         var now = ZonedDateTime.now(ZONE_ID_SPAIN);
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
-        var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
-                requestDataFrom, requestDataTo, Granularity.PT15M);
-        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, new StateBuilderFactory(mock(AuthorizationApi.class)));
+        var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId
+        );
+        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation,
+                                                             requestDataFrom.toLocalDate(), requestDataTo.toLocalDate(),
+                                                             Granularity.PT15M,
+                                                             new StateBuilderFactory(mock(AuthorizationApi.class)));
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
 
         // When
@@ -175,11 +190,17 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void createAndSendPermissionRequest_callsValidateAndSendToPaAndReceivedPaResponse() throws StateTransitionException {
+    void createAndSendPermissionRequest_callsValidateAndSendToPaAndReceivedPaResponse() throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
         var mockCreationRequest = mock(PermissionRequestForCreation.class);
         var mockPermissionRequest = mock(EsPermissionRequest.class);
-        when(factory.create(any(PermissionRequestForCreation.class))).thenReturn(mockPermissionRequest);
+        when(factory.create(any(PermissionRequestForCreation.class), any(), any(), any())).thenReturn(
+                mockPermissionRequest);
+        when(validatedHistoricalDataDataNeed.minGranularity()).thenReturn(Granularity.PT15M);
+        when(validatedHistoricalDataDataNeed.maxGranularity()).thenReturn(Granularity.PT1H);
+        when(dataNeedsService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any()))
+                .thenReturn(new DataNeedWrapper(validatedHistoricalDataDataNeed, LocalDate.now(ZONE_ID_SPAIN),
+                                                LocalDate.now(ZONE_ID_SPAIN)));
 
         // When
         service.createAndSendPermissionRequest(mockCreationRequest);
@@ -188,7 +209,39 @@ class PermissionRequestServiceTest {
         verify(mockPermissionRequest).validate();
         verify(mockPermissionRequest).sendToPermissionAdministrator();
         verify(mockPermissionRequest).receivedPermissionAdministratorResponse();
+        verify(dataNeedsService).findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any());
         verifyNoMoreInteractions(mockPermissionRequest);
+    }
+
+    @Test
+    void createAndSendPermissionRequest_withUnsupportedGranularities_throws() throws DataNeedNotFoundException {
+        // Given
+        var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
+        when(validatedHistoricalDataDataNeed.minGranularity()).thenReturn(Granularity.PT5M);
+        when(validatedHistoricalDataDataNeed.maxGranularity()).thenReturn(Granularity.PT5M);
+        when(dataNeedsService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any()))
+                .thenReturn(new DataNeedWrapper(validatedHistoricalDataDataNeed, LocalDate.now(ZONE_ID_SPAIN),
+                                                LocalDate.now(ZONE_ID_SPAIN)));
+
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> service.createAndSendPermissionRequest(mockCreationRequest));
+    }
+
+    @Test
+    void createAndSendPermissionRequest_withInvalidDataNeed_throws() throws DataNeedNotFoundException {
+        // Given
+        var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
+        when(dataNeedsService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any()))
+                .thenReturn(
+                        new DataNeedWrapper(aiidaDataNeed, LocalDate.now(ZONE_ID_SPAIN), LocalDate.now(ZONE_ID_SPAIN)));
+
+        // When
+
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> service.createAndSendPermissionRequest(mockCreationRequest));
     }
 
     @Test

@@ -18,7 +18,7 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.mockito.Mockito.*;
 
 class IdentifiableMeteringDataServiceTest {
@@ -31,11 +31,14 @@ class IdentifiableMeteringDataServiceTest {
                 "connectionId",
                 "dataNeedId",
                 "nif",
-                "meteringPointId",
-                start,
-                end,
-                Granularity.PT1H);
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
+                "meteringPointId"
+        );
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
+                                                                             permissionRequestForCreation,
+                                                                             start.toLocalDate(),
+                                                                             end.toLocalDate(),
+                                                                             Granularity.PT15M,
+                                                                             stateBuilderFactory);
         permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
         return permissionRequest;
     }
@@ -49,8 +52,7 @@ class IdentifiableMeteringDataServiceTest {
 
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
-        //noinspection unused
-        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(testPublisher.flux());
+        new IdentifiableMeteringDataService(testPublisher.flux());
 
         // When
         StepVerifier.create(testPublisher)
@@ -72,8 +74,7 @@ class IdentifiableMeteringDataServiceTest {
         ZonedDateTime end = ZonedDateTime.of(today.toLocalDate(), LocalTime.MIN, ZONE_ID_SPAIN);
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
-        //noinspection unused
-        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(testPublisher.flux());
+        new IdentifiableMeteringDataService(testPublisher.flux());
 
         // When
         StepVerifier.create(testPublisher)
@@ -95,8 +96,7 @@ class IdentifiableMeteringDataServiceTest {
         ZonedDateTime end = ZonedDateTime.of(today.toLocalDate(), LocalTime.MIN, ZONE_ID_SPAIN);
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
-        //noinspection unused
-        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(testPublisher.flux());
+        new IdentifiableMeteringDataService(testPublisher.flux());
 
         // When
         StepVerifier.create(testPublisher)
@@ -110,15 +110,14 @@ class IdentifiableMeteringDataServiceTest {
     @Test
     void ifMeteringDataDateBeforePermissionEndDate_doesNotCallFulfill() throws StateTransitionException {
         // Given
-        EsPermissionRequest permissionRequest = acceptedPermissionRequest(today.minusDays(2), today.minusDays(1));
+        EsPermissionRequest permissionRequest = acceptedPermissionRequest(today.minusDays(2), today);
         EsPermissionRequest spy = spy(permissionRequest);
 
         ZonedDateTime start = today.minusDays(2);
         ZonedDateTime end = today.minusDays(1);
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
-        //noinspection unused
-        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(testPublisher.flux());
+        new IdentifiableMeteringDataService(testPublisher.flux());
 
         // When
         StepVerifier.create(testPublisher)
@@ -136,8 +135,7 @@ class IdentifiableMeteringDataServiceTest {
         EsPermissionRequest spy = spy(permissionRequest);
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
-        //noinspection unused
-        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(testPublisher.flux());
+        new IdentifiableMeteringDataService(testPublisher.flux());
 
         // When
         StepVerifier.create(testPublisher)
@@ -160,8 +158,7 @@ class IdentifiableMeteringDataServiceTest {
 
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
-        //noinspection unused
-        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(testPublisher.flux());
+        new IdentifiableMeteringDataService(testPublisher.flux());
 
         // When
         StepVerifier.create(testPublisher)

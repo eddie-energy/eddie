@@ -13,8 +13,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.MAXIMUM_MONTHS_IN_THE_PAST;
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.MAXIMUM_MONTHS_IN_THE_PAST;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -53,9 +53,14 @@ class CreatedStateTest {
         var dataNeedId = "luu";
         var nif = "muh";
         var meteringPointId = "kuh";
-        var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
-                requestDataFrom, requestDataTo, Granularity.PT15M);
-        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
+        var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId
+        );
+        var permissionRequest = new DatadisPermissionRequest(permissionId,
+                                                             requestForCreation,
+                                                             requestDataFrom.toLocalDate(),
+                                                             requestDataTo.toLocalDate(),
+                                                             Granularity.PT15M,
+                                                             factory);
 
         CreatedState createdState = new CreatedState(permissionRequest, factory);
 
@@ -77,9 +82,14 @@ class CreatedStateTest {
         var nif = "muh";
         var meteringPointId = "kuh";
 
-        var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
-                requestDataFrom, requestDataTo, Granularity.PT15M);
-        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
+        var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId
+        );
+        var permissionRequest = new DatadisPermissionRequest(permissionId,
+                                                             requestForCreation,
+                                                             requestDataFrom.toLocalDate(),
+                                                             requestDataTo.toLocalDate(),
+                                                             Granularity.PT15M,
+                                                             factory);
         CreatedState createdState = new CreatedState(permissionRequest, factory);
 
         // When

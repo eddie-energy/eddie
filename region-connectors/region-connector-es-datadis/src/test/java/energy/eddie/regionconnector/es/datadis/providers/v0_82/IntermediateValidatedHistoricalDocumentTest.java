@@ -31,11 +31,16 @@ class IntermediateValidatedHistoricalDocumentTest {
                 "connectionId",
                 "dataNeedId",
                 "nif",
-                "meteringPointId",
-                intermediateMeteringData.start(),
-                intermediateMeteringData.end(),
-                Granularity.PT1H);
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
+                "meteringPointId"
+        );
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
+                                                                             permissionRequestForCreation,
+                                                                             intermediateMeteringData.start()
+                                                                                     .toLocalDate(),
+                                                                             intermediateMeteringData.end()
+                                                                                     .toLocalDate(),
+                                                                             Granularity.PT1H,
+                                                                             stateBuilderFactory);
         permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
         permissionRequest.setDistributorCodeAndPointType(DistributorCode.ASEME, 1);
         return new IdentifiableMeteringData(permissionRequest, intermediateMeteringData);

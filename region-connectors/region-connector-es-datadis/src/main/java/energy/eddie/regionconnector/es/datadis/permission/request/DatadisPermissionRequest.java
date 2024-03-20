@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.permission.request;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.DataSourceInformation;
@@ -11,16 +12,18 @@ import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermis
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.MAXIMUM_MONTHS_IN_THE_FUTURE;
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static java.util.Objects.requireNonNull;
 
 @Entity
 @Table(schema = "es_datadis")
 public class DatadisPermissionRequest extends TimestampedPermissionRequest implements EsPermissionRequest {
+    @Transient
+    private final DatadisDataSourceInformation dataSourceInformation = new DatadisDataSourceInformation(this);
     @Id
     private String permissionId;
     private String connectionId;
@@ -33,8 +36,6 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     @Enumerated(EnumType.STRING)
     private MeasurementType measurementType;
     private String dataNeedId;
-    @Transient
-    private final DatadisDataSourceInformation dataSourceInformation = new DatadisDataSourceInformation(this);
     @Transient
     private PermissionRequestState state;
     @Nullable
@@ -58,6 +59,9 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     public DatadisPermissionRequest(
             String permissionId,
             PermissionRequestForCreation requestForCreation,
+            LocalDate start,
+            LocalDate end,
+            Granularity granularity,
             StateBuilderFactory factory
     ) {
         super(ZONE_ID_SPAIN);
@@ -70,16 +74,13 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
         this.dataNeedId = requestForCreation.dataNeedId();
         this.nif = requestForCreation.nif();
         this.meteringPointId = requestForCreation.meteringPointId();
-        this.measurementType = switch (requestForCreation.granularity()) {
+        this.measurementType = switch (granularity) {
             case PT15M -> MeasurementType.QUARTER_HOURLY;
             case PT1H -> MeasurementType.HOURLY;
-            default ->
-                    throw new IllegalArgumentException("Unsupported granularity: " + requestForCreation.granularity());
+            default -> throw new IllegalArgumentException("Unsupported granularity: " + granularity);
         };
-        this.requestDataFrom = requestForCreation.requestDataFrom().withZoneSameLocal(ZONE_ID_SPAIN);
-        this.requestDataTo = Optional.ofNullable(requestForCreation.requestDataTo())
-                .map(toDate -> toDate.withZoneSameLocal(ZONE_ID_SPAIN).plusDays(1))
-                .orElse(requestDataFrom.plusMonths(MAXIMUM_MONTHS_IN_THE_FUTURE));
+        this.requestDataFrom = start.atStartOfDay(ZONE_ID_SPAIN);
+        this.requestDataTo = end.atStartOfDay(ZONE_ID_SPAIN);
 
         this.permissionStart = ZonedDateTime.now(ZONE_ID_SPAIN);
         this.permissionEnd = latest(permissionStart, requestDataTo);

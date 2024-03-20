@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.mockito.Mockito.*;
 
 class HistoricalDataServiceTest {

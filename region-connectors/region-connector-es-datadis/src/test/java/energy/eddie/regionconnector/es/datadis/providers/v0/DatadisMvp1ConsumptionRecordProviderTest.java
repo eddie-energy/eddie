@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -55,11 +55,14 @@ class DatadisMvp1ConsumptionRecordProviderTest {
                 "connectionId",
                 "dataNeedId",
                 "nif",
-                "meteringPointId",
-                today,
-                end,
-                Granularity.PT1H);
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
+                "meteringPointId"
+        );
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
+                                                                             permissionRequestForCreation,
+                                                                             today.toLocalDate(),
+                                                                             end.toLocalDate(),
+                                                                             Granularity.PT1H,
+                                                                             stateBuilderFactory);
         permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
 
         var meteringData = new MeteringData("CUPS", end.toLocalDate().plusDays(1).format(DateTimeFormatter.ofPattern("yyyy/MM/dd")), "00:00", 123.123, ObtainMethod.REAL, 0);
