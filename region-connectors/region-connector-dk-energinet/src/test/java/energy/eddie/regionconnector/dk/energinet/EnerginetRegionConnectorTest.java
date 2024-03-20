@@ -18,7 +18,6 @@ import reactor.core.publisher.Mono;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 
@@ -103,8 +102,8 @@ class EnerginetRegionConnectorTest {
                 "pid",
                 "cid",
                 "dataNeedId",
-                ZonedDateTime.now(Clock.systemUTC()),
-                ZonedDateTime.now(Clock.systemUTC()),
+                LocalDate.now(Clock.systemUTC()),
+                LocalDate.now(Clock.systemUTC()),
                 new EnerginetCustomerInvalidState(null)
         );
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);

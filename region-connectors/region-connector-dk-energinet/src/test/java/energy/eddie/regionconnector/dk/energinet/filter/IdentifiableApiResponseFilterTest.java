@@ -60,7 +60,7 @@ class IdentifiableApiResponseFilterTest {
     @Test
     void filter_doesNotUpdateLastPolled_whenDateBeforeLastPolled() {
         // Given
-        var start = LocalDate.now(DK_ZONE_ID).atStartOfDay(DK_ZONE_ID);
+        var start = LocalDate.now(DK_ZONE_ID);
         var end = start.plusDays(1);
         var permissionRequest = new SimplePermissionRequest(start, end, start.plusDays(1));
         DkEnerginetCustomerPermissionRequest spy = spy(permissionRequest);
@@ -70,7 +70,7 @@ class IdentifiableApiResponseFilterTest {
         document.setPeriodTimeInterval(new PeriodtimeInterval().start(start.toString()).end(end.toString()));
         response.setMyEnergyDataMarketDocument(document);
 
-        var filter = new IdentifiableApiResponseFilter(spy, start.toLocalDate(), end.toLocalDate());
+        var filter = new IdentifiableApiResponseFilter(spy, start, end);
 
         // When & Then
         StepVerifier.create(filter.filter(List.of(response)))

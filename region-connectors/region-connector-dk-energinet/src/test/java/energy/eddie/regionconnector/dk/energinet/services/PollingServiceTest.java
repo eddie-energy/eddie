@@ -223,7 +223,7 @@ class PollingServiceTest {
                             () -> assertEquals(permissionRequest.connectionId(), mr.permissionRequest().connectionId()),
                             () -> assertEquals(permissionRequest.dataNeedId(), mr.permissionRequest().dataNeedId()),
                             () -> assertNotNull(mr.apiResponse()),
-                            () -> assertEquals(permissionRequest.start(), permissionRequest.lastPolled())
+                            () -> assertEquals(permissionRequest.start().toLocalDate(), permissionRequest.lastPolled())
                     ))
                     .then(pollingService::close)
                     .expectComplete()
@@ -333,7 +333,8 @@ class PollingServiceTest {
                                                mr.permissionRequest().connectionId()),
                             () -> assertEquals(permissionRequest1.dataNeedId(), mr.permissionRequest().dataNeedId()),
                             () -> assertNotNull(mr.apiResponse()),
-                            () -> assertEquals(permissionRequest1.start(), permissionRequest1.lastPolled())
+                            () -> assertEquals(permissionRequest1.start().toLocalDate(),
+                                               permissionRequest1.lastPolled())
                     ))
                     .verifyComplete();
     }
