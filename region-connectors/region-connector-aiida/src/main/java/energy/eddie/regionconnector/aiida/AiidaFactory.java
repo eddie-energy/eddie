@@ -18,12 +18,12 @@ import org.apache.kafka.common.errors.InvalidTopicException;
 import org.apache.kafka.common.internals.Topic;
 import org.springframework.stereotype.Component;
 
-import java.time.*;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-
-import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.REGION_CONNECTOR_ZONE_ID;
 
 @Component
 public class AiidaFactory {
@@ -77,15 +77,10 @@ public class AiidaFactory {
         LocalDate startDate = getAppropriateStartDate(wrapper);
         LocalDate endDate = getAppropriateEndDate(wrapper);
 
-
-        // convert to AIIDA required datetime format
-        ZonedDateTime startTime = startDate.atStartOfDay(REGION_CONNECTOR_ZONE_ID);
-        ZonedDateTime expirationTime = endDate.atTime(LocalTime.of(23, 59, 59)).atZone(REGION_CONNECTOR_ZONE_ID);
-
         var permissionId = UUID.randomUUID().toString();
         var terminationTopic = terminationTopicForPermissionId(permissionId);
         AiidaPermissionRequest request = new AiidaPermissionRequest(permissionId, connectionId, dataNeedId,
-                                                                    terminationTopic, startTime, expirationTime);
+                                                                    terminationTopic, startDate, endDate);
 
         return PermissionRequestProxy.createProxy(request,
                                                   extensions,
@@ -121,6 +116,21 @@ public class AiidaFactory {
             return LocalDate.of(9999, 12, 31);
 
         return wrapper.calculatedEnd();
+    }
+
+    /**
+     * Creates the termination topic name by concatenating the termination topic prefix and the permissionId with an
+     * underscore.
+     *
+     * @param permissionId Id of permission request
+     * @return Kafka topic name
+     * @throws InvalidTopicException If the resulting topic name is invalid. This indicates that either the permissionId
+     *                               is not a valid UUID-4, or the prefix is invalid.
+     */
+    private String terminationTopicForPermissionId(String permissionId) throws InvalidTopicException {
+        var topic = configuration.kafkaTerminationTopicPrefix() + "_" + permissionId;
+        Topic.validate(topic);
+        return topic;
     }
 
     /**
@@ -180,20 +190,5 @@ public class AiidaFactory {
                 genericAiidaDataNeed.dataTags(),
                 kafkaConfig
         );
-    }
-
-    /**
-     * Creates the termination topic name by concatenating the termination topic prefix and the permissionId with an
-     * underscore.
-     *
-     * @param permissionId Id of permission request
-     * @return Kafka topic name
-     * @throws InvalidTopicException If the resulting topic name is invalid. This indicates that either the permissionId
-     *                               is not a valid UUID-4, or the prefix is invalid.
-     */
-    private String terminationTopicForPermissionId(String permissionId) throws InvalidTopicException {
-        var topic = configuration.kafkaTerminationTopicPrefix() + "_" + permissionId;
-        Topic.validate(topic);
-        return topic;
     }
 }
