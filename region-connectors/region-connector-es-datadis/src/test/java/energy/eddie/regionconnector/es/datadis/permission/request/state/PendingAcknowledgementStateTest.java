@@ -14,7 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,10 +22,10 @@ import static org.mockito.Mockito.mock;
 
 @ExtendWith({MockitoExtension.class})
 class PendingAcknowledgementStateTest {
-    StateBuilderFactory factory = new StateBuilderFactory(mock(AuthorizationApi.class));
+    final StateBuilderFactory factory = new StateBuilderFactory(mock(AuthorizationApi.class));
 
     private DatadisPermissionRequest makePendingPermissionRequest(AuthorizationRequestResponse response) {
-        var now = ZonedDateTime.now(ZONE_ID_SPAIN);
+        var now = LocalDate.now(ZONE_ID_SPAIN);
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
 

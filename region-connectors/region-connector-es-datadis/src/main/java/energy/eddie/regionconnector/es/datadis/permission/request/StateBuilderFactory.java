@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.es.datadis.permission.request;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
+import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestFactory;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.*;
@@ -19,14 +20,17 @@ public class StateBuilderFactory {
         this.authorizationApi = authorizationApi;
     }
 
-    public PermissionRequestStateBuilder create(EsPermissionRequest permissionRequest,
-                                                PermissionProcessStatus status) {
+    public PermissionRequestStateBuilder create(
+            EsPermissionRequest permissionRequest,
+            PermissionProcessStatus status
+    ) {
         return new PermissionRequestStateBuilder(permissionRequest, status);
     }
 
     public class PermissionRequestStateBuilder {
         private final PermissionProcessStatus status;
         private final EsPermissionRequest permissionRequest;
+        private final AuthorizationRequestFactory authorizationRequestFactory = new AuthorizationRequestFactory();
         @Nullable
         private Throwable cause;
         @Nullable
@@ -52,7 +56,10 @@ public class StateBuilderFactory {
             final StateBuilderFactory factory = StateBuilderFactory.this;
             return switch (status) {
                 case CREATED -> new CreatedState(permissionRequest, factory);
-                case VALIDATED -> new ValidatedState(permissionRequest, factory.authorizationApi, factory);
+                case VALIDATED -> new ValidatedState(permissionRequest,
+                                                     factory.authorizationApi,
+                                                     authorizationRequestFactory,
+                                                     factory);
                 case MALFORMED -> new MalformedState(permissionRequest, cause);
                 case PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT ->
                         new PendingAcknowledgementState(permissionRequest, Objects.requireNonNull(response), factory);

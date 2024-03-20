@@ -12,10 +12,8 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.MAXIMUM_MONTHS_IN_THE_FUTURE;
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static java.util.Objects.requireNonNull;
 
@@ -29,10 +27,8 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     private String connectionId;
     private String nif;
     private String meteringPointId;
-    private ZonedDateTime permissionStart;
-    private ZonedDateTime permissionEnd;
-    private ZonedDateTime requestDataFrom;
-    private ZonedDateTime requestDataTo;
+    private LocalDate requestDataFrom;
+    private LocalDate requestDataTo;
     @Enumerated(EnumType.STRING)
     private MeasurementType measurementType;
     private String dataNeedId;
@@ -44,7 +40,7 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     @Nullable
     private Integer pointType;
     @Nullable
-    private ZonedDateTime lastPulledMeterReading;
+    private LocalDate lastPulledMeterReading;
     @Enumerated(EnumType.STRING)
     private PermissionProcessStatus status;
     @Nullable
@@ -77,13 +73,9 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
             default ->
                     throw new IllegalArgumentException("Unsupported granularity: " + requestForCreation.granularity());
         };
-        this.requestDataFrom = requestForCreation.requestDataFrom().withZoneSameLocal(ZONE_ID_SPAIN);
-        this.requestDataTo = Optional.ofNullable(requestForCreation.requestDataTo())
-                .map(toDate -> toDate.withZoneSameLocal(ZONE_ID_SPAIN).plusDays(1))
-                .orElse(requestDataFrom.plusMonths(MAXIMUM_MONTHS_IN_THE_FUTURE));
+        this.requestDataFrom = requestForCreation.requestDataFrom();
+        this.requestDataTo = requestForCreation.requestDataTo().plusDays(1);
 
-        this.permissionStart = ZonedDateTime.now(ZONE_ID_SPAIN);
-        this.permissionEnd = latest(permissionStart, requestDataTo);
         this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
         this.status = state.status();
     }
@@ -94,17 +86,6 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
                 .create(this, status)
                 .build();
         return this;
-    }
-
-    /**
-     * Calculate the date furthest in the future.
-     */
-    private ZonedDateTime latest(ZonedDateTime first, ZonedDateTime second) {
-        if (!first.isBefore(second)) {
-            return first.plusDays(1); // if all the data is in the past we only need access for 1 day
-        }
-
-        return second;
     }
 
     @Override
@@ -205,30 +186,18 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     }
 
     @Override
-    public ZonedDateTime permissionStart() {
-        return permissionStart;
-    }
-
-    @Override
-    public ZonedDateTime permissionEnd() {
-        return permissionEnd;
-    }
-
-    @Override
     public LocalDate start() {
-        return requestDataFrom.withZoneSameInstant(ZONE_ID_SPAIN).toLocalDate();
+        return requestDataFrom;
     }
 
     @Override
     public LocalDate end() {
-        return requestDataTo.withZoneSameInstant(ZONE_ID_SPAIN).toLocalDate();
+        return requestDataTo;
     }
 
     @Override
     public Optional<LocalDate> lastPulledMeterReading() {
-        return Optional.ofNullable(this.lastPulledMeterReading)
-                .map(date -> date.withZoneSameInstant(ZONE_ID_SPAIN))
-                .map(ZonedDateTime::toLocalDate);
+        return Optional.ofNullable(this.lastPulledMeterReading);
     }
 
     @Override
@@ -238,7 +207,7 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
 
     @Override
     public void updateLastPulledMeterReading(LocalDate lastPulledMeterReading) {
-        this.lastPulledMeterReading = lastPulledMeterReading.atStartOfDay(ZONE_ID_SPAIN);
+        this.lastPulledMeterReading = lastPulledMeterReading;
     }
 
     @Override

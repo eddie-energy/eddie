@@ -9,20 +9,20 @@ import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermiss
 import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.mock;
 
 class AcceptedStateTest {
-    StateBuilderFactory factory = new StateBuilderFactory(mock(AuthorizationApi.class));
+    final StateBuilderFactory factory = new StateBuilderFactory(mock(AuthorizationApi.class));
 
     @Test
     void terminate_terminatesPermissionRequest() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime end = start.plusDays(10);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC);
+        LocalDate end = start.plusDays(10);
         var permissionRequest = new DatadisPermissionRequest(
                 "pid",
                 new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, Granularity.PT15M),
@@ -40,8 +40,8 @@ class AcceptedStateTest {
     @Test
     void revoke_revokesPermissionRequest() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime end = start.plusDays(10);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC);
+        LocalDate end = start.plusDays(10);
         var permissionRequest = new DatadisPermissionRequest(
                 "pid",
                 new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, Granularity.PT15M),
@@ -59,8 +59,8 @@ class AcceptedStateTest {
     @Test
     void fulfill_fulfillsPermissionRequest() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime end = start.plusDays(10);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC);
+        LocalDate end = start.plusDays(10);
         var permissionRequest = new DatadisPermissionRequest(
                 "pid",
                 new PermissionRequestForCreation("cid", "dnid", "nif", "mpid", start, end, Granularity.PT15M),

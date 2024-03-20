@@ -23,21 +23,6 @@ class IdentifiableMeteringDataServiceTest {
 
     private static final LocalDate today = LocalDate.now(ZONE_ID_SPAIN);
 
-    private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
-        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
-                "connectionId",
-                "dataNeedId",
-                "nif",
-                "meteringPointId",
-                start.atStartOfDay(ZONE_ID_SPAIN),
-                end.atStartOfDay(ZONE_ID_SPAIN),
-                Granularity.PT1H);
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
-        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
-        return permissionRequest;
-    }
-
     @Test
     void ifLastPulledEmpty_callsSetLastPulledMeterReading() {
         // Given
@@ -48,15 +33,38 @@ class IdentifiableMeteringDataServiceTest {
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
         //noinspection unused
-        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(testPublisher.flux());
+        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(
+                testPublisher.flux());
 
         // When
         StepVerifier.create(testPublisher)
-                .then(() -> testPublisher.emit(new IdentifiableMeteringData(spy, new IntermediateMeteringData(List.of(), today, end))))
-                .expectNextCount(1)
-                .verifyComplete();
+                    .then(() -> testPublisher.emit(new IdentifiableMeteringData(spy,
+                                                                                new IntermediateMeteringData(List.of(),
+                                                                                                             today,
+                                                                                                             end)))
+                    )
+                    .expectNextCount(1)
+                    .verifyComplete();
         // Then
         verify(spy).updateLastPulledMeterReading(end);
+    }
+
+    private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
+        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
+        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
+                "connectionId",
+                "dataNeedId",
+                "nif",
+                "meteringPointId",
+                start,
+                end,
+                Granularity.PT1H);
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
+                                                                             permissionRequestForCreation,
+                                                                             stateBuilderFactory);
+        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
+                                                         .build());
+        return permissionRequest;
     }
 
     @Test
@@ -71,13 +79,17 @@ class IdentifiableMeteringDataServiceTest {
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
         //noinspection unused
-        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(testPublisher.flux());
+        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(
+                testPublisher.flux());
 
         // When
         StepVerifier.create(testPublisher)
-                .then(() -> testPublisher.emit(new IdentifiableMeteringData(spy, new IntermediateMeteringData(List.of(), start, end))))
-                .expectNextCount(1)
-                .verifyComplete();
+                    .then(() -> testPublisher.emit(new IdentifiableMeteringData(spy,
+                                                                                new IntermediateMeteringData(List.of(),
+                                                                                                             start,
+                                                                                                             end))))
+                    .expectNextCount(1)
+                    .verifyComplete();
         // Then
         verify(spy).updateLastPulledMeterReading(end);
     }
@@ -93,13 +105,17 @@ class IdentifiableMeteringDataServiceTest {
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
         //noinspection unused
-        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(testPublisher.flux());
+        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(
+                testPublisher.flux());
 
         // When
         StepVerifier.create(testPublisher)
-                .then(() -> testPublisher.emit(new IdentifiableMeteringData(spy, new IntermediateMeteringData(List.of(), start, today))))
-                .expectNextCount(1)
-                .verifyComplete();
+                    .then(() -> testPublisher.emit(new IdentifiableMeteringData(spy,
+                                                                                new IntermediateMeteringData(List.of(),
+                                                                                                             start,
+                                                                                                             today))))
+                    .expectNextCount(1)
+                    .verifyComplete();
         // Then
         verify(spy, never()).updateLastPulledMeterReading(any());
     }
@@ -107,7 +123,7 @@ class IdentifiableMeteringDataServiceTest {
     @Test
     void ifMeteringDataDateBeforePermissionEndDate_doesNotCallFulfill() throws StateTransitionException {
         // Given
-        EsPermissionRequest permissionRequest = acceptedPermissionRequest(today.minusDays(2), today.minusDays(1));
+        EsPermissionRequest permissionRequest = acceptedPermissionRequest(today.minusDays(2), today);
         EsPermissionRequest spy = spy(permissionRequest);
 
         LocalDate start = today.minusDays(2);
@@ -115,13 +131,17 @@ class IdentifiableMeteringDataServiceTest {
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
         //noinspection unused
-        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(testPublisher.flux());
+        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(
+                testPublisher.flux());
 
         // When
         StepVerifier.create(testPublisher)
-                .then(() -> testPublisher.emit(new IdentifiableMeteringData(spy, new IntermediateMeteringData(List.of(), start, end))))
-                .expectNextCount(1)
-                .verifyComplete();
+                    .then(() -> testPublisher.emit(new IdentifiableMeteringData(spy,
+                                                                                new IntermediateMeteringData(List.of(),
+                                                                                                             start,
+                                                                                                             end))))
+                    .expectNextCount(1)
+                    .verifyComplete();
         // Then
         verify(spy, never()).fulfill();
     }
@@ -134,16 +154,21 @@ class IdentifiableMeteringDataServiceTest {
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
         //noinspection unused
-        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(testPublisher.flux());
+        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(
+                testPublisher.flux());
 
         // When
         StepVerifier.create(testPublisher)
-                .then(() -> {
-                    var identifiableMeteringData = new IdentifiableMeteringData(spy, new IntermediateMeteringData(List.of(), today.minusDays(2), today));
-                    testPublisher.emit(identifiableMeteringData, identifiableMeteringData);
-                })
-                .expectNextCount(2)
-                .verifyComplete();
+                    .then(() -> {
+                        var identifiableMeteringData = new IdentifiableMeteringData(spy,
+                                                                                    new IntermediateMeteringData(List.of(),
+                                                                                                                 today.minusDays(
+                                                                                                                         2),
+                                                                                                                 today));
+                        testPublisher.emit(identifiableMeteringData, identifiableMeteringData);
+                    })
+                    .expectNextCount(2)
+                    .verifyComplete();
         // Then
         verify(spy, times(1)).fulfill();
     }
@@ -158,13 +183,17 @@ class IdentifiableMeteringDataServiceTest {
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
 
         //noinspection unused
-        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(testPublisher.flux());
+        IdentifiableMeteringDataService identifiableMeteringDataService = new IdentifiableMeteringDataService(
+                testPublisher.flux());
 
         // When
         StepVerifier.create(testPublisher)
-                .then(() -> testPublisher.emit(new IdentifiableMeteringData(spy, new IntermediateMeteringData(List.of(), start, today))))
-                .expectNextCount(1)
-                .verifyComplete();
+                    .then(() -> testPublisher.emit(new IdentifiableMeteringData(spy,
+                                                                                new IntermediateMeteringData(List.of(),
+                                                                                                             start,
+                                                                                                             today))))
+                    .expectNextCount(1)
+                    .verifyComplete();
         // Then
         verify(spy).fulfill();
     }

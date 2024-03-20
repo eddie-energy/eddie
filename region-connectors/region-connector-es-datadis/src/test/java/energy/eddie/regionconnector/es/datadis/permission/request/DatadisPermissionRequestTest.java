@@ -5,14 +5,12 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,20 +20,20 @@ import static org.mockito.Mockito.mock;
 class DatadisPermissionRequestTest {
     // Those are valid values
     private final String permissionId = "Existing";
-    private final String connectionId = "connId";
-    private final String dataNeedId = "dataNeed";
-    private final String nif = "123456";
-    private final String meteringPointId = "7890";
     private final Granularity granularity = Granularity.PT15M;
-    private final ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
-    private final ZonedDateTime requestDataFrom = now.minusDays(10);
-    private final ZonedDateTime requestDataTo = now.minusDays(5);
+    private final LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
+    private final LocalDate requestDataFrom = now.minusDays(10);
+    private final LocalDate requestDataTo = now.minusDays(5);
     private StateBuilderFactory factory;
     private PermissionRequestForCreation requestForCreation;
 
     @BeforeEach
     void setUp() {
         factory = new StateBuilderFactory(mock(AuthorizationApi.class));
+        String connectionId = "connId";
+        String dataNeedId = "dataNeed";
+        String meteringPointId = "7890";
+        String nif = "123456";
         requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
                 requestDataFrom, requestDataTo, granularity);
     }
@@ -56,38 +54,6 @@ class DatadisPermissionRequestTest {
         assertThrows(NullPointerException.class, () -> new DatadisPermissionRequest(permissionId, requestForCreation, null));
     }
 
-    @Test
-    @Disabled("Future data isn't supported yet")
-    void permissionEnd_whenRequestingFutureData_IsTheSameAsRequestDataTo() {
-        var futureDate = ZonedDateTime.now(ZoneOffset.UTC).plusMonths(1);
-        requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
-                requestDataFrom, futureDate, granularity);
-
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
-        assertEquals(request.end(), request.permissionEnd().toLocalDate());
-    }
-
-    @Test
-    void permissionEnd_whenRequestingPastData_isOneDayGraterThanPermissionStart() {
-        var pastDate = ZonedDateTime.now(ZoneOffset.UTC).minusMonths(1);
-        requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
-                requestDataFrom, pastDate, granularity);
-
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
-
-        assertEquals(request.permissionStart().plusDays(1), request.permissionEnd());
-    }
-
-    @Test
-    void permissionEnd_whenRequestingTodaysData_isOneDayGraterThanPermissionStart() {
-        var today = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC);
-        requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,
-                today, today, granularity);
-
-        var request = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
-
-        assertEquals(request.permissionStart().toLocalDate().plusDays(1), request.permissionEnd().toLocalDate());
-    }
 
     @Test
     void lastPulledMeterReading_whenConstructed_isEmpty() {

@@ -12,7 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,7 +25,7 @@ class SentToPermissionAdministratorStateTest {
     private final StateBuilderFactory factory = new StateBuilderFactory(authorizationApi);
 
     private DatadisPermissionRequest makePermissionRequest() {
-        var now = ZonedDateTime.now(ZONE_ID_SPAIN);
+        var now = LocalDate.now(ZONE_ID_SPAIN);
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
 

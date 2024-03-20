@@ -26,7 +26,7 @@ public class HistoricalDataService {
             return;
         }
 
-        LocalDate end = Optional.ofNullable(permissionRequest.end())
+        LocalDate end = Optional.of(permissionRequest.end())
                 .filter(permissionRequestEnd -> !permissionRequestEnd.isAfter(now))
                 .orElse(now.minusDays(1));
 

@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import jakarta.annotation.Nullable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -28,8 +27,7 @@ class HistoricalDataServiceTest {
         return Stream.of(
                 Arguments.of(now.minusDays(10), now.plusDays(10), "10 days: 10 days ago to 10 days in the future"),
                 Arguments.of(now.minusMonths(9), now.plusMonths(9), "1 month: 9 months ago to 9 months in the future"),
-                Arguments.of(now.minusYears(1), now.plusYears(1), "1 year: 1 year ago to 1 year in the future"),
-                Arguments.of(now.minusYears(1), null, "1 year: 1 year ago to unlimited future")
+                Arguments.of(now.minusYears(1), now.plusYears(1), "1 year: 1 year ago to 1 year in the future")
         );
     }
 
@@ -46,7 +44,11 @@ class HistoricalDataServiceTest {
 
     @ParameterizedTest(name = "{2}")
     @MethodSource("pastTimeRanges")
-    void fetchAvailableHistoricalData_callsFetchDataForPermissionRequest_withExpectedParams(LocalDate start, LocalDate end, String description) {
+    void fetchAvailableHistoricalData_callsFetchDataForPermissionRequest_withExpectedParams(
+            LocalDate start,
+            LocalDate end,
+            String description
+    ) {
         // Arrange
         DataApiService dataApiService = mock(DataApiService.class);
         EsPermissionRequest permissionRequest = mock(EsPermissionRequest.class);
@@ -64,7 +66,11 @@ class HistoricalDataServiceTest {
 
     @ParameterizedTest(name = "{2}")
     @MethodSource("futureTimeRanges")
-    void fetchAvailableHistoricalData_doesNotCallFetchDataForPermissionRequest_withFutureTimeRanges(LocalDate start, LocalDate end, String description) {
+    void fetchAvailableHistoricalData_doesNotCallFetchDataForPermissionRequest_withFutureTimeRanges(
+            LocalDate start,
+            LocalDate end,
+            String description
+    ) {
         // Arrange
         DataApiService dataApiService = mock(DataApiService.class);
         EsPermissionRequest permissionRequest = mock(EsPermissionRequest.class);
@@ -82,7 +88,11 @@ class HistoricalDataServiceTest {
 
     @ParameterizedTest(name = "{2}")
     @MethodSource("pastToFutureTimeRanges")
-    void fetchAvailableHistoricalData_withPermissionRequestFromPastToFuture(LocalDate start, @Nullable LocalDate end, String description) {
+    void fetchAvailableHistoricalData_withPermissionRequestFromPastToFuture(
+            LocalDate start,
+            LocalDate end,
+            String description
+    ) {
         // Arrange
         DataApiService dataApiService = mock(DataApiService.class);
         EsPermissionRequest permissionRequest = mock(EsPermissionRequest.class);
@@ -95,6 +105,8 @@ class HistoricalDataServiceTest {
         historicalDataService.fetchAvailableHistoricalData(permissionRequest);
 
         // Assert
-        verify(dataApiService).fetchDataForPermissionRequest(permissionRequest, start, LocalDate.now(ZONE_ID_SPAIN).minusDays(1));
+        verify(dataApiService).fetchDataForPermissionRequest(permissionRequest,
+                                                             start,
+                                                             LocalDate.now(ZONE_ID_SPAIN).minusDays(1));
     }
 }

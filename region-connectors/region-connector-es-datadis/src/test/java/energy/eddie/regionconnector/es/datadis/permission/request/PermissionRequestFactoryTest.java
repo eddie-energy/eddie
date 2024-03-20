@@ -16,7 +16,7 @@ import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
@@ -46,9 +46,9 @@ class PermissionRequestFactoryTest {
         String nif = "123456";
         String dataNeedId = "dataNeed";
         String connectionId = "connId";
-        ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
-        ZonedDateTime requestDataFrom = now.minusDays(10);
-        ZonedDateTime requestDataTo = now.minusDays(5);
+        LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
+        LocalDate requestDataFrom = now.minusDays(10);
+        LocalDate requestDataTo = now.minusDays(5);
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif,
                 meteringPointId, requestDataFrom, requestDataTo, Granularity.PT15M);
 
@@ -62,8 +62,8 @@ class PermissionRequestFactoryTest {
         assertEquals(nif, createdRequest.nif());
         assertEquals(meteringPointId, createdRequest.meteringPointId());
         assertEquals(MeasurementType.QUARTER_HOURLY, createdRequest.measurementType());
-        assertEquals(requestDataFrom.toLocalDate(), createdRequest.start());
-        assertEquals(requestDataTo.plusDays(1).toLocalDate(), createdRequest.end());
+        assertEquals(requestDataFrom, createdRequest.start());
+        assertEquals(requestDataTo.plusDays(1), createdRequest.end());
         assertTrue(createdRequest.distributorCode().isEmpty());
         assertTrue(createdRequest.lastPulledMeterReading().isEmpty());
         assertTrue(createdRequest.pointType().isEmpty());

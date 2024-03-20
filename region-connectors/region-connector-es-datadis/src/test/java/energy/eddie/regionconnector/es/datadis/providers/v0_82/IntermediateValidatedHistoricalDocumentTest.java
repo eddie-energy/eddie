@@ -33,8 +33,8 @@ class IntermediateValidatedHistoricalDocumentTest {
                 "dataNeedId",
                 "nif",
                 "meteringPointId",
-                intermediateMeteringData.start().atStartOfDay(ZONE_ID_SPAIN),
-                intermediateMeteringData.end().atStartOfDay(ZONE_ID_SPAIN),
+                intermediateMeteringData.start(),
+                intermediateMeteringData.end(),
                 Granularity.PT1H);
         EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
         permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());

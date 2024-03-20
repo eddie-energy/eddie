@@ -24,7 +24,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -82,7 +81,7 @@ class PermissionRequestServiceTest {
         var dataNeedId = "luu";
         var nif = "muh";
         var meteringPointId = "kuh";
-        var now = ZonedDateTime.now(ZONE_ID_SPAIN);
+        var now = LocalDate.now(ZONE_ID_SPAIN);
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId,

@@ -9,7 +9,6 @@ import energy.eddie.regionconnector.shared.permission.requests.annotations.Invok
 import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 
 public interface EsPermissionRequest extends TimeframedPermissionRequest {
@@ -49,18 +48,6 @@ public interface EsPermissionRequest extends TimeframedPermissionRequest {
      * Look at @{@link #pointType()} to see what is supported.
      */
     MeasurementType measurementType();
-
-    /**
-     * The date the permission starts.
-     * This can be different from @{@link #start()}, as the timeframe for which data is requested can be
-     * different from the timeframe for which the permission is valid.
-     */
-    ZonedDateTime permissionStart();
-
-    /**
-     * The date the permission ends.
-     */
-    ZonedDateTime permissionEnd();
 
     /**
      * The latest meter reading that was pulled for this permission request.
