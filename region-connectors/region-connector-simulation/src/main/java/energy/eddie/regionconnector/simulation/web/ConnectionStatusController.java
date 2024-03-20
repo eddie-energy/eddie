@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.time.ZoneOffset;
+
 @RestController
 public class ConnectionStatusController implements Mvp1ConnectionStatusMessageProvider, ConsentMarketDocumentProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusController.class);
@@ -52,7 +54,8 @@ public class ConnectionStatusController implements Mvp1ConnectionStatusMessagePr
                             new SimulationPermissionRequest(req),
                             SimulationConnectorMetadata.REGION_CONNECTOR_ID,
                             ignored -> null,
-                            "N" + SimulationConnectorMetadata.getInstance().countryCode()
+                            "N" + SimulationConnectorMetadata.getInstance().countryCode(),
+                            ZoneOffset.UTC
                     ).toConsentMarketDocument()
             );
             return ResponseEntity.ok(req.connectionId);

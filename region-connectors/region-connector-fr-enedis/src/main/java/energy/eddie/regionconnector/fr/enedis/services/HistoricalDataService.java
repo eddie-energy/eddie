@@ -7,11 +7,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Optional;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
-import static energy.eddie.regionconnector.fr.enedis.services.PollingService.MAXIMUM_PERMISSION_DURATION;
 
 @Service
 public class HistoricalDataService {
@@ -24,10 +21,8 @@ public class HistoricalDataService {
 
     @Async
     public void fetchHistoricalMeterReadings(FrEnedisPermissionRequest permissionRequest) {
-        LocalDate permissionStart = permissionRequest.start().toLocalDate();
-        LocalDate permissionEnd = Optional.ofNullable(permissionRequest.end())
-                .map(ZonedDateTime::toLocalDate)
-                .orElse(permissionStart.plusYears(MAXIMUM_PERMISSION_DURATION));
+        LocalDate permissionStart = permissionRequest.start();
+        LocalDate permissionEnd = permissionRequest.end();
 
         LocalDate now = LocalDate.now(ZONE_ID_FR);
         String permissionId = permissionRequest.permissionId();

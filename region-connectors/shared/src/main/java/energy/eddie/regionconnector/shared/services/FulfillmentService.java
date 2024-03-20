@@ -6,8 +6,7 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.ZonedDateTime;
-import java.util.Optional;
+import java.time.LocalDate;
 
 public class FulfillmentService<T extends TimeframedPermissionRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(FulfillmentService.class);
@@ -24,10 +23,8 @@ public class FulfillmentService<T extends TimeframedPermissionRequest> {
      * @param date              the date to check against
      * @return true if {@code date} is after {@link TimeframedPermissionRequest#end()}
      */
-    public boolean isPermissionRequestFulfilledByDate(T permissionRequest, ZonedDateTime date) {
-        return Optional.ofNullable(permissionRequest.end())
-                .map(date::isAfter)
-                .orElse(false);
+    public boolean isPermissionRequestFulfilledByDate(T permissionRequest, LocalDate date) {
+        return date.isAfter(permissionRequest.end());
     }
 
     /**

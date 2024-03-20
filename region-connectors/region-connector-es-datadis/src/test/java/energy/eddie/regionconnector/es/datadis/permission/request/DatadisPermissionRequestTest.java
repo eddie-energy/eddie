@@ -11,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.*;
@@ -165,10 +164,10 @@ class DatadisPermissionRequestTest {
                                                    requestDataTo,
                                                    granularity,
                                                    factory);
-        ZonedDateTime expected = ZonedDateTime.now(ZoneOffset.UTC);
+        LocalDate expected = LocalDate.now(ZoneOffset.UTC);
 
         // When
-        request.setLastPulledMeterReading(expected);
+        request.updateLastPulledMeterReading(expected);
 
         // Then
         assertTrue(request.lastPulledMeterReading().isPresent());

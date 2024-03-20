@@ -4,9 +4,9 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Optional;
+
+import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
 
 @Service
 public class HistoricalDataService {
@@ -19,15 +19,14 @@ public class HistoricalDataService {
 
 
     public void fetchAvailableHistoricalData(EsPermissionRequest permissionRequest) {
-        LocalDate now = ZonedDateTime.now(ZoneOffset.UTC).toLocalDate();
-        LocalDate start = permissionRequest.start().toLocalDate();
+        LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
+        LocalDate start = permissionRequest.start();
         // check if request data from is in the future or today
         if (start.isAfter(now) || start.isEqual(now)) {
             return;
         }
 
         LocalDate end = Optional.ofNullable(permissionRequest.end())
-                .map(ZonedDateTime::toLocalDate)
                 .filter(permissionRequestEnd -> !permissionRequestEnd.isAfter(now))
                 .orElse(now.minusDays(1));
 

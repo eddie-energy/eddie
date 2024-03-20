@@ -21,7 +21,6 @@ import org.springframework.stereotype.Component;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -184,8 +183,8 @@ public class AiidaFactory {
                 aiidaRequest.permissionId(),
                 dataNeed.name(),
                 dataNeedId,
-                aiidaRequest.start().toInstant(),
-                Objects.requireNonNull(aiidaRequest.end()).toInstant(),
+                aiidaRequest.start(),
+                aiidaRequest.end(),
                 aiidaRequest.connectionId(),
                 genericAiidaDataNeed.dataTags(),
                 kafkaConfig

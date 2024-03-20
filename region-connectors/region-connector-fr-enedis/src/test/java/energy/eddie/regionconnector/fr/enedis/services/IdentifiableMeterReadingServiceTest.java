@@ -16,10 +16,8 @@ import reactor.test.publisher.TestPublisher;
 import java.io.IOException;
 import java.util.Optional;
 
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class IdentifiableMeterReadingServiceTest {
@@ -88,7 +86,7 @@ class IdentifiableMeterReadingServiceTest {
         MeterReading meterReading = TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.CONSUMPTION_LOAD_CURVE_1_DAY);
 
         FrEnedisPermissionRequest permissionRequest = mock(FrEnedisPermissionRequest.class);
-        when(permissionRequest.end()).thenReturn(meterReading.end().plusDays(1).atStartOfDay(ZONE_ID_FR));
+        when(permissionRequest.end()).thenReturn(meterReading.end().plusDays(1));
 
         TestPublisher<IdentifiableMeterReading> testPublisher = TestPublisher.create();
 

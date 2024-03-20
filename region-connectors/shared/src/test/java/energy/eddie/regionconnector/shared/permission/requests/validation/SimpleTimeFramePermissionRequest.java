@@ -4,10 +4,11 @@ import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.DataSourceInformation;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
-record SimpleTimeFramePermissionRequest(ZonedDateTime start,
-                                        ZonedDateTime end) implements TimeframedPermissionRequest {
+record SimpleTimeFramePermissionRequest(LocalDate start,
+                                        LocalDate end) implements TimeframedPermissionRequest {
 
     @Override
     public String permissionId() {

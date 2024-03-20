@@ -47,12 +47,12 @@ public class FutureDataService {
     }
 
     private boolean isActiveAndNeedsToBeFetched(FrEnedisPermissionRequest permissionRequest, LocalDate today) {
-        return permissionRequest.start().toLocalDate().isBefore(today)
+        return permissionRequest.start().isBefore(today)
                 && permissionRequest.latestMeterReading().map(latest -> latest.isBefore(today)).orElse(true);
     }
 
     private void fetchMeteringDataForRequest(FrEnedisPermissionRequest permissionRequest, LocalDate today) {
-        LocalDate lastPulledOrStart = permissionRequest.latestMeterReading().orElse(permissionRequest.start().toLocalDate());
+        LocalDate lastPulledOrStart = permissionRequest.latestMeterReading().orElse(permissionRequest.start());
 
         pollingService.fetchMeterReadings(permissionRequest, lastPulledOrStart, today);
     }

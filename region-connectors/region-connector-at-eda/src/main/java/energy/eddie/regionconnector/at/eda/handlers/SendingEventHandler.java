@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.time.ZonedDateTime;
 import java.util.Optional;
 
 @Component
@@ -57,11 +56,10 @@ public class SendingEventHandler implements EventHandler<PermissionEvent> {
             return;
         }
         AtPermissionRequest permissionRequest = optionalPermissionRequest.get();
-        ZonedDateTime end = permissionRequest.end();
         CCMORequest ccmoRequest = new CCMORequest(
                 new DsoIdAndMeteringPoint(permissionRequest.dataSourceInformation().meteredDataAdministratorId(),
                                           permissionRequest.meteringPointId().orElse(null)),
-                new CCMOTimeFrame(permissionRequest.start().toLocalDate(), end == null ? null : end.toLocalDate()),
+                new CCMOTimeFrame(permissionRequest.start(), permissionRequest.end()),
                 configuration,
                 RequestDataType.METERING_DATA,
                 permissionRequest.granularity(),

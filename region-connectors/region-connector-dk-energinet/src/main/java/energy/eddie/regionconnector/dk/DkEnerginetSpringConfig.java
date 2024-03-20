@@ -32,6 +32,7 @@ import reactor.core.publisher.Sinks;
 
 import java.util.Set;
 
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID;
 import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.CUSTOMER_ID_KEY;
 import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.ENERGINET_CUSTOMER_BASE_PATH_KEY;
@@ -91,7 +92,8 @@ public class DkEnerginetSpringConfig {
                 new ConsentMarketDocumentExtension<>(
                         consentMarketDocumentSink,
                         energinetConfiguration.customerId(),
-                        cimConfig.eligiblePartyNationalCodingScheme().value()
+                        cimConfig.eligiblePartyNationalCodingScheme().value(),
+                        DK_ZONE_ID
                 )
         );
     }

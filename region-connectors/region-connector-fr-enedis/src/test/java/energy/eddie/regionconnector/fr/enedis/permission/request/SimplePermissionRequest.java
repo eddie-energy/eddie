@@ -10,8 +10,6 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
-
 public record SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId,
                                       Optional<String> usagePointId,
                                       LocalDate startDate, LocalDate endDate,
@@ -62,12 +60,12 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     }
 
     @Override
-    public ZonedDateTime start() {
-        return startDate.atStartOfDay(ZONE_ID_FR);
+    public LocalDate start() {
+        return startDate;
     }
 
     @Override
-    public ZonedDateTime end() {
-        return endDate.atStartOfDay(ZONE_ID_FR);
+    public LocalDate end() {
+        return endDate;
     }
 }

@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SuppressWarnings("NullAway")
 class FulfillmentServiceTest {
 
-    ZonedDateTime today = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC);
+    LocalDate today = LocalDate.now(ZoneOffset.UTC);
     RegionConnectorMetadata regionConnectorMetadata = new SimpleMetaData();
     FulfillmentService<SimplePermissionRequest> fulfillmentService = new FulfillmentService<>(regionConnectorMetadata);
 
@@ -29,8 +29,8 @@ class FulfillmentServiceTest {
     @Test
     void isPermissionRequestFulfilledByDate_dateBeforePermissionEndDate_returnsFalse() throws StateTransitionException {
         // Given
-        ZonedDateTime start = today.minusDays(2);
-        ZonedDateTime end = today.plusDays(1);
+        LocalDate start = today.minusDays(2);
+        LocalDate end = today.plusDays(1);
         SimplePermissionRequest permissionRequest = new SimplePermissionRequest(start, end);
 
         // When
@@ -43,8 +43,8 @@ class FulfillmentServiceTest {
     @Test
     void isPermissionRequestFulfilledByDate_dateEqualPermissionEndDate_returnsFalse() throws StateTransitionException {
         // Given
-        ZonedDateTime start = today.minusDays(2);
-        ZonedDateTime end = today.plusDays(1);
+        LocalDate start = today.minusDays(2);
+        LocalDate end = today.plusDays(1);
         SimplePermissionRequest permissionRequest = new SimplePermissionRequest(start, end);
 
         // When
@@ -57,12 +57,13 @@ class FulfillmentServiceTest {
     @Test
     void isPermissionRequestFulfilledByDate_dateAfterPermissionEndDate_returnsTrue() throws StateTransitionException {
         // Given
-        ZonedDateTime start = today.minusDays(2);
-        ZonedDateTime end = today.plusDays(1);
+        LocalDate start = today.minusDays(2);
+        LocalDate end = today.plusDays(1);
         SimplePermissionRequest permissionRequest = new SimplePermissionRequest(start, end);
 
         // When
-        boolean isFulfilledBy = fulfillmentService.isPermissionRequestFulfilledByDate(permissionRequest, end.plusDays(1));
+        boolean isFulfilledBy = fulfillmentService.isPermissionRequestFulfilledByDate(permissionRequest,
+                                                                                      end.plusDays(1));
 
         // Then
         assertTrue(isFulfilledBy);
@@ -71,8 +72,8 @@ class FulfillmentServiceTest {
     @Test
     void tryFulfillPermissionRequest_changesStateToFulfilled() {
         // Given
-        ZonedDateTime start = today.minusDays(2);
-        ZonedDateTime end = today.plusDays(1);
+        LocalDate start = today.minusDays(2);
+        LocalDate end = today.plusDays(1);
         SimplePermissionRequest permissionRequest = new SimplePermissionRequest(start, end);
 
         // When
@@ -85,8 +86,8 @@ class FulfillmentServiceTest {
     @Test
     void tryFulfillPermissionRequest_doesNothingOnException() {
         // Given
-        ZonedDateTime start = today.minusDays(2);
-        ZonedDateTime end = today.plusDays(1);
+        LocalDate start = today.minusDays(2);
+        LocalDate end = today.plusDays(1);
         SimplePermissionRequest permissionRequest = new SimplePermissionRequest(start, end, true);
 
         // When
@@ -116,18 +117,18 @@ class FulfillmentServiceTest {
 
     private static class SimplePermissionRequest implements TimeframedPermissionRequest {
 
-        private final ZonedDateTime start;
-        private final ZonedDateTime end;
+        private final LocalDate start;
+        private final LocalDate end;
         private final boolean throwsOnFulfill;
         private PermissionRequestState state = null;
 
-        private SimplePermissionRequest(ZonedDateTime start, ZonedDateTime end) {
+        private SimplePermissionRequest(LocalDate start, LocalDate end) {
             this.start = start;
             this.end = end;
             this.throwsOnFulfill = false;
         }
 
-        private SimplePermissionRequest(ZonedDateTime start, ZonedDateTime end, boolean throwsOnFulfill) {
+        private SimplePermissionRequest(LocalDate start, LocalDate end, boolean throwsOnFulfill) {
             this.start = start;
             this.end = end;
             this.throwsOnFulfill = throwsOnFulfill;
@@ -155,15 +156,6 @@ class FulfillmentServiceTest {
         }
 
         @Override
-        public void fulfill() throws StateTransitionException {
-            if (throwsOnFulfill) {
-                throw new PastStateException(SentToPermissionAdministratorPermissionRequestState.class);
-            }
-            state = new FulfilledPermissionRequestState() {
-            };
-        }
-
-        @Override
         public DataSourceInformation dataSourceInformation() {
             return null;
         }
@@ -179,13 +171,22 @@ class FulfillmentServiceTest {
         }
 
         @Override
-        public ZonedDateTime start() {
+        public void fulfill() throws StateTransitionException {
+            if (throwsOnFulfill) {
+                throw new PastStateException(SentToPermissionAdministratorPermissionRequestState.class);
+            }
+            state = new FulfilledPermissionRequestState() {
+            };
+        }
+
+        @Override
+        public LocalDate start() {
             return start;
         }
 
         @Nullable
         @Override
-        public ZonedDateTime end() {
+        public LocalDate end() {
             return end;
         }
     }
