@@ -18,8 +18,8 @@ import reactor.test.StepVerifier;
 import reactor.test.scheduler.VirtualTimeScheduler;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -37,15 +37,15 @@ class PollingServiceTest {
 
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
         PollingService pollingService = new PollingService(enedisApi, sink);
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(20);
-        ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
+        LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
         StateBuilderFactory factory = new StateBuilderFactory();
         FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         request.changeState(new FrEnedisAcceptedState(request, factory));
         request.setUsagePointId("usagePointId");
 
         // When
-        pollingService.fetchMeterReadings(request, start.toLocalDate(), end.toLocalDate());
+        pollingService.fetchMeterReadings(request, start, end);
 
         // Then
         assertEquals(PermissionProcessStatus.REVOKED, request.state().status());
@@ -63,15 +63,15 @@ class PollingServiceTest {
 
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
         PollingService pollingService = new PollingService(enedisApi, sink);
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(20);
-        ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
+        LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
         StateBuilderFactory factory = new StateBuilderFactory();
         FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         request.changeState(new FrEnedisAcceptedState(request, factory));
         request.setUsagePointId("usagePointId");
 
         // When
-        pollingService.fetchMeterReadings(request, start.toLocalDate(), end.toLocalDate());
+        pollingService.fetchMeterReadings(request, start, end);
 
         // Then
         assertEquals(PermissionProcessStatus.ACCEPTED, request.state().status());
@@ -90,8 +90,8 @@ class PollingServiceTest {
 
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
         PollingService pollingService = new PollingService(enedisApi, sink);
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
-        ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(10);
+        LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
         StateBuilderFactory factory = new StateBuilderFactory();
         FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         request.changeState(new FrEnedisAcceptedState(request, factory));
@@ -100,7 +100,7 @@ class PollingServiceTest {
         VirtualTimeScheduler.getOrSet(); // yes, this is necessary
 
         // When
-        pollingService.fetchMeterReadings(request, start.toLocalDate(), end.toLocalDate());
+        pollingService.fetchMeterReadings(request, start, end);
 
         // Then
         StepVerifier.withVirtualTime(sink::asFlux)
@@ -125,14 +125,14 @@ class PollingServiceTest {
 
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
         PollingService pollingService = new PollingService(enedisApi, sink);
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(20);
-        ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
+        LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
         StateBuilderFactory factory = new StateBuilderFactory();
         FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         request.setUsagePointId("usagePointId");
 
         // When
-        pollingService.fetchMeterReadings(request, start.toLocalDate(), end.toLocalDate());
+        pollingService.fetchMeterReadings(request, start, end);
 
         // Then
         assertEquals(PermissionProcessStatus.CREATED, request.state().status());
@@ -148,16 +148,14 @@ class PollingServiceTest {
         EnedisApi enedisApi = mock(EnedisApi.class);
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
         PollingService pollingService = new PollingService(enedisApi, sink);
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(20);
-        ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
+        LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
         StateBuilderFactory factory = new StateBuilderFactory();
         FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.PT15M, factory);
         request.setUsagePointId("usagePointId");
 
         // When
-        var startDate = start.toLocalDate();
-        var endDate = end.toLocalDate();
-        assertThrows(IllegalStateException.class, () -> pollingService.fetchMeterReadings(request, startDate, endDate));
+        assertThrows(IllegalStateException.class, () -> pollingService.fetchMeterReadings(request, start, end));
         verifyNoInteractions(enedisApi);
 
         // Clean-Up

@@ -10,9 +10,11 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
+
 public record SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId,
                                       Optional<String> usagePointId,
-                                      ZonedDateTime start, ZonedDateTime end,
+                                      LocalDate startDate, LocalDate endDate,
                                       PermissionRequestState state,
                                       Granularity granularity) implements FrEnedisPermissionRequest {
     public SimplePermissionRequest(String permissionId, String connectionId) {
@@ -57,5 +59,15 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     @Override
     public void updateLatestMeterReading(LocalDate latestMeterReading) {
 
+    }
+
+    @Override
+    public ZonedDateTime start() {
+        return startDate.atStartOfDay(ZONE_ID_FR);
+    }
+
+    @Override
+    public ZonedDateTime end() {
+        return endDate.atStartOfDay(ZONE_ID_FR);
     }
 }

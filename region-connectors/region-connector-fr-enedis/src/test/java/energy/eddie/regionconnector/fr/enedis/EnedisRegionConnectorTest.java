@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Sinks;
 
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 
@@ -84,8 +84,8 @@ class EnedisRegionConnectorTest {
         var request = new EnedisPermissionRequest(
                 "cid",
                 "dnid",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                ZonedDateTime.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
                 Granularity.P1D,
                 factory
         );
@@ -115,8 +115,8 @@ class EnedisRegionConnectorTest {
                 "cid",
                 "dnid",
                 Optional.of("upId"),
-                ZonedDateTime.now(Clock.systemUTC()),
-                ZonedDateTime.now(Clock.systemUTC()),
+                LocalDate.now(Clock.systemUTC()),
+                LocalDate.now(Clock.systemUTC()),
                 new FrEnedisInvalidState(null),
                 Granularity.P1D
         );

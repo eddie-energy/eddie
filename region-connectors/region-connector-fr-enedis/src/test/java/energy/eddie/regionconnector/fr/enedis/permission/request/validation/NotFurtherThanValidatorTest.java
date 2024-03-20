@@ -7,8 +7,8 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissio
 import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -20,7 +20,12 @@ class NotFurtherThanValidatorTest {
     void test_validate_when_endDateIsWithinLimit() {
         // Given
         StateBuilderFactory factory = new StateBuilderFactory();
-        TimeframedPermissionRequest request = new EnedisPermissionRequest("cid", "dnid", ZonedDateTime.now(ZoneOffset.UTC), ZonedDateTime.now(ZoneOffset.UTC).plusHours(1), Granularity.P1D, factory);
+        TimeframedPermissionRequest request = new EnedisPermissionRequest("cid",
+                                                                          "dnid",
+                                                                          LocalDate.now(ZoneOffset.UTC),
+                                                                          LocalDate.now(ZoneOffset.UTC),
+                                                                          Granularity.P1D,
+                                                                          factory);
         NotFurtherThanValidator validator = new NotFurtherThanValidator(ChronoUnit.DAYS, 1);
 
         // When
@@ -34,7 +39,12 @@ class NotFurtherThanValidatorTest {
     void test_validate_when_endDateIsOutOfBounds() {
         // Given
         StateBuilderFactory factory = new StateBuilderFactory();
-        TimeframedPermissionRequest request = new EnedisPermissionRequest("cid", "dnid", ZonedDateTime.now(ZoneOffset.UTC), ZonedDateTime.now(ZoneOffset.UTC).plusDays(2), Granularity.P1D, factory);
+        TimeframedPermissionRequest request = new EnedisPermissionRequest("cid",
+                                                                          "dnid",
+                                                                          LocalDate.now(ZoneOffset.UTC),
+                                                                          LocalDate.now(ZoneOffset.UTC).plusDays(2),
+                                                                          Granularity.P1D,
+                                                                          factory);
         NotFurtherThanValidator validator = new NotFurtherThanValidator(ChronoUnit.DAYS, 1);
 
         // When
