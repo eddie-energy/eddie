@@ -23,19 +23,23 @@ public interface JpaPermissionRequestRepository extends PagingAndSortingReposito
 
     @Override
     @Query("SELECT pr FROM EdaPermissionRequest pr WHERE pr.conversationId = :conversationId OR pr.cmRequestId = :cmRequestId")
-    Optional<AtPermissionRequest> findByConversationIdOrCMRequestId(@Param("conversationId") String conversationId,
-                                                                    @Param("cmRequestId") @Nullable String cmRequestId);
+    Optional<AtPermissionRequest> findByConversationIdOrCMRequestId(
+            @Param("conversationId") String conversationId,
+            @Param("cmRequestId") @Nullable String cmRequestId
+    );
 
     @Override
     @Query("""
             SELECT pr FROM EdaPermissionRequest pr
             WHERE pr.meteringPointId = :meteringPointId
                 AND (pr.status = energy.eddie.api.v0.PermissionProcessStatus.ACCEPTED OR pr.status = energy.eddie.api.v0.PermissionProcessStatus.FULFILLED)
-                AND cast(pr.start as date) <= :date
-                AND (cast(pr.end as date) >= :date OR pr.end IS NULL)
+                AND pr.start <= :date
+                AND (pr.end >= :date OR pr.end IS NULL)
             """)
-    List<AtPermissionRequest> findAcceptedAndFulfilledByMeteringPointIdAndDate(@Param("meteringPointId") String meteringPointId,
-                                                                               @Param("date") LocalDate date);
+    List<AtPermissionRequest> findAcceptedAndFulfilledByMeteringPointIdAndDate(
+            @Param("meteringPointId") String meteringPointId,
+            @Param("date") LocalDate date
+    );
 
     @Override
     Optional<AtPermissionRequest> findByConsentId(@Param("consentId") String consentId);

@@ -4,8 +4,8 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,7 +20,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
                 "cid",
                 "dnid",
                 null,
-                ZonedDateTime.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
                 null,
                 "mpid",
                 Granularity.PT15M,
@@ -37,8 +37,8 @@ class StartIsBeforeOrEqualEndValidatorTest {
     @Test
     void isNotValid_whenPermissionRequestEndIsBeforeStart() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime end = start.minusDays(1);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC);
+        LocalDate end = start.minusDays(1);
         StartIsBeforeOrEqualEndValidator validator = new StartIsBeforeOrEqualEndValidator();
         var created = new CreatedEvent(
                 "pid",
@@ -57,7 +57,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
         // Then
         assertAll(
                 () -> assertEquals(1, res.size()),
-                () -> assertEquals("dataFrom", res.get(0).name())
+                () -> assertEquals("dataFrom", res.getFirst().name())
         );
     }
 
@@ -65,8 +65,8 @@ class StartIsBeforeOrEqualEndValidatorTest {
     void isValid_whenPermissionRequestStartIsBeforeEnd() {
         // Given
         StartIsBeforeOrEqualEndValidator validator = new StartIsBeforeOrEqualEndValidator();
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC);
+        LocalDate end = start.plusDays(1);
         var created = new CreatedEvent(
                 "pid",
                 "cid",
@@ -90,7 +90,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
     void isValid_whenPermissionRequestStartIsEqualEnd() {
         // Given
         StartIsBeforeOrEqualEndValidator validator = new StartIsBeforeOrEqualEndValidator();
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC);
         var created = new CreatedEvent(
                 "pid",
                 "cid",

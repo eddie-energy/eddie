@@ -6,7 +6,6 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMod
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingAddress;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.EdaSchemaVersion;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
@@ -21,6 +20,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static java.util.Objects.requireNonNull;
 
 public class CCMORequest {
@@ -34,13 +34,27 @@ public class CCMORequest {
     private final AtConfiguration configuration;
     private final ZonedDateTime timestamp;
 
-    public CCMORequest(DsoIdAndMeteringPoint dsoIdAndMeteringPoint,
-                       CCMOTimeFrame timeframe,
-                       AtConfiguration atConfiguration,
-                       RequestDataType requestDataType,
-                       Granularity granularity,
-                       AllowedTransmissionCycle transmissionCycle,
-                       ZonedDateTime timestamp) {
+    public CCMORequest(
+            DsoIdAndMeteringPoint dsoIdAndMeteringPoint,
+            CCMOTimeFrame timeframe,
+            AtConfiguration atConfiguration,
+            RequestDataType requestDataType,
+            Granularity granularity,
+            AllowedTransmissionCycle transmissionCycle
+    ) {
+        this(dsoIdAndMeteringPoint, timeframe, atConfiguration,
+             requestDataType, granularity, transmissionCycle, ZonedDateTime.now(ZoneOffset.UTC));
+    }
+
+    public CCMORequest(
+            DsoIdAndMeteringPoint dsoIdAndMeteringPoint,
+            CCMOTimeFrame timeframe,
+            AtConfiguration atConfiguration,
+            RequestDataType requestDataType,
+            Granularity granularity,
+            AllowedTransmissionCycle transmissionCycle,
+            ZonedDateTime timestamp
+    ) {
         requireNonNull(dsoIdAndMeteringPoint);
         requireNonNull(timeframe);
         requireNonNull(atConfiguration);
@@ -58,14 +72,52 @@ public class CCMORequest {
         this.timestamp = timestamp;
     }
 
-    public CCMORequest(DsoIdAndMeteringPoint dsoIdAndMeteringPoint,
-                       CCMOTimeFrame timeframe,
-                       AtConfiguration atConfiguration,
-                       RequestDataType requestDataType,
-                       Granularity granularity,
-                       AllowedTransmissionCycle transmissionCycle) {
-        this(dsoIdAndMeteringPoint, timeframe, atConfiguration,
-                requestDataType, granularity, transmissionCycle, ZonedDateTime.now(ZoneOffset.UTC));
+    public String dsoId() {
+        return dsoIdAndMeteringPoint.dsoId();
+    }
+
+    public LocalDate start() {
+        return timeframe.start();
+    }
+
+    public Optional<LocalDate> end() {
+        return timeframe.end();
+    }
+
+    public CMRequest toCMRequest() {
+        return new CMRequest()
+                .withMarketParticipantDirectory(makeMarketParticipantDirectory())
+                .withProcessDirectory(makeProcessDirectory());
+    }
+
+    private MarketParticipantDirectory makeMarketParticipantDirectory() {
+        return new MarketParticipantDirectory()
+                .withMessageCode(MessageCodes.Request.CODE)
+                .withSector(Sector.ELECTRICITY.value())
+                .withDocumentMode(DocumentMode.PROD)
+                .withDuplicate(false)
+                .withSchemaVersion(EdaSchemaVersion.CM_REQUEST_01_10.value())
+                .withRoutingHeader(new RoutingHeader()
+                                           .withSender(toRoutingAddress(configuration.eligiblePartyId()))
+                                           .withReceiver(toRoutingAddress(dsoIdAndMeteringPoint.dsoId()))
+                                           .withDocumentCreationDateTime(
+                                                   DateTimeConverter.dateTimeToXml(LocalDateTime.now(AT_ZONE_ID))
+                                           )
+                );
+    }
+
+    private ProcessDirectory makeProcessDirectory() {
+        var messageId = messageId();
+        String prefixedConversationId = configuration.conversationIdPrefix()
+                                                     .map(prefix -> prefix + messageId)
+                                                     .orElse(messageId);
+        return new ProcessDirectory()
+                .withCMRequest(makeReqType())
+                .withCMRequestId(cmRequestId())
+                .withMessageId(messageId)
+                .withConversationId(prefixedConversationId)
+                .withProcessDate(DateTimeConverter.dateToXml(LocalDate.now(AT_ZONE_ID)))
+                .withMeteringPoint(meteringPointId().orElse(null));
     }
 
     private static RoutingAddress toRoutingAddress(String address) {
@@ -87,72 +139,25 @@ public class CCMORequest {
         return new MessageId(toRoutingAddress(configuration.eligiblePartyId()), timestamp).toString();
     }
 
+    private ReqType makeReqType() {
+        return new ReqType()
+                .withReqDatType(requestDataType.toString(timeframe))
+                .withMeteringIntervall(meteringIntervall())
+                .withTransmissionCycle(this.transmissionCycle)
+                .withDateFrom(DateTimeConverter.dateTimeToXml(timeframe.start().atStartOfDay(AT_ZONE_ID)))
+                .withDateTo(timeframe.end()
+                                     .map(end -> end.atStartOfDay(AT_ZONE_ID))
+                                     .map(DateTimeConverter::dateTimeToXml)
+                                     .orElse(null)
+                );
+    }
+
     public String cmRequestId() {
         return new CMRequestId(messageId()).toString();
     }
 
     public Optional<String> meteringPointId() {
         return dsoIdAndMeteringPoint.meteringPoint();
-    }
-
-    public String dsoId() {
-        return dsoIdAndMeteringPoint.dsoId();
-    }
-
-    public ZonedDateTime start() {
-        return timeframe.start();
-    }
-
-    public Optional<ZonedDateTime> end() {
-        return timeframe.end();
-    }
-
-    public CMRequest toCMRequest() {
-        return new CMRequest()
-                .withMarketParticipantDirectory(makeMarketParticipantDirectory())
-                .withProcessDirectory(makeProcessDirectory());
-    }
-
-    private MarketParticipantDirectory makeMarketParticipantDirectory() {
-        return new MarketParticipantDirectory()
-                .withMessageCode(MessageCodes.Request.CODE)
-                .withSector(Sector.ELECTRICITY.value())
-                .withDocumentMode(DocumentMode.PROD)
-                .withDuplicate(false)
-                .withSchemaVersion(EdaSchemaVersion.CM_REQUEST_01_10.value())
-                .withRoutingHeader(new RoutingHeader()
-                                           .withSender(toRoutingAddress(configuration.eligiblePartyId()))
-                                           .withReceiver(toRoutingAddress(dsoIdAndMeteringPoint.dsoId()))
-                        .withDocumentCreationDateTime(
-                                DateTimeConverter.dateTimeToXml(LocalDateTime.now(EdaRegionConnectorMetadata.AT_ZONE_ID))
-                        )
-                );
-    }
-
-    private ProcessDirectory makeProcessDirectory() {
-        var messageId = messageId();
-        String prefixedConversationId = configuration.conversationIdPrefix()
-                .map(prefix -> prefix + messageId)
-                .orElse(messageId);
-        return new ProcessDirectory()
-                .withCMRequest(makeReqType())
-                .withCMRequestId(cmRequestId())
-                .withMessageId(messageId)
-                .withConversationId(prefixedConversationId)
-                .withProcessDate(DateTimeConverter.dateToXml(LocalDate.now(EdaRegionConnectorMetadata.AT_ZONE_ID)))
-                .withMeteringPoint(meteringPointId().orElse(null));
-    }
-
-    private ReqType makeReqType() {
-        return new ReqType()
-                .withReqDatType(requestDataType.toString(timeframe))
-                .withMeteringIntervall(meteringIntervall())
-                .withTransmissionCycle(this.transmissionCycle)
-                .withDateFrom(DateTimeConverter.dateTimeToXml(timeframe.start()))
-                .withDateTo(timeframe.end()
-                        .map(DateTimeConverter::dateTimeToXml)
-                        .orElse(null)
-                );
     }
 
     private MeteringIntervallType meteringIntervall() {

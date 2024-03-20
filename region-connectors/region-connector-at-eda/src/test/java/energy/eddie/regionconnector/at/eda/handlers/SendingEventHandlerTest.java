@@ -19,6 +19,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -41,7 +42,7 @@ class SendingEventHandlerTest {
     @Test
     void testAcceptCommitsPendingEvent_whenPontonAvailable() {
         // Given
-        var start = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         var permissionRequest = new EdaPermissionRequest(
                 "connectionId", "pid", "dnid", "cmRequestId", "conversationId", "mid", "dsoId", start, end,
@@ -66,7 +67,7 @@ class SendingEventHandlerTest {
     @Test
     void testAcceptCommitsUnableToSend_whenPontonUnavailable() throws TransmissionException, JAXBException {
         // Given
-        var start = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         var permissionRequest = new EdaPermissionRequest(
                 "connectionId", "pid", "dnid", "cmRequestId", "conversationId", "mid", "dsoId", start, end,
@@ -92,7 +93,7 @@ class SendingEventHandlerTest {
     }
 
     @Test
-    void testAcceptDoesNotCommit_unknownPermissionRequest() throws TransmissionException, JAXBException {
+    void testAcceptDoesNotCommit_unknownPermissionRequest() {
         // Given
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.empty());
@@ -107,5 +108,4 @@ class SendingEventHandlerTest {
         // Then
         verify(outbox, never()).commit(any());
     }
-
 }

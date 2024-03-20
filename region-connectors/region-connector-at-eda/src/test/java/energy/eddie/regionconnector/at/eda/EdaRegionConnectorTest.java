@@ -17,6 +17,7 @@ import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -62,13 +63,13 @@ class EdaRegionConnectorTest {
     @Test
     void terminateExistingPermission_sendsCmRevoke() throws TransmissionException, JAXBException {
         // given
-        var start = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
                                                          "conversationId", "mid", "dsoId", start, end,
                                                          Granularity.PT15M,
                                                          PermissionProcessStatus.ACCEPTED, "",
-                                                         "consentId", start);
+                                                         "consentId", ZonedDateTime.now(ZoneOffset.UTC));
         when(repository.findByPermissionId("permissionId")).thenReturn(Optional.of(permissionRequest));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
         var epId = new PlainAtConfiguration("epId", null);
@@ -85,14 +86,14 @@ class EdaRegionConnectorTest {
     @Test
     void terminatePermission_edaThrows_terminatesOnEPSide() throws TransmissionException, JAXBException {
         // given
-        var start = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         doThrow(new TransmissionException(null)).when(edaAdapter).sendCMRevoke(any());
         var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
                                                          "conversationId", "mid", "dsoId", start, end,
                                                          Granularity.PT15M,
                                                          PermissionProcessStatus.ACCEPTED, "",
-                                                         "consentId", start);
+                                                         "consentId", ZonedDateTime.now(ZoneOffset.UTC));
         when(repository.findByPermissionId("permissionId")).thenReturn(Optional.of(permissionRequest));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
         var epId = new PlainAtConfiguration("epId", null);
@@ -150,8 +151,8 @@ class EdaRegionConnectorTest {
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
         var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox, null);
         StepVerifier stepVerifier = StepVerifier.create(regionConnector.getConnectionStatusMessageStream())
-                .expectComplete()
-                .verifyLater();
+                                                .expectComplete()
+                                                .verifyLater();
 
         // When
         regionConnector.close();

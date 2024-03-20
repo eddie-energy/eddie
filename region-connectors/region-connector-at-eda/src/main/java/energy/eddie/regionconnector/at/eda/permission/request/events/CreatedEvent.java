@@ -5,6 +5,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
@@ -17,8 +18,8 @@ public class CreatedEvent extends PersistablePermissionEvent {
     @Embedded
     private final EdaDataSourceInformation dataSourceInformation;
     private final ZonedDateTime created;
-    private final ZonedDateTime permissionStart;
-    private final ZonedDateTime permissionEnd;
+    private final LocalDate permissionStart;
+    private final LocalDate permissionEnd;
     private final String meteringPointId;
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text")
@@ -39,17 +40,35 @@ public class CreatedEvent extends PersistablePermissionEvent {
         conversationId = null;
     }
 
-    public CreatedEvent(String permissionId,
-                        String connectionId,
-                        String dataNeedId,
-                        EdaDataSourceInformation dataSourceInformation,
-                        ZonedDateTime created,
-                        ZonedDateTime start,
-                        ZonedDateTime end,
-                        String meteringPointId,
-                        Granularity granularity,
-                        String cmRequestId,
-                        String conversationId) {
+    public CreatedEvent(
+            String permissionId,
+            String connectionId,
+            String dataNeedId,
+            EdaDataSourceInformation dataSourceInformation,
+            LocalDate start,
+            LocalDate end,
+            String meteringPointId,
+            Granularity granularity,
+            String cmRequestId,
+            String conversationId
+    ) {
+        this(permissionId, connectionId, dataNeedId, dataSourceInformation, ZonedDateTime.now(AT_ZONE_ID), start, end,
+             meteringPointId, granularity, cmRequestId, conversationId);
+    }
+
+    public CreatedEvent(
+            String permissionId,
+            String connectionId,
+            String dataNeedId,
+            EdaDataSourceInformation dataSourceInformation,
+            ZonedDateTime created,
+            LocalDate start,
+            LocalDate end,
+            String meteringPointId,
+            Granularity granularity,
+            String cmRequestId,
+            String conversationId
+    ) {
         super(permissionId, PermissionProcessStatus.CREATED);
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
@@ -61,21 +80,6 @@ public class CreatedEvent extends PersistablePermissionEvent {
         this.granularity = granularity;
         this.cmRequestId = cmRequestId;
         this.conversationId = conversationId;
-    }
-
-    public CreatedEvent(String permissionId,
-                        String connectionId,
-                        String dataNeedId,
-                        EdaDataSourceInformation dataSourceInformation,
-                        ZonedDateTime start,
-                        ZonedDateTime end,
-                        String meteringPointId,
-                        Granularity granularity,
-                        String cmRequestId,
-                        String conversationId
-    ) {
-        this(permissionId, connectionId, dataNeedId, dataSourceInformation, ZonedDateTime.now(AT_ZONE_ID), start, end,
-             meteringPointId, granularity, cmRequestId, conversationId);
     }
 
     public String connectionId() {
@@ -94,11 +98,11 @@ public class CreatedEvent extends PersistablePermissionEvent {
         return created;
     }
 
-    public ZonedDateTime start() {
+    public LocalDate start() {
         return permissionStart;
     }
 
-    public ZonedDateTime end() {
+    public LocalDate end() {
         return permissionEnd;
     }
 

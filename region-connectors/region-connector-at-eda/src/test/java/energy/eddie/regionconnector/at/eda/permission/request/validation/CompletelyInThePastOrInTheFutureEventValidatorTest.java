@@ -5,8 +5,8 @@ import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInfor
 import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,8 +16,8 @@ class CompletelyInThePastOrInTheFutureEventValidatorTest {
     void notValid_whenFromAndToAreNotCompletelyInThePast() {
         // Given
         var validator = new CompletelyInThePastOrInTheFutureEventValidator();
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(5);
-        ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).plusDays(5);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(5);
+        LocalDate end = LocalDate.now(ZoneOffset.UTC).plusDays(5);
         var event = new CreatedEvent(
                 "pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"),
                 start,
@@ -38,9 +38,9 @@ class CompletelyInThePastOrInTheFutureEventValidatorTest {
     @Test
     void isValid_whenStartAndEndDateInThePast() {
         // Given
-        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime start = now.minusDays(11);
-        ZonedDateTime end = now.minusDays(1);
+        LocalDate now = LocalDate.now(ZoneOffset.UTC);
+        LocalDate start = now.minusDays(11);
+        LocalDate end = now.minusDays(1);
         var validator = new CompletelyInThePastOrInTheFutureEventValidator();
         var event = new CreatedEvent(
                 "pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"),
@@ -59,9 +59,9 @@ class CompletelyInThePastOrInTheFutureEventValidatorTest {
     @Test
     void isValid_whenStartAndEndDateInTheFuture() {
         // Given
-        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime start = now.plusDays(1);
-        ZonedDateTime end = now.plusDays(1);
+        LocalDate now = LocalDate.now(ZoneOffset.UTC);
+        LocalDate start = now.plusDays(1);
+        LocalDate end = now.plusDays(1);
         var event = new CreatedEvent(
                 "pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"),
                 start,
@@ -80,7 +80,7 @@ class CompletelyInThePastOrInTheFutureEventValidatorTest {
     @Test
     void isValid_whenStartDateIsNow() {
         // Given
-        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        LocalDate now = LocalDate.now(ZoneOffset.UTC);
         var validator = new CompletelyInThePastOrInTheFutureEventValidator();
         var event = new CreatedEvent(
                 "pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"),
@@ -99,7 +99,7 @@ class CompletelyInThePastOrInTheFutureEventValidatorTest {
     @Test
     void isValid_whenStartDateIsInTheFutureAndDataToEmpty() {
         // Given
-        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        LocalDate now = LocalDate.now(ZoneOffset.UTC);
         var validator = new CompletelyInThePastOrInTheFutureEventValidator();
         var event = new CreatedEvent(
                 "pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"),
@@ -118,7 +118,7 @@ class CompletelyInThePastOrInTheFutureEventValidatorTest {
     @Test
     void isNotValid_whenStartDateIsInThePastAndDataToEmpty() {
         // Given
-        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        LocalDate now = LocalDate.now(ZoneOffset.UTC);
         var validator = new CompletelyInThePastOrInTheFutureEventValidator();
         var event = new CreatedEvent(
                 "pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"),
