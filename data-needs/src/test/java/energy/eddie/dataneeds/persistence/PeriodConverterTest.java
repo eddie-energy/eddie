@@ -62,6 +62,8 @@ class PeriodConverterTest {
     }
 
     @Test
+    @SuppressWarnings("JavaPeriodGetDays")
+        // is intended
     void givenPeriodString_convertToEntityAttribute_returnsParsedPeriod() {
         // When
         Period period = converter.convertToEntityAttribute("-P2Y1M27D");

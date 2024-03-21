@@ -13,10 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-
-import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -36,8 +32,6 @@ class PermissionCreationServiceTest {
     @Test
     void createAndSendPermissionRequest_doesNotCallApiOnDeniedPermissionRequest() throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
-        var start = LocalDate.now(DK_ZONE_ID).minusDays(10);
-        var end = start.plusDays(5);
         String connectionId = "connId";
         String dataNeedId = "dataNeedId";
         String refreshToken = "token";
@@ -64,8 +58,6 @@ class PermissionCreationServiceTest {
     @Test
     void createAndSendPermissionRequest_callsApiOnAcceptedPermissionRequest() throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
-        var start = ZonedDateTime.now(DK_ZONE_ID).minusDays(10);
-        var end = start.plusDays(5);
         String connectionId = "connId";
         String dataNeedId = "dataNeedId";
         String refreshToken = "token";
