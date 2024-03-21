@@ -191,7 +191,6 @@ class PermissionRequestControllerTest {
     @Test
     void createPermissionRequest_givenUnsupportedGranularity_returnsBadRequest() throws Exception {
         // Given
-        CreatedPermissionRequest expected = new CreatedPermissionRequest("pid", "cmRequestId");
         UnsupportedDataNeedException exception = new UnsupportedDataNeedException(
                 EdaRegionConnectorMetadata.REGION_CONNECTOR_ID,
                 null,

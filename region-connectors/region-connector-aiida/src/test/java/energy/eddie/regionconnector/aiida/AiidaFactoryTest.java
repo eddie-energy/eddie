@@ -16,10 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.Period;
+import java.time.*;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -144,6 +141,9 @@ class AiidaFactoryTest {
                                                                     "foo",
                                                                     start,
                                                                     end);
+        var expectedStart = request.start().atStartOfDay(ZoneOffset.UTC).toInstant();
+        var expectedEnd = ZonedDateTime.of(request.end(), LocalTime.MAX, ZoneOffset.UTC).toInstant();
+
         // When
         var dto = aiidaFactory.createPermissionDto(request);
 
@@ -151,8 +151,8 @@ class AiidaFactoryTest {
         // Then
         assertAll(
                 () -> assertDoesNotThrow(() -> UUID.fromString(dto.permissionId())),
-                () -> assertEquals(request.start(), dto.startDate()),
-                () -> assertEquals(request.end(), dto.expirationDate()),
+                () -> assertEquals(expectedStart, dto.startTime()),
+                () -> assertEquals(expectedEnd, dto.expirationTime()),
                 () -> assertEquals(request.permissionId(), dto.permissionId()),
                 () -> assertEquals(connectionId, dto.connectionId()),
                 () -> assertEquals(dataNeedId, dto.dataNeedId()),

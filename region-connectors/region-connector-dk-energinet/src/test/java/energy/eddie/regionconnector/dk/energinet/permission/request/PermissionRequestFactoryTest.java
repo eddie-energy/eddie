@@ -10,8 +10,6 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -32,8 +30,6 @@ class PermissionRequestFactoryTest {
     private EnerginetCustomerApi customerApi;
     @Mock
     private DataNeedsService mockDataNeedsService;
-    @Mock
-    private Extension<DkEnerginetCustomerPermissionRequest> extension;
     @Mock
     private DataNeedWrapper mockWrapper;
     @Mock
@@ -64,7 +60,6 @@ class PermissionRequestFactoryTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void testRecreatePermissionRequest_doesNotRunExtension() {
         var start = LocalDate.now(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
@@ -87,7 +82,6 @@ class PermissionRequestFactoryTest {
 
         // Then
         assertNotNull(wrapped);
-        verify(extension, never()).accept(any());
     }
 
     @Test
