@@ -18,9 +18,7 @@ import org.apache.kafka.common.errors.InvalidTopicException;
 import org.apache.kafka.common.internals.Topic;
 import org.springframework.stereotype.Component;
 
-import java.time.Clock;
-import java.time.LocalDate;
-import java.time.Period;
+import java.time.*;
 import java.util.Set;
 import java.util.UUID;
 
@@ -173,7 +171,7 @@ public class AiidaFactory {
         DataNeed dataNeed = dataNeedsService.findById(dataNeedId)
                                             .orElseThrow(() -> new DataNeedNotFoundException(dataNeedId));
 
-        // TODO currently only GenericDataNeed is supported
+        // currently only GenericDataNeed is supported --> GH-782
         if (!(dataNeed instanceof GenericAiidaDataNeed genericAiidaDataNeed))
             throw new UnsupportedDataNeedException(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                    dataNeedId,
@@ -183,8 +181,8 @@ public class AiidaFactory {
                 aiidaRequest.permissionId(),
                 dataNeed.name(),
                 dataNeedId,
-                aiidaRequest.start(),
-                aiidaRequest.end(),
+                aiidaRequest.start().atStartOfDay(ZoneOffset.UTC).toInstant(),
+                ZonedDateTime.of(aiidaRequest.end(), LocalTime.MAX, ZoneOffset.UTC).toInstant(),
                 aiidaRequest.connectionId(),
                 genericAiidaDataNeed.dataTags(),
                 kafkaConfig
