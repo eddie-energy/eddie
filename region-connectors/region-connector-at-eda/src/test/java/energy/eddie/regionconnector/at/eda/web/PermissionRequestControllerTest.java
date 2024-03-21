@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.web.DataNeedsAdvice;
+import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.at.eda.services.ConnectionStatusService;
@@ -24,8 +27,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.util.UriTemplate;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -74,12 +75,12 @@ class PermissionRequestControllerTest {
                 )));
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/permission-status/{permissionId}", permissionId)
-                                .accept(MediaType.APPLICATION_JSON))
-                // Then
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.permissionId", is(permissionId)))
-                .andExpect(jsonPath("$.connectionId", is("cid")));
+                       MockMvcRequestBuilders.get("/permission-status/{permissionId}", permissionId)
+                                             .accept(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.permissionId", is(permissionId)))
+               .andExpect(jsonPath("$.connectionId", is("cid")));
     }
 
     @Test
@@ -89,75 +90,75 @@ class PermissionRequestControllerTest {
                 .thenReturn(Optional.empty());
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/permission-status/{permissionId}", "123")
-                                .accept(MediaType.APPLICATION_JSON))
-                // Then
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("No permission with ID '123' found.")));
+                       MockMvcRequestBuilders.get("/permission-status/{permissionId}", "123")
+                                             .accept(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isNotFound())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("No permission with ID '123' found.")));
     }
 
     @Test
     void createPermissionRequest_415WhenNotJsonBody() throws Exception {
         // Given
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/permission-request")
-                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                                .param("connectionId", "someValue")
-                )
-                // Then
-                .andExpect(status().isUnsupportedMediaType());
+                       MockMvcRequestBuilders.post("/permission-request")
+                                             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                                             .param("connectionId", "someValue")
+               )
+               // Then
+               .andExpect(status().isUnsupportedMediaType());
     }
 
     @Test
     void createPermissionRequest_400WhenNoBody() throws Exception {
         // Given
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/permission-request")
-                                .contentType(MediaType.APPLICATION_JSON)
-                )
-                // Then
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
+                       MockMvcRequestBuilders.post("/permission-request")
+                                             .contentType(MediaType.APPLICATION_JSON)
+               )
+               // Then
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
     }
 
     @Test
     void createPermissionRequest_400WhenMissingFields() throws Exception {
         // Given
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/permission-request")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("{}")
-                )
-                // Then
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(2)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItems(
-                        "dataNeedId: must not be blank",
-                        "connectionId: must not be blank")));
+                       MockMvcRequestBuilders.post("/permission-request")
+                                             .contentType(MediaType.APPLICATION_JSON)
+                                             .content("{}")
+               )
+               // Then
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(2)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItems(
+                       "dataNeedId: must not be blank",
+                       "connectionId: must not be blank")));
     }
 
     @Test
     void createPermissionRequest_400WhenFieldsNotExactSize() throws Exception {
         ObjectNode jsonNode = objectMapper.createObjectNode()
-                .put("connectionId", "23")
-                .put("dataNeedId", "PT4h")
-                .put("dsoId", "123")
-                .put("meteringPointId", "456");
+                                          .put("connectionId", "23")
+                                          .put("dataNeedId", "PT4h")
+                                          .put("dsoId", "123")
+                                          .put("meteringPointId", "456");
 
         // Given
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/permission-request")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(jsonNode))
-                )
-                // Then
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(2)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItems(
-                        "meteringPointId: needs to be exactly 33 characters long",
-                        "dsoId: needs to be exactly 8 characters long")));
+                       MockMvcRequestBuilders.post("/permission-request")
+                                             .contentType(MediaType.APPLICATION_JSON)
+                                             .content(objectMapper.writeValueAsString(jsonNode))
+               )
+               // Then
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(2)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItems(
+                       "meteringPointId: needs to be exactly 33 characters long",
+                       "dsoId: needs to be exactly 8 characters long")));
     }
 
     @Test
@@ -167,123 +168,101 @@ class PermissionRequestControllerTest {
         CreatedPermissionRequest expected = new CreatedPermissionRequest("pid", "cmRequestId");
         when(permissionRequestCreationAndValidationService.createAndValidatePermissionRequest(any()))
                 .thenReturn(expected);
-        var end = LocalDate.now(ZoneOffset.UTC).minusDays(1);
-        var start = end.minusDays(1);
 
         ObjectNode jsonNode = objectMapper.createObjectNode()
-                .put("connectionId", "cid")
-                .put("meteringPointId", "0".repeat(33))
-                .put("dataNeedId", "dnid")
-                .put("dsoId", "0".repeat(8))
-                .put("start", start.toString())
-                .put("end", end.toString())
-                .put("granularity", "PT15M");
+                                          .put("connectionId", "cid")
+                                          .put("meteringPointId", "0".repeat(33))
+                                          .put("dataNeedId", "dnid")
+                                          .put("dsoId", "0".repeat(8))
+                                          .put("granularity", "PT15M");
 
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/permission-request")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(jsonNode.toString())
-                )
-                // Then
-                .andExpect(status().isCreated())
-                .andExpect(content().json(objectMapper.writeValueAsString(expected)))
-                .andExpect(header().string("Location", is(expectedLocationHeader)));
+                       MockMvcRequestBuilders.post("/permission-request")
+                                             .contentType(MediaType.APPLICATION_JSON)
+                                             .content(jsonNode.toString())
+               )
+               // Then
+               .andExpect(status().isCreated())
+               .andExpect(content().json(objectMapper.writeValueAsString(expected)))
+               .andExpect(header().string("Location", is(expectedLocationHeader)));
     }
 
     @Test
     void createPermissionRequest_givenUnsupportedGranularity_returnsBadRequest() throws Exception {
         // Given
         CreatedPermissionRequest expected = new CreatedPermissionRequest("pid", "cmRequestId");
+        UnsupportedDataNeedException exception = new UnsupportedDataNeedException(
+                EdaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                null,
+                "Unsupported granularity: 'JUST_FOR_TEST'");
         when(permissionRequestCreationAndValidationService.createAndValidatePermissionRequest(any()))
-                .thenReturn(expected);
-        var end = LocalDate.now(ZoneOffset.UTC).minusDays(1);
-        var start = end.minusDays(1);
+                .thenThrow(exception);
 
         ObjectNode jsonNode = objectMapper.createObjectNode()
-                .put("connectionId", "cid")
-                .put("meteringPointId", "0".repeat(33))
-                .put("dataNeedId", "dnid")
-                .put("dsoId", "0".repeat(8))
-                .put("start", start.toString())
-                .put("end", end.toString())
-                .put("granularity", "P1M");
+                                          .put("connectionId", "cid")
+                                          .put("meteringPointId", "0".repeat(33))
+                                          .put("dataNeedId", "dnid")
+                                          .put("dsoId", "0".repeat(8))
+                                          .put("granularity", "P1M");
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/permission-request")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(jsonNode.toString())
-                )
-                // Then
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", startsWith("granularity: Unsupported granularity: 'P1M'.")));
-    }
-
-    @Test
-    void createPermissionRequest_201WhenEndDateNull() throws Exception {
-        // Given
-        var start = LocalDate.now(ZoneOffset.UTC).minusDays(1);
-
-        ObjectNode jsonNode = objectMapper.createObjectNode()
-                .put("connectionId", "cid")
-                .put("meteringPointId", "0".repeat(33))
-                .put("dataNeedId", "dnid")
-                .put("dsoId", "0".repeat(8))
-                .put("start", start.toString())
-                .putNull("end")
-                .put("granularity", "PT15M");
-
-        // When
-        when(permissionRequestCreationAndValidationService.createAndValidatePermissionRequest(any()))
-                .thenReturn(new CreatedPermissionRequest("pid", "cmRequestId"));
-        mockMvc.perform(
-                        MockMvcRequestBuilders.post("/permission-request")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(jsonNode.toString())
-                )
-                // Then
-                .andExpect(status().isCreated());
+                       MockMvcRequestBuilders.post("/permission-request")
+                                             .contentType(MediaType.APPLICATION_JSON)
+                                             .content(jsonNode.toString())
+               )
+               // Then
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
+                                   startsWith(
+                                           "Region connector 'at-eda' does not support data need with ID 'null': Unsupported granularity: 'JUST_FOR_TEST'")));
     }
 
     @ParameterizedTest
     @MethodSource("permissionRequestArguments")
-    void createPermissionRequest_400WhenMissingStringParameters(String connectionId, String meteringPoint, String dataNeedsId, String dsoId, String errorFieldName) throws Exception {
+    void createPermissionRequest_400WhenMissingStringParameters(
+            String connectionId,
+            String meteringPoint,
+            String dataNeedsId,
+            String dsoId,
+            String errorFieldName
+    ) throws Exception {
         // Given
-        var end = LocalDate.now(ZoneOffset.UTC).minusDays(1);
-        var start = end.minusDays(1);
-
         ObjectNode jsonNode = objectMapper.createObjectNode()
-                .put("connectionId", connectionId)
-                .put("meteringPointId", meteringPoint)
-                .put("dataNeedId", dataNeedsId)
-                .put("dsoId", dsoId)
-                .put("start", start.toString())
-                .put("end", end.toString())
-                .put("granularity", "PT15M");
+                                          .put("connectionId", connectionId)
+                                          .put("meteringPointId", meteringPoint)
+                                          .put("dataNeedId", dataNeedsId)
+                                          .put("dsoId", dsoId)
+                                          .put("granularity", "PT15M");
 
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/permission-request")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(jsonNode.toString())
-                )
-                // Then
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", startsWith(errorFieldName)));
+                       MockMvcRequestBuilders.post("/permission-request")
+                                             .contentType(MediaType.APPLICATION_JSON)
+                                             .content(jsonNode.toString())
+               )
+               // Then
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", startsWith(errorFieldName)));
     }
 
     /**
      * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
-     * whole core is started. To be able to properly test the controller's error responses, manually add the advice
-     * to this test class.
+     * whole core is started. To be able to properly test the controller's error responses, manually add the advice to
+     * this test class.
      */
     @TestConfiguration
     static class ControllerTestConfiguration {
         @Bean
         public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
             return new RegionConnectorsCommonControllerAdvice();
+        }
+
+        @Bean
+        public DataNeedsAdvice dataNeedsAdvice() {
+            return new DataNeedsAdvice();
         }
     }
 }

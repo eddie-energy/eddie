@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.ZonedDateTime;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,8 +35,13 @@ class ValidatedStateTest {
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
 
-        var requestForCreation = new PermissionRequestForCreation("bar", "luu", "muh", "kuh", requestDataFrom, requestDataTo, Granularity.PT15M);
-        var permissionRequest = new DatadisPermissionRequest(permissionId, requestForCreation, factory);
+        var requestForCreation = new PermissionRequestForCreation("bar", "luu", "muh", "kuh");
+        var permissionRequest = new DatadisPermissionRequest(permissionId,
+                                                             requestForCreation,
+                                                             requestDataFrom.toLocalDate(),
+                                                             requestDataTo.toLocalDate(),
+                                                             Granularity.PT15M,
+                                                             factory);
         var validatedState = new ValidatedState(permissionRequest, authorizationApi, factory);
         permissionRequest.changeState(validatedState);
         return permissionRequest;

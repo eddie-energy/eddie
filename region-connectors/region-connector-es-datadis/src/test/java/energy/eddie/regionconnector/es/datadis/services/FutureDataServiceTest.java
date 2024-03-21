@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.stream.Stream;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,11 +34,12 @@ class FutureDataServiceTest {
                 "connectionId",
                 "dataNeedId",
                 "nif",
-                "meteringPointId",
-                start.atStartOfDay(ZONE_ID_SPAIN),
-                end.atStartOfDay(ZONE_ID_SPAIN),
-                Granularity.PT1H);
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
+                "meteringPointId");
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation,
+                                                                             start,
+                                                                             end,
+                                                                             Granularity.PT1H,
+                                                                             stateBuilderFactory);
         permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
         permissionRequest.setDistributorCodeAndPointType(DistributorCode.ASEME, 1);
         return permissionRequest;

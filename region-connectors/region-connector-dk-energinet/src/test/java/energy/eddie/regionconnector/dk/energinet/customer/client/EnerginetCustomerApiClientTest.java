@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.dk.energinet.customer.client;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.HealthState;
-import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.IsAliveApi;
 import energy.eddie.regionconnector.dk.energinet.customer.api.MeterDataApi;
@@ -23,18 +22,17 @@ import reactor.test.StepVerifier;
 import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import static energy.eddie.api.agnostic.Granularity.PT15M;
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class EnerginetCustomerApiClientTest {
-    private static final ZoneId DK_ZONE_ID = EnerginetRegionConnector.DK_ZONE_ID;
     private static final int MAX_PERIOD = 730;
 
     static Stream<Arguments> getTimeSeries_invalidTimeFrame_throws() {

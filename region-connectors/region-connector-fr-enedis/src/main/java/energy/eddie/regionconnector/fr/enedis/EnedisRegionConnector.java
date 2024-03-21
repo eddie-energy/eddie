@@ -10,14 +10,12 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-import java.time.ZoneId;
 import java.util.Map;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
 @Component
 public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider {
-    public static final ZoneId ZONE_ID_FR = ZoneId.of("Europe/Paris");
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
     private final EnedisApi enedisApi;

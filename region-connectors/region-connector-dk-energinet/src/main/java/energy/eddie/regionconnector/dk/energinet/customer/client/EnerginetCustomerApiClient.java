@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.dk.energinet.customer.client;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.HealthState;
-import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.api.IsAliveApi;
@@ -23,6 +22,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.UUID;
+
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 
 @Component
 public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
@@ -51,7 +52,7 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     }
 
     private void throwIfInvalidTimeframe(LocalDate start, LocalDate end) throws DateTimeException {
-        LocalDate currentDate = LocalDate.ofInstant(Instant.now(), EnerginetRegionConnector.DK_ZONE_ID);
+        LocalDate currentDate = LocalDate.ofInstant(Instant.now(), DK_ZONE_ID);
 
         if (start.isEqual(end) || start.isAfter(end)) {
             throw new DateTimeException("Start date must be before end date.");

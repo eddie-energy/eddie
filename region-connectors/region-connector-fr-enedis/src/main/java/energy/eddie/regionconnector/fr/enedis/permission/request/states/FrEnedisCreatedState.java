@@ -16,12 +16,14 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.MAXIMUM_MONTHS_IN_THE_PAST;
+
 public class FrEnedisCreatedState
         extends ContextualizedPermissionRequestState<FrEnedisPermissionRequest>
         implements CreatedPermissionRequestState {
     private static final Set<Validator<TimeframedPermissionRequest>> VALIDATORS = Set.of(
             new StartIsBeforeOrEqualEndValidator<>(),
-            new NotFurtherThanValidator(ChronoUnit.YEARS, 3)
+            new NotFurtherThanValidator(ChronoUnit.MONTHS, MAXIMUM_MONTHS_IN_THE_PAST)
     );
     private final StateBuilderFactory factory;
 
@@ -40,15 +42,15 @@ public class FrEnedisCreatedState
 
     private void validateAttributes() throws ValidationException {
         List<AttributeError> errors = VALIDATORS.stream()
-                .flatMap(val -> val.validate(permissionRequest).stream())
-                .toList();
+                                                .flatMap(val -> val.validate(permissionRequest).stream())
+                                                .toList();
 
         if (!errors.isEmpty()) {
             ValidationException exception = new ValidationException(this, errors);
             permissionRequest.changeState(
                     factory.create(permissionRequest, PermissionProcessStatus.MALFORMED)
-                            .withCause(exception)
-                            .build()
+                           .withCause(exception)
+                           .build()
             );
             throw exception;
         }

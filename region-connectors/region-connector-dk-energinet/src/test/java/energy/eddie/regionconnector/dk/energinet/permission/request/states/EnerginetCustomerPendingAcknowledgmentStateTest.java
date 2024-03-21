@@ -4,16 +4,16 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.FutureStateException;
 import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
 import org.junit.jupiter.api.Test;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -23,7 +23,8 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
     void status_returnsPendingAcknowledgement() {
         // Given
         StateBuilderFactory factory = new StateBuilderFactory();
-        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null, factory);
+        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null,
+                                                                                                            factory);
 
         // When
         // Then
@@ -33,7 +34,7 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
     @Test
     void receivedPermissionAdminAnswer_transitionsState() {
         // Given
-        var start = ZonedDateTime.now(EnerginetRegionConnector.DK_ZONE_ID).minusDays(10);
+        var start = LocalDate.now(DK_ZONE_ID).minusDays(10);
         String permissionId = UUID.randomUUID().toString();
         String refreshToken = "refreshToken";
         String meteringPoint = "meteringPoint";
@@ -42,10 +43,21 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
         String dataNeedId = "dataNeedId";
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         StateBuilderFactory factory = new StateBuilderFactory();
-        var forCreation = new PermissionRequestForCreation(connectionId, start, start.plusDays(5), refreshToken, granularity, meteringPoint, dataNeedId);
+        var forCreation = new PermissionRequestForCreation(connectionId,
+                                                           refreshToken,
+                                                           meteringPoint,
+                                                           dataNeedId);
 
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient, factory);
-        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(permissionRequest, factory);
+        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId,
+                                                                       forCreation,
+                                                                       apiClient,
+                                                                       start,
+                                                                       start.plusDays(5),
+                                                                       granularity,
+                                                                       factory);
+        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(
+                permissionRequest,
+                factory);
 
         // When
         state.receivedPermissionAdministratorResponse();
@@ -58,7 +70,8 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
     void validate_throws() {
         // Given
         StateBuilderFactory factory = new StateBuilderFactory();
-        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null, factory);
+        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null,
+                                                                                                            factory);
 
         // When
         // Then
@@ -69,7 +82,8 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
     void sendToPermissionAdministrator_throws() {
         // Given
         StateBuilderFactory factory = new StateBuilderFactory();
-        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null, factory);
+        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null,
+                                                                                                            factory);
 
         // When
         // Then
@@ -80,7 +94,8 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
     void accept_throws() {
         // Given
         StateBuilderFactory factory = new StateBuilderFactory();
-        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null, factory);
+        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null,
+                                                                                                            factory);
 
         // When
         // Then
@@ -91,7 +106,8 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
     void invalid_throws() {
         // Given
         StateBuilderFactory factory = new StateBuilderFactory();
-        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null, factory);
+        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null,
+                                                                                                            factory);
 
         // When
         // Then
@@ -102,7 +118,8 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
     void reject_throws() {
         // Given
         StateBuilderFactory factory = new StateBuilderFactory();
-        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null, factory);
+        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null,
+                                                                                                            factory);
 
         // When
         // Then
@@ -113,7 +130,8 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
     void terminate_throws() {
         // Given
         StateBuilderFactory factory = new StateBuilderFactory();
-        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null, factory);
+        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null,
+                                                                                                            factory);
 
         // When
         // Then
@@ -124,7 +142,8 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
     void revoke_throws() {
         // Given
         StateBuilderFactory factory = new StateBuilderFactory();
-        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null, factory);
+        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null,
+                                                                                                            factory);
 
         // When
         // Then
@@ -135,7 +154,8 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
     void timeLimit_throws() {
         // Given
         StateBuilderFactory factory = new StateBuilderFactory();
-        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null, factory);
+        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null,
+                                                                                                            factory);
 
         // When
         // Then
@@ -146,7 +166,8 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
     void timeOut_throws() {
         // Given
         StateBuilderFactory factory = new StateBuilderFactory();
-        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null, factory);
+        EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(null,
+                                                                                                            factory);
 
         // When
         // Then

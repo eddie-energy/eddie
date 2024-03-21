@@ -1,7 +1,7 @@
 package energy.eddie.spring.regionconnector;
 
-import energy.eddie.api.agnostic.DataNeedsService;
 import energy.eddie.core.CoreSpringConfig;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,7 +69,8 @@ class RegionConnectorsCommonControllerAdviceCorrectlyRegisteredTest {
      */
     private WebApplicationContext getChildContext(String servletRegistrationName) {
         assertNotNull(applicationContext.getServletContext());
-        var attribute = applicationContext.getServletContext().getAttribute(PREFIX_SERVLET_ATTRIBUTE_NAME + servletRegistrationName);
+        var attribute = applicationContext.getServletContext()
+                .getAttribute(PREFIX_SERVLET_ATTRIBUTE_NAME + servletRegistrationName);
         assertNotNull(attribute);
 
 
@@ -80,9 +81,9 @@ class RegionConnectorsCommonControllerAdviceCorrectlyRegisteredTest {
     void givenInvalidRequestBody_returnsBadRequest() throws Exception {
         // When
         mockMvc.perform(post("/permission-request")
-                        // this will cause a HttpMessageNotReadableException
-                        .content("")
-                        .contentType(MediaType.APPLICATION_JSON))
+                                // this will cause a HttpMessageNotReadableException
+                                .content("")
+                                .contentType(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
@@ -94,19 +95,17 @@ class RegionConnectorsCommonControllerAdviceCorrectlyRegisteredTest {
     void givenIncompleteRequestBody_returnsBadRequest() throws Exception {
         // When
         mockMvc.perform(post("/permission-request")
-                        // this will cause a MethodArgumentNotValidException
-                        .content("{\"connectionId\":\"\", \"dataNeedId\":\"\"}")
-                        .contentType(MediaType.APPLICATION_JSON))
+                                // this will cause a MethodArgumentNotValidException
+                                .content("{\"connectionId\":\"\", \"dataNeedId\":\"\"}")
+                                .contentType(MediaType.APPLICATION_JSON))
                 // Then
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItems(
                         "nif: must not be null or blank",
                         "meteringPointId: must not be null or blank",
-                        "granularity: must not be null",
                         "dataNeedId: must not be null or blank",
-                        "connectionId: must not be null or blank",
-                        "requestDataTo: must not be null",
-                        "requestDataFrom: must not be null")));
+                        "connectionId: must not be null or blank"
+                )));
     }
 
     @Test
@@ -116,6 +115,7 @@ class RegionConnectorsCommonControllerAdviceCorrectlyRegisteredTest {
                 // Then
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("No permission with ID 'NonExistingId' found.")));
+                .andExpect(
+                        jsonPath(ERRORS_JSON_PATH + "[0].message", is("No permission with ID 'NonExistingId' found.")));
     }
 }

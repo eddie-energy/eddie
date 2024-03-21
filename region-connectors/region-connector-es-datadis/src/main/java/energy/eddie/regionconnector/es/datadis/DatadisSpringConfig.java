@@ -10,6 +10,7 @@ import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
@@ -134,9 +135,12 @@ public class DatadisSpringConfig {
             EsPermissionRequestRepository repository,
             PermissionRequestFactory permissionRequestFactory,
             PermissionRequestConsumer permissionRequestConsumer,
-            SupplyApiService supplyApiService
+            SupplyApiService supplyApiService,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // This class is autowired from another spring context
+            DataNeedsService dataNeedsService
     ) {
-        return new PermissionRequestService(repository, permissionRequestFactory, supplyApiService, permissionRequestConsumer);
+        return new PermissionRequestService(repository, permissionRequestFactory, supplyApiService,
+                                            permissionRequestConsumer, dataNeedsService);
     }
 
     @Bean

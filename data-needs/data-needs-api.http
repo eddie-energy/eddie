@@ -1,0 +1,7 @@
+### GET ID and name of all data needs
+GET http://localhost:8080/data-needs/api
+
+
+### GET details of a data need
+@id = 5b39265c-c784-4009-a114-f6672d1c1d5f
+GET http://localhost:8080/data-needs/api/{{id}}

@@ -26,19 +26,16 @@ services:
       JDBC_URL: "jdbc:postgresql://localhost:5432/example_app"
       JDBC_USER: "test"
       JDBC_PASSWORD: "test"
-      PUBLIC_CONTEXT_PATH: ""                            # default value
-      IMPORT_CONFIG_FILE: "file:./config/data-needs.yml" # default value
+      PUBLIC_CONTEXT_PATH: ""                                   # default value
+      EDDIE_DATA_NEEDS_CONFIG_FILE: "./config/data-needs.json"  # default value
     volumes:
       - ./ponton:/ponton
-      - ./data-needs.yml:/opt/eddie/config/data-needs.yml
+      - ./data-needs.json:/opt/eddie/config/data-needs.json
 ````
 
-| Variable             | Description                                             |
-|----------------------|---------------------------------------------------------|
-| `IMPORT_CONFIG_FILE` | Comma separated list of Spring configuration locations. |
-
-- `IMPORT_CONFIG_FILE` follows the same syntax and semantics as `spring.config.import`, see
-  [Spring Boot Reference](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config.files.optional-prefix)
+| Variable                       | Description                             |
+|--------------------------------|-----------------------------------------|
+| `EDDIE_DATA_NEEDS_CONFIG_FILE` | File containing data needs definitions. |
 
 As the configuration of region connectors is quite complex and there are many properties, the environment is
 configured in the accompanying `.env` file (see [EDDIE /env](https://github.com/eddie-energy/eddie/tree/main/env)
@@ -64,8 +61,8 @@ web application as it's implemented using standard HTML custom elements.
 <script type="module" src="${eddieUrl}/lib/eddie-components.js"></script>
 <!-- ... -->
 <eddie-connect-button
-        connection-id="1"
-        data-need-id="LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY"
+  connection-id="1"
+  data-need-id="LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY"
 ></eddie-connect-button>
 ```
 
@@ -92,9 +89,9 @@ id must be used only once to create a uniquely identifiable connection with EDDI
 Configuration parameters can be modified in the following locations:
 
 - **Environment variables**: They are described in the _Installation_ section of this document.
-- `data-needs.yml`: This file contains the data needs configuration. It's intended content is described in the section
-  _DataNeed configuration_.
-- `application.properties`: A base configuration is provided inside of the application, but additional values are
+- `data-needs.json`: This file contains the data needs configuration. It's intended content is described in the section
+  _data need configuration_.
+- `application.properties`: A base configuration is provided inside the application, but additional values are
   required that can be supplied in EDDIE's runtime directory (`./application.properties`). The base
   configuration is located
   at [core/src/main/resources/application.properties](https://github.com/eddie-energy/eddie/blob/main/core/src/main/resources/application.properties).
@@ -118,113 +115,69 @@ cim.eligible-party.national-coding-scheme=NAT
 
 #### Data need configuration
 
-A data need
-([class DataNeed in logical data model](https://eddie-web.projekte.fh-hagenberg.at/docs/requirements/4_data_requirements/1_logical_data_model/))
-describes a configuration for the _Connect Button_. By using that button, the type of data and time frame is predefined
+A data need describes a configuration for the _Connect Button_. By using that button, the type of data and time frame is
+predefined
 so that the EP application receives data that it actually needs to perform its job.
 
-Data needs can be configured in two ways: via the spring configuration or they can be set via a REST-ful API which
-stores
-the data needs in the framework's database.
+Data needs can be configured in two ways: via a JSON file that is read on startup, they can be created via a REST-ful
+API which stores the data needs in the core's database.
 
-| Parameter                                | Type              | Description                                           |
-|------------------------------------------|-------------------|-------------------------------------------------------|
-| eddie.data-needs-config.data-need-source | CONFIG / DATABASE | Specifies the location where data needs are read from |
+| Parameter                                | Type              | Description                                            |
+|------------------------------------------|-------------------|--------------------------------------------------------|
+| eddie.data-needs-config.data-need-source | CONFIG / DATABASE | Specifies the location where data needs are read from. |
 
-If this is set to `DATABASE` no data needs are allowed in the configuration.
+If this is set to `CONFIG`, the property `EDDIE_DATA_NEEDS_CONFIG_FILE` needs to be set, otherwise the file is ignored.
+It is not possible to combine `CONFIG` and `DATABASE` modes.
 
-**Data needs when using database**
+##### Data needs in configuration
 
-When using the database as source for data needs, the data need config file needs to contain *only* the following
-config:  
-`config/data-needs.yml`
+See the file [env/data-needs.json](env/data-needs.json) for a full example configuration.
+While the REST-API ignores the ID field for creation requests, when supplying data needs via the JSON file,
+the ID is a mandatory field.
 
-```yaml
-eddie:
-  data-needs-config:
-    data-need-source=DATABASE
+```json
+{
+  "type": "validated",
+  "id": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
+  "name": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
+  "description": "Historical validated consumption data for the last three months, one measurement per day",
+  "purpose": "Some purpose",
+  "policyLink": "https://example.com/toc",
+  "duration": {
+    "type": "relativeDuration",
+    "start": "-P3M",
+    "end": "P0D"
+  },
+  "energyType": "ELECTRICITY",
+  "minGranularity": "P1D",
+  "maxGranularity": "P1D"
+}
 ```
 
-**Data needs in configuration**
+All data needs have these common fields:
 
-`config/data-needs.yml`
+| Attribute   | Type   | Description                                                                                                                                         |
+|-------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| type        | String | Type of the data need, e.g. `validated` for historical validated consumption data. Please check the OpenAPI documentation for all supported values. |
+| id          | String | Unique id that can be used to reference this data need.                                                                                             |
+| name        | String | Short memorable name of the data need that may be presented to the customer.                                                                        |
+| description | String | Multiline string that describes this data need in a human readable form to be shown in the UI. May be formatted using Markdown.                     |
+| purpose     | String | Multiline string that describes the purpose of this data need. May be formatted using Markdown.                                                     |
+| policyLink  | URL    | URL to the data policy that applies to this data need.                                                                                              |
 
-```yaml
-eddie:
-  data-needs-config:
-    data-need-source: CONFIG
-    data-needs:
-      - id: LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY
-        description: Historical validated consumption data for the last three months, one measurement per day
-        type: HISTORICAL_VALIDATED_CONSUMPTION_DATA
-        granularity: P1D
-        duration-start: -90
-        duration-open-end: false
-        duration-end: 0
-      - id: FUTURE_NEAR_REALTIME_DATA
-        description: Near realtime consumption data from the smart meter
-        type: AIIDA_NEAR_REALTIME_DATA
-        granularity: PT5M
-        duration-start: 0
-        duration-open-end: false
-        duration-end: 10
-        transmission-interval: 5
-        shared-data-ids:
-          - "1-0:1.7.0"
-          - "1-0:1.8.0"
-        service-name: "My awesome energy service"
-```
+Depending on the `type`, a data need may require more fields, e.g. for validated historical consumption data:
 
-| Attribute             | Type                        | Description                                                                                                                                   |
-|-----------------------|-----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
-| id                    | String                      | Unique id that can be used to reference this DataNeed                                                                                         |
-| description           | String                      | Multiline string that describes this DataNeed in a human readable form to be shown in the UI                                                  |
-| type                  | DataType                    |                                                                                                                                               |
-| granularity           | MeteringInterval (optional) | Describing the measurements per 24h only relevant for validated consumption data                                                              |
-| duration-start        | Integer (signed)            | Beginning of the metering data in days after the current date                                                                                 |
-| duration-end          | Integer (signed, optional)  | End of the metering data in days after the current date                                                                                       |
-| duration-open-end     | Boolean (optional)          | If true, the value of `durationEnd` is ignored and the time interval is open ended                                                            |
-| transmission-interval | Integer                     | Interval in seconds between two data transmissions from AIIDA to the EP. Only required if the DataType is `AIIDA_NEAR_REALTIME_DATA`          |
-| shared-data-ids       | Set of Strings              | Set of Strings that describe the data that should be shared by an AIIDA instance. Only required if the DataType is `AIIDA_NEAR_REALTIME_DATA` |
-| service-name          | String                      | Name of the service that this DataNeed was created for. Only required if the DataType is `AIIDA_NEAR_REALTIME_DATA`                           |
+| Attribute      | Type   | Description                                                                                                                                                                                                                                                                                                                                |
+|----------------|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| duration       | Object | Describes the timeframe for this data need.                                                                                                                                                                                                                                                                                                |
+| energyType     | String | Type of energy to be requested. See OpenAPI documentation for all possible values.                                                                                                                                                                                                                                                         |
+| minGranularity | String | Desired granularity of the data that should be requested.                                                                                                                                                                                                                                                                                  |
+| maxGranularity | String | Maximum accepted granularity. Not all MDAs supply the data in the same granularity, if your application can handle multiple granularities, set this to a higher value than `minGranularity` and the region connectors will automatically retry to fetch the data in a higher granularity if the data is not available in `minGranularity`. |
 
-- A DataNeed is mandatory for each _Connect with EDDIE_ Button.
-- `durationStart` and `durationEnd` are relative to the time when a Connection is actually created by the User on the UI
-- If `durationStart` or `durationEnd` are negative, that is interpreted as days _before_ the current date.
+A data need is mandatory for each _Connect with EDDIE_ Button.
 
-**Constraints:**
-
-- If `type` is `HISTORICAL_VALIDATED_CONSUMPTION_DATA`, `durationEnd` has to be zero or negative.
-- If `type` is `FUTURE_VALIDATED_CONSUMPTION_DATA`, `durationStart` has to be zero or positive.
-- `durationEnd` is mandatory, except if `type` is `ACCOUNTING_POINT_MASTER_DATA`
-- `durationStart` has to be smaller than `durationEnd`
-- `durationOpenEnd` can only be true if future data is requested
-
-**Enum: DataType**
-
-| Value                                   | Description                                                                                                |
-|-----------------------------------------|------------------------------------------------------------------------------------------------------------|
-| `HISTORICAL_VALIDATED_CONSUMPTION_DATA` | consumption records will contain historical validated consumption data from  the past                      |
-| `FUTURE_VALIDATED_CONSUMPTION_DATA`     | consumption records will contain historical validated consumption data but it's requested for future times |
-| `AIIDA_NEAR_REALTIME_DATA`              | consumption records will be unvalidated near-realtime data directly from a P1 meter                        |
-| `ACCOUNTING_POINT_MASTER_DATA`          | master data for the accounting point                                                                       |
-
-- A request to `HISTORICAL_VALIDATED_CONSUMPTION_DATA` and `FUTURE_VALIDATED_CONSUMPTION_DATA` leads to the same data
-  structure delivered by EDDIE. But the process of requesting these kinds of data differ, so it's
-  currently not possible to mix both in a single request.
-
-**Enum: MeteringInterval**
-
-| Value   | Values per 24h | Description      |
-|---------|----------------|------------------|
-| `P1Y`   | n.a.           | once per year    |
-| `P1M`   | n.a.           | once per month   |
-| `P1D`   | 1              | once per day     |
-| `PT1H`  | 24             | once per hour    |
-| `PT30M` | 48             | every 30 minutes |
-| `PT15M` | 96             | every 15 minutes |
-| `PT10M` | 144            | every 10 minutes |
-| `PT5M`  | 288            | every 5 minutes  |
+Please see the OpenAPI documentation (default: http://localhost:8080/data-needs/swagger-ui/index.html) for further
+details about all possible data need types and their respective fields.
 
 ### External system related
 

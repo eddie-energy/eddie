@@ -23,14 +23,10 @@ repositories {
 dependencies {
     implementation(project(":api"))
 
-    implementation(libs.reactor.core)
-    implementation(project(mapOf("path" to ":api")))
-    implementation(libs.jakarta.annotation.api)
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
+    implementation(libs.reactor.core)
     implementation(libs.hibernate.validator)
-    implementation(libs.jakarta.validation.api)
-
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
 

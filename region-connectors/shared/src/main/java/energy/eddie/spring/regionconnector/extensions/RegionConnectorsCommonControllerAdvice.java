@@ -1,9 +1,9 @@
 package energy.eddie.spring.regionconnector.extensions;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
-import energy.eddie.api.agnostic.exceptions.DataNeedNotFoundException;
 import energy.eddie.api.agnostic.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
@@ -24,6 +24,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
 
@@ -41,6 +42,7 @@ public class RegionConnectorsCommonControllerAdvice {
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, List<EddieApiError>>> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
+        LOGGER.debug("Invalid request body", exception);
         String errorDetails = "Invalid request body.";
 
         if (isEnumCauseOfException(exception)) {
@@ -50,10 +52,28 @@ public class RegionConnectorsCommonControllerAdvice {
             Object[] validEnumConstants = getValidEnumConstantsAndFieldName(invalidFormatEx);
 
             errorDetails = String.format("%s: Invalid enum value: '%s'. Valid values: %s.",
-                    fieldName, invalidFormatEx.getValue(), Arrays.toString(validEnumConstants));
+                                         fieldName, invalidFormatEx.getValue(), Arrays.toString(validEnumConstants));
+        } else if (isInvalidFormatExceptionCauseOfException(exception)) {
+            InvalidFormatException formatException = ((InvalidFormatException) exception.getCause());
+            String completeFieldName = formatException
+                    .getPath()
+                    .stream()
+                    .map(JsonMappingException.Reference::getFieldName)
+                    .collect(Collectors.joining("."));
+
+            errorDetails = String.format("%s: Cannot parse value '%s'.", completeFieldName, formatException.getValue());
         }
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(errorDetails)));
         return ResponseEntity.badRequest().body(errors);
+    }
+
+    /**
+     * @param exception {@link HttpMessageNotReadableException} to check.
+     * @return True if the {@code exception} was caused by an {@link InvalidFormatException}.
+     */
+    private boolean isInvalidFormatExceptionCauseOfException(HttpMessageNotReadableException exception) {
+        return exception.getCause() instanceof InvalidFormatException invalidFormatEx
+                && invalidFormatEx.getPath() != null;
     }
 
     /**
@@ -129,16 +149,5 @@ public class RegionConnectorsCommonControllerAdvice {
             (PermissionNotFoundException exception) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
-    }
-
-    @ExceptionHandler(DataNeedNotFoundException.class)
-    public ResponseEntity<Map<String, List<EddieApiError>>> handleDataNeedNotFoundException
-            (DataNeedNotFoundException exception) {
-        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
-
-        if (exception.isBadRequest())
-            return ResponseEntity.badRequest().body(errors);
-        else
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
     }
 }

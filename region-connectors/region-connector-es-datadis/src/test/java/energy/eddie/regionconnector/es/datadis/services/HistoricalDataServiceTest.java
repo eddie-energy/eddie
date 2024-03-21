@@ -7,7 +7,6 @@ import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermiss
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,7 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.stream.Stream;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -41,8 +40,7 @@ class HistoricalDataServiceTest {
         return Stream.of(
                 Arguments.of(now.minusDays(10), now.plusDays(10), "10 days: 10 days ago to 10 days in the future"),
                 Arguments.of(now.minusMonths(9), now.plusMonths(9), "1 month: 9 months ago to 9 months in the future"),
-                Arguments.of(now.minusYears(1), now.plusYears(1), "1 year: 1 year ago to 1 year in the future"),
-                Arguments.of(now.minusYears(1), null, "1 year: 1 year ago to unlimited future")
+                Arguments.of(now.minusYears(1), now.plusYears(1), "1 year: 1 year ago to 1 year in the future")
         );
     }
 
@@ -56,19 +54,21 @@ class HistoricalDataServiceTest {
         );
     }
 
-    @SuppressWarnings("DataFlowIssue")
-    private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, @Nullable LocalDate end) {
+    private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
         StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
         PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
                 "connectionId",
                 "dataNeedId",
                 "nif",
-                "meteringPointId",
-                start.atStartOfDay(ZONE_ID_SPAIN),
-                end == null ? null : end.atStartOfDay(ZONE_ID_SPAIN),
-                Granularity.PT1H);
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation, stateBuilderFactory);
-        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
+                "meteringPointId");
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
+                                                                             permissionRequestForCreation,
+                                                                             start,
+                                                                             end,
+                                                                             Granularity.PT1H,
+                                                                             stateBuilderFactory);
+        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
+                                                         .build());
         permissionRequest.setDistributorCodeAndPointType(DistributorCode.ASEME, 1);
         return permissionRequest;
     }
@@ -76,9 +76,13 @@ class HistoricalDataServiceTest {
 
     @ParameterizedTest(name = "{2}")
     @MethodSource("pastTimeRanges")
-    void fetchAvailableHistoricalData_callsFetchDataForPermissionRequest_withExpectedParams(LocalDate start, LocalDate end, String description) {
+    void fetchAvailableHistoricalData_callsFetchDataForPermissionRequest_withExpectedParams(
+            LocalDate start,
+            LocalDate end,
+            String description
+    ) {
         // Given
-        EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end.minusDays(1));
+        EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
         HistoricalDataService historicalDataService = new HistoricalDataService(dataApiService);
 
         // When
@@ -90,7 +94,11 @@ class HistoricalDataServiceTest {
 
     @ParameterizedTest(name = "{2}")
     @MethodSource("futureTimeRanges")
-    void fetchAvailableHistoricalData_doesNotCallFetchDataForPermissionRequest_withFutureTimeRanges(LocalDate start, LocalDate end, String description) {
+    void fetchAvailableHistoricalData_doesNotCallFetchDataForPermissionRequest_withFutureTimeRanges(
+            LocalDate start,
+            LocalDate end,
+            String description
+    ) {
         // Given
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
         HistoricalDataService historicalDataService = new HistoricalDataService(dataApiService);
@@ -104,7 +112,11 @@ class HistoricalDataServiceTest {
 
     @ParameterizedTest(name = "{2}")
     @MethodSource("pastToFutureTimeRanges")
-    void fetchAvailableHistoricalData_withPermissionRequestFromPastToFuture(LocalDate start, @Nullable LocalDate end, String description) {
+    void fetchAvailableHistoricalData_withPermissionRequestFromPastToFuture(
+            LocalDate start,
+             LocalDate end,
+            String description
+    ) {
         // Given
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
         HistoricalDataService historicalDataService = new HistoricalDataService(dataApiService);
@@ -113,6 +125,8 @@ class HistoricalDataServiceTest {
         historicalDataService.fetchAvailableHistoricalData(permissionRequest);
 
         // Then
-        verify(dataApiService).fetchDataForPermissionRequest(permissionRequest, start, LocalDate.now(ZONE_ID_SPAIN).minusDays(1));
+        verify(dataApiService).fetchDataForPermissionRequest(permissionRequest,
+                                                             start,
+                                                             LocalDate.now(ZONE_ID_SPAIN).minusDays(1));
     }
 }

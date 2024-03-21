@@ -16,11 +16,11 @@ import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
-import static energy.eddie.regionconnector.es.datadis.utils.DatadisSpecificConstants.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,33 +46,40 @@ class PermissionRequestFactoryTest {
         String nif = "123456";
         String dataNeedId = "dataNeed";
         String connectionId = "connId";
-        ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
-        ZonedDateTime requestDataFrom = now.minusDays(10);
-        ZonedDateTime requestDataTo = now.minusDays(5);
+        LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
+        LocalDate requestDataFrom = now.minusDays(10);
+        LocalDate requestDataTo = now.minusDays(5);
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif,
-                meteringPointId, requestDataFrom, requestDataTo, Granularity.PT15M);
+                                                                  meteringPointId
+        );
 
         // When
-        EsPermissionRequest createdRequest = factory.create(requestForCreation);
+        EsPermissionRequest createdRequest = factory.create(requestForCreation,
+                                                            requestDataFrom,
+                                                            requestDataTo,
+                                                            Granularity.PT15M);
 
         // Then
-        assertDoesNotThrow(() -> UUID.fromString(createdRequest.permissionId()));
-        assertEquals(connectionId, createdRequest.connectionId());
-        assertEquals(dataNeedId, createdRequest.dataNeedId());
-        assertEquals(nif, createdRequest.nif());
-        assertEquals(meteringPointId, createdRequest.meteringPointId());
-        assertEquals(MeasurementType.QUARTER_HOURLY, createdRequest.measurementType());
-        assertEquals(requestDataFrom, createdRequest.start());
-        assertEquals(requestDataTo.plusDays(1), createdRequest.end());
-        assertTrue(createdRequest.distributorCode().isEmpty());
-        assertTrue(createdRequest.lastPulledMeterReading().isEmpty());
-        assertTrue(createdRequest.pointType().isEmpty());
+        assertAll(
+                () -> assertDoesNotThrow(() -> UUID.fromString(createdRequest.permissionId())),
+                () -> assertEquals(connectionId, createdRequest.connectionId()),
+                () -> assertEquals(dataNeedId, createdRequest.dataNeedId()),
+                () -> assertEquals(nif, createdRequest.nif()),
+                () -> assertEquals(meteringPointId, createdRequest.meteringPointId()),
+                () -> assertEquals(MeasurementType.QUARTER_HOURLY, createdRequest.measurementType()),
+                () -> assertEquals(requestDataFrom.atStartOfDay(ZONE_ID_SPAIN), createdRequest.start()),
+                () -> assertEquals(requestDataTo.atStartOfDay(ZONE_ID_SPAIN), createdRequest.end()),
+                () -> assertTrue(createdRequest.distributorCode().isEmpty()),
+                () -> assertTrue(createdRequest.lastPulledMeterReading().isEmpty()),
+                () -> assertTrue(createdRequest.pointType().isEmpty())
+        );
     }
 
     @Test
     void close_emitsCompleteOnPublisher() {
         // Given
-        var factory = new PermissionRequestFactory(Sinks.many().multicast().onBackpressureBuffer(), Set.of(), new StateBuilderFactory(authorizationApi));
+        var factory = new PermissionRequestFactory(Sinks.many().multicast().onBackpressureBuffer(), Set.of(),
+                                                   new StateBuilderFactory(authorizationApi));
         StepVerifier stepVerifier = StepVerifier.create(factory.getConnectionStatusMessageStream())
                 .expectComplete()
                 .verifyLater();

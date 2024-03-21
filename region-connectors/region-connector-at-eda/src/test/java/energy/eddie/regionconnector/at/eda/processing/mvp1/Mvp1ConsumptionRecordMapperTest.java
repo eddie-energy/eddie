@@ -2,9 +2,9 @@ package energy.eddie.regionconnector.at.eda.processing.mvp1;
 
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
 import energy.eddie.api.v0.ConsumptionPoint;
+import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.utils.ConversionFactor;
-import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import energy.eddie.regionconnector.at.eda.utils.MeteringIntervalUtil;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
@@ -90,7 +90,7 @@ class Mvp1ConsumptionRecordMapperTest {
 
     @Test
     void mapToMvp1ConsumptionRecord_mapsEDAConsumptionRecordWithSingleConsumptionPoint_returnsAtTimeZoneInformation() throws InvalidMappingException {
-        var austrianTime = ZonedDateTime.of(2021, 1, 1, 0, 0, 0, 0, DateTimeConstants.AT_ZONE_ID);
+        var austrianTime = ZonedDateTime.of(2021, 1, 1, 0, 0, 0, 0, EdaRegionConnectorMetadata.AT_ZONE_ID);
         var edaCR = createConsumptionRecord("xxx", "L1", austrianTime, MeteringIntervall.QH, 10, UOMType.KWH);
 
         var uut = new Mvp1ConsumptionRecordMapper();
@@ -100,7 +100,7 @@ class Mvp1ConsumptionRecordMapperTest {
         assertNotNull(cimCR.getConsumptionPoints());
         assertEquals(1, cimCR.getConsumptionPoints().size());
         assertEquals(austrianTime, cimCR.getStartDateTime());
-        assertEquals(DateTimeConstants.AT_ZONE_ID, cimCR.getStartDateTime().getZone());
+        assertEquals(EdaRegionConnectorMetadata.AT_ZONE_ID, cimCR.getStartDateTime().getZone());
     }
 
 

@@ -9,6 +9,8 @@ import java.time.LocalDate;
 /**
  * This class represents the supply data returned by the Datadis API.
  * It contains information about supplies (metering points) associated to a NIF.
+ * @param pointType is the type of the metering point.
+ *                  Values 1 and 2 support quarter hourly values and 3 - 5 support only hourly values.
  */
 public record Supply(String address,
                      @JsonProperty("cups") String meteringPoint,

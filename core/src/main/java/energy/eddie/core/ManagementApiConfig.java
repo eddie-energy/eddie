@@ -32,7 +32,9 @@ import java.io.IOException;
  *      <li>spring.data.rest.basepath=${management.server.urlprefix}</li>
  * </ul>
  *
- * @see <a href="https://dmytro-lazarenko.hashnode.dev/spring-boot-2-multiple-ports-for-internal-and-external-rest-apis-jetty">Spring boot 2: multiple ports for Internal and External REST APIs + Jetty</a>
+ * @see <a
+ * href="https://dmytro-lazarenko.hashnode.dev/spring-boot-2-multiple-ports-for-internal-and-external-rest-apis-jetty">Spring
+ * boot 2: multiple ports for Internal and External REST APIs + Jetty</a>
  */
 @Configuration
 public class ManagementApiConfig {
@@ -40,7 +42,10 @@ public class ManagementApiConfig {
     private final int managementPort;
     private final String managementUrlPrefix;
 
-    public ManagementApiConfig(@Value("${management.server.port}") int managementPort, @Value("${management.server.urlprefix}") String managementUrlPrefix) {
+    public ManagementApiConfig(
+            @Value("${management.server.port}") int managementPort,
+            @Value("${management.server.urlprefix}") String managementUrlPrefix
+    ) {
         this.managementPort = managementPort;
         this.managementUrlPrefix = managementUrlPrefix.startsWith("/") ? managementUrlPrefix : "/" + managementUrlPrefix;
     }
@@ -66,11 +71,20 @@ public class ManagementApiConfig {
         private static final Logger IEF_LOGGER = org.slf4j.LoggerFactory.getLogger(InternalEndpointsFilter.class);
 
         @Override
-        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        public void doFilter(
+                ServletRequest request,
+                ServletResponse response,
+                FilterChain chain
+        ) throws IOException, ServletException {
             var httpRequest = (HttpServletRequest) request;
             var isRequestOnManagementPort = httpRequest.getServerPort() == managementPort;
-            var isRequestOnManagementUrl = httpRequest.getRequestURI().startsWith(managementUrlPrefix);
-            IEF_LOGGER.debug("{} requested on port {}, managementPort: {}, managementUrl: {}", httpRequest.getRequestURI(), request.getLocalPort(), isRequestOnManagementPort, isRequestOnManagementUrl);
+            var isRequestOnManagementUrl = httpRequest.getRequestURI()
+                                                      .startsWith(CoreSpringConfig.DATA_NEEDS_URL_MAPPING_PREFIX + managementUrlPrefix);
+            IEF_LOGGER.debug("{} requested on port {}, managementPort: {}, managementUrl: {}",
+                             httpRequest.getRequestURI(),
+                             request.getLocalPort(),
+                             isRequestOnManagementPort,
+                             isRequestOnManagementUrl);
             if (isRequestOnManagementPort && isRequestOnManagementUrl) {
                 chain.doFilter(request, response); // this request should be considered accepted
             } else if (!isRequestOnManagementPort && !isRequestOnManagementUrl) {
@@ -80,5 +94,4 @@ public class ManagementApiConfig {
             }
         }
     }
-
 }

@@ -1,9 +1,9 @@
 package energy.eddie.spring.regionconnector.extensions;
 
-import energy.eddie.api.agnostic.DataNeedsService;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.core.CoreSpringConfig;
 import energy.eddie.core.services.RawDataService;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
@@ -21,8 +20,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.util.UriTemplate;
 
 import java.net.URI;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
@@ -50,14 +47,18 @@ class PermissionRequestControllerTest {
     void permissionStatus_permissionExists_returnsOk() throws Exception {
         // Given
         when(permissionRequestService.findConnectionStatusMessageById(anyString()))
-                .thenReturn(Optional.of(new ConnectionStatusMessage("cid", "permissionId", "dnid", null, PermissionProcessStatus.CREATED)));
+                .thenReturn(Optional.of(new ConnectionStatusMessage("cid",
+                                                                    "permissionId",
+                                                                    "dnid",
+                                                                    null,
+                                                                    PermissionProcessStatus.CREATED)));
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/permission-status/" + "cid")
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                // Then
-                .andExpect(status().isOk());
+                       MockMvcRequestBuilders.get("/permission-status/" + "cid")
+                                             .accept(MediaType.APPLICATION_JSON)
+               )
+               // Then
+               .andExpect(status().isOk());
     }
 
     @Test
@@ -67,11 +68,11 @@ class PermissionRequestControllerTest {
                 .thenReturn(Optional.empty());
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/permission-status/" + "cid")
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                // Then
-                .andExpect(status().isNotFound());
+                       MockMvcRequestBuilders.get("/permission-status/" + "cid")
+                                             .accept(MediaType.APPLICATION_JSON)
+               )
+               // Then
+               .andExpect(status().isNotFound());
     }
 
     @Test
@@ -82,21 +83,18 @@ class PermissionRequestControllerTest {
                 .thenReturn(new CreatedPermissionRequest("pid", URI.create("https://redirect.com")));
         PermissionRequestForCreation pr = new PermissionRequestForCreation(
                 "cid",
-                "dnid",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                ZonedDateTime.now(ZoneOffset.UTC).plusDays(10),
-                Granularity.P1D
+                "dnid"
         );
 
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/permission-request")
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(mapper.writeValueAsString(pr))
-                )
-                // Then
-                .andExpect(status().isCreated())
-                .andExpect(header().string("Location", is(expectedLocationHeader)));
+                       MockMvcRequestBuilders.post("/permission-request")
+                                             .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                             .content(mapper.writeValueAsString(pr))
+               )
+               // Then
+               .andExpect(status().isCreated())
+               .andExpect(header().string("Location", is(expectedLocationHeader)));
     }
 
     @Test
@@ -106,54 +104,52 @@ class PermissionRequestControllerTest {
 
         // When
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/authorization-callback")
-                                .param("state", "state")
-                                .param("usage_point_id", "upid")
-                )
-                // Then
-                .andExpect(status().isOk());
+                       MockMvcRequestBuilders.get("/authorization-callback")
+                                             .param("state", "state")
+                                             .param("usage_point_id", "upid")
+               )
+               // Then
+               .andExpect(status().isOk());
     }
 
     @Test
     void givenNonJsonBody_returnsUnsupportedMediaType() throws Exception {
         // Given
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/permission-request")
-                                .contentType(MediaType.MULTIPART_FORM_DATA)
-                                .param("connectionId", "someValue")
-                )
-                // Then
-                .andExpect(status().isUnsupportedMediaType());
+                       MockMvcRequestBuilders.post("/permission-request")
+                                             .contentType(MediaType.MULTIPART_FORM_DATA)
+                                             .param("connectionId", "someValue")
+               )
+               // Then
+               .andExpect(status().isUnsupportedMediaType());
     }
 
     @Test
     void givenNoRequestBody_returnsBadRequest() throws Exception {
         mockMvc.perform(post("/permission-request")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
     }
 
     @Test
     void givenAllMissingFields_returnsBadRequest() throws Exception {
         mockMvc.perform(post("/permission-request")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", allOf(
-                        iterableWithSize(4),
-                        hasItem("connectionId: must not be blank"),
-                        hasItem("dataNeedId: must not be blank"),
-                        hasItem("start: must not be null"),
-                        hasItem("end: must not be null")
-                )));
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}"))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", allOf(
+                       iterableWithSize(2),
+                       hasItem("connectionId: must not be blank"),
+                       hasItem("dataNeedId: must not be blank")
+               )));
     }
 
     /**
      * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
-     * whole core is started. To be able to properly test the controller's error responses, manually add the advice
-     * to this test class.
+     * whole core is started. To be able to properly test the controller's error responses, manually add the advice to
+     * this test class.
      */
     @TestConfiguration
     static class ControllerTestConfiguration {

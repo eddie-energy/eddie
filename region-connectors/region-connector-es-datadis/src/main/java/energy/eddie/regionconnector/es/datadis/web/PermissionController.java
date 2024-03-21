@@ -2,6 +2,8 @@ package energy.eddie.regionconnector.es.datadis.web;
 
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -59,7 +61,8 @@ public class PermissionController {
     @PostMapping(value = PATH_PERMISSION_REQUEST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, String>> requestPermission(@Valid @RequestBody PermissionRequestForCreation requestForCreation) throws StateTransitionException {
+    public ResponseEntity<Map<String, String>> requestPermission(
+            @Valid @RequestBody PermissionRequestForCreation requestForCreation) throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
         var permissionRequest = service.createAndSendPermissionRequest(requestForCreation);
 
         String permissionId = permissionRequest.permissionId();
@@ -71,7 +74,8 @@ public class PermissionController {
     }
 
     @PatchMapping(value = "/permission-request/{permissionId}/accepted")
-    public ResponseEntity<String> acceptPermission(@PathVariable String permissionId) throws PermissionNotFoundException, StateTransitionException {
+    public ResponseEntity<String> acceptPermission(
+            @PathVariable String permissionId) throws PermissionNotFoundException {
         service.acceptPermission(permissionId);
         return ResponseEntity.ok(permissionId);
     }

@@ -6,8 +6,8 @@ import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.ProcessDirectory;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMode;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
+import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
-import energy.eddie.regionconnector.at.eda.utils.DateTimeConstants;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
 
@@ -35,7 +35,9 @@ public class CCMORevoke {
                                         new RoutingHeader()
                                                 .withSender(new CCMOAddress(eligiblePartyId).toRoutingAddress())
                                                 .withReceiver(new CCMOAddress(permissionRequest.dataSourceInformation().permissionAdministratorId()).toRoutingAddress())
-                                                .withDocumentCreationDateTime(DateTimeConverter.dateTimeToXml(LocalDateTime.now(DateTimeConstants.AT_ZONE_ID)))
+                                                .withDocumentCreationDateTime(DateTimeConverter.dateTimeToXml(
+                                                        LocalDateTime.now(
+                                                                EdaRegionConnectorMetadata.AT_ZONE_ID)))
                                 )
                                 .withSector(Sector.ELECTRICITY.value())
                 )
@@ -43,7 +45,9 @@ public class CCMORevoke {
                         new ProcessDirectory()
                                 .withMeteringPoint(permissionRequest.meteringPointId().orElse(null))
                                 .withConsentId(permissionRequest.consentId().orElse(null))
-                                .withMessageId(new MessageId(new CCMOAddress(eligiblePartyId).toRoutingAddress(), ZonedDateTime.now(DateTimeConstants.AT_ZONE_ID)).toString())
+                                .withMessageId(new MessageId(new CCMOAddress(eligiblePartyId).toRoutingAddress(),
+                                                             ZonedDateTime.now(
+                                                                     EdaRegionConnectorMetadata.AT_ZONE_ID)).toString())
                                 .withConversationId(permissionRequest.conversationId())
                                 .withConsentEnd(
                                         permissionRequest.end() == null

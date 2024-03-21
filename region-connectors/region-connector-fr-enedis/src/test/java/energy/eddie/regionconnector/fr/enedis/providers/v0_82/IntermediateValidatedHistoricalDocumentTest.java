@@ -19,7 +19,7 @@ import java.time.LocalDate;
 
 import static energy.eddie.cim.v0_82.vhd.EnergyProductTypeList.ACTIVE_ENERGY;
 import static energy.eddie.cim.v0_82.vhd.EnergyProductTypeList.ACTIVE_POWER;
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector.ZONE_ID_FR;
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

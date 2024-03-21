@@ -5,7 +5,11 @@ import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.at.eda.EdaRegionConnector;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
@@ -24,19 +28,20 @@ import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.TRANSMISSION_CYCLE;
-import static energy.eddie.regionconnector.at.eda.utils.DateTimeConstants.AT_ZONE_ID;
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.*;
 
 @Component
 public class PermissionRequestCreationAndValidationService {
     private static final Set<Validator<CreatedEvent>> VALIDATORS = Set.of(
-            new NotOlderThanValidator(ChronoUnit.MONTHS, EdaRegionConnector.MAXIMUM_MONTHS_IN_THE_PAST),
+            new NotOlderThanValidator(ChronoUnit.MONTHS, MAXIMUM_MONTHS_IN_THE_PAST),
             new CompletelyInThePastOrInTheFutureEventValidator(),
             new StartIsBeforeOrEqualEndValidator(),
             new MeteringPointMatchesDsoIdValidator()
@@ -44,37 +49,65 @@ public class PermissionRequestCreationAndValidationService {
 
     private final AtConfiguration configuration;
     private final Outbox outbox;
+    private final DataNeedsService dataNeedsService;
 
     public PermissionRequestCreationAndValidationService(
-            AtConfiguration configuration, Outbox outbox
+            AtConfiguration configuration,
+            Outbox outbox,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")  // defined in core
+            DataNeedsService dataNeedsService
     ) {
         this.configuration = configuration;
         this.outbox = outbox;
+        this.dataNeedsService = dataNeedsService;
     }
 
     private static List<AttributeError> validateAttributes(CreatedEvent permissionEvent) {
         return VALIDATORS.stream()
-                .flatMap(validator -> validator.validate(permissionEvent).stream())
-                .toList();
+                         .flatMap(validator -> validator.validate(permissionEvent).stream())
+                         .toList();
     }
 
     /**
-     * Creates and validates a permission request.
-     * This will emit a <code>CreatedEvent</code>, and a <code>ValidatedEvent</code> or a <code>MalformedEvent</code>.
+     * Creates and validates a permission request. This will emit a <code>CreatedEvent</code>, and a
+     * <code>ValidatedEvent</code> or a <code>MalformedEvent</code>.
      *
      * @param permissionRequest the DTO that is the base for the created and validated permission request.
      * @return a DTO with the id of the created and validated permission request
-     * @throws ValidationException if the permission request is invalid, a <code>ValidationException</code> is thrown containing all the erroneous fields and a description for each one.
+     * @throws ValidationException if the permission request is invalid, a <code>ValidationException</code> is thrown
+     *                             containing all the erroneous fields and a description for each one.
      */
     public CreatedPermissionRequest createAndValidatePermissionRequest(
-            PermissionRequestForCreation permissionRequest) throws ValidationException {
+            PermissionRequestForCreation permissionRequest
+    ) throws ValidationException, DataNeedNotFoundException, UnsupportedDataNeedException {
+        var referenceDate = LocalDate.now(AT_ZONE_ID);
+        var wrapper = dataNeedsService.findDataNeedAndCalculateStartAndEnd(permissionRequest.dataNeedId(),
+                                                                           referenceDate,
+                                                                           PERIOD_EARLIEST_START,
+                                                                           PERIOD_LATEST_END);
+
+        if (!(wrapper.timeframedDataNeed() instanceof ValidatedHistoricalDataDataNeed vhdDataNeed)) {
+            throw new UnsupportedDataNeedException(EdaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                   wrapper.timeframedDataNeed().id(),
+                                                   "This region connector only supports validated historical data data needs.");
+        }
+        var granularity = switch (vhdDataNeed.minGranularity()) {
+            case PT15M, P1D -> vhdDataNeed.minGranularity();
+            default -> throw new UnsupportedDataNeedException(EdaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                              vhdDataNeed.id(),
+                                                              "Unsupported granularity: '" + vhdDataNeed.minGranularity() + "'");
+        };
+
+        ZonedDateTime start = ZonedDateTime.of(wrapper.calculatedStart(), LocalTime.MIN, AT_ZONE_ID);
+        ZonedDateTime end = ZonedDateTime.of(wrapper.calculatedEnd(), LocalTime.MIN, AT_ZONE_ID);
+
         ZonedDateTime created = ZonedDateTime.now(AT_ZONE_ID);
         CCMORequest ccmoRequest = new CCMORequest(
                 new DsoIdAndMeteringPoint(permissionRequest.dsoId(), permissionRequest.meteringPointId()),
-                new CCMOTimeFrame(permissionRequest.start(), permissionRequest.end()),
+                new CCMOTimeFrame(start, end),
                 configuration,
                 RequestDataType.METERING_DATA,
-                permissionRequest.granularity(),
+                granularity,
                 TRANSMISSION_CYCLE,
                 created
         );
@@ -85,10 +118,10 @@ public class PermissionRequestCreationAndValidationService {
                 permissionRequest.dataNeedId(),
                 new EdaDataSourceInformation(permissionRequest.dsoId()),
                 created,
-                permissionRequest.start(),
-                permissionRequest.end(),
+                start,
+                end,
                 permissionRequest.meteringPointId(),
-                permissionRequest.granularity(),
+                granularity,
                 ccmoRequest.cmRequestId(),
                 ccmoRequest.messageId()
         );
