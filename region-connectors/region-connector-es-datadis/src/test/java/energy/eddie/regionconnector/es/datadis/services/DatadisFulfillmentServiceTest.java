@@ -9,35 +9,20 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DatadisFulfillmentServiceTest {
-    private static final ZonedDateTime today = LocalDate.now(ZONE_ID_SPAIN).atStartOfDay(ZONE_ID_SPAIN);
-
-    private static EsPermissionRequest permissionRequest(ZonedDateTime start, ZonedDateTime end, PermissionProcessStatus permissionProcessStatus) {
-        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
-                "connectionId",
-                "dataNeedId",
-                "nif",
-                "meteringPointId");
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation,
-                                                                             start.toLocalDate(),
-                                                                             end.toLocalDate(),
-                                                                             Granularity.PT1H ,
-                                                                             stateBuilderFactory);
-        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, permissionProcessStatus).build());
-        return permissionRequest;
-    }
+    private static final LocalDate today = LocalDate.now(ZONE_ID_SPAIN);
 
     @Test
     void isPermissionRequestFulfilledByDate_ifEndBeforePermissionEnd_returnsFalse() {
         // Given
-        EsPermissionRequest permissionRequest = permissionRequest(today.minusDays(2), today, PermissionProcessStatus.ACCEPTED);
-        ZonedDateTime end = today.minusDays(1);
+        EsPermissionRequest permissionRequest = permissionRequest(today.minusDays(2),
+                                                                  today,
+                                                                  PermissionProcessStatus.ACCEPTED);
+        LocalDate end = today.minusDays(1);
 
         DatadisFulfillmentService fulfillmentService = new DatadisFulfillmentService();
 
@@ -48,10 +33,33 @@ class DatadisFulfillmentServiceTest {
         assertFalse(fulfills);
     }
 
+    private static EsPermissionRequest permissionRequest(
+            LocalDate start,
+            LocalDate end,
+            PermissionProcessStatus permissionProcessStatus
+    ) {
+        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
+        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
+                "connectionId",
+                "dataNeedId",
+                "nif",
+                "meteringPointId");
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
+                                                                             permissionRequestForCreation,
+                                                                             start,
+                                                                             end,
+                                                                             Granularity.PT1H,
+                                                                             stateBuilderFactory);
+        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, permissionProcessStatus).build());
+        return permissionRequest;
+    }
+
     @Test
     void isPermissionRequestFulfilledByDate_ifEndAfterPermissionEnd_returnsTrue() {
         // Given
-        EsPermissionRequest permissionRequest = permissionRequest(today.minusDays(2), today.minusDays(1), PermissionProcessStatus.ACCEPTED);
+        EsPermissionRequest permissionRequest = permissionRequest(today.minusDays(2),
+                                                                  today.minusDays(1),
+                                                                  PermissionProcessStatus.ACCEPTED);
 
         DatadisFulfillmentService fulfillmentService = new DatadisFulfillmentService();
 
@@ -65,8 +73,10 @@ class DatadisFulfillmentServiceTest {
     @Test
     void isPermissionRequestFulfilledByDate_ifEndEqualPermissionEnd_returnsTrue() {
         // Given
-        ZonedDateTime start = today.minusDays(2);
-        EsPermissionRequest permissionRequest = permissionRequest(start, today.minusDays(1), PermissionProcessStatus.ACCEPTED); // DatadisPermissionRequest adds 1 day to the end date
+        LocalDate start = today.minusDays(2);
+        EsPermissionRequest permissionRequest = permissionRequest(start,
+                                                                  today.minusDays(1),
+                                                                  PermissionProcessStatus.ACCEPTED); // DatadisPermissionRequest adds 1 day to the end date
 
 
         DatadisFulfillmentService fulfillmentService = new DatadisFulfillmentService();
@@ -80,8 +90,10 @@ class DatadisFulfillmentServiceTest {
     @Test
     void tryFulfillPermissionRequest_changesStateFromAcceptedToFulfilled() {
         // Given
-        ZonedDateTime start = today.minusDays(2);
-        EsPermissionRequest permissionRequest = permissionRequest(start, today.minusDays(1), PermissionProcessStatus.ACCEPTED);
+        LocalDate start = today.minusDays(2);
+        EsPermissionRequest permissionRequest = permissionRequest(start,
+                                                                  today.minusDays(1),
+                                                                  PermissionProcessStatus.ACCEPTED);
 
 
         DatadisFulfillmentService fulfillmentService = new DatadisFulfillmentService();
@@ -96,8 +108,10 @@ class DatadisFulfillmentServiceTest {
     @Test
     void tryFulfillPermissionRequest_doesNotChangeStateIfNotAccepted() {
         // Given
-        ZonedDateTime start = today.minusDays(2);
-        EsPermissionRequest permissionRequest = permissionRequest(start, today.minusDays(1), PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+        LocalDate start = today.minusDays(2);
+        EsPermissionRequest permissionRequest = permissionRequest(start,
+                                                                  today.minusDays(1),
+                                                                  PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
 
 
         DatadisFulfillmentService fulfillmentService = new DatadisFulfillmentService();

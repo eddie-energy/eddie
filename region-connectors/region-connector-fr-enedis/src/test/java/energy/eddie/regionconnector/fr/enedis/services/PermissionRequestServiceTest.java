@@ -29,7 +29,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,6 +48,8 @@ class PermissionRequestServiceTest {
     private PermissionRequestService permissionRequestService;
     @Autowired
     private PermissionRequestRepository<FrEnedisPermissionRequest> repository;
+    @MockBean
+    private HistoricalDataService historicalDataService;
     @MockBean
     private DataNeedsService dataNeedsService;
     @Mock
@@ -82,8 +83,8 @@ class PermissionRequestServiceTest {
     @DirtiesContext
     void testAuthorizePermissionRequest_acceptsPermissionRequest() throws StateTransitionException, PermissionNotFoundException {
         // Given
-        var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
-        var end = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
+        var end = LocalDate.now(ZoneOffset.UTC);
         StateBuilderFactory factory = new StateBuilderFactory();
         var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         request.changeState(new FrEnedisPendingAcknowledgmentState(request, factory));
@@ -101,8 +102,8 @@ class PermissionRequestServiceTest {
     @DirtiesContext
     void testAuthorizePermissionRequestWithNullUsageId_rejectsPermissionRequest() throws StateTransitionException, PermissionNotFoundException {
         // Given
-        var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
-        var end = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
+        var end = LocalDate.now(ZoneOffset.UTC);
         StateBuilderFactory factory = new StateBuilderFactory();
         var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         request.changeState(new FrEnedisPendingAcknowledgmentState(request, factory));
@@ -127,8 +128,8 @@ class PermissionRequestServiceTest {
     @DirtiesContext
     void testFindConnectionStatusById_returnsConnectionStatus() {
         // Given
-        var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
-        var end = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
+        var end = LocalDate.now(ZoneOffset.UTC);
         StateBuilderFactory factory = new StateBuilderFactory();
         var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         repository.save(request);
@@ -145,8 +146,8 @@ class PermissionRequestServiceTest {
     @DirtiesContext
     void testFindConnectionStatusById_withNotExistingPermissionId_returnsEmpty() {
         // Given
-        var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
-        var end = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
+        var end = LocalDate.now(ZoneOffset.UTC);
         StateBuilderFactory factory = new StateBuilderFactory();
         var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         repository.save(request);
@@ -162,8 +163,8 @@ class PermissionRequestServiceTest {
     @DirtiesContext
     void testFindPermissionRequestById_returnsPermissionRequest() {
         // Given
-        var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
-        var end = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
+        var end = LocalDate.now(ZoneOffset.UTC);
         StateBuilderFactory factory = new StateBuilderFactory();
         var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         repository.save(request);
@@ -180,8 +181,8 @@ class PermissionRequestServiceTest {
     @DirtiesContext
     void testFindPermissionRequestById_withNotExistingPermissionId_returnsEmpty() {
         // Given
-        var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
-        var end = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
+        var end = LocalDate.now(ZoneOffset.UTC);
         StateBuilderFactory factory = new StateBuilderFactory();
         var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         repository.save(request);
@@ -197,8 +198,8 @@ class PermissionRequestServiceTest {
     @DirtiesContext
     void testFindTimedOutPermissionRequests_returnsPermissionRequests() throws StateTransitionException {
         // Given
-        var start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(3);
-        var end = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
+        var end = LocalDate.now(ZoneOffset.UTC);
         StateBuilderFactory factory = new StateBuilderFactory();
         var request1 = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         var request2 = new EnedisPermissionRequest("pid2", "cid2", "dnid", start, end, Granularity.P1D, factory);

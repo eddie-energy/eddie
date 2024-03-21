@@ -20,7 +20,6 @@ import reactor.util.retry.RetryBackoffSpec;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,8 +45,8 @@ public class PollingService implements AutoCloseable {
     }
 
     private static boolean isActiveAndNeedsToBePolled(DkEnerginetCustomerPermissionRequest permissionRequest, LocalDate today) {
-        LocalDate permissionStart = permissionRequest.start().withZoneSameInstant(DK_ZONE_ID).toLocalDate();
-        var lastPolled = permissionRequest.lastPolled().withZoneSameInstant(DK_ZONE_ID).toLocalDate();
+        LocalDate permissionStart = permissionRequest.start();
+        var lastPolled = permissionRequest.lastPolled();
         return permissionStart.isBefore(today)
                 && (lastPolled.isBefore(today) || lastPolled.isEqual(today));
     }
@@ -84,10 +83,10 @@ public class PollingService implements AutoCloseable {
      * @param permissionRequest for historical validated data
      */
     public void fetchHistoricalMeterReadings(DkEnerginetCustomerPermissionRequest permissionRequest) {
-        ZonedDateTime end = permissionRequest.end();
-        ZonedDateTime now = ZonedDateTime.now(DK_ZONE_ID);
+        LocalDate end = permissionRequest.end();
+        LocalDate now = LocalDate.now(DK_ZONE_ID);
         if (end != null && (end.isBefore(now) || end.isEqual(now))) {
-            fetch(permissionRequest, now.toLocalDate());
+            fetch(permissionRequest, now);
         }
     }
 
@@ -96,10 +95,8 @@ public class PollingService implements AutoCloseable {
         meteringPoints.addMeteringPointItem(permissionRequest.meteringPoint());
         MeteringPointsRequest meteringPointsRequest = new MeteringPointsRequest().meteringPoints(meteringPoints);
 
-        LocalDate dateFrom = permissionRequest.lastPolled().withZoneSameInstant(DK_ZONE_ID).toLocalDate();
-        LocalDate dateTo = Optional.ofNullable(permissionRequest.end())
-                .map(end -> end.withZoneSameInstant(DK_ZONE_ID))
-                .map(ZonedDateTime::toLocalDate)
+        LocalDate dateFrom = permissionRequest.lastPolled();
+        LocalDate dateTo = Optional.of(permissionRequest.end())
                 .filter(d -> d.isBefore(today))
                 .map(d -> d.plusDays(1)) // The Energinet API is inclusive on the start date and exclusive on the end date so we need to add one day if the end date is before today
                 .orElse(today);

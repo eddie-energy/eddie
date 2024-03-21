@@ -20,8 +20,10 @@ public class PermissionRequestFulfillmentService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestFulfillmentService.class);
     private final Outbox outbox;
 
-    public PermissionRequestFulfillmentService(Flux<IdentifiableConsumptionRecord> consumptionRecordStream,
-                                               Outbox outbox) {
+    public PermissionRequestFulfillmentService(
+            Flux<IdentifiableConsumptionRecord> consumptionRecordStream,
+            Outbox outbox
+    ) {
         this.outbox = outbox;
         consumptionRecordStream.subscribe(this::checkForFulfillment);
     }
@@ -54,16 +56,15 @@ public class PermissionRequestFulfillmentService {
             }
 
             LocalDate meteringPeriodEnd = getMeteringPeriodEndDate(energyOptional.get());
-            LocalDate permissionEndDate = permissionEnd.toLocalDate();
             LOGGER.atDebug()
-                    .addArgument(permissionRequest::permissionId)
-                    .addArgument(permissionEndDate::toString)
-                    .addArgument(meteringPeriodEnd::toString)
-                    .log("Checking if permission request {} is fulfilled. Permission end date: {}, metering period end date: {}");
+                  .addArgument(permissionRequest::permissionId)
+                  .addArgument(permissionEnd::toString)
+                  .addArgument(meteringPeriodEnd::toString)
+                  .log("Checking if permission request {} is fulfilled. Permission end date: {}, metering period end date: {}");
 
             // if we request quarter hourly data up to the 24.01.2024, the last consumption record we get will have an meteringPeriodStart of 24.01.2024T23:45:00 and an meteringPeriodEnd of 25.01.2024T00:00:00
             // so if the permissionEnd is before the meteringPeriodEnd the permission request is fulfilled
-            if (permissionEndDate.isBefore(meteringPeriodEnd)) {
+            if (permissionEnd.isBefore(meteringPeriodEnd)) {
                 outbox.commit(new SimpleEvent(permissionRequest.permissionId(), PermissionProcessStatus.FULFILLED));
             }
         });

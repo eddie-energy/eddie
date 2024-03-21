@@ -13,14 +13,13 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static java.util.Objects.requireNonNull;
 
 @Entity
-@Table(schema = "es_datadis")
+@Table(schema = "es_datadis", name = "datadis_permission_request")
 public class DatadisPermissionRequest extends TimestampedPermissionRequest implements EsPermissionRequest {
     @Transient
     private final DatadisDataSourceInformation dataSourceInformation = new DatadisDataSourceInformation(this);
@@ -29,10 +28,8 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     private String connectionId;
     private String nif;
     private String meteringPointId;
-    private ZonedDateTime permissionStart;
-    private ZonedDateTime permissionEnd;
-    private ZonedDateTime requestDataFrom;
-    private ZonedDateTime requestDataTo;
+    private LocalDate requestDataFrom;
+    private LocalDate requestDataTo;
     @Enumerated(EnumType.STRING)
     private MeasurementType measurementType;
     private String dataNeedId;
@@ -44,7 +41,7 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     @Nullable
     private Integer pointType;
     @Nullable
-    private ZonedDateTime lastPulledMeterReading;
+    private LocalDate lastPulledMeterReading;
     @Enumerated(EnumType.STRING)
     private PermissionProcessStatus status;
     @Nullable
@@ -79,11 +76,9 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
             case PT1H -> MeasurementType.HOURLY;
             default -> throw new IllegalArgumentException("Unsupported granularity: " + granularity);
         };
-        this.requestDataFrom = start.atStartOfDay(ZONE_ID_SPAIN);
-        this.requestDataTo = end.atStartOfDay(ZONE_ID_SPAIN);
+        this.requestDataFrom = start;
+        this.requestDataTo = end;
 
-        this.permissionStart = ZonedDateTime.now(ZONE_ID_SPAIN);
-        this.permissionEnd = latest(permissionStart, requestDataTo);
         this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
         this.status = state.status();
     }
@@ -94,17 +89,6 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
                 .create(this, status)
                 .build();
         return this;
-    }
-
-    /**
-     * Calculate the date furthest in the future.
-     */
-    private ZonedDateTime latest(ZonedDateTime first, ZonedDateTime second) {
-        if (!first.isBefore(second)) {
-            return first.plusDays(1); // if all the data is in the past we only need access for 1 day
-        }
-
-        return second;
     }
 
     @Override
@@ -205,27 +189,17 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     }
 
     @Override
-    public ZonedDateTime permissionStart() {
-        return permissionStart;
-    }
-
-    @Override
-    public ZonedDateTime permissionEnd() {
-        return permissionEnd;
-    }
-
-    @Override
-    public ZonedDateTime start() {
+    public LocalDate start() {
         return requestDataFrom;
     }
 
     @Override
-    public ZonedDateTime end() {
+    public LocalDate end() {
         return requestDataTo;
     }
 
     @Override
-    public Optional<ZonedDateTime> lastPulledMeterReading() {
+    public Optional<LocalDate> lastPulledMeterReading() {
         return Optional.ofNullable(this.lastPulledMeterReading);
     }
 
@@ -235,7 +209,7 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     }
 
     @Override
-    public void setLastPulledMeterReading(ZonedDateTime lastPulledMeterReading) {
+    public void updateLastPulledMeterReading(LocalDate lastPulledMeterReading) {
         this.lastPulledMeterReading = lastPulledMeterReading;
     }
 

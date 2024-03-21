@@ -56,25 +56,6 @@ class DataApiServiceTest {
         );
     }
 
-    private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
-        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
-                "connectionId",
-                "dataNeedId",
-                "nif",
-                "meteringPointId");
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
-                                                                             permissionRequestForCreation,
-                                                                             start,
-                                                                             end,
-                                                                             Granularity.PT1H,
-                                                                             stateBuilderFactory);
-        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
-                                                         .build());
-        permissionRequest.setDistributorCodeAndPointType(DistributorCode.ASEME, 1);
-        return permissionRequest;
-    }
-
     @Test
     void fetchDataForPermissionRequest_callsDataApi_withExpectedMeteringDataRequest() {
         // Given
@@ -104,14 +85,33 @@ class DataApiServiceTest {
                     .verify(Duration.ofSeconds(2));
     }
 
+    private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
+        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
+        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
+                "connectionId",
+                "dataNeedId",
+                "nif",
+                "meteringPointId");
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
+                                                                             permissionRequestForCreation,
+                                                                             start,
+                                                                             end,
+                                                                             Granularity.PT1H,
+                                                                             stateBuilderFactory);
+        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
+                                                         .build());
+        permissionRequest.setDistributorCodeAndPointType(DistributorCode.ASEME, 1);
+        return permissionRequest;
+    }
+
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     void fetchDataForPermissionRequest_dataEndDateEqualPermissionEndDate_fulfillsPermissionRequest() throws IOException {
         // Given
         List<MeteringData> meteringData = MeteringDataProvider.loadMeteringData();
         var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData);
-        LocalDate start = intermediateMeteringData.start().toLocalDate();
-        LocalDate end = intermediateMeteringData.end().toLocalDate();
+        LocalDate start = intermediateMeteringData.start();
+        LocalDate end = intermediateMeteringData.end();
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
 
         var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end);
@@ -143,8 +143,8 @@ class DataApiServiceTest {
         // Given
         List<MeteringData> meteringData = MeteringDataProvider.loadMeteringData();
         var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData);
-        LocalDate start = intermediateMeteringData.start().toLocalDate();
-        LocalDate end = intermediateMeteringData.end().toLocalDate();
+        LocalDate start = intermediateMeteringData.start();
+        LocalDate end = intermediateMeteringData.end();
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end.plusDays(1));
 
         var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end);

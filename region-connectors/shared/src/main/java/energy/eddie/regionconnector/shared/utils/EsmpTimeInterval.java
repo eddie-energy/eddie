@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.shared.utils;
 import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.util.Strings;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -19,6 +20,11 @@ public class EsmpTimeInterval {
     public EsmpTimeInterval(@Nullable ZonedDateTime start, @Nullable ZonedDateTime end) {
         this.start = start == null ? null : new EsmpDateTime(start, ChronoUnit.MINUTES);
         this.end = end == null ? null : new EsmpDateTime(end, ChronoUnit.MINUTES);
+    }
+
+    public EsmpTimeInterval(@Nullable LocalDate start, @Nullable LocalDate end, ZoneId zoneId) {
+        this.start = start == null ? null : new EsmpDateTime(start.atStartOfDay(zoneId), ChronoUnit.MINUTES);
+        this.end = end == null ? null : new EsmpDateTime(end.atStartOfDay(zoneId), ChronoUnit.MINUTES);
     }
 
     public EsmpTimeInterval(String start, String end, DateTimeFormatter format, ZoneId zoneId) {

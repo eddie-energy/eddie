@@ -15,8 +15,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 class JpaPermissionRequestRepositoryTest {
+    @SuppressWarnings("unused")
     @Container
     @ServiceConnection
     private static final PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:15-alpine");
@@ -62,8 +62,8 @@ class JpaPermissionRequestRepositoryTest {
     @Test
     void findByConversationIdOrCMRequestId_returnsPresentOptional_forConversationIdAndNullRequestId() {
         // Given
-        var start = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var end = ZonedDateTime.of(2024, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
+        var start = LocalDate.of(2024, 1, 1);
+        var end = LocalDate.of(2024, 1, 31);
         String conversationId = "convId";
         PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
                                                  end, "mid", Granularity.PT15M, "cmRequestId",
@@ -80,8 +80,8 @@ class JpaPermissionRequestRepositoryTest {
     @Test
     void findByConversationIdOrCMRequestId_returnsPresentOptional_forConversationIdAndNonExistingRequestId() {
         // Given
-        var start = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var end = ZonedDateTime.of(2024, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
+        var start = LocalDate.of(2024, 1, 1);
+        var end = LocalDate.of(2024, 1, 31);
         String conversationId = "convId";
         PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
                                                  end, "mid", Granularity.PT15M, "cmRequestId",
@@ -98,8 +98,8 @@ class JpaPermissionRequestRepositoryTest {
     @Test
     void findByConversationIdOrCMRequestId_returnsEmptyOptional_forNonExistingConversationIdAndNullRequestId() {
         // Given
-        var start = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var end = ZonedDateTime.of(2024, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
+        var start = LocalDate.of(2024, 1, 1);
+        var end = LocalDate.of(2024, 1, 31);
         String conversationId = "convId";
         PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
                                                  end, "mid", Granularity.PT15M, "cmRequestId",
@@ -116,8 +116,8 @@ class JpaPermissionRequestRepositoryTest {
     @Test
     void findByConversationIdOrCMRequestId_returnsEmptyOptional_forNonExistingConversationIdAndNonExistingRequestId() {
         // Given
-        var start = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var end = ZonedDateTime.of(2024, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
+        var start = LocalDate.of(2024, 1, 1);
+        var end = LocalDate.of(2024, 1, 31);
         String conversationId = "convId";
         PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
                                                  end, "mid", Granularity.PT15M, "cmRequestId",
@@ -134,8 +134,8 @@ class JpaPermissionRequestRepositoryTest {
     @Test
     void findByConversationIdOrCMRequestId_returnsEmptyOptional_forNonExistingConversationIdAndExistingRequestId() {
         // Given
-        var start = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var end = ZonedDateTime.of(2024, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
+        var start = LocalDate.of(2024, 1, 1);
+        var end = LocalDate.of(2024, 1, 31);
         String cmRequestId = "cmRequestId";
         PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
                                                  end, "mid", Granularity.PT15M, cmRequestId,

@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -36,8 +35,8 @@ class PermissionRequestFactoryTest {
     @Test
     void testCreatePermissionRequest_withExistingPermissionRequest() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(ZoneId.systemDefault());
+        LocalDate end = start.plusDays(1);
         StateBuilderFactory factory = new StateBuilderFactory();
         PermissionRequestFactory permissionRequestFactory = new PermissionRequestFactory(Set.of(), factory);
         FrEnedisPermissionRequest original = new EnedisPermissionRequest("cid",

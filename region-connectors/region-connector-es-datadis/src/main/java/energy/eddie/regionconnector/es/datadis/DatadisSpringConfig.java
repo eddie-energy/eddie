@@ -41,6 +41,7 @@ import reactor.netty.http.client.HttpClient;
 import java.util.Set;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 
 
 @EnableWebMvc
@@ -52,7 +53,8 @@ public class DatadisSpringConfig {
     public DatadisConfig datadisConfig(
             @Value("${" + DatadisConfig.USERNAME_KEY + "}") String username,
             @Value("${" + DatadisConfig.PASSWORD_KEY + "}") String password,
-            @Value("${" + DatadisConfig.BASE_PATH_KEY + ":https://datadis.es}") String basePath) {
+            @Value("${" + DatadisConfig.BASE_PATH_KEY + ":https://datadis.es}") String basePath
+    ) {
         return new PlainDatadisConfiguration(username, password, basePath);
     }
 
@@ -89,22 +91,38 @@ public class DatadisSpringConfig {
     @Bean
     public DatadisTokenProvider datadisTokenProvider(
             DatadisConfig config,
-            HttpClient httpClient) {
+            HttpClient httpClient
+    ) {
         return new NettyDatadisTokenProvider(config, httpClient);
     }
 
     @Bean
-    public DataApi dataApi(DatadisTokenProvider tokenProvider, ObjectMapper mapper, DatadisConfig config, HttpClient httpClient) {
+    public DataApi dataApi(
+            DatadisTokenProvider tokenProvider,
+            ObjectMapper mapper,
+            DatadisConfig config,
+            HttpClient httpClient
+    ) {
         return new NettyDataApiClient(httpClient, mapper, tokenProvider, config.basePath());
     }
 
     @Bean
-    public SupplyApi supplyApi(DatadisTokenProvider tokenProvider, ObjectMapper mapper, DatadisConfig config, HttpClient httpClient) {
+    public SupplyApi supplyApi(
+            DatadisTokenProvider tokenProvider,
+            ObjectMapper mapper,
+            DatadisConfig config,
+            HttpClient httpClient
+    ) {
         return new NettySupplyApiClient(httpClient, mapper, tokenProvider, config.basePath());
     }
 
     @Bean
-    public AuthorizationApi authorizationApi(HttpClient httpClient, ObjectMapper mapper, DatadisTokenProvider tokenProvider, DatadisConfig config) {
+    public AuthorizationApi authorizationApi(
+            HttpClient httpClient,
+            ObjectMapper mapper,
+            DatadisTokenProvider tokenProvider,
+            DatadisConfig config
+    ) {
         return new NettyAuthorizationApiClient(httpClient, mapper, tokenProvider, config.basePath());
     }
 
@@ -114,18 +132,21 @@ public class DatadisSpringConfig {
     }
 
     @Bean
-    public Set<Extension<EsPermissionRequest>> permissionRequestExtensions(EsPermissionRequestRepository repository,
-                                                                           Sinks.Many<ConnectionStatusMessage> messages,
-                                                                           Sinks.Many<ConsentMarketDocument> cmds,
-                                                                           DatadisConfig config,
-                                                                           CommonInformationModelConfiguration cimConfig) {
+    public Set<Extension<EsPermissionRequest>> permissionRequestExtensions(
+            EsPermissionRequestRepository repository,
+            Sinks.Many<ConnectionStatusMessage> messages,
+            Sinks.Many<ConsentMarketDocument> cmds,
+            DatadisConfig config,
+            CommonInformationModelConfiguration cimConfig
+    ) {
         return Set.of(
                 new SavingExtension<>(repository),
                 new MessagingExtension<>(messages),
                 new ConsentMarketDocumentExtension<>(
                         cmds,
                         config.username(),
-                        cimConfig.eligiblePartyNationalCodingScheme().value()
+                        cimConfig.eligiblePartyNationalCodingScheme().value(),
+                        ZONE_ID_SPAIN
                 )
         );
     }

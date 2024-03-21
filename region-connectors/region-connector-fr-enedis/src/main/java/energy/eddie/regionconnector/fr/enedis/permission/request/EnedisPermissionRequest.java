@@ -24,10 +24,10 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
     private String permissionId;
     @Column(name = "connection_id")
     private String connectionId;
-    @Column(name = "start_timestamp")
-    private ZonedDateTime start;
-    @Column(name = "end_timestamp")
-    private ZonedDateTime end;
+    @Column(name = "start_date")
+    private LocalDate start;
+    @Column(name = "end_date")
+    private LocalDate end;
     @Column(name = "data_need_id")
     private String dataNeedId;
     @Transient
@@ -57,8 +57,8 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
             String permissionId,
             String connectionId,
             String dataNeedId,
-            ZonedDateTime start,
-            ZonedDateTime end,
+            LocalDate start,
+            LocalDate end,
             Granularity granularity,
             StateBuilderFactory factory
     ) {
@@ -67,8 +67,8 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
         this.connectionId = connectionId;
         this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
         this.dataNeedId = dataNeedId;
-        this.start = start.withZoneSameInstant(ZONE_ID_FR);
-        this.end = end.withZoneSameInstant(ZONE_ID_FR);
+        this.start = start;
+        this.end = end;
         this.status = state.status();
         this.granularity = granularity;
     }
@@ -76,8 +76,8 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
     public EnedisPermissionRequest(
             String connectionId,
             String dataNeedId,
-            ZonedDateTime start,
-            ZonedDateTime end,
+            LocalDate start,
+            LocalDate end,
             Granularity granularity,
             StateBuilderFactory factory
     ) {
@@ -129,12 +129,12 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
     }
 
     @Override
-    public ZonedDateTime start() {
+    public LocalDate start() {
         return start;
     }
 
     @Override
-    public ZonedDateTime end() {
+    public LocalDate end() {
         return end;
     }
 

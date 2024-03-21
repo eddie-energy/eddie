@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,10 +26,10 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     private final String cmRequestId;
     private final String conversationId;
     @Column(name = "permission_start")
-    private final ZonedDateTime start;
+    private final LocalDate start;
     @Nullable
     @Column(name = "permission_end")
-    private final ZonedDateTime end;
+    private final LocalDate end;
     private final String dataNeedId;
     @Embedded
     private final EdaDataSourceInformation dataSourceInformation;
@@ -48,27 +49,33 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     private final PermissionProcessStatus status;
     private final ZonedDateTime created;
 
-    public EdaPermissionRequest(String connectionId, String dataNeedId, CCMORequest ccmoRequest,
-                                Granularity granularity, PermissionProcessStatus status, String message,
-                                String consentId) {
+    public EdaPermissionRequest(
+            String connectionId, String dataNeedId, CCMORequest ccmoRequest,
+            Granularity granularity, PermissionProcessStatus status, String message,
+            String consentId
+    ) {
         this(connectionId, UUID.randomUUID().toString(), dataNeedId, ccmoRequest, granularity, status, message,
              consentId);
     }
 
-    public EdaPermissionRequest(String connectionId, String permissionId, String dataNeedId, CCMORequest ccmoRequest,
-                                Granularity granularity, PermissionProcessStatus status, String message,
-                                @Nullable String consentId) {
+    public EdaPermissionRequest(
+            String connectionId, String permissionId, String dataNeedId, CCMORequest ccmoRequest,
+            Granularity granularity, PermissionProcessStatus status, String message,
+            @Nullable String consentId
+    ) {
         this(connectionId, permissionId, dataNeedId, ccmoRequest.cmRequestId(), ccmoRequest.messageId(),
              ccmoRequest.meteringPointId()
-                     .orElse(null), ccmoRequest.dsoId(), ccmoRequest.start(), ccmoRequest.end().orElse(null),
+                        .orElse(null), ccmoRequest.dsoId(), ccmoRequest.start(), ccmoRequest.end().orElse(null),
              granularity, status, message, consentId, ZonedDateTime.now(AT_ZONE_ID));
     }
 
-    public EdaPermissionRequest(String connectionId, String permissionId, String dataNeedId, String cmRequestId,
-                                String conversationId, @Nullable String meteringPointId, String dsoId,
-                                ZonedDateTime start, @Nullable ZonedDateTime end, Granularity granularity,
-                                PermissionProcessStatus status, String message, @Nullable String consentId,
-                                ZonedDateTime created) {
+    public EdaPermissionRequest(
+            String connectionId, String permissionId, String dataNeedId, String cmRequestId,
+            String conversationId, @Nullable String meteringPointId, String dsoId,
+            LocalDate start, @Nullable LocalDate end, Granularity granularity,
+            PermissionProcessStatus status, String message, @Nullable String consentId,
+            ZonedDateTime created
+    ) {
         this.connectionId = connectionId;
         this.permissionId = permissionId;
         this.dataNeedId = dataNeedId;
@@ -127,13 +134,12 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     }
 
     @Override
-    public ZonedDateTime start() {
+    public LocalDate start() {
         return start;
     }
 
     @Override
-    @Nullable
-    public ZonedDateTime end() {
+    public LocalDate end() {
         return end;
     }
 

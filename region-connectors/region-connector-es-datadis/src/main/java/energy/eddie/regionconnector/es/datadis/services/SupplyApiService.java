@@ -43,7 +43,7 @@ public class SupplyApiService {
      * @param permissionRequest The permission request containing the NIF, distributor code,
      *                          metering point ID, and measurement type.
      * @return A {@link Supply} object containing the supply details if successful.
-     * {@link NoSuppliesException}                                If no supplies are found for the provided NIF and distributor code.
+     * {@link NoSuppliesException}                                If no supplies are found for the provided NIF a nd distributor code.
      * {@link NoSupplyForMeteringPointException}                  If no supply is found for the given metering point ID.
      * {@link InvalidPointAndMeasurementTypeCombinationException} If the point type does not support
      * the requested measurement type.

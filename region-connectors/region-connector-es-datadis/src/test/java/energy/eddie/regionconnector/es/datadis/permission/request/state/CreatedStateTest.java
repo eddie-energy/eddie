@@ -10,7 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.MAXIMUM_MONTHS_IN_THE_PAST;
@@ -25,15 +25,17 @@ class CreatedStateTest {
     private final StateBuilderFactory factory = new StateBuilderFactory(authorizationApi);
 
     private static Stream<Arguments> invalidParameterProvider() {
-        ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
+        LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
         return Stream.of(
-                arguments(now.minusMonths(MAXIMUM_MONTHS_IN_THE_PAST), now.minusDays(10), "requestDataFrom must not be older than " + MAXIMUM_MONTHS_IN_THE_PAST + " months"),
+                arguments(now.minusMonths(MAXIMUM_MONTHS_IN_THE_PAST),
+                          now.minusDays(10),
+                          "requestDataFrom must not be older than " + MAXIMUM_MONTHS_IN_THE_PAST + " months"),
                 arguments(now.minusDays(10), now.minusDays(20), "requestDataFrom must be before requestDataTo")
         );
     }
 
     private static Stream<Arguments> validParameterProvider() {
-        ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
+        LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
         return Stream.of(
                 arguments(now.minusDays(2), now.minusDays(1), "start before end"),
                 arguments(now.minusDays(1), now.minusDays(1), "start equals end"),
@@ -44,9 +46,10 @@ class CreatedStateTest {
     @ParameterizedTest(name = "{2}")
     @MethodSource("invalidParameterProvider")
     void validate_changesToMalformedState_whenInvalidParameter(
-            ZonedDateTime requestDataFrom,
-            ZonedDateTime requestDataTo,
-            String expectedErrorMessage) {
+            LocalDate requestDataFrom,
+            LocalDate requestDataTo,
+            String expectedErrorMessage
+    ) {
         // Given
         var permissionId = "foo";
         var connectionId = "bar";
@@ -57,8 +60,8 @@ class CreatedStateTest {
         );
         var permissionRequest = new DatadisPermissionRequest(permissionId,
                                                              requestForCreation,
-                                                             requestDataFrom.toLocalDate(),
-                                                             requestDataTo.toLocalDate(),
+                                                             requestDataFrom,
+                                                             requestDataTo,
                                                              Granularity.PT15M,
                                                              factory);
 
@@ -74,7 +77,11 @@ class CreatedStateTest {
 
     @ParameterizedTest(name = "{2}")
     @MethodSource("validParameterProvider")
-    void validate_changesToValidatedState_whenValid(ZonedDateTime requestDataFrom, ZonedDateTime requestDataTo, String testName) {
+    void validate_changesToValidatedState_whenValid(
+            LocalDate requestDataFrom,
+            LocalDate requestDataTo,
+            String testName
+    ) {
         // Given
         var permissionId = "foo";
         var connectionId = "bar";
@@ -86,8 +93,8 @@ class CreatedStateTest {
         );
         var permissionRequest = new DatadisPermissionRequest(permissionId,
                                                              requestForCreation,
-                                                             requestDataFrom.toLocalDate(),
-                                                             requestDataTo.toLocalDate(),
+                                                             requestDataFrom,
+                                                             requestDataTo,
                                                              Granularity.PT15M,
                                                              factory);
         CreatedState createdState = new CreatedState(permissionRequest, factory);

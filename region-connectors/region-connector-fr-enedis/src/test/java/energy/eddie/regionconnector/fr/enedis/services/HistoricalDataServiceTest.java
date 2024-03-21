@@ -17,7 +17,6 @@ import reactor.test.StepVerifier;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,29 +36,45 @@ class HistoricalDataServiceTest {
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
         StateBuilderFactory factory = new StateBuilderFactory();
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start.atStartOfDay(ZoneOffset.UTC), end.atStartOfDay(ZoneOffset.UTC), Granularity.PT30M, factory);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
+                                                                        "cid",
+                                                                        "dnid",
+                                                                        start,
+                                                                        end,
+                                                                        Granularity.PT30M,
+                                                                        factory);
         request.setUsagePointId("usagePointId");
 
         when(enedisApi.getConsumptionMeterReading(anyString(), eq(start), eq(start.plusWeeks(1)), any()))
-                .thenReturn(Mono.just(new MeterReading("usagePointId", start, start.plusWeeks(1), "BRUT", null, List.of())));
+                .thenReturn(Mono.just(new MeterReading("usagePointId",
+                                                       start,
+                                                       start.plusWeeks(1),
+                                                       "BRUT",
+                                                       null,
+                                                       List.of())));
         when(enedisApi.getConsumptionMeterReading(anyString(), eq(start.plusWeeks(1)), eq(end.plusDays(1)), any()))
-                .thenReturn(Mono.just(new MeterReading("usagePointId", start.plusWeeks(1), end, "BRUT", null, List.of())));
+                .thenReturn(Mono.just(new MeterReading("usagePointId",
+                                                       start.plusWeeks(1),
+                                                       end,
+                                                       "BRUT",
+                                                       null,
+                                                       List.of())));
         // When
         historicalDataService.fetchHistoricalMeterReadings(request);
 
         // Then
         StepVerifier.create(sink.asFlux())
-                .assertNext(cr -> {
-                    assertEquals(start, cr.meterReading().start());
-                    assertEquals(start.plusWeeks(1), cr.meterReading().end());
-                })
-                .assertNext(cr -> {
-                    assertEquals(start.plusWeeks(1), cr.meterReading().start());
-                    assertEquals(end, cr.meterReading().end());
-                })
-                .then(sink::tryEmitComplete)
-                .expectComplete()
-                .verify(Duration.ofSeconds(5));
+                    .assertNext(cr -> {
+                        assertEquals(start, cr.meterReading().start());
+                        assertEquals(start.plusWeeks(1), cr.meterReading().end());
+                    })
+                    .assertNext(cr -> {
+                        assertEquals(start.plusWeeks(1), cr.meterReading().start());
+                        assertEquals(end, cr.meterReading().end());
+                    })
+                    .then(sink::tryEmitComplete)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(5));
 
         // Clean-Up
         pollingService.close();
@@ -75,27 +90,46 @@ class HistoricalDataServiceTest {
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(30);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
         StateBuilderFactory factory = new StateBuilderFactory();
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start.atStartOfDay(ZoneOffset.UTC), end.atStartOfDay(ZoneOffset.UTC), Granularity.PT30M, factory);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
+                                                                        "cid",
+                                                                        "dnid",
+                                                                        start,
+                                                                        end,
+                                                                        Granularity.PT30M,
+                                                                        factory);
         request.setUsagePointId("usagePointId");
 
         when(enedisApi.getConsumptionMeterReading(anyString(), eq(start), eq(start.plusWeeks(1)), any()))
-                .thenReturn(Mono.just(new MeterReading("usagePointId", start, start.plusWeeks(1), "BRUT", null, List.of())));
+                .thenReturn(Mono.just(new MeterReading("usagePointId",
+                                                       start,
+                                                       start.plusWeeks(1),
+                                                       "BRUT",
+                                                       null,
+                                                       List.of())));
         when(enedisApi.getConsumptionMeterReading(anyString(), eq(start.plusWeeks(1)), eq(start.plusWeeks(2)), any()))
-                .thenReturn(Mono.error(WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR, "", null, null, null, null)));
+                .thenReturn(Mono.error(WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR,
+                                                                         "",
+                                                                         null,
+                                                                         null,
+                                                                         null,
+                                                                         null)));
         // When
         historicalDataService.fetchHistoricalMeterReadings(request);
 
         // Then
         StepVerifier.create(sink.asFlux())
-                .assertNext(cr -> {
-                    assertEquals(start, cr.meterReading().start());
-                    assertEquals(start.plusWeeks(1), cr.meterReading().end());
-                })
-                .then(sink::tryEmitComplete)
-                .expectComplete()
-                .verify(Duration.ofSeconds(5));
+                    .assertNext(cr -> {
+                        assertEquals(start, cr.meterReading().start());
+                        assertEquals(start.plusWeeks(1), cr.meterReading().end());
+                    })
+                    .then(sink::tryEmitComplete)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(5));
         verify(enedisApi, times(1)).getConsumptionMeterReading(anyString(), eq(start), eq(start.plusWeeks(1)), any());
-        verify(enedisApi, times(1)).getConsumptionMeterReading(anyString(), eq(start.plusWeeks(1)), eq(start.plusWeeks(2)), any());
+        verify(enedisApi, times(1)).getConsumptionMeterReading(anyString(),
+                                                               eq(start.plusWeeks(1)),
+                                                               eq(start.plusWeeks(2)),
+                                                               any());
         verifyNoMoreInteractions(enedisApi);
 
         // Clean-Up
@@ -109,18 +143,24 @@ class HistoricalDataServiceTest {
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
         PollingService pollingService = new PollingService(enedisApi, sink);
         HistoricalDataService historicalDataService = new HistoricalDataService(pollingService);
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).plusDays(20);
-        ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).plusDays(10);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(20);
+        LocalDate end = LocalDate.now(ZoneOffset.UTC).plusDays(10);
         StateBuilderFactory factory = new StateBuilderFactory();
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
+                                                                        "cid",
+                                                                        "dnid",
+                                                                        start,
+                                                                        end,
+                                                                        Granularity.P1D,
+                                                                        factory);
         request.setUsagePointId("usagePointId");
         // When
         historicalDataService.fetchHistoricalMeterReadings(request);
 
         // Then
         StepVerifier.create(sink.asFlux())
-                .then(sink::tryEmitComplete)
-                .verifyComplete();
+                    .then(sink::tryEmitComplete)
+                    .verifyComplete();
         verifyNoInteractions(enedisApi);
 
         // Clean-Up

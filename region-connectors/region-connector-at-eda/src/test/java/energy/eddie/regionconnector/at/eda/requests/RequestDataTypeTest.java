@@ -2,9 +2,9 @@ package energy.eddie.regionconnector.at.eda.requests;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,8 +15,8 @@ class RequestDataTypeTest {
     void requestDataTypeToStringMasterData() {
         // given
         RequestDataType type = RequestDataType.MASTER_DATA;
-        ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(ZoneId.systemDefault());
+        LocalDate end = start.plusDays(1);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         String expectedValue = "MasterData";
 
@@ -31,8 +31,8 @@ class RequestDataTypeTest {
     void requestDataTypeToStringMeteringDataPast() {
         // given
         RequestDataType type = RequestDataType.METERING_DATA;
-        ZonedDateTime start = ZonedDateTime.of(2022, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        ZonedDateTime end = ZonedDateTime.of(2022, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
+        LocalDate start = LocalDate.of(2022, 1, 1);
+        LocalDate end = LocalDate.of(2022, 1, 2);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         String expectedValue = "HistoricalMeteringData";
 
@@ -48,8 +48,8 @@ class RequestDataTypeTest {
         // given
         RequestDataType type = RequestDataType.METERING_DATA;
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(
-                ZonedDateTime.now(ZoneOffset.UTC).plusDays(1),
-                ZonedDateTime.now(ZoneOffset.UTC).plusDays(10)
+                LocalDate.now(ZoneOffset.UTC).plusDays(1),
+                LocalDate.now(ZoneOffset.UTC).plusDays(10)
         );
         String expectedValue = "MeteringData";
 
@@ -64,8 +64,8 @@ class RequestDataTypeTest {
     void requestDataTypeToStringMixed() {
         // given
         RequestDataType type = RequestDataType.METERING_DATA;
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
-        ZonedDateTime end = ZonedDateTime.now(ZoneOffset.UTC).plusDays(10);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(10);
+        LocalDate end = LocalDate.now(ZoneOffset.UTC).plusDays(10);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
 
         // when
@@ -77,7 +77,7 @@ class RequestDataTypeTest {
     void requestDataTypeNowToNow_returnsMeteringData() {
         // given
         RequestDataType type = RequestDataType.METERING_DATA;
-        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        LocalDate now = LocalDate.now(ZoneOffset.UTC);
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(now, now);
         String expectedValue = "MeteringData";
 
@@ -87,6 +87,4 @@ class RequestDataTypeTest {
         // then
         assertEquals(expectedValue, actualValue);
     }
-
-
 }

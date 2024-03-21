@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -32,7 +33,7 @@ class ConnectionStatusMessageHandlerTest {
     void testAccept_emitsStatusMessage() {
         // Given
         Sinks.Many<ConnectionStatusMessage> messages = Sinks.many().multicast().onBackpressureBuffer();
-        var start = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         EdaPermissionRequest permissionRequest = new EdaPermissionRequest(
                 "connectionId", "pid", "dnid", "cmRequestId", "conversationId", "mid", "dsoId", start, end,

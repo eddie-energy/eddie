@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -34,7 +35,7 @@ class ConsentMarketDocumentMessageHandlerTest {
     void testAccept_emitsConsentMarketDocument() {
         // Given
         Sinks.Many<ConsentMarketDocument> messages = Sinks.many().multicast().onBackpressureBuffer();
-        var start = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         EdaPermissionRequest permissionRequest = new EdaPermissionRequest(
                 "connectionId", "pid", "dnid", "cmRequestId", "conversationId", "mid", "dsoId", start, end,
@@ -46,17 +47,16 @@ class ConsentMarketDocumentMessageHandlerTest {
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
                 CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME);
         EventBus eventBus = new EventBusImpl();
-        new ConsentMarketDocumentMessageHandler(eventBus, repository, messages, atConfig,
-                                                cimConfig);
+        new ConsentMarketDocumentMessageHandler(eventBus, repository, messages, atConfig, cimConfig);
 
         // When
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.VALIDATED));
 
         // Then
         StepVerifier.create(messages.asFlux())
-                .then(messages::tryEmitComplete)
-                .expectNextCount(1)
-                .verifyComplete();
+                    .then(messages::tryEmitComplete)
+                    .expectNextCount(1)
+                    .verifyComplete();
     }
 
     @Test
@@ -68,16 +68,15 @@ class ConsentMarketDocumentMessageHandlerTest {
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
                 CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME);
         EventBus eventBus = new EventBusImpl();
-        new ConsentMarketDocumentMessageHandler(eventBus, repository, messages, atConfig,
-                                                cimConfig);
+        new ConsentMarketDocumentMessageHandler(eventBus, repository, messages, atConfig, cimConfig);
 
         // When
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.VALIDATED));
 
         // Then
         StepVerifier.create(messages.asFlux())
-                .then(messages::tryEmitComplete)
-                .expectError(PermissionNotFoundException.class)
-                .verify();
+                    .then(messages::tryEmitComplete)
+                    .expectError(PermissionNotFoundException.class)
+                    .verify();
     }
 }

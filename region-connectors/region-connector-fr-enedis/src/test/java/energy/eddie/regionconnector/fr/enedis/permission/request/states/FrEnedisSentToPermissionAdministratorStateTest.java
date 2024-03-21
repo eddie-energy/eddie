@@ -6,8 +6,8 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFac
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -16,8 +16,8 @@ class FrEnedisSentToPermissionAdministratorStateTest {
     @Test
     void reject_transitionsStateToRejected() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(ZoneId.systemDefault());
+        LocalDate end = start.plusDays(1);
         StateBuilderFactory factory = new StateBuilderFactory();
         FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         FrEnedisSentToPermissionAdministratorState state = new FrEnedisSentToPermissionAdministratorState(permissionRequest, factory);
@@ -32,8 +32,8 @@ class FrEnedisSentToPermissionAdministratorStateTest {
     @Test
     void invalid_transitionsStateToInvalid() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(ZoneId.systemDefault());
+        LocalDate end = start.plusDays(1);
         StateBuilderFactory factory = new StateBuilderFactory();
         FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         FrEnedisSentToPermissionAdministratorState state = new FrEnedisSentToPermissionAdministratorState(permissionRequest, factory);
@@ -48,8 +48,8 @@ class FrEnedisSentToPermissionAdministratorStateTest {
     @Test
     void accept_transitionsStateToAccepted() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneId.systemDefault());
-        ZonedDateTime end = start.plusDays(1);
+        LocalDate start = LocalDate.now(ZoneId.systemDefault());
+        LocalDate end = start.plusDays(1);
         StateBuilderFactory factory = new StateBuilderFactory();
         FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
         FrEnedisSentToPermissionAdministratorState state = new FrEnedisSentToPermissionAdministratorState(permissionRequest, factory);

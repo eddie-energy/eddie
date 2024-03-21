@@ -3,11 +3,15 @@ package energy.eddie.regionconnector.at.eda.requests;
 import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMode;
 import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
+import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -18,13 +22,21 @@ class CCMORevokeTest {
         // Given
         DataSourceInformation dataSourceInformation = mock(DataSourceInformation.class);
         when(dataSourceInformation.permissionAdministratorId()).thenReturn("paId");
-        AtPermissionRequest mockPermissionRequest = mock(AtPermissionRequest.class);
-        when(mockPermissionRequest.dataSourceInformation()).thenReturn(dataSourceInformation);
-        when(mockPermissionRequest.meteringPointId()).thenReturn(Optional.of("TestMeteringPointId"));
-        when(mockPermissionRequest.consentId()).thenReturn(Optional.of("TestConsentId"));
-        when(mockPermissionRequest.conversationId()).thenReturn("TestConversationId");
+        AtPermissionRequest permissionRequest = new SimplePermissionRequest(
+                "TestPermissionId",
+                "TestConnectionId",
+                "TestDataNeedId",
+                "TestCmRequestId",
+                "TestConversationId",
+                "TestDsoId",
+                Optional.of("TestMeteringPointId"),
+                LocalDate.now(AT_ZONE_ID),
+                LocalDate.now(AT_ZONE_ID).plusDays(1),
+                PermissionProcessStatus.ACCEPTED,
+                Optional.of("TestConsentId")
+        );
         String eligiblePartyId = "TestEligiblePartyId";
-        CCMORevoke ccmoRevoke = new CCMORevoke(mockPermissionRequest, eligiblePartyId);
+        CCMORevoke ccmoRevoke = new CCMORevoke(permissionRequest, eligiblePartyId);
 
         // When
         CMRevoke cmRevoke = ccmoRevoke.toCMRevoke();
@@ -38,7 +50,7 @@ class CCMORevokeTest {
                 () -> assertEquals("TestMeteringPointId", cmRevoke.getProcessDirectory().getMeteringPoint()),
                 () -> assertEquals("TestConsentId", cmRevoke.getProcessDirectory().getConsentId()),
                 () -> assertEquals("TestConversationId", cmRevoke.getProcessDirectory().getConversationId()),
-                () -> assertNull(cmRevoke.getProcessDirectory().getConsentEnd()),
+                () -> assertNotNull(cmRevoke.getProcessDirectory().getConsentEnd()),
                 () -> assertNotNull(cmRevoke.getProcessDirectory().getReason())
         );
     }

@@ -14,21 +14,17 @@ import static java.util.Objects.requireNonNull;
  */
 public class AuthorizationRequest {
     private static final String MODE = "PULL";
-
     @JsonProperty("startDatePull")
     @JsonSerialize(using = LocalDateToEpochSerializer.class)
     @SuppressWarnings("unused")
     private LocalDate startDate;
-
     @JsonProperty("endDatePull")
     @JsonSerialize(using = LocalDateToEpochSerializer.class)
     @SuppressWarnings("unused")
     private LocalDate endDate;
-
     @JsonProperty("nifSolicitante")
     @SuppressWarnings("unused")
     private String nif;
-
     @JsonProperty("cups")
     @SuppressWarnings("unused")
     private List<Cups> meteringPoints;
@@ -43,6 +39,14 @@ public class AuthorizationRequest {
         this.endDate = endDate;
         this.nif = nif;
         this.meteringPoints = meteringPoints.stream().map(meteringPoint -> new Cups(meteringPoint, startDate, endDate)).toList();
+    }
+
+    public LocalDate startDate() {
+        return startDate;
+    }
+
+    public LocalDate endDate() {
+        return endDate;
     }
 
     @JsonProperty("mode")

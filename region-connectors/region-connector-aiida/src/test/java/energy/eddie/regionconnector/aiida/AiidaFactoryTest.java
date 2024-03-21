@@ -16,7 +16,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.*;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -29,6 +32,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AiidaFactoryTest {
+    private final String connectionId = "testConnId";
+    private final String dataNeedId = "testDataNeedId";
     @Mock
     private DataNeedsService mockService;
     @Mock
@@ -38,8 +43,6 @@ class AiidaFactoryTest {
     @Mock
     private RelativeDuration mockRelativeDuration;
     private AiidaFactory aiidaFactory;
-    private final String connectionId = "testConnId";
-    private final String dataNeedId = "testDataNeedId";
 
     @BeforeEach
     void setUp() {
@@ -96,8 +99,8 @@ class AiidaFactoryTest {
         var request = aiidaFactory.createPermissionRequest(connectionId, dataNeedId);
 
         // Then
-        assertEquals(ZonedDateTime.parse("2000-01-01T00:00:00Z[Etc/UTC]"), request.start());
-        assertEquals(ZonedDateTime.parse("9999-12-31T23:59:59Z[Etc/UTC]"), request.end());
+        assertEquals(LocalDate.parse("2000-01-01"), request.start());
+        assertEquals(LocalDate.parse("9999-12-31"), request.end());
     }
 
     @Test
@@ -109,8 +112,8 @@ class AiidaFactoryTest {
         DataNeedWrapper wrapper = new DataNeedWrapper(mockDataNeed, LocalDate.of(2024, 4, 1), LocalDate.of(2024, 4, 4));
         when(mockService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any())).thenReturn(wrapper);
 
-        var expectedStart = ZonedDateTime.parse("2024-04-01T00:00Z[Etc/UTC]");
-        var expectedExpiration = ZonedDateTime.parse("2024-04-04T23:59:59Z[Etc/UTC]");
+        var expectedStart = LocalDate.parse("2024-04-01");
+        var expectedExpiration = LocalDate.parse("2024-04-04");
 
 
         // When
@@ -130,8 +133,8 @@ class AiidaFactoryTest {
         when(mockDataNeed.name()).thenReturn("Test Service");
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1-0:1.8.0", "1-0:1.7.0"));
         when(mockService.findById(anyString())).thenReturn(Optional.of(mockDataNeed));
-        var start = ZonedDateTime.parse("2023-01-01T00:00:00Z[Etc/UTC]");
-        var end = ZonedDateTime.parse("2023-01-25T23:59:59Z[Etc/UTC]");
+        var start = LocalDate.parse("2023-01-01");
+        var end = LocalDate.parse("2023-01-25");
 
 
         String permissionId = "8390505d-2bb1-4321-bad2-396897cad525";
@@ -148,8 +151,8 @@ class AiidaFactoryTest {
         // Then
         assertAll(
                 () -> assertDoesNotThrow(() -> UUID.fromString(dto.permissionId())),
-                () -> assertEquals(request.start().toInstant(), dto.startTime()),
-                () -> assertEquals(request.end().toInstant(), dto.expirationTime()),
+                () -> assertEquals(request.start(), dto.startDate()),
+                () -> assertEquals(request.end(), dto.expirationDate()),
                 () -> assertEquals(request.permissionId(), dto.permissionId()),
                 () -> assertEquals(connectionId, dto.connectionId()),
                 () -> assertEquals(dataNeedId, dto.dataNeedId()),

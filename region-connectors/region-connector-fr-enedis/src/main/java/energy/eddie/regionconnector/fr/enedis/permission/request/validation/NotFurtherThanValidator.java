@@ -4,8 +4,8 @@ import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.agnostic.process.model.validation.Validator;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class NotFurtherThanValidator implements Validator<TimeframedPermissionRe
 
     @Override
     public List<AttributeError> validate(TimeframedPermissionRequest value) {
-        ZonedDateTime limitDate = ZonedDateTime
+        LocalDate limitDate = LocalDate
                 .now(ZoneOffset.UTC)
                 .plus(limit, unit);
         if (value.end().isAfter(limitDate)) {

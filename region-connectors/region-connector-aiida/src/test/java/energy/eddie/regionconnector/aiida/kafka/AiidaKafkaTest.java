@@ -22,8 +22,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 import reactor.test.publisher.TestPublisher;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
@@ -55,7 +55,7 @@ class AiidaKafkaTest {
 
         // json that is received from AIIDA
         var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(),
-                dataSourceInformation, PermissionProcessStatus.ACCEPTED);
+                                                  dataSourceInformation, PermissionProcessStatus.ACCEPTED);
         var json = mapper.writeValueAsString(message);
 
         // make sure the request is in a valid state
@@ -71,6 +71,16 @@ class AiidaKafkaTest {
         verify(request).accept();
     }
 
+    private AiidaPermissionRequest createTestRequest() {
+        String connectionId = "TestConnectionId";
+        String permissionId = "TestPermissionId";
+        String terminationTopic = "TestTopic";
+        String dataNeedId = "1";
+        LocalDate start = LocalDate.now(ZoneOffset.UTC);
+        return new AiidaPermissionRequest(permissionId, connectionId, dataNeedId, terminationTopic,
+                                          start, start.plusDays(1));
+    }
+
     @ParameterizedTest
     @EnumSource(
             value = PermissionProcessStatus.class,
@@ -80,7 +90,7 @@ class AiidaKafkaTest {
         var request = spy(createTestRequest());
 
         var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(),
-                dataSourceInformation, status);
+                                                  dataSourceInformation, status);
         var json = mapper.writeValueAsString(message);
 
         request.changeState(new AiidaAcceptedPermissionRequestState(request));
@@ -113,16 +123,6 @@ class AiidaKafkaTest {
 
         // Then
         verify(mockTemplate).send(terminationTopic, connectionId, connectionId);
-    }
-
-    private AiidaPermissionRequest createTestRequest() {
-        String connectionId = "TestConnectionId";
-        String permissionId = "TestPermissionId";
-        String terminationTopic = "TestTopic";
-        String dataNeedId = "1";
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
-        return new AiidaPermissionRequest(permissionId, connectionId, dataNeedId, terminationTopic,
-                start, start.plusSeconds(10000));
     }
     // TODO how to handle it, when we get status messages from AIIDA but request is in a different state? i.e. just random messages from aiida
 }

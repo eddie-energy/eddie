@@ -5,9 +5,8 @@ import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import reactor.core.publisher.Mono;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 
 /**
  * Filter metering data by permission request start and end date
@@ -23,8 +22,8 @@ public record MeteringDataFilter(
     public static final int NR_OF_QUARTER_HOURS_IN_A_DAY = 96;
 
     public Mono<IntermediateMeteringData> filter() {
-        ZonedDateTime startDate = permissionRequest.lastPulledMeterReading().orElse(permissionRequest.start());
-        Optional<ZonedDateTime> endDate = Optional.ofNullable(permissionRequest.end());
+        LocalDate startDate = permissionRequest.lastPulledMeterReading().orElse(permissionRequest.start());
+        LocalDate endDate = permissionRequest.end();
         int stepSize = stepSize();
         var startIndex = calculateStartIndex(intermediateMeteringData, startDate, stepSize);
         var endIndex = calculateEndIndex(intermediateMeteringData, endDate, stepSize);
@@ -47,20 +46,19 @@ public record MeteringDataFilter(
         return permissionRequest.measurementType() == MeasurementType.HOURLY ? NR_OF_HOURS_IN_A_DAY : NR_OF_QUARTER_HOURS_IN_A_DAY;
     }
 
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private int calculateEndIndex(IntermediateMeteringData intermediateMeteringData, Optional<ZonedDateTime> endDate, int stepSize) {
-        if (endDate.isEmpty() || !intermediateMeteringData.end().isAfter(endDate.get())) {
+    private int calculateEndIndex(IntermediateMeteringData intermediateMeteringData, LocalDate endDate, int stepSize) {
+        if (!intermediateMeteringData.end().isAfter(endDate)) {
             return intermediateMeteringData.meteringData().size();
         }
-        int daysBetween = (int) ChronoUnit.DAYS.between(endDate.get().toLocalDate(), intermediateMeteringData.end());
+        int daysBetween = (int) ChronoUnit.DAYS.between(endDate, intermediateMeteringData.end());
         return intermediateMeteringData.meteringData().size() - (daysBetween * stepSize);
     }
 
-    private int calculateStartIndex(IntermediateMeteringData intermediateMeteringData, ZonedDateTime startDate, int stepSize) {
+    private int calculateStartIndex(IntermediateMeteringData intermediateMeteringData, LocalDate startDate, int stepSize) {
         if (startDate.isBefore(intermediateMeteringData.start())) {
             return 0;
         }
-        int daysBetween = (int) ChronoUnit.DAYS.between(intermediateMeteringData.start().toLocalDate(), startDate);
+        int daysBetween = (int) ChronoUnit.DAYS.between(intermediateMeteringData.start(), startDate);
         return daysBetween * stepSize;
     }
 }

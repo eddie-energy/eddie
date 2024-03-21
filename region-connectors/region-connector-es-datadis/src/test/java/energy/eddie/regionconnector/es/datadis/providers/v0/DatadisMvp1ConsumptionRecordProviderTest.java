@@ -34,21 +34,24 @@ class DatadisMvp1ConsumptionRecordProviderTest {
         var provider = new DatadisMvp1ConsumptionRecordProvider(publisher.flux());
 
         StepVerifier.create(provider.getConsumptionRecordStream())
-                // When
-                .then(() -> publisher.next(reading))
-                // Then
-                .assertNext(consumptionRecord -> assertAll(
-                        () -> assertEquals(reading.permissionRequest().connectionId(), consumptionRecord.getConnectionId()),
-                        () -> assertEquals(reading.permissionRequest().permissionId(), consumptionRecord.getPermissionId()),
-                        () -> assertEquals(reading.permissionRequest().dataNeedId(), consumptionRecord.getDataNeedId()),
-                        () -> assertEquals(1, consumptionRecord.getConsumptionPoints().size())
-                ))
-                .thenCancel()
-                .verify(Duration.ofSeconds(2));
+                    // When
+                    .then(() -> publisher.next(reading))
+                    // Then
+                    .assertNext(consumptionRecord -> assertAll(
+                            () -> assertEquals(reading.permissionRequest().connectionId(),
+                                               consumptionRecord.getConnectionId()),
+                            () -> assertEquals(reading.permissionRequest().permissionId(),
+                                               consumptionRecord.getPermissionId()),
+                            () -> assertEquals(reading.permissionRequest().dataNeedId(),
+                                               consumptionRecord.getDataNeedId()),
+                            () -> assertEquals(1, consumptionRecord.getConsumptionPoints().size())
+                    ))
+                    .thenCancel()
+                    .verify(Duration.ofSeconds(2));
     }
 
     private IdentifiableMeteringData createReading() {
-        var today = LocalDate.now(ZONE_ID_SPAIN).atStartOfDay(ZONE_ID_SPAIN);
+        var today = LocalDate.now(ZONE_ID_SPAIN);
         var end = today.plusDays(1);
         StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
         PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
@@ -59,13 +62,19 @@ class DatadisMvp1ConsumptionRecordProviderTest {
         );
         EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
                                                                              permissionRequestForCreation,
-                                                                             today.toLocalDate(),
-                                                                             end.toLocalDate(),
+                                                                             today,
+                                                                             end,
                                                                              Granularity.PT1H,
                                                                              stateBuilderFactory);
         permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
 
-        var meteringData = new MeteringData("CUPS", end.toLocalDate().plusDays(1).format(DateTimeFormatter.ofPattern("yyyy/MM/dd")), "00:00", 123.123, ObtainMethod.REAL, 0);
-        return new IdentifiableMeteringData(permissionRequest, IntermediateMeteringData.fromMeteringData(List.of(meteringData)));
+        var meteringData = new MeteringData("CUPS",
+                                            end.plusDays(1).format(DateTimeFormatter.ofPattern("yyyy/MM/dd")),
+                                            "00:00",
+                                            123.123,
+                                            ObtainMethod.REAL,
+                                            0);
+        return new IdentifiableMeteringData(permissionRequest,
+                                            IntermediateMeteringData.fromMeteringData(List.of(meteringData)));
     }
 }

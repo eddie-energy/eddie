@@ -9,8 +9,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class EnedisDurationTest {
 
     private static Stream<Arguments> testEnedisDuration_returnsISODuration_ifEndIsInFuture_methodSource() {
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC);
         return Stream.of(
                 Arguments.of(start, start.plusDays(3), "P3D"),
                 Arguments.of(start, start.plusYears(3), "P1095D")
@@ -28,8 +28,8 @@ class EnedisDurationTest {
     @Test
     void testEnedisDuration_returnsISODurationOfOneDay_ifEndIsInPast() {
         // Given
-        ZonedDateTime start = ZonedDateTime.now(ZoneOffset.UTC).minusDays(10);
-        ZonedDateTime end = start.plusDays(3);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(10);
+        LocalDate end = start.plusDays(3);
         StateBuilderFactory factory = new StateBuilderFactory();
         FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("cid", "dnid", start, end, Granularity.P1D, factory);
         EnedisDuration duration = new EnedisDuration(permissionRequest);
@@ -43,7 +43,7 @@ class EnedisDurationTest {
 
     @ParameterizedTest
     @MethodSource("testEnedisDuration_returnsISODuration_ifEndIsInFuture_methodSource")
-    void testEnedisDuration_returnsISODuration_ifEndIsInFuture(ZonedDateTime start, ZonedDateTime end, String expected) {
+    void testEnedisDuration_returnsISODuration_ifEndIsInFuture(LocalDate start, LocalDate end, String expected) {
         // Given
         StateBuilderFactory factory = new StateBuilderFactory();
         FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("cid", "dnid", start, end, Granularity.P1D, factory);

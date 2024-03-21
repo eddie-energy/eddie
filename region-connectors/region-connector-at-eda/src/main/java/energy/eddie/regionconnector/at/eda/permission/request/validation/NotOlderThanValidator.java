@@ -4,7 +4,7 @@ import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class NotOlderThanValidator implements Validator<CreatedEvent> {
 
     @Override
     public List<AttributeError> validate(CreatedEvent value) {
-        if (value.start().toLocalDate().isBefore(ZonedDateTime.now(AT_ZONE_ID).toLocalDate().minus(limit, unit))) {
+        if (value.start().isBefore(LocalDate.now(AT_ZONE_ID).minus(limit, unit))) {
             return List.of(new AttributeError("dataFrom", "Date must no be older than %s %s".formatted(limit, unit)));
         }
         return List.of();

@@ -9,7 +9,7 @@
     "duration": {
       "type": "relativeDuration",
       "start": "-P3M",
-      "end": "P0D"
+      "end": "P-1D"
     },
     "energyType": "ELECTRICITY",
     "minGranularity": "P1D",
@@ -59,7 +59,7 @@
     "duration": {
       "type": "relativeDuration",
       "start": "-P3M",
-      "end": "P0D"
+      "end": "P-1D"
     },
     "energyType": "ELECTRICITY",
     "minGranularity": "PT1H",

@@ -6,8 +6,8 @@ import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermission
 import energy.eddie.regionconnector.aiida.states.AiidaCreatedPermissionRequestState;
 import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 public class AiidaPermissionRequest extends TimestampedPermissionRequest implements AiidaPermissionRequestInterface {
     private static final AiidaDataSourceInformation dataSourceInformation = new AiidaDataSourceInformation();
@@ -15,8 +15,8 @@ public class AiidaPermissionRequest extends TimestampedPermissionRequest impleme
     private final String connectionId;
     private final String dataNeedId;
     private final String terminationTopic;
-    private final ZonedDateTime startTime;
-    private final ZonedDateTime expirationTime;
+    private final LocalDate startDate;
+    private final LocalDate expirationDate;
     private PermissionRequestState state;
 
     /**
@@ -26,34 +26,35 @@ public class AiidaPermissionRequest extends TimestampedPermissionRequest impleme
      * @param connectionId     connectionId that should be used for this new permission request.
      * @param dataNeedId       dataNeedId that should be used for this new permission request.
      * @param terminationTopic Kafka topic, on which a termination request from the EP should be published.
-     * @param startTime        Starting from this UTC timestamp, the permission is valid and data should be shared.
-     * @param expirationTime   Until this UTC timestamp, the permission is valid and data sharing should stop.
+     * @param startDate        Starting from this date, the permission is valid and data should be shared.
+     * @param expirationDate   Until this date, the permission is valid and data sharing should stop.
      */
     public AiidaPermissionRequest(
             String permissionId,
             String connectionId,
             String dataNeedId,
             String terminationTopic,
-            ZonedDateTime startTime,
-            ZonedDateTime expirationTime) {
+            LocalDate startDate,
+            LocalDate expirationDate
+    ) {
         super(ZoneOffset.UTC);
         this.permissionId = permissionId;
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
         this.terminationTopic = terminationTopic;
-        this.startTime = startTime;
-        this.expirationTime = expirationTime;
+        this.startDate = startDate;
+        this.expirationDate = expirationDate;
         this.state = new AiidaCreatedPermissionRequestState(this);
     }
 
     @Override
-    public ZonedDateTime start() {
-        return startTime;
+    public LocalDate start() {
+        return startDate;
     }
 
     @Override
-    public ZonedDateTime end() {
-        return expirationTime;
+    public LocalDate end() {
+        return expirationDate;
     }
 
     @Override

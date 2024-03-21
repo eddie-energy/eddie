@@ -20,8 +20,8 @@ import reactor.test.publisher.TestPublisher;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,7 +64,7 @@ class RevocationServiceTest {
         // Given
         var edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        LocalDate now = LocalDate.now(ZoneOffset.UTC);
         when(ccmoRequest.start()).thenReturn(now);
         when(ccmoRequest.end()).thenReturn(Optional.of(now.plusDays(10)));
         var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, Granularity.PT15M,
@@ -98,7 +98,7 @@ class RevocationServiceTest {
         // Given
         var edaAdapter = mock(EdaAdapter.class);
         CCMORequest ccmoRequest = mock(CCMORequest.class);
-        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        LocalDate now = LocalDate.now(ZoneOffset.UTC);
         when(ccmoRequest.start()).thenReturn(now);
         when(ccmoRequest.end()).thenReturn(Optional.of(now.plusDays(10)));
         var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, Granularity.PT15M,

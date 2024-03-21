@@ -9,13 +9,22 @@ import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
+
+
 public class ConsumptionRecordMapper {
     public static final int CONVERSION_FACTOR = 1000;
 
     private ConsumptionRecordMapper() {
     }
 
-    public static ConsumptionRecord mapToMvp1ConsumptionRecord(IntermediateMeteringData meteringData, @Nullable String permissionId, @Nullable String connectionId, MeasurementType measurementType, @Nullable String dataNeedId) {
+    public static ConsumptionRecord mapToMvp1ConsumptionRecord(
+            IntermediateMeteringData meteringData,
+            @Nullable String permissionId,
+            @Nullable String connectionId,
+            MeasurementType measurementType,
+            @Nullable String dataNeedId
+    ) {
         ConsumptionRecord consumptionRecord = new ConsumptionRecord();
         consumptionRecord.setPermissionId(permissionId);
         consumptionRecord.setConnectionId(connectionId);
@@ -25,7 +34,7 @@ public class ConsumptionRecordMapper {
         var firstMeteringData = meteringData.meteringData().getFirst();
 
         consumptionRecord.setMeteringPoint(firstMeteringData.cups());
-        consumptionRecord.setStartDateTime(meteringData.start());
+        consumptionRecord.setStartDateTime(meteringData.start().atStartOfDay(ZONE_ID_SPAIN));
 
         var consumptionPoints = meteringData.meteringData().stream().map(reading -> {
             ConsumptionPoint consumptionPoint = new ConsumptionPoint();

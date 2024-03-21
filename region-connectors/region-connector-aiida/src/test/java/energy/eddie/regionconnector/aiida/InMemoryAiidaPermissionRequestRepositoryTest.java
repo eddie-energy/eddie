@@ -4,8 +4,8 @@ import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequ
 import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class InMemoryAiidaPermissionRequestRepositoryTest {
     @Test
     void givenNewRepository_whenSaveAndFindByPermissionId_thenPermissionRequestFound() {
-        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var now = LocalDate.now(ZoneOffset.UTC);
         InMemoryAiidaPermissionRequestRepository repository = new InMemoryAiidaPermissionRequestRepository();
         String permissionId = "permissionId";
         var request = new AiidaPermissionRequest(permissionId, "connectionId",
@@ -55,7 +55,7 @@ class InMemoryAiidaPermissionRequestRepositoryTest {
     @Test
     void givenExistingPermissionId_removeByPermissionId_returnsTrue() {
         // Given
-        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var now = LocalDate.now(ZoneOffset.UTC);
         InMemoryAiidaPermissionRequestRepository repository = new InMemoryAiidaPermissionRequestRepository();
         String permissionId = "permissionId";
         var request = new AiidaPermissionRequest(permissionId, "connectionId",

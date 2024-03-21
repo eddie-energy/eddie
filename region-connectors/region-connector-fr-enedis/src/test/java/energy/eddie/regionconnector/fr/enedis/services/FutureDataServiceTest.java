@@ -15,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -37,28 +36,48 @@ class FutureDataServiceTest {
     static Stream<Arguments> activePermission_that_needsToBeFetched() {
         LocalDate today = LocalDate.now(ZONE_ID_FR);
         return Stream.of(
-                Arguments.of(createPermissionRequest(today.minusDays(1), today, Optional.empty()), "Permission: start = yesterday, end = today, no latest meter reading"),
-                Arguments.of(createPermissionRequest(today.minusDays(2), today, Optional.empty()), "Permission: start = 2 days ago, end = today, no latest meter reading"),
-                Arguments.of(createPermissionRequest(today.minusDays(2), today, Optional.of(today.minusDays(1))), "Permission: start = 2 days ago, end = today, latest meter reading = yesterday"),
-                Arguments.of(createPermissionRequest(today.minusDays(2), today.plusDays(1), Optional.of(today.minusDays(1))), "Permission: start = 2 days ago, end = tomorrow, latest meter reading = yesterday")
+                Arguments.of(createPermissionRequest(today.minusDays(1), today, Optional.empty()),
+                             "Permission: start = yesterday, end = today, no latest meter reading"),
+                Arguments.of(createPermissionRequest(today.minusDays(2), today, Optional.empty()),
+                             "Permission: start = 2 days ago, end = today, no latest meter reading"),
+                Arguments.of(createPermissionRequest(today.minusDays(2), today, Optional.of(today.minusDays(1))),
+                             "Permission: start = 2 days ago, end = today, latest meter reading = yesterday"),
+                Arguments.of(createPermissionRequest(today.minusDays(2),
+                                                     today.plusDays(1),
+                                                     Optional.of(today.minusDays(1))),
+                             "Permission: start = 2 days ago, end = tomorrow, latest meter reading = yesterday")
         );
     }
 
     static Stream<Arguments> permissionThatAreInactiveOrDoNotNeedToBeFetched() {
         LocalDate today = LocalDate.now(ZONE_ID_FR);
         return Stream.of(
-                Arguments.of(createPermissionRequest(today.minusDays(1), today.plusDays(1), Optional.of(today)), "Permission: start = yesterday, end = tomorrow, latest meter reading = today, data is already up to date"),
-                Arguments.of(createPermissionRequest(today, today, Optional.empty()), "Permission: start = today, end = today, inactive"),
-                Arguments.of(createPermissionRequest(today.plusDays(1), today.plusDays(2), Optional.empty()), "Permission: start = tomorrow, end = day after tomorrow, inactive"),
-                Arguments.of(createPermissionRequest(today.plusDays(2), today.plusDays(2), Optional.empty()), "Permission: start = day after tomorrow, end = day after tomorrow, inactive")
+                Arguments.of(createPermissionRequest(today.minusDays(1), today.plusDays(1), Optional.of(today)),
+                             "Permission: start = yesterday, end = tomorrow, latest meter reading = today, data is already up to date"),
+                Arguments.of(createPermissionRequest(today, today, Optional.empty()),
+                             "Permission: start = today, end = today, inactive"),
+                Arguments.of(createPermissionRequest(today.plusDays(1), today.plusDays(2), Optional.empty()),
+                             "Permission: start = tomorrow, end = day after tomorrow, inactive"),
+                Arguments.of(createPermissionRequest(today.plusDays(2), today.plusDays(2), Optional.empty()),
+                             "Permission: start = day after tomorrow, end = day after tomorrow, inactive")
         );
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    static FrEnedisPermissionRequest createPermissionRequest(LocalDate start, LocalDate end, Optional<LocalDate> latestMeterReading) {
-        FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("cId", "dId", start.atStartOfDay(ZoneOffset.UTC), end.atStartOfDay(ZoneOffset.UTC), Granularity.P1D, stateBuilderFactory);
+    static FrEnedisPermissionRequest createPermissionRequest(
+            LocalDate start,
+            LocalDate end,
+            Optional<LocalDate> latestMeterReading
+    ) {
+        FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("cId",
+                                                                                  "dId",
+                                                                                  start,
+                                                                                  end,
+                                                                                  Granularity.P1D,
+                                                                                  stateBuilderFactory);
         latestMeterReading.ifPresent(permissionRequest::updateLatestMeterReading);
-        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
+        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
+                                                         .build());
         return permissionRequest;
     }
 
@@ -77,24 +96,34 @@ class FutureDataServiceTest {
 
     @ParameterizedTest(name = "{1}")
     @MethodSource("activePermission_that_needsToBeFetched")
-    void fetchMeterReadings_invokesPollingService_forActivePermissionsThatNeedToBePolled(FrEnedisPermissionRequest permissionRequest, String description) {
+    void fetchMeterReadings_invokesPollingService_forActivePermissionsThatNeedToBePolled(
+            FrEnedisPermissionRequest permissionRequest,
+            String description
+    ) {
         // Given
-        when(permissionRequestService.findAllAcceptedPermissionRequests()).thenReturn(Collections.singletonList(permissionRequest));
+        when(permissionRequestService.findAllAcceptedPermissionRequests()).thenReturn(Collections.singletonList(
+                permissionRequest));
 
         // When
         futureDataService.fetchMeterReadings();
 
         // Then
         verify(permissionRequestService, times(1)).findAllAcceptedPermissionRequests();
-        LocalDate startFetchDate = permissionRequest.latestMeterReading().orElse(permissionRequest.start().toLocalDate());
-        verify(pollingService, times(1)).fetchMeterReadings(permissionRequest, startFetchDate, LocalDate.now(ZONE_ID_FR));
+        LocalDate startFetchDate = permissionRequest.latestMeterReading().orElse(permissionRequest.start());
+        verify(pollingService, times(1)).fetchMeterReadings(permissionRequest,
+                                                            startFetchDate,
+                                                            LocalDate.now(ZONE_ID_FR));
     }
 
     @ParameterizedTest(name = "{1}")
     @MethodSource("permissionThatAreInactiveOrDoNotNeedToBeFetched")
-    void fetchMeterReadings_doesNotInvokePollingService_IfPermissionIsActiveButDoesNotNeedToBeFetched(FrEnedisPermissionRequest permissionRequest, String description) {
+    void fetchMeterReadings_doesNotInvokePollingService_IfPermissionIsActiveButDoesNotNeedToBeFetched(
+            FrEnedisPermissionRequest permissionRequest,
+            String description
+    ) {
         // Given
-        when(permissionRequestService.findAllAcceptedPermissionRequests()).thenReturn(Collections.singletonList(permissionRequest));
+        when(permissionRequestService.findAllAcceptedPermissionRequests()).thenReturn(Collections.singletonList(
+                permissionRequest));
 
         // Execute
         futureDataService.fetchMeterReadings();

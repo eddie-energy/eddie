@@ -16,7 +16,6 @@ import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.MAXIMUM_MONTHS_IN_THE_PAST;
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
@@ -30,7 +29,12 @@ public class DataApiService implements AutoCloseable {
     private final LastPulledMeterReadingService lastPulledMeterReadingService;
 
 
-    public DataApiService(DataApi dataApi, Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink, DatadisFulfillmentService fulfillmentService, LastPulledMeterReadingService lastPulledMeterReadingService) {
+    public DataApiService(
+            DataApi dataApi,
+            Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink,
+            DatadisFulfillmentService fulfillmentService,
+            LastPulledMeterReadingService lastPulledMeterReadingService
+    ) {
         this.dataApi = dataApi;
         this.identifiableMeteringDataSink = identifiableMeteringDataSink;
         this.fulfillmentService = fulfillmentService;
@@ -40,10 +44,10 @@ public class DataApiService implements AutoCloseable {
 
     public void fetchDataForPermissionRequest(EsPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
         LOGGER.atInfo()
-                .addArgument(permissionRequest::permissionId)
-                .addArgument(start)
-                .addArgument(end)
-                .log("Polling metering data for permission request {} from {} to {}");
+              .addArgument(permissionRequest::permissionId)
+              .addArgument(start)
+              .addArgument(end)
+              .log("Polling metering data for permission request {} from {} to {}");
 
         tryGetConsumptionKwh(
                 MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end),
@@ -53,22 +57,27 @@ public class DataApiService implements AutoCloseable {
 
     private void tryGetConsumptionKwh(MeteringDataRequest request, EsPermissionRequest permissionRequest) {
         dataApi.getConsumptionKwh(request)
-                .map(IntermediateMeteringData::fromMeteringData)
-                .flatMap(result -> new MeteringDataFilter(result, permissionRequest).filter())
-                .map(result -> new IdentifiableMeteringData(permissionRequest, result))
-                .doOnError(e -> retryOrRevoke(request, permissionRequest, e))
-                .onErrorComplete() // The error is handled by doOnError, so we can complete the stream here
-                .subscribe(identifiableMeteringData -> handleIdentifiableMeteringData(permissionRequest, identifiableMeteringData));
+               .map(IntermediateMeteringData::fromMeteringData)
+               .flatMap(result -> new MeteringDataFilter(result, permissionRequest).filter())
+               .map(result -> new IdentifiableMeteringData(permissionRequest, result))
+               .doOnError(e -> retryOrRevoke(request, permissionRequest, e))
+               .onErrorComplete() // The error is handled by doOnError, so we can complete the stream here
+               .subscribe(identifiableMeteringData -> handleIdentifiableMeteringData(permissionRequest,
+                                                                                     identifiableMeteringData));
     }
 
-    private void handleIdentifiableMeteringData(EsPermissionRequest permissionRequest, IdentifiableMeteringData identifiableMeteringData) {
-        ZonedDateTime meteringDataEndDate = identifiableMeteringData.intermediateMeteringData().end();
+    private void handleIdentifiableMeteringData(
+            EsPermissionRequest permissionRequest,
+            IdentifiableMeteringData identifiableMeteringData
+    ) {
+        LocalDate meteringDataEndDate = identifiableMeteringData.intermediateMeteringData().end();
         if (lastPulledMeterReadingService.updateLastPulledMeterReading(permissionRequest, meteringDataEndDate)
                 && fulfillmentService.isPermissionRequestFulfilledByDate(permissionRequest, meteringDataEndDate)) {
             fulfillmentService.tryFulfillPermissionRequest(permissionRequest);
         }
 
-        identifiableMeteringDataSink.emitNext(identifiableMeteringData, Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
+        identifiableMeteringDataSink.emitNext(identifiableMeteringData,
+                                              Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
     }
 
     private void retryOrRevoke(MeteringDataRequest request, EsPermissionRequest permissionRequest, Throwable e) {
@@ -78,9 +87,9 @@ public class DataApiService implements AutoCloseable {
         }
 
         LOGGER.atError()
-                .addArgument(permissionRequest::permissionId)
-                .setCause(e)
-                .log("Something went wrong while fetching data for permission request {} from Datadis:");
+              .addArgument(permissionRequest::permissionId)
+              .setCause(e)
+              .log("Something went wrong while fetching data for permission request {} from Datadis:");
 
         if (cause instanceof DatadisApiException exception) {
             if (exception.statusCode() == HttpStatus.FORBIDDEN.value()) {
@@ -92,7 +101,8 @@ public class DataApiService implements AutoCloseable {
             }
             if (exception.statusCode() == HttpStatus.TOO_MANY_REQUESTS.value()) {
                 request = request.minusMonths(1);
-                if (!request.startDate().isBefore(LocalDate.now(ZONE_ID_SPAIN).minusMonths(MAXIMUM_MONTHS_IN_THE_PAST))) {
+                if (!request.startDate()
+                            .isBefore(LocalDate.now(ZONE_ID_SPAIN).minusMonths(MAXIMUM_MONTHS_IN_THE_PAST))) {
                     tryGetConsumptionKwh(request, permissionRequest);
                 }
             }

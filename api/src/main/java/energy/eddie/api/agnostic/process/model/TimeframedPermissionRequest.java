@@ -1,18 +1,15 @@
 package energy.eddie.api.agnostic.process.model;
 
-import jakarta.annotation.Nullable;
-
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 public interface TimeframedPermissionRequest extends PermissionRequest {
     /**
-     * The start date from which data is requested.
+     * The start date from which data is requested. (inclusive)
      */
-    ZonedDateTime start();
+    LocalDate start();
 
     /**
-     * The end date from which data is requested.
+     * The end date from which data is requested. (inclusive)
      */
-    @Nullable
-    ZonedDateTime end();
+    LocalDate end();
 }

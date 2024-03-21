@@ -4,8 +4,8 @@ import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -15,8 +15,8 @@ class StartIsBeforeOrEqualEndValidatorTest {
     @Test
     void testValidateWhen_startIsBeforeEnd() {
         // Given
-        ZonedDateTime startTime = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime endTime = startTime.plusHours(1);
+        LocalDate startTime = LocalDate.now(ZoneOffset.UTC);
+        LocalDate endTime = startTime.plusDays(1);
         TimeframedPermissionRequest request = new SimpleTimeFramePermissionRequest(startTime, endTime);
         StartIsBeforeOrEqualEndValidator<TimeframedPermissionRequest> validator = new StartIsBeforeOrEqualEndValidator<>();
 
@@ -30,7 +30,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
     @Test
     void testValidateWhen_startIsEqualToEnd() {
         // Given
-        ZonedDateTime startTime = ZonedDateTime.now(ZoneOffset.UTC);
+        LocalDate startTime = LocalDate.now(ZoneOffset.UTC);
         TimeframedPermissionRequest request = new SimpleTimeFramePermissionRequest(startTime, startTime);
         StartIsBeforeOrEqualEndValidator<TimeframedPermissionRequest> validator = new StartIsBeforeOrEqualEndValidator<>();
 
@@ -44,8 +44,8 @@ class StartIsBeforeOrEqualEndValidatorTest {
     @Test
     void testValidateWhen_startIsAfterEnd() {
         // Given
-        ZonedDateTime startTime = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime endTime = startTime.minusHours(1);
+        LocalDate startTime = LocalDate.now(ZoneOffset.UTC);
+        LocalDate endTime = startTime.minusDays(1);
         TimeframedPermissionRequest request = new SimpleTimeFramePermissionRequest(startTime, endTime);
         StartIsBeforeOrEqualEndValidator<TimeframedPermissionRequest> validator = new StartIsBeforeOrEqualEndValidator<>();
 
@@ -55,5 +55,4 @@ class StartIsBeforeOrEqualEndValidatorTest {
         // Then
         assertFalse(errors.isEmpty());
     }
-
 }

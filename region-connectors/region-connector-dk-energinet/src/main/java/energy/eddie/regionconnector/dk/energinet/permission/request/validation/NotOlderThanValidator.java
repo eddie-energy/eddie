@@ -5,7 +5,7 @@ import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -30,7 +30,7 @@ public class NotOlderThanValidator implements Validator<DkEnerginetCustomerPermi
 
     @Override
     public List<AttributeError> validate(DkEnerginetCustomerPermissionRequest value) {
-        var earliestAllowedStart = ZonedDateTime.now(DK_ZONE_ID).minus(limit, unit);
+        var earliestAllowedStart = LocalDate.now(DK_ZONE_ID).minus(limit, unit);
         if (value.start().isBefore(earliestAllowedStart)) {
             return List.of(new AttributeError("start", "start must not be older than %s %s".formatted(limit, unit)));
         }

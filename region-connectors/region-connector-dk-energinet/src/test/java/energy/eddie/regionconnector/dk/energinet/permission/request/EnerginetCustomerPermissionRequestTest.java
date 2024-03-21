@@ -8,8 +8,6 @@ import energy.eddie.regionconnector.dk.energinet.permission.request.states.Energ
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,24 +27,24 @@ class EnerginetCustomerPermissionRequestTest {
         Granularity granularity = Granularity.PT1H;
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         var forCreation = new PermissionRequestForCreation(connectionId,
-                                                           refreshToken,
-                                                           meteringPoint,
-                                                           dataNeedId);
+                refreshToken,
+                meteringPoint,
+                dataNeedId);
 
         // When
         var request = new EnerginetCustomerPermissionRequest(permissionId,
-                                                             forCreation,
-                                                             apiClient,
-                                                             start,
-                                                             end,
-                                                             granularity,
-                                                             new StateBuilderFactory());
+                forCreation,
+                apiClient,
+                start,
+                end,
+                granularity,
+                new StateBuilderFactory());
 
         // Then
         assertEquals(permissionId, request.permissionId());
         assertEquals(connectionId, request.connectionId());
-        assertEquals(ZonedDateTime.of(start, LocalTime.MIN, DK_ZONE_ID), request.start());
-        assertEquals(ZonedDateTime.of(end, LocalTime.MIN, DK_ZONE_ID), request.end());
+        assertEquals(start, request.start());
+        assertEquals(end, request.end());
         assertEquals(meteringPoint, request.meteringPoint());
         assertEquals(dataNeedId, request.dataNeedId());
         assertEquals(granularity, request.granularity());
@@ -65,18 +63,18 @@ class EnerginetCustomerPermissionRequestTest {
         Granularity granularity = Granularity.PT1H;
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         var forCreation = new PermissionRequestForCreation(connectionId,
-                                                           refreshToken,
-                                                           meteringPoint,
-                                                           dataNeedId);
+                refreshToken,
+                meteringPoint,
+                dataNeedId);
 
         // When
         var request = new EnerginetCustomerPermissionRequest(permissionId,
-                                                             forCreation,
-                                                             apiClient,
-                                                             start,
-                                                             end,
-                                                             granularity,
-                                                             new StateBuilderFactory());
+                forCreation,
+                apiClient,
+                start,
+                end,
+                granularity,
+                new StateBuilderFactory());
         PermissionRequestState newState = new EnerginetCustomerRejectedState(request);
 
         // When

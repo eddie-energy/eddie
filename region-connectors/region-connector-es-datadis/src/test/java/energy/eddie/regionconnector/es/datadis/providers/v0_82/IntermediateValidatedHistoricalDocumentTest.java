@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.math.BigDecimal;
 
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -35,10 +36,8 @@ class IntermediateValidatedHistoricalDocumentTest {
         );
         EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
                                                                              permissionRequestForCreation,
-                                                                             intermediateMeteringData.start()
-                                                                                     .toLocalDate(),
-                                                                             intermediateMeteringData.end()
-                                                                                     .toLocalDate(),
+                                                                             intermediateMeteringData.start(),
+                                                                             intermediateMeteringData.end(),
                                                                              Granularity.PT1H,
                                                                              stateBuilderFactory);
         permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
@@ -63,7 +62,8 @@ class IntermediateValidatedHistoricalDocumentTest {
 
         var timeframe = new EsmpTimeInterval(
                 identifiableMeteringData.intermediateMeteringData().start(),
-                identifiableMeteringData.intermediateMeteringData().end()
+                identifiableMeteringData.intermediateMeteringData().end(),
+                ZONE_ID_SPAIN
         );
         var timeSeries = marketDocument.getTimeSeriesList().getTimeSeries().getFirst();
         var seriesPeriod = timeSeries.getSeriesPeriodList().getSeriesPeriods().getFirst();

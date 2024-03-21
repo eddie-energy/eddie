@@ -8,11 +8,7 @@ import energy.eddie.regionconnector.shared.permission.requests.extensions.Extens
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
 import java.util.Set;
-
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 
 @Component
 public class PermissionRequestFactory {
@@ -42,8 +38,8 @@ public class PermissionRequestFactory {
         FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest(
                 permissionRequestForCreation.connectionId(),
                 permissionRequestForCreation.dataNeedId(),
-                ZonedDateTime.of(start, LocalTime.MIN, ZONE_ID_FR),
-                ZonedDateTime.of(end, LocalTime.MIN, ZONE_ID_FR),
+                start,
+                end,
                 granularity,
                 stateBuilderFactory
         );

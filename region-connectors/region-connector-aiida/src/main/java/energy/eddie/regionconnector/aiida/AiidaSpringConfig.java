@@ -32,6 +32,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.time.Clock;
+import java.time.ZoneOffset;
 import java.util.Set;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
@@ -52,7 +53,7 @@ public class AiidaSpringConfig {
             @Value("${" + CUSTOMER_ID + "}") String customerId
     ) {
         return new PlainAiidaConfiguration(kafkaBootstrapServers, kafkaDataTopic,
-                                           kafkaStatusMessagesTopic, kafkaTerminationTopicPrefix, customerId);
+                kafkaStatusMessagesTopic, kafkaTerminationTopicPrefix, customerId);
     }
 
     @Bean
@@ -113,7 +114,8 @@ public class AiidaSpringConfig {
                         cmdSink,
                         transmissionScheduleProvider,
                         aiidaConfiguration.customerId(),
-                        cimConfig.eligiblePartyNationalCodingScheme().value()
+                        cimConfig.eligiblePartyNationalCodingScheme().value(),
+                        ZoneOffset.UTC
                 )
         );
     }

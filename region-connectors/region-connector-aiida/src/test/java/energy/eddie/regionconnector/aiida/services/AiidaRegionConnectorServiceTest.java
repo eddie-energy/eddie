@@ -32,7 +32,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
-import java.time.*;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -131,8 +134,8 @@ class AiidaRegionConnectorServiceTest {
     @Test
     void givenPermissionId_terminateRequest_publishesTerminationRequestOnFluxAndUpdatesDB() throws StateTransitionException {
         var permissionId = UUID.randomUUID().toString();
-        var start = ZonedDateTime.now(ZoneOffset.UTC);
-        var expiration = start.plusSeconds(1000);
+        var start = LocalDate.now(ZoneOffset.UTC);
+        var expiration = start.plusDays(1);
         AiidaPermissionRequest request = new AiidaPermissionRequest(permissionId, connectionId,
                                                                     "dataNeedId", "SomeTopic", start, expiration);
         request.changeState(new AiidaAcceptedPermissionRequestState(request));
@@ -182,7 +185,7 @@ class AiidaRegionConnectorServiceTest {
     }
 
     @Test
-    void givenExistingPermissionId_getPermissionRequestById_returnsRequest() throws PermissionNotFoundException {
+    void givenExistingPermissionId_getPermissionRequestById_returnsRequest() {
         // Given
         String permissionId = "MyId";
         when(mockRepository.findByPermissionId(permissionId)).thenReturn(Optional.of(mock(

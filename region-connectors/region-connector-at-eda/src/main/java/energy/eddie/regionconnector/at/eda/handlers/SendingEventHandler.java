@@ -32,11 +32,13 @@ public class SendingEventHandler implements EventHandler<PermissionEvent> {
     private final AtPermissionRequestRepository repository;
     private final Outbox outbox;
 
-    protected SendingEventHandler(EventBus eventBus,
-                                  EdaAdapter edaAdapter,
-                                  AtConfiguration configuration,
-                                  AtPermissionRequestRepository repository,
-                                  Outbox outbox) {
+    protected SendingEventHandler(
+            EventBus eventBus,
+            EdaAdapter edaAdapter,
+            AtConfiguration configuration,
+            AtPermissionRequestRepository repository,
+            Outbox outbox
+    ) {
         this.edaAdapter = edaAdapter;
         this.configuration = configuration;
         this.repository = repository;

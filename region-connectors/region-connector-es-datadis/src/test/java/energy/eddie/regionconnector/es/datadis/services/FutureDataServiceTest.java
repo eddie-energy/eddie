@@ -72,7 +72,7 @@ class FutureDataServiceTest {
         // Given
         LocalDate lastPulledMeterReading = yesterday.minusDays(2);
         EsPermissionRequest activePermissionRequest = acceptedPermissionRequest(lastPulledMeterReading.minusDays(2), yesterday);
-        activePermissionRequest.setLastPulledMeterReading(lastPulledMeterReading.atStartOfDay(ZONE_ID_SPAIN));
+        activePermissionRequest.updateLastPulledMeterReading(lastPulledMeterReading);
 
         when(permissionRequestService.getAllAcceptedPermissionRequests()).thenReturn(Stream.of(activePermissionRequest));
 
@@ -90,7 +90,7 @@ class FutureDataServiceTest {
     void fetchMeteringData_usesYesterday_ifLastPulledMeterReadingEqualYesterday() {
         // Given
         EsPermissionRequest activePermissionRequest = acceptedPermissionRequest(yesterday.minusDays(2), yesterday);
-        activePermissionRequest.setLastPulledMeterReading(yesterday.atStartOfDay(ZONE_ID_SPAIN));
+        activePermissionRequest.updateLastPulledMeterReading(yesterday);
 
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
         when(permissionRequestService.getAllAcceptedPermissionRequests()).thenReturn(Stream.of(activePermissionRequest));

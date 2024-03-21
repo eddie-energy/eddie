@@ -8,7 +8,7 @@ import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFa
 import energy.eddie.regionconnector.shared.permission.requests.annotations.InvokeExtensions;
 import jakarta.annotation.Nullable;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.Optional;
 
 public interface EsPermissionRequest extends TimeframedPermissionRequest {
@@ -50,25 +50,13 @@ public interface EsPermissionRequest extends TimeframedPermissionRequest {
     MeasurementType measurementType();
 
     /**
-     * The date the permission starts.
-     * This can be different from @{@link #start()}, as the timeframe for which data is requested can be
-     * different from the timeframe for which the permission is valid.
-     */
-    ZonedDateTime permissionStart();
-
-    /**
-     * The date the permission ends.
-     */
-    ZonedDateTime permissionEnd();
-
-    /**
      * The latest meter reading that was pulled for this permission request.
      * Use this to avoid pulling the same meter reading twice.
      */
-    Optional<ZonedDateTime> lastPulledMeterReading();
+    Optional<LocalDate> lastPulledMeterReading();
 
     @InvokeExtensions
-    void setLastPulledMeterReading(ZonedDateTime lastPulledMeterReading);
+    void updateLastPulledMeterReading(LocalDate lastPulledMeterReading);
 
     @Nullable
     String errorMessage();

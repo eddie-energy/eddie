@@ -9,9 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 
@@ -23,35 +23,41 @@ public class IdentifiableApiResponseService {
         identifiableApiResponseFlux.subscribe(this::updateLastPolledAndCheckForFulfillment);
     }
 
-    private static ZonedDateTime parseZonedDateTime(String zonedDateTime) {
+    private static LocalDate parseZonedDateTime(String zonedDateTime) {
         // This ensures that a received datetime: 2024-03-05T23:00:00Z is parsed to 2024-03-06T00:00:00+01:00
-        return ZonedDateTime.parse(zonedDateTime, DateTimeFormatter.ISO_DATE_TIME).withZoneSameInstant(DK_ZONE_ID);
+        return ZonedDateTime.parse(zonedDateTime, DateTimeFormatter.ISO_DATE_TIME)
+                            .withZoneSameInstant(DK_ZONE_ID)
+                            .toLocalDate();
     }
 
     @SuppressWarnings("DataFlowIssue") // IdentifiableApiResponseFilter ensures that none of these getters return null
-    private static ZonedDateTime extractEndDate(MyEnergyDataMarketDocumentResponse marketDocumentResponse) {
+    private static LocalDate extractEndDate(MyEnergyDataMarketDocumentResponse marketDocumentResponse) {
         var timeInterval = marketDocumentResponse.getMyEnergyDataMarketDocument().getPeriodTimeInterval().getEnd();
         return parseZonedDateTime(timeInterval);
     }
 
-    private static boolean isLatestMeterReading(DkEnerginetCustomerPermissionRequest permissionRequest, ZonedDateTime meterReadingEndDate) {
+    private static boolean isLatestMeterReading(
+            DkEnerginetCustomerPermissionRequest permissionRequest,
+            LocalDate meterReadingEndDate
+    ) {
         return meterReadingEndDate.isAfter(permissionRequest.lastPolled());
     }
 
     /**
-     * Checks if the permission request is fulfilled.
-     * The last metering data date is always at 00:00 the next day, so if we get data for the 24.01.2024,
-     * the last metering data date will be 25.01.2024T00:00:00 when converted to the correct timezone
-     * this check makes sure that the permission request is fulfilled only if the last metering data date is after the permission end date (since we also want data for the end date of the permission request)
+     * Checks if the permission request is fulfilled. The last metering data date is always at 00:00 the next day, so if
+     * we get data for the 24.01.2024, the last metering data date will be 25.01.2024T00:00:00 when converted to the
+     * correct timezone this check makes sure that the permission request is fulfilled only if the last metering data
+     * date is after the permission end date (since we also want data for the end date of the permission request)
      *
      * @param permissionRequest   the permission request
      * @param meterReadingEndDate the end date of the meter reading
      * @return true if {@code meterReadingEndDate} is after {@code permissionRequest.end()}
      */
-    private static boolean isFulfilled(DkEnerginetCustomerPermissionRequest permissionRequest, ZonedDateTime meterReadingEndDate) {
-        return Optional.ofNullable(permissionRequest.end())
-                .map(meterReadingEndDate::isAfter)
-                .orElse(false);
+    private static boolean isFulfilled(
+            DkEnerginetCustomerPermissionRequest permissionRequest,
+            LocalDate meterReadingEndDate
+    ) {
+        return meterReadingEndDate.isAfter(permissionRequest.end());
     }
 
     private void updateLastPolledAndCheckForFulfillment(IdentifiableApiResponse identifiableApiResponse) {
@@ -62,7 +68,10 @@ public class IdentifiableApiResponseService {
         var meterReadingEndDate = extractEndDate(marketDocumentResponse);
 
         if (isLatestMeterReading(permissionRequest, meterReadingEndDate)) {
-            LOGGER.info("Updating latest meter reading for permission request {} from {} to {}", permissionId, permissionRequest.lastPolled(), meterReadingEndDate);
+            LOGGER.info("Updating latest meter reading for permission request {} from {} to {}",
+                        permissionId,
+                        permissionRequest.lastPolled(),
+                        meterReadingEndDate);
             permissionRequest.updateLastPolled(meterReadingEndDate);
 
             if (isFulfilled(permissionRequest, meterReadingEndDate)) {

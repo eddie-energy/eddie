@@ -6,23 +6,22 @@ import energy.eddie.api.agnostic.process.model.validation.Validator;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
 public class CompletelyInThePastOrInTheFutureValidator<T extends TimeframedPermissionRequest> implements Validator<T> {
 
-    private boolean isPresentToFuture(T value, ZonedDateTime now) {
+    private boolean isPresentToFuture(T value, LocalDate now) {
         return value.start().isEqual(now);
     }
 
-    private boolean isFuture(T value, ZonedDateTime now) {
+    private boolean isFuture(T value, LocalDate now) {
         return value.start().isAfter(now);
     }
 
     @Override
     public List<AttributeError> validate(T value) {
-        ZonedDateTime now = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC);
+        LocalDate now = LocalDate.now(ZoneOffset.UTC);
         boolean isEndInThePast = Optional.ofNullable(value.end()).map(dataTo -> dataTo.isBefore(now)).orElse(false);
         boolean completelyInThePast = value.start().isBefore(now) && isEndInThePast;
         if (completelyInThePast

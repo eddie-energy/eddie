@@ -9,39 +9,18 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 class LastPulledMeterReadingServiceTest {
-    private static final ZonedDateTime today = LocalDate.now(ZONE_ID_SPAIN).atStartOfDay(ZONE_ID_SPAIN);
-
-    private static EsPermissionRequest acceptedPermissionRequest(ZonedDateTime start, ZonedDateTime end) {
-        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
-                "connectionId",
-                "dataNeedId",
-                "nif",
-                "meteringPointId");
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
-                                                                             permissionRequestForCreation,
-                                                                             start.toLocalDate(),
-                                                                             end.toLocalDate(),
-                                                                             Granularity.PT1H,
-                                                                             stateBuilderFactory);
-        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
-                                                         .build());
-        return permissionRequest;
-    }
-
+    private static final LocalDate today = LocalDate.now(ZONE_ID_SPAIN);
 
     @Test
     void ifLastPulledEmpty_callsSetLastPulledMeterReading() {
         // Given
-        ZonedDateTime end = today.plusDays(1);
+        LocalDate end = today.plusDays(1);
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(today, end);
 
         LastPulledMeterReadingService lastPulledMeterReadingService = new LastPulledMeterReadingService();
@@ -53,14 +32,32 @@ class LastPulledMeterReadingServiceTest {
         assertEquals(end, permissionRequest.lastPulledMeterReading().get());
     }
 
+    private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
+        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
+        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
+                "connectionId",
+                "dataNeedId",
+                "nif",
+                "meteringPointId");
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
+                                                                             permissionRequestForCreation,
+                                                                             start,
+                                                                             end,
+                                                                             Granularity.PT1H,
+                                                                             stateBuilderFactory);
+        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
+                                                         .build());
+        return permissionRequest;
+    }
+
     @Test
     void ifLastPulledPresent_callsSetLastPulledMeterReading_ifMeterReadingNewer() {
         // Given
-        ZonedDateTime start = ZonedDateTime.of(today.toLocalDate().minusDays(2), LocalTime.MIN, ZONE_ID_SPAIN);
+        LocalDate start = today.minusDays(2);
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, today);
-        permissionRequest.setLastPulledMeterReading(today.minusDays(1));
+        permissionRequest.updateLastPulledMeterReading(today.minusDays(1));
 
-        ZonedDateTime end = ZonedDateTime.of(today.toLocalDate(), LocalTime.MIN, ZONE_ID_SPAIN);
+        LocalDate end = today;
 
         LastPulledMeterReadingService lastPulledMeterReadingService = new LastPulledMeterReadingService();
 
@@ -73,15 +70,14 @@ class LastPulledMeterReadingServiceTest {
     @Test
     void ifLastPulledPresent_doesNotCallSetLastPulledMeterReading_ifMeterReadingOlder() {
         // Given
-        ZonedDateTime start = ZonedDateTime.of(today.toLocalDate().minusDays(2), LocalTime.MIN, ZONE_ID_SPAIN);
+        LocalDate start = today.minusDays(2);
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, today);
-        permissionRequest.setLastPulledMeterReading(today);
-        ZonedDateTime end = ZonedDateTime.of(today.toLocalDate(), LocalTime.MIN, ZONE_ID_SPAIN);
+        permissionRequest.updateLastPulledMeterReading(today);
 
         LastPulledMeterReadingService lastPulledMeterReadingService = new LastPulledMeterReadingService();
 
         // When
-        lastPulledMeterReadingService.updateLastPulledMeterReading(permissionRequest, end);
+        lastPulledMeterReadingService.updateLastPulledMeterReading(permissionRequest, today);
 
         // Then
         assertEquals(today, permissionRequest.lastPulledMeterReading().get());

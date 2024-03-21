@@ -29,7 +29,6 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -62,12 +61,6 @@ public class PermissionRequestCreationAndValidationService {
         this.dataNeedsService = dataNeedsService;
     }
 
-    private static List<AttributeError> validateAttributes(CreatedEvent permissionEvent) {
-        return VALIDATORS.stream()
-                         .flatMap(validator -> validator.validate(permissionEvent).stream())
-                         .toList();
-    }
-
     /**
      * Creates and validates a permission request. This will emit a <code>CreatedEvent</code>, and a
      * <code>ValidatedEvent</code> or a <code>MalformedEvent</code>.
@@ -98,13 +91,10 @@ public class PermissionRequestCreationAndValidationService {
                                                               "Unsupported granularity: '" + vhdDataNeed.minGranularity() + "'");
         };
 
-        ZonedDateTime start = ZonedDateTime.of(wrapper.calculatedStart(), LocalTime.MIN, AT_ZONE_ID);
-        ZonedDateTime end = ZonedDateTime.of(wrapper.calculatedEnd(), LocalTime.MIN, AT_ZONE_ID);
-
         ZonedDateTime created = ZonedDateTime.now(AT_ZONE_ID);
         CCMORequest ccmoRequest = new CCMORequest(
                 new DsoIdAndMeteringPoint(permissionRequest.dsoId(), permissionRequest.meteringPointId()),
-                new CCMOTimeFrame(start, end),
+                new CCMOTimeFrame(wrapper.calculatedStart(), wrapper.calculatedEnd()),
                 configuration,
                 RequestDataType.METERING_DATA,
                 granularity,
@@ -118,8 +108,8 @@ public class PermissionRequestCreationAndValidationService {
                 permissionRequest.dataNeedId(),
                 new EdaDataSourceInformation(permissionRequest.dsoId()),
                 created,
-                start,
-                end,
+                wrapper.calculatedStart(),
+                wrapper.calculatedEnd(),
                 permissionRequest.meteringPointId(),
                 granularity,
                 ccmoRequest.cmRequestId(),
@@ -135,5 +125,11 @@ public class PermissionRequestCreationAndValidationService {
             throw new ValidationException(new MalformedPermissionRequestState() {
             }, errors);
         }
+    }
+
+    private static List<AttributeError> validateAttributes(CreatedEvent permissionEvent) {
+        return VALIDATORS.stream()
+                         .flatMap(validator -> validator.validate(permissionEvent).stream())
+                         .toList();
     }
 }
