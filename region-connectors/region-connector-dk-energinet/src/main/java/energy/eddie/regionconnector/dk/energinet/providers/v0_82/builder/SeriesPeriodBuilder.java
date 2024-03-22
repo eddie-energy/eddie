@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.dk.energinet.customer.model.Period;
 import energy.eddie.regionconnector.dk.energinet.customer.model.Point;
+import energy.eddie.regionconnector.dk.energinet.filter.EnerginetResolution;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -17,7 +18,7 @@ public class SeriesPeriodBuilder {
             var timeInterval = Objects.requireNonNull(period.getTimeInterval());
             var pointList = Objects.requireNonNull(period.getPoint());
             var periodComplexType = new SeriesPeriodComplexType()
-                    .withResolution(Objects.requireNonNull(period.getResolution()))
+                    .withResolution(new EnerginetResolution(Objects.requireNonNull(period.getResolution())).toISO8601Duration())
                     .withTimeInterval(
                             new ESMPDateTimeIntervalComplexType()
                                     .withStart(Objects.requireNonNull(timeInterval.getStart()))
