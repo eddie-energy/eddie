@@ -4,6 +4,7 @@ import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.dk.energinet.customer.model.*;
 import energy.eddie.regionconnector.dk.energinet.enums.PointQualityEnum;
+import energy.eddie.regionconnector.dk.energinet.filter.EnerginetResolution;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 
 import java.time.ZoneOffset;
@@ -29,16 +30,18 @@ public class ConsumptionRecordMapper {
 
         MyEnergyDataMarketDocument energyDataMarketDocument = energyDataMarketDocumentResponse.getMyEnergyDataMarketDocument();
         PeriodtimeInterval periodtimeInterval = energyDataMarketDocument.getPeriodTimeInterval();
-        consumptionRecord.setStartDateTime(DateTimeConverter.isoDateTimeToZonedDateTime(Objects.requireNonNull(periodtimeInterval).getStart(), ZoneOffset.UTC.getId()).withZoneSameInstant(DK_ZONE_ID));
+        consumptionRecord.setStartDateTime(DateTimeConverter.isoDateTimeToZonedDateTime(Objects.requireNonNull(
+                periodtimeInterval).getStart(), ZoneOffset.UTC.getId()).withZoneSameInstant(DK_ZONE_ID));
 
         List<ConsumptionPoint> consumptionPoints = new ArrayList<>();
         for (TimeSeries timeSeries : Objects.requireNonNull(energyDataMarketDocument.getTimeSeries())) {
             for (Period period : Objects.requireNonNull(timeSeries.getPeriod())) {
 
-                consumptionRecord.setMeteringInterval(period.getResolution());
+                consumptionRecord.setMeteringInterval(new EnerginetResolution(period.getResolution()).toISO8601Duration());
 
                 for (Point point : Objects.requireNonNull(period.getPoint())) {
-                    var consumptionPoint = new ConsumptionPoint().withMeteringType(switch (PointQualityEnum.fromString(point.getOutQuantityQuality())) {
+                    var consumptionPoint = new ConsumptionPoint().withMeteringType(switch (PointQualityEnum.fromString(
+                            point.getOutQuantityQuality())) {
                         case A01 ->
                                 throw new IllegalStateException(getPointQualityIllegalStateErrorMessage(PointQualityEnum.A01));
                         case A02 ->
