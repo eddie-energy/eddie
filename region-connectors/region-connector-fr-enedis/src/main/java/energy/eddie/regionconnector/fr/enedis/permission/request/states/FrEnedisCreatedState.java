@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.states;
 
 import energy.eddie.api.agnostic.process.model.ContextualizedPermissionRequestState;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.states.CreatedPermissionRequestState;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
@@ -21,7 +21,7 @@ import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetada
 public class FrEnedisCreatedState
         extends ContextualizedPermissionRequestState<FrEnedisPermissionRequest>
         implements CreatedPermissionRequestState {
-    private static final Set<Validator<TimeframedPermissionRequest>> VALIDATORS = Set.of(
+    private static final Set<Validator<PermissionRequest>> VALIDATORS = Set.of(
             new StartIsBeforeOrEqualEndValidator<>(),
             new NotFurtherThanValidator(ChronoUnit.MONTHS, MAXIMUM_MONTHS_IN_THE_PAST)
     );

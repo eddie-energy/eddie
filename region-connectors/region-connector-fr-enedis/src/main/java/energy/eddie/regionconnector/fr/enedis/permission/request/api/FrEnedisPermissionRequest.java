@@ -1,14 +1,14 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.api;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.annotations.InvokeExtensions;
 import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
 
 import java.time.LocalDate;
 import java.util.Optional;
 
-public interface FrEnedisPermissionRequest extends TimeframedPermissionRequest {
+public interface FrEnedisPermissionRequest extends PermissionRequest {
     FrEnedisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory);
 
     Optional<String> usagePointId();

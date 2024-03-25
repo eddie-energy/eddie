@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82;
 
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import jakarta.annotation.Nullable;
 
-public interface TransmissionScheduleProvider<T extends TimeframedPermissionRequest> {
+public interface TransmissionScheduleProvider<T extends PermissionRequest> {
     @Nullable
     String findTransmissionSchedule(T permissionRequest);
 }

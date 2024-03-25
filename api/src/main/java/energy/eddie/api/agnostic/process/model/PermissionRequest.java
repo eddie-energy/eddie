@@ -4,11 +4,12 @@ package energy.eddie.api.agnostic.process.model;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 /**
- * A PermissionRequest represents the starting point of requesting the permission for data from an MDA.
- * It can have different states depending on where in the process of a specific Permission Administrator the request currently is.
+ * A PermissionRequest represents the starting point of requesting the permission for data from an MDA. It can have
+ * different states depending on where in the process of a specific Permission Administrator the request currently is.
  * This is the context class of the state pattern.
  *
  * @see <a href="https://refactoring.guru/design-patterns/state">State Pattern</link>
@@ -16,8 +17,8 @@ import java.time.ZonedDateTime;
 public interface PermissionRequest {
 
     /**
-     * The permissionId of a request.
-     * It is used internally of EDDIE to map permission requests or incoming consumption data
+     * The permissionId of a request. It is used internally of EDDIE to map permission requests or incoming consumption
+     * data
      *
      * @return permissionId
      */
@@ -38,16 +39,16 @@ public interface PermissionRequest {
      */
     String dataNeedId();
 
+    default PermissionProcessStatus status() {
+        return state().status();
+    }
+
     /**
      * The state of the permission request.
      *
      * @return the current state of the permission request.
      */
     PermissionRequestState state();
-
-    default PermissionProcessStatus status() {
-        return state().status();
-    }
 
     /**
      * Information about the data source associated with the permission request.
@@ -64,8 +65,8 @@ public interface PermissionRequest {
     ZonedDateTime created();
 
     /**
-     * After a state transition was successful the permission requests state will be updated using this method.
-     * Usually the old state will update this with the new state.
+     * After a state transition was successful the permission requests state will be updated using this method. Usually
+     * the old state will update this with the new state.
      *
      * @param state the new state of the PermissionRequest
      */
@@ -110,4 +111,14 @@ public interface PermissionRequest {
     default void timeOut() throws StateTransitionException {
         state().timeOut();
     }
+
+    /**
+     * The start date from which data is requested. (inclusive)
+     */
+    LocalDate start();
+
+    /**
+     * The end date from which data is requested. (inclusive)
+     */
+    LocalDate end();
 }

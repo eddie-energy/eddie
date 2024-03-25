@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request.validation;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
@@ -20,12 +20,12 @@ class NotFurtherThanValidatorTest {
     void test_validate_when_endDateIsWithinLimit() {
         // Given
         StateBuilderFactory factory = new StateBuilderFactory();
-        TimeframedPermissionRequest request = new EnedisPermissionRequest("cid",
-                                                                          "dnid",
-                                                                          LocalDate.now(ZoneOffset.UTC),
-                                                                          LocalDate.now(ZoneOffset.UTC),
-                                                                          Granularity.P1D,
-                                                                          factory);
+        PermissionRequest request = new EnedisPermissionRequest("cid",
+                                                                "dnid",
+                                                                LocalDate.now(ZoneOffset.UTC),
+                                                                LocalDate.now(ZoneOffset.UTC),
+                                                                Granularity.P1D,
+                                                                factory);
         NotFurtherThanValidator validator = new NotFurtherThanValidator(ChronoUnit.DAYS, 1);
 
         // When
@@ -39,12 +39,12 @@ class NotFurtherThanValidatorTest {
     void test_validate_when_endDateIsOutOfBounds() {
         // Given
         StateBuilderFactory factory = new StateBuilderFactory();
-        TimeframedPermissionRequest request = new EnedisPermissionRequest("cid",
-                                                                          "dnid",
-                                                                          LocalDate.now(ZoneOffset.UTC),
-                                                                          LocalDate.now(ZoneOffset.UTC).plusDays(2),
-                                                                          Granularity.P1D,
-                                                                          factory);
+        PermissionRequest request = new EnedisPermissionRequest("cid",
+                                                                "dnid",
+                                                                LocalDate.now(ZoneOffset.UTC),
+                                                                LocalDate.now(ZoneOffset.UTC).plusDays(2),
+                                                                Granularity.P1D,
+                                                                factory);
         NotFurtherThanValidator validator = new NotFurtherThanValidator(ChronoUnit.DAYS, 1);
 
         // When

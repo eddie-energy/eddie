@@ -1,14 +1,14 @@
 package energy.eddie.regionconnector.shared.permission.requests.validation;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.DataSourceInformation;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 record SimpleTimeFramePermissionRequest(LocalDate start,
-                                        LocalDate end) implements TimeframedPermissionRequest {
+                                        LocalDate end) implements PermissionRequest {
 
     @Override
     public String permissionId() {

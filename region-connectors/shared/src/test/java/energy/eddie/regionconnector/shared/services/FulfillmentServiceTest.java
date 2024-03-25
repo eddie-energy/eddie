@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.shared.services;
 
 import energy.eddie.api.agnostic.process.model.PastStateException;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.agnostic.process.model.states.FulfilledPermissionRequestState;
 import energy.eddie.api.agnostic.process.model.states.SentToPermissionAdministratorPermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
@@ -27,7 +27,7 @@ class FulfillmentServiceTest {
 
 
     @Test
-    void isPermissionRequestFulfilledByDate_dateBeforePermissionEndDate_returnsFalse() throws StateTransitionException {
+    void isPermissionRequestFulfilledByDate_dateBeforePermissionEndDate_returnsFalse() {
         // Given
         LocalDate start = today.minusDays(2);
         LocalDate end = today.plusDays(1);
@@ -41,7 +41,7 @@ class FulfillmentServiceTest {
     }
 
     @Test
-    void isPermissionRequestFulfilledByDate_dateEqualPermissionEndDate_returnsFalse() throws StateTransitionException {
+    void isPermissionRequestFulfilledByDate_dateEqualPermissionEndDate_returnsFalse() {
         // Given
         LocalDate start = today.minusDays(2);
         LocalDate end = today.plusDays(1);
@@ -55,7 +55,7 @@ class FulfillmentServiceTest {
     }
 
     @Test
-    void isPermissionRequestFulfilledByDate_dateAfterPermissionEndDate_returnsTrue() throws StateTransitionException {
+    void isPermissionRequestFulfilledByDate_dateAfterPermissionEndDate_returnsTrue() {
         // Given
         LocalDate start = today.minusDays(2);
         LocalDate end = today.plusDays(1);
@@ -115,7 +115,7 @@ class FulfillmentServiceTest {
         }
     }
 
-    private static class SimplePermissionRequest implements TimeframedPermissionRequest {
+    private static class SimplePermissionRequest implements PermissionRequest {
 
         private final LocalDate start;
         private final LocalDate end;

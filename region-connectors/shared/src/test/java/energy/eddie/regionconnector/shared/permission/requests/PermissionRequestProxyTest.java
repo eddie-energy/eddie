@@ -87,6 +87,7 @@ class PermissionRequestProxyTest {
     }
 
     interface SimplePermissionRequestExtension extends PermissionRequest {
+        @SuppressWarnings("UnusedReturnValue")
         @InvokeExtensions
         String testMethod(int x, String y);
     }

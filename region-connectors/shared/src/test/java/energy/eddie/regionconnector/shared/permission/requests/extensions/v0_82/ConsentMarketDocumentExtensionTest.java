@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82;
 
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
@@ -32,7 +32,7 @@ class ConsentMarketDocumentExtensionTest {
         when(dataSourceInformation.regionConnectorId()).thenReturn("rc");
 
 
-        var permissionRequest = mock(TimeframedPermissionRequest.class);
+        var permissionRequest = mock(PermissionRequest.class);
         when(permissionRequest.permissionId()).thenReturn("pid", "pid");
         when(permissionRequest.connectionId()).thenReturn("cid");
         when(permissionRequest.dataNeedId()).thenReturn("dnid");
@@ -50,15 +50,15 @@ class ConsentMarketDocumentExtensionTest {
 
         // Then
         StepVerifier.create(sink.asFlux())
-                .then(sink::tryEmitComplete)
-                .assertNext(cmd -> assertEquals("pid", cmd.getMRID()))
-                .verifyComplete();
+                    .then(sink::tryEmitComplete)
+                    .assertNext(cmd -> assertEquals("pid", cmd.getMRID()))
+                    .verifyComplete();
     }
 
     @Test
     void accept_emitsErrorOnException() {
         // Given
-        var permissionRequest = mock(TimeframedPermissionRequest.class);
+        var permissionRequest = mock(PermissionRequest.class);
         when(permissionRequest.permissionId()).thenThrow(new RuntimeException());
 
         Sinks.Many<ConsentMarketDocument> sink = Sinks.many().multicast().onBackpressureBuffer();
@@ -69,8 +69,8 @@ class ConsentMarketDocumentExtensionTest {
 
         // Then
         StepVerifier.create(sink.asFlux())
-                .then(sink::tryEmitComplete)
-                .expectError(RuntimeException.class)
-                .verify();
+                    .then(sink::tryEmitComplete)
+                    .expectError(RuntimeException.class)
+                    .verify();
     }
 }

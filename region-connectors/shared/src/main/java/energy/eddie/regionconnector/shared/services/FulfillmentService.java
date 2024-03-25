@@ -1,14 +1,14 @@
 package energy.eddie.regionconnector.shared.services;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 
-public class FulfillmentService<T extends TimeframedPermissionRequest> {
+public class FulfillmentService<T extends PermissionRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(FulfillmentService.class);
     private final String regionConnectorId;
 
@@ -21,7 +21,7 @@ public class FulfillmentService<T extends TimeframedPermissionRequest> {
      *
      * @param permissionRequest the permission request
      * @param date              the date to check against
-     * @return true if {@code date} is after {@link TimeframedPermissionRequest#end()}
+     * @return true if {@code date} is after {@link PermissionRequest#end()}
      */
     public boolean isPermissionRequestFulfilledByDate(T permissionRequest, LocalDate date) {
         return date.isAfter(permissionRequest.end());

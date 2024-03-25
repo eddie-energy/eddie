@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request.api;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.annotations.InvokeExtensions;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 
-public interface DkEnerginetCustomerPermissionRequest extends TimeframedPermissionRequest {
+public interface DkEnerginetCustomerPermissionRequest extends PermissionRequest {
     DkEnerginetCustomerPermissionRequest withApiClient(EnerginetCustomerApi client);
 
     DkEnerginetCustomerPermissionRequest withStateBuilderFactory(StateBuilderFactory factory);
