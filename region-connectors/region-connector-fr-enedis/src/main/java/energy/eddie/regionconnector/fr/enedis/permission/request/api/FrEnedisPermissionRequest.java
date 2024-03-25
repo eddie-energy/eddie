@@ -2,8 +2,8 @@ package energy.eddie.regionconnector.fr.enedis.permission.request.api;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.annotations.InvokeExtensions;
 import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
-import energy.eddie.regionconnector.shared.permission.requests.annotations.InvokeExtensions;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -19,8 +19,8 @@ public interface FrEnedisPermissionRequest extends TimeframedPermissionRequest {
     Granularity granularity();
 
     /**
-     * The latest meter reading that was pulled for this permission request.
-     * This is the end date of the last meter reading that was pulled.
+     * The latest meter reading that was pulled for this permission request. This is the end date of the last meter
+     * reading that was pulled.
      */
     Optional<LocalDate> latestMeterReading();
 

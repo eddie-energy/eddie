@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.shared.permission.requests.annotations;
+package energy.eddie.api.agnostic.process.model.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

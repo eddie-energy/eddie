@@ -2,9 +2,9 @@ package energy.eddie.regionconnector.dk.energinet.permission.request.api;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.annotations.InvokeExtensions;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
-import energy.eddie.regionconnector.shared.permission.requests.annotations.InvokeExtensions;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;

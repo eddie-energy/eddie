@@ -1,11 +1,11 @@
 package energy.eddie.regionconnector.es.datadis.permission.request.api;
 
 import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.annotations.InvokeExtensions;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
-import energy.eddie.regionconnector.shared.permission.requests.annotations.InvokeExtensions;
 import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
