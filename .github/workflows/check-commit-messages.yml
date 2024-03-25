@@ -16,7 +16,7 @@ permissions:
 jobs:
   check-commit-message:
     name: Check Commit Message
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted, fh-server ]
     steps:
       - name: Check for referenced issue
         uses: gsactions/commit-message-checker@v2

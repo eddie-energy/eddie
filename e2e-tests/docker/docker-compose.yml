@@ -12,7 +12,7 @@ services:
       - ./create-example-app-db.sql:/docker-entrypoint-initdb.d/create_database.sql
 
   eddie:
-    image: ghcr.io/eddie-energy/eddie:latest
+    image: ghcr.io/eddie-energy/eddie:e2e-test
     build:
       dockerfile: src/main/docker/Dockerfile
       context: ../../core
@@ -27,7 +27,7 @@ services:
       - db
 
   eddie-example-app:
-    image: ghcr.io/eddie-energy/eddie-example-app:latest
+    image: ghcr.io/eddie-energy/eddie-example-app:e2e-test
     build:
       dockerfile: src/main/docker/Dockerfile
       context: ../../examples/example-app
