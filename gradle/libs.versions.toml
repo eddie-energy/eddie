@@ -40,6 +40,8 @@ microprofile-config = "3.0.3"
 hibernate-validator = "8.0.1.Final"
 mockwebserver = "4.12.0"
 flyway = "10.8.1"
+hakky-logcaptor = "2.9.2"
+paho-mqtt-client = "1.2.5"
 
 swagger-codegen-version = "3.0.45"
 openapi-generator = "7.3.0"
@@ -48,6 +50,7 @@ apache-httpcomponents-version = "4.5.14"
 apache-httpcomponents-client-version = "5.2.1"
 jackson-databind-nullable-version = "0.2.6"
 dotenv-version = "3.0.0"
+google-jib = "3.4.0"
 
 testcontainers = "1.19.6"
 
@@ -69,6 +72,7 @@ jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", ver
 
 # shared dependencies
 testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainers-toxiproxy = { module = "org.testcontainers:toxiproxy", version.ref = "testcontainers" }
 testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 
 
@@ -152,6 +156,11 @@ kafka-streams = { module = "org.apache.kafka:kafka-streams", version.ref = "kafk
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 
+# AIIDA
+hakky-logcaptor = { module = "io.github.hakky54:logcaptor", version.ref = "hakky-logcaptor" }
+eclipse-paho-mqttv5-client = { module = "org.eclipse.paho:org.eclipse.paho.mqttv5.client", version.ref = "paho-mqtt-client" }
+jackson-hibernate6 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-hibernate6", version.ref = "jackson" }
+
 [bundles]
 
 [plugins]
@@ -163,3 +172,5 @@ jte-gradle = { id = "gg.jte.gradle", version.ref = "jte" }
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
+# AIIDA
+google-jib = {id ="com.google.cloud.tools.jib", version.ref="google-jib"}

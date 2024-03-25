@@ -1,0 +1,28 @@
+version: "3.8"
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg12
+    environment:
+      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
+      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      POSTGRES_DB: aiida
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: always
+
+  aiida:
+    image: ghcr.io/eddie-energy/aiida:latest
+    depends_on: [ timescaledb ]
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://timescaledb:5432/aiida"
+    env_file:
+      - .env
+
+networks:
+  default:
+    name: "aiida_bridge"
+
+volumes:
+  db_data:
