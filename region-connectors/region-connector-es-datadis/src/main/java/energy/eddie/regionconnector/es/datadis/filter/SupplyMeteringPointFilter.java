@@ -11,12 +11,20 @@ import java.util.Objects;
 public record SupplyMeteringPointFilter(List<Supply> supplies, String meteringPointId) {
     public Mono<Supply> filter() {
         if (supplies.isEmpty()) {
-            return Mono.error(new NoSuppliesException("No supplies found"));
+            return Mono.error(
+                    new NoSuppliesException(
+                            "No supplies found, distributor might be unavailable or no supplies are available for the given NIF"
+                    )
+            );
         }
         return supplies.stream()
-                .filter(s -> Objects.equals(s.meteringPoint(), meteringPointId))
-                .findFirst()
-                .map(Mono::just)
-                .orElseGet(() -> Mono.error(new NoSupplyForMeteringPointException("No supply found for metering point")));
+                       .filter(s -> Objects.equals(s.meteringPoint(), meteringPointId))
+                       .findFirst()
+                       .map(Mono::just)
+                       .orElseGet(() -> Mono.error(
+                               new NoSupplyForMeteringPointException(
+                                       "No supply found for metering point, distributor might be unavailable or no supply is available for the given metering point"
+                               )
+                       ));
     }
 }
