@@ -54,6 +54,24 @@ class HistoricalDataServiceTest {
         );
     }
 
+    @ParameterizedTest(name = "{2}")
+    @MethodSource("pastTimeRanges")
+    void fetchAvailableHistoricalData_callsFetchDataForPermissionRequest_withExpectedParams(
+            LocalDate start,
+            LocalDate end,
+            String description
+    ) {
+        // Given
+        EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
+        HistoricalDataService historicalDataService = new HistoricalDataService(dataApiService);
+
+        // When
+        historicalDataService.fetchAvailableHistoricalData(permissionRequest);
+
+        // Then
+        verify(dataApiService).fetchDataForPermissionRequest(permissionRequest, start, end.plusDays(1));
+    }
+
     private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
         StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
         PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
@@ -71,25 +89,6 @@ class HistoricalDataServiceTest {
                                                          .build());
         permissionRequest.setDistributorCodeAndPointType(DistributorCode.ASEME, 1);
         return permissionRequest;
-    }
-
-
-    @ParameterizedTest(name = "{2}")
-    @MethodSource("pastTimeRanges")
-    void fetchAvailableHistoricalData_callsFetchDataForPermissionRequest_withExpectedParams(
-            LocalDate start,
-            LocalDate end,
-            String description
-    ) {
-        // Given
-        EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
-        HistoricalDataService historicalDataService = new HistoricalDataService(dataApiService);
-
-        // When
-        historicalDataService.fetchAvailableHistoricalData(permissionRequest);
-
-        // Then
-        verify(dataApiService).fetchDataForPermissionRequest(permissionRequest, start, end);
     }
 
     @ParameterizedTest(name = "{2}")
@@ -114,7 +113,7 @@ class HistoricalDataServiceTest {
     @MethodSource("pastToFutureTimeRanges")
     void fetchAvailableHistoricalData_withPermissionRequestFromPastToFuture(
             LocalDate start,
-             LocalDate end,
+            LocalDate end,
             String description
     ) {
         // Given

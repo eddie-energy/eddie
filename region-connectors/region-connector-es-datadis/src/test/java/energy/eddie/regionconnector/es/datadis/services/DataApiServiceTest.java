@@ -106,7 +106,7 @@ class DataApiServiceTest {
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
-    void fetchDataForPermissionRequest_dataEndDateEqualPermissionEndDate_fulfillsPermissionRequest() throws IOException {
+    void fetchDataForPermissionRequest_dataEndDateEqualPermissionEndDate_doesNotFulfillPermissionRequest() throws IOException {
         // Given
         List<MeteringData> meteringData = MeteringDataProvider.loadMeteringData();
         var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData);
@@ -128,9 +128,43 @@ class DataApiServiceTest {
         // Then
         StepVerifier.create(meteringDataSink.asFlux())
                     .assertNext(identifiableMeteringData -> assertAll(
-                            () -> assertEquals(PermissionProcessStatus.FULFILLED, permissionRequest.status()),
+                            () -> assertEquals(PermissionProcessStatus.ACCEPTED, permissionRequest.status()),
                             () -> assertEquals(intermediateMeteringData.end(),
                                                permissionRequest.lastPulledMeterReading().get())
+                    ))
+                    .then(dataApiService::close)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(2));
+    }
+
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    @Test
+    void fetchDataForPermissionRequest_dataEndDateAfterPermissionEndDate_fulfillsPermissionRequest() throws IOException {
+        // Given
+        List<MeteringData> meteringData = MeteringDataProvider.loadMeteringData();
+        var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData);
+        LocalDate start = intermediateMeteringData.start();
+        LocalDate end = intermediateMeteringData.end();
+        EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end.minusDays(1));
+
+        var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest,
+                                                                                    start,
+                                                                                    end);
+        when(dataApi.getConsumptionKwh(expectedMeteringDataRequest)).thenReturn(Mono.just(meteringData));
+
+        var dataApiService = new DataApiService(dataApi,
+                                                meteringDataSink,
+                                                new DatadisFulfillmentService(),
+                                                new LastPulledMeterReadingService());
+
+        // When
+        dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
+
+        // Then
+        StepVerifier.create(meteringDataSink.asFlux())
+                    .assertNext(identifiableMeteringData -> assertAll(
+                            () -> assertEquals(PermissionProcessStatus.FULFILLED, permissionRequest.status()),
+                            () -> assertEquals(end, permissionRequest.lastPulledMeterReading().get())
                     ))
                     .then(dataApiService::close)
                     .expectComplete()

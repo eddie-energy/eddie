@@ -32,7 +32,7 @@ class AuthorizationRequestFactoryTest {
 
 
     @Test
-    void endDate_whenRequestingFutureData_IsTheSameAsRequestDataTo() {
+    void endDate_whenRequestingFutureData_IsOneDayGreaterToAccountForExclusivity() {
         var futureDate = LocalDate.now(ZoneOffset.UTC).plusMonths(1);
         var requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId);
         var request = new DatadisPermissionRequest(permissionId,
@@ -46,7 +46,7 @@ class AuthorizationRequestFactoryTest {
 
         AuthorizationRequest authorizationRequest = factory.fromPermissionRequest(request);
 
-        assertEquals(request.end(), authorizationRequest.endDate());
+        assertEquals(request.end().plusDays(1), authorizationRequest.endDate());
     }
 
     @Test

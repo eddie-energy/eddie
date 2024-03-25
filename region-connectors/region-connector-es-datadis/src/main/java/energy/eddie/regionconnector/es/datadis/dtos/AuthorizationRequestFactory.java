@@ -11,7 +11,7 @@ import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMeta
 public class AuthorizationRequestFactory {
     public AuthorizationRequest fromPermissionRequest(EsPermissionRequest permissionRequest) {
         LocalDate permissionStart = LocalDate.now(ZONE_ID_SPAIN);
-        LocalDate permissionEnd = latest(permissionStart, permissionRequest.end());
+        LocalDate permissionEnd = calculatePermissionEnd(permissionStart, permissionRequest.end());
 
         return new AuthorizationRequest(
                 permissionStart,
@@ -21,14 +21,11 @@ public class AuthorizationRequestFactory {
         );
     }
 
-    /**
-     * Calculate the date furthest in the future.
-     */
-    private LocalDate latest(LocalDate first, LocalDate second) {
-        if (!first.isBefore(second)) {
-            return first.plusDays(1); // if all the data is in the past we only need access for 1 day
+    private LocalDate calculatePermissionEnd(LocalDate permissionStart, LocalDate permissionRequestEnd) {
+        if (!permissionStart.isBefore(permissionRequestEnd)) {
+            return permissionStart.plusDays(1); // if all the data is in the past we only need access for 1 day
         }
 
-        return second;
+        return permissionRequestEnd.plusDays(1); // Datadis requires end + 1 in order to get the data for the last day
     }
 }

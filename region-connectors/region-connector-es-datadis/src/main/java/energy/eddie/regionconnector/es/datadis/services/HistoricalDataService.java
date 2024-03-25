@@ -29,6 +29,7 @@ public class HistoricalDataService {
 
         LocalDate end = Optional.of(permissionRequest.end())
                                 .filter(permissionRequestEnd -> !permissionRequestEnd.isAfter(now))
+                                .map(permissionRequestEnd -> permissionRequestEnd.plusDays(1))
                                 .orElse(now.minusDays(1));
 
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);

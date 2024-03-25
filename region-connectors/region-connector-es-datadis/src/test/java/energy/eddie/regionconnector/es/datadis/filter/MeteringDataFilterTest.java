@@ -68,8 +68,8 @@ class MeteringDataFilterTest {
     void filter_reducesDataFrom1Month_to3Days(MeasurementType measurementType) {
         var intermediateMeteringData = setupIntermediateMeteringData(measurementType);
         LocalDate requestedStartDate = intermediateMeteringData.start().plusWeeks(2);
-        LocalDate requestedEndDate = requestedStartDate.plusDays(3);
-        ZonedDateTime expectedEnd = requestedEndDate.atStartOfDay(ZONE_ID_SPAIN);
+        LocalDate requestedEndDate = requestedStartDate.plusDays(2); // plus 2 since the end date is inclusive
+        ZonedDateTime expectedEnd = requestedEndDate.plusDays(1).atStartOfDay(ZONE_ID_SPAIN);
         EsPermissionRequest permissionRequest = setupPermissionRequest(requestedStartDate, requestedEndDate,
                                                                        measurementType);
         int expectedSize = switch (measurementType) {

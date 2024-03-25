@@ -23,7 +23,8 @@ public record MeteringDataFilter(
 
     public Mono<IntermediateMeteringData> filter() {
         LocalDate startDate = permissionRequest.lastPulledMeterReading().orElse(permissionRequest.start());
-        LocalDate endDate = permissionRequest.end();
+        LocalDate endDate = permissionRequest.end()
+                                             .plusDays(1); // Add one day to the end date to treat end as inclusive
         int stepSize = stepSize();
         var startIndex = calculateStartIndex(intermediateMeteringData, startDate, stepSize);
         var endIndex = calculateEndIndex(intermediateMeteringData, endDate, stepSize);
@@ -46,19 +47,23 @@ public record MeteringDataFilter(
         return permissionRequest.measurementType() == MeasurementType.HOURLY ? NR_OF_HOURS_IN_A_DAY : NR_OF_QUARTER_HOURS_IN_A_DAY;
     }
 
+    private int calculateStartIndex(
+            IntermediateMeteringData intermediateMeteringData,
+            LocalDate startDate,
+            int stepSize
+    ) {
+        if (startDate.isBefore(intermediateMeteringData.start())) {
+            return 0;
+        }
+        int daysBetween = (int) ChronoUnit.DAYS.between(intermediateMeteringData.start(), startDate);
+        return daysBetween * stepSize;
+    }
+
     private int calculateEndIndex(IntermediateMeteringData intermediateMeteringData, LocalDate endDate, int stepSize) {
         if (!intermediateMeteringData.end().isAfter(endDate)) {
             return intermediateMeteringData.meteringData().size();
         }
         int daysBetween = (int) ChronoUnit.DAYS.between(endDate, intermediateMeteringData.end());
         return intermediateMeteringData.meteringData().size() - (daysBetween * stepSize);
-    }
-
-    private int calculateStartIndex(IntermediateMeteringData intermediateMeteringData, LocalDate startDate, int stepSize) {
-        if (startDate.isBefore(intermediateMeteringData.start())) {
-            return 0;
-        }
-        int daysBetween = (int) ChronoUnit.DAYS.between(intermediateMeteringData.start(), startDate);
-        return daysBetween * stepSize;
     }
 }
