@@ -36,13 +36,16 @@ dependencies {
     implementation(libs.flyway.core)
 
 
-    runtimeOnly(libs.h2database)
     runtimeOnly(libs.postgresql)
     runtimeOnly(libs.flyway.postgresql)
 
 
+    testImplementation(libs.h2database)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.spring.boot.testcontainers)
+    testImplementation(libs.testcontainers.junit)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.reactor.test)
 }
