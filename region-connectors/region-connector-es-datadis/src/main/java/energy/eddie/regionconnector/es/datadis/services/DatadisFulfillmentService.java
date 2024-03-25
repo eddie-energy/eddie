@@ -5,8 +5,6 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-
 /**
  * This service updates the last pulled meter reading and checks for fulfillment of the permission request.
  */
@@ -14,18 +12,5 @@ import java.time.LocalDate;
 public class DatadisFulfillmentService extends FulfillmentService<EsPermissionRequest> {
     public DatadisFulfillmentService() {
         super(DatadisRegionConnectorMetadata.getInstance());
-    }
-
-    /**
-     * Checks if the permission request is fulfilled by the given date.
-     *
-     * @param permissionRequest the permission request
-     * @param date              the date to check against
-     * @return true if {@code date} is >= {@link EsPermissionRequest#end()}. The {@link EsPermissionRequest#end()} is
-     * already inclusive, so we check >= instead of >.
-     */
-    @Override
-    public boolean isPermissionRequestFulfilledByDate(EsPermissionRequest permissionRequest, LocalDate date) {
-        return !date.isBefore(permissionRequest.end());
     }
 }
