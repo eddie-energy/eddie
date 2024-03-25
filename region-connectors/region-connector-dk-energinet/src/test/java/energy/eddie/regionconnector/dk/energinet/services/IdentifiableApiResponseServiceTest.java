@@ -75,7 +75,7 @@ class IdentifiableApiResponseServiceTest {
                     .verifyComplete();
 
         // Then
-        verify(spy).updateLastPolled(periodEnd);
+        verify(spy).updateLatestMeterReadingEndDate(periodEnd);
     }
 
     @Test
@@ -96,7 +96,7 @@ class IdentifiableApiResponseServiceTest {
                     .verifyComplete();
 
         // Then
-        verify(spy).updateLastPolled(periodEnd);
+        verify(spy).updateLatestMeterReadingEndDate(periodEnd);
     }
 
     @ParameterizedTest
@@ -118,7 +118,7 @@ class IdentifiableApiResponseServiceTest {
                     .verifyComplete();
 
         // Then
-        verify(spy, never()).updateLastPolled(any());
+        verify(spy, never()).updateLatestMeterReadingEndDate(any());
     }
 
     @Test

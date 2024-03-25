@@ -26,6 +26,7 @@ import reactor.test.StepVerifier;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
@@ -223,7 +224,8 @@ class PollingServiceTest {
                             () -> assertEquals(permissionRequest.connectionId(), mr.permissionRequest().connectionId()),
                             () -> assertEquals(permissionRequest.dataNeedId(), mr.permissionRequest().dataNeedId()),
                             () -> assertNotNull(mr.apiResponse()),
-                            () -> assertEquals(permissionRequest.start(), permissionRequest.lastPolled())
+                            () -> assertEquals(Optional.of(permissionRequest.start()),
+                                               permissionRequest.latestMeterReadingEndDate())
                     ))
                     .then(pollingService::close)
                     .expectComplete()
@@ -333,7 +335,8 @@ class PollingServiceTest {
                                                mr.permissionRequest().connectionId()),
                             () -> assertEquals(permissionRequest1.dataNeedId(), mr.permissionRequest().dataNeedId()),
                             () -> assertNotNull(mr.apiResponse()),
-                            () -> assertEquals(permissionRequest1.start(), permissionRequest1.lastPolled())
+                            () -> assertEquals(Optional.of(permissionRequest1.start()),
+                                               permissionRequest1.latestMeterReadingEndDate())
                     ))
                     .verifyComplete();
     }

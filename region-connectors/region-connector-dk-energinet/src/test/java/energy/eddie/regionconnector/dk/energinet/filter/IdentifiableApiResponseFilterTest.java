@@ -34,8 +34,8 @@ class IdentifiableApiResponseFilterTest {
 
         // When & Then
         StepVerifier.create(filter.filter(List.of(response)))
-                .expectError(ApiResponseException.class)
-                .verify();
+                    .expectError(ApiResponseException.class)
+                    .verify();
     }
 
     @Test
@@ -53,8 +53,8 @@ class IdentifiableApiResponseFilterTest {
 
         // When & Then
         StepVerifier.create(filter.filter(List.of(response)))
-                .expectNextCount(0)
-                .verifyComplete();
+                    .expectNextCount(0)
+                    .verifyComplete();
     }
 
     @Test
@@ -74,8 +74,8 @@ class IdentifiableApiResponseFilterTest {
 
         // When & Then
         StepVerifier.create(filter.filter(List.of(response)))
-                .assertNext(apiResponse -> assertEquals(response, apiResponse.apiResponse()))
-                .verifyComplete();
-        verify(spy, never()).updateLastPolled(any());
+                    .assertNext(apiResponse -> assertEquals(response, apiResponse.apiResponse()))
+                    .verifyComplete();
+        verify(spy, never()).updateLatestMeterReadingEndDate(any());
     }
 }

@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class SimplePermissionRequest implements DkEnerginetCustomerPermissionRequest {
     private final String permissionId;
@@ -19,7 +20,19 @@ public final class SimplePermissionRequest implements DkEnerginetCustomerPermiss
     private final LocalDate start;
     private final LocalDate end;
     private final PermissionRequestState state;
-    private LocalDate lastPolled;
+    private LocalDate latestMeterReadingEndDate;
+
+    public SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId) {
+        this(permissionId, connectionId, dataNeedId, null, null, null);
+    }
+
+    public SimplePermissionRequest(
+            String permissionId, String connectionId, String dataNeedId, LocalDate start,
+            LocalDate end,
+            PermissionRequestState state
+    ) {
+        this(permissionId, connectionId, dataNeedId, start, end, start, state);
+    }
 
     public SimplePermissionRequest(
             String permissionId, String connectionId, String dataNeedId, LocalDate start,
@@ -31,20 +44,8 @@ public final class SimplePermissionRequest implements DkEnerginetCustomerPermiss
         this.dataNeedId = dataNeedId;
         this.start = start;
         this.end = end;
-        this.lastPolled = lastPolled;
+        this.latestMeterReadingEndDate = lastPolled;
         this.state = state;
-    }
-
-    public SimplePermissionRequest(
-            String permissionId, String connectionId, String dataNeedId, LocalDate start,
-            LocalDate end,
-            PermissionRequestState state
-    ) {
-        this(permissionId, connectionId, dataNeedId, start, end, start, state);
-    }
-
-    public SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId) {
-        this(permissionId, connectionId, dataNeedId, null, null, null);
     }
 
     public SimplePermissionRequest() {
@@ -53,31 +54,6 @@ public final class SimplePermissionRequest implements DkEnerginetCustomerPermiss
 
     public SimplePermissionRequest(LocalDate start, LocalDate end, LocalDate lastPolled) {
         this(null, null, null, start, end, lastPolled, null);
-    }
-
-    @Override
-    public String connectionId() {
-        return connectionId;
-    }
-
-    @Override
-    public String dataNeedId() {
-        return dataNeedId;
-    }
-
-    @Override
-    public DataSourceInformation dataSourceInformation() {
-        return new EnerginetDataSourceInformation();
-    }
-
-    @Override
-    public ZonedDateTime created() {
-        return null;
-    }
-
-    @Override
-    public void changeState(PermissionRequestState state) {
-
     }
 
     @Override
@@ -106,8 +82,28 @@ public final class SimplePermissionRequest implements DkEnerginetCustomerPermiss
     }
 
     @Override
-    public LocalDate lastPolled() {
-        return lastPolled;
+    public Optional<LocalDate> latestMeterReadingEndDate() {
+        return Optional.ofNullable(latestMeterReadingEndDate);
+    }
+
+    @Override
+    public void updateLatestMeterReadingEndDate(LocalDate date) {
+        this.latestMeterReadingEndDate = date;
+    }
+
+    @Override
+    public String permissionId() {
+        return permissionId;
+    }
+
+    @Override
+    public String connectionId() {
+        return connectionId;
+    }
+
+    @Override
+    public String dataNeedId() {
+        return dataNeedId;
     }
 
     @Override
@@ -116,13 +112,23 @@ public final class SimplePermissionRequest implements DkEnerginetCustomerPermiss
     }
 
     @Override
-    public void updateLastPolled(LocalDate lastPolled) {
-        this.lastPolled = lastPolled;
+    public PermissionRequestState state() {
+        return state;
     }
 
     @Override
-    public String permissionId() {
-        return permissionId;
+    public DataSourceInformation dataSourceInformation() {
+        return new EnerginetDataSourceInformation();
+    }
+
+    @Override
+    public ZonedDateTime created() {
+        return null;
+    }
+
+    @Override
+    public void changeState(PermissionRequestState state) {
+
     }
 
     @Override
@@ -136,8 +142,8 @@ public final class SimplePermissionRequest implements DkEnerginetCustomerPermiss
     }
 
     @Override
-    public PermissionRequestState state() {
-        return state;
+    public int hashCode() {
+        return Objects.hash(permissionId, connectionId, dataNeedId, start, end, latestMeterReadingEndDate, state);
     }
 
     @Override
@@ -150,13 +156,8 @@ public final class SimplePermissionRequest implements DkEnerginetCustomerPermiss
                 Objects.equals(this.dataNeedId, that.dataNeedId) &&
                 Objects.equals(this.start, that.start) &&
                 Objects.equals(this.end, that.end) &&
-                Objects.equals(this.lastPolled, that.lastPolled) &&
+                Objects.equals(this.latestMeterReadingEndDate, that.latestMeterReadingEndDate) &&
                 Objects.equals(this.state, that.state);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(permissionId, connectionId, dataNeedId, start, end, lastPolled, state);
     }
 
     @Override
@@ -167,7 +168,7 @@ public final class SimplePermissionRequest implements DkEnerginetCustomerPermiss
                 "dataNeedId=" + dataNeedId + ", " +
                 "start=" + start + ", " +
                 "end=" + end + ", " +
-                "lastPolled=" + lastPolled + ", " +
+                "date=" + latestMeterReadingEndDate + ", " +
                 "state=" + state + ']';
     }
 }

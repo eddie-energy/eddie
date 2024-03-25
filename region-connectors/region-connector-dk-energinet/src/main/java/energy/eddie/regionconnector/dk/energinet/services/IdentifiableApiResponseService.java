@@ -23,11 +23,30 @@ public class IdentifiableApiResponseService {
         identifiableApiResponseFlux.subscribe(this::updateLastPolledAndCheckForFulfillment);
     }
 
-    private static LocalDate parseZonedDateTime(String zonedDateTime) {
-        // This ensures that a received datetime: 2024-03-05T23:00:00Z is parsed to 2024-03-06T00:00:00+01:00
-        return ZonedDateTime.parse(zonedDateTime, DateTimeFormatter.ISO_DATE_TIME)
-                            .withZoneSameInstant(DK_ZONE_ID)
-                            .toLocalDate();
+    private void updateLastPolledAndCheckForFulfillment(IdentifiableApiResponse identifiableApiResponse) {
+        var permissionRequest = identifiableApiResponse.permissionRequest();
+        var permissionId = permissionRequest.permissionId();
+
+        var marketDocumentResponse = identifiableApiResponse.apiResponse();
+        var meterReadingEndDate = extractEndDate(marketDocumentResponse);
+
+        if (isLatestMeterReading(permissionRequest, meterReadingEndDate)) {
+            LOGGER.info("Updating latest meter reading for permission request {} from {} to {}",
+                        permissionId,
+                        permissionRequest.latestMeterReadingEndDate(),
+                        meterReadingEndDate);
+            permissionRequest.updateLatestMeterReadingEndDate(meterReadingEndDate);
+
+            if (isFulfilled(permissionRequest, meterReadingEndDate)) {
+                LOGGER.info("Fulfilling permission request {}", permissionId);
+                try {
+                    permissionRequest.fulfill();
+                    LOGGER.info("Permission request {} fulfilled", permissionId);
+                } catch (StateTransitionException e) {
+                    LOGGER.error("Error while fulfilling permission request {}", permissionId, e);
+                }
+            }
+        }
     }
 
     @SuppressWarnings("DataFlowIssue") // IdentifiableApiResponseFilter ensures that none of these getters return null
@@ -40,7 +59,9 @@ public class IdentifiableApiResponseService {
             DkEnerginetCustomerPermissionRequest permissionRequest,
             LocalDate meterReadingEndDate
     ) {
-        return meterReadingEndDate.isAfter(permissionRequest.lastPolled());
+        return permissionRequest.latestMeterReadingEndDate()
+                                .map(meterReadingEndDate::isAfter)
+                                .orElse(true);
     }
 
     /**
@@ -60,29 +81,10 @@ public class IdentifiableApiResponseService {
         return meterReadingEndDate.isAfter(permissionRequest.end());
     }
 
-    private void updateLastPolledAndCheckForFulfillment(IdentifiableApiResponse identifiableApiResponse) {
-        var permissionRequest = identifiableApiResponse.permissionRequest();
-        var permissionId = permissionRequest.permissionId();
-
-        var marketDocumentResponse = identifiableApiResponse.apiResponse();
-        var meterReadingEndDate = extractEndDate(marketDocumentResponse);
-
-        if (isLatestMeterReading(permissionRequest, meterReadingEndDate)) {
-            LOGGER.info("Updating latest meter reading for permission request {} from {} to {}",
-                        permissionId,
-                        permissionRequest.lastPolled(),
-                        meterReadingEndDate);
-            permissionRequest.updateLastPolled(meterReadingEndDate);
-
-            if (isFulfilled(permissionRequest, meterReadingEndDate)) {
-                LOGGER.info("Fulfilling permission request {}", permissionId);
-                try {
-                    permissionRequest.fulfill();
-                    LOGGER.info("Permission request {} fulfilled", permissionId);
-                } catch (StateTransitionException e) {
-                    LOGGER.error("Error while fulfilling permission request {}", permissionId, e);
-                }
-            }
-        }
+    private static LocalDate parseZonedDateTime(String zonedDateTime) {
+        // This ensures that a received datetime: 2024-03-05T23:00:00Z is parsed to 2024-03-06T00:00:00+01:00
+        return ZonedDateTime.parse(zonedDateTime, DateTimeFormatter.ISO_DATE_TIME)
+                            .withZoneSameInstant(DK_ZONE_ID)
+                            .toLocalDate();
     }
 }
