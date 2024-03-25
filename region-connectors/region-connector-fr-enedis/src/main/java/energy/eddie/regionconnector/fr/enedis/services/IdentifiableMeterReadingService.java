@@ -28,8 +28,11 @@ public class IdentifiableMeterReadingService {
         LocalDate meterReadingEndDate = identifiableMeteringData.meterReading().end();
 
         if (isLatestMeterReading(permissionRequest, meterReadingEndDate)) {
-            LOGGER.info("Updating latest meter reading for permission request {} from {} to {}", permissionId, permissionRequest.latestMeterReading(), meterReadingEndDate);
-            permissionRequest.updateLatestMeterReading(meterReadingEndDate);
+            LOGGER.info("Updating latest meter reading for permission request {} from {} to {}",
+                        permissionId,
+                        permissionRequest.latestMeterReadingEndDate(),
+                        meterReadingEndDate);
+            permissionRequest.updateLatestMeterReadingEndDate(meterReadingEndDate);
 
             if (isFulfilled(permissionRequest, meterReadingEndDate)) {
                 LOGGER.info("Fulfilling permission request {}", permissionId);
@@ -43,9 +46,12 @@ public class IdentifiableMeterReadingService {
         }
     }
 
-    private static boolean isLatestMeterReading(FrEnedisPermissionRequest permissionRequest, LocalDate meterReadingEndDate) {
+    private static boolean isLatestMeterReading(
+            FrEnedisPermissionRequest permissionRequest,
+            LocalDate meterReadingEndDate
+    ) {
         return permissionRequest
-                .latestMeterReading()
+                .latestMeterReadingEndDate()
                 .map(meterReadingEndDate::isAfter)
                 .orElse(true);
     }

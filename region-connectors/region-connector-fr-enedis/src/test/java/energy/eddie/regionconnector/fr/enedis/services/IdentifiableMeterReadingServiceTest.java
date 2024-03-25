@@ -25,7 +25,7 @@ class IdentifiableMeterReadingServiceTest {
     void ifLatestMeterReadingEmpty_callsSetLastPulledMeterReading() throws IOException {
         // Arrange
         FrEnedisPermissionRequest permissionRequest = mock(FrEnedisPermissionRequest.class);
-        when(permissionRequest.latestMeterReading()).thenReturn(Optional.empty());
+        when(permissionRequest.latestMeterReadingEndDate()).thenReturn(Optional.empty());
 
         MeterReading meterReading = TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.CONSUMPTION_LOAD_CURVE_1_DAY);
         TestPublisher<IdentifiableMeterReading> testPublisher = TestPublisher.create();
@@ -37,7 +37,7 @@ class IdentifiableMeterReadingServiceTest {
                     .expectNextCount(1)
                     .verifyComplete();
         // Assert
-        verify(permissionRequest).updateLatestMeterReading(meterReading.end());
+        verify(permissionRequest).updateLatestMeterReadingEndDate(meterReading.end());
     }
 
     @Test
@@ -46,7 +46,7 @@ class IdentifiableMeterReadingServiceTest {
         MeterReading meterReading = TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.CONSUMPTION_LOAD_CURVE_1_DAY);
 
         FrEnedisPermissionRequest permissionRequest = mock(FrEnedisPermissionRequest.class);
-        when(permissionRequest.latestMeterReading()).thenReturn(Optional.of(meterReading.end().minusDays(1)));
+        when(permissionRequest.latestMeterReadingEndDate()).thenReturn(Optional.of(meterReading.end().minusDays(1)));
 
         TestPublisher<IdentifiableMeterReading> testPublisher = TestPublisher.create();
 
@@ -57,7 +57,7 @@ class IdentifiableMeterReadingServiceTest {
                     .expectNextCount(1)
                     .verifyComplete();
         // Assert
-        verify(permissionRequest).updateLatestMeterReading(meterReading.end());
+        verify(permissionRequest).updateLatestMeterReadingEndDate(meterReading.end());
     }
 
     @Test
@@ -66,7 +66,7 @@ class IdentifiableMeterReadingServiceTest {
         MeterReading meterReading = TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.CONSUMPTION_LOAD_CURVE_1_DAY);
 
         FrEnedisPermissionRequest permissionRequest = mock(FrEnedisPermissionRequest.class);
-        when(permissionRequest.latestMeterReading()).thenReturn(Optional.of(meterReading.end().plusDays(1)));
+        when(permissionRequest.latestMeterReadingEndDate()).thenReturn(Optional.of(meterReading.end().plusDays(1)));
 
         TestPublisher<IdentifiableMeterReading> testPublisher = TestPublisher.create();
 
@@ -77,7 +77,7 @@ class IdentifiableMeterReadingServiceTest {
                     .expectNextCount(1)
                     .verifyComplete();
         // Assert
-        verify(permissionRequest, never()).updateLatestMeterReading(any());
+        verify(permissionRequest, never()).updateLatestMeterReadingEndDate(any());
     }
 
     @Test

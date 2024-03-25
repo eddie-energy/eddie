@@ -42,8 +42,8 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
     @Column(name = "usage_point_id")
     private String usagePointId;
     @Nullable
-    @Column(name = "latest_meter_reading")
-    private LocalDate latestMeterReading;
+    @Column(name = "latest_meter_reading_end_date")
+    private LocalDate latestMeterReadingEndDate;
 
     @Column(name = "created")
     private ZonedDateTime created;
@@ -51,6 +51,17 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
     // just for JPA
     @SuppressWarnings("NullAway.Init")
     protected EnedisPermissionRequest() {
+    }
+
+    public EnedisPermissionRequest(
+            String connectionId,
+            String dataNeedId,
+            LocalDate start,
+            LocalDate end,
+            Granularity granularity,
+            StateBuilderFactory factory
+    ) {
+        this(UUID.randomUUID().toString(), connectionId, dataNeedId, start, end, granularity, factory);
     }
 
     public EnedisPermissionRequest(
@@ -73,23 +84,28 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
         this.granularity = granularity;
     }
 
-    public EnedisPermissionRequest(
-            String connectionId,
-            String dataNeedId,
-            LocalDate start,
-            LocalDate end,
-            Granularity granularity,
-            StateBuilderFactory factory
-    ) {
-        this(UUID.randomUUID().toString(), connectionId, dataNeedId, start, end, granularity, factory);
-    }
-
     @Override
     public FrEnedisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
         this.state = factory
                 .create(this, status)
                 .build();
         return this;
+    }
+
+    @Override
+    public Optional<String> usagePointId() {
+        return Optional.ofNullable(usagePointId);
+    }
+
+    @SuppressWarnings("NullableProblems")
+    @Override
+    public void setUsagePointId(String usagePointId) {
+        this.usagePointId = usagePointId;
+    }
+
+    @Override
+    public Granularity granularity() {
+        return granularity;
     }
 
     @Override
@@ -105,6 +121,11 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
     @Override
     public String dataNeedId() {
         return dataNeedId;
+    }
+
+    @Override
+    public PermissionProcessStatus status() {
+        return status;
     }
 
     @Override
@@ -139,33 +160,12 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
     }
 
     @Override
-    public PermissionProcessStatus status() {
-        return status;
+    public Optional<LocalDate> latestMeterReadingEndDate() {
+        return Optional.ofNullable(latestMeterReadingEndDate);
     }
 
     @Override
-    public Optional<String> usagePointId() {
-        return Optional.ofNullable(usagePointId);
-    }
-
-    @SuppressWarnings("NullableProblems")
-    @Override
-    public void setUsagePointId(String usagePointId) {
-        this.usagePointId = usagePointId;
-    }
-
-    @Override
-    public Granularity granularity() {
-        return granularity;
-    }
-
-    @Override
-    public Optional<LocalDate> latestMeterReading() {
-        return Optional.ofNullable(latestMeterReading);
-    }
-
-    @Override
-    public void updateLatestMeterReading(LocalDate latestMeterReading) {
-        this.latestMeterReading = latestMeterReading;
+    public void updateLatestMeterReadingEndDate(LocalDate date) {
+        this.latestMeterReadingEndDate = date;
     }
 }
