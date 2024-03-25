@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.permission.request.api;
 
-import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.api.agnostic.process.model.annotations.InvokeExtensions;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
@@ -8,10 +8,9 @@ import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCod
 import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import jakarta.annotation.Nullable;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
-public interface EsPermissionRequest extends PermissionRequest {
+public interface EsPermissionRequest extends MeterReadingPermissionRequest {
     /**
      * The NIF of the customer that requested the permission. This is the username which is used to log in to the
      * Datadis portal.
@@ -49,15 +48,6 @@ public interface EsPermissionRequest extends PermissionRequest {
      * <p>Look at@{@link #pointType()} to see what is supported.</p>
      */
     MeasurementType measurementType();
-
-    /**
-     * The latest meter reading that was pulled for this permission request. Use this to avoid pulling the same meter
-     * reading twice.
-     */
-    Optional<LocalDate> lastPulledMeterReading();
-
-    @InvokeExtensions
-    void updateLastPulledMeterReading(LocalDate lastPulledMeterReading);
 
     @Nullable
     String errorMessage();

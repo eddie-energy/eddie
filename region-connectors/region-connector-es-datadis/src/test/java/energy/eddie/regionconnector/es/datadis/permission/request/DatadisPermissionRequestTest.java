@@ -5,14 +5,12 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.*;
@@ -84,7 +82,7 @@ class DatadisPermissionRequestTest {
                                                    requestDataTo,
                                                    granularity,
                                                    factory);
-        assertTrue(request.lastPulledMeterReading().isEmpty());
+        assertTrue(request.latestMeterReadingEndDate().isEmpty());
     }
 
     @Test
@@ -123,11 +121,11 @@ class DatadisPermissionRequestTest {
         LocalDate expected = LocalDate.now(ZoneOffset.UTC);
 
         // When
-        request.updateLastPulledMeterReading(expected);
+        request.updateLatestMeterReadingEndDate(expected);
 
         // Then
-        assertTrue(request.lastPulledMeterReading().isPresent());
-        assertEquals(expected, request.lastPulledMeterReading().get());
+        assertTrue(request.latestMeterReadingEndDate().isPresent());
+        assertEquals(expected, request.latestMeterReadingEndDate().get());
     }
 
     @Test

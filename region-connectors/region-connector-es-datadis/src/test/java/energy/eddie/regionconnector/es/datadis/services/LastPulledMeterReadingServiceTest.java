@@ -29,7 +29,7 @@ class LastPulledMeterReadingServiceTest {
         lastPulledMeterReadingService.updateLastPulledMeterReading(permissionRequest, end);
 
         // Then
-        assertEquals(end, permissionRequest.lastPulledMeterReading().get());
+        assertEquals(end, permissionRequest.latestMeterReadingEndDate().get());
     }
 
     private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
@@ -55,7 +55,7 @@ class LastPulledMeterReadingServiceTest {
         // Given
         LocalDate start = today.minusDays(2);
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, today);
-        permissionRequest.updateLastPulledMeterReading(today.minusDays(1));
+        permissionRequest.updateLatestMeterReadingEndDate(today.minusDays(1));
 
         LocalDate end = today;
 
@@ -64,7 +64,7 @@ class LastPulledMeterReadingServiceTest {
         // When
         lastPulledMeterReadingService.updateLastPulledMeterReading(permissionRequest, end);
         // Then
-        assertEquals(end, permissionRequest.lastPulledMeterReading().get());
+        assertEquals(end, permissionRequest.latestMeterReadingEndDate().get());
     }
 
     @Test
@@ -72,7 +72,7 @@ class LastPulledMeterReadingServiceTest {
         // Given
         LocalDate start = today.minusDays(2);
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, today);
-        permissionRequest.updateLastPulledMeterReading(today);
+        permissionRequest.updateLatestMeterReadingEndDate(today);
 
         LastPulledMeterReadingService lastPulledMeterReadingService = new LastPulledMeterReadingService();
 
@@ -80,6 +80,6 @@ class LastPulledMeterReadingServiceTest {
         lastPulledMeterReadingService.updateLastPulledMeterReading(permissionRequest, today);
 
         // Then
-        assertEquals(today, permissionRequest.lastPulledMeterReading().get());
+        assertEquals(today, permissionRequest.latestMeterReadingEndDate().get());
     }
 }

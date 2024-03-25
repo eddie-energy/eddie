@@ -40,8 +40,9 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     private DistributorCode distributorCode;
     @Nullable
     private Integer pointType;
+    @Column(name = "latest_meter_reading_end_date")
     @Nullable
-    private LocalDate lastPulledMeterReading;
+    private LocalDate latestMeterReadingEndDate;
     @Enumerated(EnumType.STRING)
     private PermissionProcessStatus status;
     @Nullable
@@ -84,30 +85,6 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     }
 
     @Override
-    public DatadisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
-        this.state = factory
-                .create(this, status)
-                .build();
-        return this;
-    }
-
-    @Override
-    public void setDistributorCodeAndPointType(DistributorCode distributorCode, Integer pointType) {
-        this.distributorCode = distributorCode;
-        this.pointType = pointType;
-    }
-
-    @Override
-    public Optional<Integer> pointType() {
-        return Optional.ofNullable(this.pointType);
-    }
-
-    @Override
-    public MeasurementType measurementType() {
-        return this.measurementType;
-    }
-
-    @Override
     public String permissionId() {
         return permissionId;
     }
@@ -120,6 +97,11 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     @Override
     public String dataNeedId() {
         return dataNeedId;
+    }
+
+    @Override
+    public PermissionProcessStatus status() {
+        return status;
     }
 
     @Override
@@ -174,6 +156,16 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     }
 
     @Override
+    public LocalDate start() {
+        return requestDataFrom;
+    }
+
+    @Override
+    public LocalDate end() {
+        return requestDataTo;
+    }
+
+    @Override
     public String nif() {
         return nif;
     }
@@ -189,28 +181,27 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     }
 
     @Override
-    public LocalDate start() {
-        return requestDataFrom;
+    public Optional<Integer> pointType() {
+        return Optional.ofNullable(this.pointType);
     }
 
     @Override
-    public LocalDate end() {
-        return requestDataTo;
+    public DatadisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
+        this.state = factory
+                .create(this, status)
+                .build();
+        return this;
     }
 
     @Override
-    public Optional<LocalDate> lastPulledMeterReading() {
-        return Optional.ofNullable(this.lastPulledMeterReading);
+    public void setDistributorCodeAndPointType(DistributorCode distributorCode, Integer pointType) {
+        this.distributorCode = distributorCode;
+        this.pointType = pointType;
     }
 
     @Override
-    public PermissionProcessStatus status() {
-        return status;
-    }
-
-    @Override
-    public void updateLastPulledMeterReading(LocalDate lastPulledMeterReading) {
-        this.lastPulledMeterReading = lastPulledMeterReading;
+    public MeasurementType measurementType() {
+        return this.measurementType;
     }
 
     @Override
@@ -222,5 +213,15 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     @Override
     public void setErrorMessage(@Nullable String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    @Override
+    public Optional<LocalDate> latestMeterReadingEndDate() {
+        return Optional.ofNullable(this.latestMeterReadingEndDate);
+    }
+
+    @Override
+    public void updateLatestMeterReadingEndDate(LocalDate date) {
+        this.latestMeterReadingEndDate = date;
     }
 }

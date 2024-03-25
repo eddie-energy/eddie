@@ -22,10 +22,10 @@ public class LastPulledMeterReadingService {
         if (isLatestMeterReading(permissionRequest, meteringDataEndDate)) {
             LOGGER.atInfo()
                   .addArgument(permissionRequest::permissionId)
-                  .addArgument(permissionRequest::lastPulledMeterReading)
+                  .addArgument(permissionRequest::latestMeterReadingEndDate)
                   .addArgument(meteringDataEndDate)
                   .log("Updating latest meter reading for permission request {} from {} to {}");
-            permissionRequest.updateLastPulledMeterReading(meteringDataEndDate);
+            permissionRequest.updateLatestMeterReadingEndDate(meteringDataEndDate);
             return true;
         }
 
@@ -34,7 +34,7 @@ public class LastPulledMeterReadingService {
 
     private static boolean isLatestMeterReading(EsPermissionRequest permissionRequest, LocalDate meteringDataDate) {
         return permissionRequest
-                .lastPulledMeterReading()
+                .latestMeterReadingEndDate()
                 .map(meteringDataDate::isAfter)
                 .orElse(true);
     }

@@ -130,7 +130,7 @@ class DataApiServiceTest {
                     .assertNext(identifiableMeteringData -> assertAll(
                             () -> assertEquals(PermissionProcessStatus.ACCEPTED, permissionRequest.status()),
                             () -> assertEquals(intermediateMeteringData.end(),
-                                               permissionRequest.lastPulledMeterReading().get())
+                                               permissionRequest.latestMeterReadingEndDate().get())
                     ))
                     .then(dataApiService::close)
                     .expectComplete()
@@ -164,7 +164,7 @@ class DataApiServiceTest {
         StepVerifier.create(meteringDataSink.asFlux())
                     .assertNext(identifiableMeteringData -> assertAll(
                             () -> assertEquals(PermissionProcessStatus.FULFILLED, permissionRequest.status()),
-                            () -> assertEquals(end, permissionRequest.lastPulledMeterReading().get())
+                            () -> assertEquals(end, permissionRequest.latestMeterReadingEndDate().get())
                     ))
                     .then(dataApiService::close)
                     .expectComplete()
@@ -198,7 +198,7 @@ class DataApiServiceTest {
                     .assertNext(identifiableMeteringData -> assertAll(
                             () -> assertEquals(PermissionProcessStatus.ACCEPTED, permissionRequest.status()),
                             () -> assertEquals(intermediateMeteringData.end(),
-                                               permissionRequest.lastPulledMeterReading().get())
+                                               permissionRequest.latestMeterReadingEndDate().get())
                     ))
                     .then(dataApiService::close)
                     .expectComplete()
