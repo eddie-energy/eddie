@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://REPLACE_ME:5432/aiida
+    username: REPLACE_ME
+    password: REPLACE_ME
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          lob:
+            non_contextual_creation: 'true'
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+
+aiida:
+  streamer:
+    poll_interval: 10
