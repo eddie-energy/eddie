@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import energy.eddie.regionconnector.es.datadis.filter.MeteringDataFilter;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
+import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -25,20 +26,17 @@ public class DataApiService implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataApiService.class);
     private final DataApi dataApi;
     private final Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink;
-    private final DatadisFulfillmentService fulfillmentService;
-    private final LastPulledMeterReadingService lastPulledMeterReadingService;
+    private final MeterReadingPermissionUpdateAndFulfillmentService permissionUpdateAndFulfillmentService;
 
 
     public DataApiService(
             DataApi dataApi,
             Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink,
-            DatadisFulfillmentService fulfillmentService,
-            LastPulledMeterReadingService lastPulledMeterReadingService
+            MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService
     ) {
         this.dataApi = dataApi;
         this.identifiableMeteringDataSink = identifiableMeteringDataSink;
-        this.fulfillmentService = fulfillmentService;
-        this.lastPulledMeterReadingService = lastPulledMeterReadingService;
+        this.permissionUpdateAndFulfillmentService = meterReadingPermissionUpdateAndFulfillmentService;
     }
 
 
@@ -70,12 +68,10 @@ public class DataApiService implements AutoCloseable {
             EsPermissionRequest permissionRequest,
             IdentifiableMeteringData identifiableMeteringData
     ) {
-        LocalDate meteringDataEndDate = identifiableMeteringData.intermediateMeteringData().end();
-        if (lastPulledMeterReadingService.updateLastPulledMeterReading(permissionRequest, meteringDataEndDate)
-                && fulfillmentService.isPermissionRequestFulfilledByDate(permissionRequest, meteringDataEndDate)) {
-            fulfillmentService.tryFulfillPermissionRequest(permissionRequest);
-        }
-
+        permissionUpdateAndFulfillmentService.tryUpdateAndFulfillPermissionRequest(
+                permissionRequest,
+                identifiableMeteringData
+        );
         identifiableMeteringDataSink.emitNext(identifiableMeteringData,
                                               Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
     }

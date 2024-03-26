@@ -14,6 +14,8 @@ import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCod
 import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
+import energy.eddie.regionconnector.shared.services.FulfillmentService;
+import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,6 +43,8 @@ import static org.mockito.Mockito.*;
 @SuppressWarnings("resource")
 class DataApiServiceTest {
     private final DataApi dataApi = mock(DataApi.class);
+    private final MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService =
+            new MeterReadingPermissionUpdateAndFulfillmentService(new FulfillmentService());
     private final Sinks.Many<IdentifiableMeteringData> meteringDataSink = Sinks.many()
                                                                                .multicast()
                                                                                .onBackpressureBuffer();
@@ -69,8 +73,7 @@ class DataApiServiceTest {
 
         var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
-                                                new DatadisFulfillmentService(),
-                                                new LastPulledMeterReadingService());
+                                                meterReadingPermissionUpdateAndFulfillmentService);
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
@@ -119,8 +122,7 @@ class DataApiServiceTest {
 
         var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
-                                                new DatadisFulfillmentService(),
-                                                new LastPulledMeterReadingService());
+                                                meterReadingPermissionUpdateAndFulfillmentService);
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
@@ -154,8 +156,7 @@ class DataApiServiceTest {
 
         var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
-                                                new DatadisFulfillmentService(),
-                                                new LastPulledMeterReadingService());
+                                                meterReadingPermissionUpdateAndFulfillmentService);
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
@@ -187,8 +188,7 @@ class DataApiServiceTest {
         Sinks.Many<IdentifiableMeteringData> sink = Sinks.many().multicast().onBackpressureBuffer();
         var dataApiService = new DataApiService(dataApi,
                                                 sink,
-                                                new DatadisFulfillmentService(),
-                                                new LastPulledMeterReadingService());
+                                                meterReadingPermissionUpdateAndFulfillmentService);
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
@@ -220,8 +220,7 @@ class DataApiServiceTest {
 
         var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
-                                                new DatadisFulfillmentService(),
-                                                new LastPulledMeterReadingService());
+                                                meterReadingPermissionUpdateAndFulfillmentService);
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
@@ -250,8 +249,7 @@ class DataApiServiceTest {
 
         var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
-                                                new DatadisFulfillmentService(),
-                                                new LastPulledMeterReadingService());
+                                                meterReadingPermissionUpdateAndFulfillmentService);
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
@@ -286,8 +284,7 @@ class DataApiServiceTest {
 
         var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
-                                                new DatadisFulfillmentService(),
-                                                new LastPulledMeterReadingService());
+                                                meterReadingPermissionUpdateAndFulfillmentService);
         var now = LocalDate.now(ZONE_ID_SPAIN);
         var expectedNrOfRetries = ChronoUnit.MONTHS.between(now.minusMonths(MAXIMUM_MONTHS_IN_THE_PAST), start);
         // When

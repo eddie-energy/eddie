@@ -8,7 +8,6 @@ import energy.eddie.api.agnostic.process.model.states.FulfilledPermissionRequest
 import energy.eddie.api.agnostic.process.model.states.SentToPermissionAdministratorPermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.RegionConnectorMetadata;
 import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
@@ -22,8 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FulfillmentServiceTest {
 
     LocalDate today = LocalDate.now(ZoneOffset.UTC);
-    RegionConnectorMetadata regionConnectorMetadata = new SimpleMetaData();
-    FulfillmentService<SimplePermissionRequest> fulfillmentService = new FulfillmentService<>(regionConnectorMetadata);
+    FulfillmentService fulfillmentService = new FulfillmentService();
 
 
     @Test
@@ -97,24 +95,6 @@ class FulfillmentServiceTest {
         assertNull(permissionRequest.state());
     }
 
-    private static class SimpleMetaData implements RegionConnectorMetadata {
-
-        @Override
-        public String id() {
-            return "id";
-        }
-
-        @Override
-        public String countryCode() {
-            return "countryCode";
-        }
-
-        @Override
-        public long coveredMeteringPoints() {
-            return 0;
-        }
-    }
-
     private static class SimplePermissionRequest implements PermissionRequest {
 
         private final LocalDate start;
@@ -157,7 +137,27 @@ class FulfillmentServiceTest {
 
         @Override
         public DataSourceInformation dataSourceInformation() {
-            return null;
+            return new DataSourceInformation() {
+                @Override
+                public String countryCode() {
+                    return "countryCode";
+                }
+
+                @Override
+                public String regionConnectorId() {
+                    return "regionConnectorId";
+                }
+
+                @Override
+                public String meteredDataAdministratorId() {
+                    return "meteredDataAdministratorId";
+                }
+
+                @Override
+                public String permissionAdministratorId() {
+                    return "permissionAdministratorId";
+                }
+            };
         }
 
         @Override

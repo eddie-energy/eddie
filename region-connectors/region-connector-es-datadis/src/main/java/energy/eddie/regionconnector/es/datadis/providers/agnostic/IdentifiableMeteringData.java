@@ -2,9 +2,16 @@ package energy.eddie.regionconnector.es.datadis.providers.agnostic;
 
 import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
+import energy.eddie.regionconnector.shared.utils.MeterReadingEndDate;
+
+import java.time.LocalDate;
 
 public record IdentifiableMeteringData(
         EsPermissionRequest permissionRequest,
         IntermediateMeteringData intermediateMeteringData
-) {
+) implements MeterReadingEndDate {
+    @Override
+    public LocalDate meterReadingEndDate() {
+        return intermediateMeteringData().end();
+    }
 }
