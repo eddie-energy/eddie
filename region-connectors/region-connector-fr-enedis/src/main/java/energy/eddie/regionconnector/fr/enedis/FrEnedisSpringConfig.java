@@ -24,6 +24,8 @@ import energy.eddie.regionconnector.shared.permission.requests.extensions.Extens
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.ConsentMarketDocumentExtension;
+import energy.eddie.regionconnector.shared.services.FulfillmentService;
+import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -67,7 +69,8 @@ public class FrEnedisSpringConfig {
 
     @Bean
     public CommonInformationModelConfiguration commonInformationModelConfiguration(
-            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingSchemeTypeList) {
+            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingSchemeTypeList
+    ) {
         return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingSchemeTypeList));
     }
 
@@ -109,11 +112,13 @@ public class FrEnedisSpringConfig {
     }
 
     @Bean
-    public Set<Extension<FrEnedisPermissionRequest>> extensions(PermissionRequestRepository<FrEnedisPermissionRequest> repository,
-                                                                Sinks.Many<ConnectionStatusMessage> messages,
-                                                                Sinks.Many<ConsentMarketDocument> cmds,
-                                                                EnedisConfiguration config,
-                                                                CommonInformationModelConfiguration cimConfig) {
+    public Set<Extension<FrEnedisPermissionRequest>> extensions(
+            PermissionRequestRepository<FrEnedisPermissionRequest> repository,
+            Sinks.Many<ConnectionStatusMessage> messages,
+            Sinks.Many<ConsentMarketDocument> cmds,
+            EnedisConfiguration config,
+            CommonInformationModelConfiguration cimConfig
+    ) {
         return Set.of(
                 new SavingExtension<>(repository),
                 new MessagingExtension<>(messages),
@@ -142,5 +147,17 @@ public class FrEnedisSpringConfig {
     @Bean
     public ConsentMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<ConsentMarketDocument> sink) {
         return new CommonConsentMarketDocumentProvider(sink);
+    }
+
+    @Bean
+    FulfillmentService fulfillmentService() {
+        return new FulfillmentService();
+    }
+
+    @Bean
+    MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService(
+            FulfillmentService fulfillmentService
+    ) {
+        return new MeterReadingPermissionUpdateAndFulfillmentService(fulfillmentService);
     }
 }

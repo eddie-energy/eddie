@@ -7,6 +7,8 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissio
 import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.shared.services.FulfillmentService;
+import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -26,12 +28,15 @@ import static org.mockito.Mockito.*;
 
 class HistoricalDataServiceTest {
 
+    private final MeterReadingPermissionUpdateAndFulfillmentService service =
+            new MeterReadingPermissionUpdateAndFulfillmentService(new FulfillmentService());
+
     @Test
     void fetchHistoricalMeterReadings_requestDataFor11Days_batchesFetchCallsInto2_andEmitsMeterReading() throws Exception {
         // Given
         EnedisApi enedisApi = mock(EnedisApi.class);
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, sink);
+        PollingService pollingService = new PollingService(enedisApi, service, sink);
         HistoricalDataService historicalDataService = new HistoricalDataService(pollingService);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
@@ -85,7 +90,7 @@ class HistoricalDataServiceTest {
         // Given
         EnedisApi enedisApi = mock(EnedisApi.class);
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, sink);
+        PollingService pollingService = new PollingService(enedisApi, service, sink);
         HistoricalDataService historicalDataService = new HistoricalDataService(pollingService);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(30);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
@@ -141,7 +146,7 @@ class HistoricalDataServiceTest {
         // Given
         EnedisApi enedisApi = mock(EnedisApi.class);
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, sink);
+        PollingService pollingService = new PollingService(enedisApi, service, sink);
         HistoricalDataService historicalDataService = new HistoricalDataService(pollingService);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).plusDays(10);
