@@ -12,6 +12,8 @@ import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCus
 import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.states.EnerginetCustomerAcceptedState;
+import energy.eddie.regionconnector.shared.services.FulfillmentService;
+import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +27,8 @@ import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,7 +50,9 @@ class PollingServiceTest {
 
     @BeforeEach
     void setUp() {
-        pollingService = new PollingService(customerApi, permissionRequestService);
+        pollingService = new PollingService(customerApi,
+                                            permissionRequestService,
+                                            new MeterReadingPermissionUpdateAndFulfillmentService(new FulfillmentService()));
     }
 
     @Test
@@ -203,8 +209,11 @@ class PollingServiceTest {
         MyEnergyDataMarketDocumentResponse resultItem = new MyEnergyDataMarketDocumentResponse();
         resultItem.setMyEnergyDataMarketDocument(new MyEnergyDataMarketDocument()
                                                          .periodTimeInterval(new PeriodtimeInterval()
-                                                                                     .start(start.toString())
-                                                                                     .end(end.toString()))
+                                                                                     .start(start.atStartOfDay(
+                                                                                             ZoneOffset.UTC).format(
+                                                                                             DateTimeFormatter.ISO_DATE_TIME))
+                                                                                     .end(end.atStartOfDay(ZoneOffset.UTC)
+                                                                                             .format(DateTimeFormatter.ISO_DATE_TIME)))
         );
         MyEnergyDataMarketDocumentResponseListApiResponse data = new MyEnergyDataMarketDocumentResponseListApiResponse()
                 .addResultItem(resultItem);
@@ -224,7 +233,7 @@ class PollingServiceTest {
                             () -> assertEquals(permissionRequest.connectionId(), mr.permissionRequest().connectionId()),
                             () -> assertEquals(permissionRequest.dataNeedId(), mr.permissionRequest().dataNeedId()),
                             () -> assertNotNull(mr.apiResponse()),
-                            () -> assertEquals(Optional.of(permissionRequest.start()),
+                            () -> assertEquals(Optional.of(end),
                                                permissionRequest.latestMeterReadingEndDate())
                     ))
                     .then(pollingService::close)
@@ -296,8 +305,11 @@ class PollingServiceTest {
         MyEnergyDataMarketDocumentResponse resultItem = new MyEnergyDataMarketDocumentResponse();
         resultItem.setMyEnergyDataMarketDocument(new MyEnergyDataMarketDocument()
                                                          .periodTimeInterval(new PeriodtimeInterval()
-                                                                                     .start(start1.toString())
-                                                                                     .end(end1.toString()))
+                                                                                     .start(start1.atStartOfDay(
+                                                                                             ZoneOffset.UTC).format(
+                                                                                             DateTimeFormatter.ISO_DATE_TIME))
+                                                                                     .end(end1.atStartOfDay(ZoneOffset.UTC)
+                                                                                              .format(DateTimeFormatter.ISO_DATE_TIME)))
         );
         MyEnergyDataMarketDocumentResponseListApiResponse data = new MyEnergyDataMarketDocumentResponseListApiResponse()
                 .addResultItem(resultItem);
@@ -335,7 +347,7 @@ class PollingServiceTest {
                                                mr.permissionRequest().connectionId()),
                             () -> assertEquals(permissionRequest1.dataNeedId(), mr.permissionRequest().dataNeedId()),
                             () -> assertNotNull(mr.apiResponse()),
-                            () -> assertEquals(Optional.of(permissionRequest1.start()),
+                            () -> assertEquals(Optional.of(end1),
                                                permissionRequest1.latestMeterReadingEndDate())
                     ))
                     .verifyComplete();

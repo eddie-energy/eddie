@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMark
 import energy.eddie.regionconnector.dk.energinet.filter.IdentifiableApiResponseFilter;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
+import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,14 +36,17 @@ public class PollingService implements AutoCloseable {
     private final Flux<IdentifiableApiResponse> apiResponseFlux;
     private final Sinks.Many<IdentifiableApiResponse> sink = Sinks.many().multicast().onBackpressureBuffer();
     private final PermissionRequestService permissionRequestService;
+    private final MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService;
 
 
     public PollingService(
             EnerginetCustomerApi energinetCustomerApi,
-            PermissionRequestService permissionRequestService
+            PermissionRequestService permissionRequestService,
+            MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService
     ) {
         this.energinetCustomerApi = energinetCustomerApi;
         this.permissionRequestService = permissionRequestService;
+        this.meterReadingPermissionUpdateAndFulfillmentService = meterReadingPermissionUpdateAndFulfillmentService;
         apiResponseFlux = sink.asFlux()
                               .share();
     }
@@ -120,14 +124,15 @@ public class PollingService implements AutoCloseable {
                                  permissionId,
                                  error))
                          .onErrorComplete()
-                         .subscribe(identifiableApiResponse -> {
-                             LOGGER.info("Fetched metering data from Energinet for permission request {} from {} to {}",
-                                         permissionId,
-                                         dateFrom,
-                                         dateTo);
-                             sink.emitNext(identifiableApiResponse,
-                                           Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
-                         });
+                         .subscribe(identifiableApiResponse ->
+                                            handleIdentifiableApiResponse(
+                                                    permissionRequest,
+                                                    identifiableApiResponse,
+                                                    permissionId,
+                                                    dateFrom,
+                                                    dateTo
+                                            )
+                         );
     }
 
     private void revokePermissionRequest(
@@ -146,6 +151,25 @@ public class PollingService implements AutoCloseable {
         } catch (StateTransitionException e) {
             LOGGER.warn("Could not revoke permission request", e);
         }
+    }
+
+    private void handleIdentifiableApiResponse(
+            DkEnerginetCustomerPermissionRequest permissionRequest,
+            IdentifiableApiResponse identifiableApiResponse,
+            String permissionId,
+            LocalDate dateFrom,
+            LocalDate dateTo
+    ) {
+        LOGGER.info("Fetched metering data from Energinet for permission request {} from {} to {}",
+                    permissionId,
+                    dateFrom,
+                    dateTo);
+        meterReadingPermissionUpdateAndFulfillmentService.tryUpdateAndFulfillPermissionRequest(
+                permissionRequest,
+                identifiableApiResponse
+        );
+        sink.emitNext(identifiableApiResponse,
+                      Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
     }
 
     /**

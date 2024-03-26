@@ -76,7 +76,6 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
         this.granularity = granularity;
 
         this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
-        this.latestMeterReadingEndDate = this.start;
         this.status = state.status();
     }
 
