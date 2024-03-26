@@ -78,7 +78,7 @@ jobs:
       packages: write
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: eddie-aiida
+      IMAGE_NAME: aiida
 
     steps:
       - uses: actions/checkout@v3
@@ -93,4 +93,4 @@ jobs:
         run: |
           IMAGE_ID=${REGISTRY}/${{ github.repository_owner }}/${IMAGE_NAME}
           echo $IMAGE_ID
-          ./gradlew jib --image $IMAGE_ID -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}
+          ./gradlew --no-daemon jib --image $IMAGE_ID -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}
