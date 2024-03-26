@@ -23,6 +23,7 @@ import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecor
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import jakarta.annotation.Nullable;
 import jakarta.xml.bind.JAXBException;
@@ -51,7 +52,8 @@ public class AtEdaBeanConfig {
             @Value("${" + ADAPTER_VERSION_KEY + "}") String adapterVersion,
             @Value("${" + HOSTNAME_KEY + "}") String hostname,
             @Value("${" + PORT_KEY + "}") int port,
-            @Value("${" + WORK_FOLDER_KEY + "}") String workFolder) {
+            @Value("${" + WORK_FOLDER_KEY + "}") String workFolder
+    ) {
         return new PlainPontonXPAdapterConfiguration(adapterId, adapterVersion, hostname, port, workFolder);
     }
 
@@ -65,7 +67,8 @@ public class AtEdaBeanConfig {
 
     @Bean
     public Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordStream(
-            IdentifiableConsumptionRecordService identifiableConsumptionRecordService) {
+            IdentifiableConsumptionRecordService identifiableConsumptionRecordService
+    ) {
         return identifiableConsumptionRecordService.getIdentifiableConsumptionRecordStream();
     }
 
@@ -106,14 +109,16 @@ public class AtEdaBeanConfig {
 
     @Bean
     public CommonInformationModelConfiguration commonInformationModelConfiguration(
-            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingSchemeTypeList) {
+            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingSchemeTypeList
+    ) {
         return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingSchemeTypeList));
     }
 
     @Bean
     public EdaEddieValidatedHistoricalDataMarketDocumentProvider consumptionRecordProcessor(
             CommonInformationModelConfiguration commonInformationModelConfiguration,
-            Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux) {
+            Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux
+    ) {
         return new EdaEddieValidatedHistoricalDataMarketDocumentProvider(
                 new ValidatedHistoricalDataMarketDocumentDirector(
                         commonInformationModelConfiguration,
@@ -136,5 +141,10 @@ public class AtEdaBeanConfig {
     @Bean
     public Outbox outbox(EventBus eventBus, PermissionEventRepository repository) {
         return new Outbox(eventBus, repository);
+    }
+
+    @Bean
+    public FulfillmentService fulfillmentService() {
+        return new FulfillmentService();
     }
 }

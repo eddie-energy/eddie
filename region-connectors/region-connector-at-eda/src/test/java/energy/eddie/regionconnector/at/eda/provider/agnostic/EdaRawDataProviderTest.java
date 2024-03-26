@@ -36,30 +36,33 @@ class EdaRawDataProviderTest {
             var source = provider.getRawDataStream();
 
             StepVerifier.create(source)
-                    .then(() -> {
-                        testPublisher.next(new IdentifiableConsumptionRecord(mockConsumptionRecord, permissionRequests));
-                        testPublisher.complete();
-                    })
-                    .assertNext(rawData -> {
-                        assertEquals(expectedString1, rawData.permissionId());
-                        assertEquals(expectedString1, rawData.connectionId());
-                        assertEquals(expectedString1, rawData.dataNeedId());
-                        assertThat(rawData.rawPayload()).startsWith("<?xml");
-                    })
-                    .assertNext(rawData -> {
-                        assertEquals(expectedString2, rawData.permissionId());
-                        assertEquals(expectedString2, rawData.connectionId());
-                        assertEquals(expectedString2, rawData.dataNeedId());
-                        assertThat(rawData.rawPayload()).startsWith("<?xml");
-                    })
-                    .assertNext(rawData -> {
-                        assertEquals(expectedString3, rawData.permissionId());
-                        assertEquals(expectedString3, rawData.connectionId());
-                        assertEquals(expectedString3, rawData.dataNeedId());
-                        assertThat(rawData.rawPayload()).startsWith("<?xml");
-                    })
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
+                        .then(() -> {
+                            testPublisher.next(new IdentifiableConsumptionRecord(mockConsumptionRecord,
+                                                                                 permissionRequests,
+                                                                                 null,
+                                                                                 null));
+                            testPublisher.complete();
+                        })
+                        .assertNext(rawData -> {
+                            assertEquals(expectedString1, rawData.permissionId());
+                            assertEquals(expectedString1, rawData.connectionId());
+                            assertEquals(expectedString1, rawData.dataNeedId());
+                            assertThat(rawData.rawPayload()).startsWith("<?xml");
+                        })
+                        .assertNext(rawData -> {
+                            assertEquals(expectedString2, rawData.permissionId());
+                            assertEquals(expectedString2, rawData.connectionId());
+                            assertEquals(expectedString2, rawData.dataNeedId());
+                            assertThat(rawData.rawPayload()).startsWith("<?xml");
+                        })
+                        .assertNext(rawData -> {
+                            assertEquals(expectedString3, rawData.permissionId());
+                            assertEquals(expectedString3, rawData.connectionId());
+                            assertEquals(expectedString3, rawData.dataNeedId());
+                            assertThat(rawData.rawPayload()).startsWith("<?xml");
+                        })
+                        .expectComplete()
+                        .verify(Duration.ofSeconds(2));
         }
     }
 

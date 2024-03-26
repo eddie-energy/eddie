@@ -10,6 +10,7 @@ import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestFulfillmentServiceTest {
+    private final FulfillmentService fulfillmentService = new FulfillmentService();
     @Mock
     private Outbox outbox;
 
@@ -41,13 +43,16 @@ class PermissionRequestFulfillmentServiceTest {
         AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd,
                                                                         PermissionProcessStatus.ACCEPTED);
         ConsumptionRecord consumptionRecord = createConsumptionRecord(meteringDataEnd);
-        new PermissionRequestFulfillmentService(testPublisher.flux(), outbox);
+        new PermissionRequestFulfillmentService(testPublisher.flux(), outbox, fulfillmentService);
 
         // When
         StepVerifier.create(testPublisher.flux())
                     .then(() -> {
                         testPublisher.next(
-                                new IdentifiableConsumptionRecord(consumptionRecord, List.of(permissionRequest)));
+                                new IdentifiableConsumptionRecord(consumptionRecord,
+                                                                  List.of(permissionRequest),
+                                                                  null,
+                                                                  meteringDataEnd));
                         testPublisher.complete();
                     })
                     .expectNextCount(1)
@@ -82,13 +87,16 @@ class PermissionRequestFulfillmentServiceTest {
         AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd,
                                                                         PermissionProcessStatus.ACCEPTED);
         ConsumptionRecord consumptionRecord = createConsumptionRecord(permissionRequestEnd);
-        new PermissionRequestFulfillmentService(testPublisher.flux(), outbox);
+        new PermissionRequestFulfillmentService(testPublisher.flux(), outbox, fulfillmentService);
 
         // When
         StepVerifier.create(testPublisher.flux())
                     .then(() -> {
                         testPublisher.next(
-                                new IdentifiableConsumptionRecord(consumptionRecord, List.of(permissionRequest)));
+                                new IdentifiableConsumptionRecord(consumptionRecord,
+                                                                  List.of(permissionRequest),
+                                                                  null,
+                                                                  permissionRequestEnd));
                         testPublisher.complete();
                     })
                     .expectNextCount(1)
@@ -108,13 +116,16 @@ class PermissionRequestFulfillmentServiceTest {
         AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd,
                                                                         PermissionProcessStatus.ACCEPTED);
         ConsumptionRecord consumptionRecord = createConsumptionRecord(meteringDataEnd);
-        new PermissionRequestFulfillmentService(testPublisher.flux(), outbox);
+        new PermissionRequestFulfillmentService(testPublisher.flux(), outbox, fulfillmentService);
 
         // When
         StepVerifier.create(testPublisher.flux())
                     .then(() -> {
                         testPublisher.next(
-                                new IdentifiableConsumptionRecord(consumptionRecord, List.of(permissionRequest)));
+                                new IdentifiableConsumptionRecord(consumptionRecord,
+                                                                  List.of(permissionRequest),
+                                                                  null,
+                                                                  meteringDataEnd));
                         testPublisher.complete();
                     })
                     .expectNextCount(1)
@@ -133,13 +144,16 @@ class PermissionRequestFulfillmentServiceTest {
         AtPermissionRequest permissionRequest = createPermissionRequest(meteringDataEnd,
                                                                         PermissionProcessStatus.ACCEPTED);
         ConsumptionRecord consumptionRecord = createConsumptionRecord(meteringDataEnd);
-        new PermissionRequestFulfillmentService(testPublisher.flux(), outbox);
+        new PermissionRequestFulfillmentService(testPublisher.flux(), outbox, fulfillmentService);
 
         // When
         StepVerifier.create(testPublisher.flux())
                     .then(() -> {
                         testPublisher.next(
-                                new IdentifiableConsumptionRecord(consumptionRecord, List.of(permissionRequest)));
+                                new IdentifiableConsumptionRecord(consumptionRecord,
+                                                                  List.of(permissionRequest),
+                                                                  null,
+                                                                  meteringDataEnd));
                         testPublisher.complete();
                     })
                     .expectNextCount(1)
@@ -159,13 +173,16 @@ class PermissionRequestFulfillmentServiceTest {
         TestPublisher<IdentifiableConsumptionRecord> testPublisher = TestPublisher.create();
         AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd, status);
         ConsumptionRecord consumptionRecord = createConsumptionRecord(meteringDataEnd);
-        new PermissionRequestFulfillmentService(testPublisher.flux(), outbox);
+        new PermissionRequestFulfillmentService(testPublisher.flux(), outbox, fulfillmentService);
 
         // When
         StepVerifier.create(testPublisher.flux())
                     .then(() -> {
                         testPublisher.next(
-                                new IdentifiableConsumptionRecord(consumptionRecord, List.of(permissionRequest)));
+                                new IdentifiableConsumptionRecord(consumptionRecord,
+                                                                  List.of(permissionRequest),
+                                                                  null,
+                                                                  meteringDataEnd));
                         testPublisher.complete();
                     })
                     .expectNextCount(1)
@@ -185,13 +202,16 @@ class PermissionRequestFulfillmentServiceTest {
                                                                         PermissionProcessStatus.ACCEPTED);
         ConsumptionRecord consumptionRecord = new ConsumptionRecord()
                 .withProcessDirectory(new ProcessDirectory());
-        new PermissionRequestFulfillmentService(testPublisher.flux(), outbox);
+        new PermissionRequestFulfillmentService(testPublisher.flux(), outbox, fulfillmentService);
 
         // When
         StepVerifier.create(testPublisher.flux())
                     .then(() -> {
                         testPublisher.next(
-                                new IdentifiableConsumptionRecord(consumptionRecord, List.of(permissionRequest)));
+                                new IdentifiableConsumptionRecord(consumptionRecord,
+                                                                  List.of(permissionRequest),
+                                                                  null,
+                                                                  null));
                         testPublisher.complete();
                     })
                     .expectNextCount(1)
