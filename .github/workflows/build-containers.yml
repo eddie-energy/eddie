@@ -69,7 +69,7 @@ jobs:
           docker tag ${IMAGE_NAME} $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
       - name: Post ghcr.io login
-        run: rm /home/runner/.docker/config.json
+        run: rm $HOME/.docker/config.json
 
   build-aiida:
     runs-on: [ self-hosted, fh-server ]
@@ -78,7 +78,7 @@ jobs:
       packages: write
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: aiida
+      IMAGE_NAME: eddie-aiida
 
     steps:
       - uses: actions/checkout@v3
