@@ -143,6 +143,10 @@ tasks.jacocoTestReport {
 sonarqube {
     properties {
         property("sonar.coverage.exclusions", generatedSchemas)
+        property(
+            "sonar.cpd.exclusions",
+            "**/at/eda/ponton/messages/**/*"
+        ) // exclude files from duplication detection
     }
 }
 
