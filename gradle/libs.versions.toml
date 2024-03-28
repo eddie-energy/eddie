@@ -6,6 +6,7 @@ spring-retry = "2.0.4"
 spring-aspects = "6.1.1"
 spring-kafka = "3.1.1"
 spring-websocket = "6.1.2"
+spring-oxm = "6.1.5"
 junit = "5.9.2"
 mockito-junit = "5.4.0"
 errorprone = "3.0.1"
@@ -145,6 +146,8 @@ spring-websocket = { module = "org.springframework:spring-websocket", version.re
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "spring-retry" }
 spring-aspects = { module = "org.springframework:spring-aspects", version.ref = "spring-aspects" }
 spring-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "openapi-webmvc-ui" }
+spring-oxm = { module = "org.springframework:spring-oxm", version.ref = "spring-oxm" }
+
 
 hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", version.ref = "hibernate-validator" }
 
@@ -173,4 +176,4 @@ spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
 # AIIDA
-google-jib = {id ="com.google.cloud.tools.jib", version.ref="google-jib"}
+google-jib = { id = "com.google.cloud.tools.jib", version.ref = "google-jib" }

@@ -16,6 +16,7 @@ import energy.eddie.regionconnector.at.eda.ponton.NoOpEdaAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
+import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
 import energy.eddie.regionconnector.at.eda.provider.v0_82.EdaEddieValidatedHistoricalDataMarketDocumentProvider;
@@ -26,13 +27,13 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import jakarta.annotation.Nullable;
-import jakarta.xml.bind.JAXBException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -80,9 +81,11 @@ public class AtEdaBeanConfig {
     @Bean
     @Profile("!no-ponton")
     public EdaAdapter edaAdapter(
-            PontonXPAdapterConfiguration configuration
-    ) throws JAXBException, IOException, ConnectionException {
-        return new PontonXPAdapter(configuration);
+            PontonXPAdapterConfiguration configuration,
+            Jaxb2Marshaller jaxb2Marshaller,
+            OutboundMessageFactoryCollection outboundMessageFactoryCollection
+    ) throws IOException, ConnectionException {
+        return new PontonXPAdapter(configuration, jaxb2Marshaller, outboundMessageFactoryCollection);
     }
 
     @Bean
@@ -141,6 +144,13 @@ public class AtEdaBeanConfig {
     @Bean
     public Outbox outbox(EventBus eventBus, PermissionEventRepository repository) {
         return new Outbox(eventBus, repository);
+    }
+
+    @Bean
+    public Jaxb2Marshaller jaxb2Marshaller() {
+        Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
+        marshaller.setPackagesToScan("at.ebutilities.schemata.customerconsent");
+        return marshaller;
     }
 
     @Bean

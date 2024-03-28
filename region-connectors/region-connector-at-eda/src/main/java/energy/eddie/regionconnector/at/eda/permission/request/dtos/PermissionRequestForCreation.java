@@ -3,8 +3,7 @@ package energy.eddie.regionconnector.at.eda.permission.request.dtos;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-import static energy.eddie.regionconnector.at.eda.requests.CCMORequest.DSO_ID_LENGTH;
-
+import static energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint.DSO_ID_LENGTH;
 
 public record PermissionRequestForCreation(
         @NotBlank(message = "must not be blank")

@@ -7,16 +7,9 @@ import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEven
 import java.util.List;
 import java.util.Objects;
 
-import static energy.eddie.regionconnector.at.eda.requests.CCMORequest.DSO_ID_LENGTH;
+import static energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint.DSO_ID_LENGTH;
 
 public class MeteringPointMatchesDsoIdValidator implements Validator<CreatedEvent> {
-    private boolean meteringPointMatchesDsoId(CreatedEvent value) {
-        return Objects.equals(
-                value.dataSourceInformation().meteredDataAdministratorId(),
-                value.meteringPointId().substring(0, DSO_ID_LENGTH)
-        );
-    }
-
     @Override
     public List<AttributeError> validate(CreatedEvent value) {
 
@@ -27,6 +20,13 @@ public class MeteringPointMatchesDsoIdValidator implements Validator<CreatedEven
         }
         return List.of(
                 new AttributeError("meteringPointId", "The dsoId does not match the dsoId of the metering point")
+        );
+    }
+
+    private boolean meteringPointMatchesDsoId(CreatedEvent value) {
+        return Objects.equals(
+                value.dataSourceInformation().meteredDataAdministratorId(),
+                value.meteringPointId().substring(0, DSO_ID_LENGTH)
         );
     }
 }

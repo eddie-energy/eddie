@@ -14,10 +14,10 @@ import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
 import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
 import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
-import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -60,18 +60,21 @@ public class SendingEventHandler implements EventHandler<PermissionEvent> {
                 new DsoIdAndMeteringPoint(permissionRequest.dataSourceInformation().meteredDataAdministratorId(),
                                           permissionRequest.meteringPointId().orElse(null)),
                 new CCMOTimeFrame(permissionRequest.start(), permissionRequest.end()),
-                configuration,
                 RequestDataType.METERING_DATA,
-                permissionRequest.granularity(),
+                switch (permissionRequest.granularity()) {
+                    case PT15M -> AllowedMeteringIntervalType.QH;
+                    default -> AllowedMeteringIntervalType.D; // Granularity at this point is either PT15M or P1D
+                },
                 EdaRegionConnectorMetadata.TRANSMISSION_CYCLE,
+                configuration,
                 permissionRequest.created()
         );
         PermissionEvent nextEvent = null;
         try {
-            edaAdapter.sendCMRequest(ccmoRequest.toCMRequest());
+            edaAdapter.sendCMRequest(ccmoRequest);
             nextEvent = new SimpleEvent(permissionId,
                                         PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT);
-        } catch (TransmissionException | JAXBException e) {
+        } catch (TransmissionException e) {
             nextEvent = new ExceptionEvent(permissionId, PermissionProcessStatus.UNABLE_TO_SEND, e);
         } finally {
             outbox.commit(nextEvent);
