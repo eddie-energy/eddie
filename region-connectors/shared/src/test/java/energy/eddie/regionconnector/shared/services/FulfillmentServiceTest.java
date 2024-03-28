@@ -1,14 +1,13 @@
 package energy.eddie.regionconnector.shared.services;
 
 import energy.eddie.api.agnostic.process.model.PastStateException;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
 import energy.eddie.api.agnostic.process.model.states.FulfilledPermissionRequestState;
 import energy.eddie.api.agnostic.process.model.states.SentToPermissionAdministratorPermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.RegionConnectorMetadata;
 import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
@@ -22,12 +21,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class FulfillmentServiceTest {
 
     LocalDate today = LocalDate.now(ZoneOffset.UTC);
-    RegionConnectorMetadata regionConnectorMetadata = new SimpleMetaData();
-    FulfillmentService<SimplePermissionRequest> fulfillmentService = new FulfillmentService<>(regionConnectorMetadata);
+    FulfillmentService fulfillmentService = new FulfillmentService();
 
 
     @Test
-    void isPermissionRequestFulfilledByDate_dateBeforePermissionEndDate_returnsFalse() throws StateTransitionException {
+    void isPermissionRequestFulfilledByDate_dateBeforePermissionEndDate_returnsFalse() {
         // Given
         LocalDate start = today.minusDays(2);
         LocalDate end = today.plusDays(1);
@@ -41,7 +39,7 @@ class FulfillmentServiceTest {
     }
 
     @Test
-    void isPermissionRequestFulfilledByDate_dateEqualPermissionEndDate_returnsFalse() throws StateTransitionException {
+    void isPermissionRequestFulfilledByDate_dateEqualPermissionEndDate_returnsFalse() {
         // Given
         LocalDate start = today.minusDays(2);
         LocalDate end = today.plusDays(1);
@@ -55,7 +53,7 @@ class FulfillmentServiceTest {
     }
 
     @Test
-    void isPermissionRequestFulfilledByDate_dateAfterPermissionEndDate_returnsTrue() throws StateTransitionException {
+    void isPermissionRequestFulfilledByDate_dateAfterPermissionEndDate_returnsTrue() {
         // Given
         LocalDate start = today.minusDays(2);
         LocalDate end = today.plusDays(1);
@@ -97,25 +95,7 @@ class FulfillmentServiceTest {
         assertNull(permissionRequest.state());
     }
 
-    private static class SimpleMetaData implements RegionConnectorMetadata {
-
-        @Override
-        public String id() {
-            return "id";
-        }
-
-        @Override
-        public String countryCode() {
-            return "countryCode";
-        }
-
-        @Override
-        public long coveredMeteringPoints() {
-            return 0;
-        }
-    }
-
-    private static class SimplePermissionRequest implements TimeframedPermissionRequest {
+    private static class SimplePermissionRequest implements PermissionRequest {
 
         private final LocalDate start;
         private final LocalDate end;
@@ -157,7 +137,27 @@ class FulfillmentServiceTest {
 
         @Override
         public DataSourceInformation dataSourceInformation() {
-            return null;
+            return new DataSourceInformation() {
+                @Override
+                public String countryCode() {
+                    return "countryCode";
+                }
+
+                @Override
+                public String regionConnectorId() {
+                    return "regionConnectorId";
+                }
+
+                @Override
+                public String meteredDataAdministratorId() {
+                    return "meteredDataAdministratorId";
+                }
+
+                @Override
+                public String permissionAdministratorId() {
+                    return "permissionAdministratorId";
+                }
+            };
         }
 
         @Override

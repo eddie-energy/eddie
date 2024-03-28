@@ -22,7 +22,7 @@ public record MeteringDataFilter(
     public static final int NR_OF_QUARTER_HOURS_IN_A_DAY = 96;
 
     public Mono<IntermediateMeteringData> filter() {
-        LocalDate startDate = permissionRequest.lastPulledMeterReading().orElse(permissionRequest.start());
+        LocalDate startDate = permissionRequest.latestMeterReadingEndDate().orElse(permissionRequest.start());
         LocalDate endDate = permissionRequest.end()
                                              .plusDays(1); // Add one day to the end date to treat end as inclusive
         int stepSize = stepSize();

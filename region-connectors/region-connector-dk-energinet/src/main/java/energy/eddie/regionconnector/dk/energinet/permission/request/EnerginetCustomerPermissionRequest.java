@@ -8,10 +8,12 @@ import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerA
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static java.util.Objects.requireNonNull;
@@ -35,7 +37,9 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
     private Granularity granularity;
     @Transient
     private PermissionRequestState state;
-    private LocalDate lastPolled;
+    @Column(name = "latest_meter_reading_end_date")
+    @Nullable
+    private LocalDate latestMeterReadingEndDate;
     @Column(columnDefinition = "TEXT")
     private String refreshToken;
     @Enumerated(EnumType.STRING)
@@ -72,7 +76,6 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
         this.granularity = granularity;
 
         this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
-        this.lastPolled = this.start;
         this.status = state.status();
     }
 
@@ -91,8 +94,18 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
     }
 
     @Override
-    public PermissionProcessStatus status() {
-        return status;
+    public Mono<String> accessToken() {
+        return credentials.accessToken();
+    }
+
+    @Override
+    public Granularity granularity() {
+        return granularity;
+    }
+
+    @Override
+    public String meteringPoint() {
+        return meteringPoint;
     }
 
     @Override
@@ -108,6 +121,11 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
     @Override
     public String dataNeedId() {
         return dataNeedId;
+    }
+
+    @Override
+    public PermissionProcessStatus status() {
+        return status;
     }
 
     @Override
@@ -137,27 +155,12 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
     }
 
     @Override
-    public Mono<String> accessToken() {
-        return credentials.accessToken();
+    public Optional<LocalDate> latestMeterReadingEndDate() {
+        return Optional.ofNullable(latestMeterReadingEndDate);
     }
 
     @Override
-    public Granularity granularity() {
-        return granularity;
-    }
-
-    @Override
-    public String meteringPoint() {
-        return meteringPoint;
-    }
-
-    @Override
-    public LocalDate lastPolled() {
-        return lastPolled;
-    }
-
-    @Override
-    public void updateLastPolled(LocalDate lastPolled) {
-        this.lastPolled = lastPolled;
+    public void updateLatestMeterReadingEndDate(LocalDate date) {
+        this.latestMeterReadingEndDate = date;
     }
 }

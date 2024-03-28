@@ -36,9 +36,9 @@ class IdentifiableConsumptionRecordServiceTest {
         when(repository.findAcceptedAndFulfilledByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any()))
                 .thenReturn(List.of(
                         new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1",
-                                PermissionProcessStatus.ACCEPTED),
+                                                    PermissionProcessStatus.ACCEPTED),
                         new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2",
-                                PermissionProcessStatus.ACCEPTED)
+                                                    PermissionProcessStatus.ACCEPTED)
                 ));
         when(repository.findAcceptedAndFulfilledByMeteringPointIdAndDate(eq(unidentifiableMeteringPoint), any()))
                 .thenReturn(List.of());
@@ -47,13 +47,54 @@ class IdentifiableConsumptionRecordServiceTest {
                 testPublisher.flux(), repository);
 
         StepVerifier.create(identifiableConsumptionRecordService.getIdentifiableConsumptionRecordStream())
-                .then(() -> testPublisher.emit(identifiableConsumptionRecord, unidentifiableConsumptionRecord))
-                .assertNext(icr -> {
-                    assertEquals(identifiableConsumptionRecord, icr.consumptionRecord());
-                    assertEquals(2, icr.permissionRequests().size());
-                })
-                .expectComplete()
-                .verify(Duration.ofSeconds(2));
+                    .then(() -> testPublisher.emit(identifiableConsumptionRecord, unidentifiableConsumptionRecord))
+                    .assertNext(icr -> {
+                        assertEquals(identifiableConsumptionRecord, icr.consumptionRecord());
+                        assertEquals(2, icr.permissionRequests().size());
+                    })
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(2));
+    }
+
+    private ConsumptionRecord createConsumptionRecord(String meteringPoint) {
+        var meteringType = "L1";
+        var consumptionValue = 10;
+        var meteringInterval = MeteringIntervall.QH;
+        var unit = UOMType.KWH;
+        return createConsumptionRecord(meteringPoint,
+                                       meteringType,
+                                       ZonedDateTime.now(ZoneOffset.UTC),
+                                       meteringInterval,
+                                       consumptionValue,
+                                       unit);
+    }
+
+    private ConsumptionRecord createConsumptionRecord(
+            String meteringPoint,
+            String meteringType,
+            ZonedDateTime meteringPeriodStart,
+            MeteringIntervall meteringIntervall,
+            double consumptionValue,
+            UOMType unit
+    ) {
+        var edaCR = new ConsumptionRecord();
+        ProcessDirectory processDirectory = new ProcessDirectory();
+        edaCR.setProcessDirectory(processDirectory);
+        processDirectory.setMeteringPoint(meteringPoint);
+        Energy energy = new Energy();
+        energy.setMeteringIntervall(meteringIntervall);
+        energy.setNumberOfMeteringIntervall(BigInteger.valueOf(1));
+        energy.setMeteringPeriodStart(DateTimeConverter.dateToXml(meteringPeriodStart.toLocalDate()));
+        energy.setMeteringPeriodEnd(DateTimeConverter.dateToXml(meteringPeriodStart.toLocalDate()));
+        EnergyData energyData = new EnergyData();
+        energyData.setUOM(unit);
+        EnergyPosition energyPosition = new EnergyPosition();
+        energyPosition.setMM(meteringType);
+        energyPosition.setBQ(BigDecimal.valueOf(consumptionValue));
+        energyData.getEP().add(energyPosition);
+        energy.getEnergyData().add(energyData);
+        processDirectory.getEnergy().add(energy);
+        return edaCR;
     }
 
     @Test
@@ -66,64 +107,37 @@ class IdentifiableConsumptionRecordServiceTest {
         when(repository.findAcceptedAndFulfilledByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any()))
                 .thenReturn(List.of(
                         new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1",
-                                PermissionProcessStatus.ACCEPTED),
+                                                    PermissionProcessStatus.ACCEPTED),
                         new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2",
-                                PermissionProcessStatus.ACCEPTED))
+                                                    PermissionProcessStatus.ACCEPTED))
                 );
 
         IdentifiableConsumptionRecordService identifiableConsumptionRecordService = new IdentifiableConsumptionRecordService(
                 testPublisher.asFlux(), repository);
 
         var first = StepVerifier.create(identifiableConsumptionRecordService.getIdentifiableConsumptionRecordStream())
-                .then(() -> {
-                    testPublisher.tryEmitNext(identifiableConsumptionRecord);
-                    testPublisher.tryEmitComplete();
-                })
-                .assertNext(icr -> {
-                    assertEquals(identifiableConsumptionRecord, icr.consumptionRecord());
-                    assertEquals(2, icr.permissionRequests().size());
-                })
-                .expectComplete()
-                .verifyLater();
+                                .then(() -> {
+                                    testPublisher.tryEmitNext(identifiableConsumptionRecord);
+                                    testPublisher.tryEmitComplete();
+                                })
+                                .assertNext(icr -> {
+                                    assertEquals(identifiableConsumptionRecord, icr.consumptionRecord());
+                                    assertEquals(2, icr.permissionRequests().size());
+                                })
+                                .expectComplete()
+                                .verifyLater();
 
         var second = StepVerifier.create(identifiableConsumptionRecordService.getIdentifiableConsumptionRecordStream())
-                .assertNext(icr -> {
-                    assertEquals(identifiableConsumptionRecord, icr.consumptionRecord());
-                    assertEquals(2, icr.permissionRequests().size());
-                })
-                .expectComplete()
-                .verifyLater();
+                                 .assertNext(icr -> {
+                                     assertEquals(identifiableConsumptionRecord, icr.consumptionRecord());
+                                     assertEquals(2, icr.permissionRequests().size());
+                                 })
+                                 .expectComplete()
+                                 .verifyLater();
 
         first.verify(Duration.ofSeconds(2));
         second.verify(Duration.ofSeconds(2));
-        verify(repository, times(1)).findAcceptedAndFulfilledByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any());
-    }
-
-    private ConsumptionRecord createConsumptionRecord(String meteringPoint) {
-        var meteringType = "L1";
-        var consumptionValue = 10;
-        var meteringInterval = MeteringIntervall.QH;
-        var unit = UOMType.KWH;
-        return createConsumptionRecord(meteringPoint, meteringType, ZonedDateTime.now(ZoneOffset.UTC), meteringInterval, consumptionValue, unit);
-    }
-
-    private ConsumptionRecord createConsumptionRecord(String meteringPoint, String meteringType, ZonedDateTime meteringPeriodStart, MeteringIntervall meteringIntervall, double consumptionValue, UOMType unit) {
-        var edaCR = new ConsumptionRecord();
-        ProcessDirectory processDirectory = new ProcessDirectory();
-        edaCR.setProcessDirectory(processDirectory);
-        processDirectory.setMeteringPoint(meteringPoint);
-        Energy energy = new Energy();
-        energy.setMeteringIntervall(meteringIntervall);
-        energy.setNumberOfMeteringIntervall(BigInteger.valueOf(1));
-        energy.setMeteringPeriodStart(DateTimeConverter.dateToXml(meteringPeriodStart.toLocalDate()));
-        EnergyData energyData = new EnergyData();
-        energyData.setUOM(unit);
-        EnergyPosition energyPosition = new EnergyPosition();
-        energyPosition.setMM(meteringType);
-        energyPosition.setBQ(BigDecimal.valueOf(consumptionValue));
-        energyData.getEP().add(energyPosition);
-        energy.getEnergyData().add(energyData);
-        processDirectory.getEnergy().add(energy);
-        return edaCR;
+        verify(repository, times(1)).findAcceptedAndFulfilledByMeteringPointIdAndDate(eq(identifiableMeteringPoint),
+                                                                                      any());
     }
 }

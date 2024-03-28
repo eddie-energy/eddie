@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.simulation.web;
 
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.PermissionProcessStatus;
@@ -27,7 +27,7 @@ import java.time.ZoneOffset;
 public class ConnectionStatusController implements Mvp1ConnectionStatusMessageProvider, ConsentMarketDocumentProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusController.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusStreamSink = Sinks.many().multicast()
-            .onBackpressureBuffer();
+                                                                                        .onBackpressureBuffer();
     private final Sinks.Many<ConsentMarketDocument> cmdSink = Sinks.many().multicast().onBackpressureBuffer();
 
     @GetMapping(value = "/api/connection-status-values")
@@ -50,7 +50,7 @@ public class ConnectionStatusController implements Mvp1ConnectionStatusMessagePr
                     )
             );
             cmdSink.tryEmitNext(
-                    new IntermediateConsentMarketDocument<TimeframedPermissionRequest>(
+                    new IntermediateConsentMarketDocument<PermissionRequest>(
                             new SimulationPermissionRequest(req),
                             SimulationConnectorMetadata.REGION_CONNECTOR_ID,
                             ignored -> null,
@@ -64,7 +64,7 @@ public class ConnectionStatusController implements Mvp1ConnectionStatusMessagePr
                     "Mandatory attribute missing (connectionId,connectionStatus,dataNeedId) on ConnectionStatusMessage from frontend: {}",
                     req);
             return ResponseEntity.badRequest()
-                    .body("Mandatory attribute missing (connectionId,connectionStatus,dataNeedId) on ConnectionStatusMessage");
+                                 .body("Mandatory attribute missing (connectionId,connectionStatus,dataNeedId) on ConnectionStatusMessage");
         }
     }
 
@@ -74,13 +74,13 @@ public class ConnectionStatusController implements Mvp1ConnectionStatusMessagePr
     }
 
     @Override
-    public Flux<ConsentMarketDocument> getConsentMarketDocumentStream() {
-        return cmdSink.asFlux();
-    }
-
-    @Override
     public void close() {
         connectionStatusStreamSink.tryEmitComplete();
         cmdSink.tryEmitComplete();
+    }
+
+    @Override
+    public Flux<ConsentMarketDocument> getConsentMarketDocumentStream() {
+        return cmdSink.asFlux();
     }
 }

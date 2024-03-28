@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 public final class SimplePermissionRequest implements PermissionRequest {
@@ -12,16 +13,16 @@ public final class SimplePermissionRequest implements PermissionRequest {
     private final String dataNeedId;
     private PermissionRequestState state;
 
-    public SimplePermissionRequest(String permissionId, String connectionId, PermissionRequestState state, String dataNeedId) {
+    public SimplePermissionRequest(
+            String permissionId,
+            String connectionId,
+            PermissionRequestState state,
+            String dataNeedId
+    ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
         this.state = state;
         this.dataNeedId = dataNeedId;
-    }
-
-    @Override
-    public void changeState(PermissionRequestState state) {
-        this.state = state;
     }
 
     @Override
@@ -51,6 +52,21 @@ public final class SimplePermissionRequest implements PermissionRequest {
 
     @Override
     public ZonedDateTime created() {
+        return null;
+    }
+
+    @Override
+    public void changeState(PermissionRequestState state) {
+        this.state = state;
+    }
+
+    @Override
+    public LocalDate start() {
+        return null;
+    }
+
+    @Override
+    public LocalDate end() {
         return null;
     }
 }

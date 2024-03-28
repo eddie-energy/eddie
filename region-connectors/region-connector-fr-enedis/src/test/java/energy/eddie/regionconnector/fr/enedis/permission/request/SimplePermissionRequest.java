@@ -20,6 +20,21 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     }
 
     @Override
+    public FrEnedisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
+        return this;
+    }
+
+    @Override
+    public void setUsagePointId(String usagePointId) {
+
+    }
+
+    @Override
+    public PermissionProcessStatus status() {
+        return state.status();
+    }
+
+    @Override
     public DataSourceInformation dataSourceInformation() {
         return new EnedisDataSourceInformation();
     }
@@ -35,31 +50,6 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     }
 
     @Override
-    public FrEnedisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
-        return this;
-    }
-
-    @Override
-    public PermissionProcessStatus status() {
-        return state.status();
-    }
-
-    @Override
-    public void setUsagePointId(String usagePointId) {
-
-    }
-
-    @Override
-    public Optional<LocalDate> latestMeterReading() {
-        return Optional.empty();
-    }
-
-    @Override
-    public void updateLatestMeterReading(LocalDate latestMeterReading) {
-
-    }
-
-    @Override
     public LocalDate start() {
         return startDate;
     }
@@ -67,5 +57,15 @@ public record SimplePermissionRequest(String permissionId, String connectionId, 
     @Override
     public LocalDate end() {
         return endDate;
+    }
+
+    @Override
+    public Optional<LocalDate> latestMeterReadingEndDate() {
+        return Optional.empty();
+    }
+
+    @Override
+    public void updateLatestMeterReadingEndDate(LocalDate latestMeterReading) {
+
     }
 }

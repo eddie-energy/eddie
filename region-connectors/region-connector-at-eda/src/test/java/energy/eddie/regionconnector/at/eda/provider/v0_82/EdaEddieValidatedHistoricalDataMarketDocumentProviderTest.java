@@ -36,35 +36,45 @@ class EdaEddieValidatedHistoricalDataMarketDocumentProviderTest {
         ValidatedHistoricalDataMarketDocument validatedHistoricalDataMarketDocument = new ValidatedHistoricalDataMarketDocument();
 
         ValidatedHistoricalDataMarketDocumentDirector director = mock(ValidatedHistoricalDataMarketDocumentDirector.class);
-        when(director.createValidatedHistoricalDataMarketDocument(consumptionRecord)).thenReturn(validatedHistoricalDataMarketDocument);
+        when(director.createValidatedHistoricalDataMarketDocument(consumptionRecord)).thenReturn(
+                validatedHistoricalDataMarketDocument);
 
-        try (EdaEddieValidatedHistoricalDataMarketDocumentProvider uut = new EdaEddieValidatedHistoricalDataMarketDocumentProvider(director, testPublisher.flux())) {
+        try (EdaEddieValidatedHistoricalDataMarketDocumentProvider uut = new EdaEddieValidatedHistoricalDataMarketDocumentProvider(
+                director,
+                testPublisher.flux())) {
             StepVerifier.create(uut.getEddieValidatedHistoricalDataMarketDocumentStream())
-                    .then(() -> {
-                        testPublisher.next(new IdentifiableConsumptionRecord(consumptionRecord, permissionRequests));
-                        testPublisher.complete();
-                    })
-                    .assertNext(cr -> {
-                        assertThat(cr.permissionId()).hasValue(expectedString1);
-                        assertThat(cr.connectionId()).hasValue(expectedString1);
-                        assertThat(cr.dataNeedId()).hasValue(expectedString1);
-                        assertEquals(validatedHistoricalDataMarketDocument, cr.marketDocument());
-                    })
-                    .assertNext(cr -> {
-                        assertThat(cr.permissionId()).hasValue(expectedString2);
-                        assertThat(cr.connectionId()).hasValue(expectedString2);
-                        assertThat(cr.dataNeedId()).hasValue(expectedString2);
-                        assertEquals(validatedHistoricalDataMarketDocument, cr.marketDocument());
-                    })
-                    .assertNext(cr -> {
-                        assertThat(cr.permissionId()).hasValue(expectedString3);
-                        assertThat(cr.connectionId()).hasValue(expectedString3);
-                        assertThat(cr.dataNeedId()).hasValue(expectedString3);
-                        assertEquals(validatedHistoricalDataMarketDocument, cr.marketDocument());
-                    })
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
+                        .then(() -> {
+                            testPublisher.next(new IdentifiableConsumptionRecord(consumptionRecord,
+                                                                                 permissionRequests,
+                                                                                 null,
+                                                                                 null));
+                            testPublisher.complete();
+                        })
+                        .assertNext(cr -> {
+                            assertThat(cr.permissionId()).hasValue(expectedString1);
+                            assertThat(cr.connectionId()).hasValue(expectedString1);
+                            assertThat(cr.dataNeedId()).hasValue(expectedString1);
+                            assertEquals(validatedHistoricalDataMarketDocument, cr.marketDocument());
+                        })
+                        .assertNext(cr -> {
+                            assertThat(cr.permissionId()).hasValue(expectedString2);
+                            assertThat(cr.connectionId()).hasValue(expectedString2);
+                            assertThat(cr.dataNeedId()).hasValue(expectedString2);
+                            assertEquals(validatedHistoricalDataMarketDocument, cr.marketDocument());
+                        })
+                        .assertNext(cr -> {
+                            assertThat(cr.permissionId()).hasValue(expectedString3);
+                            assertThat(cr.connectionId()).hasValue(expectedString3);
+                            assertThat(cr.dataNeedId()).hasValue(expectedString3);
+                            assertEquals(validatedHistoricalDataMarketDocument, cr.marketDocument());
+                        })
+                        .expectComplete()
+                        .verify(Duration.ofSeconds(2));
         }
+    }
+
+    private SimplePermissionRequest createPermissionRequest(String expected) {
+        return new SimplePermissionRequest(expected, expected, expected);
     }
 
     @Test
@@ -73,21 +83,23 @@ class EdaEddieValidatedHistoricalDataMarketDocumentProviderTest {
         ConsumptionRecord consumptionRecord = new ConsumptionRecord();
 
         ValidatedHistoricalDataMarketDocumentDirector director = mock(ValidatedHistoricalDataMarketDocumentDirector.class);
-        when(director.createValidatedHistoricalDataMarketDocument(consumptionRecord)).thenThrow(new InvalidMappingException(""));
+        when(director.createValidatedHistoricalDataMarketDocument(consumptionRecord))
+                .thenThrow(new InvalidMappingException(""));
 
 
-        try (EdaEddieValidatedHistoricalDataMarketDocumentProvider uut = new EdaEddieValidatedHistoricalDataMarketDocumentProvider(director, testPublisher.flux())) {
+        try (EdaEddieValidatedHistoricalDataMarketDocumentProvider uut = new EdaEddieValidatedHistoricalDataMarketDocumentProvider(
+                director,
+                testPublisher.flux())) {
             StepVerifier.create(uut.getEddieValidatedHistoricalDataMarketDocumentStream())
-                    .then(() -> {
-                        testPublisher.next(new IdentifiableConsumptionRecord(consumptionRecord, List.of()));
-                        testPublisher.complete();
-                    })
-                    .expectNextCount(0)
-                    .verifyComplete();
+                        .then(() -> {
+                            testPublisher.next(new IdentifiableConsumptionRecord(consumptionRecord,
+                                                                                 List.of(),
+                                                                                 null,
+                                                                                 null));
+                            testPublisher.complete();
+                        })
+                        .expectNextCount(0)
+                        .verifyComplete();
         }
-    }
-
-    private SimplePermissionRequest createPermissionRequest(String expected) {
-        return new SimplePermissionRequest(expected, expected, expected);
     }
 }

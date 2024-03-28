@@ -21,6 +21,8 @@ import energy.eddie.regionconnector.shared.permission.requests.extensions.Extens
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.ConsentMarketDocumentExtension;
+import energy.eddie.regionconnector.shared.services.FulfillmentService;
+import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -99,7 +101,10 @@ public class DkEnerginetSpringConfig {
     }
 
     @Bean
-    public ValidatedHistoricalDataMarketDocumentBuilderFactory validatedHistoricalDataMarketDocumentBuilderFactory(EnerginetConfiguration energinetConfiguration, CommonInformationModelConfiguration commonInformationModelConfiguration) {
+    public ValidatedHistoricalDataMarketDocumentBuilderFactory validatedHistoricalDataMarketDocumentBuilderFactory(
+            EnerginetConfiguration energinetConfiguration,
+            CommonInformationModelConfiguration commonInformationModelConfiguration
+    ) {
         return new ValidatedHistoricalDataMarketDocumentBuilderFactory(
                 energinetConfiguration,
                 commonInformationModelConfiguration,
@@ -110,5 +115,17 @@ public class DkEnerginetSpringConfig {
     @Bean
     public ConsentMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<ConsentMarketDocument> sink) {
         return new CommonConsentMarketDocumentProvider(sink);
+    }
+
+    @Bean
+    public FulfillmentService fulfillmentService() {
+        return new FulfillmentService();
+    }
+
+    @Bean
+    public MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService(
+            FulfillmentService fulfillmentService
+    ) {
+        return new MeterReadingPermissionUpdateAndFulfillmentService(fulfillmentService);
     }
 }

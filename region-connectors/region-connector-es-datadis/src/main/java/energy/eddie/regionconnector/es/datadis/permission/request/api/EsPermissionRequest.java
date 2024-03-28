@@ -1,39 +1,39 @@
 package energy.eddie.regionconnector.es.datadis.permission.request.api;
 
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
+import energy.eddie.api.agnostic.process.model.annotations.InvokeExtensions;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
-import energy.eddie.regionconnector.shared.permission.requests.annotations.InvokeExtensions;
 import jakarta.annotation.Nullable;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
-public interface EsPermissionRequest extends TimeframedPermissionRequest {
+public interface EsPermissionRequest extends MeterReadingPermissionRequest {
     /**
-     * The NIF of the customer that requested the permission.
-     * This is the username which is used to log in to the Datadis portal.
+     * The NIF of the customer that requested the permission. This is the username which is used to log in to the
+     * Datadis portal.
      */
     String nif();
 
     /**
-     * The metering point id of the metering point associated with this permission request.
-     * In DataDis this is called CUPS.
+     * The metering point id of the metering point associated with this permission request. In DataDis this is called
+     * CUPS.
      */
     String meteringPointId();
 
     /**
-     * The distributor code of the distributor that is responsible for the metering point associated with this permission request.
+     * The distributor code of the distributor that is responsible for the metering point associated with this
+     * permission request.
      */
     Optional<DistributorCode> distributorCode();
 
     /**
-     * This number describes what kind of metering point is associated with this permission request.
-     * The values range from 1 to 5 and decide what MeasurementType is used supported.
-     * Only 1 and 2 support @{@link MeasurementType#QUARTER_HOURLY}.
-     * All metering points support @{@link MeasurementType#HOURLY}.
+     * This number describes what kind of metering point is associated with this permission request. The values range
+     * from 1 to 5 and decide what MeasurementType is used supported.
+     * <p>Only 1 and 2 support @{@link MeasurementType#QUARTER_HOURLY}.</p>
+     * <p>All metering points support @{@link MeasurementType#HOURLY}.</p>
      */
     Optional<Integer> pointType();
 
@@ -44,19 +44,10 @@ public interface EsPermissionRequest extends TimeframedPermissionRequest {
 
     /**
      * Decide what kind of metering data is requested.
-     * Either @{@link MeasurementType#HOURLY} or @{@link MeasurementType#QUARTER_HOURLY}.
-     * Look at @{@link #pointType()} to see what is supported.
+     * <p>Either @{@link MeasurementType#HOURLY} or @{@link MeasurementType#QUARTER_HOURLY}.</p>
+     * <p>Look at@{@link #pointType()} to see what is supported.</p>
      */
     MeasurementType measurementType();
-
-    /**
-     * The latest meter reading that was pulled for this permission request.
-     * Use this to avoid pulling the same meter reading twice.
-     */
-    Optional<LocalDate> lastPulledMeterReading();
-
-    @InvokeExtensions
-    void updateLastPulledMeterReading(LocalDate lastPulledMeterReading);
 
     @Nullable
     String errorMessage();

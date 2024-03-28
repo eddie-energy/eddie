@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.utils;
 
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -8,9 +8,9 @@ import java.time.temporal.ChronoUnit;
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 
 public class EnedisDuration {
-    private final TimeframedPermissionRequest permissionRequest;
+    private final PermissionRequest permissionRequest;
 
-    public EnedisDuration(TimeframedPermissionRequest permissionRequest) {
+    public EnedisDuration(PermissionRequest permissionRequest) {
         this.permissionRequest = permissionRequest;
     }
 

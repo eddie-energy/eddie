@@ -49,20 +49,6 @@ class FutureDataServiceTest {
         );
     }
 
-    static Stream<Arguments> permissionThatAreInactiveOrDoNotNeedToBeFetched() {
-        LocalDate today = LocalDate.now(ZONE_ID_FR);
-        return Stream.of(
-                Arguments.of(createPermissionRequest(today.minusDays(1), today.plusDays(1), Optional.of(today)),
-                             "Permission: start = yesterday, end = tomorrow, latest meter reading = today, data is already up to date"),
-                Arguments.of(createPermissionRequest(today, today, Optional.empty()),
-                             "Permission: start = today, end = today, inactive"),
-                Arguments.of(createPermissionRequest(today.plusDays(1), today.plusDays(2), Optional.empty()),
-                             "Permission: start = tomorrow, end = day after tomorrow, inactive"),
-                Arguments.of(createPermissionRequest(today.plusDays(2), today.plusDays(2), Optional.empty()),
-                             "Permission: start = day after tomorrow, end = day after tomorrow, inactive")
-        );
-    }
-
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     static FrEnedisPermissionRequest createPermissionRequest(
             LocalDate start,
@@ -75,10 +61,24 @@ class FutureDataServiceTest {
                                                                                   end,
                                                                                   Granularity.P1D,
                                                                                   stateBuilderFactory);
-        latestMeterReading.ifPresent(permissionRequest::updateLatestMeterReading);
+        latestMeterReading.ifPresent(permissionRequest::updateLatestMeterReadingEndDate);
         permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
                                                          .build());
         return permissionRequest;
+    }
+
+    static Stream<Arguments> permissionThatAreInactiveOrDoNotNeedToBeFetched() {
+        LocalDate today = LocalDate.now(ZONE_ID_FR);
+        return Stream.of(
+                Arguments.of(createPermissionRequest(today.minusDays(1), today.plusDays(1), Optional.of(today)),
+                             "Permission: start = yesterday, end = tomorrow, latest meter reading = today, data is already up to date"),
+                Arguments.of(createPermissionRequest(today, today, Optional.empty()),
+                             "Permission: start = today, end = today, inactive"),
+                Arguments.of(createPermissionRequest(today.plusDays(1), today.plusDays(2), Optional.empty()),
+                             "Permission: start = tomorrow, end = day after tomorrow, inactive"),
+                Arguments.of(createPermissionRequest(today.plusDays(2), today.plusDays(2), Optional.empty()),
+                             "Permission: start = day after tomorrow, end = day after tomorrow, inactive")
+        );
     }
 
     @Test
@@ -109,7 +109,7 @@ class FutureDataServiceTest {
 
         // Then
         verify(permissionRequestService, times(1)).findAllAcceptedPermissionRequests();
-        LocalDate startFetchDate = permissionRequest.latestMeterReading().orElse(permissionRequest.start());
+        LocalDate startFetchDate = permissionRequest.latestMeterReadingEndDate().orElse(permissionRequest.start());
         verify(pollingService, times(1)).fetchMeterReadings(permissionRequest,
                                                             startFetchDate,
                                                             LocalDate.now(ZONE_ID_FR));

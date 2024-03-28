@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82;
 
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.cmd.*;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
@@ -18,7 +18,7 @@ import java.util.UUID;
 
 import static energy.eddie.api.CommonInformationModelVersions.V0_82;
 
-public class IntermediateConsentMarketDocument<T extends TimeframedPermissionRequest> {
+public class IntermediateConsentMarketDocument<T extends PermissionRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(IntermediateConsentMarketDocument.class);
     private final T permissionRequest;
     private final String customerIdentifier;
@@ -27,19 +27,23 @@ public class IntermediateConsentMarketDocument<T extends TimeframedPermissionReq
     private final ZoneId zoneId;
     private final PermissionProcessStatus status;
 
-    public IntermediateConsentMarketDocument(T permissionRequest,
-                                             String customerIdentifier,
-                                             TransmissionScheduleProvider<T> transmissionScheduleProvider,
-                                             String countryCode, ZoneId zoneId) {
+    public IntermediateConsentMarketDocument(
+            T permissionRequest,
+            String customerIdentifier,
+            TransmissionScheduleProvider<T> transmissionScheduleProvider,
+            String countryCode, ZoneId zoneId
+    ) {
         this(permissionRequest, permissionRequest.status(), customerIdentifier, transmissionScheduleProvider,
-                countryCode, zoneId);
+             countryCode, zoneId);
     }
 
-    public IntermediateConsentMarketDocument(T permissionRequest,
-                                             PermissionProcessStatus status,
-                                             String customerIdentifier,
-                                             TransmissionScheduleProvider<T> transmissionScheduleProvider,
-                                             String countryCode, ZoneId zoneId) {
+    public IntermediateConsentMarketDocument(
+            T permissionRequest,
+            PermissionProcessStatus status,
+            String customerIdentifier,
+            TransmissionScheduleProvider<T> transmissionScheduleProvider,
+            String countryCode, ZoneId zoneId
+    ) {
         this.status = status;
         this.permissionRequest = permissionRequest;
         this.customerIdentifier = customerIdentifier;
@@ -94,7 +98,8 @@ public class IntermediateConsentMarketDocument<T extends TimeframedPermissionReq
                                                 .withTransmissionSchedule(transmissionSchedule())
                                                 .withMarketEvaluationPointMRID(
                                                         new MeasurementPointIDStringComplexType()
-                                                                .withCodingScheme(CodingSchemeTypeList.fromValue(countryCode))
+                                                                .withCodingScheme(CodingSchemeTypeList.fromValue(
+                                                                        countryCode))
                                                                 .withValue(permissionRequest.connectionId())
                                                 )
                                                 .withMktActivityRecordList(
@@ -104,7 +109,8 @@ public class IntermediateConsentMarketDocument<T extends TimeframedPermissionReq
                                                                                 .withMRID(UUID.randomUUID().toString())
                                                                                 .withCreatedDateTime(now.toString())
                                                                                 .withDescription("")
-                                                                                .withType(permissionRequest.dataSourceInformation().regionConnectorId())
+                                                                                .withType(permissionRequest.dataSourceInformation()
+                                                                                                           .regionConnectorId())
                                                                                 .withStatus(getStatusTypeList())
                                                                 )
                                                 )
@@ -121,6 +127,14 @@ public class IntermediateConsentMarketDocument<T extends TimeframedPermissionReq
         }
     }
 
+    @Nullable
+    private String transmissionSchedule() {
+        if (!permissionRequest.start().isAfter(LocalDate.now(ZoneOffset.UTC))) {
+            return null;
+        }
+        return transmissionScheduleProvider.findTransmissionSchedule(permissionRequest);
+    }
+
     private StatusTypeList getStatusTypeList() {
         String permissionRequestStatus = status.toString().toUpperCase(Locale.ROOT);
         for (var statusType : StatusTypeList.values()) {
@@ -129,13 +143,5 @@ public class IntermediateConsentMarketDocument<T extends TimeframedPermissionReq
             }
         }
         throw new IllegalArgumentException("Unknown enum value for StatusTypeList " + permissionRequestStatus);
-    }
-
-    @Nullable
-    private String transmissionSchedule() {
-        if (!permissionRequest.start().isAfter(LocalDate.now(ZoneOffset.UTC))) {
-            return null;
-        }
-        return transmissionScheduleProvider.findTransmissionSchedule(permissionRequest);
     }
 }

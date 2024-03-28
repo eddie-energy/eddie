@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMark
 import energy.eddie.regionconnector.dk.energinet.filter.IdentifiableApiResponseFilter;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
+import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -28,27 +29,26 @@ import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector
 
 @Service
 public class PollingService implements AutoCloseable {
-    public static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.backoff(10, Duration.ofMinutes(1)).filter(error -> error instanceof WebClientResponseException.TooManyRequests || error instanceof WebClientResponseException.ServiceUnavailable);
+    public static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.backoff(10, Duration.ofMinutes(1))
+                                                                   .filter(error -> error instanceof WebClientResponseException.TooManyRequests || error instanceof WebClientResponseException.ServiceUnavailable);
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
     private final EnerginetCustomerApi energinetCustomerApi;
     private final Flux<IdentifiableApiResponse> apiResponseFlux;
     private final Sinks.Many<IdentifiableApiResponse> sink = Sinks.many().multicast().onBackpressureBuffer();
     private final PermissionRequestService permissionRequestService;
+    private final MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService;
 
 
-    public PollingService(EnerginetCustomerApi energinetCustomerApi,
-                          PermissionRequestService permissionRequestService) {
+    public PollingService(
+            EnerginetCustomerApi energinetCustomerApi,
+            PermissionRequestService permissionRequestService,
+            MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService
+    ) {
         this.energinetCustomerApi = energinetCustomerApi;
         this.permissionRequestService = permissionRequestService;
+        this.meterReadingPermissionUpdateAndFulfillmentService = meterReadingPermissionUpdateAndFulfillmentService;
         apiResponseFlux = sink.asFlux()
-                .share();
-    }
-
-    private static boolean isActiveAndNeedsToBePolled(DkEnerginetCustomerPermissionRequest permissionRequest, LocalDate today) {
-        LocalDate permissionStart = permissionRequest.start();
-        var lastPolled = permissionRequest.lastPolled();
-        return permissionStart.isBefore(today)
-                && (lastPolled.isBefore(today) || lastPolled.isEqual(today));
+                              .share();
     }
 
     /**
@@ -76,18 +76,15 @@ public class PollingService implements AutoCloseable {
         }
     }
 
-    /**
-     * This will try to fetch historical meter readings for the given permission request.
-     * If the permission request is for future data, no data will be fetched.
-     *
-     * @param permissionRequest for historical validated data
-     */
-    public void fetchHistoricalMeterReadings(DkEnerginetCustomerPermissionRequest permissionRequest) {
-        LocalDate end = permissionRequest.end();
-        LocalDate now = LocalDate.now(DK_ZONE_ID);
-        if (end != null && (end.isBefore(now) || end.isEqual(now))) {
-            fetch(permissionRequest, now);
-        }
+    private static boolean isActiveAndNeedsToBePolled(
+            DkEnerginetCustomerPermissionRequest permissionRequest,
+            LocalDate today
+    ) {
+        LocalDate permissionStart = permissionRequest.start();
+        return permissionStart.isBefore(today)
+                && permissionRequest.latestMeterReadingEndDate()
+                                    .map(lastPolled -> lastPolled.isBefore(today) || lastPolled.isEqual(today))
+                                    .orElse(true);
     }
 
     private void fetch(DkEnerginetCustomerPermissionRequest permissionRequest, LocalDate today) {
@@ -95,40 +92,53 @@ public class PollingService implements AutoCloseable {
         meteringPoints.addMeteringPointItem(permissionRequest.meteringPoint());
         MeteringPointsRequest meteringPointsRequest = new MeteringPointsRequest().meteringPoints(meteringPoints);
 
-        LocalDate dateFrom = permissionRequest.lastPolled();
+        LocalDate dateFrom = permissionRequest.latestMeterReadingEndDate().orElse(permissionRequest.start());
         LocalDate dateTo = Optional.of(permissionRequest.end())
-                .filter(d -> d.isBefore(today))
-                .map(d -> d.plusDays(1)) // The Energinet API is inclusive on the start date and exclusive on the end date so we need to add one day if the end date is before today
-                .orElse(today);
+                                   .filter(d -> d.isBefore(today))
+                                   .map(d -> d.plusDays(1)) // The Energinet API is inclusive on the start date and exclusive on the end date so we need to add one day if the end date is before today
+                                   .orElse(today);
         String permissionId = permissionRequest.permissionId();
 
-        LOGGER.info("Fetching metering data from Energinet for permission request {} from {} to {}", permissionId, dateFrom, dateTo);
+        LOGGER.info("Fetching metering data from Energinet for permission request {} from {} to {}",
+                    permissionId,
+                    dateFrom,
+                    dateTo);
         permissionRequest.accessToken()
-                .flatMap(accessToken -> energinetCustomerApi.getTimeSeries(
-                        dateFrom,
-                        dateTo,
-                        permissionRequest.granularity(),
-                        meteringPointsRequest,
-                        accessToken,
-                        UUID.fromString(permissionId)
-                ))
-                .retryWhen(RETRY_BACKOFF_SPEC)
-                // If we get an 401 Unauthorized error, the refresh token was revoked and the permission request with that
-                .doOnError(error -> revokePermissionRequest(permissionRequest, error))
-                .mapNotNull(MyEnergyDataMarketDocumentResponseListApiResponse::getResult)
-                .flatMap(myEnergyDataMarketDocumentResponses ->
-                        new IdentifiableApiResponseFilter(permissionRequest, dateFrom, dateTo)
-                                .filter(myEnergyDataMarketDocumentResponses))
-                .doOnError(error -> LOGGER.error("Something went wrong while fetching data for permission request {} from Energinet:", permissionId, error))
-                .onErrorComplete()
-                .subscribe(identifiableApiResponse -> {
-                    LOGGER.info("Fetched metering data from Energinet for permission request {} from {} to {}", permissionId, dateFrom, dateTo);
-                    sink.emitNext(identifiableApiResponse, Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
-                });
+                         .flatMap(accessToken -> energinetCustomerApi.getTimeSeries(
+                                 dateFrom,
+                                 dateTo,
+                                 permissionRequest.granularity(),
+                                 meteringPointsRequest,
+                                 accessToken,
+                                 UUID.fromString(permissionId)
+                         ))
+                         .retryWhen(RETRY_BACKOFF_SPEC)
+                         // If we get an 401 Unauthorized error, the refresh token was revoked and the permission request with that
+                         .doOnError(error -> revokePermissionRequest(permissionRequest, error))
+                         .mapNotNull(MyEnergyDataMarketDocumentResponseListApiResponse::getResult)
+                         .flatMap(myEnergyDataMarketDocumentResponses ->
+                                          new IdentifiableApiResponseFilter(permissionRequest, dateFrom, dateTo)
+                                                  .filter(myEnergyDataMarketDocumentResponses))
+                         .doOnError(error -> LOGGER.error(
+                                 "Something went wrong while fetching data for permission request {} from Energinet:",
+                                 permissionId,
+                                 error))
+                         .onErrorComplete()
+                         .subscribe(identifiableApiResponse ->
+                                            handleIdentifiableApiResponse(
+                                                    permissionRequest,
+                                                    identifiableApiResponse,
+                                                    permissionId,
+                                                    dateFrom,
+                                                    dateTo
+                                            )
+                         );
     }
 
-    private void revokePermissionRequest(DkEnerginetCustomerPermissionRequest permissionRequest,
-                                         Throwable error) {
+    private void revokePermissionRequest(
+            DkEnerginetCustomerPermissionRequest permissionRequest,
+            Throwable error
+    ) {
         if (!(error instanceof WebClientResponseException.Unauthorized)) {
             LOGGER.warn("Got error while requesting access token", error);
             return;
@@ -140,6 +150,39 @@ public class PollingService implements AutoCloseable {
             permissionRequest.revoke();
         } catch (StateTransitionException e) {
             LOGGER.warn("Could not revoke permission request", e);
+        }
+    }
+
+    private void handleIdentifiableApiResponse(
+            DkEnerginetCustomerPermissionRequest permissionRequest,
+            IdentifiableApiResponse identifiableApiResponse,
+            String permissionId,
+            LocalDate dateFrom,
+            LocalDate dateTo
+    ) {
+        LOGGER.info("Fetched metering data from Energinet for permission request {} from {} to {}",
+                    permissionId,
+                    dateFrom,
+                    dateTo);
+        meterReadingPermissionUpdateAndFulfillmentService.tryUpdateAndFulfillPermissionRequest(
+                permissionRequest,
+                identifiableApiResponse
+        );
+        sink.emitNext(identifiableApiResponse,
+                      Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
+    }
+
+    /**
+     * This will try to fetch historical meter readings for the given permission request. If the permission request is
+     * for future data, no data will be fetched.
+     *
+     * @param permissionRequest for historical validated data
+     */
+    public void fetchHistoricalMeterReadings(DkEnerginetCustomerPermissionRequest permissionRequest) {
+        LocalDate end = permissionRequest.end();
+        LocalDate now = LocalDate.now(DK_ZONE_ID);
+        if (end != null && (end.isBefore(now) || end.isEqual(now))) {
+            fetch(permissionRequest, now);
         }
     }
 

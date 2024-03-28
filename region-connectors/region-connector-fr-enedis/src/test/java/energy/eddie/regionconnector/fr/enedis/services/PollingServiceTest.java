@@ -9,6 +9,8 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFac
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisAcceptedState;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.shared.services.FulfillmentService;
+import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -20,6 +22,7 @@ import reactor.test.scheduler.VirtualTimeScheduler;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -28,6 +31,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class PollingServiceTest {
+    private final MeterReadingPermissionUpdateAndFulfillmentService service =
+            new MeterReadingPermissionUpdateAndFulfillmentService(new FulfillmentService());
+
     @Test
     void fetchHistoricalMeterReadingsThrowsForbidden_revokesPermissionRequest() throws Exception {
         // Given
@@ -36,11 +42,17 @@ class PollingServiceTest {
                 .when(enedisApi).getConsumptionMeterReading(anyString(), any(), any(), any());
 
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, sink);
+        PollingService pollingService = new PollingService(enedisApi, service, sink);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
         StateBuilderFactory factory = new StateBuilderFactory();
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
+                                                                        "cid",
+                                                                        "dnid",
+                                                                        start,
+                                                                        end,
+                                                                        Granularity.P1D,
+                                                                        factory);
         request.changeState(new FrEnedisAcceptedState(request, factory));
         request.setUsagePointId("usagePointId");
 
@@ -58,15 +70,25 @@ class PollingServiceTest {
     void fetchHistoricalMeterReadingsThrowsOther_doesNotRevokePermissionRequest() throws Exception {
         // Given
         EnedisApi enedisApi = mock(EnedisApi.class);
-        doReturn(Mono.error(WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR.value(), "", null, null, null)))
+        doReturn(Mono.error(WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                                                              "",
+                                                              null,
+                                                              null,
+                                                              null)))
                 .when(enedisApi).getConsumptionMeterReading(anyString(), any(), any(), any());
 
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, sink);
+        PollingService pollingService = new PollingService(enedisApi, service, sink);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
         StateBuilderFactory factory = new StateBuilderFactory();
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
+                                                                        "cid",
+                                                                        "dnid",
+                                                                        start,
+                                                                        end,
+                                                                        Granularity.P1D,
+                                                                        factory);
         request.changeState(new FrEnedisAcceptedState(request, factory));
         request.setUsagePointId("usagePointId");
 
@@ -85,15 +107,35 @@ class PollingServiceTest {
         // Given
         EnedisApi enedisApi = mock(EnedisApi.class);
         when(enedisApi.getConsumptionMeterReading(anyString(), any(), any(), any()))
-                .thenReturn(Mono.error(WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(), "", null, null, null)))
-                .thenReturn(Mono.just(mock(MeterReading.class)));
+                .thenReturn(Mono.error(WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(),
+                                                                         "",
+                                                                         null,
+                                                                         null,
+                                                                         null)))
+                .thenReturn(Mono.just(
+                                    new MeterReading(
+                                            "usagePointId",
+                                            LocalDate.now(ZoneOffset.UTC),
+                                            LocalDate.now(ZoneOffset.UTC),
+                                            "BRUT",
+                                            null,
+                                            List.of()
+                                    )
+                            )
+                );
 
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, sink);
+        PollingService pollingService = new PollingService(enedisApi, service, sink);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(10);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
         StateBuilderFactory factory = new StateBuilderFactory();
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
+                                                                        "cid",
+                                                                        "dnid",
+                                                                        start,
+                                                                        end,
+                                                                        Granularity.P1D,
+                                                                        factory);
         request.changeState(new FrEnedisAcceptedState(request, factory));
         request.setUsagePointId("usagePointId");
 
@@ -104,11 +146,11 @@ class PollingServiceTest {
 
         // Then
         StepVerifier.withVirtualTime(sink::asFlux)
-                .thenAwait(Duration.ofMinutes(2))
-                .expectNextCount(1)
-                .then(sink::tryEmitComplete)
-                .expectComplete()
-                .verify(Duration.ofSeconds(5));
+                    .thenAwait(Duration.ofMinutes(2))
+                    .expectNextCount(1)
+                    .then(sink::tryEmitComplete)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(5));
         verify(enedisApi, times(2)).getConsumptionMeterReading(anyString(), any(), any(), any());
 
         // Clean-Up
@@ -124,11 +166,17 @@ class PollingServiceTest {
                 .when(enedisApi).getConsumptionMeterReading(anyString(), any(), any(), any());
 
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, sink);
+        PollingService pollingService = new PollingService(enedisApi, service, sink);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
         StateBuilderFactory factory = new StateBuilderFactory();
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
+                                                                        "cid",
+                                                                        "dnid",
+                                                                        start,
+                                                                        end,
+                                                                        Granularity.P1D,
+                                                                        factory);
         request.setUsagePointId("usagePointId");
 
         // When
@@ -147,11 +195,17 @@ class PollingServiceTest {
         // Given
         EnedisApi enedisApi = mock(EnedisApi.class);
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, sink);
+        PollingService pollingService = new PollingService(enedisApi, service, sink);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
         StateBuilderFactory factory = new StateBuilderFactory();
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.PT15M, factory);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
+                                                                        "cid",
+                                                                        "dnid",
+                                                                        start,
+                                                                        end,
+                                                                        Granularity.PT15M,
+                                                                        factory);
         request.setUsagePointId("usagePointId");
 
         // When

@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.shared.permission.requests.validation;
 
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -14,7 +14,7 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
     void notValid_whenFromAndToAreNotCompletelyInThePast() {
         // Given
         var validator = new CompletelyInThePastOrInTheFutureValidator<>();
-        TimeframedPermissionRequest permissionRequest = new SimpleTimeFramePermissionRequest(
+        PermissionRequest permissionRequest = new SimpleTimeFramePermissionRequest(
                 LocalDate.now(ZoneOffset.UTC).minusDays(5),
                 LocalDate.now(ZoneOffset.UTC).plusDays(5)
         );
@@ -36,7 +36,7 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
         LocalDate start = now.minusDays(11);
         LocalDate end = now.minusDays(1);
         var validator = new CompletelyInThePastOrInTheFutureValidator<>();
-        TimeframedPermissionRequest permissionRequest = new SimpleTimeFramePermissionRequest(start, end);
+        PermissionRequest permissionRequest = new SimpleTimeFramePermissionRequest(start, end);
 
         // When
         var res = validator.validate(permissionRequest);
@@ -51,7 +51,7 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
         LocalDate now = LocalDate.now(ZoneOffset.UTC);
         LocalDate start = now.plusDays(1);
         LocalDate end = now.plusDays(1);
-        TimeframedPermissionRequest permissionRequest = new SimpleTimeFramePermissionRequest(start, end);
+        PermissionRequest permissionRequest = new SimpleTimeFramePermissionRequest(start, end);
         var validator = new CompletelyInThePastOrInTheFutureValidator<>();
 
         // When
@@ -66,7 +66,7 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
         // Given
         LocalDate now = LocalDate.now(ZoneOffset.UTC);
         var validator = new CompletelyInThePastOrInTheFutureValidator<>();
-        TimeframedPermissionRequest permissionRequest = new SimpleTimeFramePermissionRequest(now, null);
+        PermissionRequest permissionRequest = new SimpleTimeFramePermissionRequest(now, null);
 
 
         // When
@@ -81,7 +81,7 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
         // Given
         LocalDate now = LocalDate.now(ZoneOffset.UTC);
         var validator = new CompletelyInThePastOrInTheFutureValidator<>();
-        TimeframedPermissionRequest permissionRequest = new SimpleTimeFramePermissionRequest(now.plusDays(10), null);
+        PermissionRequest permissionRequest = new SimpleTimeFramePermissionRequest(now.plusDays(10), null);
 
         // When
         var res = validator.validate(permissionRequest);
@@ -95,7 +95,7 @@ class CompletelyInThePastOrInTheFutureValidatorTest {
         // Given
         LocalDate now = LocalDate.now(ZoneOffset.UTC);
         var validator = new CompletelyInThePastOrInTheFutureValidator<>();
-        TimeframedPermissionRequest permissionRequest = new SimpleTimeFramePermissionRequest(now.minusDays(10), null);
+        PermissionRequest permissionRequest = new SimpleTimeFramePermissionRequest(now.minusDays(10), null);
 
         // When
         var res = validator.validate(permissionRequest);

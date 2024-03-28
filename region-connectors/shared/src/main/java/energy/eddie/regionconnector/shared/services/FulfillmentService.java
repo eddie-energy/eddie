@@ -1,29 +1,23 @@
 package energy.eddie.regionconnector.shared.services;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
-import energy.eddie.api.v0.RegionConnectorMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 
-public class FulfillmentService<T extends TimeframedPermissionRequest> {
+public class FulfillmentService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FulfillmentService.class);
-    private final String regionConnectorId;
-
-    public FulfillmentService(RegionConnectorMetadata regionConnectorMetadata) {
-        regionConnectorId = regionConnectorMetadata.id();
-    }
 
     /**
      * Checks if the permission request is fulfilled by the given date.
      *
      * @param permissionRequest the permission request
      * @param date              the date to check against
-     * @return true if {@code date} is after {@link TimeframedPermissionRequest#end()}
+     * @return true if {@code date} is after {@link PermissionRequest#end()}
      */
-    public boolean isPermissionRequestFulfilledByDate(T permissionRequest, LocalDate date) {
+    public boolean isPermissionRequestFulfilledByDate(PermissionRequest permissionRequest, LocalDate date) {
         return date.isAfter(permissionRequest.end());
     }
 
@@ -32,14 +26,22 @@ public class FulfillmentService<T extends TimeframedPermissionRequest> {
      *
      * @param permissionRequest the permission request
      */
-    public void tryFulfillPermissionRequest(T permissionRequest) {
-        var permissionId = permissionRequest.permissionId();
-        LOGGER.info("{}: Fulfilling permission request {}", regionConnectorId, permissionId);
+    public void tryFulfillPermissionRequest(PermissionRequest permissionRequest) {
+        LOGGER.atInfo()
+              .addArgument(() -> permissionRequest.dataSourceInformation().regionConnectorId())
+              .addArgument(permissionRequest::permissionId)
+              .log("{}: Fulfilling permission request {}");
         try {
             permissionRequest.fulfill();
-            LOGGER.info("{}: Permission request {} fulfilled", regionConnectorId, permissionId);
+            LOGGER.atInfo()
+                  .addArgument(() -> permissionRequest.dataSourceInformation().regionConnectorId())
+                  .addArgument(permissionRequest::permissionId)
+                  .log("{}: Permission request {} fulfilled");
         } catch (StateTransitionException e) {
-            LOGGER.error("{}: Error while fulfilling permission request {}", regionConnectorId, permissionId, e);
+            LOGGER.atError()
+                  .addArgument(() -> permissionRequest.dataSourceInformation().regionConnectorId())
+                  .addArgument(permissionRequest::permissionId)
+                  .log("{}: Error while fulfilling permission request {}", e);
         }
     }
 }

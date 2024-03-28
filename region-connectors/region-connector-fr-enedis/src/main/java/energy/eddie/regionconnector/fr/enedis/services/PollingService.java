@@ -1,9 +1,11 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,29 +22,43 @@ import java.time.temporal.ChronoUnit;
 
 @Service
 public class PollingService implements AutoCloseable {
-    public static final int MAXIMUM_PERMISSION_DURATION = 3;
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
-    public static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.backoff(10, Duration.ofMinutes(1)).filter(PollingService::isRetryable);
+    public static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.backoff(10, Duration.ofMinutes(1))
+                                                                   .filter(PollingService::isRetryable);
     private final EnedisApi enedisApi;
     private final Sinks.Many<IdentifiableMeterReading> meterReadings;
+    private final MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService;
 
-    public PollingService(EnedisApi enedisApi, Sinks.Many<IdentifiableMeterReading> meterReadings) {
+    public PollingService(
+            EnedisApi enedisApi,
+            MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService,
+            Sinks.Many<IdentifiableMeterReading> meterReadings
+    ) {
         this.enedisApi = enedisApi;
         this.meterReadings = meterReadings;
+        this.meterReadingPermissionUpdateAndFulfillmentService = meterReadingPermissionUpdateAndFulfillmentService;
     }
 
     /**
-     * Retries when the error is:
-     * - a 429 TooManyRequests
-     * - a 401 Unauthorized (i.e. when the token is expired)
+     * Retries when the error is: - a 429 TooManyRequests - a 401 Unauthorized (i.e. when the token is expired)
      */
     private static boolean isRetryable(Throwable e) {
         LOGGER.info("Checking if error is retryable", e);
         return e instanceof WebClientResponseException.TooManyRequests || e instanceof WebClientResponseException.Unauthorized;
     }
 
-    private static void handleError(FrEnedisPermissionRequest permissionRequest, LocalDate start, String permissionId, Throwable e, LocalDate finalEndOfDataRequest) {
-        LOGGER.error("Error while fetching data from ENEDIS for permissionId '{}' from '{}' to '{}'", permissionId, start, finalEndOfDataRequest, e);
+    private static void handleError(
+            FrEnedisPermissionRequest permissionRequest,
+            LocalDate start,
+            String permissionId,
+            Throwable e,
+            LocalDate finalEndOfDataRequest
+    ) {
+        LOGGER.error("Error while fetching data from ENEDIS for permissionId '{}' from '{}' to '{}'",
+                     permissionId,
+                     start,
+                     finalEndOfDataRequest,
+                     e);
         if (e instanceof WebClientResponseException.Forbidden) {
             LOGGER.warn("Revoking permission request for permissionId '{}'", permissionId);
             try {
@@ -55,37 +71,75 @@ public class PollingService implements AutoCloseable {
 
     public void fetchMeterReadings(FrEnedisPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
         String permissionId = permissionRequest.permissionId();
-        LOGGER.info("Preparing to fetch data from ENEDIS for permission request '{}' from '{}' to '{}' (inclusive)", permissionId, start, end);
+        LOGGER.info("Preparing to fetch data from ENEDIS for permission request '{}' from '{}' to '{}' (inclusive)",
+                    permissionId,
+                    start,
+                    end);
 
         // If the granularity is PT30M, we need to fetch the data in batches
         switch (permissionRequest.granularity()) {
             case PT30M -> fetchDataInBatches(permissionRequest, start, end)
-                    .doOnComplete(() -> LOGGER.info("Finished fetching half hourly data from ENEDIS for permission request '{}'", permissionId))
-                    .subscribe(identifiableMeterReading -> {
-                        LOGGER.info("Fetched half hourly data from ENEDIS for permission request '{}'", permissionId);
-                        meterReadings.emitNext(identifiableMeterReading, Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
-                    });
+                    .doOnComplete(() -> LOGGER.info(
+                            "Finished fetching half hourly data from ENEDIS for permission request '{}'",
+                            permissionId))
+                    .subscribe(identifiableMeterReading -> handleIdentifiableMeterReading(
+                                       Granularity.PT30M,
+                                       permissionRequest,
+                                       identifiableMeterReading
+                               )
+                    );
             case P1D -> fetchData(permissionRequest, start, end)
-                    .subscribe(identifiableMeterReading -> {
-                        LOGGER.info("Fetched daily data from ENEDIS for permission request '{}'", permissionId);
-                        meterReadings.emitNext(identifiableMeterReading, Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
-                    });
+                    .subscribe(identifiableMeterReading -> handleIdentifiableMeterReading(
+                                       Granularity.P1D,
+                                       permissionRequest,
+                                       identifiableMeterReading
+                               )
+                    );
             default -> throw new IllegalStateException("Unsupported granularity: " + permissionRequest.granularity());
         }
     }
 
-    private Mono<IdentifiableMeterReading> fetchData(FrEnedisPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
+    private void handleIdentifiableMeterReading(
+            Granularity granularity,
+            FrEnedisPermissionRequest permissionRequest,
+            IdentifiableMeterReading identifiableMeterReading
+    ) {
+        LOGGER.atInfo()
+              .addArgument(granularity)
+              .addArgument(permissionRequest::permissionId)
+              .log("Fetched data with {} granularity from ENEDIS for permission request '{}'");
+
+        meterReadingPermissionUpdateAndFulfillmentService.tryUpdateAndFulfillPermissionRequest(
+                permissionRequest,
+                identifiableMeterReading
+        );
+        meterReadings.emitNext(identifiableMeterReading,
+                               Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
+    }
+
+    private Mono<IdentifiableMeterReading> fetchData(
+            FrEnedisPermissionRequest permissionRequest,
+            LocalDate start,
+            LocalDate end
+    ) {
         String permissionId = permissionRequest.permissionId();
         LOGGER.info("Fetching data from ENEDIS for permissionId '{}' from '{}' to '{}'", permissionId, start, end);
         // Make the API call for this batch
-        return Mono.defer(() -> enedisApi.getConsumptionMeterReading(permissionRequest.usagePointId().orElseThrow(), start, end, permissionRequest.granularity()))
-                .retryWhen(RETRY_BACKOFF_SPEC)
-                .doOnError(e -> handleError(permissionRequest, start, permissionId, e, end))
-                .map(meterReading -> new IdentifiableMeterReading(permissionRequest, meterReading));
+        return Mono.defer(() -> enedisApi.getConsumptionMeterReading(permissionRequest.usagePointId().orElseThrow(),
+                                                                     start,
+                                                                     end,
+                                                                     permissionRequest.granularity()))
+                   .retryWhen(RETRY_BACKOFF_SPEC)
+                   .doOnError(e -> handleError(permissionRequest, start, permissionId, e, end))
+                   .map(meterReading -> new IdentifiableMeterReading(permissionRequest, meterReading));
     }
 
 
-    private Flux<IdentifiableMeterReading> fetchDataInBatches(FrEnedisPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
+    private Flux<IdentifiableMeterReading> fetchDataInBatches(
+            FrEnedisPermissionRequest permissionRequest,
+            LocalDate start,
+            LocalDate end
+    ) {
         return calculateBatchDates(start, end)
                 .flatMap(batchStart -> {
                     // Calculate the end date for this batch, ensuring it's within the overall end date and not in the future
@@ -100,8 +154,8 @@ public class PollingService implements AutoCloseable {
         // the api allows for a maximum of 7 days per request, so we need to split the request into multiple batches
         long daysBetween = ChronoUnit.DAYS.between(start, end);
         return Flux.range(0, (int) Math.ceil(daysBetween / 7.0))
-                .map(start::plusWeeks)
-                .takeWhile(batchStart -> !batchStart.isAfter(end)); // Ensure not to exceed the end date
+                   .map(start::plusWeeks)
+                   .takeWhile(batchStart -> !batchStart.isAfter(end)); // Ensure not to exceed the end date
     }
 
     @Override

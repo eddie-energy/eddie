@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.shared.permission.requests;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
-import energy.eddie.regionconnector.shared.permission.requests.annotations.InvokeExtensions;
+import energy.eddie.api.agnostic.process.model.annotations.InvokeExtensions;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 
 import java.lang.reflect.InvocationHandler;
@@ -21,29 +21,34 @@ public class PermissionRequestProxy<T extends PermissionRequest> implements Invo
         }
     }
 
+    private void executeConsumers() {
+        consumers.forEach(consumer -> consumer.accept(delegate));
+    }
+
     /**
-     * This method will create a proxy instance of a permission request.
-     * The proxy adds extra functionality via extensions.
-     * It is unchecked for because of the reflection.
+     * This method will create a proxy instance of a permission request. The proxy adds extra functionality via
+     * extensions. It is unchecked for because of the reflection.
      *
      * @param delegate     the permission request that should be proxied
      * @param extensions   the extra functionality to extend the delegate with
      * @param clazz        the base class that the proxy should use
-     * @param creationInfo if the proxy should run the extensions upon creation or only when the proxied methods are called
+     * @param creationInfo if the proxy should run the extensions upon creation or only when the proxied methods are
+     *                     called
      * @param <T>          a type that is based on the permission request interface
      * @return a proxy object that adds functionality
      */
     @SuppressWarnings("unchecked")
-    public static <T extends PermissionRequest> T createProxy(T delegate, Set<Extension<T>> extensions, Class<T> clazz, CreationInfo creationInfo) {
+    public static <T extends PermissionRequest> T createProxy(
+            T delegate,
+            Set<Extension<T>> extensions,
+            Class<T> clazz,
+            CreationInfo creationInfo
+    ) {
         return (T) Proxy.newProxyInstance(
                 clazz.getClassLoader(),
                 new Class[]{clazz},
                 new PermissionRequestProxy<>(delegate, extensions, creationInfo)
         );
-    }
-
-    private static boolean isTransitionMethod(Method method) {
-        return Void.TYPE.equals(method.getReturnType()) && method.getParameterCount() == 0;
     }
 
     @Override
@@ -61,8 +66,8 @@ public class PermissionRequestProxy<T extends PermissionRequest> implements Invo
         }
     }
 
-    private void executeConsumers() {
-        consumers.forEach(consumer -> consumer.accept(delegate));
+    private static boolean isTransitionMethod(Method method) {
+        return Void.TYPE.equals(method.getReturnType()) && method.getParameterCount() == 0;
     }
 
     public enum CreationInfo {

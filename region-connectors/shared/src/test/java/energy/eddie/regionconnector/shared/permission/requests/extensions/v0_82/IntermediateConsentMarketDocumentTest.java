@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.TimeframedPermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.cmd.*;
@@ -42,7 +42,7 @@ class IntermediateConsentMarketDocumentTest {
         when(dataSourceInformation.permissionAdministratorId()).thenReturn("paID");
         when(dataSourceInformation.regionConnectorId()).thenReturn("rc");
 
-        var permissionRequest = mock(TimeframedPermissionRequest.class);
+        var permissionRequest = mock(PermissionRequest.class);
         when(permissionRequest.permissionId()).thenReturn("pid", "pid");
         when(permissionRequest.connectionId()).thenReturn("cid");
         when(permissionRequest.dataNeedId()).thenReturn("dnid");
@@ -51,7 +51,7 @@ class IntermediateConsentMarketDocumentTest {
         when(permissionRequest.start()).thenReturn(start);
         when(permissionRequest.end()).thenReturn(end);
         when(permissionRequest.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
-        IntermediateConsentMarketDocument<TimeframedPermissionRequest> csm = new IntermediateConsentMarketDocument<>(
+        IntermediateConsentMarketDocument<PermissionRequest> csm = new IntermediateConsentMarketDocument<>(
                 permissionRequest,
                 "customerId",
                 ignored -> Granularity.PT15M.name(),
@@ -84,7 +84,7 @@ class IntermediateConsentMarketDocumentTest {
         when(dataSourceInformation.permissionAdministratorId()).thenReturn("paID");
         when(dataSourceInformation.regionConnectorId()).thenReturn("rc");
 
-        var permissionRequest = mock(TimeframedPermissionRequest.class);
+        var permissionRequest = mock(PermissionRequest.class);
         when(permissionRequest.permissionId()).thenReturn("pid", "pid");
         when(permissionRequest.connectionId()).thenReturn("cid");
         when(permissionRequest.dataNeedId()).thenReturn("dnid");
@@ -93,7 +93,7 @@ class IntermediateConsentMarketDocumentTest {
         when(permissionRequest.start()).thenReturn(start);
         when(permissionRequest.end()).thenReturn(end);
         when(permissionRequest.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
-        IntermediateConsentMarketDocument<TimeframedPermissionRequest> csm = new IntermediateConsentMarketDocument<>(
+        IntermediateConsentMarketDocument<PermissionRequest> csm = new IntermediateConsentMarketDocument<>(
                 permissionRequest,
                 "customerId",
                 ignored -> Granularity.PT15M.name(),
@@ -112,9 +112,9 @@ class IntermediateConsentMarketDocumentTest {
                 () -> assertEquals(new EsmpDateTime(now).toString(), res.getCreatedDateTime()),
                 () -> assertEquals("dnid", res.getDescription()),
                 () -> assertEquals(RoleTypeList.PARTY_CONNECTED_TO_GRID,
-                        res.getSenderMarketParticipantMarketRoleType()),
+                                   res.getSenderMarketParticipantMarketRoleType()),
                 () -> assertEquals(RoleTypeList.PERMISSION_ADMINISTRATOR,
-                        res.getReceiverMarketParticipantMarketRoleType()),
+                                   res.getReceiverMarketParticipantMarketRoleType()),
                 () -> assertEquals(ProcessTypeList.ACCESS_TO_METERED_DATA, res.getProcessProcessType()),
                 () -> assertEquals(codingScheme, res.getSenderMarketParticipantMRID().getCodingScheme()),
                 () -> assertEquals("customerId", res.getSenderMarketParticipantMRID().getValue()),
@@ -124,27 +124,27 @@ class IntermediateConsentMarketDocumentTest {
                 () -> assertEquals(timeInterval.end(), res.getPeriodTimeInterval().getEnd()),
                 () -> assertEquals("pid", res.getPermissionList().getPermissions().getFirst().getPermissionMRID()),
                 () -> assertEquals(new EsmpDateTime(now).toString(),
-                        res.getPermissionList().getPermissions().getFirst().getCreatedDateTime()),
+                                   res.getPermissionList().getPermissions().getFirst().getCreatedDateTime()),
                 () -> assertNull(res.getPermissionList().getPermissions().getFirst().getTransmissionSchedule()),
                 () -> assertEquals(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
-                        res.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID()
-                                .getCodingScheme()),
+                                   res.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID()
+                                      .getCodingScheme()),
                 () -> assertEquals("cid",
-                        res.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID()
-                                .getValue()),
+                                   res.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID()
+                                      .getValue()),
                 () -> assertNull(res.getPermissionList().getPermissions().getFirst().getReasonList()),
                 () -> assertNull(res.getPermissionList().getPermissions().getFirst().getTransmissionSchedule()),
                 () -> assertNotNull(res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
-                        .getMktActivityRecords().getFirst().getMRID()),
+                                       .getMktActivityRecords().getFirst().getMRID()),
                 () -> assertNotNull(res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
-                        .getMktActivityRecords().getFirst().getCreatedDateTime()),
+                                       .getMktActivityRecords().getFirst().getCreatedDateTime()),
                 () -> assertEquals("", res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
-                        .getMktActivityRecords().getFirst().getDescription()),
+                                          .getMktActivityRecords().getFirst().getDescription()),
                 () -> assertEquals("rc", res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
-                        .getMktActivityRecords().getFirst().getType()),
+                                            .getMktActivityRecords().getFirst().getType()),
                 () -> assertEquals(StatusTypeList.A107,
-                        res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
-                                .getMktActivityRecords().getFirst().getStatus())
+                                   res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
+                                      .getMktActivityRecords().getFirst().getStatus())
         );
     }
 }

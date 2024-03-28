@@ -28,23 +28,6 @@ class FutureDataServiceTest {
     @Mock
     private DataApiService dataApiService;
 
-    private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
-        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
-                "connectionId",
-                "dataNeedId",
-                "nif",
-                "meteringPointId");
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId", permissionRequestForCreation,
-                                                                             start,
-                                                                             end,
-                                                                             Granularity.PT1H,
-                                                                             stateBuilderFactory);
-        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
-        permissionRequest.setDistributorCodeAndPointType(DistributorCode.ASEME, 1);
-        return permissionRequest;
-    }
-
     @Test
     void fetchMeteringData_callsFetchDataForPermissionRequest_forWhenivePermissionRequest() {
         // Given
@@ -53,7 +36,9 @@ class FutureDataServiceTest {
         EsPermissionRequest inactivePermissionRequest = acceptedPermissionRequest(today, today);
 
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
-        when(permissionRequestService.getAllAcceptedPermissionRequests()).thenReturn(Stream.of(activePermissionRequest1, activePermissionRequest2, inactivePermissionRequest));
+        when(permissionRequestService.getAllAcceptedPermissionRequests()).thenReturn(Stream.of(activePermissionRequest1,
+                                                                                               activePermissionRequest2,
+                                                                                               inactivePermissionRequest));
 
 
         FutureDataService futureDataService = new FutureDataService(permissionRequestService, dataApiService);
@@ -67,12 +52,32 @@ class FutureDataServiceTest {
         verifyNoMoreInteractions(dataApiService);
     }
 
+    private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
+        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
+        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
+                "connectionId",
+                "dataNeedId",
+                "nif",
+                "meteringPointId");
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
+                                                                             permissionRequestForCreation,
+                                                                             start,
+                                                                             end,
+                                                                             Granularity.PT1H,
+                                                                             stateBuilderFactory);
+        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
+                                                         .build());
+        permissionRequest.setDistributorCodeAndPointType(DistributorCode.ASEME, 1);
+        return permissionRequest;
+    }
+
     @Test
     void fetchMeteringData_usesLastPulledMeterReading_ifBeforeYesterday() {
         // Given
         LocalDate lastPulledMeterReading = yesterday.minusDays(2);
-        EsPermissionRequest activePermissionRequest = acceptedPermissionRequest(lastPulledMeterReading.minusDays(2), yesterday);
-        activePermissionRequest.updateLastPulledMeterReading(lastPulledMeterReading);
+        EsPermissionRequest activePermissionRequest = acceptedPermissionRequest(lastPulledMeterReading.minusDays(2),
+                                                                                yesterday);
+        activePermissionRequest.updateLatestMeterReadingEndDate(lastPulledMeterReading);
 
         when(permissionRequestService.getAllAcceptedPermissionRequests()).thenReturn(Stream.of(activePermissionRequest));
 
@@ -82,7 +87,9 @@ class FutureDataServiceTest {
         futureDataService.fetchMeteringData();
 
         // Then
-        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest, lastPulledMeterReading, yesterday);
+        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest,
+                                                             lastPulledMeterReading,
+                                                             yesterday);
         verifyNoMoreInteractions(dataApiService);
     }
 
@@ -90,7 +97,7 @@ class FutureDataServiceTest {
     void fetchMeteringData_usesYesterday_ifLastPulledMeterReadingEqualYesterday() {
         // Given
         EsPermissionRequest activePermissionRequest = acceptedPermissionRequest(yesterday.minusDays(2), yesterday);
-        activePermissionRequest.updateLastPulledMeterReading(yesterday);
+        activePermissionRequest.updateLatestMeterReadingEndDate(yesterday);
 
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
         when(permissionRequestService.getAllAcceptedPermissionRequests()).thenReturn(Stream.of(activePermissionRequest));
