@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.at.eda.ponton.messages;
 
+import energy.eddie.regionconnector.at.eda.ponton.messages.cmnotification.EdaCMNotificationInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord.EdaConsumptionRecordInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.EdaMasterDataInboundMessageFactory;
 import org.slf4j.LoggerFactory;
@@ -17,19 +18,25 @@ public class InboundMessageFactoryCollection {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(InboundMessageFactoryCollection.class);
     private final List<EdaConsumptionRecordInboundMessageFactory> inboundConsumptionRecordFactories;
     private final List<EdaMasterDataInboundMessageFactory> inboundMasterDataFactories;
+    private final List<EdaCMNotificationInboundMessageFactory> inboundCMNotificationFactories;
     private EdaMasterDataInboundMessageFactory activeMasterDataFactory;
     private EdaConsumptionRecordInboundMessageFactory activeConsumptionRecordFactory;
+    private EdaCMNotificationInboundMessageFactory activeCMNotificationFactory;
 
     public InboundMessageFactoryCollection(
             List<EdaConsumptionRecordInboundMessageFactory> inboundConsumptionRecordFactories,
-            List<EdaMasterDataInboundMessageFactory> inboundMasterDataFactories
+            List<EdaMasterDataInboundMessageFactory> inboundMasterDataFactories,
+            List<EdaCMNotificationInboundMessageFactory> inboundCMNotificationFactories
     ) {
         this.inboundConsumptionRecordFactories = inboundConsumptionRecordFactories;
         this.inboundMasterDataFactories = inboundMasterDataFactories;
+        this.inboundCMNotificationFactories = inboundCMNotificationFactories;
         activeConsumptionRecordFactory = findActiveConsumptionRecordFactory()
                 .orElseThrow(() -> new IllegalStateException("No active EdaConsumptionRecordInboundMessageFactory found"));
         activeMasterDataFactory = findActiveMasterDataFactory()
                 .orElseThrow(() -> new IllegalStateException("No active EdaMasterDataInboundMessageFactory found"));
+        activeCMNotificationFactory = findActiveCMNotificationFactory()
+                .orElseThrow(() -> new IllegalStateException("No active EdaCMNotificationInboundMessageFactory found"));
     }
 
     private Optional<EdaConsumptionRecordInboundMessageFactory> findActiveConsumptionRecordFactory() {
@@ -46,6 +53,13 @@ public class InboundMessageFactoryCollection {
                                          .findFirst();
     }
 
+    private Optional<EdaCMNotificationInboundMessageFactory> findActiveCMNotificationFactory() {
+        LocalDate now = LocalDate.now(AT_ZONE_ID);
+        return inboundCMNotificationFactories.stream()
+                                             .filter(factory -> factory.isActive(now))
+                                             .findFirst();
+    }
+
     @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Vienna")
     public void updateActiveFactories() {
         LOGGER.info("Checking for active Factories");
@@ -59,6 +73,12 @@ public class InboundMessageFactoryCollection {
                 .ifPresentOrElse(
                         this::updateActiveMasterDataFactory,
                         () -> LOGGER.error("No active EdaMasterDataInboundMessageFactory found")
+                );
+
+        findActiveCMNotificationFactory()
+                .ifPresentOrElse(
+                        this::updateActiveCMNotificationFactory,
+                        () -> LOGGER.error("No active EdaCMNotificationInboundMessageFactory found")
                 );
     }
 
@@ -92,6 +112,21 @@ public class InboundMessageFactoryCollection {
         }
     }
 
+    private void updateActiveCMNotificationFactory(EdaCMNotificationInboundMessageFactory factory) {
+        if (activeCMNotificationFactory != factory) {
+            LOGGER.atInfo()
+                  .addArgument(() -> activeCMNotificationFactory.getClass().getSimpleName())
+                  .addArgument(() -> factory.getClass().getSimpleName())
+                  .log("Switching active EdaCMNotificationInboundMessageFactory from {} to {}");
+
+            activeCMNotificationFactory = factory;
+        } else {
+            LOGGER.atInfo()
+                  .addArgument(() -> factory.getClass().getSimpleName())
+                  .log("Active EdaCMNotificationInboundMessageFactory is still {}");
+        }
+    }
+
 
     public EdaMasterDataInboundMessageFactory activeMasterDataFactory() {
         return activeMasterDataFactory;
@@ -100,5 +135,9 @@ public class InboundMessageFactoryCollection {
 
     public EdaConsumptionRecordInboundMessageFactory activeConsumptionRecordFactory() {
         return activeConsumptionRecordFactory;
+    }
+
+    public EdaCMNotificationInboundMessageFactory activeCMNotificationFactory() {
+        return activeCMNotificationFactory;
     }
 }
