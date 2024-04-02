@@ -42,6 +42,11 @@ public class CMRequest01p10OutboundMessageFactory implements CMRequestOutboundMe
     }
 
     @Override
+    public boolean isActive(LocalDate date) {
+        return ACTIVE_UNTIL.isAfter(date) || ACTIVE_UNTIL.isEqual(date);
+    }
+
+    @Override
     public OutboundMessage createOutboundMessage(CCMORequest ccmoRequest) {
         var request = new CMRequest01p10(ccmoRequest).cmRequest();
         var outputStream = new ByteArrayOutputStream();
@@ -62,10 +67,5 @@ public class CMRequest01p10OutboundMessageFactory implements CMRequestOutboundMe
                 .setReceiverId(new ReceiverId(ccmoRequest.dsoId()))
                 .setMessageType(MESSAGETYPE)
                 .build();
-    }
-
-    @Override
-    public boolean isActive(LocalDate date) {
-        return ACTIVE_UNTIL.isAfter(date) || ACTIVE_UNTIL.isEqual(date);
     }
 }

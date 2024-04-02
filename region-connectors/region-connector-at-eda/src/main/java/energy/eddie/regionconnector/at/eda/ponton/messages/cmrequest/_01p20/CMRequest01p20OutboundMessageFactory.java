@@ -59,6 +59,7 @@ public class CMRequest01p20OutboundMessageFactory implements CMRequestOutboundMe
                 .build();
     }
 
+    @Override
     public boolean isActive(LocalDate date) {
         return !ACTIVE_FROM.isAfter(date);
     }
