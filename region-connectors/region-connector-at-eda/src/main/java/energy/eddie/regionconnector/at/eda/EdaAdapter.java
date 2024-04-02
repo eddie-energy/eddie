@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.at.eda;
 
 import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
-import at.ebutilities.schemata.customerprocesses.masterdata._01p30.MasterData;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
@@ -37,9 +37,9 @@ public interface EdaAdapter extends AutoCloseable {
 
 
     /**
-     * Returns a stream of MasterData objects that contain information regarding metering points and their owners.
+     * Returns a stream of EdaMasterData objects that contain information regarding metering points and their owners.
      */
-    Flux<MasterData> getMasterDataStream();
+    Flux<EdaMasterData> getMasterDataStream();
 
 
     /**

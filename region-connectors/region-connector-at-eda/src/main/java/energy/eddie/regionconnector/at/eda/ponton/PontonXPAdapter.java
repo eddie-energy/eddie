@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.at.eda.ponton;
 import at.ebutilities.schemata.customerconsent.cmnotification._01p11.CMNotification;
 import at.ebutilities.schemata.customerconsent.cmnotification._01p11.ResponseDataType;
 import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
-import at.ebutilities.schemata.customerprocesses.masterdata._01p30.MasterData;
 import de.ponton.xp.adapter.api.ConnectionException;
 import de.ponton.xp.adapter.api.MessengerConnection;
 import de.ponton.xp.adapter.api.domainvalues.AdapterInfo;
@@ -16,6 +15,7 @@ import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.models.ResponseCode;
@@ -51,7 +51,7 @@ public class PontonXPAdapter implements EdaAdapter {
                                                                                 .unicast()
                                                                                 .onBackpressureBuffer();
     private final Sinks.Many<CMRevoke> cmRevokeSink = Sinks.many().multicast().onBackpressureBuffer();
-    private final Sinks.Many<MasterData> masterDataSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<EdaMasterData> masterDataSink = Sinks.many().multicast().onBackpressureBuffer();
     private final PontonXPAdapterConfiguration config;
     private final Jaxb2Marshaller jaxb2Marshaller;
     private final OutboundMessageFactoryCollection outboundMessageFactoryCollection;
@@ -251,11 +251,12 @@ public class PontonXPAdapter implements EdaAdapter {
 
     private InboundMessageStatusUpdate handleMasterDataMessage(InboundMessage inboundMessage) throws IOException {
         try (InputStream inputStream = inboundMessage.createInputStream()) {
-            var masterData = (MasterData) jaxb2Marshaller.unmarshal(new StreamSource(inputStream));
+            var masterData = inboundMessageFactoryCollection.activeMasterDataFactory()
+                                                            .parseInputStream(inputStream);
             masterDataSink.tryEmitNext(masterData);
-
-            LOGGER.info("Received master data with ConversationId '{}'",
-                        masterData.getProcessDirectory().getConversationId());
+            LOGGER.atInfo()
+                  .addArgument(masterData::conversationId)
+                  .log("Received master data with ConversationId '{}'");
 
             return InboundMessageStatusUpdate.newBuilder()
                                              .setInboundMessage(inboundMessage)
@@ -335,7 +336,7 @@ public class PontonXPAdapter implements EdaAdapter {
     }
 
     @Override
-    public Flux<MasterData> getMasterDataStream() {
+    public Flux<EdaMasterData> getMasterDataStream() {
         return masterDataSink.asFlux();
     }
 
