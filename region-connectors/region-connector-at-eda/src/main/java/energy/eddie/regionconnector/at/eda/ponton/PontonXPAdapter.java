@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.at.eda.ponton;
 
-import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
 import de.ponton.xp.adapter.api.ConnectionException;
 import de.ponton.xp.adapter.api.MessengerConnection;
 import de.ponton.xp.adapter.api.domainvalues.AdapterInfo;
@@ -12,6 +11,7 @@ import de.ponton.xp.adapter.api.messages.OutboundMessageStatusUpdate;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
+import energy.eddie.regionconnector.at.eda.dto.EdaCMRevoke;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.dto.ResponseData;
@@ -23,14 +23,13 @@ import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactor
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
 import jakarta.validation.constraints.NotNull;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.oxm.XmlMappingException;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,22 +48,19 @@ public class PontonXPAdapter implements EdaAdapter {
     private final Sinks.Many<EdaConsumptionRecord> consumptionRecordSink = Sinks.many()
                                                                                 .unicast()
                                                                                 .onBackpressureBuffer();
-    private final Sinks.Many<CMRevoke> cmRevokeSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<EdaCMRevoke> cmRevokeSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<EdaMasterData> masterDataSink = Sinks.many().multicast().onBackpressureBuffer();
     private final PontonXPAdapterConfiguration config;
-    private final Jaxb2Marshaller jaxb2Marshaller;
     private final OutboundMessageFactoryCollection outboundMessageFactoryCollection;
     private final InboundMessageFactoryCollection inboundMessageFactoryCollection;
     private final MessengerConnection messengerConnection;
 
     public PontonXPAdapter(
             PontonXPAdapterConfiguration config,
-            Jaxb2Marshaller jaxb2Marshaller,
             OutboundMessageFactoryCollection outboundMessageFactoryCollection,
             InboundMessageFactoryCollection inboundMessageFactoryCollection
     ) throws IOException, ConnectionException {
         this.config = config;
-        this.jaxb2Marshaller = jaxb2Marshaller;
         this.outboundMessageFactoryCollection = outboundMessageFactoryCollection;
         this.inboundMessageFactoryCollection = inboundMessageFactoryCollection;
         final String adapterId = config.adapterId();
@@ -187,9 +183,12 @@ public class PontonXPAdapter implements EdaAdapter {
                 LOGGER.atInfo()
                       .addArgument(status::getStatus)
                       .addArgument(status::getCMRequestId)
+                      .addArgument(() -> status.getCMConsentId()
+                                               .map(consentId -> " (ConsentId '" + consentId + "')")
+                                               .orElse(Strings.EMPTY))
                       .addArgument(status::getConversationId)
                       .addArgument(status::getMessage)
-                      .log("Received CMNotification: {} for CMRequestId '{}' with ConversationId '{}', reason '{}'");
+                      .log("Received CMNotification: {} for CMRequestId '{}'{} with ConversationId '{}', reason '{}'");
             }
         }
 
@@ -238,12 +237,14 @@ public class PontonXPAdapter implements EdaAdapter {
     private InboundMessageStatusUpdate handleRevokeMessage(InboundMessage inboundMessage) throws IOException {
         try (InputStream inputStream = inboundMessage.createInputStream()) {
             // convert stream to consumption record
-            var cmRevoke = (CMRevoke) jaxb2Marshaller.unmarshal(new StreamSource(inputStream));
+            var cmRevoke = inboundMessageFactoryCollection.activeCMRevokeFactory()
+                                                          .parseInputStream(inputStream);
 
-            cmRevokeSink.tryEmitNext(cmRevoke);
-            LOGGER.info("Received revoke message for ConsentId '{}' with ConversationId '{}'",
-                        cmRevoke.getProcessDirectory().getMeteringPoint(),
-                        cmRevoke.getProcessDirectory().getConversationId());
+            cmRevokeSink.emitNext(cmRevoke, Sinks.EmitFailureHandler.busyLooping(Duration.ofSeconds(5)));
+            LOGGER.atInfo()
+                  .addArgument(cmRevoke::consentId)
+                  .addArgument(cmRevoke::consentEnd)
+                  .log("Received CMRevoke for ConsentId '{}' with ConsentEnd '{}'");
 
             return InboundMessageStatusUpdate.newBuilder()
                                              .setInboundMessage(inboundMessage)
@@ -282,7 +283,7 @@ public class PontonXPAdapter implements EdaAdapter {
     }
 
     @Override
-    public Flux<CMRevoke> getCMRevokeStream() {
+    public Flux<EdaCMRevoke> getCMRevokeStream() {
         return cmRevokeSink.asFlux();
     }
 

@@ -83,13 +83,11 @@ public class AtEdaBeanConfig {
     @Profile("!no-ponton")
     public EdaAdapter edaAdapter(
             PontonXPAdapterConfiguration configuration,
-            Jaxb2Marshaller jaxb2Marshaller,
             OutboundMessageFactoryCollection outboundMessageFactoryCollection,
             InboundMessageFactoryCollection inboundMessageFactoryCollection
     ) throws IOException, ConnectionException {
         return new PontonXPAdapter(
                 configuration,
-                jaxb2Marshaller,
                 outboundMessageFactoryCollection,
                 inboundMessageFactoryCollection
         );
