@@ -53,40 +53,44 @@ public class OutboundMessageFactoryCollection {
         LOGGER.info("Checking for active Factories");
         findActiveCMRequestFactory()
                 .ifPresentOrElse(
-                        factory -> {
-                            if (activeCmRequestFactory != factory) {
-                                LOGGER.atInfo()
-                                      .addArgument(() -> activeCmRequestFactory.getClass().getSimpleName())
-                                      .addArgument(() -> factory.getClass().getSimpleName())
-                                      .log("Switching active CMRequestOutboundMessageFactory from {} to {}");
-
-                                activeCmRequestFactory = factory;
-                            } else {
-                                LOGGER.atInfo()
-                                      .addArgument(() -> factory.getClass().getSimpleName())
-                                      .log("Active CMRequestOutboundMessageFactory is still {}");
-                            }
-                        },
+                        this::updateActiveCMRequestOutboundMessageFactory,
                         () -> LOGGER.error("No active CMRequestOutboundMessageFactory found")
                 );
 
         findActiveCMRevokeFactory().ifPresentOrElse(
-                factory -> {
-                    if (activeCmRevokeFactory != factory) {
-                        LOGGER.atInfo()
-                              .addArgument(() -> activeCmRevokeFactory.getClass().getSimpleName())
-                              .addArgument(() -> factory.getClass().getSimpleName())
-                              .log("Switching active CMRevokeOutboundMessageFactory from {} to {}");
-
-                        activeCmRevokeFactory = factory;
-                    } else {
-                        LOGGER.atInfo()
-                              .addArgument(() -> factory.getClass().getSimpleName())
-                              .log("Active CMRevokeOutboundMessageFactory is still {}");
-                    }
-                },
+                this::updateActiveCMRevokeOutboundMessageFactory,
                 () -> LOGGER.error("No active CMRevokeOutboundMessageFactory found")
         );
+    }
+
+    private void updateActiveCMRequestOutboundMessageFactory(CMRequestOutboundMessageFactory factory) {
+        if (activeCmRequestFactory != factory) {
+            LOGGER.atInfo()
+                  .addArgument(() -> activeCmRequestFactory.getClass().getSimpleName())
+                  .addArgument(() -> factory.getClass().getSimpleName())
+                  .log("Switching active CMRequestOutboundMessageFactory from {} to {}");
+
+            activeCmRequestFactory = factory;
+        } else {
+            LOGGER.atInfo()
+                  .addArgument(() -> factory.getClass().getSimpleName())
+                  .log("Active CMRequestOutboundMessageFactory is still {}");
+        }
+    }
+
+    private void updateActiveCMRevokeOutboundMessageFactory(CMRevokeOutboundMessageFactory factory) {
+        if (activeCmRevokeFactory != factory) {
+            LOGGER.atInfo()
+                  .addArgument(() -> activeCmRevokeFactory.getClass().getSimpleName())
+                  .addArgument(() -> factory.getClass().getSimpleName())
+                  .log("Switching active CMRevokeOutboundMessageFactory from {} to {}");
+
+            activeCmRevokeFactory = factory;
+        } else {
+            LOGGER.atInfo()
+                  .addArgument(() -> factory.getClass().getSimpleName())
+                  .log("Active CMRevokeOutboundMessageFactory is still {}");
+        }
     }
 
     public CMRequestOutboundMessageFactory activeCmRequestFactory() {

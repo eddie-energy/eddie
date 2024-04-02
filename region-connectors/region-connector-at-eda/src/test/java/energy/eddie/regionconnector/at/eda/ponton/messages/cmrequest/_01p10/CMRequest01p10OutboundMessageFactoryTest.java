@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p10;
 
+import energy.eddie.regionconnector.at.eda.ponton.messages.InactiveOutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.MarshallerConfig;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactoryTest;
@@ -19,11 +20,15 @@ class CMRequest01p10OutboundMessageFactoryTest extends CMRequestOutboundMessageF
 
     @Override
     protected CMRequestOutboundMessageFactory factory() {
-        return new CMRequest01p10OutboundMessageFactory(marshaller);
+        try {
+            return new CMRequest01p10OutboundMessageFactory(marshaller);
+        } catch (InactiveOutboundMessageFactory e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
-    void isActive_on_07_04_2024_returnsTrue() {
+    void isActive_on_07_04_2024_returnsTrue() throws InactiveOutboundMessageFactory {
         // given
         var factory = new CMRequest01p10OutboundMessageFactory(marshaller);
 
@@ -35,7 +40,7 @@ class CMRequest01p10OutboundMessageFactoryTest extends CMRequestOutboundMessageF
     }
 
     @Test
-    void isActive_on_08_04_2024_returnsFalse() {
+    void isActive_on_08_04_2024_returnsFalse() throws InactiveOutboundMessageFactory {
         // given
         var factory = new CMRequest01p10OutboundMessageFactory(marshaller);
 

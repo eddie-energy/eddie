@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p10;
 import de.ponton.xp.adapter.api.domainvalues.*;
 import de.ponton.xp.adapter.api.messages.OutboundMessage;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
+import energy.eddie.regionconnector.at.eda.ponton.messages.InactiveOutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
@@ -20,10 +21,10 @@ import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_
 @SuppressWarnings("DuplicatedCode")
 public class CMRequest01p10OutboundMessageFactory implements CMRequestOutboundMessageFactory {
     /**
-     * The active till date of the message. After this date the message is not valid anymore.
+     * The date until which this message is active. After this date the message is not valid anymore.
      * <p>From <a href="https://www.ebutilities.at/schemas/149">ebutilities</a>
      */
-    private static final LocalDate ACTIVE_TILL = LocalDate.of(2024, 4, 7);
+    private static final LocalDate ACTIVE_UNTIL = LocalDate.of(2024, 4, 7);
     private static final MessageType MESSAGETYPE = new MessageType.MessageTypeBuilder()
             .setSchemaSet(new SchemaSet("CM_REQ_ONL_01.10"))
             .setVersion(new MessageTypeVersion("01.10"))
@@ -33,10 +34,10 @@ public class CMRequest01p10OutboundMessageFactory implements CMRequestOutboundMe
             .build();
     private final Jaxb2Marshaller marshaller;
 
-    public CMRequest01p10OutboundMessageFactory(Jaxb2Marshaller marshaller) {
+    public CMRequest01p10OutboundMessageFactory(Jaxb2Marshaller marshaller) throws InactiveOutboundMessageFactory {
         this.marshaller = marshaller;
         if (!isActive(LocalDate.now(AT_ZONE_ID))) {
-            throw new IllegalStateException("CMRequest01p10OutboundMessageFactory is not active anymore");
+            throw new InactiveOutboundMessageFactory(CMRequest01p10OutboundMessageFactory.class);
         }
     }
 
@@ -65,6 +66,6 @@ public class CMRequest01p10OutboundMessageFactory implements CMRequestOutboundMe
 
     @Override
     public boolean isActive(LocalDate date) {
-        return ACTIVE_TILL.isAfter(date) || ACTIVE_TILL.isEqual(date);
+        return ACTIVE_UNTIL.isAfter(date) || ACTIVE_UNTIL.isEqual(date);
     }
 }

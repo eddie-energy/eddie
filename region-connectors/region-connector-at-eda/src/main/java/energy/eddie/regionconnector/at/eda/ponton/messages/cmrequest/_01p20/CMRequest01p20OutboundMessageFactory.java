@@ -14,13 +14,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.time.LocalDate;
 
-import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
-
 @Component
 @SuppressWarnings("DuplicatedCode")
 public class CMRequest01p20OutboundMessageFactory implements CMRequestOutboundMessageFactory {
     /**
-     * The active till date of the message. After this date the message is not valid anymore.
+     * The active from date of the message. The message is active from this date.
      * <p>From <a href="https://www.ebutilities.at/schemas/161">ebutilities</a>
      */
     private static final LocalDate ACTIVE_FROM = LocalDate.of(2024, 4, 8);
@@ -36,9 +34,6 @@ public class CMRequest01p20OutboundMessageFactory implements CMRequestOutboundMe
 
     public CMRequest01p20OutboundMessageFactory(Jaxb2Marshaller marshaller) {
         this.marshaller = marshaller;
-        if (isActive(LocalDate.now(AT_ZONE_ID))) {
-            throw new IllegalStateException("CMRequest01p10OutboundMessageFactory is not active anymore");
-        }
     }
 
     @Override
