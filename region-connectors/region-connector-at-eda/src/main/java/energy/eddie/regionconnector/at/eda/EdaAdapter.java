@@ -43,18 +43,18 @@ public interface EdaAdapter extends AutoCloseable {
 
 
     /**
-     * This method sends a CMRequest to EDA. A CMRequest can be used to request either metering or master data.
+     * This method sends a CCMORequest to EDA. A CCORequest can be used to request either metering or master data.
      *
-     * @param request The CMRequest message that should be sent to EDA.
+     * @param request The CCMORequest message that should be sent to EDA.
      * @throws TransmissionException If the request could not be sent. Reasons can be a connection error or a malformed
      *                               request.
      */
     void sendCMRequest(CCMORequest request) throws TransmissionException;
 
     /**
-     * This method sends a CMRevoke to EDA. A CMRevoke can be used to revoke an active permission/consent.
+     * This method sends a CCMORevoke to EDA. A CCMORevoke can be used to revoke an active permission/consent.
      *
-     * @param revoke The CMRevoke message that should be sent to EDA.
+     * @param revoke The CCMORevoke message that should be sent to EDA.
      * @throws TransmissionException If the request could not be sent. Reasons can be a connection error or a malformed
      *                               request.
      */
