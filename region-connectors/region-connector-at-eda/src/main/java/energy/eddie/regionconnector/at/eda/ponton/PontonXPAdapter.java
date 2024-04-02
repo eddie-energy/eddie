@@ -1,7 +1,5 @@
 package energy.eddie.regionconnector.at.eda.ponton;
 
-import at.ebutilities.schemata.customerconsent.cmnotification._01p11.CMNotification;
-import at.ebutilities.schemata.customerconsent.cmnotification._01p11.ResponseDataType;
 import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
 import de.ponton.xp.adapter.api.ConnectionException;
 import de.ponton.xp.adapter.api.MessengerConnection;
@@ -16,6 +14,7 @@ import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
+import energy.eddie.regionconnector.at.eda.dto.ResponseData;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.models.ResponseCode;
@@ -36,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +45,6 @@ public class PontonXPAdapter implements EdaAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(PontonXPAdapter.class);
     private static final String PONTON_HOST = "pontonHost";
     private static final int PING_TIMEOUT = 2000;
-    private static final String CM_NOTIFICATION_PROCESSED = "CMNotification processed";
     private final Sinks.Many<CMRequestStatus> requestStatusSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<EdaConsumptionRecord> consumptionRecordSink = Sinks.many()
                                                                                 .unicast()
@@ -103,9 +102,12 @@ public class PontonXPAdapter implements EdaAdapter {
 
         try {
             return switch (messageType) {
-                case MessageCodes.Notification.ANSWER -> handleCMNotificationMessage(inboundMessage);
-                case MessageCodes.Notification.ACCEPT -> handleCMAcceptNotificationMessage(inboundMessage);
-                case MessageCodes.Notification.REJECT -> handleCMRejectNotificationMessage(inboundMessage);
+                case MessageCodes.Notification.ANSWER ->
+                        handleCMNotificationMessage(inboundMessage, CMRequestStatus.Status.DELIVERED);
+                case MessageCodes.Notification.ACCEPT ->
+                        handleCMNotificationMessage(inboundMessage, CMRequestStatus.Status.ACCEPTED);
+                case MessageCodes.Notification.REJECT ->
+                        handleCMNotificationMessage(inboundMessage, CMRequestStatus.Status.REJECTED);
                 case MessageCodes.MASTER_DATA -> handleMasterDataMessage(inboundMessage);
                 case MessageCodes.CONSUMPTION_RECORD -> handleConsumptionRecordMessage(inboundMessage);
                 case MessageCodes.Revoke.CUSTOMER, MessageCodes.Revoke.IMPLICIT -> handleRevokeMessage(inboundMessage);
@@ -161,92 +163,41 @@ public class PontonXPAdapter implements EdaAdapter {
         }
     }
 
-    private InboundMessageStatusUpdate handleCMNotificationMessage(InboundMessage inboundMessage) throws IOException {
+    private InboundMessageStatusUpdate handleCMNotificationMessage(
+            InboundMessage inboundMessage,
+            CMRequestStatus.Status requestStatus
+    ) throws IOException {
         try (InputStream inputStream = inboundMessage.createInputStream()) {
-            var notification = (CMNotification) jaxb2Marshaller.unmarshal(new StreamSource(inputStream));
-            var cmRequestId = notification.getProcessDirectory().getCMRequestId();
-            ResponseDataType responseData = notification.getProcessDirectory().getResponseData().getFirst();
-            var meteringPoint = responseData.getMeteringPoint();
-            var responseCodes = responseData.getResponseCode();
+            var notification = inboundMessageFactoryCollection.activeCMNotificationFactory()
+                                                              .parseInputStream(inputStream);
 
-            var status = new CMRequestStatus(CMRequestStatus.Status.DELIVERED,
-                                             responseCodesToMessage(responseCodes, "CCMO request has been delivered."),
-                                             notification.getProcessDirectory().getConversationId());
-            status.setCmRequestId(cmRequestId);
-            status.setMeteringPoint(meteringPoint);
+            var cmRequestId = notification.cmRequestId();
+            var conversationId = notification.conversationId();
+            for (ResponseData responseData : notification.responseData()) {
+                var status = new CMRequestStatus(
+                        requestStatus,
+                        responseCodesToMessage(responseData.responseCodes()),
+                        conversationId
+                );
+                status.setCmRequestId(cmRequestId);
+                status.setMeteringPoint(responseData.meteringPoint());
+                status.setCmConsentId(responseData.consentId());
 
-            requestStatusSink.tryEmitNext(status);
-            LOGGER.info("Received CMNotification '{}' for CMRequestId '{}' with ConversationId '{}'",
-                        status.getStatus(),
-                        cmRequestId,
-                        status.getConversationId());
-
-            return InboundMessageStatusUpdate.newBuilder()
-                                             .setInboundMessage(inboundMessage)
-                                             .setStatus(InboundStatusEnum.SUCCESS)
-                                             .setStatusText(CM_NOTIFICATION_PROCESSED)
-                                             .build();
+                requestStatusSink.emitNext(status, Sinks.EmitFailureHandler.busyLooping(Duration.ofSeconds(5)));
+                LOGGER.atInfo()
+                      .addArgument(status::getStatus)
+                      .addArgument(status::getCMRequestId)
+                      .addArgument(status::getConversationId)
+                      .addArgument(status::getMessage)
+                      .log("Received CMNotification: {} for CMRequestId '{}' with ConversationId '{}', reason '{}'");
+            }
         }
-    }
 
-    private InboundMessageStatusUpdate handleCMAcceptNotificationMessage(InboundMessage inboundMessage) throws IOException {
-        try (InputStream inputStream = inboundMessage.createInputStream()) {
-            var notification = (CMNotification) jaxb2Marshaller.unmarshal(new StreamSource(inputStream));
-            var cmRequestId = notification.getProcessDirectory().getCMRequestId();
-            ResponseDataType responseData = notification.getProcessDirectory().getResponseData().getFirst();
-            var consentId = responseData.getConsentId();
-            var meteringPoint = responseData.getMeteringPoint();
-            var responseCodes = responseData.getResponseCode();
-
-            var status = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED,
-                                             responseCodesToMessage(responseCodes, "CCMO request has been accepted."),
-                                             notification.getProcessDirectory().getConversationId());
-            status.setCmConsentId(consentId);
-            status.setCmRequestId(cmRequestId);
-            status.setMeteringPoint(meteringPoint);
-
-            requestStatusSink.tryEmitNext(status);
-            LOGGER.info(
-                    "Received CMNotification: ACCEPTED for CMRequestId '{}' with ConversationId '{}' and ConsentId: '{}'",
-                    cmRequestId,
-                    status.getConversationId(),
-                    consentId);
-
-            return InboundMessageStatusUpdate.newBuilder()
-                                             .setInboundMessage(inboundMessage)
-                                             .setStatus(InboundStatusEnum.SUCCESS)
-                                             .setStatusText(CM_NOTIFICATION_PROCESSED)
-                                             .build();
-        }
-    }
-
-    private InboundMessageStatusUpdate handleCMRejectNotificationMessage(InboundMessage inboundMessage) throws IOException {
-        try (InputStream inputStream = inboundMessage.createInputStream()) {
-            var notification = (CMNotification) jaxb2Marshaller.unmarshal(new StreamSource(inputStream));
-            var cmRequestId = notification.getProcessDirectory().getCMRequestId();
-            var meteringPoint = notification.getProcessDirectory().getResponseData().getFirst().getMeteringPoint();
-
-            var responseCodes = notification.getProcessDirectory().getResponseData().getFirst().getResponseCode();
-            var reason = responseCodesToMessage(responseCodes, "DSO provided no reason for rejection.");
-
-            var status = new CMRequestStatus(CMRequestStatus.Status.REJECTED,
-                                             reason,
-                                             notification.getProcessDirectory().getConversationId());
-            status.setCmRequestId(cmRequestId);
-            status.setMeteringPoint(meteringPoint);
-
-            requestStatusSink.tryEmitNext(status);
-            LOGGER.info("Received CMNotification: REJECTED for CMRequestId '{}' with  ConversationId '{}', reason '{}'",
-                        cmRequestId,
-                        status.getConversationId(),
-                        reason);
-
-            return InboundMessageStatusUpdate.newBuilder()
-                                             .setInboundMessage(inboundMessage)
-                                             .setStatus(InboundStatusEnum.SUCCESS)
-                                             .setStatusText(CM_NOTIFICATION_PROCESSED)
-                                             .build();
-        }
+        return InboundMessageStatusUpdate.newBuilder()
+                                         .setInboundMessage(inboundMessage)
+                                         .setStatus(InboundStatusEnum.SUCCESS)
+                                         .setStatusText("CMNotification processed")
+                                         .build();
     }
 
     private InboundMessageStatusUpdate handleMasterDataMessage(InboundMessage inboundMessage) throws IOException {
@@ -303,12 +254,12 @@ public class PontonXPAdapter implements EdaAdapter {
     }
 
     @NotNull
-    private static String responseCodesToMessage(List<Integer> responseCodes, String defaultMessage) {
+    private static String responseCodesToMessage(List<Integer> responseCodes) {
         return responseCodes.stream()
                             .map(ResponseCode::new)
                             .map(ResponseCode::toString)
                             .reduce((a, b) -> a + ", " + b)
-                            .orElse(defaultMessage);
+                            .orElse("No response codes provided.");
     }
 
     @Override
