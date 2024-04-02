@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.at.eda;
 
 import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import at.ebutilities.schemata.customerprocesses.masterdata._01p30.MasterData;
 import energy.eddie.api.v0.HealthState;
+import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
@@ -25,10 +25,10 @@ public interface EdaAdapter extends AutoCloseable {
     Flux<CMRequestStatus> getCMRequestStatusStream();
 
     /**
-     * Returns a stream of ConsumptionRecord objects tha contain information regarding energy consumption for a specific
-     * metering point.
+     * Returns a stream of EdaConsumptionRecord objects tha contain information regarding energy consumption for a
+     * specific metering point.
      */
-    Flux<ConsumptionRecord> getConsumptionRecordStream();
+    Flux<EdaConsumptionRecord> getConsumptionRecordStream();
 
     /**
      * Returns a stream of CMRevoke objects that contain information regarding revoked permissions/consents.

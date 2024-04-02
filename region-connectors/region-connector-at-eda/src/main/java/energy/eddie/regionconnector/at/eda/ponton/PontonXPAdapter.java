@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.at.eda.ponton;
 import at.ebutilities.schemata.customerconsent.cmnotification._01p11.CMNotification;
 import at.ebutilities.schemata.customerconsent.cmnotification._01p11.ResponseDataType;
 import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import at.ebutilities.schemata.customerprocesses.masterdata._01p30.MasterData;
 import de.ponton.xp.adapter.api.ConnectionException;
 import de.ponton.xp.adapter.api.MessengerConnection;
@@ -16,9 +15,11 @@ import de.ponton.xp.adapter.api.messages.OutboundMessageStatusUpdate;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
+import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.models.ResponseCode;
+import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
@@ -46,22 +47,27 @@ public class PontonXPAdapter implements EdaAdapter {
     private static final int PING_TIMEOUT = 2000;
     private static final String CM_NOTIFICATION_PROCESSED = "CMNotification processed";
     private final Sinks.Many<CMRequestStatus> requestStatusSink = Sinks.many().multicast().onBackpressureBuffer();
-    private final Sinks.Many<ConsumptionRecord> consumptionRecordSink = Sinks.many().unicast().onBackpressureBuffer();
+    private final Sinks.Many<EdaConsumptionRecord> consumptionRecordSink = Sinks.many()
+                                                                                .unicast()
+                                                                                .onBackpressureBuffer();
     private final Sinks.Many<CMRevoke> cmRevokeSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<MasterData> masterDataSink = Sinks.many().multicast().onBackpressureBuffer();
     private final PontonXPAdapterConfiguration config;
     private final Jaxb2Marshaller jaxb2Marshaller;
     private final OutboundMessageFactoryCollection outboundMessageFactoryCollection;
+    private final InboundMessageFactoryCollection inboundMessageFactoryCollection;
     private final MessengerConnection messengerConnection;
 
     public PontonXPAdapter(
             PontonXPAdapterConfiguration config,
             Jaxb2Marshaller jaxb2Marshaller,
-            OutboundMessageFactoryCollection outboundMessageFactoryCollection
+            OutboundMessageFactoryCollection outboundMessageFactoryCollection,
+            InboundMessageFactoryCollection inboundMessageFactoryCollection
     ) throws IOException, ConnectionException {
         this.config = config;
         this.jaxb2Marshaller = jaxb2Marshaller;
         this.outboundMessageFactoryCollection = outboundMessageFactoryCollection;
+        this.inboundMessageFactoryCollection = inboundMessageFactoryCollection;
         final String adapterId = config.adapterId();
         final String adapterVersion = config.adapterVersion();
         final String hostname = config.hostname();
@@ -261,12 +267,13 @@ public class PontonXPAdapter implements EdaAdapter {
 
     private InboundMessageStatusUpdate handleConsumptionRecordMessage(InboundMessage inboundMessage) throws IOException {
         try (InputStream inputStream = inboundMessage.createInputStream()) {
-            var consumptionRecord = (ConsumptionRecord) jaxb2Marshaller.unmarshal(new StreamSource(inputStream));
+            var consumptionRecord = inboundMessageFactoryCollection.activeConsumptionRecordFactory()
+                                                                   .parseInputStream(inputStream);
             // the process is documented here https://www.ebutilities.at/prozesse/230
-            // we might have to create a ABLEHNUNG_CRMSG (CPNotification) if the message was not valid, see https://www.ebutilities.at/prozesse/230/marktnachrichten/615
             consumptionRecordSink.tryEmitNext(consumptionRecord);
-            LOGGER.info("Received consumption record with ConversationId '{}'",
-                        consumptionRecord.getProcessDirectory().getConversationId());
+            LOGGER.atInfo()
+                  .addArgument(consumptionRecord::conversationId)
+                  .log("ConsumptionRecord successfully delivered to backend with ConversationId '{}'");
 
             return InboundMessageStatusUpdate.newBuilder()
                                              .setInboundMessage(inboundMessage)
@@ -318,7 +325,7 @@ public class PontonXPAdapter implements EdaAdapter {
     }
 
     @Override
-    public Flux<ConsumptionRecord> getConsumptionRecordStream() {
+    public Flux<EdaConsumptionRecord> getConsumptionRecordStream() {
         return consumptionRecordSink.asFlux();
     }
 
