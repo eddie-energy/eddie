@@ -1,10 +1,11 @@
 package energy.eddie.regionconnector.at.eda.provider.v0;
 
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
+import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.SimpleEdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.processing.mvp1.Mvp1ConsumptionRecordMapper;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
@@ -18,7 +19,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class EdaMvp1ConsumptionRecordProviderTest {
-    private final ConsumptionRecord mockConsumptionRecord = mock(ConsumptionRecord.class);
+    private final EdaConsumptionRecord mockConsumptionRecord = new SimpleEdaConsumptionRecord();
 
     @Test
     void getConsumptionRecordStream_whenReceivingIdentifiableConsumptionRecordWithMultiplePermissions_publishesMultipleMvp1ConsumptionRecords() throws Exception {

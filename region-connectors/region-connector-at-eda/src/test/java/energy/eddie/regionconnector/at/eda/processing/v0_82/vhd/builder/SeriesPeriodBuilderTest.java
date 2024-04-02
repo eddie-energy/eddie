@@ -1,19 +1,18 @@
 package energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder;
 
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.Energy;
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.EnergyData;
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.EnergyPosition;
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.MeteringIntervall;
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.cim.v0_82.vhd.QualityTypeList;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
-import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
+import energy.eddie.regionconnector.at.eda.dto.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.List;
 
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static energy.eddie.regionconnector.shared.utils.EsmpDateTime.ESMP_DATE_TIME_MINUTE_FORMATTER;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,11 +27,11 @@ class SeriesPeriodBuilderTest {
 
     @Test
     void withEnergyData_setsPointList_asExpected() throws InvalidMappingException {
-        EnergyData energyData = new EnergyData()
-                .withEP(List.of(
-                        new EnergyPosition().withBQ(new BigDecimal(1)).withMM("L1"),
-                        new EnergyPosition().withBQ(new BigDecimal(2)).withMM("L2"),
-                        new EnergyPosition().withBQ(new BigDecimal(3)).withMM("L3")
+        EnergyData energyData = new SimpleEnergyData()
+                .setEnergyPositions(List.of(
+                        new EnergyPosition(new BigDecimal(1), "L1"),
+                        new EnergyPosition(new BigDecimal(2), "L2"),
+                        new EnergyPosition(new BigDecimal(3), "L3")
                 ));
 
         SeriesPeriodBuilder uut = new SeriesPeriodBuilder()
@@ -48,9 +47,9 @@ class SeriesPeriodBuilderTest {
 
     @Test
     void withEnergyData_withUnexpectedMeteringMethod_throwsInvalidMappingException() {
-        EnergyData energyData = new EnergyData()
-                .withEP(List.of(
-                        new EnergyPosition().withBQ(new BigDecimal(1)).withMM("unexpected")
+        EnergyData energyData = new SimpleEnergyData()
+                .setEnergyPositions(List.of(
+                        new EnergyPosition(new BigDecimal(1), "unexpected")
                 ));
 
         assertThrows(InvalidMappingException.class, () -> new SeriesPeriodBuilder().withEnergyData(energyData));
@@ -58,15 +57,15 @@ class SeriesPeriodBuilderTest {
 
     @Test
     void build_withValidEnergy_withValidEnergyData_returnsExpected() throws InvalidMappingException {
-        EnergyData energyData = new EnergyData()
-                .withEP(List.of(
-                        new EnergyPosition().withBQ(new BigDecimal(1)).withMM("L1")
+        EnergyData energyData = new SimpleEnergyData()
+                .setEnergyPositions(List.of(
+                        new EnergyPosition(new BigDecimal(1), "L1")
                 ));
-        LocalDateTime start = LocalDateTime.of(2021, 1, 1, 0, 0, 0);
-        Energy energy = new Energy()
-                .withMeteringIntervall(MeteringIntervall.D)
-                .withMeteringPeriodStart(DateTimeConverter.dateTimeToXml(start))
-                .withMeteringPeriodEnd(DateTimeConverter.dateTimeToXml(start.plusDays(1)));
+        ZonedDateTime start = ZonedDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.MIN, AT_ZONE_ID);
+        Energy energy = new SimpleEnergy()
+                .setGranularity(Granularity.P1D)
+                .setMeterReadingStart(start)
+                .setMeterReadingEnd(start.plusDays(1));
 
         SeriesPeriodBuilder uut = new SeriesPeriodBuilder().withEnergy(energy).withEnergyData(energyData);
         var seriesPeriod = uut.build();
@@ -77,74 +76,33 @@ class SeriesPeriodBuilderTest {
     @Test
     void withEnergy_withValidEnergy_setsTimeIntervalAsExpected() throws InvalidMappingException {
         // following this document https://www.ebutilities.at/documents/20220309103941_datentypen.pdf
-        LocalDateTime start = LocalDateTime.of(2021, 1, 1, 0, 0, 0);
-        LocalDateTime end = start.plusDays(1);
-        Energy energy = new Energy()
-                .withMeteringIntervall(MeteringIntervall.D)
-                .withMeteringPeriodStart(DateTimeConverter.dateTimeToXml(start))
-                .withMeteringPeriodEnd(DateTimeConverter.dateTimeToXml(end));
+        ZonedDateTime start = ZonedDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.MIN, AT_ZONE_ID);
+        ZonedDateTime end = start.plusDays(1);
+        Energy energy = new SimpleEnergy()
+                .setGranularity(Granularity.P1D)
+                .setMeterReadingStart(start)
+                .setMeterReadingEnd(end);
 
         SeriesPeriodBuilder uut = new SeriesPeriodBuilder().withEnergy(energy);
 
         var timeInterval = uut.build().getTimeInterval();
-        assertEquals(start, LocalDateTime.parse(timeInterval.getStart(), ESMP_DATE_TIME_MINUTE_FORMATTER));
-        assertEquals(end, LocalDateTime.parse(timeInterval.getEnd(), ESMP_DATE_TIME_MINUTE_FORMATTER));
+        assertEquals(start.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
+                     LocalDateTime.parse(timeInterval.getStart(), ESMP_DATE_TIME_MINUTE_FORMATTER));
+        assertEquals(end.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
+                     LocalDateTime.parse(timeInterval.getEnd(), ESMP_DATE_TIME_MINUTE_FORMATTER));
     }
 
-    @Test
-    void withEnergy_withDailyMeteringInterval_setsResolutionAsExpected() throws InvalidMappingException {
-        // following this document https://www.ebutilities.at/documents/20220309103941_datentypen.pdf
-        LocalDateTime start = LocalDateTime.of(2021, 1, 1, 0, 0, 0);
-        Energy energy = new Energy()
-                .withMeteringIntervall(MeteringIntervall.D)
-                .withMeteringPeriodStart(DateTimeConverter.dateTimeToXml(start))
-                .withMeteringPeriodEnd(DateTimeConverter.dateTimeToXml(start.plusDays(1)));
+    @ParameterizedTest
+    @EnumSource(Granularity.class)
+    void withEnergy_setsResolutionAsExpected(Granularity granularity) {
+        ZonedDateTime start = ZonedDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.MIN, AT_ZONE_ID);
+        Energy energy = new SimpleEnergy()
+                .setGranularity(granularity)
+                .setMeterReadingStart(start)
+                .setMeterReadingEnd(start.plusDays(1));
 
         SeriesPeriodBuilder uut = new SeriesPeriodBuilder().withEnergy(energy);
 
-        Duration resolution = Duration.parse(uut.build().getResolution());
-        assertEquals(Duration.ofDays(1), resolution);
-    }
-
-    @Test
-    void withEnergy_withQuarterHourlyMeteringInterval_setsResolutionAsExpected() throws InvalidMappingException {
-        // following this document https://www.ebutilities.at/documents/20220309103941_datentypen.pdf
-        LocalDateTime start = LocalDateTime.of(2021, 1, 1, 0, 0, 0);
-        Energy energy = new Energy()
-                .withMeteringIntervall(MeteringIntervall.QH)
-                .withMeteringPeriodStart(DateTimeConverter.dateTimeToXml(start))
-                .withMeteringPeriodEnd(DateTimeConverter.dateTimeToXml(start.plusDays(1)));
-
-        SeriesPeriodBuilder uut = new SeriesPeriodBuilder().withEnergy(energy);
-
-        Duration resolution = Duration.parse(uut.build().getResolution());
-        assertEquals(Duration.ofMinutes(15), resolution);
-    }
-
-    @Test
-    void withEnergy_withHourlyMeteringInterval_setsResolutionAsExpected() throws InvalidMappingException {
-        // following this document https://www.ebutilities.at/documents/20220309103941_datentypen.pdf
-        LocalDateTime start = LocalDateTime.of(2021, 1, 1, 0, 0, 0);
-        Energy energy = new Energy()
-                .withMeteringIntervall(MeteringIntervall.H)
-                .withMeteringPeriodStart(DateTimeConverter.dateTimeToXml(start))
-                .withMeteringPeriodEnd(DateTimeConverter.dateTimeToXml(start.plusDays(1)));
-
-        SeriesPeriodBuilder uut = new SeriesPeriodBuilder().withEnergy(energy);
-
-        Duration resolution = Duration.parse(uut.build().getResolution());
-        assertEquals(Duration.ofHours(1), resolution);
-    }
-
-    @Test
-    void withEnergy_withVariableMeteringInterval_throwsInvalidMappingException() {
-        // following this document https://www.ebutilities.at/documents/20220309103941_datentypen.pdf
-        LocalDateTime start = LocalDateTime.of(2021, 1, 1, 0, 0, 0);
-        Energy energy = new Energy()
-                .withMeteringIntervall(MeteringIntervall.V)
-                .withMeteringPeriodStart(DateTimeConverter.dateTimeToXml(start))
-                .withMeteringPeriodEnd(DateTimeConverter.dateTimeToXml(start.plusDays(1)));
-
-        assertThrows(InvalidMappingException.class, () -> new SeriesPeriodBuilder().withEnergy(energy));
+        assertEquals(granularity.name(), uut.build().getResolution());
     }
 }

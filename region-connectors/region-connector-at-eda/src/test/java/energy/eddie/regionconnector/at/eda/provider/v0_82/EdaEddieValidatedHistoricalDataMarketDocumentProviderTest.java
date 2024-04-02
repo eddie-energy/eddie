@@ -1,11 +1,12 @@
 package energy.eddie.regionconnector.at.eda.provider.v0_82;
 
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocument;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
+import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.SimpleEdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
@@ -32,7 +33,7 @@ class EdaEddieValidatedHistoricalDataMarketDocumentProviderTest {
                 createPermissionRequest(expectedString2),
                 createPermissionRequest(expectedString3)
         );
-        ConsumptionRecord consumptionRecord = new ConsumptionRecord();
+        EdaConsumptionRecord consumptionRecord = new SimpleEdaConsumptionRecord();
         ValidatedHistoricalDataMarketDocument validatedHistoricalDataMarketDocument = new ValidatedHistoricalDataMarketDocument();
 
         ValidatedHistoricalDataMarketDocumentDirector director = mock(ValidatedHistoricalDataMarketDocumentDirector.class);
@@ -80,7 +81,7 @@ class EdaEddieValidatedHistoricalDataMarketDocumentProviderTest {
     @Test
     void getEddieValidatedHistoricalDataMarketDocumentStream_whenDirectorThrows_emitsNothing() throws Exception {
         TestPublisher<IdentifiableConsumptionRecord> testPublisher = TestPublisher.create();
-        ConsumptionRecord consumptionRecord = new ConsumptionRecord();
+        EdaConsumptionRecord consumptionRecord = new SimpleEdaConsumptionRecord();
 
         ValidatedHistoricalDataMarketDocumentDirector director = mock(ValidatedHistoricalDataMarketDocumentDirector.class);
         when(director.createValidatedHistoricalDataMarketDocument(consumptionRecord))

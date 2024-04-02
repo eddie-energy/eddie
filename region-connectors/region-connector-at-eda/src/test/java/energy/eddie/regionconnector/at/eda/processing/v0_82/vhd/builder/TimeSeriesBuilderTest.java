@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder;
 
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
+import energy.eddie.regionconnector.at.eda.dto.*;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
 
@@ -26,51 +26,45 @@ class TimeSeriesBuilderTest {
     }
 
     @Test
-    void withProcessDirectory_setsDateAndMarketEvaluationPoint() {
+    void withConsumptionRecord_setsDateAndMarketEvaluationPoint() {
         String meteringPoint = "meteringPoint";
-        XMLGregorianCalendar processDate = DateTimeConverter.dateToXml(LocalDate.of(2023, 1, 1));
-        ProcessDirectory processDirectory = new ProcessDirectory()
-                .withProcessDate(processDate)
-                .withMeteringPoint(meteringPoint);
-
-        TimeSeriesBuilder uut = new TimeSeriesBuilder().withProcessDirectory(processDirectory);
-        var timeSeries = uut.build();
-
-        assertEquals(meteringPoint, timeSeries.getMarketEvaluationPointMRID().getValue());
-        assertEquals(processDate, timeSeries.getRegistrationDateAndOrTimeDateTime().getDate());
-    }
-
-    @Test
-    void withMarketParticipantDirectory_setsVersion() {
         String version = "version";
-        MarketParticipantDirectory marketParticipantDirectory = new MarketParticipantDirectory()
-                .withSchemaVersion(version);
+        XMLGregorianCalendar processDate = DateTimeConverter.dateToXml(LocalDate.of(2023, 1, 1));
+        EdaConsumptionRecord consumptionRecord = new SimpleEdaConsumptionRecord()
+                .setSchemaVersion(version)
+                .setProcessDate(processDate)
+                .setMeteringPoint(meteringPoint);
 
-        TimeSeriesBuilder uut = new TimeSeriesBuilder().withMarketParticipantDirectory(marketParticipantDirectory);
+        TimeSeriesBuilder uut = new TimeSeriesBuilder().withConsumptionRecord(consumptionRecord);
         var timeSeries = uut.build();
 
-        assertEquals(version, timeSeries.getVersion());
+        assertAll(
+                () -> assertEquals(meteringPoint, timeSeries.getMarketEvaluationPointMRID().getValue()),
+                () -> assertEquals(processDate, timeSeries.getRegistrationDateAndOrTimeDateTime().getDate()),
+                () -> assertEquals(version, timeSeries.getVersion())
+        );
     }
 
     @Test
     void withEnergy_setsReason() {
         String meteringReason = "meteringReason";
-        Energy energy = new Energy()
-                .withMeteringReason(meteringReason);
+        Energy energy = new SimpleEnergy()
+                .setMeteringReason(meteringReason);
 
         TimeSeriesBuilder uut = new TimeSeriesBuilder().withEnergy(energy);
         var timeSeries = uut.build();
 
         assertEquals(meteringReason, timeSeries.getReasonList().getReasons().getFirst().getText());
-        assertEquals(ReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED, timeSeries.getReasonList().getReasons().getFirst().getCode());
+        assertEquals(ReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED,
+                     timeSeries.getReasonList().getReasons().getFirst().getCode());
     }
 
     @Test
     void withEnergyData_withConsumptionMeterCode_setsMeteringInformation() throws InvalidMappingException {
         String meterCode = "1-1:1.9.0 P.01"; // Consumption meter
-        EnergyData energyData = new EnergyData()
-                .withMeterCode(meterCode)
-                .withUOM(UOMType.KWH);
+        EnergyData energyData = new SimpleEnergyData()
+                .setMeterCode(meterCode)
+                .setBillingUnit("KWH");
 
         TimeSeriesBuilder uut = new TimeSeriesBuilder().withEnergyData(energyData);
         var timeSeries = uut.build();
@@ -84,9 +78,9 @@ class TimeSeriesBuilderTest {
     @Test
     void withEnergyData_withProductionMeterCode_setsMeteringInformation() throws InvalidMappingException {
         String meterCode = "1-1:2.9.0 P.01"; // Production meter
-        EnergyData energyData = new EnergyData()
-                .withMeterCode(meterCode)
-                .withUOM(UOMType.MWH);
+        EnergyData energyData = new SimpleEnergyData()
+                .setMeterCode(meterCode)
+                .setBillingUnit("MWH");
 
         TimeSeriesBuilder uut = new TimeSeriesBuilder().withEnergyData(energyData);
         var timeSeries = uut.build();
@@ -100,9 +94,9 @@ class TimeSeriesBuilderTest {
     @Test
     void withEnergyData_withUnsupportedMeterCode_throwsInvalidMappingException() {
         String meterCode = "1-1:3.9.0 P.01";
-        EnergyData energyData = new EnergyData()
-                .withMeterCode(meterCode)
-                .withUOM(UOMType.MWH);
+        EnergyData energyData = new SimpleEnergyData()
+                .setMeterCode(meterCode)
+                .setBillingUnit("MWH");
 
         assertThrows(InvalidMappingException.class, () -> new TimeSeriesBuilder().withEnergyData(energyData));
     }
@@ -110,10 +104,9 @@ class TimeSeriesBuilderTest {
     @Test
     void withEnergyData_withUnsupportedUOMType_throwsInvalidMappingException() {
         String meterCode = "1-1:1.9.0 P.01";
-        EnergyData energyData = new EnergyData()
-                .withMeterCode(meterCode) // Consumption meter
-                .withUOM(UOMType.EUR);
-
+        EnergyData energyData = new SimpleEnergyData()
+                .setMeterCode(meterCode)
+                .setBillingUnit("EUR");
         assertThrows(InvalidMappingException.class, () -> new TimeSeriesBuilder().withEnergyData(energyData));
     }
 

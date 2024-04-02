@@ -4,6 +4,8 @@ import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
+import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._01p31.EdaConsumptionRecord01p31;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Sinks;
@@ -31,7 +33,7 @@ class IdentifiableConsumptionRecordServiceTest {
         var identifiableConsumptionRecord = createConsumptionRecord(identifiableMeteringPoint);
         var unidentifiableConsumptionRecord = createConsumptionRecord(unidentifiableMeteringPoint);
 
-        TestPublisher<ConsumptionRecord> testPublisher = TestPublisher.create();
+        TestPublisher<EdaConsumptionRecord> testPublisher = TestPublisher.create();
         var repository = mock(AtPermissionRequestRepository.class);
         when(repository.findAcceptedAndFulfilledByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any()))
                 .thenReturn(List.of(
@@ -56,7 +58,7 @@ class IdentifiableConsumptionRecordServiceTest {
                     .verify(Duration.ofSeconds(2));
     }
 
-    private ConsumptionRecord createConsumptionRecord(String meteringPoint) {
+    private EdaConsumptionRecord createConsumptionRecord(String meteringPoint) {
         var meteringType = "L1";
         var consumptionValue = 10;
         var meteringInterval = MeteringIntervall.QH;
@@ -69,7 +71,7 @@ class IdentifiableConsumptionRecordServiceTest {
                                        unit);
     }
 
-    private ConsumptionRecord createConsumptionRecord(
+    private EdaConsumptionRecord createConsumptionRecord(
             String meteringPoint,
             String meteringType,
             ZonedDateTime meteringPeriodStart,
@@ -94,7 +96,7 @@ class IdentifiableConsumptionRecordServiceTest {
         energyData.getEP().add(energyPosition);
         energy.getEnergyData().add(energyData);
         processDirectory.getEnergy().add(energy);
-        return edaCR;
+        return new EdaConsumptionRecord01p31(edaCR);
     }
 
     @Test
@@ -102,7 +104,7 @@ class IdentifiableConsumptionRecordServiceTest {
         String identifiableMeteringPoint = "identifiableMeteringPoint";
         var identifiableConsumptionRecord = createConsumptionRecord(identifiableMeteringPoint);
 
-        Sinks.Many<ConsumptionRecord> testPublisher = Sinks.many().unicast().onBackpressureBuffer();
+        Sinks.Many<EdaConsumptionRecord> testPublisher = Sinks.many().unicast().onBackpressureBuffer();
         var repository = mock(AtPermissionRequestRepository.class);
         when(repository.findAcceptedAndFulfilledByMeteringPointIdAndDate(eq(identifiableMeteringPoint), any()))
                 .thenReturn(List.of(
