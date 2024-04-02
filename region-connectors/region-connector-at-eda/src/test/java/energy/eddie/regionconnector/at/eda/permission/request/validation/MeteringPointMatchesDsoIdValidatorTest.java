@@ -8,7 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 
-import static energy.eddie.regionconnector.at.eda.requests.CCMORequest.DSO_ID_LENGTH;
+import static energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint.DSO_ID_LENGTH;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MeteringPointMatchesDsoIdValidatorTest {
@@ -80,5 +80,4 @@ class MeteringPointMatchesDsoIdValidatorTest {
                 () -> assertEquals("meteringPointId", res.getFirst().name())
         );
     }
-
 }

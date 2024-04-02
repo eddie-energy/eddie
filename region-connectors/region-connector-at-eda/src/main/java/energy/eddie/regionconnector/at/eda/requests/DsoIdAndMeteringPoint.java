@@ -7,6 +7,8 @@ import java.util.Optional;
 import static java.util.Objects.requireNonNull;
 
 public class DsoIdAndMeteringPoint {
+    public static final int DSO_ID_LENGTH = 8;
+
 
     @Nullable
     private final String meteringPoint;

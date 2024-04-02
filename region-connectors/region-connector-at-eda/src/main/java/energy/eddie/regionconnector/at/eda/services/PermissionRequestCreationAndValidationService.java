@@ -25,6 +25,7 @@ import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
 import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
 import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.springframework.stereotype.Component;
 
@@ -84,8 +85,9 @@ public class PermissionRequestCreationAndValidationService {
                                                    wrapper.timeframedDataNeed().id(),
                                                    "This region connector only supports validated historical data data needs.");
         }
-        var granularity = switch (vhdDataNeed.minGranularity()) {
-            case PT15M, P1D -> vhdDataNeed.minGranularity();
+        var meteringIntervalType = switch (vhdDataNeed.minGranularity()) {
+            case PT15M -> AllowedMeteringIntervalType.QH;
+            case P1D -> AllowedMeteringIntervalType.D;
             default -> throw new UnsupportedDataNeedException(EdaRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                               vhdDataNeed.id(),
                                                               "Unsupported granularity: '" + vhdDataNeed.minGranularity() + "'");
@@ -95,10 +97,10 @@ public class PermissionRequestCreationAndValidationService {
         CCMORequest ccmoRequest = new CCMORequest(
                 new DsoIdAndMeteringPoint(permissionRequest.dsoId(), permissionRequest.meteringPointId()),
                 new CCMOTimeFrame(wrapper.calculatedStart(), wrapper.calculatedEnd()),
-                configuration,
                 RequestDataType.METERING_DATA,
-                granularity,
+                meteringIntervalType,
                 TRANSMISSION_CYCLE,
+                configuration,
                 created
         );
         String permissionId = UUID.randomUUID().toString();
@@ -111,7 +113,7 @@ public class PermissionRequestCreationAndValidationService {
                 wrapper.calculatedStart(),
                 wrapper.calculatedEnd(),
                 permissionRequest.meteringPointId(),
-                granularity,
+                vhdDataNeed.minGranularity(),
                 ccmoRequest.cmRequestId(),
                 ccmoRequest.messageId()
         );

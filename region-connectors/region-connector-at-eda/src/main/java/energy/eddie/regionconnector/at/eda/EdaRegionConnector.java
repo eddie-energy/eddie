@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.at.eda;
 
-import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
 import energy.eddie.api.v0.*;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
@@ -53,19 +52,14 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
     }
 
     @Override
-    public RegionConnectorMetadata getMetadata() {
-        return EdaRegionConnectorMetadata.getInstance();
-    }
-
-    @Override
-    public Map<String, HealthState> health() {
-        return edaAdapter.health();
-    }
-
-    @Override
     public void close() throws Exception {
         edaAdapter.close();
         permissionStateMessages.tryEmitComplete();
+    }
+
+    @Override
+    public RegionConnectorMetadata getMetadata() {
+        return EdaRegionConnectorMetadata.getInstance();
     }
 
     @Override
@@ -77,12 +71,19 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
             return;
         }
         AtPermissionRequest permissionRequest = request.get();
-        CMRevoke revoke = new CCMORevoke(permissionRequest, atConfiguration.eligiblePartyId()).toCMRevoke();
+        var revoke = new CCMORevoke(permissionRequest,
+                                    atConfiguration.eligiblePartyId(),
+                                    "Terminated by eligible party");
         try {
             edaAdapter.sendCMRevoke(revoke);
         } catch (Exception e) {
             LOGGER.warn("Error trying to terminate permission request.", e);
         }
-        outbox.commit(new TerminationEvent(permissionId, revoke.getProcessDirectory().getReason()));
+        outbox.commit(new TerminationEvent(permissionId, revoke.reason()));
+    }
+
+    @Override
+    public Map<String, HealthState> health() {
+        return edaAdapter.health();
     }
 }

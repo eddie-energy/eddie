@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.at.eda.requests;
 
-import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingAddress;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
@@ -23,24 +22,20 @@ class MessageIdTest {
     @Test
     void dateTimeNull_throws() {
         // given
-        var address = new RoutingAddress();
         // when
         // then
-        assertThrows(NullPointerException.class, () -> new MessageId(address, null));
+        assertThrows(NullPointerException.class, () -> new MessageId("test", null));
     }
 
     @Test
     void messageIdToString() {
         // given
-        var address = new RoutingAddress();
-        address.setMessageAddress("AT999999");
         var now = ZonedDateTime.now(ZoneOffset.UTC);
-        var messageId = new MessageId(address, now);
+        var messageId = new MessageId("AT999999", now);
         // when
         var result = messageId.toString();
         // then
         var expected = "AT999999T" + now.toInstant().toEpochMilli();
         assertEquals(expected, result);
     }
-
 }
