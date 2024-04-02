@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p10;
 import de.ponton.xp.adapter.api.domainvalues.*;
 import de.ponton.xp.adapter.api.messages.OutboundMessage;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
-import energy.eddie.regionconnector.at.eda.ponton.messages.InactiveOutboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.InactivePontonMessageFactoryException;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
@@ -34,10 +34,10 @@ public class CMRequest01p10OutboundMessageFactory implements CMRequestOutboundMe
             .build();
     private final Jaxb2Marshaller marshaller;
 
-    public CMRequest01p10OutboundMessageFactory(Jaxb2Marshaller marshaller) throws InactiveOutboundMessageFactory {
+    public CMRequest01p10OutboundMessageFactory(Jaxb2Marshaller marshaller) throws InactivePontonMessageFactoryException {
         this.marshaller = marshaller;
         if (!isActive(LocalDate.now(AT_ZONE_ID))) {
-            throw new InactiveOutboundMessageFactory(CMRequest01p10OutboundMessageFactory.class);
+            throw new InactivePontonMessageFactoryException(CMRequest01p10OutboundMessageFactory.class);
         }
     }
 
