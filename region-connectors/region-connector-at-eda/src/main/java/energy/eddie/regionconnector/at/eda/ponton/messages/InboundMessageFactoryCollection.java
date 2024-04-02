@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.at.eda.ponton.messages;
 
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmnotification.EdaCMNotificationInboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke.EdaCMRevokeInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord.EdaConsumptionRecordInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.EdaMasterDataInboundMessageFactory;
 import org.slf4j.LoggerFactory;
@@ -19,24 +20,30 @@ public class InboundMessageFactoryCollection {
     private final List<EdaConsumptionRecordInboundMessageFactory> inboundConsumptionRecordFactories;
     private final List<EdaMasterDataInboundMessageFactory> inboundMasterDataFactories;
     private final List<EdaCMNotificationInboundMessageFactory> inboundCMNotificationFactories;
+    private final List<EdaCMRevokeInboundMessageFactory> inboundCMRevokeFactories;
     private EdaMasterDataInboundMessageFactory activeMasterDataFactory;
     private EdaConsumptionRecordInboundMessageFactory activeConsumptionRecordFactory;
     private EdaCMNotificationInboundMessageFactory activeCMNotificationFactory;
+    private EdaCMRevokeInboundMessageFactory activeCMRevokeFactory;
 
     public InboundMessageFactoryCollection(
             List<EdaConsumptionRecordInboundMessageFactory> inboundConsumptionRecordFactories,
             List<EdaMasterDataInboundMessageFactory> inboundMasterDataFactories,
-            List<EdaCMNotificationInboundMessageFactory> inboundCMNotificationFactories
+            List<EdaCMNotificationInboundMessageFactory> inboundCMNotificationFactories,
+            List<EdaCMRevokeInboundMessageFactory> inboundCMRevokeFactories
     ) {
         this.inboundConsumptionRecordFactories = inboundConsumptionRecordFactories;
         this.inboundMasterDataFactories = inboundMasterDataFactories;
         this.inboundCMNotificationFactories = inboundCMNotificationFactories;
+        this.inboundCMRevokeFactories = inboundCMRevokeFactories;
         activeConsumptionRecordFactory = findActiveConsumptionRecordFactory()
                 .orElseThrow(() -> new IllegalStateException("No active EdaConsumptionRecordInboundMessageFactory found"));
         activeMasterDataFactory = findActiveMasterDataFactory()
                 .orElseThrow(() -> new IllegalStateException("No active EdaMasterDataInboundMessageFactory found"));
         activeCMNotificationFactory = findActiveCMNotificationFactory()
                 .orElseThrow(() -> new IllegalStateException("No active EdaCMNotificationInboundMessageFactory found"));
+        activeCMRevokeFactory = findActiveCMRevokeFactory()
+                .orElseThrow(() -> new IllegalStateException("No active EdaCMRevokeInboundMessageFactory found"));
     }
 
     private Optional<EdaConsumptionRecordInboundMessageFactory> findActiveConsumptionRecordFactory() {
@@ -60,6 +67,13 @@ public class InboundMessageFactoryCollection {
                                              .findFirst();
     }
 
+    private Optional<EdaCMRevokeInboundMessageFactory> findActiveCMRevokeFactory() {
+        LocalDate now = LocalDate.now(AT_ZONE_ID);
+        return inboundCMRevokeFactories.stream()
+                                       .filter(factory -> factory.isActive(now))
+                                       .findFirst();
+    }
+
     @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Vienna")
     public void updateActiveFactories() {
         LOGGER.info("Checking for active Factories");
@@ -79,6 +93,12 @@ public class InboundMessageFactoryCollection {
                 .ifPresentOrElse(
                         this::updateActiveCMNotificationFactory,
                         () -> LOGGER.error("No active EdaCMNotificationInboundMessageFactory found")
+                );
+
+        findActiveCMRevokeFactory()
+                .ifPresentOrElse(
+                        this::updateActiveCMRevokeFactory,
+                        () -> LOGGER.error("No active EdaCMRevokeInboundMessageFactory found")
                 );
     }
 
@@ -127,6 +147,20 @@ public class InboundMessageFactoryCollection {
         }
     }
 
+    private void updateActiveCMRevokeFactory(EdaCMRevokeInboundMessageFactory factory) {
+        if (activeCMRevokeFactory != factory) {
+            LOGGER.atInfo()
+                  .addArgument(() -> activeCMRevokeFactory.getClass().getSimpleName())
+                  .addArgument(() -> factory.getClass().getSimpleName())
+                  .log("Switching active EdaCMRevokeInboundMessageFactory from {} to {}");
+
+            activeCMRevokeFactory = factory;
+        } else {
+            LOGGER.atInfo()
+                  .addArgument(() -> factory.getClass().getSimpleName())
+                  .log("Active EdaCMRevokeInboundMessageFactory is still {}");
+        }
+    }
 
     public EdaMasterDataInboundMessageFactory activeMasterDataFactory() {
         return activeMasterDataFactory;
@@ -139,5 +173,9 @@ public class InboundMessageFactoryCollection {
 
     public EdaCMNotificationInboundMessageFactory activeCMNotificationFactory() {
         return activeCMNotificationFactory;
+    }
+
+    public EdaCMRevokeInboundMessageFactory activeCMRevokeFactory() {
+        return activeCMRevokeFactory;
     }
 }
