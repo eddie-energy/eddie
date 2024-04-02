@@ -149,7 +149,7 @@ public class AtEdaBeanConfig {
     @Bean
     public Jaxb2Marshaller jaxb2Marshaller() {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-        marshaller.setPackagesToScan("at.ebutilities.schemata.customerconsent");
+        marshaller.setPackagesToScan("at.ebutilities.schemata");
         return marshaller;
     }
 
