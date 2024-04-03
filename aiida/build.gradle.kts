@@ -31,6 +31,7 @@ dependencies {
 
     implementation(libs.reactor.core)
     implementation(libs.flyway.core)
+    implementation(libs.flyway.postgresql)
     implementation(libs.spring.openapi.webmvc.ui)
     implementation(libs.kafka.clients)
     implementation(libs.eclipse.paho.mqttv5.client)
