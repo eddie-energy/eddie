@@ -1,0 +1,14 @@
+body {
+  font-family: var(--sl-font-sans);
+  padding: var(--sl-spacing-small);
+}
+
+.permissions {
+  display: grid;
+  gap: var(--sl-spacing-small);
+}
+
+.permission-form {
+  display: flex;
+  gap: var(--sl-spacing-small);
+}
