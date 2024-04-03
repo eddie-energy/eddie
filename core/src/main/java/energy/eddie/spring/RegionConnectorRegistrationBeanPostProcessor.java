@@ -2,6 +2,7 @@ package energy.eddie.spring;
 
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
+import energy.eddie.regionconnector.shared.utils.ServletPathUtil;
 import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,13 +25,11 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProce
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
@@ -39,21 +38,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, Ordered, EnvironmentAware {
-    public static final String ALL_REGION_CONNECTORS_BASE_URL_PATH = "region-connectors";
+public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, Ordered {
     /**
      * Name of the Bean registered in the core context that holds a list of the IDs of the enabled region connectors.
      */
     public static final String ENABLED_REGION_CONNECTOR_BEAN_NAME = "enabledRegionConnectors";
-    private static final String REGION_CONNECTORS_SCAN_BASE_PACKAGE = "energy.eddie.regionconnector";
+    /**
+     * Base package under which all region connectors are located.
+     */
+    public static final String REGION_CONNECTORS_SCAN_BASE_PACKAGE = "energy.eddie.regionconnector";
     private static final Logger LOGGER = LoggerFactory.getLogger(RegionConnectorRegistrationBeanPostProcessor.class);
-    @Nullable
-    private Environment environment;
+    private final Environment environment;
 
-    @Override
-    public void setEnvironment(@NonNull Environment environment) {
-        this.environment = environment;
-    }
+    public RegionConnectorRegistrationBeanPostProcessor(Environment environment) {this.environment = environment;}
 
     /**
      * Scans the {@value REGION_CONNECTORS_SCAN_BASE_PACKAGE} package for any classes that are annotated with
@@ -64,8 +61,9 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
      * explicitly set to <i>true</i> are loaded.
      * </p>
      * <p>
-     * The DispatcherServlet has its URL mapping set to "/{@link #ALL_REGION_CONNECTORS_BASE_URL_PATH}/{RC-NAME}/*"
-     * whereas {@code RC-NAME} is specified by {@link RegionConnector#name()}.
+     * The DispatcherServlet has its URL mapping set to
+     * "/{@value ServletPathUtil#ALL_REGION_CONNECTORS_BASE_URL_PATH}/{RC-NAME}/*" whereas {@code RC-NAME} is specified
+     * by {@link RegionConnector#name()}.
      * </p>
      *
      * @param registry the bean definition registry used by the application context
@@ -76,50 +74,24 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
     public void postProcessBeanDefinitionRegistry(@NonNull BeanDefinitionRegistry registry) throws InitializationException {
         LOGGER.info("Starting scan for classes on the classpath annotated with @RegionConnector");
 
-        if (environment == null)
-            throw new IllegalStateException("environment must not be null");
-
-        Set<BeanDefinition> regionConnectorBeanDefinitions = findAllSpringRegionConnectorBeanDefinitions();
         List<Class<?>> regionConnectorProcessorClasses = findAllRegionConnectorProcessorClasses(environment);
 
-        List<String> regionConnectorNames = new ArrayList<>();
         List<String> enabledRegionConnectorNames = new ArrayList<>();
 
-        for (BeanDefinition rcDefinition : regionConnectorBeanDefinitions) {
-            try {
-                Class<?> regionConnectorConfigClass = Class.forName(rcDefinition.getBeanClassName());
-                String regionConnectorName = regionConnectorConfigClass.getAnnotation(RegionConnector.class).name();
-                regionConnectorNames.add(regionConnectorName);
-                var propertyName = "region-connector.%s.enabled".formatted(regionConnectorName.replace('-', '.'));
+        for (Class<?> configClass : getEnabledRegionConnectorConfigClasses()) {
+            var regionConnectorName = configClass.getAnnotation(RegionConnector.class).name();
+            enabledRegionConnectorNames.add(regionConnectorName);
 
-                if (Boolean.FALSE.equals(environment.getProperty(propertyName, Boolean.class, false))) {
-                    LOGGER.info("Region connector {} not explicitly enabled by property, will not load it.",
-                                regionConnectorName);
-                } else {
-                    enabledRegionConnectorNames.add(regionConnectorName);
-                    var applicationContext = createWebContext(regionConnectorConfigClass,
-                                                              regionConnectorName,
-                                                              regionConnectorProcessorClasses);
-                    var beanDefinition = createRegionConnectorBeanDefinition(applicationContext, regionConnectorName);
+            var applicationContext = createWebContext(configClass,
+                                                      regionConnectorName,
+                                                      regionConnectorProcessorClasses);
+            var beanDefinition = createRegionConnectorBeanDefinition(applicationContext, regionConnectorName);
 
-                    registry.registerBeanDefinition(regionConnectorName, beanDefinition);
-                }
-            } catch (ClassNotFoundException e) {
-                LOGGER.error("Found a region connector bean definition {}, but couldn't get the class for it",
-                             rcDefinition,
-                             e);
-            }
+            registry.registerBeanDefinition(regionConnectorName, beanDefinition);
         }
 
         registerEnabledRegionConnectorsBeanDefinition(registry, enabledRegionConnectorNames);
-        registerFlywayStrategy(registry, regionConnectorNames);
-    }
-
-    private Set<BeanDefinition> findAllSpringRegionConnectorBeanDefinitions() {
-        var scanner = new ClassPathScanningCandidateComponentProvider(false);
-        scanner.addIncludeFilter(new AnnotationTypeFilter(RegionConnector.class));
-
-        return scanner.findCandidateComponents(REGION_CONNECTORS_SCAN_BASE_PACKAGE);
+        registerFlywayStrategy(registry, enabledRegionConnectorNames);
     }
 
     // Ignore warning to use .toList because it doesn't return a List<Class<?>> but a List<? extends Class<?>>
@@ -147,9 +119,22 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
             try {
                 return Class.forName(beanDefinition.getBeanClassName());
             } catch (ClassNotFoundException e) {
-                throw new InitializationException("Couldn't find class for RegionConnectorExtension. %s".formatted(e.getMessage()));
+                throw new InitializationException("Couldn't find class for RegionConnectorExtension. %s".formatted(e.getMessage()),
+                                                  e);
             }
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * Returns a Set containing the config classes (i.e. the classes annotated with {@link RegionConnector}) of all
+     * enabled region connectors.
+     */
+    private Set<Class<?>> getEnabledRegionConnectorConfigClasses() {
+        return findAllSpringRegionConnectorBeanDefinitions()
+                .stream()
+                .map(RegionConnectorRegistrationBeanPostProcessor::classForBeanDefinition)
+                .filter(this::isRegionConnectorEnabled)
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -196,7 +181,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
             AnnotationConfigWebApplicationContext regionConnectorContext,
             String regionConnectorName
     ) {
-        String urlMapping = "/%s/%s/*".formatted(ALL_REGION_CONNECTORS_BASE_URL_PATH, regionConnectorName);
+        String urlMapping = ServletPathUtil.getServletPathForRegionConnector(regionConnectorName);
         LOGGER.info("Registering new region connector with URL mapping {}", urlMapping);
         DispatcherServlet dispatcherServlet = new DispatcherServlet(regionConnectorContext);
 
@@ -214,11 +199,24 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
     }
 
     /**
-     * Creates a {@link FlywayMigrationStrategy} for each region connector, as well as for the {@code core} and
+     * Registers a List&lt;String&gt; containing the names of the enabled region connectors.
+     */
+    private void registerEnabledRegionConnectorsBeanDefinition(
+            BeanDefinitionRegistry registry,
+            List<String> enabledRegionConnectorNames
+    ) {
+        AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
+                .genericBeanDefinition(List.class, () -> enabledRegionConnectorNames)
+                .getBeanDefinition();
+        registry.registerBeanDefinition(ENABLED_REGION_CONNECTOR_BEAN_NAME, beanDefinition);
+    }
+
+    /**
+     * Creates a {@link FlywayMigrationStrategy} for each enabled region connector, as well as for the {@code core} and
      * {@code data-needs} module. The migration strategy creates the schema for the module and executes any migration
      * scripts found in the respective folders on the classpath. The folder pattern is:
      * "db/migration/&lt;region-connector-name&gt;". Any minus ('-') in the region connector's name will be replaced by
-     * an underscore ('_') for the schema name.
+     * an underscore ('_') for a valid schema name.
      *
      * @param registry                    BeanDefinitionRegistry where the {@link FlywayMigrationStrategy} is
      *                                    registered.
@@ -246,14 +244,36 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
                 .getBeanDefinition());
     }
 
-    private void registerEnabledRegionConnectorsBeanDefinition(
-            BeanDefinitionRegistry registry,
-            List<String> enabledRegionConnectorNames
-    ) {
-        AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
-                .genericBeanDefinition(List.class, () -> enabledRegionConnectorNames)
-                .getBeanDefinition();
-        registry.registerBeanDefinition(ENABLED_REGION_CONNECTOR_BEAN_NAME, beanDefinition);
+    private Set<BeanDefinition> findAllSpringRegionConnectorBeanDefinitions() {
+        var scanner = new ClassPathScanningCandidateComponentProvider(false);
+        scanner.addIncludeFilter(new AnnotationTypeFilter(RegionConnector.class));
+
+        return scanner.findCandidateComponents(REGION_CONNECTORS_SCAN_BASE_PACKAGE);
+    }
+
+    public static Class<?> classForBeanDefinition(BeanDefinition definition) {
+        try {
+            return Class.forName(definition.getBeanClassName());
+        } catch (ClassNotFoundException e) {
+            throw new InitializationException(
+                    "Found region connector bean definition for class '%s', but couldn't get the class for it, this must not happen, will abort launch".formatted(
+                            definition.getBeanClassName()),
+                    e);
+        }
+    }
+
+    private boolean isRegionConnectorEnabled(Class<?> configClass) {
+        var regionConnectorName = configClass.getAnnotation(RegionConnector.class).name();
+        var propertyName = "region-connector.%s.enabled".formatted(regionConnectorName.replace('-', '.'));
+
+        var isEnabled = Boolean.TRUE.equals(environment.getProperty(propertyName, Boolean.class, false));
+
+        if (!isEnabled) {
+            LOGGER.info("Region connector {} not explicitly enabled by property, will not load it.",
+                        regionConnectorName);
+        }
+
+        return isEnabled;
     }
 
     /**
