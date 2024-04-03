@@ -6,14 +6,9 @@ import energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke.CMRevokeOutb
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,13 +19,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
-@Import(MarshallerConfig.class)
 class OutboundMessageFactoryCollectionTest {
-
-    @Autowired
-    protected Jaxb2Marshaller marshaller;
-
     public static Stream<Arguments> noActiveFactoriesCtrArguments() {
         return Stream.of(
                 Arguments.of(List.of(), List.of()),
@@ -133,7 +122,7 @@ class OutboundMessageFactoryCollectionTest {
         when(requestFactory1.isActive(any())).thenReturn(true).thenReturn(false);
 
         CMRequestOutboundMessageFactory requestFactory2 = mock(CMRequestOutboundMessageFactory.class);
-        when(requestFactory2.isActive(any())).thenReturn(true);
+        when(requestFactory2.isActive(any())).thenReturn(false);
 
         var collection = new OutboundMessageFactoryCollection(List.of(requestFactory1, requestFactory2),
                                                               List.of(simpleCMRevokeFactory(true)));
@@ -144,7 +133,7 @@ class OutboundMessageFactoryCollectionTest {
         collection.updateActiveFactories();
 
         // Then
-        assertEquals(requestFactory2, collection.activeCmRequestFactory());
+        assertEquals(requestFactory1, collection.activeCmRequestFactory());
     }
 
 
