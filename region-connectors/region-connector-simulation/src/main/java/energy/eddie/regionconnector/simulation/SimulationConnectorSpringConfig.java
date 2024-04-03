@@ -4,6 +4,7 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
+import energy.eddie.regionconnector.shared.utils.CommonPaths;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +22,8 @@ import static energy.eddie.regionconnector.simulation.SimulationConnectorMetadat
 public class SimulationConnectorSpringConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        var classPathLocation = "classpath:/public/region-connectors/%s/".formatted(REGION_CONNECTOR_ID);
+        var classPathLocation = "classpath:/public/%s/%s/".formatted(CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH,
+                                                                     REGION_CONNECTOR_ID);
         // add a resource handler that serves all public files of this region connector
         registry.addResourceHandler("/**")
                 .addResourceLocations(classPathLocation);
@@ -34,7 +36,8 @@ public class SimulationConnectorSpringConfig implements WebMvcConfigurer {
 
     @Bean
     public CommonInformationModelConfiguration commonInformationModelConfiguration(
-            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingSchemeTypeList) {
+            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingSchemeTypeList
+    ) {
         return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingSchemeTypeList));
     }
 }

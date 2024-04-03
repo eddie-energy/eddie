@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.lang.NonNull;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -79,8 +80,8 @@ public class CoreSpringConfig implements WebMvcConfigurer {
      * be static for Spring to be able to "enhance @Configuration bean definition".
      */
     @Bean
-    static RegionConnectorRegistrationBeanPostProcessor regionConnectorRegistrationBeanPostProcessor() {
-        return new RegionConnectorRegistrationBeanPostProcessor();
+    static RegionConnectorRegistrationBeanPostProcessor regionConnectorRegistrationBeanPostProcessor(Environment environment) {
+        return new RegionConnectorRegistrationBeanPostProcessor(environment);
     }
 
     /**

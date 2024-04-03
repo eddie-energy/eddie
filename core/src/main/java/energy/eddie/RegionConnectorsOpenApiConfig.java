@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import static energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor.ALL_REGION_CONNECTORS_BASE_URL_PATH;
+import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
 import static energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor.ENABLED_REGION_CONNECTOR_BEAN_NAME;
 
 /**
