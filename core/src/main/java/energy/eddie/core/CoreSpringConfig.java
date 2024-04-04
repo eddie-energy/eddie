@@ -117,6 +117,7 @@ public class CoreSpringConfig implements WebMvcConfigurer {
     public ServletRegistrationBean<DispatcherServlet> europeanMasterDataDispatcherServlet() {
         AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
         context.register(EuropeanMasterDataSpringConfig.class);
+        enableSpringDoc(context);
 
         DispatcherServlet dispatcherServlet = new DispatcherServlet(context);
         String urlMapping = "/european-masterdata/*";
