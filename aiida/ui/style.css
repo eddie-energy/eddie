@@ -3,6 +3,27 @@ body {
   padding: var(--sl-spacing-small);
 }
 
+.permission-details {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sl-spacing-x-small);
+}
+
+.permission-details dt {
+  font-weight: bold;
+  color: var(--sl-color-neutral-500);
+  font-size: var(--sl-font-size-small);
+}
+
+.label {
+  color: var(--sl-color-neutral-500);
+}
+
+.text {
+  color: var(--sl-color-neutral-900);
+  line-height: var(--sl-line-height-dense);
+}
+
 .permissions {
   display: grid;
   gap: var(--sl-spacing-small);

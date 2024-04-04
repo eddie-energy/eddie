@@ -30,15 +30,52 @@ function handlePermissionFormSubmit(event) {
 
   const permission = JSON.parse(atob(aiidaCodeInput.value));
 
-  const { serviceName, startTime, expirationTime, requestedCodes } = permission;
+  console.log(permission);
 
-  permissionDialogContent.innerHTML = `
-            <h2>Confirm permission request from <span style="color: var(--sl-color-primary-600)">${serviceName}</span></h2>
-            <p>
-                The service requests data from <b>${new Date(startTime).toLocaleString()}</b> to <b>${new Date(expirationTime).toLocaleString()}</b>.
-                for OBIS-Codes: ${requestedCodes.join(", ")}.
-            </p>
-        `;
+  const {
+    serviceName,
+    connectionId,
+    permissionId,
+    startTime,
+    expirationTime,
+    requestedCodes,
+  } = permission;
+
+  permissionDialogContent.innerHTML = /* HTML */ `
+    <span>Permission request from</span>
+
+    <h3>
+      <strong>${serviceName}</strong>
+    </h3>
+
+    <dl class="permission-details">
+      <dt>Service</dt>
+      <dd>${serviceName}</dd>
+
+      <dt>Connection ID</dt>
+      <dd>${connectionId}</dd>
+
+      <dt>Permission ID</dt>
+      <dd>${permissionId}</dd>
+
+      <dt>Start</dt>
+      <dd>${new Date(startTime).toLocaleDateString()}</dd>
+
+      <dt>End</dt>
+      <dd>${new Date(expirationTime).toLocaleDateString()}</dd>
+
+      <dt>OBIS-Codes</dt>
+      <dd>
+        ${requestedCodes.map((code) => `<span>${code}</span>`).join("<br>")}
+      </dd>
+    </dl>
+
+    <p class="text">
+      <em>${serviceName}</em> requests permission to retrieve the near-realtime
+      data for the given time frame and OBIS-codes. Please confirm the request
+      is correct before granting permission.
+    </p>
+  `;
   permissionDialog.show();
 }
 
@@ -79,29 +116,52 @@ function renderPermissions() {
         requestedCodes,
       } = permission;
 
-      const element = `
-        <sl-details summary="${serviceName}">
-          <h3>${serviceName}</h3>
+      const element = /* HTML */ `
+        <sl-details open>
+          <span slot="summary">
+            <strong>${serviceName}</strong><br />
+            <small class="label">${permissionId} / ${connectionId}</small>
+          </span>
 
-          <sl-badge>${status}</sl-badge>
-          <small style="color: var(--sl-color-neutral-600)">${permissionId} / ${connectionId}</small>
+          <dl class="permission-details">
+            <dt>Service</dt>
+            <dd>${serviceName}</dd>
+            <dt>Status</dt>
+            <dd>
+              <sl-badge
+                variant="${STATUS_ACTIVE.includes(status)
+                  ? "success"
+                  : "danger"}"
+                >${status}</sl-badge
+              >
+            </dd>
 
-          <p>
-              From <b>${new Date(startTime * 1000).toLocaleString()}</b> to <b>${new Date(expirationTime * 1000).toLocaleString()}</b>
-          </p>
-          <p>
-              Requested OBIS-Codes: ${requestedCodes.join()}
-          </p>
+            <dt>Connection ID</dt>
+            <dd>${connectionId}</dd>
 
-          ${
-            STATUS_REVOCABLE.includes(status)
-              ? `
-                <sl-button class="js-revoke-permission" data-permission-id="${permissionId}">
+            <dt>Permission ID</dt>
+            <dd>${permissionId}</dd>
+
+            <dt>Start</dt>
+            <dd>${new Date(startTime * 1000).toLocaleDateString()}</dd>
+
+            <dt>End</dt>
+            <dd>${new Date(expirationTime * 1000).toLocaleDateString()}</dd>
+
+            <dt>OBIS-Codes</dt>
+            <dd>
+              ${requestedCodes
+                .map((code) => `<span>${code}</span>`)
+                .join("<br>")}
+            </dd>
+          </dl>
+          ${STATUS_REVOCABLE.includes(status)
+            ? `
+                <sl-button class="js-revoke-permission" data-permission-id="${permissionId}" style="margin-top: 1rem">
                   Revoke
                 </sl-button>
               `
-              : ""
-          }
+            : ""}
         </sl-details>
       `;
 
@@ -147,11 +207,14 @@ function addPermission(aiidaCode) {
 
       permissionDialogContent.insertAdjacentHTML(
         "beforeend",
-        `
-            <sl-alert variant="danger" open>
-              <sl-icon slot="icon" name="exclamation-octagon"></sl-icon>
-              <p>There was an error confirming the permission request. Please contact the service provider if this issue persists.</p>
-            </sl-alert>`,
+        /* HTML */ ` <br />
+          <sl-alert variant="danger" open>
+            <sl-icon slot="icon" name="exclamation-octagon"></sl-icon>
+            <p>
+              There was an error confirming the permission request. Please
+              contact the service provider if this issue persists.
+            </p>
+          </sl-alert>`,
       );
     });
 }
