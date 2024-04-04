@@ -1,7 +1,8 @@
-package energy.eddie.core.masterdata;
+package eddie.energy.europeanmasterdata;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
@@ -10,26 +11,27 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class MasterDataService {
+public class EuropeanMasterDataService {
 
     private final List<PermissionAdministrator> permissionAdministrators;
     private final List<MeteredDataAdministrator> meteredDataAdministrators;
 
     private final ObjectMapper objectMapper;
 
-    public MasterDataService(ObjectMapper objectMapper) throws FileNotFoundException {
+    public EuropeanMasterDataService(ObjectMapper objectMapper) throws FileNotFoundException {
         this.objectMapper = objectMapper;
 
-        this.permissionAdministrators = readJsonFile("permission-administrators.json");
-        this.meteredDataAdministrators = readJsonFile("metered-data-administrators.json");
+        this.permissionAdministrators = readJsonFile("permission-administrators.json",
+                                                     PermissionAdministrator.class);
+        this.meteredDataAdministrators = readJsonFile("metered-data-administrators.json",
+                                                      MeteredDataAdministrator.class);
     }
 
-    private <T> List<T> readJsonFile(String filename) throws FileNotFoundException {
+    private <T> List<T> readJsonFile(String filename, Class<T> elementType) throws FileNotFoundException {
         try {
             return objectMapper.readValue(
                     getClass().getClassLoader().getResource(filename),
-                    new TypeReference<>() {
-                    }
+                    TypeFactory.defaultInstance().constructCollectionType(List.class, elementType)
             );
         } catch (IOException e) {
             throw new FileNotFoundException("Error reading config file " + filename + ": " + e.getMessage());
@@ -42,8 +44,8 @@ public class MasterDataService {
 
     public Optional<PermissionAdministrator> getPermissionAdministrator(String id) {
         return permissionAdministrators.stream()
-                .filter(p -> p.companyId().equals(id))
-                .findFirst();
+                                       .filter(p -> p.companyId().equals(id))
+                                       .findFirst();
     }
 
     public List<MeteredDataAdministrator> getMeteredDataAdministrators() {
@@ -52,7 +54,7 @@ public class MasterDataService {
 
     public Optional<MeteredDataAdministrator> getMeteredDataAdministrator(String id) {
         return meteredDataAdministrators.stream()
-                .filter(m -> m.companyId().equals(id))
-                .findFirst();
+                                        .filter(m -> m.companyId().equals(id))
+                                        .findFirst();
     }
 }

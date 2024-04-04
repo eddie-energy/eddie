@@ -1,4 +1,4 @@
-package energy.eddie.core.masterdata;
+package eddie.energy.europeanmasterdata;
 
 public record MeteredDataAdministrator(
         String country,

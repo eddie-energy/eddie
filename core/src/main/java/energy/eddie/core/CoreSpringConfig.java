@@ -1,5 +1,6 @@
 package energy.eddie.core;
 
+import eddie.energy.europeanmasterdata.EuropeanMasterDataSpringConfig;
 import energy.eddie.RegionConnectorsOpenApiConfig;
 import energy.eddie.api.utils.Shared;
 import energy.eddie.dataneeds.DataNeedsSpringConfig;
@@ -109,6 +110,25 @@ public class CoreSpringConfig implements WebMvcConfigurer {
         connectorServletBean.setLoadOnStartup(2);
 
         LOGGER.info("Created ServletRegistrationBean for data needs, urlMapping is {}", urlMapping);
+        return connectorServletBean;
+    }
+
+    @Bean
+    public ServletRegistrationBean<DispatcherServlet> europeanMasterDataDispatcherServlet() {
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        context.register(EuropeanMasterDataSpringConfig.class);
+
+        DispatcherServlet dispatcherServlet = new DispatcherServlet(context);
+        String urlMapping = "/european-masterdata/*";
+        ServletRegistrationBean<DispatcherServlet> connectorServletBean = new ServletRegistrationBean<>(
+                dispatcherServlet,
+                urlMapping
+        );
+
+        connectorServletBean.setName("european-masterdata");
+        connectorServletBean.setLoadOnStartup(2);
+
+        LOGGER.info("Created ServletRegistrationBean for european-masterdata, urlMapping is {}", urlMapping);
         return connectorServletBean;
     }
 }

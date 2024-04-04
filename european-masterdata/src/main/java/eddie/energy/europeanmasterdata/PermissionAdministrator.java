@@ -1,4 +1,4 @@
-package energy.eddie.core.masterdata;
+package eddie.energy.europeanmasterdata;
 
 public record PermissionAdministrator(
         String country,

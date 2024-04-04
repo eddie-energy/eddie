@@ -39,3 +39,5 @@ findProject("e2e-tests")?.name = "e2e-tests"
 include("data-needs")
 
 include("aiida")
+
+include("european-masterdata")
