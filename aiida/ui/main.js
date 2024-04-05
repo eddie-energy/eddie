@@ -47,7 +47,7 @@ const STATUS = {
   },
 };
 
-const BASE_URL = "http://localhost:8081/permissions";
+const { VITE_API_BASE_URL: BASE_URL } = import.meta.env;
 
 const permissionDialog = document.getElementById("permission-dialog");
 const permissionDialogContent = document.getElementById(
@@ -192,9 +192,8 @@ function permissionElement(permission) {
       ${STATUS[status].isRevocable
         ? /* HTML */ `
             <sl-button
-              class="js-revoke-permission"
               style="margin-top: 1rem"
-              onclick="openRevokePermissionDialog('${permissionId}')"
+              onclick="window.openRevokePermissionDialog('${permissionId}')"
             >
               Revoke
             </sl-button>
@@ -291,3 +290,8 @@ Promise.all([
 });
 
 renderPermissions();
+
+window.openRevokePermissionDialog = openRevokePermissionDialog;
+window.addPermission = addPermission;
+window.hidePermissionDialog = () => permissionDialog.hide();
+window.hideRevokeDialog = () => revokeDialog.hide();
