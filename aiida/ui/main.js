@@ -1,18 +1,66 @@
-import STATUS from "./status.json";
+const STATUS = {
+  ACCEPTED: {
+    title: "Accepted",
+    description:
+      "The permission request was accepted by the user and is being processed.",
+    isActive: true,
+    isRevocable: true,
+  },
+  WAITING_FOR_START: {
+    title: "Waiting for Start",
+    description:
+      "The permission request was accepted and is scheduled to start at the specified start time.",
+    isActive: true,
+    isRevocable: true,
+  },
+  STREAMING_DATA: {
+    title: "Streaming Data",
+    description:
+      "The permission request was accepted and data is now actively streamed to the eligible party.",
+    isActive: true,
+    isRevocable: true,
+  },
+  REJECTED: {
+    title: "Rejected",
+    description: "The user rejected the permission request.",
+  },
+  REVOCATION_RECEIVED: {
+    title: "Revocation Received",
+    description: "The user requested revocation of the permission.",
+    isActive: true,
+  },
+  REVOKED: {
+    title: "Revoked",
+    description: "The user revoked the permission.",
+  },
+  TERMINATED: {
+    title: "Terminated",
+    description: "The permission was terminated by the eligible party.",
+  },
+  FULFILLED: {
+    title: "Fulfilled",
+    description: "The expiration time of the permission was reached.",
+  },
+  FAILED_TO_START: {
+    title: "Failed to Start",
+    description: "An error occurred and the permission could not be started.",
+  },
+};
 
 const BASE_URL = "http://localhost:8081/permissions";
 
-const permissionDialog = document.querySelector(".js-permission-dialog");
-const permissionDialogContent = document.querySelector(
-  ".js-permission-dialog-content",
+const permissionDialog = document.getElementById("permission-dialog");
+const permissionDialogContent = document.getElementById(
+  "permission-dialog-content",
 );
+
+const revokeDialog = document.getElementById("revoke-permission-dialog");
+const revokeButton = document.getElementById("revoke-permission-button");
 
 const aiidaCodeInput = document.getElementById("aiida-code");
 
 const activePermissionsList = document.getElementById("active-permissions");
 const expiredPermissionsList = document.getElementById("expired-permissions");
-
-const changeEvent = new Event("permissions-changed");
 
 function permissions() {
   return fetch(BASE_URL).then((response) => response.json());
@@ -92,93 +140,89 @@ aiidaCodeInput.addEventListener("sl-input", () => {
   }
 });
 
+function permissionElement(permission) {
+  const {
+    permissionId,
+    status,
+    serviceName,
+    startTime,
+    expirationTime,
+    connectionId,
+    requestedCodes,
+  } = permission;
+
+  return /* HTML */ `
+    <sl-details>
+      <span slot="summary">
+        <strong>${serviceName}</strong><br />
+        <small class="label">${permissionId} / ${connectionId}</small>
+      </span>
+
+      <dl class="permission-details">
+        <dt>Service</dt>
+        <dd>${serviceName}</dd>
+        <dt>Status</dt>
+        <dd>
+          <sl-tooltip content="${STATUS[status].description}">
+            <sl-badge
+              variant="${STATUS[status].isActive ? "success" : "danger"}"
+            >
+              ${STATUS[status].title}
+            </sl-badge>
+          </sl-tooltip>
+        </dd>
+
+        <dt>Connection ID</dt>
+        <dd>${connectionId}</dd>
+
+        <dt>Permission ID</dt>
+        <dd>${permissionId}</dd>
+
+        <dt>Start</dt>
+        <dd>${new Date(startTime * 1000).toLocaleDateString()}</dd>
+
+        <dt>End</dt>
+        <dd>${new Date(expirationTime * 1000).toLocaleDateString()}</dd>
+
+        <dt>OBIS-Codes</dt>
+        <dd>
+          ${requestedCodes.map((code) => `<span>${code}</span>`).join("<br>")}
+        </dd>
+      </dl>
+      ${STATUS[status].isRevocable
+        ? /* HTML */ `
+            <sl-button
+              class="js-revoke-permission"
+              style="margin-top: 1rem"
+              onclick="openRevokePermissionDialog('${permissionId}')"
+            >
+              Revoke
+            </sl-button>
+          `
+        : ""}
+    </sl-details>
+  `;
+}
+
 function renderPermissions() {
   permissions().then((permissions) => {
     activePermissionsList.innerHTML = "";
     expiredPermissionsList.innerHTML = "";
 
     permissions.forEach((permission) => {
-      const {
-        permissionId,
-        status,
-        serviceName,
-        startTime,
-        expirationTime,
-        connectionId,
-        requestedCodes,
-      } = permission;
+      const element = permissionElement(permission);
 
-      const element = /* HTML */ `
-        <sl-details open>
-          <span slot="summary">
-            <strong>${serviceName}</strong><br />
-            <small class="label">${permissionId} / ${connectionId}</small>
-          </span>
-
-          <dl class="permission-details">
-            <dt>Service</dt>
-            <dd>${serviceName}</dd>
-            <dt>Status</dt>
-            <dd>
-              <sl-tooltip content="${STATUS[status].description}">
-                <sl-badge
-                  variant="${STATUS[status].isActive ? "success" : "danger"}"
-                >
-                  ${STATUS[status].title}
-                </sl-badge>
-              </sl-tooltip>
-            </dd>
-
-            <dt>Connection ID</dt>
-            <dd>${connectionId}</dd>
-
-            <dt>Permission ID</dt>
-            <dd>${permissionId}</dd>
-
-            <dt>Start</dt>
-            <dd>${new Date(startTime * 1000).toLocaleDateString()}</dd>
-
-            <dt>End</dt>
-            <dd>${new Date(expirationTime * 1000).toLocaleDateString()}</dd>
-
-            <dt>OBIS-Codes</dt>
-            <dd>
-              ${requestedCodes
-                .map((code) => `<span>${code}</span>`)
-                .join("<br>")}
-            </dd>
-          </dl>
-          ${STATUS[status].isRevocable
-            ? /* HTML */ `
-                <sl-button
-                  class="js-revoke-permission"
-                  data-permission-id="${permissionId}"
-                  style="margin-top: 1rem"
-                >
-                  Revoke
-                </sl-button>
-              `
-            : ""}
-        </sl-details>
-      `;
-
-      if (STATUS[status].isActive) {
+      if (STATUS[permission.status].isActive) {
         activePermissionsList.insertAdjacentHTML("beforeend", element);
       } else {
         expiredPermissionsList.insertAdjacentHTML("beforeend", element);
       }
     });
-
-    document.querySelectorAll(".js-revoke-permission").forEach((button) => {
-      button.addEventListener("click", () => {
-        revokePermission(button.dataset.permissionId);
-      });
-    });
   });
 }
 
-function addPermission(aiidaCode) {
-  const body = JSON.parse(atob(aiidaCode));
+function addPermission() {
+  const body = JSON.parse(atob(aiidaCodeInput.value));
   body.grantTime = new Date().toISOString();
 
   fetch(BASE_URL, {
@@ -197,7 +241,7 @@ function addPermission(aiidaCode) {
     .then(() => {
       permissionDialog.hide();
       aiidaCodeInput.value = "";
-      document.dispatchEvent(changeEvent);
+      renderPermissions();
     })
     .catch((error) => {
       console.debug(error);
@@ -216,6 +260,14 @@ function addPermission(aiidaCode) {
     });
 }
 
+function openRevokePermissionDialog(permissionId) {
+  revokeDialog.show();
+  revokeButton.onclick = () => {
+    revokePermission(permissionId);
+    revokeDialog.hide();
+  };
+}
+
 function revokePermission(permissionId) {
   fetch(`${BASE_URL}/${permissionId}`, {
     method: "PATCH",
@@ -225,18 +277,8 @@ function revokePermission(permissionId) {
     body: JSON.stringify({
       operation: "REVOKE_PERMISSION",
     }),
-  }).then(() => document.dispatchEvent(changeEvent));
+  }).then(() => renderPermissions());
 }
-
-document.addEventListener("permissions-changed", renderPermissions);
-
-document
-  .querySelector(".js-add-permission")
-  .addEventListener("click", () => addPermission(aiidaCodeInput.value));
-
-document
-  .querySelector(".js-permission-dialog-hide")
-  .addEventListener("click", () => permissionDialog.hide());
 
 // wait for Shoelace elements to ensure validation before submit
 Promise.all([
@@ -244,7 +286,7 @@ Promise.all([
   customElements.whenDefined("sl-input"),
 ]).then(() => {
   document
-    .querySelector(".js-permission-form")
+    .getElementById("permission-form")
     .addEventListener("submit", handlePermissionFormSubmit);
 });
 

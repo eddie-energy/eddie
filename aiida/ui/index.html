@@ -24,7 +24,7 @@
 
     <h2>Add new permission</h2>
 
-    <form class="permission-form js-permission-form">
+    <form id="permission-form" class="permission-form">
       <sl-input id="aiida-code" placeholder="AIIDA code" required></sl-input>
       <sl-button type="submit" variant="primary">Add</sl-button>
       <sl-button circle disabled>
@@ -32,15 +32,30 @@
       </sl-button>
     </form>
 
-    <sl-dialog label="Add permission" class="js-permission-dialog">
-      <sl-button slot="footer" variant="primary" class="js-add-permission">
+    <sl-dialog id="permission-dialog" label="Add permission">
+      <sl-button slot="footer" variant="primary" onclick="addPermission()">
         Confirm
       </sl-button>
 
-      <div class="js-permission-dialog-content"></div>
+      <div id="permission-dialog-content"></div>
 
-      <sl-button slot="footer" outline class="js-permission-dialog-hide">
+      <sl-button slot="footer" outline onclick="permissionDialog.hide()">
         Close
+      </sl-button>
+    </sl-dialog>
+
+    <sl-dialog id="revoke-permission-dialog" label="Revoke permission">
+      <sl-button slot="footer" variant="primary" id="revoke-permission-button">
+        Revoke
+      </sl-button>
+
+      <p class="text">
+        This action will revoke the given permission. The eligible party will no
+        longer be able to receive data for this entry.
+      </p>
+
+      <sl-button slot="footer" outline onclick="revokeDialog.hide()">
+        Cancel
       </sl-button>
     </sl-dialog>
 
@@ -50,6 +65,6 @@
     <h2>Expired permissions</h2>
     <div id="expired-permissions" class="permissions"></div>
 
-    <script type="module" src="./main.js"></script>
+    <script src="./main.js"></script>
   </body>
 </html>
