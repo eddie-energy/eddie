@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.at.eda.ponton.messages;
 
-public class InactiveOutboundMessageFactory extends Throwable {
+public class InactivePontonMessageFactoryException extends Throwable {
     private final Class<?> classType;
 
-    public InactiveOutboundMessageFactory(Class<?> classType) {this.classType = classType;}
+    public InactivePontonMessageFactoryException(Class<?> classType) {this.classType = classType;}
 
     @Override
     public String getMessage() {

@@ -6,8 +6,10 @@ import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.Proces
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
+import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
+import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._01p31.EdaConsumptionRecord01p31;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
@@ -42,7 +44,7 @@ class PermissionRequestFulfillmentServiceTest {
         TestPublisher<IdentifiableConsumptionRecord> testPublisher = TestPublisher.create();
         AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd,
                                                                         PermissionProcessStatus.ACCEPTED);
-        ConsumptionRecord consumptionRecord = createConsumptionRecord(meteringDataEnd);
+        EdaConsumptionRecord consumptionRecord = createConsumptionRecord(meteringDataEnd);
         new PermissionRequestFulfillmentService(testPublisher.flux(), outbox, fulfillmentService);
 
         // When
@@ -73,10 +75,18 @@ class PermissionRequestFulfillmentServiceTest {
                                         null);
     }
 
-    private ConsumptionRecord createConsumptionRecord(LocalDate date) {
-        return new ConsumptionRecord()
-                .withProcessDirectory(new ProcessDirectory().withEnergy(
-                        new Energy().withMeteringPeriodEnd(DateTimeConverter.dateTimeToXml(date.atStartOfDay(AT_ZONE_ID)))));
+    private EdaConsumptionRecord createConsumptionRecord(LocalDate date) {
+        return new EdaConsumptionRecord01p31(
+                new ConsumptionRecord()
+                        .withProcessDirectory(
+                                new ProcessDirectory().withEnergy(
+                                        new Energy().withMeteringPeriodEnd(
+                                                DateTimeConverter.dateTimeToXml(date.atStartOfDay(AT_ZONE_ID)
+                                                )
+                                        )
+                                )
+                        )
+        );
     }
 
     @Test
@@ -86,7 +96,7 @@ class PermissionRequestFulfillmentServiceTest {
         TestPublisher<IdentifiableConsumptionRecord> testPublisher = TestPublisher.create();
         AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd,
                                                                         PermissionProcessStatus.ACCEPTED);
-        ConsumptionRecord consumptionRecord = createConsumptionRecord(permissionRequestEnd);
+        EdaConsumptionRecord consumptionRecord = createConsumptionRecord(permissionRequestEnd);
         new PermissionRequestFulfillmentService(testPublisher.flux(), outbox, fulfillmentService);
 
         // When
@@ -115,7 +125,7 @@ class PermissionRequestFulfillmentServiceTest {
         TestPublisher<IdentifiableConsumptionRecord> testPublisher = TestPublisher.create();
         AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd,
                                                                         PermissionProcessStatus.ACCEPTED);
-        ConsumptionRecord consumptionRecord = createConsumptionRecord(meteringDataEnd);
+        EdaConsumptionRecord consumptionRecord = createConsumptionRecord(meteringDataEnd);
         new PermissionRequestFulfillmentService(testPublisher.flux(), outbox, fulfillmentService);
 
         // When
@@ -143,7 +153,7 @@ class PermissionRequestFulfillmentServiceTest {
         TestPublisher<IdentifiableConsumptionRecord> testPublisher = TestPublisher.create();
         AtPermissionRequest permissionRequest = createPermissionRequest(meteringDataEnd,
                                                                         PermissionProcessStatus.ACCEPTED);
-        ConsumptionRecord consumptionRecord = createConsumptionRecord(meteringDataEnd);
+        EdaConsumptionRecord consumptionRecord = createConsumptionRecord(meteringDataEnd);
         new PermissionRequestFulfillmentService(testPublisher.flux(), outbox, fulfillmentService);
 
         // When
@@ -172,7 +182,7 @@ class PermissionRequestFulfillmentServiceTest {
         LocalDate meteringDataEnd = permissionRequestEnd.plusDays(1);
         TestPublisher<IdentifiableConsumptionRecord> testPublisher = TestPublisher.create();
         AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd, status);
-        ConsumptionRecord consumptionRecord = createConsumptionRecord(meteringDataEnd);
+        EdaConsumptionRecord consumptionRecord = createConsumptionRecord(meteringDataEnd);
         new PermissionRequestFulfillmentService(testPublisher.flux(), outbox, fulfillmentService);
 
         // When
@@ -200,8 +210,8 @@ class PermissionRequestFulfillmentServiceTest {
         TestPublisher<IdentifiableConsumptionRecord> testPublisher = TestPublisher.create();
         AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd,
                                                                         PermissionProcessStatus.ACCEPTED);
-        ConsumptionRecord consumptionRecord = new ConsumptionRecord()
-                .withProcessDirectory(new ProcessDirectory());
+        EdaConsumptionRecord consumptionRecord = new EdaConsumptionRecord01p31(new ConsumptionRecord()
+                                                                                       .withProcessDirectory(new ProcessDirectory()));
         new PermissionRequestFulfillmentService(testPublisher.flux(), outbox, fulfillmentService);
 
         // When

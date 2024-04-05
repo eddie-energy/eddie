@@ -3,9 +3,12 @@ package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p10;
 import de.ponton.xp.adapter.api.domainvalues.*;
 import de.ponton.xp.adapter.api.messages.OutboundMessage;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
-import energy.eddie.regionconnector.at.eda.ponton.messages.InactiveOutboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.InactivePontonMessageFactoryException;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._01p31.EdaConsumptionRecord01p31InboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +23,8 @@ import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_
 @Component
 @SuppressWarnings("DuplicatedCode")
 public class CMRequest01p10OutboundMessageFactory implements CMRequestOutboundMessageFactory {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CMRequest01p10OutboundMessageFactory.class);
+
     /**
      * The date until which this message is active. After this date the message is not valid anymore.
      * <p>From <a href="https://www.ebutilities.at/schemas/149">ebutilities</a>
@@ -34,11 +39,19 @@ public class CMRequest01p10OutboundMessageFactory implements CMRequestOutboundMe
             .build();
     private final Jaxb2Marshaller marshaller;
 
-    public CMRequest01p10OutboundMessageFactory(Jaxb2Marshaller marshaller) throws InactiveOutboundMessageFactory {
+    public CMRequest01p10OutboundMessageFactory(Jaxb2Marshaller marshaller) {
         this.marshaller = marshaller;
         if (!isActive(LocalDate.now(AT_ZONE_ID))) {
-            throw new InactiveOutboundMessageFactory(CMRequest01p10OutboundMessageFactory.class);
+            var exception = new InactivePontonMessageFactoryException(EdaConsumptionRecord01p31InboundMessageFactory.class);
+            LOGGER.atError()
+                  .addArgument(exception::getMessage)
+                  .log("{}", exception);
         }
+    }
+
+    @Override
+    public boolean isActive(LocalDate date) {
+        return ACTIVE_UNTIL.isAfter(date) || ACTIVE_UNTIL.isEqual(date);
     }
 
     @Override
@@ -62,10 +75,5 @@ public class CMRequest01p10OutboundMessageFactory implements CMRequestOutboundMe
                 .setReceiverId(new ReceiverId(ccmoRequest.dsoId()))
                 .setMessageType(MESSAGETYPE)
                 .build();
-    }
-
-    @Override
-    public boolean isActive(LocalDate date) {
-        return ACTIVE_UNTIL.isAfter(date) || ACTIVE_UNTIL.isEqual(date);
     }
 }

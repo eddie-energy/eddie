@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.at.eda;
 
-import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
-import at.ebutilities.schemata.customerprocesses.masterdata._01p30.MasterData;
 import energy.eddie.api.v0.HealthState;
+import energy.eddie.regionconnector.at.eda.dto.EdaCMRevoke;
+import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
@@ -25,36 +25,36 @@ public interface EdaAdapter extends AutoCloseable {
     Flux<CMRequestStatus> getCMRequestStatusStream();
 
     /**
-     * Returns a stream of ConsumptionRecord objects tha contain information regarding energy consumption for a specific
-     * metering point.
+     * Returns a stream of EdaConsumptionRecord objects tha contain information regarding energy consumption for a
+     * specific metering point.
      */
-    Flux<ConsumptionRecord> getConsumptionRecordStream();
+    Flux<EdaConsumptionRecord> getConsumptionRecordStream();
 
     /**
-     * Returns a stream of CMRevoke objects that contain information regarding revoked permissions/consents.
+     * Returns a stream of EdaCMRevoke objects that contain information regarding revoked permissions/consents.
      */
-    Flux<CMRevoke> getCMRevokeStream();
-
-
-    /**
-     * Returns a stream of MasterData objects that contain information regarding metering points and their owners.
-     */
-    Flux<MasterData> getMasterDataStream();
+    Flux<EdaCMRevoke> getCMRevokeStream();
 
 
     /**
-     * This method sends a CMRequest to EDA. A CMRequest can be used to request either metering or master data.
+     * Returns a stream of EdaMasterData objects that contain information regarding metering points and their owners.
+     */
+    Flux<EdaMasterData> getMasterDataStream();
+
+
+    /**
+     * This method sends a CCMORequest to EDA. A CCORequest can be used to request either metering or master data.
      *
-     * @param request The CMRequest message that should be sent to EDA.
+     * @param request The CCMORequest message that should be sent to EDA.
      * @throws TransmissionException If the request could not be sent. Reasons can be a connection error or a malformed
      *                               request.
      */
     void sendCMRequest(CCMORequest request) throws TransmissionException;
 
     /**
-     * This method sends a CMRevoke to EDA. A CMRevoke can be used to revoke an active permission/consent.
+     * This method sends a CCMORevoke to EDA. A CCMORevoke can be used to revoke an active permission/consent.
      *
-     * @param revoke The CMRevoke message that should be sent to EDA.
+     * @param revoke The CCMORevoke message that should be sent to EDA.
      * @throws TransmissionException If the request could not be sent. Reasons can be a connection error or a malformed
      *                               request.
      */

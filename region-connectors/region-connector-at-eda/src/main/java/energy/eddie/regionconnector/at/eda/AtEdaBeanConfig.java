@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.at.eda;
 
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
 import de.ponton.xp.adapter.api.ConnectionException;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.v0.ConnectionStatusMessage;
@@ -11,11 +10,13 @@ import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
+import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.ponton.NoOpEdaAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
+import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
@@ -74,7 +75,7 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public Flux<ConsumptionRecord> consumptionRecordStream(EdaAdapter edaAdapter) {
+    public Flux<EdaConsumptionRecord> consumptionRecordStream(EdaAdapter edaAdapter) {
         return edaAdapter.getConsumptionRecordStream();
     }
 
@@ -82,10 +83,14 @@ public class AtEdaBeanConfig {
     @Profile("!no-ponton")
     public EdaAdapter edaAdapter(
             PontonXPAdapterConfiguration configuration,
-            Jaxb2Marshaller jaxb2Marshaller,
-            OutboundMessageFactoryCollection outboundMessageFactoryCollection
+            OutboundMessageFactoryCollection outboundMessageFactoryCollection,
+            InboundMessageFactoryCollection inboundMessageFactoryCollection
     ) throws IOException, ConnectionException {
-        return new PontonXPAdapter(configuration, jaxb2Marshaller, outboundMessageFactoryCollection);
+        return new PontonXPAdapter(
+                configuration,
+                outboundMessageFactoryCollection,
+                inboundMessageFactoryCollection
+        );
     }
 
     @Bean
@@ -149,7 +154,7 @@ public class AtEdaBeanConfig {
     @Bean
     public Jaxb2Marshaller jaxb2Marshaller() {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-        marshaller.setPackagesToScan("at.ebutilities.schemata.customerconsent");
+        marshaller.setPackagesToScan("at.ebutilities.schemata");
         return marshaller;
     }
 
