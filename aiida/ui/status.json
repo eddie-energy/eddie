@@ -1,0 +1,45 @@
+{
+  "ACCEPTED": {
+    "title": "Accepted",
+    "description": "The permission request was accepted by the user and is being processed.",
+    "isActive": true,
+    "isRevocable": true
+  },
+  "WAITING_FOR_START": {
+    "title": "Waiting for Start",
+    "description": "The permission request was accepted and is scheduled to start at the specified start time.",
+    "isActive": true,
+    "isRevocable": true
+  },
+  "STREAMING_DATA": {
+    "title": "Streaming Data",
+    "description": "The permission request was accepted and data is now actively streamed to the eligible party.",
+    "isActive": true,
+    "isRevocable": true
+  },
+  "REJECTED": {
+    "title": "Rejected",
+    "description": "The user rejected the permission request."
+  },
+  "REVOCATION_RECEIVED": {
+    "title": "Revocation Received",
+    "description": "The user requested revocation of the permission.",
+    "isActive": true
+  },
+  "REVOKED": {
+    "title": "Revoked",
+    "description": "The user revoked the permission."
+  },
+  "TERMINATED": {
+    "title": "Terminated",
+    "description": "The permission was terminated by the eligible party."
+  },
+  "FULFILLED": {
+    "title": "Fulfilled",
+    "description": "The expiration time of the permission was reached."
+  },
+  "FAILED_TO_START": {
+    "title": "Failed to Start",
+    "description": "An error occurred and the permission could not be started."
+  }
+}

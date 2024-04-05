@@ -1,13 +1,6 @@
-const BASE_URL = "http://localhost:8081/permissions";
+import STATUS from "./status.json";
 
-const STATUS_ACTIVE = [
-  "ACCEPTED",
-  "WAITING_FOR_START",
-  "STREAMING_DATA",
-  "REVOCATION_RECEIVED",
-];
-const STATUS_EXPIRED = ["REJECTED", "REVOKED", "TERMINATED", "TIME_LIMIT"];
-const STATUS_REVOCABLE = ["ACCEPTED", "WAITING_FOR_START", "STREAMING_DATA"];
+const BASE_URL = "http://localhost:8081/permissions";
 
 const permissionDialog = document.querySelector(".js-permission-dialog");
 const permissionDialogContent = document.querySelector(
@@ -85,7 +78,6 @@ aiidaCodeInput.addEventListener("sl-input", () => {
     // noinspection JSUnusedLocalSymbols
     const {
       permissionId,
-      status,
       serviceName,
       startTime,
       expirationTime,
@@ -128,12 +120,13 @@ function renderPermissions() {
             <dd>${serviceName}</dd>
             <dt>Status</dt>
             <dd>
-              <sl-badge
-                variant="${STATUS_ACTIVE.includes(status)
-                  ? "success"
-                  : "danger"}"
-                >${status}</sl-badge
-              >
+              <sl-tooltip content="${STATUS[status].description}">
+                <sl-badge
+                  variant="${STATUS[status].isActive ? "success" : "danger"}"
+                >
+                  ${STATUS[status].title}
+                </sl-badge>
+              </sl-tooltip>
             </dd>
 
             <dt>Connection ID</dt>
@@ -155,9 +148,13 @@ function renderPermissions() {
                 .join("<br>")}
             </dd>
           </dl>
-          ${STATUS_REVOCABLE.includes(status)
-            ? `
-                <sl-button class="js-revoke-permission" data-permission-id="${permissionId}" style="margin-top: 1rem">
+          ${STATUS[status].isRevocable
+            ? /* HTML */ `
+                <sl-button
+                  class="js-revoke-permission"
+                  data-permission-id="${permissionId}"
+                  style="margin-top: 1rem"
+                >
                   Revoke
                 </sl-button>
               `
@@ -165,9 +162,9 @@ function renderPermissions() {
         </sl-details>
       `;
 
-      if (STATUS_ACTIVE.includes(status)) {
+      if (STATUS[status].isActive) {
         activePermissionsList.insertAdjacentHTML("beforeend", element);
-      } else if (STATUS_EXPIRED.includes(status)) {
+      } else {
         expiredPermissionsList.insertAdjacentHTML("beforeend", element);
       }
     });
