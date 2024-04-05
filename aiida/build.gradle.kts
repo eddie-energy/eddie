@@ -4,6 +4,7 @@ import net.ltgt.gradle.errorprone.errorprone
 plugins {
     java
     id("energy.eddie.java-conventions")
+    id("energy.eddie.pnpm-build")
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
     alias(libs.plugins.google.jib)

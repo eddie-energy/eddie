@@ -1,4 +1,5 @@
 packages:
   - 'core'
+  - 'aiida/ui'
   - 'region-connectors/*'
   - 'administrative-console'
