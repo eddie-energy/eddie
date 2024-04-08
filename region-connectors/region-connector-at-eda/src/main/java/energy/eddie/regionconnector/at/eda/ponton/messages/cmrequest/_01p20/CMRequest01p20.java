@@ -5,7 +5,6 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.AddressType
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMode;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingAddress;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
-import energy.eddie.regionconnector.at.eda.EdaSchemaVersion;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
@@ -21,6 +20,9 @@ import static java.util.Objects.requireNonNull;
 public record CMRequest01p20(
         CCMORequest ccmoRequest
 ) {
+
+    public static final String SCHEMA_VERSION = "01.20";
+
     public at.ebutilities.schemata.customerconsent.cmrequest._01p20.CMRequest cmRequest() {
         return new CMRequest()
                 .withMarketParticipantDirectory(makeMarketParticipantDirectory(ccmoRequest))
@@ -33,7 +35,7 @@ public record CMRequest01p20(
                 .withSector(Sector.ELECTRICITY.value())
                 .withDocumentMode(DocumentMode.PROD)
                 .withDuplicate(false)
-                .withSchemaVersion(EdaSchemaVersion.CM_REQUEST_01_10.value())
+                .withSchemaVersion(SCHEMA_VERSION)
                 .withRoutingHeader(new RoutingHeader()
                                            .withSender(toRoutingAddress(ccmoRequest.eligiblePartyId()))
                                            .withReceiver(toRoutingAddress(ccmoRequest.dsoId()))
