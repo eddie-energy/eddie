@@ -9,6 +9,7 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -25,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = DataNeedsController.class)
+@AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 public class DataNeedsControllerTest {
     public static final String EXAMPLE_VHD_DATA_NEED = "{\"type\":\"validated\",\"id\":\"123\",\"name\":\"Name\",\"description\":\"Description\",\"purpose\":\"Purpose\",\"policyLink\":\"https://example.com/toc\",\"createdAt\":1710262490.674,\"energyType\":\"ELECTRICITY\",\"minGranularity\":\"PT15M\",\"maxGranularity\":\"PT15M\",\"duration\":{\"type\":\"relativeDuration\",\"start\":\"-P90D\",\"end\":\"P120D\",\"stickyStartCalendarUnit\":null}}";
     public static final String EXAMPLE_ACCOUNTING_POINT_DATA_NEED = "{\"type\":\"account\",\"id\":\"fooBar\",\"name\":\"Accounting Point Need\",\"description\":\"Description\",\"purpose\":\"Purpose\",\"policyLink\":\"https://example.com/toc\",\"createdAt\":1710262490.674}";
