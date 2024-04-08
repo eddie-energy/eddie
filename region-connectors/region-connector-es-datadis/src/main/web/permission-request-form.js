@@ -75,6 +75,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
       });
       const result = await response.json();
 
@@ -181,6 +182,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   accepted() {
     fetch(REQUEST_URL + `/${this.permissionId}/accepted`, {
       method: "PATCH",
+      credentials: "include",
     })
       .then(() => {
         this._areResponseButtonsDisabled = true;
@@ -197,6 +199,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   rejected() {
     fetch(REQUEST_URL + `/${this.permissionId}/rejected`, {
       method: "PATCH",
+      credentials: "include"
     })
       .then(() => {
         this._areResponseButtonsDisabled = true;
