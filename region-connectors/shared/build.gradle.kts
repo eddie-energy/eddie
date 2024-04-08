@@ -25,10 +25,15 @@ dependencies {
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
+    implementation(libs.spring.boot.security)
+
     implementation(libs.reactor.core)
     implementation(libs.hibernate.validator)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.nimbus.oidc)
+    implementation(libs.bouncycastle.bcpkix)
+    implementation(libs.bouncycastle.bcprov)
 
     testImplementation(libs.reactor.test)
     testImplementation(libs.junit.jupiter)

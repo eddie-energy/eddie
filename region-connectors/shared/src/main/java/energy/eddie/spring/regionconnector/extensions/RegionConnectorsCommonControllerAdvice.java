@@ -7,6 +7,7 @@ import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.api.agnostic.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
+import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.shared.validation.SupportedGranularities;
 import energy.eddie.regionconnector.shared.web.StateValidationErrors;
@@ -149,5 +150,13 @@ public class RegionConnectorsCommonControllerAdvice {
             (PermissionNotFoundException exception) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
+    }
+
+    @ExceptionHandler(JwtCreationFailedException.class)
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleJwtCreationFailedException
+            (JwtCreationFailedException exception) {
+        LOGGER.error("JwtCreationFailedException exception occurred", exception);
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
     }
 }

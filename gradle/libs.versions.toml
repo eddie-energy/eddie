@@ -43,6 +43,8 @@ mockwebserver = "4.12.0"
 flyway = "10.8.1"
 hakky-logcaptor = "2.9.2"
 paho-mqtt-client = "1.2.5"
+nimbus = "11.10.1"
+bouncycastle = "1.78"
 
 swagger-codegen-version = "3.0.45"
 openapi-generator = "7.3.0"
@@ -141,6 +143,7 @@ spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-star
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
 spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
 spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
+spring-boot-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-kafka = { module = "org.springframework.kafka:spring-kafka", version.ref = "spring-kafka" }
 spring-websocket = { module = "org.springframework:spring-websocket", version.ref = "spring-websocket" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "spring-retry" }
@@ -164,6 +167,10 @@ hakky-logcaptor = { module = "io.github.hakky54:logcaptor", version.ref = "hakky
 eclipse-paho-mqttv5-client = { module = "org.eclipse.paho:org.eclipse.paho.mqttv5.client", version.ref = "paho-mqtt-client" }
 jackson-hibernate6 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-hibernate6", version.ref = "jackson" }
 
+# Security
+nimbus-oidc = { module = "com.nimbusds:oauth2-oidc-sdk", version.ref = "nimbus" }
+bouncycastle-bcpkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
+bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
 [bundles]
 
 [plugins]
