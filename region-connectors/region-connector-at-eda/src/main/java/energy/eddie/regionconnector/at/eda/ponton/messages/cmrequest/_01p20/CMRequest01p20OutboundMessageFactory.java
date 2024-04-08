@@ -14,6 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.time.LocalDate;
 
+import static energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p20.CMRequest01p20.SCHEMA_VERSION;
+
 @Component
 @SuppressWarnings("DuplicatedCode")
 public class CMRequest01p20OutboundMessageFactory implements CMRequestOutboundMessageFactory {
@@ -24,7 +26,7 @@ public class CMRequest01p20OutboundMessageFactory implements CMRequestOutboundMe
     private static final LocalDate ACTIVE_FROM = LocalDate.of(2024, 4, 8);
     private static final MessageType MESSAGETYPE = new MessageType.MessageTypeBuilder()
             .setSchemaSet(new SchemaSet("CM_REQ_ONL_01.20"))
-            .setVersion(new MessageTypeVersion("01.20"))
+            .setVersion(new MessageTypeVersion(SCHEMA_VERSION))
             .setName(new MessageTypeName(MessageCodes.Request.CODE))
             .setMimeType(new MimeType(
                     "text/xml"))
