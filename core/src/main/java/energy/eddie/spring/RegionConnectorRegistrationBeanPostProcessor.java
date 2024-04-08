@@ -2,7 +2,7 @@ package energy.eddie.spring;
 
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
-import energy.eddie.regionconnector.shared.utils.ServletPathUtil;
+import energy.eddie.regionconnector.shared.utils.CommonPaths;
 import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +62,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
      * </p>
      * <p>
      * The DispatcherServlet has its URL mapping set to
-     * "/{@value ServletPathUtil#ALL_REGION_CONNECTORS_BASE_URL_PATH}/{RC-NAME}/*" whereas {@code RC-NAME} is specified
+     * "/{@value CommonPaths#ALL_REGION_CONNECTORS_BASE_URL_PATH}/{RC-NAME}/*" whereas {@code RC-NAME} is specified
      * by {@link RegionConnector#name()}.
      * </p>
      *
@@ -181,7 +181,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
             AnnotationConfigWebApplicationContext regionConnectorContext,
             String regionConnectorName
     ) {
-        String urlMapping = ServletPathUtil.getServletPathForRegionConnector(regionConnectorName);
+        String urlMapping = CommonPaths.getServletPathForRegionConnector(regionConnectorName);
         LOGGER.info("Registering new region connector with URL mapping {}", urlMapping);
         DispatcherServlet dispatcherServlet = new DispatcherServlet(regionConnectorContext);
 

@@ -1,9 +1,10 @@
 package energy.eddie.regionconnector.shared.utils;
 
-public class ServletPathUtil {
+public class CommonPaths {
     public static final String ALL_REGION_CONNECTORS_BASE_URL_PATH = "region-connectors";
+    public static final String CE_FILE_NAME = "ce.js";
 
-    private ServletPathUtil() {}
+    private CommonPaths() {}
 
     public static String getServletPathForRegionConnector(String regionConnectorId) {
         return "/%s/%s/*".formatted(ALL_REGION_CONNECTORS_BASE_URL_PATH, regionConnectorId);

@@ -1,6 +1,7 @@
 package energy.eddie.spring.regionconnector.extensions;
 
 import energy.eddie.api.agnostic.RegionConnectorExtension;
+import energy.eddie.regionconnector.shared.utils.CommonPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -12,7 +13,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import static energy.eddie.regionconnector.shared.utils.ServletPathUtil.ALL_REGION_CONNECTORS_BASE_URL_PATH;
+import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
+import static energy.eddie.regionconnector.shared.utils.CommonPaths.CE_FILE_NAME;
 
 /**
  * The {@code RegionConnectorConnectorElementProvider} creates an HTTP GET mapping for the connector element javascript
@@ -22,7 +24,6 @@ import static energy.eddie.regionconnector.shared.utils.ServletPathUtil.ALL_REGI
 @RestController
 public class RegionConnectorConnectorElementProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(RegionConnectorConnectorElementProvider.class);
-    private static final String CE_FILE_NAME = "ce.js";
     private final String ceElementContent;
 
     /**
@@ -35,7 +36,7 @@ public class RegionConnectorConnectorElementProvider {
      * </p>
      * <p>
      * Whereas RC-COMMON-PATH is
-     * {@value energy.eddie.regionconnector.shared.utils.ServletPathUtil#ALL_REGION_CONNECTORS_BASE_URL_PATH} and
+     * {@value CommonPaths#ALL_REGION_CONNECTORS_BASE_URL_PATH} and
      * {@code regionConnectorName} is the parameter.
      * </p>
      *
