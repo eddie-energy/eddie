@@ -18,6 +18,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -26,6 +27,8 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.*;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -46,6 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = DataNeedsManagementController.class, properties = {"management.server.urlprefix=management", "eddie.data-needs-config.data-need-source=database"})
+@AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 class DataNeedsManagementControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -231,6 +235,8 @@ class DataNeedsManagementFullTest {
     private int port;
     @Autowired
     private TestRestTemplate restTemplate;
+    @MockBean
+    private SecurityFilterChain mockSecurityFilterChain;
 
     public static Stream<Arguments> validDataNeedRequests() {
         return Stream.of(
@@ -269,5 +275,16 @@ class DataNeedsManagementFullTest {
         String expectedLocationHeader = "management/" + response.getBody().id();
         assertNotNull(response.getHeaders().getLocation());
         assertEquals(expectedLocationHeader, response.getHeaders().getLocation().toString());
+    }
+
+    @org.springframework.boot.test.context.TestConfiguration
+    static class TestConfiguration {
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+            http.securityMatcher("/**")
+                .authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
+
+            return http.build();
+        }
     }
 }

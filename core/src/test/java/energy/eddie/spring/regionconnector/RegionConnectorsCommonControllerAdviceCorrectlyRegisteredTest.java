@@ -2,6 +2,7 @@ package energy.eddie.spring.regionconnector;
 
 import energy.eddie.core.CoreSpringConfig;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.shared.security.JwtUtil;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,8 @@ class RegionConnectorsCommonControllerAdviceCorrectlyRegisteredTest {
     private WebApplicationContext applicationContext;
     @MockBean
     private DataNeedsService unusedDataNeedsService;
+    @MockBean
+    private JwtUtil jwtUtil;
     private MockMvc mockMvc;
 
     @BeforeEach
