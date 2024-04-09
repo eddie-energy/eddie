@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda.permission.request.validation;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -26,7 +26,7 @@ class NotOlderThanValidatorTest {
                 LocalDate.now(ZoneOffset.UTC).minusDays(15),
                 null,
                 "mpid",
-                Granularity.PT15M,
+                AllowedGranularity.PT15M,
                 "cmId",
                 "concId");
 
@@ -53,7 +53,7 @@ class NotOlderThanValidatorTest {
                 LocalDate.now(ZoneOffset.UTC).minusDays(5),
                 null,
                 "mpid",
-                Granularity.PT15M,
+                AllowedGranularity.PT15M,
                 "cmId",
                 "concId");
 
@@ -77,7 +77,7 @@ class NotOlderThanValidatorTest {
                 LocalDate.now(ZoneOffset.UTC).plusDays(15),
                 null,
                 "mpid",
-                Granularity.PT15M,
+                AllowedGranularity.PT15M,
                 "cmId",
                 "concId");
 
@@ -101,7 +101,7 @@ class NotOlderThanValidatorTest {
                 LocalDate.now(ZoneOffset.UTC),
                 null,
                 "mpid",
-                Granularity.PT15M,
+                AllowedGranularity.PT15M,
                 "cmId",
                 "concId");
 

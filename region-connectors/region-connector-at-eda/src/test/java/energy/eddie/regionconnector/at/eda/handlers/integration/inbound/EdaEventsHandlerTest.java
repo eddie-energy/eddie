@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
@@ -8,6 +7,7 @@ import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.EdaAnswerEvent;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,7 +63,7 @@ class EdaEventsHandlerTest {
         when(edaAdapter.getCMRequestStatusStream()).thenReturn(publisher.flux());
         var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
                                                          "conversationId", null, "dsoId", null, null,
-                                                         Granularity.PT15M,
+                                                         AllowedGranularity.PT15M,
                                                          PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
                                                          "", null, null);
         when(repository.findByConversationIdOrCMRequestId("conversationId", "cmRequestId"))
@@ -93,7 +93,7 @@ class EdaEventsHandlerTest {
         when(edaAdapter.getCMRequestStatusStream()).thenReturn(publisher.flux());
         var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
                                                          "conversationId", null, "dsoId", null, null,
-                                                         Granularity.PT15M,
+                                                         AllowedGranularity.PT15M,
                                                          PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
                                                          "", null, null);
         when(repository.findByConversationIdOrCMRequestId("conversationId", "cmRequestId"))
@@ -118,7 +118,7 @@ class EdaEventsHandlerTest {
         when(edaAdapter.getCMRequestStatusStream()).thenReturn(publisher.flux());
         var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
                                                          "conversationId", null, "dsoId", null, null,
-                                                         Granularity.PT15M,
+                                                         AllowedGranularity.PT15M,
                                                          PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT,
                                                          "", null, null);
         when(repository.findByConversationIdOrCMRequestId("conversationId", null))
@@ -146,7 +146,7 @@ class EdaEventsHandlerTest {
         when(edaAdapter.getCMRequestStatusStream()).thenReturn(publisher.flux());
         var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
                                                          "conversationId", null, "dsoId", null, null,
-                                                         Granularity.PT15M,
+                                                         AllowedGranularity.PT15M,
                                                          PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
                                                          "", null, null);
         when(repository.findByConversationIdOrCMRequestId("conversationId", null))
@@ -170,7 +170,7 @@ class EdaEventsHandlerTest {
         when(edaAdapter.getCMRequestStatusStream()).thenReturn(publisher.flux());
         var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
                                                          "conversationId", null, "dsoId", null, null,
-                                                         Granularity.PT15M,
+                                                         AllowedGranularity.PT15M,
                                                          PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
                                                          "", null, null);
         when(repository.findByConversationIdOrCMRequestId("conversationId", null))
@@ -201,6 +201,4 @@ class EdaEventsHandlerTest {
         // Then
         verify(outbox, never()).commit(any());
     }
-
-
 }

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda.requests;
 
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
-import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import energy.eddie.regionconnector.at.eda.utils.CMRequestId;
 
@@ -13,7 +13,7 @@ public record CCMORequest(
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint,
         CCMOTimeFrame timeframe,
         RequestDataType requestDataType,
-        AllowedMeteringIntervalType intervalType,
+        AllowedGranularity granularity,
         AllowedTransmissionCycle transmissionCycle,
         AtConfiguration configuration,
         ZonedDateTime timestamp

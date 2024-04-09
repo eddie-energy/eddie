@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.at.eda.requests;
 
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
-import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +29,7 @@ class CCMORequestTest {
                 dsoIdAndMeteringPoint,
                 timeFrame,
                 RequestDataType.METERING_DATA,
-                AllowedMeteringIntervalType.D,
+                AllowedGranularity.P1D,
                 AllowedTransmissionCycle.D,
                 atConfiguration,
                 dt
@@ -56,7 +56,7 @@ class CCMORequestTest {
                 dsoIdAndMeteringPoint,
                 timeFrame,
                 RequestDataType.METERING_DATA,
-                AllowedMeteringIntervalType.D,
+                AllowedGranularity.P1D,
                 AllowedTransmissionCycle.D,
                 atConfiguration,
                 dt

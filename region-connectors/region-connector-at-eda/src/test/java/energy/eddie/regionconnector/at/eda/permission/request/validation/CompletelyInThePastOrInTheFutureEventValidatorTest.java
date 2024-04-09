@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.at.eda.permission.request.validation;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -22,7 +22,7 @@ class CompletelyInThePastOrInTheFutureEventValidatorTest {
                 "pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"),
                 start,
                 end,
-                "mid", Granularity.PT15M, "cmId", "convId"
+                "mid", AllowedGranularity.PT15M, "cmId", "convId"
         );
 
         // When
@@ -46,7 +46,7 @@ class CompletelyInThePastOrInTheFutureEventValidatorTest {
                 "pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"),
                 start,
                 end,
-                "mid", Granularity.PT15M, "cmId", "convId"
+                "mid", AllowedGranularity.PT15M, "cmId", "convId"
         );
 
         // When
@@ -66,7 +66,7 @@ class CompletelyInThePastOrInTheFutureEventValidatorTest {
                 "pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"),
                 start,
                 end,
-                "mid", Granularity.PT15M, "cmId", "convId"
+                "mid", AllowedGranularity.PT15M, "cmId", "convId"
         );
         var validator = new CompletelyInThePastOrInTheFutureEventValidator();
 
@@ -86,7 +86,7 @@ class CompletelyInThePastOrInTheFutureEventValidatorTest {
                 "pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"),
                 now,
                 null,
-                "mid", Granularity.PT15M, "cmId", "convId"
+                "mid", AllowedGranularity.PT15M, "cmId", "convId"
         );
 
         // When
@@ -105,7 +105,7 @@ class CompletelyInThePastOrInTheFutureEventValidatorTest {
                 "pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"),
                 now.plusDays(10),
                 null,
-                "mid", Granularity.PT15M, "cmId", "convId"
+                "mid", AllowedGranularity.PT15M, "cmId", "convId"
         );
 
         // When
@@ -124,7 +124,7 @@ class CompletelyInThePastOrInTheFutureEventValidatorTest {
                 "pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"),
                 now.minusDays(10),
                 null,
-                "mid", Granularity.PT15M, "cmId", "convId"
+                "mid", AllowedGranularity.PT15M, "cmId", "convId"
         );
 
 

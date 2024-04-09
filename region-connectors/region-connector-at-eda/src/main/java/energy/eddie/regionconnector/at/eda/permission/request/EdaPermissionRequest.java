@@ -1,11 +1,11 @@
 package energy.eddie.regionconnector.at.eda.permission.request;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
@@ -42,7 +42,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text")
-    private final Granularity granularity;
+    private final AllowedGranularity granularity;
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text")
@@ -51,7 +51,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
 
     public EdaPermissionRequest(
             String connectionId, String dataNeedId, CCMORequest ccmoRequest,
-            Granularity granularity, PermissionProcessStatus status, String message,
+            AllowedGranularity granularity, PermissionProcessStatus status, String message,
             String consentId
     ) {
         this(connectionId, UUID.randomUUID().toString(), dataNeedId, ccmoRequest, granularity, status, message,
@@ -60,7 +60,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
 
     public EdaPermissionRequest(
             String connectionId, String permissionId, String dataNeedId, CCMORequest ccmoRequest,
-            Granularity granularity, PermissionProcessStatus status, String message,
+            AllowedGranularity granularity, PermissionProcessStatus status, String message,
             @Nullable String consentId
     ) {
         this(connectionId, permissionId, dataNeedId, ccmoRequest.cmRequestId(), ccmoRequest.messageId(),
@@ -72,7 +72,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     public EdaPermissionRequest(
             String connectionId, String permissionId, String dataNeedId, String cmRequestId,
             String conversationId, @Nullable String meteringPointId, String dsoId,
-            LocalDate start, @Nullable LocalDate end, Granularity granularity,
+            LocalDate start, @Nullable LocalDate end, AllowedGranularity granularity,
             PermissionProcessStatus status, String message, @Nullable String consentId,
             ZonedDateTime created
     ) {
@@ -114,6 +114,41 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     }
 
     @Override
+    public PermissionProcessStatus status() {
+        return status;
+    }
+
+    @Override
+    public PermissionRequestState state() {
+        return null;
+    }
+
+    @Override
+    public DataSourceInformation dataSourceInformation() {
+        return dataSourceInformation;
+    }
+
+    @Override
+    public ZonedDateTime created() {
+        return created;
+    }
+
+    @Override
+    public void changeState(PermissionRequestState state) {
+        // NoOp
+    }
+
+    @Override
+    public LocalDate start() {
+        return start;
+    }
+
+    @Override
+    public LocalDate end() {
+        return end;
+    }
+
+    @Override
     public String cmRequestId() {
         return cmRequestId;
     }
@@ -134,47 +169,12 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     }
 
     @Override
-    public LocalDate start() {
-        return start;
-    }
-
-    @Override
-    public LocalDate end() {
-        return end;
-    }
-
-    @Override
-    public PermissionRequestState state() {
-        return null;
-    }
-
-    @Override
-    public DataSourceInformation dataSourceInformation() {
-        return dataSourceInformation;
-    }
-
-    @Override
-    public ZonedDateTime created() {
-        return created;
-    }
-
-    @Override
     public String message() {
         return message;
     }
 
     @Override
-    public Granularity granularity() {
+    public AllowedGranularity granularity() {
         return granularity;
-    }
-
-    @Override
-    public void changeState(PermissionRequestState state) {
-        // NoOp
-    }
-
-    @Override
-    public PermissionProcessStatus status() {
-        return status;
     }
 }

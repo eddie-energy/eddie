@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.at.eda.permission.request.events;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -23,7 +23,7 @@ public class CreatedEvent extends PersistablePermissionEvent {
     private final String meteringPointId;
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text")
-    private final Granularity granularity;
+    private final AllowedGranularity granularity;
     private final String cmRequestId;
     private final String conversationId;
 
@@ -48,7 +48,7 @@ public class CreatedEvent extends PersistablePermissionEvent {
             LocalDate start,
             LocalDate end,
             String meteringPointId,
-            Granularity granularity,
+            AllowedGranularity granularity,
             String cmRequestId,
             String conversationId
     ) {
@@ -65,7 +65,7 @@ public class CreatedEvent extends PersistablePermissionEvent {
             LocalDate start,
             LocalDate end,
             String meteringPointId,
-            Granularity granularity,
+            AllowedGranularity granularity,
             String cmRequestId,
             String conversationId
     ) {
@@ -110,7 +110,7 @@ public class CreatedEvent extends PersistablePermissionEvent {
         return meteringPointId;
     }
 
-    public Granularity granularity() {
+    public AllowedGranularity granularity() {
         return granularity;
     }
 

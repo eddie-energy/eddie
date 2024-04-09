@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.at.eda.handlers;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
@@ -9,9 +8,9 @@ import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import jakarta.xml.bind.JAXBException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -46,7 +45,7 @@ class SendingEventHandlerTest {
         var end = start.plusDays(10);
         var permissionRequest = new EdaPermissionRequest(
                 "connectionId", "pid", "dnid", "cmRequestId", "conversationId", "mid", "dsoId", start, end,
-                Granularity.PT15M, PermissionProcessStatus.VALIDATED, "", null,
+                AllowedGranularity.PT15M, PermissionProcessStatus.VALIDATED, "", null,
                 ZonedDateTime.now(ZoneOffset.UTC)
         );
         when(repository.findByPermissionId("pid"))
@@ -65,13 +64,13 @@ class SendingEventHandlerTest {
     }
 
     @Test
-    void testAcceptCommitsUnableToSend_whenPontonUnavailable() throws TransmissionException, JAXBException {
+    void testAcceptCommitsUnableToSend_whenPontonUnavailable() throws TransmissionException {
         // Given
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         var permissionRequest = new EdaPermissionRequest(
                 "connectionId", "pid", "dnid", "cmRequestId", "conversationId", "mid", "dsoId", start, end,
-                Granularity.PT15M, PermissionProcessStatus.VALIDATED, "", null,
+                AllowedGranularity.PT15M, PermissionProcessStatus.VALIDATED, "", null,
                 ZonedDateTime.now(ZoneOffset.UTC)
         );
         when(repository.findByPermissionId("pid"))

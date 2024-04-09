@@ -84,9 +84,9 @@ public record CMRequest01p20(
     }
 
     private MeteringIntervallType meteringIntervall(CCMORequest ccmoRequest) {
-        return switch (ccmoRequest.intervalType()) {
-            case QH -> MeteringIntervallType.QH;
-            case D -> MeteringIntervallType.D;
+        return switch (ccmoRequest.granularity()) {
+            case PT15M -> MeteringIntervallType.QH;
+            case P1D -> MeteringIntervallType.D;
         };
     }
 

@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.at.eda.permission.request.validation;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
@@ -26,7 +26,7 @@ class MeteringPointMatchesDsoIdValidatorTest {
                 null,
                 null,
                 meteringPointId,
-                Granularity.PT15M,
+                AllowedGranularity.PT15M,
                 "cmId",
                 "concId");
         // When
@@ -47,7 +47,7 @@ class MeteringPointMatchesDsoIdValidatorTest {
                 null,
                 null,
                 "0".repeat(DSO_ID_LENGTH) + "123456789",
-                Granularity.PT15M,
+                AllowedGranularity.PT15M,
                 "cmId",
                 "concId");
         // When
@@ -68,7 +68,7 @@ class MeteringPointMatchesDsoIdValidatorTest {
                 null,
                 null,
                 "1".repeat(DSO_ID_LENGTH) + "123456789",
-                Granularity.PT15M,
+                AllowedGranularity.PT15M,
                 "cmId",
                 "concId");
         // When

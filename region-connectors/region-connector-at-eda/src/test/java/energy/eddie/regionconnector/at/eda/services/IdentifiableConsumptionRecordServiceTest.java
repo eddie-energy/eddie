@@ -1,22 +1,19 @@
 package energy.eddie.regionconnector.at.eda.services;
 
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.*;
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
-import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
-import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._01p31.EdaConsumptionRecord01p31;
-import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
+import energy.eddie.regionconnector.at.eda.dto.*;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -61,12 +58,12 @@ class IdentifiableConsumptionRecordServiceTest {
     private EdaConsumptionRecord createConsumptionRecord(String meteringPoint) {
         var meteringType = "L1";
         var consumptionValue = 10;
-        var meteringInterval = MeteringIntervall.QH;
-        var unit = UOMType.KWH;
+        var granularity = Granularity.PT15M;
+        var unit = "KWH";
         return createConsumptionRecord(meteringPoint,
                                        meteringType,
-                                       ZonedDateTime.now(ZoneOffset.UTC),
-                                       meteringInterval,
+                                       LocalDate.now(ZoneOffset.UTC),
+                                       granularity,
                                        consumptionValue,
                                        unit);
     }
@@ -74,29 +71,28 @@ class IdentifiableConsumptionRecordServiceTest {
     private EdaConsumptionRecord createConsumptionRecord(
             String meteringPoint,
             String meteringType,
-            ZonedDateTime meteringPeriodStart,
-            MeteringIntervall meteringIntervall,
+            LocalDate meteringPeriodStart,
+            Granularity granularity,
             double consumptionValue,
-            UOMType unit
+            String unit
     ) {
-        var edaCR = new ConsumptionRecord();
-        ProcessDirectory processDirectory = new ProcessDirectory();
-        edaCR.setProcessDirectory(processDirectory);
-        processDirectory.setMeteringPoint(meteringPoint);
-        Energy energy = new Energy();
-        energy.setMeteringIntervall(meteringIntervall);
-        energy.setNumberOfMeteringIntervall(BigInteger.valueOf(1));
-        energy.setMeteringPeriodStart(DateTimeConverter.dateToXml(meteringPeriodStart.toLocalDate()));
-        energy.setMeteringPeriodEnd(DateTimeConverter.dateToXml(meteringPeriodStart.toLocalDate()));
-        EnergyData energyData = new EnergyData();
-        energyData.setUOM(unit);
-        EnergyPosition energyPosition = new EnergyPosition();
-        energyPosition.setMM(meteringType);
-        energyPosition.setBQ(BigDecimal.valueOf(consumptionValue));
-        energyData.getEP().add(energyPosition);
-        energy.getEnergyData().add(energyData);
-        processDirectory.getEnergy().add(energy);
-        return new EdaConsumptionRecord01p31(edaCR);
+        return new SimpleEdaConsumptionRecord()
+                .setMeteringPoint(meteringPoint)
+                .setStartDate(meteringPeriodStart)
+                .setEndDate(meteringPeriodStart)
+                .setEnergy(List.of(
+                        new SimpleEnergy()
+                                .setGranularity(granularity)
+                                .setEnergyData(List.of(
+                                        new SimpleEnergyData()
+                                                .setBillingUnit(unit)
+                                                .setEnergyPositions(List.of(new EnergyPosition(
+                                                                            BigDecimal.valueOf(consumptionValue),
+                                                                            meteringType)
+                                                                    )
+                                                )
+                                ))
+                ));
     }
 
     @Test

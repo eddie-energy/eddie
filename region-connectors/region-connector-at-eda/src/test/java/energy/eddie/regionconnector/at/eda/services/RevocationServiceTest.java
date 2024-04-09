@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.at.eda.services;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
@@ -9,6 +8,7 @@ import energy.eddie.regionconnector.at.eda.dto.SimpleEdaCMRevoke;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,8 +39,13 @@ class RevocationServiceTest {
     void revokeWithConsentId_revokesPermissionRequest() {
         // Given
         var edaAdapter = mock(EdaAdapter.class);
-        var permissionRequest = new EdaPermissionRequest("cid", "dnid", mock(CCMORequest.class), Granularity.PT15M,
-                                                         PermissionProcessStatus.ACCEPTED, null, null);
+        var permissionRequest = new EdaPermissionRequest("cid",
+                                                         "dnid",
+                                                         mock(CCMORequest.class),
+                                                         AllowedGranularity.PT15M,
+                                                         PermissionProcessStatus.ACCEPTED,
+                                                         null,
+                                                         null);
         TestPublisher<EdaCMRevoke> revocationStream = TestPublisher.create();
         when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());
         var repository = mock(AtPermissionRequestRepository.class);
@@ -64,7 +69,7 @@ class RevocationServiceTest {
         LocalDate now = LocalDate.now(AT_ZONE_ID);
         when(ccmoRequest.start()).thenReturn(now);
         when(ccmoRequest.end()).thenReturn(Optional.of(now.plusDays(10)));
-        var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, Granularity.PT15M,
+        var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, AllowedGranularity.PT15M,
                                                          PermissionProcessStatus.ACCEPTED, null, null);
         TestPublisher<EdaCMRevoke> revocationStream = TestPublisher.create();
         when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());
@@ -95,7 +100,7 @@ class RevocationServiceTest {
         LocalDate now = LocalDate.now(AT_ZONE_ID);
         when(ccmoRequest.start()).thenReturn(now);
         when(ccmoRequest.end()).thenReturn(Optional.of(now.plusDays(10)));
-        var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, Granularity.PT15M,
+        var permissionRequest = new EdaPermissionRequest("cid", "dnid", ccmoRequest, AllowedGranularity.PT15M,
                                                          PermissionProcessStatus.CREATED, null, null);
         TestPublisher<EdaCMRevoke> revocationStream = TestPublisher.create();
         when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());

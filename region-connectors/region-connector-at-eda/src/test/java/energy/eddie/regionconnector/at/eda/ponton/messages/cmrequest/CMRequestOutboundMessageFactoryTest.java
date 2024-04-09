@@ -7,13 +7,14 @@ import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
 import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
 import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
-import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
@@ -24,6 +25,7 @@ import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {MarshallerConfig.class})
 @Import(MarshallerConfig.class)
 public abstract class CMRequestOutboundMessageFactoryTest {
 
@@ -42,7 +44,7 @@ public abstract class CMRequestOutboundMessageFactoryTest {
         var request = new CCMORequest(dsoIdAndMeteringPoint,
                                       timeFrame,
                                       RequestDataType.METERING_DATA,
-                                      AllowedMeteringIntervalType.D,
+                                      AllowedGranularity.P1D,
                                       AllowedTransmissionCycle.D,
                                       atConfiguration,
                                       ZonedDateTime.now(AT_ZONE_ID));

@@ -1,14 +1,13 @@
 package energy.eddie.regionconnector.at.eda;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import jakarta.xml.bind.JAXBException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -47,7 +46,7 @@ class EdaRegionConnectorTest {
     }
 
     @Test
-    void terminateNonExistingPermission_doesNothing() throws TransmissionException, JAXBException {
+    void terminateNonExistingPermission_doesNothing() throws TransmissionException {
         // given
         when(repository.findByPermissionId("permissionId")).thenReturn(Optional.empty());
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
@@ -61,13 +60,13 @@ class EdaRegionConnectorTest {
     }
 
     @Test
-    void terminateExistingPermission_sendsCmRevoke() throws TransmissionException, JAXBException {
+    void terminateExistingPermission_sendsCmRevoke() throws TransmissionException {
         // given
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
                                                          "conversationId", "mid", "dsoId", start, end,
-                                                         Granularity.PT15M,
+                                                         AllowedGranularity.PT15M,
                                                          PermissionProcessStatus.ACCEPTED, "",
                                                          "consentId", ZonedDateTime.now(ZoneOffset.UTC));
         when(repository.findByPermissionId("permissionId")).thenReturn(Optional.of(permissionRequest));
@@ -84,14 +83,14 @@ class EdaRegionConnectorTest {
     }
 
     @Test
-    void terminatePermission_edaThrows_terminatesOnEPSide() throws TransmissionException, JAXBException {
+    void terminatePermission_edaThrows_terminatesOnEPSide() throws TransmissionException {
         // given
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         doThrow(new TransmissionException(null)).when(edaAdapter).sendCMRevoke(any());
         var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
                                                          "conversationId", "mid", "dsoId", start, end,
-                                                         Granularity.PT15M,
+                                                         AllowedGranularity.PT15M,
                                                          PermissionProcessStatus.ACCEPTED, "",
                                                          "consentId", ZonedDateTime.now(ZoneOffset.UTC));
         when(repository.findByPermissionId("permissionId")).thenReturn(Optional.of(permissionRequest));
