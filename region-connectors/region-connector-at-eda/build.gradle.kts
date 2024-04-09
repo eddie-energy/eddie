@@ -59,6 +59,7 @@ dependencies {
     testImplementation(libs.spring.boot.testcontainers)
     testImplementation(libs.flyway.core)
     testImplementation(libs.flyway.postgresql)
+    testImplementation(libs.okhttp3.mockwebserver)
     testRuntimeOnly(libs.postgresql)
 }
 

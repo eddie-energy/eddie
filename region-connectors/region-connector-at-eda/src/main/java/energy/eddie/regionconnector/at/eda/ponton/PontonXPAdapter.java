@@ -20,6 +20,7 @@ import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.models.ResponseCode;
 import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactoryCollection;
+import energy.eddie.regionconnector.at.eda.ponton.messenger.MessengerHealth;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
 import jakarta.validation.constraints.NotNull;
@@ -33,7 +34,6 @@ import reactor.core.publisher.Sinks;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
@@ -53,16 +53,19 @@ public class PontonXPAdapter implements EdaAdapter {
     private final PontonXPAdapterConfiguration config;
     private final OutboundMessageFactoryCollection outboundMessageFactoryCollection;
     private final InboundMessageFactoryCollection inboundMessageFactoryCollection;
+    private final MessengerHealth messengerHealth;
     private final MessengerConnection messengerConnection;
 
     public PontonXPAdapter(
             PontonXPAdapterConfiguration config,
             OutboundMessageFactoryCollection outboundMessageFactoryCollection,
-            InboundMessageFactoryCollection inboundMessageFactoryCollection
+            InboundMessageFactoryCollection inboundMessageFactoryCollection,
+            MessengerHealth messengerHealth
     ) throws IOException, ConnectionException {
         this.config = config;
         this.outboundMessageFactoryCollection = outboundMessageFactoryCollection;
         this.inboundMessageFactoryCollection = inboundMessageFactoryCollection;
+        this.messengerHealth = messengerHealth;
         final String adapterId = config.adapterId();
         final String adapterVersion = config.adapterVersion();
         final String hostname = config.hostname();
@@ -343,13 +346,11 @@ public class PontonXPAdapter implements EdaAdapter {
     @Override
     public Map<String, HealthState> health() {
         Map<String, HealthState> healthChecks = new HashMap<>();
-        try {
-            InetAddress address = InetAddress.getByName(config.hostname());
-            healthChecks.put(PONTON_HOST, address.isReachable(PING_TIMEOUT) ? HealthState.UP : HealthState.DOWN);
-        } catch (IOException e) {
-            LOGGER.warn("Ponton XP Messenger Host not reachable", e);
-            healthChecks.put(PONTON_HOST, HealthState.DOWN);
-        }
+        var status = messengerHealth.messengerStatus();
+        healthChecks.put(PONTON_HOST, status.ok() ? HealthState.UP : HealthState.DOWN);
+        status.healthChecks().values()
+              .forEach(healthCheck -> healthChecks.put(PONTON_HOST + "." + healthCheck.name(),
+                                                       healthCheck.ok() ? HealthState.UP : HealthState.DOWN));
         return healthChecks;
     }
 }

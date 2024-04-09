@@ -28,6 +28,7 @@ depends on the way you deploy the region connector.
 | `region-connector.at.eda.ponton.messenger.adapter.version` | Version number of the adapter                                                                                                                                                                                                                                                                                                                                                                          |
 | `region-connector.at.eda.ponton.messenger.hostname`        | URL or IP address of your PontonXP Messenger.                                                                                                                                                                                                                                                                                                                                                          |
 | `region-connector.at.eda.ponton.messenger.port`            | The port that is used for connecting to the messenger. If you did not change this in the `server.xml` file of the messenger it should be `2600`.                                                                                                                                                                                                                                                       |
+| `region-connector.at.eda.ponton.messenger.api.endpoint`    | Endpoint of the XP Messenger REST API. Default should be <hostname>[:<api-port>]/api                                                                                                                                                                                                                                                                                                                   |                                                                                                                                                                 
 | `region-connector.at.eda.ponton.messenger.folder`          | Folder that is used to store information that the adapter needs for operating. This folder stores the `id.dat` file that is generated when the region connector first connects to the PontonXP Messenger. This file is used by the messenger to authenticate the adapter, i.e. all subsequent instances of the same adapter (same adapter id) need this file if they want to connect to the messenger. |
 | `region-connector.at.eda.conversation.id.prefix`           | A prefix for the generated conversation id, to enable routing between different ponton xp adapters from one xp messenger. Can be omitted if not needed.                                                                                                                                                                                                                                                |                                                                                                                                                                                                                                                                              |
 
@@ -41,6 +42,7 @@ region-connector.at.eda.ponton.messenger.adapter.id=Eddie
 region-connector.at.eda.ponton.messenger.adapter.version=1.0.0
 region-connector.at.eda.ponton.messenger.hostname=pontonxp.messenger.com
 region-connector.at.eda.ponton.messenger.port=2600
+region-connector.at.eda.ponton.messenger.api.endpoint=pontonxp.messenger.com/api
 region-connector.at.eda.ponton.messenger.folder=/opt/pontonxp
 region-connector.at.eda.conversation.id.prefix=test-instance-
 ```
@@ -60,6 +62,7 @@ REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_ADAPTER_ID=Eddie
 REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_ADAPTER_VERSION=1.0.0
 REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_HOSTNAME=pontonxp.messenger.com
 REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_PORT=2600
+REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_API_ENDPOINT=pontonxp.messenger.com/api
 REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_FOLDER=/opt/pontonxp
 ```
 

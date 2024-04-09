@@ -21,6 +21,8 @@ import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactoryCollection;
+import energy.eddie.regionconnector.at.eda.ponton.messenger.MessengerHealth;
+import energy.eddie.regionconnector.at.eda.ponton.messenger.RestClientMessengerHealth;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
 import energy.eddie.regionconnector.at.eda.provider.v0_82.EdaEddieValidatedHistoricalDataMarketDocumentProvider;
@@ -41,6 +43,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.web.client.RestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -62,9 +65,15 @@ public class AtEdaBeanConfig {
             @Value("${" + ADAPTER_VERSION_KEY + "}") String adapterVersion,
             @Value("${" + HOSTNAME_KEY + "}") String hostname,
             @Value("${" + PORT_KEY + "}") int port,
+            @Value("${" + API_ENDPOINT_KEY + "}") String apiEndpoint,
             @Value("${" + WORK_FOLDER_KEY + "}") String workFolder
     ) {
-        return new PlainPontonXPAdapterConfiguration(adapterId, adapterVersion, hostname, port, workFolder);
+        return new PlainPontonXPAdapterConfiguration(adapterId,
+                                                     adapterVersion,
+                                                     hostname,
+                                                     port,
+                                                     apiEndpoint,
+                                                     workFolder);
     }
 
     @Bean
@@ -92,12 +101,14 @@ public class AtEdaBeanConfig {
     public EdaAdapter edaAdapter(
             PontonXPAdapterConfiguration configuration,
             OutboundMessageFactoryCollection outboundMessageFactoryCollection,
-            InboundMessageFactoryCollection inboundMessageFactoryCollection
+            InboundMessageFactoryCollection inboundMessageFactoryCollection,
+            MessengerHealth messengerHealth
     ) throws IOException, ConnectionException {
         return new PontonXPAdapter(
                 configuration,
                 outboundMessageFactoryCollection,
-                inboundMessageFactoryCollection
+                inboundMessageFactoryCollection,
+                messengerHealth
         );
     }
 
@@ -169,6 +180,16 @@ public class AtEdaBeanConfig {
     @Bean
     public FulfillmentService fulfillmentService() {
         return new FulfillmentService();
+    }
+
+    @Bean
+    public RestClient restClient() {
+        return RestClient.create();
+    }
+
+    @Bean
+    public MessengerHealth messengerHealth(RestClient restClient, PontonXPAdapterConfiguration config) {
+        return new RestClientMessengerHealth(restClient, config);
     }
 
     @Bean
