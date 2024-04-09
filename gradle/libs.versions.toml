@@ -1,6 +1,6 @@
 # See: https://docs.gradle.org/current/userguide/platforms.html#sub:conventional-dependencies-toml
 [versions]
-spring-boot = "3.1.8"
+spring-boot = "3.2.4"
 spring-dependency-management = "1.1.2"
 spring-retry = "2.0.4"
 spring-aspects = "6.1.1"
