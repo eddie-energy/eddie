@@ -1,6 +1,8 @@
 package energy.eddie.core;
 
 import energy.eddie.regionconnector.shared.security.JwtUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,17 +10,28 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class CoreSecurityConfig {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CoreSecurityConfig.class);
+
     /**
      * Add a custom security filter chain for core, otherwise Spring will create a default one.
      */
     @Bean
-    public SecurityFilterChain coreSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.securityMatcher("/api/**")
-            .authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
+    public SecurityFilterChain coreSecurityFilterChain(
+            HttpSecurity http,
+            CorsConfigurationSource corsConfigurationSource
+    ) throws Exception {
+        http.securityMatcher("/api/**", "/lib/**")
+            .authorizeHttpRequests(requests -> requests.anyRequest().permitAll())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource));
 
         return http.build();
     }
@@ -34,5 +47,25 @@ public class CoreSecurityConfig {
     @Bean
     public JwtUtil jwtUtil(@Value("${eddie.jwt.hmac.secret}") String jwtHmacSecret) {
         return new JwtUtil(jwtHmacSecret);
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(@Value("${eddie.cors.allowed-origins:}") String allowedCorsOrigins) {
+        if (allowedCorsOrigins.isEmpty()) {
+            LOGGER.info("No CORS origins configured, will not set any CORS headers.");
+            return new UrlBasedCorsConfigurationSource();
+        }
+
+        LOGGER.info("Will allow CORS requests from origin patterns '{}'", allowedCorsOrigins);
+
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setExposedHeaders(List.of("Location"));
+        configuration.setAllowedOriginPatterns(List.of(allowedCorsOrigins));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE"));
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedHeaders(List.of("content-type"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
