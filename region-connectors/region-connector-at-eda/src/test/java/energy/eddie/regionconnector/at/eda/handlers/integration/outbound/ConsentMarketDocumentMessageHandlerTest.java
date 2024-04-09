@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.at.eda.handlers.integration.outbound;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
@@ -9,6 +8,7 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -39,7 +39,7 @@ class ConsentMarketDocumentMessageHandlerTest {
         var end = start.plusDays(10);
         EdaPermissionRequest permissionRequest = new EdaPermissionRequest(
                 "connectionId", "pid", "dnid", "cmRequestId", "conversationId", "mid", "dsoId", start, end,
-                Granularity.PT15M, PermissionProcessStatus.VALIDATED, "", null,
+                AllowedGranularity.PT15M, PermissionProcessStatus.VALIDATED, "", null,
                 ZonedDateTime.now(ZoneOffset.UTC)
         );
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));

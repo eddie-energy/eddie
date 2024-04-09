@@ -6,7 +6,7 @@ import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
 import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
 import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
-import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +31,7 @@ class CMRequest01p20Test {
         var request = new CMRequest01p20(new CCMORequest(dsoIdAndMeteringPoint,
                                                          timeFrame,
                                                          RequestDataType.METERING_DATA,
-                                                         AllowedMeteringIntervalType.D,
+                                                         AllowedGranularity.P1D,
                                                          AllowedTransmissionCycle.D,
                                                          atConfiguration,
                                                          ZonedDateTime.now(AT_ZONE_ID)));
@@ -53,7 +53,7 @@ class CMRequest01p20Test {
         var request = new CMRequest01p20(new CCMORequest(dsoIdAndMeteringPoint,
                                                          timeFrame,
                                                          RequestDataType.METERING_DATA,
-                                                         AllowedMeteringIntervalType.D,
+                                                         AllowedGranularity.P1D,
                                                          AllowedTransmissionCycle.D,
                                                          atConfiguration,
                                                          ZonedDateTime.now(AT_ZONE_ID)));
@@ -76,7 +76,7 @@ class CMRequest01p20Test {
         var request = new CMRequest01p20(new CCMORequest(dsoIdAndMeteringPoint,
                                                          timeFrame,
                                                          RequestDataType.METERING_DATA,
-                                                         AllowedMeteringIntervalType.D,
+                                                         AllowedGranularity.P1D,
                                                          AllowedTransmissionCycle.D,
                                                          atConfiguration,
                                                          ZonedDateTime.now(AT_ZONE_ID)));

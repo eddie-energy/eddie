@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.at.api;
 
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 
 import java.util.Optional;
 
@@ -51,5 +51,5 @@ public interface AtPermissionRequest extends PermissionRequest {
      *
      * @return granularity
      */
-    Granularity granularity();
+    AllowedGranularity granularity();
 }

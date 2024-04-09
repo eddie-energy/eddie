@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda.permission.request.validation;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -23,7 +23,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
                 LocalDate.now(ZoneOffset.UTC),
                 null,
                 "mpid",
-                Granularity.PT15M,
+                AllowedGranularity.PT15M,
                 "cmId",
                 "concId");
 
@@ -48,7 +48,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
                 start,
                 end,
                 "mpid",
-                Granularity.PT15M,
+                AllowedGranularity.PT15M,
                 "cmId",
                 "concId");
         // When
@@ -75,7 +75,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
                 start,
                 end,
                 "mpid",
-                Granularity.PT15M,
+                AllowedGranularity.PT15M,
                 "cmId",
                 "concId");
 
@@ -99,7 +99,7 @@ class StartIsBeforeOrEqualEndValidatorTest {
                 start,
                 start,
                 "mpid",
-                Granularity.PT15M,
+                AllowedGranularity.PT15M,
                 "cmId",
                 "concId");
         // When

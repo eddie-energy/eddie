@@ -1,11 +1,11 @@
 package energy.eddie.regionconnector.at.eda.persistence;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -66,7 +66,7 @@ class JpaPermissionRequestRepositoryTest {
         var end = LocalDate.of(2024, 1, 31);
         String conversationId = "convId";
         PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
-                                                 end, "mid", Granularity.PT15M, "cmRequestId",
+                                                 end, "mid", AllowedGranularity.PT15M, "cmRequestId",
                                                  conversationId);
         permissionEventRepository.saveAndFlush(event);
 
@@ -84,7 +84,7 @@ class JpaPermissionRequestRepositoryTest {
         var end = LocalDate.of(2024, 1, 31);
         String conversationId = "convId";
         PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
-                                                 end, "mid", Granularity.PT15M, "cmRequestId",
+                                                 end, "mid", AllowedGranularity.PT15M, "cmRequestId",
                                                  conversationId);
         permissionEventRepository.saveAndFlush(event);
 
@@ -102,7 +102,7 @@ class JpaPermissionRequestRepositoryTest {
         var end = LocalDate.of(2024, 1, 31);
         String conversationId = "convId";
         PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
-                                                 end, "mid", Granularity.PT15M, "cmRequestId",
+                                                 end, "mid", AllowedGranularity.PT15M, "cmRequestId",
                                                  "otherId");
         permissionEventRepository.saveAndFlush(event);
 
@@ -120,7 +120,7 @@ class JpaPermissionRequestRepositoryTest {
         var end = LocalDate.of(2024, 1, 31);
         String conversationId = "convId";
         PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
-                                                 end, "mid", Granularity.PT15M, "cmRequestId",
+                                                 end, "mid", AllowedGranularity.PT15M, "cmRequestId",
                                                  conversationId);
         permissionEventRepository.saveAndFlush(event);
 
@@ -138,7 +138,7 @@ class JpaPermissionRequestRepositoryTest {
         var end = LocalDate.of(2024, 1, 31);
         String cmRequestId = "cmRequestId";
         PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
-                                                 end, "mid", Granularity.PT15M, cmRequestId,
+                                                 end, "mid", AllowedGranularity.PT15M, cmRequestId,
                                                  "convId");
         permissionEventRepository.saveAndFlush(event);
 

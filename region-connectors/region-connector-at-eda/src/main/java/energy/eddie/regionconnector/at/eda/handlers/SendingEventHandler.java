@@ -14,7 +14,6 @@ import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
 import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
 import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
-import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedMeteringIntervalType;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
@@ -61,10 +60,7 @@ public class SendingEventHandler implements EventHandler<PermissionEvent> {
                                           permissionRequest.meteringPointId().orElse(null)),
                 new CCMOTimeFrame(permissionRequest.start(), permissionRequest.end()),
                 RequestDataType.METERING_DATA,
-                switch (permissionRequest.granularity()) {
-                    case PT15M -> AllowedMeteringIntervalType.QH;
-                    default -> AllowedMeteringIntervalType.D; // Granularity at this point is either PT15M or P1D
-                },
+                permissionRequest.granularity(),
                 EdaRegionConnectorMetadata.TRANSMISSION_CYCLE,
                 configuration,
                 permissionRequest.created()

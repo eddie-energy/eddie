@@ -1,16 +1,12 @@
 package energy.eddie.regionconnector.at.eda.services;
 
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ConsumptionRecord;
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.Energy;
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p31.ProcessDirectory;
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.SimpleEdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
-import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._01p31.EdaConsumptionRecord01p31;
-import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import org.junit.jupiter.api.Test;
@@ -27,7 +23,6 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 
-import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -71,22 +66,41 @@ class PermissionRequestFulfillmentServiceTest {
     ) {
         return new EdaPermissionRequest("cid", "pid", "dnid", "cmRequestId", "convId",
                                         "mid", "dsoId", null, meteringDataEnd,
-                                        Granularity.PT15M, accepted, "", "consentId",
+                                        AllowedGranularity.PT15M, accepted, "", "consentId",
                                         null);
     }
 
     private EdaConsumptionRecord createConsumptionRecord(LocalDate date) {
-        return new EdaConsumptionRecord01p31(
-                new ConsumptionRecord()
-                        .withProcessDirectory(
-                                new ProcessDirectory().withEnergy(
-                                        new Energy().withMeteringPeriodEnd(
-                                                DateTimeConverter.dateTimeToXml(date.atStartOfDay(AT_ZONE_ID)
-                                                )
-                                        )
-                                )
-                        )
-        );
+        return new SimpleEdaConsumptionRecord()
+                .setEndDate(date);
+    }
+
+    @Test
+    void service_doesNotCallFulfilled_whenNoMeterReadingPresent() {
+        // Given
+        LocalDate permissionRequestEnd = LocalDate.now(ZoneOffset.UTC).minusDays(1);
+        TestPublisher<IdentifiableConsumptionRecord> testPublisher = TestPublisher.create();
+        AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd,
+                                                                        PermissionProcessStatus.ACCEPTED);
+        EdaConsumptionRecord consumptionRecord = new SimpleEdaConsumptionRecord();
+        new PermissionRequestFulfillmentService(testPublisher.flux(), outbox, fulfillmentService);
+
+        // When
+        StepVerifier.create(testPublisher.flux())
+                    .then(() -> {
+                        testPublisher.next(
+                                new IdentifiableConsumptionRecord(consumptionRecord,
+                                                                  List.of(permissionRequest),
+                                                                  null,
+                                                                  null));
+                        testPublisher.complete();
+                    })
+                    .expectNextCount(1)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(1));
+
+        // Then
+        verify(outbox, never()).commit(any());
     }
 
     @Test
@@ -193,35 +207,6 @@ class PermissionRequestFulfillmentServiceTest {
                                                                   List.of(permissionRequest),
                                                                   null,
                                                                   meteringDataEnd));
-                        testPublisher.complete();
-                    })
-                    .expectNextCount(1)
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(1));
-
-        // Then
-        verify(outbox, never()).commit(any());
-    }
-
-    @Test
-    void service_doesNotCallFulfilled_whenNoMeterReadingPresent() {
-        // Given
-        LocalDate permissionRequestEnd = LocalDate.now(ZoneOffset.UTC).minusDays(1);
-        TestPublisher<IdentifiableConsumptionRecord> testPublisher = TestPublisher.create();
-        AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd,
-                                                                        PermissionProcessStatus.ACCEPTED);
-        EdaConsumptionRecord consumptionRecord = new EdaConsumptionRecord01p31(new ConsumptionRecord()
-                                                                                       .withProcessDirectory(new ProcessDirectory()));
-        new PermissionRequestFulfillmentService(testPublisher.flux(), outbox, fulfillmentService);
-
-        // When
-        StepVerifier.create(testPublisher.flux())
-                    .then(() -> {
-                        testPublisher.next(
-                                new IdentifiableConsumptionRecord(consumptionRecord,
-                                                                  List.of(permissionRequest),
-                                                                  null,
-                                                                  null));
                         testPublisher.complete();
                     })
                     .expectNextCount(1)

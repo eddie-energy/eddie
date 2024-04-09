@@ -1,11 +1,11 @@
 package energy.eddie.regionconnector.at.eda.handlers.integration.outbound;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ class ConnectionStatusMessageHandlerTest {
         var end = start.plusDays(10);
         EdaPermissionRequest permissionRequest = new EdaPermissionRequest(
                 "connectionId", "pid", "dnid", "cmRequestId", "conversationId", "mid", "dsoId", start, end,
-                Granularity.PT15M, PermissionProcessStatus.VALIDATED, "", null,
+                AllowedGranularity.PT15M, PermissionProcessStatus.VALIDATED, "", null,
                 ZonedDateTime.now(ZoneOffset.UTC)
         );
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));
@@ -49,16 +49,16 @@ class ConnectionStatusMessageHandlerTest {
 
         // Then
         StepVerifier.create(messages.asFlux())
-                .then(messages::tryEmitComplete)
-                .assertNext(csm -> assertAll(
-                        () -> assertEquals(permissionRequest.connectionId(), csm.connectionId()),
-                        () -> assertEquals(permissionRequest.permissionId(), csm.permissionId()),
-                        () -> assertEquals(permissionRequest.dataNeedId(), csm.dataNeedId()),
-                        () -> assertEquals(permissionRequest.dataSourceInformation(), csm.dataSourceInformation()),
-                        () -> assertEquals(permissionRequest.status(), csm.status()),
-                        () -> assertEquals(permissionRequest.message(), csm.message())
-                ))
-                .verifyComplete();
+                    .then(messages::tryEmitComplete)
+                    .assertNext(csm -> assertAll(
+                            () -> assertEquals(permissionRequest.connectionId(), csm.connectionId()),
+                            () -> assertEquals(permissionRequest.permissionId(), csm.permissionId()),
+                            () -> assertEquals(permissionRequest.dataNeedId(), csm.dataNeedId()),
+                            () -> assertEquals(permissionRequest.dataSourceInformation(), csm.dataSourceInformation()),
+                            () -> assertEquals(permissionRequest.status(), csm.status()),
+                            () -> assertEquals(permissionRequest.message(), csm.message())
+                    ))
+                    .verifyComplete();
     }
 
     @Test
@@ -74,7 +74,7 @@ class ConnectionStatusMessageHandlerTest {
 
         // Then
         StepVerifier.create(messages.asFlux())
-                .then(messages::tryEmitComplete)
-                .verifyComplete();
+                    .then(messages::tryEmitComplete)
+                    .verifyComplete();
     }
 }
