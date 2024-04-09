@@ -84,8 +84,9 @@ sourceSets {
     }
 }
 
-val generateEDASchemaClasses = tasks.create<JavaExec>("generateEDASchemaClasses") {
+val generateEDASchemaClasses = tasks.register<JavaExec>("generateEDASchemaClasses") {
     description = "Generate EDA Java Classes from XSD files"
+    group = "xml"
     classpath(jaxb)
     mainClass.set("com.sun.tools.xjc.XJCFacade")
 
