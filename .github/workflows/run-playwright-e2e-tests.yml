@@ -39,6 +39,7 @@ jobs:
       - name: Write secrets to files
         run: |
           echo "${{ secrets.E2E_TEST_ALL_SECRETS }}" >  ${{ env.E2E_COMPOSE_SECRETS_FILE }}
+          echo "${{ secrets.EDDIE_JWT_HMAC_SECRET }}" >>  ${{ env.E2E_COMPOSE_SECRETS_FILE }}
           mkdir -p  ${{ env.PONTON_FOLDER }}
           echo -n "${{ secrets.PONTON_ID_DAT_FILE }}" | base64 -di > ${{ env.PONTON_ID_DAT_FILE }}
 
