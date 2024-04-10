@@ -5,7 +5,7 @@ import energy.eddie.api.v0.DataSourceInformation;
 public class DummyDataSourceInformation implements DataSourceInformation {
     @Override
     public String countryCode() {
-        return null;
+        return "AT";
     }
 
     @Override
