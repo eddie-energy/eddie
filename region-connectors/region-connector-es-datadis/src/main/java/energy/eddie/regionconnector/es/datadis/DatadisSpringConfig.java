@@ -10,7 +10,6 @@ import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.ContractApi;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
@@ -18,13 +17,9 @@ import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
 import energy.eddie.regionconnector.es.datadis.client.*;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
-import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
-import energy.eddie.regionconnector.es.datadis.permission.request.PermissionRequestFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
-import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
-import energy.eddie.regionconnector.es.datadis.services.SupplyApiService;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
@@ -163,19 +158,6 @@ public class DatadisSpringConfig {
                         ZONE_ID_SPAIN
                 )
         );
-    }
-
-    @Bean
-    public PermissionRequestService permissionRequestService(
-            EsPermissionRequestRepository repository,
-            PermissionRequestFactory permissionRequestFactory,
-            PermissionRequestConsumer permissionRequestConsumer,
-            SupplyApiService supplyApiService,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // This class is autowired from another spring context
-            DataNeedsService dataNeedsService
-    ) {
-        return new PermissionRequestService(repository, permissionRequestFactory, supplyApiService,
-                                            permissionRequestConsumer, dataNeedsService);
     }
 
     @Bean

@@ -18,12 +18,14 @@ import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundExceptio
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+@Service
 public class PermissionRequestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestService.class);
     private static final Period MAX_TIME_IN_THE_PAST = Period.ofMonths(
