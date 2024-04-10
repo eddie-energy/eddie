@@ -12,6 +12,7 @@ import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
+import energy.eddie.regionconnector.es.datadis.api.ContractApi;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
 import energy.eddie.regionconnector.es.datadis.client.*;
@@ -117,6 +118,17 @@ public class DatadisSpringConfig {
     ) {
         return new NettySupplyApiClient(httpClient, mapper, tokenProvider, config.basePath());
     }
+
+    @Bean
+    public ContractApi contractApi(
+            DatadisTokenProvider tokenProvider,
+            ObjectMapper mapper,
+            DatadisConfig config,
+            HttpClient httpClient
+    ) {
+        return new NettyContractApiClient(httpClient, mapper, tokenProvider, config.basePath());
+    }
+
 
     @Bean
     public AuthorizationApi authorizationApi(
