@@ -1,0 +1,28 @@
+[
+  {
+    "cups": "ES00XXXXXXXXXXXXXXXX",
+    "distributor": "I-DE REDES ELÉCTRICAS INTELIGENTES, S.A.U.",
+    "marketer": "-",
+    "tension": "Baja tensión",
+    "accessFare": "BAJA TENSION Y POTENCIA  > 15 kW",
+    "province": "Madrid",
+    "municipality": "MADRID",
+    "postalCode": "28046",
+    "contractedPowerkW": [
+      20.0,
+      20.0
+    ],
+    "timeDiscrimination": "",
+    "modePowerControl": "Maxímetro",
+    "startDate": "2023/07/22",
+    "endDate": "",
+    "codeFare": "3T",
+    "selfConsumptionTypeCode": null,
+    "selfConsumptionTypeDesc": null,
+    "section": null,
+    "subsection": null,
+    "partitionCoefficient": null,
+    "cau": null,
+    "installedCapacity": null
+  }
+]
