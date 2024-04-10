@@ -9,13 +9,18 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import energy.eddie.regionconnector.es.datadis.permission.request.persistence.DatadisPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.permission.request.state.AcceptedState;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
+import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import energy.eddie.regionconnector.shared.security.JwtUtil;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -35,7 +40,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = {PermissionController.class})
+@WebMvcTest(controllers = {PermissionController.class}, properties = "eddie.jwt.hmac.secret=RbNQrp0Dfd+fNoTalQQTd5MRurblhcDtVYaPGoDsg8Q=")
+@AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 class PermissionControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
     @Autowired
@@ -44,6 +50,8 @@ class PermissionControllerTest {
     private PermissionRequestService mockService;
     @MockBean
     private DatadisPermissionRequestRepository unusedMockRepository;
+    @SpyBean
+    private JwtUtil spyJwtUtil;
 
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {
@@ -227,6 +235,33 @@ class PermissionControllerTest {
         verify(mockService).createAndSendPermissionRequest(any());
     }
 
+    @Test
+    void givenJwtCreationFailedException_returnsInternalServerError() throws Exception {
+        // Given
+        var testPermissionId = "MyTestId";
+        var mockPermissionRequest = mock(PermissionRequest.class);
+        when(mockPermissionRequest.permissionId()).thenReturn(testPermissionId);
+        when(mockService.createAndSendPermissionRequest(any())).thenReturn(mockPermissionRequest);
+        doThrow(mock(JwtCreationFailedException.class)).when(spyJwtUtil).setJwtCookie(any(),
+                                                                                      any(),
+                                                                                      anyString(),
+                                                                                      anyString());
+
+
+        ObjectNode jsonNode = mapper.createObjectNode()
+                                    .put("connectionId", "ConnId")
+                                    .put("meteringPointId", "SomeId")
+                                    .put("dataNeedId", "BLA_BLU_BLE")
+                                    .put("nif", "NOICE");
+
+        mockMvc.perform(post("/permission-request").content(mapper.writeValueAsString(
+                                                           jsonNode))
+                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                   .accept(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isInternalServerError());
+    }
+
     /**
      * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
      * whole core is started. To be able to properly test the controller's error responses, manually add the advice
@@ -237,6 +272,11 @@ class PermissionControllerTest {
         @Bean
         public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
             return new RegionConnectorsCommonControllerAdvice();
+        }
+
+        @Bean
+        public JwtUtil jwtUtil(@Value("${eddie.jwt.hmac.secret}") String jwtHmacSecret) {
+            return new JwtUtil(jwtHmacSecret);
         }
     }
 }

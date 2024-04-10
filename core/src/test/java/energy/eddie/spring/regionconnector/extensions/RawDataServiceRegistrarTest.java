@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.core.CoreSpringConfig;
 import energy.eddie.core.services.RawDataService;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.shared.security.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,8 @@ class RawDataServiceRegistrarDisabledTest {
     private WebApplicationContext applicationContext;
     @MockBean
     private DataNeedsService unusedDataNeedsService;
+    @MockBean
+    private JwtUtil jwtUtil;
 
     @Test
     void givenPropertyFalse_registrarIsNotAddedToContext() {
@@ -90,6 +93,8 @@ class RawDataServiceRegistrarEnabledTest {
     private WebApplicationContext applicationContext;
     @MockBean
     private DataNeedsService unusedDataNeedsService;
+    @MockBean
+    private JwtUtil jwtUtil;
 
     @Test
     void givenPropertyTrue_registrarIsAddedToContext() {

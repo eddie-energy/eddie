@@ -10,6 +10,7 @@ import energy.eddie.api.agnostic.process.model.SendToPermissionAdministratorExce
 import energy.eddie.api.agnostic.process.model.states.CreatedPermissionRequestState;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
+import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.shared.validation.SupportedGranularities;
 import org.junit.jupiter.api.Test;
@@ -234,6 +235,25 @@ class RegionConnectorsCommonControllerAdviceTest {
         assertNotNull(responseBody);
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertEquals("No permission with ID 'some-non-existing-id' found.", responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+        assertEquals("No permission with ID 'some-non-existing-id' found.",
+                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+    }
+
+    @Test
+    void givenJwtCreationFailedException_returnsInternalServerError() {
+        // Given
+        var exception = new JwtCreationFailedException(null);
+
+        // When
+        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleJwtCreationFailedException(exception);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        var responseBody = response.getBody();
+        assertNotNull(responseBody);
+        assertEquals(1, responseBody.size());
+        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
+        assertEquals("Failed to create JWT",
+                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 }

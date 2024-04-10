@@ -1,7 +1,6 @@
 package energy.eddie.spring.regionconnector.extensions;
 
 import energy.eddie.api.agnostic.RegionConnectorExtension;
-import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,6 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import static energy.eddie.regionconnector.shared.utils.CommonPaths.CE_FILE_NAME;
+import static energy.eddie.regionconnector.shared.utils.CommonPaths.getClasspathForCeElement;
+
 /**
  * The {@code RegionConnectorConnectorElementProvider} creates an HTTP GET mapping for the connector element javascript
  * file for each individual region connector.
@@ -21,18 +23,18 @@ import java.nio.charset.StandardCharsets;
 @RestController
 public class RegionConnectorConnectorElementProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(RegionConnectorConnectorElementProvider.class);
-    private static final String CE_FILE_NAME = "ce.js";
     private final String ceElementContent;
 
     /**
-     * {@link RestController} that serves the connector element javascript file.
-     * It requires a bean named {@link RegionConnectorNameExtension#REGION_CONNECTOR_NAME_BEAN_NAME} and determines
-     * the path of the connector element using this name.
+     * {@link RestController} that serves the connector element javascript file. It requires a bean named
+     * {@link RegionConnectorNameExtension#REGION_CONNECTOR_NAME_BEAN_NAME} and determines the path of the connector
+     * element using this name.
      * <p>
-     * The connector element is expected to be at the classpath under the following path: /public/{RC-COMMON-PATH}/{regionConnectorName}/ce.js
+     * The connector element is expected to be at the classpath under the following path:
+     * /public/{RC-COMMON-PATH}/{regionConnectorName}/ce.js
      * </p>
      * <p>
-     * Whereas RC-COMMON-PATH is {@value RegionConnectorRegistrationBeanPostProcessor#ALL_REGION_CONNECTORS_BASE_URL_PATH} and
+     * Whereas RC-COMMON-PATH is {@value CommonPaths#ALL_REGION_CONNECTORS_BASE_URL_PATH} and
      * {@code regionConnectorName} is the parameter.
      * </p>
      *
@@ -42,14 +44,18 @@ public class RegionConnectorConnectorElementProvider {
     public RegionConnectorConnectorElementProvider(
             @Qualifier(RegionConnectorNameExtension.REGION_CONNECTOR_NAME_BEAN_NAME) String regionConnectorName
     ) throws FileNotFoundException {
-        var cePath = "/public/%s/%s/%s".formatted(RegionConnectorRegistrationBeanPostProcessor.ALL_REGION_CONNECTORS_BASE_URL_PATH, regionConnectorName, CE_FILE_NAME);
+        var cePath = getClasspathForCeElement(regionConnectorName);
 
         LOGGER.info("Registering new GET mapping for file classpath:{}", cePath);
         try {
             // fail early if connector element file cannot be found
             ceElementContent = readContentFromClasspath(cePath);
         } catch (IOException e) {
-            throw new FileNotFoundException("Error while reading connector element javascript file for region connector \"%s\". Expected classpath for file \"%s\"%n%s".formatted(regionConnectorName, cePath, e.getMessage()));
+            throw new FileNotFoundException(
+                    "Error while reading connector element javascript file for region connector \"%s\". Expected classpath for file \"%s\"%n%s".formatted(
+                            regionConnectorName,
+                            cePath,
+                            e.getMessage()));
         }
     }
 
