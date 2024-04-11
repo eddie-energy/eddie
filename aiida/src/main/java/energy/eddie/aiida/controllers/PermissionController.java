@@ -29,7 +29,7 @@ import org.springframework.web.util.UriTemplate;
 
 import java.util.List;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/permissions")
 @OpenAPIDefinition(info = @Info(title = "Permissions API", version = "1.0", description = "Manage permissions"))
