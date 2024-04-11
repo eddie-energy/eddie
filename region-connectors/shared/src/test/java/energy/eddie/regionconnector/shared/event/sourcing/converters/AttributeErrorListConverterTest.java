@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.at.eda.permission.request.events.converters;
+package energy.eddie.regionconnector.shared.event.sourcing.converters;
 
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import org.junit.jupiter.api.Test;

@@ -1,17 +1,16 @@
-package energy.eddie.regionconnector.at.eda.handlers.integration.outbound;
+package energy.eddie.regionconnector.shared.event.sourcing.handlers.integration;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.states.ValidatedPermissionRequestState;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
-import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
-import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
-import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
-import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
-import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.SimplePermissionRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -29,7 +28,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ConsentMarketDocumentMessageHandlerTest {
     @Mock
-    private AtPermissionRequestRepository repository;
+    private PermissionRequestRepository<PermissionRequest> repository;
+    @Mock
+    private ValidatedPermissionRequestState state;
 
     @Test
     void testAccept_emitsConsentMarketDocument() {
@@ -37,17 +38,20 @@ class ConsentMarketDocumentMessageHandlerTest {
         Sinks.Many<ConsentMarketDocument> messages = Sinks.many().multicast().onBackpressureBuffer();
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
-        EdaPermissionRequest permissionRequest = new EdaPermissionRequest(
-                "connectionId", "pid", "dnid", "cmRequestId", "conversationId", "mid", "dsoId", start, end,
-                AllowedGranularity.PT15M, PermissionProcessStatus.VALIDATED, "", null,
-                ZonedDateTime.now(ZoneOffset.UTC)
+        var permissionRequest = new SimplePermissionRequest(
+                "pid", "cid", state, "dnid", start, end, ZonedDateTime.now(ZoneOffset.UTC)
         );
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));
-        PlainAtConfiguration atConfig = new PlainAtConfiguration("epId", null);
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
                 CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME);
         EventBus eventBus = new EventBusImpl();
-        new ConsentMarketDocumentMessageHandler(eventBus, repository, messages, atConfig, cimConfig);
+        new ConsentMarketDocumentMessageHandler<>(eventBus,
+                                                  repository,
+                                                  messages,
+                                                  "EP-ID",
+                                                  cimConfig,
+                                                  pr -> null,
+                                                  ZoneOffset.UTC);
 
         // When
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.VALIDATED));
@@ -64,11 +68,16 @@ class ConsentMarketDocumentMessageHandlerTest {
         // Given
         Sinks.Many<ConsentMarketDocument> messages = Sinks.many().multicast().onBackpressureBuffer();
         when(repository.findByPermissionId("pid")).thenReturn(Optional.empty());
-        PlainAtConfiguration atConfig = new PlainAtConfiguration("epId", null);
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
                 CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME);
         EventBus eventBus = new EventBusImpl();
-        new ConsentMarketDocumentMessageHandler(eventBus, repository, messages, atConfig, cimConfig);
+        new ConsentMarketDocumentMessageHandler<>(eventBus,
+                                                  repository,
+                                                  messages,
+                                                  "EP-ID",
+                                                  cimConfig,
+                                                  pr -> null,
+                                                  ZoneOffset.UTC);
 
         // When
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.VALIDATED));
@@ -78,5 +87,29 @@ class ConsentMarketDocumentMessageHandlerTest {
                     .then(messages::tryEmitComplete)
                     .expectError(PermissionNotFoundException.class)
                     .verify();
+    }
+
+    @Test
+    void testAccept_doesNotEmitStatus_onInternalEvent() {
+        // Given
+        Sinks.Many<ConsentMarketDocument> messages = Sinks.many().multicast().onBackpressureBuffer();
+        PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
+                CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME);
+        EventBus eventBus = new EventBusImpl();
+        new ConsentMarketDocumentMessageHandler<>(eventBus,
+                                                  repository,
+                                                  messages,
+                                                  "EP-ID",
+                                                  cimConfig,
+                                                  pr -> null,
+                                                  ZoneOffset.UTC);
+
+        // When
+        eventBus.emit(new InternalEvent("pid", PermissionProcessStatus.VALIDATED));
+
+        // Then
+        StepVerifier.create(messages.asFlux())
+                    .then(messages::tryEmitComplete)
+                    .verifyComplete();
     }
 }

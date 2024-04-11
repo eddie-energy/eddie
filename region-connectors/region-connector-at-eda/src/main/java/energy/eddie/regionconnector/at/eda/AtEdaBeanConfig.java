@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.at.eda;
 
 import de.ponton.xp.adapter.api.ConnectionException;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
@@ -8,6 +9,8 @@ import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
@@ -26,6 +29,9 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
+import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.TransmissionScheduleProvider;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +47,8 @@ import reactor.core.publisher.Sinks;
 import java.io.IOException;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.TRANSMISSION_CYCLE;
 import static energy.eddie.regionconnector.at.eda.config.AtConfiguration.CONVERSATION_ID_PREFIX;
 import static energy.eddie.regionconnector.at.eda.config.AtConfiguration.ELIGIBLE_PARTY_ID_KEY;
 import static energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration.*;
@@ -161,5 +169,36 @@ public class AtEdaBeanConfig {
     @Bean
     public FulfillmentService fulfillmentService() {
         return new FulfillmentService();
+    }
+
+    @Bean
+    public TransmissionScheduleProvider<PermissionRequest> transmissionScheduleProvider() {
+        return pr -> TRANSMISSION_CYCLE.name();
+    }
+
+    @Bean
+    public ConnectionStatusMessageHandler<AtPermissionRequest> connectionStatusMessageHandler(
+            EventBus eventBus,
+            Sinks.Many<ConnectionStatusMessage> messages,
+            AtPermissionRequestRepository repository
+    ) {
+        return new ConnectionStatusMessageHandler<>(eventBus, messages, repository, AtPermissionRequest::message);
+    }
+
+    @Bean
+    public ConsentMarketDocumentMessageHandler<AtPermissionRequest> consentMarketDocumentMessageHandler(
+            EventBus eventBus,
+            AtPermissionRequestRepository repository,
+            Sinks.Many<ConsentMarketDocument> cmdSink,
+            AtConfiguration atConfig,
+            CommonInformationModelConfiguration cimConfig
+    ) {
+        return new ConsentMarketDocumentMessageHandler<>(eventBus,
+                                                         repository,
+                                                         cmdSink,
+                                                         atConfig.eligiblePartyId(),
+                                                         cimConfig,
+                                                         pr -> TRANSMISSION_CYCLE.name(),
+                                                         AT_ZONE_ID);
     }
 }
