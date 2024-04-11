@@ -22,6 +22,7 @@ import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.MessengerHealth;
+import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConnection;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.RestClientMessengerHealth;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
@@ -30,10 +31,10 @@ import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecor
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.TransmissionScheduleProvider;
+import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
@@ -98,18 +99,24 @@ public class AtEdaBeanConfig {
 
     @Bean
     @Profile("!no-ponton")
-    public EdaAdapter edaAdapter(
+    public EdaAdapter edaAdapter(PontonMessengerConnection pontonMessengerConnection) {
+        return new PontonXPAdapter(pontonMessengerConnection);
+    }
+
+    @Bean
+    public PontonMessengerConnection pontonMessengerConnection(
             PontonXPAdapterConfiguration configuration,
-            OutboundMessageFactoryCollection outboundMessageFactoryCollection,
             InboundMessageFactoryCollection inboundMessageFactoryCollection,
-            MessengerHealth messengerHealth
-    ) throws IOException, ConnectionException {
-        return new PontonXPAdapter(
-                configuration,
-                outboundMessageFactoryCollection,
-                inboundMessageFactoryCollection,
-                messengerHealth
-        );
+            OutboundMessageFactoryCollection outboundMessageFactoryCollection,
+            MessengerHealth healthApi
+    ) throws ConnectionException, IOException {
+        return PontonMessengerConnection
+                .newBuilder()
+                .withConfig(configuration)
+                .withInboundMessageFactoryCollection(inboundMessageFactoryCollection)
+                .withOutboundMessageFactoryCollection(outboundMessageFactoryCollection)
+                .withHealthApi(healthApi)
+                .build();
     }
 
     @Bean
