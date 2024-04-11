@@ -1,3 +1,6 @@
+# Ignore UI build output
+/src/main/resources/static/
+
 # Compiled class file
 *.class
 

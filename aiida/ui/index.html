@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>AIIDA</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.14.0/cdn/themes/light.css"
+    />
+    <link rel="stylesheet" href="./style.css" />
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.14.0/cdn/shoelace-autoloader.js"
+    ></script>
+  </head>
+  <body>
+    <h1>AIIDA</h1>
+
+    <img src="/eddie.svg" alt="EDDIE Logo" height="64" />
+
+    <h2>Add new permission</h2>
+
+    <form id="permission-form" class="permission-form">
+      <sl-input id="aiida-code" placeholder="AIIDA code" required></sl-input>
+      <sl-button type="submit" variant="primary">Add</sl-button>
+      <sl-button circle disabled>
+        <sl-icon name="camera" label="Camera"></sl-icon>
+      </sl-button>
+    </form>
+
+    <sl-dialog id="permission-dialog" label="Add permission">
+      <sl-button slot="footer" variant="primary" onclick="window.addPermission()">
+        Confirm
+      </sl-button>
+
+      <div id="permission-dialog-content"></div>
+
+      <sl-button slot="footer" outline onclick="window.hidePermissionDialog()">
+        Close
+      </sl-button>
+    </sl-dialog>
+
+    <sl-dialog id="revoke-permission-dialog" label="Revoke permission">
+      <sl-button slot="footer" variant="primary" id="revoke-permission-button">
+        Revoke
+      </sl-button>
+
+      <p class="text">
+        This action will revoke the given permission. The eligible party will no
+        longer be able to receive data for this entry.
+      </p>
+
+      <sl-button slot="footer" outline onclick="window.hideRevokeDialog()">
+        Cancel
+      </sl-button>
+    </sl-dialog>
+
+    <h2>Active permissions</h2>
+    <div id="active-permissions" class="permissions"></div>
+
+    <h2>Expired permissions</h2>
+    <div id="expired-permissions" class="permissions"></div>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
