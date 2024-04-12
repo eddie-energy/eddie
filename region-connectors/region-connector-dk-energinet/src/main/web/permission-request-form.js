@@ -18,6 +18,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     accountingPointId: { attribute: "accounting-point-id" },
     _requestId: { type: String },
     _requestStatus: { type: String },
+    _isSubmitDisabled: { type: Boolean },
   };
 
   constructor() {
@@ -32,7 +33,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   }
 
   handleSubmit(event) {
-    this._isSubmitDisabled = true;
     event.preventDefault();
 
     const formData = new FormData(event.target);
@@ -47,15 +47,22 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     jsonData.connectionId = this.connectionId;
     jsonData.dataNeedId = this.dataNeedAttributes.id;
 
+    this._isSubmitDisabled = true;
+
     this.createPermissionRequest(jsonData)
-      .then()
       .catch((error) =>
         this.notify({
           title: this.ERROR_TITLE,
           message: error,
           variant: "danger",
         })
-      );
+      )
+      .finally(() => {
+        // request failed if no request status was set
+        if (!this._requestStatus) {
+          this._isSubmitDisabled = false
+        }
+      });
   }
 
   async createPermissionRequest(payload) {
@@ -83,6 +90,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           variant: "success",
           duration: 5000,
         });
+
+        this.startOrRestartAutomaticPermissionStatusPolling();
       } else if (response.status === 400) {
         // An error on the client side happened, and it should be displayed as alert in the form
         let errorMessage;
@@ -103,9 +112,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           message: errorMessage,
           variant: "danger",
         });
-        this._isSubmitDisabled = false;
-
-        return;
       } else {
         const errorMessage =
           "Something went wrong when creating the permission request, please try again later.";
@@ -114,11 +120,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           message: errorMessage,
           variant: "danger",
         });
-
-        return;
       }
-
-      this.startOrRestartAutomaticPermissionStatusPolling();
     } catch (e) {
       this.notify({ title: this.ERROR_TITLE, message: e, variant: "danger" });
     }
@@ -155,13 +157,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     const currentStatus = result["status"];
     this._requestStatus = currentStatus;
 
-    if (
-      currentStatus === "SENT_TO_PERMISSION_ADMINISTRATOR" ||
-      currentStatus === "RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE"
-    ) {
-      this._isSubmitDisabled = true;
-    }
-
     this.handleStatus(currentStatus, result["message"]);
 
     // Wait for status update
@@ -186,14 +181,18 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             type="text"
             id="meteringPoint"
             name="meteringPoint"
-            .helpText=${this.accountingPointId ? "The service has already provided a metering point. If this value is incorrect, please contact the service provider." : nothing}
-            .value="${this.accountingPointId ? this.accountingPointId : nothing}"
+            .helpText=${this.accountingPointId
+              ? "The service has already provided a metering point. If this value is incorrect, please contact the service provider."
+              : nothing}
+            .value="${this.accountingPointId
+              ? this.accountingPointId
+              : nothing}"
             .disabled="${!!this.accountingPointId}"
             required
           ></sl-input>
           <br />
           <sl-button
-            .disabled="${this._isSubmitDisabled}"
+            ?disabled="${this._isSubmitDisabled}"
             type="submit"
             variant="primary"
           >

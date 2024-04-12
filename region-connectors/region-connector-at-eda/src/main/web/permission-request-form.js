@@ -19,6 +19,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     accountingPointId: { attribute: "accounting-point-id" },
     _requestId: { type: String },
     _requestStatus: { type: String },
+    _isSubmitDisabled: { type: Boolean },
   };
 
   constructor() {
@@ -26,6 +27,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
     this._requestId = "";
     this._requestStatus = "";
+    this._isSubmitDisabled = false;
   }
 
   handleSubmit(event) {
@@ -42,6 +44,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       dataNeedId: this.dataNeedAttributes.id,
     };
 
+    this._isSubmitDisabled = true;
+
     this.createPermissionRequest(jsonData)
       .then()
       .catch((error) =>
@@ -50,7 +54,13 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           message: error,
           variant: "danger",
         })
-      );
+      )
+      .finally(() => {
+        // request failed if no request status was set
+        if (!this._requestStatus) {
+          this._isSubmitDisabled = false
+        }
+      });
   }
 
   async createPermissionRequest(formData) {
@@ -169,19 +179,37 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             minlength="33"
             maxlength="33"
             placeholder="${this.companyId}"
-            .value="${this.accountingPointId ? this.accountingPointId : nothing}"
+            .value="${this.accountingPointId
+              ? this.accountingPointId
+              : nothing}"
             .disabled="${!!this.accountingPointId}"
           ></sl-input>
 
           <br />
 
           <div>
-            <sl-button type="submit" variant="primary">Connect</sl-button>
+            <sl-button
+              type="submit"
+              variant="primary"
+              ?disabled="${this._isSubmitDisabled}"
+              >Connect</sl-button
+            >
           </div>
         </form>
 
+        ${this._isSubmitDisabled
+          ? html`<br />
+              <sl-alert open>
+                <sl-icon slot="icon" name="info-circle"></sl-icon>
+                <p>Your permission request is being processed.</p>
+                <p>
+                  Please wait for the request to finish. 
+                  This process may take several minutes!
+                </p>
+              </sl-alert>`
+          : ""}
         ${this._requestStatus &&
-        html` <br />
+        html`<br />
           <sl-alert open>
             <sl-icon slot="icon" name="info-circle"></sl-icon>
 

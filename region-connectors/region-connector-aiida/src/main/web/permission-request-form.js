@@ -17,6 +17,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
     _isConnected: { type: Boolean },
     _aiidaCode: { type: String },
+    _isSubmitDisabled: { type: Boolean },
   };
 
   qrCodeRef = createRef();
@@ -25,6 +26,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     super();
 
     this._aiidaCode = null;
+    this._isSubmitDisabled = false;
   }
 
   requestPermission(_event) {
@@ -32,6 +34,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       dataNeedId: this.dataNeedAttributes.id,
       connectionId: this.connectionId,
     };
+
+    this._isSubmitDisabled = true;
 
     fetch(REQUEST_URL, {
       method: "POST",
@@ -44,16 +48,18 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       .then((json) => {
         this._aiidaCode = JSON.stringify(json);
         this.qrCodeRef.value.updateComplete.then(() => {
-          this.qrCodeRef.value.style.visibility = "visible";
+          this.qrCodeRef.value.removeAttribute("hidden");
         });
       })
-      .catch((error) =>
+      .catch((error) => {
         this.notify({
           title: this.ERROR_TITLE,
           message: error,
           variant: "danger",
-        })
-      );
+        });
+
+        this._isSubmitDisabled = false;
+      })
   }
 
   convertToBase64(content) {
@@ -75,7 +81,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
       ${this.alerts}
       ${!this._aiidaCode
-        ? html`<sl-button @click="${this.requestPermission}" variant="primary">
+        ? html`<sl-button
+            @click="${this.requestPermission}"
+            variant="primary"
+            ?disabled="${this._isSubmitDisabled}"
+          >
             Connect
           </sl-button>`
         : html`
@@ -83,8 +93,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
               ${ref(this.qrCodeRef)}
               value="${this._aiidaCode}"
               radius="0.5"
-              style="visibility: hidden"
               size="256"
+              hidden
             ></sl-qr-code>
 
             <br />

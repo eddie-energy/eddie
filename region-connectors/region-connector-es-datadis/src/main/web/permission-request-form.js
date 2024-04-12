@@ -21,6 +21,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     _requestId: { type: String },
     _requestStatus: { type: String },
     _isCooldown: { type: Boolean },
+    _isSubmitDisabled: { type: Boolean },
     _isSubmitHidden: { type: Boolean },
     _areResponseButtonsDisabled: { type: Boolean },
   };
@@ -41,7 +42,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   }
 
   handleSubmit(event) {
-    this._isSubmitDisabled = true;
     event.preventDefault();
 
     const formData = new FormData(event.target);
@@ -56,6 +56,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     jsonData.nif = formData.get("nif");
     jsonData.dataNeedId = this.dataNeedAttributes.id;
 
+    this._isSubmitDisabled = true;
+
     this.createPermissionRequest(jsonData)
       .then()
       .catch((error) =>
@@ -64,7 +66,13 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           message: error,
           variant: "danger",
         })
-      );
+      )
+      .finally(() => {
+        // request failed if no request status was set
+        if (!this._requestStatus) {
+          this._isSubmitDisabled = false;
+        }
+      });
   }
 
   async createPermissionRequest(payload) {
@@ -113,7 +121,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           message: errorMessage,
           variant: "danger",
         });
-        this._isSubmitDisabled = false;
 
         return;
       } else {
@@ -156,7 +163,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           millisecondsToWait / 1000
         } seconds`,
         variant: "danger",
-        duration: millisecondsToWait.toString(),
+        duration: millisecondsToWait,
       });
       await this.awaitRetry(millisecondsToWait, maxRetries);
       return;
@@ -199,7 +206,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   rejected() {
     fetch(REQUEST_URL + `/${this.permissionId}/rejected`, {
       method: "PATCH",
-      credentials: "include"
+      credentials: "include",
     })
       .then(() => {
         this._areResponseButtonsDisabled = true;
@@ -245,7 +252,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           <br />
 
           <sl-button
-            .disabled="${this._isSubmitDisabled}"
+            ?disabled="${this._isSubmitDisabled}"
             ?hidden="${this._isSubmitHidden}"
             type="submit"
             variant="primary"
