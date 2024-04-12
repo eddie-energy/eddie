@@ -44,12 +44,25 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       },
       body: JSON.stringify(body),
     })
-      .then((response) => (this._aiidaCode = response.json()))
-      .then((json) => {
-        this._aiidaCode = JSON.stringify(json);
-        this.qrCodeRef.value.updateComplete.then(() => {
-          this.qrCodeRef.value.removeAttribute("hidden");
-        });
+      .then((response) => {
+        if (response.ok) {
+          return response.json().then((json) => {
+            this._aiidaCode = JSON.stringify(json);
+            this.qrCodeRef.value.updateComplete.then(() => {
+              this.qrCodeRef.value.removeAttribute("hidden");
+            });
+          });
+        } else {
+          return response.json().then((json) => {
+            json.errors.map((error) => {
+              this.notify({
+                title: this.ERROR_TITLE,
+                message: error.message,
+                variant: "danger",
+              });
+            });
+          });
+        }
       })
       .catch((error) => {
         this.notify({
@@ -57,9 +70,12 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           message: error,
           variant: "danger",
         });
-
-        this._isSubmitDisabled = false;
       })
+      .finally(() => {
+        if (!this._aiidaCode) {
+          this._isSubmitDisabled = false;
+        }
+      });
   }
 
   convertToBase64(content) {
