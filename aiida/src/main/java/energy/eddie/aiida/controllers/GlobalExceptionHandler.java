@@ -2,10 +2,7 @@ package energy.eddie.aiida.controllers;
 
 import api.ValidationErrors;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import energy.eddie.aiida.errors.InvalidPatchOperationException;
-import energy.eddie.aiida.errors.InvalidPermissionRevocationException;
-import energy.eddie.aiida.errors.PermissionNotFoundException;
-import energy.eddie.aiida.errors.PermissionStartFailedException;
+import energy.eddie.aiida.errors.*;
 import energy.eddie.api.agnostic.EddieApiError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +29,9 @@ public class GlobalExceptionHandler {
      * @return ResponseEntity with status code 400 and an error message.
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, List<EddieApiError>>> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException exception
+    ) {
         String errorDetails = "Invalid request body.";
 
         if (isEnumCauseOfException(exception)) {
@@ -43,7 +42,9 @@ public class GlobalExceptionHandler {
                 Object[] validEnumConstants = invalidFormatEx.getTargetType().getEnumConstants();
 
                 errorDetails = String.format("%s: Invalid enum value: '%s'. Valid values: %s.",
-                        fieldName, invalidFormatEx.getValue(), Arrays.toString(validEnumConstants));
+                                             fieldName,
+                                             invalidFormatEx.getValue(),
+                                             Arrays.toString(validEnumConstants));
             }
         }
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(errorDetails)));
@@ -51,8 +52,10 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * @param exception HttpMessageNotReadableException that might have been caused by an Enum not being able to be matched.
-     * @return True if the passed exception is an {@link InvalidFormatException} and the target that couldn't be matched is an Enum.
+     * @param exception HttpMessageNotReadableException that might have been caused by an Enum not being able to be
+     *                  matched.
+     * @return True if the passed exception is an {@link InvalidFormatException} and the target that couldn't be matched
+     * is an Enum.
      */
     private boolean isEnumCauseOfException(HttpMessageNotReadableException exception) {
         return exception.getCause() instanceof InvalidFormatException invalidFormatEx
@@ -74,20 +77,33 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = {InvalidPermissionRevocationException.class})
-    protected ResponseEntity<Map<String, List<EddieApiError>>> handleInvalidPermissionRevocationException(InvalidPermissionRevocationException exception) {
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleInvalidPermissionRevocationException(
+            InvalidPermissionRevocationException exception
+    ) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.badRequest().body(errors);
     }
 
     @ExceptionHandler(value = {InvalidPatchOperationException.class})
-    protected ResponseEntity<Map<String, List<EddieApiError>>> handleInvalidPatchOperationException(InvalidPatchOperationException exception) {
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleInvalidPatchOperationException(
+            InvalidPatchOperationException exception
+    ) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.badRequest().body(errors);
     }
 
     @ExceptionHandler(value = {PermissionStartFailedException.class})
     protected ResponseEntity<Object> handlePermissionStartFailedException(PermissionStartFailedException ignored) {
-        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError("Failed to start permission, please try again later.")));
+        var errors = Map.of(ERRORS_PROPERTY_NAME,
+                            List.of(new EddieApiError("Failed to start permission, please try again later.")));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
+    }
+
+    @ExceptionHandler(value = {PermissionAlreadyExistsException.class})
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handlePermissionAlreadyExistsException(
+            PermissionAlreadyExistsException exception
+    ) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.badRequest().body(errors);
     }
 }

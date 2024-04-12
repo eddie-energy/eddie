@@ -1,10 +1,7 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.PermissionDto;
-import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
-import energy.eddie.aiida.errors.InvalidPermissionRevocationException;
-import energy.eddie.aiida.errors.PermissionNotFoundException;
-import energy.eddie.aiida.errors.PermissionStartFailedException;
+import energy.eddie.aiida.errors.*;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
@@ -46,8 +43,13 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private final TaskScheduler scheduler;
 
     @Autowired
-    public PermissionService(PermissionRepository repository, Clock clock, StreamerManager streamerManager,
-                             TaskScheduler scheduler, ConcurrentMap<String, ScheduledFuture<?>> permissionFutures) {
+    public PermissionService(
+            PermissionRepository repository,
+            Clock clock,
+            StreamerManager streamerManager,
+            TaskScheduler scheduler,
+            ConcurrentMap<String, ScheduledFuture<?>> permissionFutures
+    ) {
         this.repository = repository;
         this.clock = clock;
         this.streamerManager = streamerManager;
@@ -80,7 +82,11 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             return;
 
         try {
-            var terminated = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), terminateTime, TERMINATED, permissionId);
+            var terminated = new ConnectionStatusMessage(permission.connectionId(),
+                                                         permission.dataNeedId(),
+                                                         terminateTime,
+                                                         TERMINATED,
+                                                         permissionId);
             streamerManager.sendConnectionStatusMessageForPermission(terminated, permissionId);
         } catch (ConnectionStatusMessageSendFailedException ex) {
             LOGGER.error("Failed to send TERMINATED status message for permission {}", permissionId, ex);
@@ -90,19 +96,30 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     /**
-     * Saves a new permission in the database and sends the {@link PermissionStatus#ACCEPTED} status message to
-     * the EDDIE framework. If any error occurs, the permission is not saved in the database.
-     * If the permission's startTime is in the future, it will be scheduled to start then, and the status message will
-     * also just be sent when the permission's start time has been reached.
+     * Saves a new permission in the database and sends the {@link PermissionStatus#ACCEPTED} status message to the
+     * EDDIE framework. If any error occurs, the permission is not saved in the database. If the permission's startTime
+     * is in the future, it will be scheduled to start then, and the status message will also just be sent when the
+     * permission's start time has been reached.
      *
      * @param dto Data transfer object containing the information for the new permission.
      * @return Permission object as returned by the database.
-     * @throws PermissionStartFailedException If the permission couldn't be started.
+     * @throws PermissionStartFailedException   If the permission couldn't be started.
+     * @throws PermissionAlreadyExistsException If there is already a permission with the ID.
      */
-    public Permission setupNewPermission(PermissionDto dto) throws PermissionStartFailedException {
-        Permission newPermission = new Permission(dto.permissionId(), dto.serviceName(), dto.dataNeedId(),
-                dto.startTime(), dto.expirationTime(), dto.grantTime(), dto.connectionId(),
-                dto.requestedCodes(), dto.kafkaStreamingConfig());
+    public Permission setupNewPermission(PermissionDto dto) throws PermissionStartFailedException, PermissionAlreadyExistsException {
+        if (repository.existsById(dto.permissionId())) {
+            throw new PermissionAlreadyExistsException(dto.permissionId());
+        }
+
+        Permission newPermission = new Permission(dto.permissionId(),
+                                                  dto.serviceName(),
+                                                  dto.dataNeedId(),
+                                                  dto.startTime(),
+                                                  dto.expirationTime(),
+                                                  dto.grantTime(),
+                                                  dto.connectionId(),
+                                                  dto.requestedCodes(),
+                                                  dto.kafkaStreamingConfig());
         newPermission = repository.save(newPermission);
 
         var now = Instant.now(clock);
@@ -137,7 +154,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private Permission startPermission(Permission permission) throws PermissionStartFailedException {
         LOGGER.info("Starting permission {}", permission.permissionId());
         var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(),
-                clock.instant(), ACCEPTED, permission.permissionId());
+                                                          clock.instant(), ACCEPTED, permission.permissionId());
 
         try {
             streamerManager.createNewStreamerForPermission(permission);
@@ -156,26 +173,29 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     private void schedulePermissionExpirationRunnable(Permission permission) {
-        LOGGER.info("Will schedule a PermissionExpirationRunnable for permission {} to run at  {}", permission.permissionId(), permission.expirationTime());
+        LOGGER.info("Will schedule a PermissionExpirationRunnable for permission {} to run at  {}",
+                    permission.permissionId(),
+                    permission.expirationTime());
 
         Sinks.One<String> expirationSink = Sinks.one();
         expirationSink.asMono().subscribe(this::expirePermission);
         var expirationRunnable = new PermissionExpiredRunnable(permission.permissionId(),
-                permission.expirationTime(), expirationSink);
+                                                               permission.expirationTime(), expirationSink);
         ScheduledFuture<?> future = scheduler.schedule(expirationRunnable, permission.expirationTime());
 
         permissionFutures.put(permission.permissionId(), future);
     }
 
     /**
-     * Revokes the specified permission by updating its status and records the timestamp and persisting the changes.
-     * If an error during shutdown of the AiidaStreamer or sending of the {@link ConnectionStatusMessage} occurs,
-     * they are logged but not propagated to the caller.
+     * Revokes the specified permission by updating its status and records the timestamp and persisting the changes. If
+     * an error during shutdown of the AiidaStreamer or sending of the {@link ConnectionStatusMessage} occurs, they are
+     * logged but not propagated to the caller.
      *
      * @param permissionId ID of the permission that should be revoked.
      * @return Updated permission object that has been persisted.
      * @throws PermissionNotFoundException          In case no permission with the specified ID can be found.
-     * @throws InvalidPermissionRevocationException In case the permission has a status that makes it not eligible for revocation.
+     * @throws InvalidPermissionRevocationException In case the permission has a status that makes it not eligible for
+     *                                              revocation.
      */
     public Permission revokePermission(String permissionId) throws PermissionNotFoundException, InvalidPermissionRevocationException {
         LOGGER.info("Got request to revoke permission with id {}", permissionId);
@@ -202,15 +222,25 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             // if permission has never sent data, we also don't send the REVOKED status messages
             return permission;
 
-        var revocationReceivedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), revocationTime, REVOCATION_RECEIVED, permissionId);
-        var revokeMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), revocationTime, REVOKED, permissionId);
+        var revocationReceivedMessage = new ConnectionStatusMessage(permission.connectionId(),
+                                                                    permission.dataNeedId(),
+                                                                    revocationTime,
+                                                                    REVOCATION_RECEIVED,
+                                                                    permissionId);
+        var revokeMessage = new ConnectionStatusMessage(permission.connectionId(),
+                                                        permission.dataNeedId(),
+                                                        revocationTime,
+                                                        REVOKED,
+                                                        permissionId);
 
         try {
             streamerManager.sendConnectionStatusMessageForPermission(revocationReceivedMessage, permissionId);
             streamerManager.sendConnectionStatusMessageForPermission(revokeMessage, permissionId);
             streamerManager.stopStreamer(permissionId);
         } catch (ConnectionStatusMessageSendFailedException | IllegalArgumentException ex) {
-            LOGGER.error("Error while sending connection status messages while revoking permission {}", permissionId, ex);
+            LOGGER.error("Error while sending connection status messages while revoking permission {}",
+                         permissionId,
+                         ex);
         }
 
         return permission;
@@ -219,7 +249,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     /**
      * Returns all permission objects that are persisted, sorted by their grantTime descending.
      *
-     * @return A list of permissions, sorted by grantTime descending, i.e. the permission with the newest grantTime is the first item.
+     * @return A list of permissions, sorted by grantTime descending, i.e. the permission with the newest grantTime is
+     * the first item.
      */
     public List<Permission> getAllPermissionsSortedByGrantTime() {
         return repository.findAllByOrderByGrantTimeDesc();
@@ -238,8 +269,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
     /**
      * Sends the {@link PermissionStatus#FULFILLED} status message to the EDDIE framework for the permission with
-     * {@code permissionId} , stops the associated streamer, sets the permission's status to FULFILLED and
-     * updates the database.
+     * {@code permissionId} , stops the associated streamer, sets the permission's status to FULFILLED and updates the
+     * database.
      *
      * @param permissionId ID of the permission which has reached its expiration time.
      */
@@ -256,15 +287,23 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         if (!(permission.status() == PermissionStatus.ACCEPTED ||
                 permission.status() == PermissionStatus.WAITING_FOR_START ||
                 permission.status() == PermissionStatus.STREAMING_DATA)) {
-            LOGGER.warn("Permission {} was modified, its status is {}. Will NOT expire the permission", permissionId, permission.status());
+            LOGGER.warn("Permission {} was modified, its status is {}. Will NOT expire the permission",
+                        permissionId,
+                        permission.status());
             return;
         }
 
         if (permission.status() == PermissionStatus.ACCEPTED || permission.status() == PermissionStatus.WAITING_FOR_START) {
-            LOGGER.warn("Permission {} has status {}, meaning it was never started. Will expire it anyway.", permissionId, permission.status());
+            LOGGER.warn("Permission {} has status {}, meaning it was never started. Will expire it anyway.",
+                        permissionId,
+                        permission.status());
         }
 
-        var statusMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), clock.instant(), PermissionStatus.FULFILLED, permissionId);
+        var statusMessage = new ConnectionStatusMessage(permission.connectionId(),
+                                                        permission.dataNeedId(),
+                                                        clock.instant(),
+                                                        PermissionStatus.FULFILLED,
+                                                        permissionId);
 
         try {
             streamerManager.sendConnectionStatusMessageForPermission(statusMessage, permissionId);
@@ -278,8 +317,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     /**
-     * Indicates whether the permission's current status allows it to be revoked.
-     * The status needs to be one of the following, to be eligible for revocation: ACCEPTED, WAITING_FOR_START, STREAMING_DATA
+     * Indicates whether the permission's current status allows it to be revoked. The status needs to be one of the
+     * following, to be eligible for revocation: ACCEPTED, WAITING_FOR_START, STREAMING_DATA
      *
      * @param permission Permission to check.
      * @return True if the permission is eligible for revocation, false otherwise.
@@ -292,16 +331,17 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     /**
-     * Gets all active permissions from the database and checks if they have expired.
-     * If not, streaming is resumed, otherwise their database entry will be updated accordingly.
-     * This is done when a {@link ContextRefreshedEvent} is received, which ensures that all beans are started
-     * and the database is set up correctly.
+     * Gets all active permissions from the database and checks if they have expired. If not, streaming is resumed,
+     * otherwise their database entry will be updated accordingly. This is done when a {@link ContextRefreshedEvent} is
+     * received, which ensures that all beans are started and the database is set up correctly.
      */
     @Override
     public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
         // fields of permissions are loaded eagerly to avoid n+1 select problem in loop
         List<Permission> allActivePermissions = repository.findAllActivePermissions();
-        LOGGER.info("Fetched {} active permissions from database and will resume streaming or update them if they are expired.", allActivePermissions.size());
+        LOGGER.info(
+                "Fetched {} active permissions from database and will resume streaming or update them if they are expired.",
+                allActivePermissions.size());
 
         for (Permission permission : allActivePermissions) {
             if (permission.expirationTime().isAfter(clock.instant())) {
@@ -311,7 +351,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                 permission.updateStatus(PermissionStatus.STREAMING_DATA);
                 repository.save(permission);
             } else {
-                LOGGER.info("Permission {} has expired but AIIDA was not running at that time, will expire it now", permission.permissionId());
+                LOGGER.info("Permission {} has expired but AIIDA was not running at that time, will expire it now",
+                            permission.permissionId());
                 permission.updateStatus(PermissionStatus.FULFILLED);
                 repository.save(permission);
             }
@@ -319,8 +360,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     /**
-     * Use static nested class to ensure Spring will inject the ConcurrentHashMap only into the PermissionService and
-     * it won't be shared with other classes.
+     * Use static nested class to ensure Spring will inject the ConcurrentHashMap only into the PermissionService and it
+     * won't be shared with other classes.
      */
     @Configuration
     public static class ConcurrentHashMapConfig {

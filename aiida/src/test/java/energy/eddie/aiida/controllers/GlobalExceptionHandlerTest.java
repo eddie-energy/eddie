@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.aiida.dtos.PatchOperation;
 import energy.eddie.aiida.dtos.PatchPermissionDto;
 import energy.eddie.aiida.errors.InvalidPatchOperationException;
+import energy.eddie.aiida.errors.PermissionAlreadyExistsException;
 import energy.eddie.aiida.errors.PermissionNotFoundException;
 import energy.eddie.api.agnostic.EddieApiError;
 import org.junit.jupiter.api.Test;
@@ -137,5 +138,23 @@ class GlobalExceptionHandlerTest {
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
         assertEquals("Invalid PatchOperation, permitted values are: [REVOKE_PERMISSION].", responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+    }
+
+    @Test
+    void givenPermissionAlreadyExistsException_returnsBadRequest() {
+        // Given
+        var exception = new PermissionAlreadyExistsException("testId");
+
+        // When
+        var response = advice.handlePermissionAlreadyExistsException(exception);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        var responseBody = response.getBody();
+        assertNotNull(responseBody);
+        assertEquals(1, responseBody.size());
+        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
+        assertEquals("Permission with ID 'testId' already exists.",
+                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 }

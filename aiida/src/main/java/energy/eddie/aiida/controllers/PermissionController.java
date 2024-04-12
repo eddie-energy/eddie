@@ -5,6 +5,7 @@ import energy.eddie.aiida.dtos.PatchOperation;
 import energy.eddie.aiida.dtos.PatchPermissionDto;
 import energy.eddie.aiida.dtos.PermissionDto;
 import energy.eddie.aiida.errors.InvalidPatchOperationException;
+import energy.eddie.aiida.errors.PermissionAlreadyExistsException;
 import energy.eddie.aiida.errors.PermissionStartFailedException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.PermissionService;
@@ -59,7 +60,7 @@ public class PermissionController {
             @ApiResponse(responseCode = "500", description = "Failed to start permission", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class), examples = @ExampleObject(value = "{\"errors\":[\"Failed to start permission, please try again later.\"]}")))})
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Permission> setupNewPermission(@Valid @RequestBody PermissionDto newPermission)
-            throws PermissionStartFailedException {
+            throws PermissionStartFailedException, PermissionAlreadyExistsException {
         LOGGER.debug("Got new permission request {}", newPermission);
 
         var permission = permissionService.setupNewPermission(newPermission);
