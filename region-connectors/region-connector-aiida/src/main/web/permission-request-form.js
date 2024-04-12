@@ -1,6 +1,5 @@
 import { html } from "lit";
 import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
-import { createRef, ref } from "lit/directives/ref.js";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/input/input.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/button/button.js";
@@ -20,12 +19,10 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     _isSubmitDisabled: { type: Boolean },
   };
 
-  qrCodeRef = createRef();
-
   constructor() {
     super();
 
-    this._aiidaCode = null;
+    this._aiidaCode = "";
     this._isSubmitDisabled = false;
   }
 
@@ -48,9 +45,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
         if (response.ok) {
           return response.json().then((json) => {
             this._aiidaCode = JSON.stringify(json);
-            this.qrCodeRef.value.updateComplete.then(() => {
-              this.qrCodeRef.value.removeAttribute("hidden");
-            });
           });
         } else {
           return response.json().then((json) => {
@@ -106,11 +100,9 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           </sl-button>`
         : html`
             <sl-qr-code
-              ${ref(this.qrCodeRef)}
               value="${this._aiidaCode}"
               radius="0.5"
               size="256"
-              hidden
             ></sl-qr-code>
 
             <br />
