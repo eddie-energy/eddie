@@ -1,6 +1,5 @@
 package energy.eddie.aiida.controllers;
 
-import energy.eddie.aiida.dtos.ErrorResponse;
 import energy.eddie.aiida.dtos.PatchOperation;
 import energy.eddie.aiida.dtos.PatchPermissionDto;
 import energy.eddie.aiida.dtos.PermissionDto;
@@ -9,6 +8,7 @@ import energy.eddie.aiida.errors.PermissionAlreadyExistsException;
 import energy.eddie.aiida.errors.PermissionStartFailedException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.PermissionService;
+import energy.eddie.api.agnostic.EddieApiError;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -56,8 +56,8 @@ public class PermissionController {
             operationId = "setupNewPermission", tags = {"permission"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Permission.class))}),
-            @ApiResponse(responseCode = "400", description = "Invalid body supplied", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "500", description = "Failed to start permission", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class), examples = @ExampleObject(value = "{\"errors\":[\"Failed to start permission, please try again later.\"]}")))})
+            @ApiResponse(responseCode = "400", description = "Invalid body supplied", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))),
+            @ApiResponse(responseCode = "500", description = "Failed to start permission", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class), examples = @ExampleObject(value = "{\"errors\":[\"Failed to start permission, please try again later.\"]}")))})
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Permission> setupNewPermission(@Valid @RequestBody PermissionDto newPermission)
             throws PermissionStartFailedException, PermissionAlreadyExistsException {
@@ -75,9 +75,9 @@ public class PermissionController {
             operationId = "revokePermission", tags = {"permission"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Permission.class), examples = @ExampleObject(value = REVOKE_PERMISSION_EXAMPLE_RETURN_JSON))}),
-            @ApiResponse(responseCode = "400", description = "Invalid operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
-            @ApiResponse(responseCode = "404", description = "Permission not found", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
-            @ApiResponse(responseCode = "405", description = "Permission not eligible for revocation, e.g. it is already expired or terminated.", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))})
+            @ApiResponse(responseCode = "400", description = "Invalid operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
+            @ApiResponse(responseCode = "404", description = "Permission not found", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
+            @ApiResponse(responseCode = "405", description = "Permission not eligible for revocation, e.g. it is already expired or terminated.", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))})
     })
     @PatchMapping(value = "/{permissionId}",
             consumes = MediaType.APPLICATION_JSON_VALUE,
