@@ -1,4 +1,4 @@
-package energy.eddie.aiida.controllers;
+package energy.eddie.aiida.web;
 
 import api.ValidationErrors;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;

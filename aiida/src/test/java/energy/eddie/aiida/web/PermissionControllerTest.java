@@ -1,4 +1,4 @@
-package energy.eddie.aiida.controllers;
+package energy.eddie.aiida.web;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static energy.eddie.aiida.controllers.GlobalExceptionHandler.ERRORS_JSON_PATH;
+import static energy.eddie.aiida.web.GlobalExceptionHandler.ERRORS_JSON_PATH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;

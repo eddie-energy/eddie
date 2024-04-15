@@ -1,4 +1,4 @@
-package energy.eddie.aiida.controllers;
+package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.PatchOperation;
 import energy.eddie.aiida.dtos.PatchPermissionDto;

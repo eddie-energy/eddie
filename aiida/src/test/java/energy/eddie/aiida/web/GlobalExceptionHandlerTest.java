@@ -1,4 +1,4 @@
-package energy.eddie.aiida.controllers;
+package energy.eddie.aiida.web;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static energy.eddie.aiida.controllers.GlobalExceptionHandler.ERRORS_PROPERTY_NAME;
+import static energy.eddie.aiida.web.GlobalExceptionHandler.ERRORS_PROPERTY_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
