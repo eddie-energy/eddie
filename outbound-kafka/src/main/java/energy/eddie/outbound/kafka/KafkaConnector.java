@@ -10,16 +10,18 @@ import energy.eddie.api.v0_82.ConsentMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.Closeable;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
 
 public class KafkaConnector implements
         Mvp1ConnectionStatusMessageOutboundConnector,
@@ -38,43 +40,85 @@ public class KafkaConnector implements
     @Override
     public void setConnectionStatusMessageStream(Flux<ConnectionStatusMessage> statusMessageStream) {
         statusMessageStream
+                .publishOn(Schedulers.boundedElastic())
                 .subscribe(this::produceStatusMessage);
     }
 
-    @Override
-    public void setEddieValidatedHistoricalDataMarketDocumentStream(
-            Flux<EddieValidatedHistoricalDataMarketDocument> marketDocumentStream) {
-        marketDocumentStream
-                .subscribe(this::produceEddieValidatedHistoricalDataMarketDocument);
-    }
-
-    @Override
-    public void setConsumptionRecordStream(Flux<ConsumptionRecord> consumptionRecordStream) {
-        consumptionRecordStream
-                .subscribe(this::produceConsumptionRecord);
+    private void produceStatusMessage(ConnectionStatusMessage statusMessage) {
+        kafkaProducer.send(new ProducerRecord<>("status-messages", statusMessage),
+                           new KafkaCallback("Could not produce connection status message"));
+        LOGGER.debug("Produced connection status {} message for permission request {}",
+                     statusMessage.status(),
+                     statusMessage.permissionId());
     }
 
     @Override
     public void setConsentMarketDocumentStream(Flux<ConsentMarketDocument> consentMarketDocumentStream) {
         consentMarketDocumentStream
+                .publishOn(Schedulers.boundedElastic())
                 .subscribe(this::produceConsentMarketDocument);
     }
 
     private void produceConsentMarketDocument(ConsentMarketDocument consentMarketDocument) {
-        try {
-            kafkaProducer
-                    .send(new ProducerRecord<>(
-                                  "consent-market-document",
-                                  consentMarketDocument.getPermissionList().getPermissions().getFirst()
-                                          .getMarketEvaluationPointMRID().getValue(),
-                                  consentMarketDocument
-                          )
-                    ).get();
-        } catch (ExecutionException e) {
-            LOGGER.warn("Could not produce consent market document");
-        } catch (InterruptedException e) {
-            reinterrupt(e);
-        }
+        ProducerRecord<String, Object> toSend = new ProducerRecord<>(
+                "consent-market-document",
+                consentMarketDocument.getPermissionList().getPermissions().getFirst()
+                                     .getMarketEvaluationPointMRID().getValue(),
+                consentMarketDocument
+        );
+        kafkaProducer.send(toSend, new KafkaCallback("Could not produce consent market document"));
+    }
+
+    @Override
+    public void setEddieValidatedHistoricalDataMarketDocumentStream(
+            Flux<EddieValidatedHistoricalDataMarketDocument> marketDocumentStream
+    ) {
+        marketDocumentStream
+                .publishOn(Schedulers.boundedElastic())
+                .subscribe(this::produceEddieValidatedHistoricalDataMarketDocument);
+    }
+
+    private void produceEddieValidatedHistoricalDataMarketDocument(
+            EddieValidatedHistoricalDataMarketDocument marketDocument
+    ) {
+        ProducerRecord<String, Object> toSend = new ProducerRecord<>("validated-historical-data",
+                                                                     marketDocument.connectionId().orElse(null),
+                                                                     marketDocument);
+        kafkaProducer.send(toSend,
+                           new KafkaCallback("Could not produce validated historical data market document message"));
+        LOGGER.debug("Produced validated historical data market document message for permission request {}",
+                     marketDocument.permissionId());
+    }
+
+    @Override
+    public void setConsumptionRecordStream(Flux<ConsumptionRecord> consumptionRecordStream) {
+        consumptionRecordStream
+                .publishOn(Schedulers.boundedElastic())
+                .subscribe(this::produceConsumptionRecord);
+    }
+
+    private void produceConsumptionRecord(ConsumptionRecord consumptionRecord) {
+        ProducerRecord<String, Object> toSend = new ProducerRecord<>("consumption-records",
+                                                                     consumptionRecord.getConnectionId(),
+                                                                     consumptionRecord);
+        kafkaProducer.send(toSend, new KafkaCallback("Could not produce consumption record message"));
+        LOGGER.debug("Produced consumption record message for permission request {}",
+                     consumptionRecord.getPermissionId());
+    }
+
+    @Override
+    public void setRawDataStream(Flux<RawDataMessage> rawDataStream) {
+        rawDataStream
+                .publishOn(Schedulers.boundedElastic())
+                .subscribe(this::produceRawDataMessage);
+    }
+
+    private void produceRawDataMessage(RawDataMessage message) {
+        ProducerRecord<String, Object> toSend = new ProducerRecord<>("raw-data-in-proprietary-format",
+                                                                     message.connectionId(),
+                                                                     message);
+        kafkaProducer.send(toSend, new KafkaCallback("Could not produce raw data message"));
+        LOGGER.debug("Produced raw data message for permission request {}", message.permissionId());
     }
 
     @Override
@@ -82,69 +126,12 @@ public class KafkaConnector implements
         kafkaProducer.close();
     }
 
-    private void produceStatusMessage(ConnectionStatusMessage statusMessage) {
-        try {
-            kafkaProducer
-                    .send(new ProducerRecord<>("status-messages", statusMessage))
-                    .get();
-            LOGGER.info("Produced connection status {} message for permission request {}", statusMessage.status(), statusMessage.permissionId());
-        } catch (RuntimeException | ExecutionException e) {
-            LOGGER.warn("Could not produce connection status message", e);
-        } catch (InterruptedException e) {
-            reinterrupt(e);
-        }
-    }
-
-    private void produceConsumptionRecord(ConsumptionRecord consumptionRecord) {
-        try {
-            kafkaProducer
-                    .send(new ProducerRecord<>("consumption-records", consumptionRecord.getConnectionId(),
-                                               consumptionRecord))
-                    .get();
-            LOGGER.info("Produced consumption record message for permission request {}", consumptionRecord.getPermissionId());
-        } catch (RuntimeException | ExecutionException e) {
-            LOGGER.warn("Could not produce consumption record message", e);
-        } catch (InterruptedException e) {
-            reinterrupt(e);
-        }
-    }
-
-    private void produceEddieValidatedHistoricalDataMarketDocument(
-            EddieValidatedHistoricalDataMarketDocument marketDocument) {
-        try {
-            kafkaProducer
-                    .send(new ProducerRecord<>("validated-historical-data", marketDocument.connectionId().orElse(null),
-                                               marketDocument))
-                    .get();
-            LOGGER.info("Produced validated historical data market document message for permission request {}", marketDocument.permissionId());
-        } catch (RuntimeException | ExecutionException e) {
-            LOGGER.warn("Could not produce validated historical data market document message", e);
-        } catch (InterruptedException e) {
-            reinterrupt(e);
-        }
-    }
-
-    private void reinterrupt(InterruptedException e) {
-        LOGGER.warn("Thread was interrupted", e);
-        Thread.currentThread().interrupt();
-    }
-
-    @Override
-    public void setRawDataStream(Flux<RawDataMessage> rawDataStream) {
-        rawDataStream
-                .subscribe(this::produceRawDataMessage);
-    }
-
-    private void produceRawDataMessage(RawDataMessage message) {
-        try {
-            kafkaProducer
-                    .send(new ProducerRecord<>("raw-data-in-proprietary-format", message.connectionId(), message))
-                    .get();
-            LOGGER.debug("Produced raw data message for permission request {}", message.permissionId());
-        } catch (RuntimeException | ExecutionException e) {
-            LOGGER.warn("Could not produce raw data message", e);
-        } catch (InterruptedException e) {
-            reinterrupt(e);
+    private record KafkaCallback(String errorLogMessage) implements Callback {
+        @Override
+        public void onCompletion(RecordMetadata metadata, Exception exception) {
+            if (exception != null) {
+                LOGGER.error(errorLogMessage, exception);
+            }
         }
     }
 }
