@@ -8,13 +8,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -45,7 +46,7 @@ class JwtAuthorizationManagerTest {
         when(mockRequest.getCookies()).thenReturn(null);
 
         // When, Then
-        assertFalse(authManager.check(null, mockContext).isGranted());
+        assertThrows(AccessDeniedException.class, () -> authManager.check(null, mockContext));
     }
 
     @Test
@@ -59,7 +60,7 @@ class JwtAuthorizationManagerTest {
         when(mockJwtUtil.getPermissions(anyString())).thenReturn(Collections.emptyMap());
 
         // When, Then
-        assertFalse(authManager.check(null, mockContext).isGranted());
+        assertThrows(AccessDeniedException.class, () -> authManager.check(null, mockContext));
     }
 
     @Test
@@ -74,7 +75,7 @@ class JwtAuthorizationManagerTest {
         when(mockContext.getVariables()).thenReturn(Collections.emptyMap());
 
         // When, Then
-        assertFalse(authManager.check(null, mockContext).isGranted());
+        assertThrows(AccessDeniedException.class, () -> authManager.check(null, mockContext));
     }
 
     @Test
@@ -91,7 +92,7 @@ class JwtAuthorizationManagerTest {
         when(mockJwtUtil.getPermissions(anyString())).thenReturn(Map.of("es-datadis", Collections.emptyList()));
 
         // When, Then
-        assertFalse(authManager.check(null, mockContext).isGranted());
+        assertThrows(AccessDeniedException.class, () -> authManager.check(null, mockContext));
     }
 
     @Test
@@ -107,7 +108,7 @@ class JwtAuthorizationManagerTest {
         when(mockJwtUtil.getPermissions(anyString())).thenReturn(Map.of("es-datadis", List.of("foo", "bar")));
 
         // When, Then
-        assertFalse(authManager.check(null, mockContext).isGranted());
+        assertThrows(AccessDeniedException.class, () -> authManager.check(null, mockContext));
     }
 
     @Test
