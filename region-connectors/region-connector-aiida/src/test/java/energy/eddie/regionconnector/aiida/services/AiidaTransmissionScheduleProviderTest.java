@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.aiida.services;
 
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -21,7 +21,7 @@ class AiidaTransmissionScheduleProviderTest {
         var dataNeedsService = mock(DataNeedsService.class);
         when(dataNeedsService.findById("dataNeedId"))
                 .thenReturn(Optional.of(dataNeed));
-        var permissionRequest = mock(AiidaPermissionRequestInterface.class);
+        var permissionRequest = mock(AiidaPermissionRequest.class);
         when(permissionRequest.dataNeedId()).thenReturn("dataNeedId");
         var scheduleProvider = new AiidaTransmissionScheduleProvider(dataNeedsService);
 

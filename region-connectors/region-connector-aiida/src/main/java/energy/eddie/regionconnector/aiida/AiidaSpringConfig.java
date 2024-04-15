@@ -5,7 +5,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.ConnectionStatusMessageMixin;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
@@ -14,15 +13,16 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
-import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
-import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestRepository;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
+import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionEventRepository;
+import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
 import energy.eddie.regionconnector.aiida.services.AiidaTransmissionScheduleProvider;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.ConsentMarketDocumentExtension;
+import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
+import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.TransmissionScheduleProvider;
-import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -32,8 +32,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.time.Clock;
-import java.time.ZoneOffset;
-import java.util.Set;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID;
@@ -53,7 +51,7 @@ public class AiidaSpringConfig {
             @Value("${" + CUSTOMER_ID + "}") String customerId
     ) {
         return new PlainAiidaConfiguration(kafkaBootstrapServers, kafkaDataTopic,
-                kafkaStatusMessagesTopic, kafkaTerminationTopicPrefix, customerId);
+                                           kafkaStatusMessagesTopic, kafkaTerminationTopicPrefix, customerId);
     }
 
     @Bean
@@ -98,36 +96,47 @@ public class AiidaSpringConfig {
         return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme));
     }
 
-    @Bean
-    public Set<Extension<AiidaPermissionRequestInterface>> permissionRequestExtensions(
-            AiidaPermissionRequestRepository repository,
-            Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink,
-            Sinks.Many<ConsentMarketDocument> cmdSink,
-            AiidaConfiguration aiidaConfiguration,
-            TransmissionScheduleProvider<AiidaPermissionRequestInterface> transmissionScheduleProvider,
-            CommonInformationModelConfiguration cimConfig
-    ) {
-        return Set.of(
-                new SavingExtension<>(repository),
-                new MessagingExtension<>(connectionStatusMessageSink),
-                new ConsentMarketDocumentExtension<>(
-                        cmdSink,
-                        transmissionScheduleProvider,
-                        aiidaConfiguration.customerId(),
-                        cimConfig.eligiblePartyNationalCodingScheme().value(),
-                        ZoneOffset.UTC
-                )
-        );
-    }
-
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // Injected via parent app context
     @Bean
-    public TransmissionScheduleProvider<AiidaPermissionRequestInterface> transmissionScheduleProvider(DataNeedsService dataNeedsService) {
+    public TransmissionScheduleProvider<AiidaPermissionRequest> transmissionScheduleProvider(DataNeedsService dataNeedsService) {
         return new AiidaTransmissionScheduleProvider(dataNeedsService);
     }
 
     @Bean
-    public ConsentMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<ConsentMarketDocument> cmdSink) {
-        return new CommonConsentMarketDocumentProvider(cmdSink);
+    public EventBus eventBus() {
+        return new EventBusImpl();
+    }
+
+    @Bean
+    public Outbox outbox(EventBus eventBus, AiidaPermissionEventRepository repository) {
+        return new Outbox(eventBus, repository);
+    }
+
+    @Bean
+    public ConnectionStatusMessageHandler<AiidaPermissionRequest> connectionStatusMessageHandler(
+            EventBus eventBus,
+            Sinks.Many<ConnectionStatusMessage> messageSink,
+            AiidaPermissionRequestViewRepository repository
+    ) {
+        // AIIDA does not populate additional info for messages
+        return new ConnectionStatusMessageHandler<>(eventBus, messageSink, repository, request -> "");
+    }
+
+    @Bean
+    public ConsentMarketDocumentMessageHandler<AiidaPermissionRequest> consentMarketDocumentMessageHandler(
+            EventBus eventBus,
+            AiidaPermissionRequestViewRepository repository,
+            Sinks.Many<ConsentMarketDocument> consentMarketDocumentSink,
+            AiidaConfiguration configuration,
+            CommonInformationModelConfiguration cimConfig,
+            TransmissionScheduleProvider<AiidaPermissionRequest> transmissionScheduleProvider
+    ) {
+        return new ConsentMarketDocumentMessageHandler<>(eventBus,
+                                                         repository,
+                                                         consentMarketDocumentSink,
+                                                         configuration.customerId(),
+                                                         cimConfig,
+                                                         transmissionScheduleProvider,
+                                                         AiidaRegionConnectorMetadata.REGION_CONNECTOR_ZONE_ID);
     }
 }

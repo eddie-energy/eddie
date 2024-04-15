@@ -1,17 +1,16 @@
 package energy.eddie.regionconnector.aiida.kafka;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.ConnectionStatusMessageMixin;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaDataSourceInformation;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
-import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
-import energy.eddie.regionconnector.aiida.states.AiidaAcceptedPermissionRequestState;
-import energy.eddie.regionconnector.aiida.states.AiidaSentToPermissionAdministratorPermissionRequestState;
+import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,109 +19,91 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
-import reactor.test.publisher.TestPublisher;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AiidaKafkaTest {
     @Mock
-    private AiidaRegionConnectorService mockService;
-    private AiidaKafka kafka;
-    private ObjectMapper mapper;
-    @Mock
     private KafkaTemplate<String, String> mockTemplate;
+    @Mock
+    private Outbox mockOutbox;
+    @Mock
+    private AiidaPermissionRequestViewRepository mockRepository;
+    @Mock
+    private AiidaPermissionRequest mockRequest;
+    private AiidaKafka aiidaKafka;
+    private ObjectMapper mapper;
     private DataSourceInformation dataSourceInformation;
-    private TestPublisher<TerminationRequest> publisher;
 
     @BeforeEach
     void setUp() {
         mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         mapper.addMixIn(ConnectionStatusMessage.class, ConnectionStatusMessageMixin.class);
 
-        publisher = TestPublisher.create();
-        kafka = new AiidaKafka(mapper, mockService, publisher.flux(), mockTemplate);
+        aiidaKafka = new AiidaKafka(mapper,
+                                    mockTemplate,
+                                    mockOutbox,
+                                    mockRepository);
         dataSourceInformation = new AiidaDataSourceInformation();
-    }
-
-    @Test
-    void givenAcceptedMessage_listenForConnectionStatusMessages_callsAccept() throws Exception {
-        var request = spy(createTestRequest());
-
-        // json that is received from AIIDA
-        var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(),
-                                                  dataSourceInformation, PermissionProcessStatus.ACCEPTED);
-        var json = mapper.writeValueAsString(message);
-
-        // make sure the request is in a valid state
-        request.changeState(new AiidaSentToPermissionAdministratorPermissionRequestState(request));
-
-        when(mockService.getPermissionRequestById(request.permissionId())).thenReturn(request);
-
-        // When
-        kafka.listenForConnectionStatusMessages(json);
-
-        // Then
-        verify(mockService).getPermissionRequestById(anyString());
-        verify(request).accept();
-    }
-
-    private AiidaPermissionRequest createTestRequest() {
-        String connectionId = "TestConnectionId";
-        String permissionId = "TestPermissionId";
-        String terminationTopic = "TestTopic";
-        String dataNeedId = "1";
-        LocalDate start = LocalDate.now(ZoneOffset.UTC);
-        return new AiidaPermissionRequest(permissionId, connectionId, dataNeedId, terminationTopic,
-                                          start, start.plusDays(1));
-    }
-
-    @ParameterizedTest
-    @EnumSource(
-            value = PermissionProcessStatus.class,
-            names = {"REVOKED", "FULFILLED", "TERMINATED"},
-            mode = EnumSource.Mode.INCLUDE)
-    void givenRevokedMessage_listenForConnectionStatusMessages_callsRevoke(PermissionProcessStatus status) throws Exception {
-        var request = spy(createTestRequest());
-
-        var message = new ConnectionStatusMessage(request.connectionId(), request.permissionId(), request.dataNeedId(),
-                                                  dataSourceInformation, status);
-        var json = mapper.writeValueAsString(message);
-
-        request.changeState(new AiidaAcceptedPermissionRequestState(request));
-
-        when(mockService.getPermissionRequestById(request.permissionId())).thenReturn(request);
-
-        // When
-        kafka.listenForConnectionStatusMessages(json);
-
-        // Then
-        verify(mockService).getPermissionRequestById(anyString());
-
-        switch (status) {
-            case REVOKED -> verify(request).revoke();
-            case FULFILLED -> verify(request).fulfill();
-            case TERMINATED -> verify(request).terminate();
-            default -> fail();
-        }
     }
 
     @Test
     void givenTerminationRequest_sendsViaKafkaTemplate() {
         // Given
-        var connectionId = "SomeId";
-        var terminationTopic = "MyTerminationTopic";
-        publisher.assertSubscribers(1);
+        String connectionId = "connectionId";
+        String terminationTopic = "terminationTopic";
+        when(mockRepository.findById(anyString())).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.connectionId()).thenReturn(connectionId);
+        when(mockRequest.terminationTopic()).thenReturn(terminationTopic);
 
         // When
-        publisher.next(new TerminationRequest(connectionId, terminationTopic));
+        aiidaKafka.sendTerminationRequest("permissionId");
 
         // Then
         verify(mockTemplate).send(terminationTopic, connectionId, connectionId);
     }
-    // TODO how to handle it, when we get status messages from AIIDA but request is in a different state? i.e. just random messages from aiida
+
+    @ParameterizedTest
+    @EnumSource(value = PermissionProcessStatus.class,
+            names = {"ACCEPTED", "TERMINATED", "REVOKED", "FULFILLED"},
+            mode = EnumSource.Mode.INCLUDE)
+    void givenConnectionStatusMessageFromAiida_commitsCorrespondingPermissionEvent(PermissionProcessStatus status) throws JsonProcessingException {
+        String connectionId = "TestConnectionId";
+        String permissionId = "TestPermissionId";
+        String dataNeedId = "1";
+        // json that is received from AIIDA
+        var message = new ConnectionStatusMessage(connectionId, permissionId, dataNeedId,
+                                                  dataSourceInformation, status);
+        var json = mapper.writeValueAsString(message);
+
+        // When
+        aiidaKafka.listenForConnectionStatusMessages(json);
+
+        // Then
+        verify(mockOutbox).commit(argThat(event -> event.status() == status));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = PermissionProcessStatus.class,
+            names = {"ACCEPTED", "TERMINATED", "REVOKED", "FULFILLED"},
+            mode = EnumSource.Mode.EXCLUDE)
+    void givenConnectionStatusMessageFromAiidaWithNotHandledStatus_doesNotCommitPermissionEvent(PermissionProcessStatus status) throws JsonProcessingException {
+        String connectionId = "TestConnectionId";
+        String permissionId = "TestPermissionId";
+        String dataNeedId = "1";
+        // json that is received from AIIDA
+        var message = new ConnectionStatusMessage(connectionId, permissionId, dataNeedId,
+                                                  dataSourceInformation, status);
+        var json = mapper.writeValueAsString(message);
+
+        // When
+        aiidaKafka.listenForConnectionStatusMessages(json);
+
+        // Then
+        verifyNoInteractions(mockOutbox);
+    }
 }
