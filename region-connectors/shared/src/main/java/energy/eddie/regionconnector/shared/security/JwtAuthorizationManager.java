@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.shared.security;
 import jakarta.servlet.http.Cookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.core.Authentication;
@@ -42,7 +43,7 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
         if (jwtCookie.isEmpty()) {
             LOGGER.trace("Denying authorization for request URI {} because no JWT cookie was included in the request",
                          requestURI);
-            return new AuthorizationDecision(false);
+            throw new AccessDeniedException("No JWT cookie provided");
         }
 
         var permissions = jwtUtil.getPermissions(jwtCookie.get().getValue());
@@ -59,7 +60,7 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
                     requestedPermissionId,
                     requestedConnectorId,
                     permittedPermissionsForRequestedConnector);
-            return new AuthorizationDecision(false);
+            throw new AccessDeniedException("Not authorized to access the requested resource");
         }
 
         if (!permittedPermissionsForRequestedConnector.contains(requestedPermissionId)) {
@@ -67,7 +68,7 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
                     "Denying authorization for request URI {} because the requested permissionId is not in the JWT ({})",
                     requestURI,
                     permissions);
-            return new AuthorizationDecision(false);
+            throw new AccessDeniedException("Not authorized to access the requested resource");
         }
 
         return new AuthorizationDecision(true);

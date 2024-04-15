@@ -1,17 +1,25 @@
 package energy.eddie.regionconnector.es.datadis;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.RegionConnectorSecurityConfig;
 import energy.eddie.regionconnector.shared.security.JwtAuthorizationManager;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
+import java.util.List;
+import java.util.Map;
+
+import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
 import static energy.eddie.regionconnector.es.datadis.web.PermissionController.PATH_PERMISSION_ACCEPTED;
 import static energy.eddie.regionconnector.es.datadis.web.PermissionController.PATH_PERMISSION_REJECTED;
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
@@ -42,7 +50,8 @@ public class DatadisSecurityConfig {
             MvcRequestMatcher.Builder datadisMvcRequestMatcher,
             HttpSecurity http,
             JwtAuthorizationManager datadisAuthorizationManager,
-            CorsConfigurationSource corsConfigurationSource
+            CorsConfigurationSource corsConfigurationSource,
+            ObjectMapper mapper
     ) throws Exception {
         return http
                 .securityMatcher(datadisMvcRequestMatcher.pattern("/**"))    // apply following rules only to requests of this DispatcherServlet
@@ -57,6 +66,28 @@ public class DatadisSecurityConfig {
                         .anyRequest().denyAll()
 // @formatter:on
                 )
+                .exceptionHandling(customizer -> customizer
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            // we cannot properly differentiate between unauthenticated/unauthorized because we are not directly using Spring's security context, so no specific error message can be given
+                            var errors = Map.of(ERRORS_PROPERTY_NAME,
+                                                List.of(new EddieApiError(
+                                                        "Not authenticated/authorized to access the requested resource")));
+
+                            // when using response.sendError(), the message will be overwritten
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write(mapper.writeValueAsString(errors));
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            var errors = Map.of(ERRORS_PROPERTY_NAME,
+                                                List.of(new EddieApiError(
+                                                        "Not authorized to access the requested resource")));
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            response.getWriter().write(mapper.writeValueAsString(errors));
+                        })
+                )
+                .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .build();
     }
