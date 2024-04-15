@@ -16,7 +16,7 @@ env:
 jobs:
   build:
 
-    runs-on: [ self-hosted, fh-server ]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -72,7 +72,7 @@ jobs:
         run: rm $HOME/.docker/config.json
 
   build-aiida:
-    runs-on: [ self-hosted, fh-server ]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
