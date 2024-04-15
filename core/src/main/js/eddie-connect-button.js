@@ -115,6 +115,12 @@ class EddieConnectButton extends LitElement {
       cursor: default;
       filter: grayscale(100%);
     }
+
+    .version-indicator {
+      font-size: var(--sl-font-size-x-small);
+      color: var(--sl-color-neutral-500);
+      padding: var(--sl-spacing-2x-small);
+    }
   `;
   dialogRef = createRef();
 
@@ -486,7 +492,11 @@ class EddieConnectButton extends LitElement {
               `}
         </div>
 
-        <br />
+        <div slot="footer">
+          <div class="version-indicator">
+            <i>EDDIE Version: __EDDIE_VERSION__</i>
+          </div>
+        </div>
       </sl-dialog>
     `;
   }
