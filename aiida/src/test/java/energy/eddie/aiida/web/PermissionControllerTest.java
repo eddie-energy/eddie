@@ -47,10 +47,6 @@ class PermissionControllerTest {
     private String connectionId;
     private String dataNeedId;
     private Set<String> codes;
-    private String bootstrapServers;
-    private String validDataTopic;
-    private String validStatusTopic;
-    private String validSubscribeTopic;
     private PermissionDto permissionDto;
     private ObjectMapper mapper;
     @MockBean

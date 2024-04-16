@@ -1,6 +1,7 @@
 package energy.eddie.aiida.streamers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import reactor.core.publisher.Flux;
