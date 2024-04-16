@@ -67,7 +67,7 @@ class FutureDataServiceTest {
                                                                              stateBuilderFactory);
         permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
                                                          .build());
-        permissionRequest.setDistributorCodeAndPointType(DistributorCode.ASEME, 1);
+        permissionRequest.setDistributorCodePointTypeAndProductionSupport(DistributorCode.ASEME, 1, false);
         return permissionRequest;
     }
 

@@ -3,6 +3,8 @@ package energy.eddie.regionconnector.es.datadis.consumer;
 import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
+import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
+import energy.eddie.regionconnector.es.datadis.dtos.ContractDetails;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
@@ -13,6 +15,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,14 +34,43 @@ class PermissionRequestConsumerTest {
         when(supply.distributorCode()).thenReturn("1");
 
         PermissionRequestConsumer permissionRequestConsumer = new PermissionRequestConsumer(historicalDataService);
+        AccountingPointData accountingPointData = new AccountingPointData(supply, createContractDetails());
 
         // Act
-        permissionRequestConsumer.acceptPermission(permissionRequest, supply);
+        permissionRequestConsumer.acceptPermission(permissionRequest, accountingPointData);
 
         // Assert
-        verify(permissionRequest).setDistributorCodeAndPointType(DistributorCode.fromCode("1"), 1);
+        verify(permissionRequest).setDistributorCodePointTypeAndProductionSupport(DistributorCode.fromCode("1"),
+                                                                                  1,
+                                                                                  false);
         verify(permissionRequest).accept();
         verify(historicalDataService).fetchAvailableHistoricalData(permissionRequest);
+    }
+
+    private ContractDetails createContractDetails() {
+        return new ContractDetails(
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                new double[0],
+                "",
+                "",
+                LocalDate.now(ZONE_ID_SPAIN),
+                Optional.empty(),
+                "",
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty()
+        );
     }
 
     @Test
@@ -50,14 +85,14 @@ class PermissionRequestConsumerTest {
         when(supply.distributorCode()).thenReturn("1");
 
         PermissionRequestConsumer permissionRequestConsumer = new PermissionRequestConsumer(historicalDataService);
+        AccountingPointData accountingPointData = new AccountingPointData(supply, createContractDetails());
 
         // Act
-        permissionRequestConsumer.acceptPermission(permissionRequest, supply);
+        permissionRequestConsumer.acceptPermission(permissionRequest, accountingPointData);
 
         // Assert
         verifyNoInteractions(historicalDataService);
     }
-
 
     @Test
     void consumeError_ifForbidden_callsTimeOut() throws StateTransitionException {

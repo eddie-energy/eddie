@@ -38,7 +38,7 @@ public class PermissionRequestService {
             DatadisRegionConnectorMetadata.MAXIMUM_MONTHS_IN_THE_FUTURE).minusDays(1);
     private final EsPermissionRequestRepository repository;
     private final PermissionRequestFactory permissionRequestFactory;
-    private final SupplyApiService supplyApiService;
+    private final AccountingPointDataService accountingPointDataService;
     private final PermissionRequestConsumer permissionRequestConsumer;
     private final DataNeedsService dataNeedsService;
 
@@ -46,14 +46,14 @@ public class PermissionRequestService {
     public PermissionRequestService(
             EsPermissionRequestRepository repository,
             PermissionRequestFactory permissionRequestFactory,
-            SupplyApiService supplyApiService,
+            AccountingPointDataService accountingPointDataService,
             PermissionRequestConsumer permissionRequestConsumer,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // Injected from another spring context
             DataNeedsService dataNeedsService
     ) {
         this.repository = repository;
         this.permissionRequestFactory = permissionRequestFactory;
-        this.supplyApiService = supplyApiService;
+        this.accountingPointDataService = accountingPointDataService;
         this.permissionRequestConsumer = permissionRequestConsumer;
         this.dataNeedsService = dataNeedsService;
     }
@@ -76,11 +76,13 @@ public class PermissionRequestService {
             LOGGER.info("Got request to accept permission {}", permissionRequest.permissionId());
         }
 
-        supplyApiService.fetchSupplyForPermissionRequest(permissionRequest)
-                        .subscribe(
-                                supply -> permissionRequestConsumer.acceptPermission(permissionRequest, supply),
-                                e -> permissionRequestConsumer.consumeError(e, permissionRequest)
-                        );
+        accountingPointDataService
+                .fetchAccountingPointDataForPermissionRequest(permissionRequest)
+                .doOnError(error -> permissionRequestConsumer.consumeError(error, permissionRequest))
+                .onErrorComplete()
+                .subscribe(accountingPointData ->
+                                   permissionRequestConsumer.acceptPermission(permissionRequest, accountingPointData)
+                );
     }
 
     private EsPermissionRequest getPermissionRequestById(String permissionId) throws PermissionNotFoundException {

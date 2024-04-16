@@ -47,7 +47,11 @@ public interface EsPermissionRequest extends MeterReadingPermissionRequest {
     DatadisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory);
 
     @InvokeExtensions
-    void setDistributorCodeAndPointType(DistributorCode distributorCode, Integer pointType);
+    void setDistributorCodePointTypeAndProductionSupport(
+            DistributorCode distributorCode,
+            Integer pointType,
+            boolean productionSupport
+    );
 
     /**
      * Decide what kind of metering data is requested.

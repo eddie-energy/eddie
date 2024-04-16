@@ -13,6 +13,8 @@ import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
+import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
+import energy.eddie.regionconnector.es.datadis.dtos.ContractDetails;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
@@ -44,7 +46,7 @@ class PermissionRequestServiceTest {
     @Mock
     private PermissionRequestFactory factory;
     @Mock
-    private SupplyApiService supplyApiService;
+    private AccountingPointDataService accountingPointDataService;
     @Mock
     private PermissionRequestConsumer permissionRequestConsumer;
     @Mock
@@ -134,16 +136,45 @@ class PermissionRequestServiceTest {
         var permissionId = "Existing";
         var permissionRequest = mock(DatadisPermissionRequest.class);
         Supply supply = new Supply("", "", "", "", "", "1", LocalDate.now(ZONE_ID_SPAIN), null, 1, "1");
+        AccountingPointData accountingPointData = new AccountingPointData(supply, createContractDetails());
         when(permissionRequest.permissionId()).thenReturn(permissionId);
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
         when(factory.create(permissionRequest)).thenReturn(permissionRequest);
-        when(supplyApiService.fetchSupplyForPermissionRequest(permissionRequest)).thenReturn(Mono.just(supply));
+        when(accountingPointDataService.fetchAccountingPointDataForPermissionRequest(permissionRequest)).thenReturn(
+                Mono.just(accountingPointData)
+        );
 
         // When
         assertDoesNotThrow(() -> service.acceptPermission(permissionId));
 
         // Then
-        verify(permissionRequestConsumer).acceptPermission(permissionRequest, supply);
+        verify(permissionRequestConsumer).acceptPermission(permissionRequest, accountingPointData);
+    }
+
+    private ContractDetails createContractDetails() {
+        return new ContractDetails(
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                new double[0],
+                "",
+                "",
+                LocalDate.now(ZONE_ID_SPAIN),
+                Optional.empty(),
+                "",
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty()
+        );
     }
 
     @Test
@@ -154,10 +185,9 @@ class PermissionRequestServiceTest {
         when(permissionRequest.permissionId()).thenReturn(permissionId);
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
         when(factory.create(permissionRequest)).thenReturn(permissionRequest);
-        when(supplyApiService.fetchSupplyForPermissionRequest(permissionRequest)).thenReturn(Mono.error(new DatadisApiException(
-                "",
-                HttpResponseStatus.FORBIDDEN,
-                "")));
+        when(accountingPointDataService.fetchAccountingPointDataForPermissionRequest(permissionRequest)).thenReturn(
+                Mono.error(new DatadisApiException("", HttpResponseStatus.FORBIDDEN, ""))
+        );
 
         // When
         assertDoesNotThrow(() -> service.acceptPermission(permissionId));
@@ -165,7 +195,6 @@ class PermissionRequestServiceTest {
         // Then
         verify(permissionRequestConsumer).consumeError(any(), eq(permissionRequest));
     }
-
 
     @Test
     void rejectPermission_nonExistingId_throws() {

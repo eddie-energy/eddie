@@ -201,9 +201,14 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     }
 
     @Override
-    public void setDistributorCodeAndPointType(DistributorCode distributorCode, Integer pointType) {
+    public void setDistributorCodePointTypeAndProductionSupport(
+            DistributorCode distributorCode,
+            Integer pointType,
+            boolean productionSupport
+    ) {
         this.distributorCode = distributorCode;
         this.pointType = pointType;
+        this.productionSupport = productionSupport;
     }
 
     @Override
