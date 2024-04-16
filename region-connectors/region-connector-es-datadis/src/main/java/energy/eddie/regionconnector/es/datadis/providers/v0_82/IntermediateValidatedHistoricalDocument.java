@@ -56,27 +56,26 @@ public final class IntermediateValidatedHistoricalDocument {
                 ZONE_ID_SPAIN
         );
 
-        vhd
-                .withSenderMarketParticipantMRID(
-                        new PartyIDStringComplexType()
-                                .withCodingScheme(CodingSchemeTypeList.SPAIN_NATIONAL_CODING_SCHEME)
-                                .withValue(identifiableMeteringData.permissionRequest()
-                                                                   .distributorCode()
-                                                                   .map(DistributorCode::name)
-                                                                   .orElse("Datadis"))
-                )
-                .withCreatedDateTime(EsmpDateTime.now().toString())
-                .withReceiverMarketParticipantMRID(
-                        new PartyIDStringComplexType()
-                                .withCodingScheme(cimConfig.eligiblePartyNationalCodingScheme())
-                                .withValue(datadisConfig.username())
-                )
-                .withPeriodTimeInterval(
-                        new ESMPDateTimeIntervalComplexType()
-                                .withStart(timeframe.start())
-                                .withEnd(timeframe.end())
-                )
-                .withTimeSeriesList(timeSeriesList(timeframe));
+        vhd.withSenderMarketParticipantMRID(
+                   new PartyIDStringComplexType()
+                           .withCodingScheme(CodingSchemeTypeList.SPAIN_NATIONAL_CODING_SCHEME)
+                           .withValue(identifiableMeteringData.permissionRequest()
+                                                              .distributorCode()
+                                                              .map(DistributorCode::name)
+                                                              .orElse("Datadis"))
+           )
+           .withCreatedDateTime(EsmpDateTime.now().toString())
+           .withReceiverMarketParticipantMRID(
+                   new PartyIDStringComplexType()
+                           .withCodingScheme(cimConfig.eligiblePartyNationalCodingScheme())
+                           .withValue(datadisConfig.username())
+           )
+           .withPeriodTimeInterval(
+                   new ESMPDateTimeIntervalComplexType()
+                           .withStart(timeframe.start())
+                           .withEnd(timeframe.end())
+           )
+           .withTimeSeriesList(timeSeriesList(timeframe));
         var permissionRequest = identifiableMeteringData.permissionRequest();
         return new EddieValidatedHistoricalDataMarketDocument(
                 Optional.of(permissionRequest.connectionId()),
@@ -87,11 +86,39 @@ public final class IntermediateValidatedHistoricalDocument {
     }
 
     private ValidatedHistoricalDataMarketDocument.TimeSeriesList timeSeriesList(EsmpTimeInterval timeframe) {
-        TimeSeriesComplexType reading = new TimeSeriesComplexType()
+        ValidatedHistoricalDataMarketDocument.TimeSeriesList timeSeriesList = new ValidatedHistoricalDataMarketDocument.TimeSeriesList();
+        TimeSeriesComplexType consumptionReading = timeSeriesComplexType(
+                timeframe,
+                BusinessTypeList.CONSUMPTION,
+                DirectionTypeList.DOWN,
+                consumptionPoints()
+        );
+        timeSeriesList.withTimeSeries(consumptionReading);
+
+        if (identifiableMeteringData.permissionRequest().productionSupport()) {
+            TimeSeriesComplexType productionReading = timeSeriesComplexType(
+                    timeframe,
+                    BusinessTypeList.PRODUCTION,
+                    DirectionTypeList.UP,
+                    productionPoints()
+            );
+            timeSeriesList.withTimeSeries(productionReading);
+        }
+
+        return timeSeriesList;
+    }
+
+    private TimeSeriesComplexType timeSeriesComplexType(
+            EsmpTimeInterval timeframe,
+            BusinessTypeList businessType,
+            DirectionTypeList directionTypeList,
+            List<PointComplexType> points
+    ) {
+        return new TimeSeriesComplexType()
                 .withMRID(UUID.randomUUID().toString())
-                .withBusinessType(BusinessTypeList.CONSUMPTION)
+                .withBusinessType(businessType)
                 .withProduct(EnergyProductTypeList.ACTIVE_ENERGY)
-                .withFlowDirectionDirection(DirectionTypeList.DOWN)
+                .withFlowDirectionDirection(directionTypeList)
                 .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation(AggregateKind.SUM)
                 .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(CommodityKind.ELECTRICITYPRIMARYMETERED) // No mapping available
                 .withEnergyMeasurementUnitName(UnitOfMeasureTypeList.KILOWATT_HOUR)
@@ -107,13 +134,11 @@ public final class IntermediateValidatedHistoricalDocument {
                 )
                 .withSeriesPeriodList(
                         new TimeSeriesComplexType.SeriesPeriodList()
-                                .withSeriesPeriods(seriesPeriods(timeframe))
+                                .withSeriesPeriods(seriesPeriod(timeframe, points))
                 );
-        return new ValidatedHistoricalDataMarketDocument.TimeSeriesList()
-                .withTimeSeries(List.of(reading));
     }
 
-    private List<SeriesPeriodComplexType> seriesPeriods(EsmpTimeInterval timeInterval) {
+    private List<PointComplexType> consumptionPoints() {
         List<PointComplexType> consumptionPoints = new ArrayList<>();
         int position = 0;
         for (MeteringData meteringData
@@ -127,7 +152,31 @@ public final class IntermediateValidatedHistoricalDocument {
             position++;
         }
 
-        var seriesPeriod = new SeriesPeriodComplexType()
+        return consumptionPoints;
+    }
+
+    private List<PointComplexType> productionPoints() {
+        List<PointComplexType> productionPoints = new ArrayList<>();
+        int position = 0;
+        for (MeteringData meteringData
+                : identifiableMeteringData.intermediateMeteringData().meteringData()) {
+            QualityTypeList qualityTypeList = qualityTypeList(meteringData);
+            PointComplexType consumptionPoint = new PointComplexType()
+                    .withPosition(String.valueOf(position))
+                    .withEnergyQuantityQuantity(BigDecimal.valueOf(meteringData.surplusEnergyKWh()))
+                    .withEnergyQuantityQuality(qualityTypeList);
+            productionPoints.add(consumptionPoint);
+            position++;
+        }
+
+        return productionPoints;
+    }
+
+    private SeriesPeriodComplexType seriesPeriod(
+            EsmpTimeInterval timeInterval,
+            List<PointComplexType> points
+    ) {
+        return new SeriesPeriodComplexType()
                 .withResolution(switch (identifiableMeteringData.permissionRequest().measurementType()) {
                     case MeasurementType.QUARTER_HOURLY -> Granularity.PT15M.name();
                     case MeasurementType.HOURLY -> Granularity.PT1H.name();
@@ -138,9 +187,8 @@ public final class IntermediateValidatedHistoricalDocument {
                 )
                 .withPointList(
                         new SeriesPeriodComplexType.PointList()
-                                .withPoints(consumptionPoints)
+                                .withPoints(points)
                 );
-        return new ArrayList<>(List.of(seriesPeriod));
     }
 
     /**

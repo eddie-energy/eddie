@@ -20,7 +20,7 @@ class IntermediateVHDFactoryTest {
         );
 
         // When
-        var res = factory.create(IntermediateValidatedHistoricalDocumentTest.identifiableMeterReading());
+        var res = factory.create(IntermediateValidatedHistoricalDocumentTest.identifiableMeterReading(false));
 
         // Then
         assertNotNull(res);

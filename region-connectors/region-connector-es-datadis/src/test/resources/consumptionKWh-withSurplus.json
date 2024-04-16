@@ -1,0 +1,194 @@
+[
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "01:00",
+    "consumptionKWh": 0.979,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 0
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "02:00",
+    "consumptionKWh": 0.939,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 0
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "03:00",
+    "consumptionKWh": 0.982,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 0
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "04:00",
+    "consumptionKWh": 0.929,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 0
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "05:00",
+    "consumptionKWh": 0.946,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 0.5
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "06:00",
+    "consumptionKWh": 0.955,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 0.54
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "07:00",
+    "consumptionKWh": 0.922,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 0.546
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "08:00",
+    "consumptionKWh": 2.667,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 0.6
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "09:00",
+    "consumptionKWh": 3.789,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 0.66
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "10:00",
+    "consumptionKWh": 4.495,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 0.7
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "11:00",
+    "consumptionKWh": 4.875,
+    "obtainMethod": "Real",
+    "surplusEnergyKWh": 1.2
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "12:00",
+    "consumptionKWh": 5.543,
+    "obtainMethod": "Estimada",
+    "surplusEnergyKWh": 1.8
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "13:00",
+    "consumptionKWh": 5.996,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 5.1
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "14:00",
+    "consumptionKWh": 5.439,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 6.5
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "15:00",
+    "consumptionKWh": 5.644,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 6.5
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "16:00",
+    "consumptionKWh": 4.291,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 3.0
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "17:00",
+    "consumptionKWh": 5.234,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 3.2
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "18:00",
+    "consumptionKWh": 4.41,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 2.3
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "19:00",
+    "consumptionKWh": 4.178,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 2
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "20:00",
+    "consumptionKWh": 2.579,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 0.5
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "21:00",
+    "consumptionKWh": 2.286,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 0.5
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "22:00",
+    "consumptionKWh": 1.107,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 0.1
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "23:00",
+    "consumptionKWh": 0.95,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 0.01
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "24:00",
+    "consumptionKWh": 1.003,
+    "obtainMethod": "",
+    "surplusEnergyKWh": 0.0
+  }
+]
