@@ -19,11 +19,6 @@ class PermissionTest {
     private String connectionId;
     private String dataNeedId;
     private Set<String> codes;
-    private String bootstrapServers;
-    private String validDataTopic;
-    private String validStatusTopic;
-    private String validSubscribeTopic;
-    private KafkaStreamingConfig streamingConfig;
 
     @BeforeEach
     void setUp() {
@@ -35,31 +30,25 @@ class PermissionTest {
         start = Instant.now();
         expiration = start.plusSeconds(5000);
 
-        bootstrapServers = "localhost:9092";
-        validDataTopic = "ValidPublishTopic";
-        validStatusTopic = "ValidStatusTopic";
-        validSubscribeTopic = "ValidSubscribeTopic";
-        streamingConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
-
         codes = Set.of("1.8.0", "2.8.0");
         grant = Instant.now();
     }
 
     @Test
     void givenNull_updateStatus_throws() {
-        var permission = new Permission(permissionId, name, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
+        var permission = new Permission(permissionId, name, dataNeedId, start, expiration, grant, connectionId, codes);
         assertThrows(NullPointerException.class, () -> permission.updateStatus(null));
     }
 
     @Test
     void givenNull_revokeTime_throws() {
-        var permission = new Permission(permissionId, name, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
+        var permission = new Permission(permissionId, name, dataNeedId, start, expiration, grant, connectionId, codes);
         assertThrows(NullPointerException.class, () -> permission.revokeTime(null));
     }
 
     @Test
     void givenRevocationTimeBeforeGrantTime_revokeTime_throws() {
-        var permission = new Permission(permissionId, name, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
+        var permission = new Permission(permissionId, name, dataNeedId, start, expiration, grant, connectionId, codes);
         var revokeTime = start.minusSeconds(1000);
 
         assertThrows(IllegalArgumentException.class, () -> permission.revokeTime(revokeTime));
@@ -68,7 +57,7 @@ class PermissionTest {
     @Test
     void givenValidRevocationTime_asExpected() {
         // Given
-        var permission = new Permission(permissionId, name, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
+        var permission = new Permission(permissionId, name, dataNeedId, start, expiration, grant, connectionId, codes);
         var revocationTime = start.plusSeconds(1000);
 
         // When
@@ -88,9 +77,5 @@ class PermissionTest {
         assertEquals(connectionId, permission.connectionId());
         assertEquals(permissionId, permission.permissionId());
         assertThat(codes).hasSameElementsAs(permission.requestedCodes());
-        assertEquals(bootstrapServers, permission.kafkaStreamingConfig().bootstrapServers());
-        assertEquals(validDataTopic, permission.kafkaStreamingConfig().dataTopic());
-        assertEquals(validStatusTopic, permission.kafkaStreamingConfig().statusTopic());
-        assertEquals(validSubscribeTopic, permission.kafkaStreamingConfig().subscribeTopic());
     }
 }

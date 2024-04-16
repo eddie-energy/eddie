@@ -6,7 +6,6 @@ spring:
   jpa:
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           lob:
             non_contextual_creation: 'true'
@@ -14,8 +13,3 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
-
-
-aiida:
-  streamer:
-    poll_interval: 10

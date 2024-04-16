@@ -1,7 +1,6 @@
 package energy.eddie.aiida.constraints;
 
 import energy.eddie.aiida.dtos.PermissionDto;
-import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -28,7 +27,6 @@ class ExpirationTimeAfterStartTimePermissionDtoValidatorTest {
     private String connectionId;
     private String dataNeedId;
     private Set<String> codes;
-    private KafkaStreamingConfig streamingConfig;
 
     @BeforeEach
     public void setUp() {
@@ -43,12 +41,6 @@ class ExpirationTimeAfterStartTimePermissionDtoValidatorTest {
         start = Instant.now();
         end = start.plusSeconds(5000);
 
-        String bootstrapServers = "localhost:9092";
-        String validDataTopic = "ValidPublishTopic";
-        String validStatusTopic = "ValidStatusTopic";
-        String validSubscribeTopic = "ValidSubscribeTopic";
-        streamingConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
-
         codes = Set.of("1.8.0", "2.8.0");
         grant = Instant.now();
     }
@@ -61,7 +53,7 @@ class ExpirationTimeAfterStartTimePermissionDtoValidatorTest {
     @Test
     void givenExpirationTimeBeforeStartTime_validation_willFail() {
         end = start.minusSeconds(1000);
-        var dto = new PermissionDto(permissionId, name, dataNeedId, start, end, grant, connectionId, codes, streamingConfig);
+        var dto = new PermissionDto(permissionId, name, dataNeedId, start, end, grant, connectionId, codes);
 
         var violations = validator.validate(dto);
         assertEquals(2, violations.size());
@@ -72,7 +64,7 @@ class ExpirationTimeAfterStartTimePermissionDtoValidatorTest {
 
     @Test
     void givenNull_validation_willFail() {
-        var dto = new PermissionDto(permissionId, name, dataNeedId, null, end, grant, connectionId, codes, streamingConfig);
+        var dto = new PermissionDto(permissionId, name, dataNeedId, null, end, grant, connectionId, codes);
 
         var violations = validator.validate(dto);
         assertEquals(2, violations.size());
@@ -81,7 +73,7 @@ class ExpirationTimeAfterStartTimePermissionDtoValidatorTest {
                 "must not be null."));
 
 
-        dto = new PermissionDto(permissionId, name, dataNeedId, start, null, grant, connectionId, codes, streamingConfig);
+        dto = new PermissionDto(permissionId, name, dataNeedId, start, null, grant, connectionId, codes);
 
         violations = validator.validate(dto);
         assertEquals(3, violations.size());
@@ -93,7 +85,7 @@ class ExpirationTimeAfterStartTimePermissionDtoValidatorTest {
 
     @Test
     void givenValidInput_validation_passes() {
-        var dto = new PermissionDto(permissionId, name, dataNeedId, start, end, grant, connectionId, codes, streamingConfig);
+        var dto = new PermissionDto(permissionId, name, dataNeedId, start, end, grant, connectionId, codes);
 
         var violations = validator.validate(dto);
         assertEquals(0, violations.size());

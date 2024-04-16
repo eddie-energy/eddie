@@ -33,7 +33,6 @@ dependencies {
     implementation(libs.flyway.core)
     implementation(libs.flyway.postgresql)
     implementation(libs.spring.openapi.webmvc.ui)
-    implementation(libs.kafka.clients)
     implementation(libs.eclipse.paho.mqttv5.client)
     // enable Jackson support to fetch Hibernate lazy loaded properties when serializing
     implementation(libs.jackson.hibernate6)
@@ -45,7 +44,6 @@ dependencies {
     testImplementation(libs.apache.http.client)
     testImplementation(libs.hakky.logcaptor)
     testImplementation(libs.testcontainers.postgresql)
-    testImplementation(libs.testcontainers.kafka)
     testImplementation(libs.testcontainers.toxiproxy)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.starter.test)
