@@ -1,7 +1,6 @@
 package energy.eddie.aiida.constraints;
 
 import energy.eddie.aiida.dtos.PermissionDto;
-import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -30,10 +29,8 @@ class ExpirationTimeNotInPastPermissionDtoValidatorTest {
     @Test
     void givenNull_validation_willFail() {
         var start = Instant.now().minusSeconds(100);
-        var streamingConfig = new KafkaStreamingConfig("localhost:9092", "ValidPublishTopic",
-                "ValidStatusTopic", "ValidSubscribeTopic");
         var dto = new PermissionDto(UUID.randomUUID().toString(), "SomeName", "dId",
-                start, null, start, "conId", Set.of("1-0:1.8.0"), streamingConfig);
+                                    start, null, start, "conId", Set.of("1-0:1.8.0"));
 
         var violations = validator.validate(dto);
         assertEquals(3, violations.size());
@@ -48,10 +45,8 @@ class ExpirationTimeNotInPastPermissionDtoValidatorTest {
     void givenExpirationTimeInPast_validation_willFail() {
         var start = Instant.now().minusSeconds(100);
         var expiration = Instant.now().minusSeconds(50);
-        var streamingConfig = new KafkaStreamingConfig("localhost:9092", "ValidPublishTopic",
-                "ValidStatusTopic", "ValidSubscribeTopic");
         var dto = new PermissionDto(UUID.randomUUID().toString(), "SomeName", "dId",
-                start, expiration, start, "conId", Set.of("1-0:1.8.0"), streamingConfig);
+                                    start, expiration, start, "conId", Set.of("1-0:1.8.0"));
 
         var violations = validator.validate(dto);
         assertEquals(1, violations.size());

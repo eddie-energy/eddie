@@ -118,8 +118,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                                                   dto.expirationTime(),
                                                   dto.grantTime(),
                                                   dto.connectionId(),
-                                                  dto.requestedCodes(),
-                                                  dto.kafkaStreamingConfig());
+                                                  dto.requestedCodes());
         newPermission = repository.save(newPermission);
 
         var now = Instant.now(clock);

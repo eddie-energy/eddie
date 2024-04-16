@@ -3,9 +3,7 @@ package energy.eddie.aiida.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.constraints.ExpirationTimeAfterStartTime;
 import energy.eddie.aiida.constraints.ExpirationTimeNotInPast;
-import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -25,7 +23,6 @@ import java.util.Set;
  * @param grantTime            UTC timestamp when the customer granted the permission.
  * @param connectionId         UUID string, that should be sent along with every message related to the requested permission.
  * @param requestedCodes       Set of OBIS codes, that the EP wants to receive from the customer. If the customer's AIIDA system cannot provide <b>all</b> codes, the permission cannot be setup.
- * @param kafkaStreamingConfig Configuration for the streaming via Kafka.
  */
 @ExpirationTimeAfterStartTime
 @ExpirationTimeNotInPast
@@ -62,9 +59,5 @@ public record PermissionDto(
         @Schema(description = "Set of OBIS codes that the EP wants to receive. All requested codes must be available at this AIIDA instance, otherwise the permission cannot be accepted.", type = "array", implementation = String.class, example = "[\"1-0:1.8.0\", \"1-0:1.7.0\"]")
         @NotEmpty(message = "At least one OBIS code needs to be requested.")
         @JsonProperty(required = true)
-        Set<String> requestedCodes,
-        @Valid  // if PermissionDto is validated, also validate kafkaStreamingConfig
-        @JsonProperty(required = true)
-        @NotNull(message = "must not be null.")
-        KafkaStreamingConfig kafkaStreamingConfig) {
+        Set<String> requestedCodes) {
 }

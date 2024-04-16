@@ -8,12 +8,10 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,20 +24,16 @@ public class StreamerManager implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamerManager.class);
     private final ObjectMapper mapper;
     private final Map<String, StreamerSinkContainer> streamers;
-    private final TaskScheduler scheduler;
-    private final Duration terminationRequestPollInterval;
     private final Aggregator aggregator;
     private final Sinks.Many<String> terminationRequests;
 
     /**
      * The mapper is passed to the {@link AiidaStreamer} instances that which use it to convert POJOs to JSON.
-     * As the mapper is shared, make the used implementation is thread-safe and supports sharing.
+     * As the mapper is shared, make sure the used implementation is thread-safe and supports sharing.
      */
     @Autowired
-    public StreamerManager(ObjectMapper mapper, TaskScheduler scheduler, Duration terminationRequestPollInterval, Aggregator aggregator) {
+    public StreamerManager(ObjectMapper mapper, Aggregator aggregator) {
         this.mapper = mapper;
-        this.scheduler = scheduler;
-        this.terminationRequestPollInterval = terminationRequestPollInterval;
         this.aggregator = aggregator;
 
         streamers = new HashMap<>();
@@ -55,7 +49,7 @@ public class StreamerManager implements AutoCloseable {
      * @throws IllegalArgumentException If an AiidaStreamer for the passed permission has already been created.
      */
     public void createNewStreamerForPermission(Permission permission) throws IllegalArgumentException {
-        LOGGER.info("Will create a new KafkaStreamer for permission {}", permission.permissionId());
+        LOGGER.info("Will create a new AiidaStreamer for permission {}", permission.permissionId());
 
         if (streamers.get(permission.permissionId()) != null)
             throw new IllegalStateException("An AiidaStreamer for permission %s has already been created.".formatted(permission.permissionId()));
@@ -71,7 +65,7 @@ public class StreamerManager implements AutoCloseable {
         });
 
         var streamer = StreamerFactory.getAiidaStreamer(permission, recordFlux, statusMessageSink.asFlux(),
-                streamerTerminationRequestSink, mapper, scheduler, terminationRequestPollInterval);
+                                                        streamerTerminationRequestSink, mapper);
         streamer.connect();
 
         StreamerSinkContainer container = new StreamerSinkContainer(streamer, statusMessageSink);
@@ -167,6 +161,5 @@ public class StreamerManager implements AutoCloseable {
     record StreamerSinkContainer(
             AiidaStreamer streamer,
             Sinks.Many<ConnectionStatusMessage> statusMessageSink
-    ) {
-    }
+    ) {}
 }

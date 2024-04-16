@@ -5,8 +5,9 @@ import energy.eddie.aiida.dtos.PatchPermissionDto;
 import energy.eddie.aiida.dtos.PermissionDto;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,21 +24,18 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import javax.sql.DataSource;
-import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
-import static energy.eddie.aiida.TestUtils.getKafkaConfig;
-import static energy.eddie.aiida.TestUtils.getKafkaConsumer;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -52,26 +50,22 @@ class PermissionControllerIntegrationTest {
             DockerImageName.parse("timescale/timescaledb:2.11.2-pg15")
                     .asCompatibleSubstituteFor("postgres")
     );
-    @Container
-    @ServiceConnection
-    private static final KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.1"));
     @Autowired
-    DataSource dataSource;
+    private DataSource dataSource;
     @LocalServerPort
     private int port;
     @Autowired
     private TestRestTemplate restTemplate;
 
-    private PermissionDto getPermissionDto(Instant start, Instant expiration, TestInfo testInfo) {
+    private PermissionDto getPermissionDto(Instant start, Instant expiration) {
         var permissionId = UUID.randomUUID().toString();
         var name = "My NewAIIDA Test Service";
         var grant = Instant.now();
         var connectionId = "NewAiidaRandomConnectionId";
         var dataNeedId = "dataNeedId";
         var codes = Set.of("1.8.0", "2.8.0");
-        var streamingConfig = getKafkaConfig(testInfo, kafka);
 
-        return new PermissionDto(permissionId, name, dataNeedId, start, expiration, grant, connectionId, codes, streamingConfig);
+        return new PermissionDto(permissionId, name, dataNeedId, start, expiration, grant, connectionId, codes);
     }
 
     // Truncate DB script doesn't work with @Sql annotation, so execute it manually to ensure clean DB for each test
@@ -113,10 +107,10 @@ class PermissionControllerIntegrationTest {
     }
 
     @Test
-    void givenInvalidInput_setupNewPermission_returnsBadRequest(TestInfo testInfo) {
+    void givenInvalidInput_setupNewPermission_returnsBadRequest() {
         var start = Instant.now().plusSeconds(100_000);
         var expiration = start.minusSeconds(200_000);
-        var dto = getPermissionDto(start, expiration, testInfo);
+        var dto = getPermissionDto(start, expiration);
 
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(getPermissionsUrl(),
                 dto, String.class);
@@ -133,10 +127,10 @@ class PermissionControllerIntegrationTest {
      * <li> it's the only permission returned by getPermissions (previously empty database)
      */
     @Test
-    void givenValidInput_setupNewPermission_asExpected_andGetPermissionsReturnsOnlyThisPermission(TestInfo testInfo) {
+    void givenValidInput_setupNewPermission_asExpected_andGetPermissionsReturnsOnlyThisPermission() {
         var start = Instant.now().minusSeconds(100_000);
         var expiration = start.plusSeconds(200_000);
-        var dto = getPermissionDto(start, expiration, testInfo);
+        var dto = getPermissionDto(start, expiration);
 
         ResponseEntity<Permission> responseEntity = restTemplate.postForEntity(getPermissionsUrl(),
                 dto, Permission.class);
@@ -168,11 +162,11 @@ class PermissionControllerIntegrationTest {
     }
 
     @Test
-    void givenPermissionStartInFuture_returnsWaitingForStart(TestInfo testInfo) {
+    void givenPermissionStartInFuture_returnsWaitingForStart() {
         // Given
         var start = Instant.now().plusSeconds(100_000);
         var expiration = start.plusSeconds(200_000);
-        var dto = getPermissionDto(start, expiration, testInfo);
+        var dto = getPermissionDto(start, expiration);
 
         // When
         ResponseEntity<Permission> responseEntity = restTemplate.postForEntity(getPermissionsUrl(),
@@ -196,71 +190,6 @@ class PermissionControllerIntegrationTest {
         assertEquals(PermissionStatus.WAITING_FOR_START, permissions.getFirst().status());
     }
 
-    /**
-     * Tests that
-     * <li> a new permission is set up successfully
-     * <li> the <i>ACCEPTED</i> status message is received by the Kafka cluster
-     * <li> the permission is revoked successfully (response fields are as expected)
-     * <li> the <i>REVOCATION_RECEIVED</i> and <i>REVOCATION</i> status messages are received by the Kafka cluster
-     */
-    @Test
-    @Timeout(10)
-    void givenValidInput_setupNewPermission_andRevokePermission_asExpected(TestInfo testInfo) {
-        var start = Instant.now().minusSeconds(100_000);
-        var expiration = start.plusSeconds(200_000);
-        var dto = getPermissionDto(start, expiration, testInfo);
-
-
-        // create the permission
-        ResponseEntity<Permission> responseEntity = restTemplate.postForEntity(getPermissionsUrl(),
-                dto, Permission.class);
-        var permission = responseEntity.getBody();
-        assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
-        assertNotNull(permission);
-        var permissionId = permission.permissionId();
-
-
-        // revoke the permission
-        var revokeDto = new PatchPermissionDto(PatchOperation.REVOKE_PERMISSION);
-        RequestEntity<PatchPermissionDto> revokeRequest = RequestEntity
-                .patch(getPermissionsUrl() + "/" + permissionId)
-                .accept(MediaType.APPLICATION_JSON)
-                .body(revokeDto);
-
-        // use custom factory because default one does not support Patch operation
-        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
-        RestTemplate restTemplate = new RestTemplate(requestFactory);
-        responseEntity = restTemplate.exchange(revokeRequest, Permission.class);
-        permission = responseEntity.getBody();
-
-        assertNotNull(permission);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(permissionId, permission.permissionId());
-        assertEquals(PermissionStatus.REVOKED, permission.status());
-        var revokeTime = permission.revokeTime();
-        assertNotNull(revokeTime);
-        assertTrue(revokeTime.isBefore(Instant.now()));
-
-
-        // check that the status messages have been sent to Kafka
-        var consumer = getKafkaConsumer(testInfo, kafka);
-        consumer.subscribe(List.of(permission.kafkaStreamingConfig().statusTopic()));
-        var polledRecords = new ArrayList<ConsumerRecord<String, String>>();
-        while (polledRecords.size() < 3) {
-            for (ConsumerRecord<String, String> received : consumer.poll(Duration.ofSeconds(1))) {
-                polledRecords.add(received);
-            }
-        }
-
-        assertEquals(3, polledRecords.size());
-
-        assertThat(polledRecords.get(0).value(), containsString("ACCEPTED"));
-        assertThat(polledRecords.get(1).value(), containsString("REVOCATION_RECEIVED"));
-        assertThat(polledRecords.get(2).value(), containsString("REVOKED"));
-
-        consumer.close();
-    }
-
     private void assertDtoAndPermission(PermissionDto dto, Permission permission) {
         assertEquals(dto.serviceName(), permission.serviceName());
 
@@ -271,10 +200,6 @@ class PermissionControllerIntegrationTest {
 
         assertEquals(dto.connectionId(), permission.connectionId());
         org.assertj.core.api.Assertions.assertThat(dto.requestedCodes()).hasSameElementsAs(permission.requestedCodes());
-        assertEquals(dto.kafkaStreamingConfig().bootstrapServers(), permission.kafkaStreamingConfig().bootstrapServers());
-        assertEquals(dto.kafkaStreamingConfig().dataTopic(), permission.kafkaStreamingConfig().dataTopic());
-        assertEquals(dto.kafkaStreamingConfig().statusTopic(), permission.kafkaStreamingConfig().statusTopic());
-        assertEquals(dto.kafkaStreamingConfig().subscribeTopic(), permission.kafkaStreamingConfig().subscribeTopic());
         assertEquals(PermissionStatus.STREAMING_DATA, permission.status());
         assertNull(permission.revokeTime());
     }

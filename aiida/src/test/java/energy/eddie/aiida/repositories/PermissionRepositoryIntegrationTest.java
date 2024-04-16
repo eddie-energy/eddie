@@ -1,6 +1,5 @@
 package energy.eddie.aiida.repositories;
 
-import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import org.junit.jupiter.api.Test;
@@ -41,20 +40,14 @@ class PermissionRepositoryIntegrationTest {
         var start = Instant.now().plusSeconds(100_000);
         var end = start.plusSeconds(400_000);
         var permissionId = UUID.randomUUID().toString();
-
         var codes = Set.of("1.8.0", "2.8.0");
-        var validDataTopic = "ValidPublishTopic";
-        var validStatusTopic = "ValidStatusTopic";
-        var validSubscribeTopic = "ValidSubscribeTopic";
-        var bootstrapServers = "localhost:9092";
-        var streamingConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
 
         String name = "My NewAIIDA Test Service";
         String connectionId = "NewAiidaRandomConnectionId";
         String dataNeedId = "dataNeedId";
         Instant grant = Instant.now();
         Permission permission = new Permission(permissionId, name, dataNeedId, start, end,
-                grant, connectionId, codes, streamingConfig);
+                                               grant, connectionId, codes);
 
         var savedPermission = permissionRepository.save(permission);
 
@@ -69,10 +62,6 @@ class PermissionRepositoryIntegrationTest {
         assertEquals(PermissionStatus.ACCEPTED, savedPermission.status());
 
         assertThat(codes).hasSameElementsAs(savedPermission.requestedCodes());
-        assertEquals(bootstrapServers, savedPermission.kafkaStreamingConfig().bootstrapServers());
-        assertEquals(validDataTopic, savedPermission.kafkaStreamingConfig().dataTopic());
-        assertEquals(validStatusTopic, savedPermission.kafkaStreamingConfig().statusTopic());
-        assertEquals(validSubscribeTopic, savedPermission.kafkaStreamingConfig().subscribeTopic());
     }
 
     @Test
@@ -80,13 +69,7 @@ class PermissionRepositoryIntegrationTest {
         var start = Instant.now().plusSeconds(100_000);
         var end = start.plusSeconds(400_000);
         var permissionId = UUID.randomUUID().toString();
-
         var codes = Set.of("1.8.0", "2.8.0");
-        var validDataTopic = "ValidPublishTopic";
-        var validStatusTopic = "ValidStatusTopic";
-        var validSubscribeTopic = "ValidSubscribeTopic";
-        var bootstrapServers = "localhost:9092";
-        var streamingConfig = new KafkaStreamingConfig(bootstrapServers, validDataTopic, validStatusTopic, validSubscribeTopic);
 
         String name = "My NewAIIDA Test Service";
         String connectionId = "NewAiidaRandomConnectionId";
@@ -95,7 +78,7 @@ class PermissionRepositoryIntegrationTest {
         Instant revokeTime = grant.plusSeconds(1000);
 
         Permission permission = new Permission(permissionId, name, dataNeedId, start, end, grant,
-                connectionId, codes, streamingConfig);
+                                               connectionId, codes);
 
         assertEquals(PermissionStatus.ACCEPTED, permission.status());
 
@@ -113,11 +96,6 @@ class PermissionRepositoryIntegrationTest {
         assertEquals(dataNeedId, savedPermission.dataNeedId());
         assertEquals(revokeTime, savedPermission.revokeTime());
         assertEquals(PermissionStatus.REVOKED, savedPermission.status());
-
         assertThat(codes).hasSameElementsAs(savedPermission.requestedCodes());
-        assertEquals(bootstrapServers, savedPermission.kafkaStreamingConfig().bootstrapServers());
-        assertEquals(validDataTopic, savedPermission.kafkaStreamingConfig().dataTopic());
-        assertEquals(validStatusTopic, savedPermission.kafkaStreamingConfig().statusTopic());
-        assertEquals(validSubscribeTopic, savedPermission.kafkaStreamingConfig().subscribeTopic());
     }
 }
