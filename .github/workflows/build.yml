@@ -3,7 +3,7 @@ on: [ push ]
 jobs:
   build:
     name: Build and analyze
-    runs-on: [ self-hosted, fh-server ]
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:

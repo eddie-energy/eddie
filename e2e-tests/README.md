@@ -33,8 +33,10 @@ whole test report as HTML file are uploaded as artifacts and attached to the wor
 A self-hosted runner that is on the FH network is used so that the Ponton XP messenger can be accessed.
 The self-hosted runner is started in a docker container, which shares its working directory as a volume with the host.
 Currently, only one runner is available at the same time, therefore only 1 job can be processed simultaneously.
-For a workflow to run on a self-hosted runner, `runs-on: [ self-hosted, fh-server ]` has to be used in the workflow
-definition.
+For a workflow to run on a self-hosted runner, the corresponding labels of the runner have to be specified in the
+workflow file, e.g. `runs-on: [ self-hosted, fh-server ]`. If one uses a label, that is used by a self-hosted as well as
+a GitHub-hosted runner, e.g. `ubuntu-22.04`, then GitHub will send the job to a self-hosted runner if one is available,
+and otherwise will use a GitHub-hosted one.
 
 It would also be possible to not use a volume and make the runner completely ephemeral. However, this is not feasible
 with our test setup, as the *eddie core* container needs secrets written to files to work properly. These GitHub secrets
@@ -94,4 +96,3 @@ mkdir -p $GITHUB_WORKSPACE
 ```
 
 Could use playwright image which has dependencies pre-installed but then need to mount again the source files, etc...
-
