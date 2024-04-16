@@ -3,6 +3,7 @@ package energy.eddie.aiida.streamers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.aiida.aggregator.Aggregator;
+import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.models.permission.Permission;

@@ -1,4 +1,4 @@
-package energy.eddie.aiida.streamers;
+package energy.eddie.aiida.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.models.permission.PermissionStatus;

@@ -1,5 +1,6 @@
 package energy.eddie.aiida.streamers;
 
+import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
