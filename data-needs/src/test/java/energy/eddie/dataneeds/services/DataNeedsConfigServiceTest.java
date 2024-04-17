@@ -48,10 +48,10 @@ class DataNeedsConfigServiceTest {
         // Then
         assertThat(service.getDataNeedIdsAndNames())
                 .extracting(DataNeedsNameAndIdProjection::getId)
-                .containsExactlyInAnyOrder("FUTURE_NEAR_REALTIME_DATA",
-                                           "NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY",
-                                           "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY");
-        Optional<DataNeed> example = service.findById("NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY");
+                .containsExactlyInAnyOrder("5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
+                                           "dcbc1c74-37bd-4c5b-ab2e-fd0be9c1edf3",
+                                           "9bd0668f-cc19-40a8-99db-dc2cb2802b17");
+        Optional<DataNeed> example = service.findById("dcbc1c74-37bd-4c5b-ab2e-fd0be9c1edf3");
         assertTrue(example.isPresent());
         // created timestamp is ignored when reading from JSON
         assertNull(example.get().createdAt());
@@ -75,7 +75,7 @@ class DataNeedsConfigServiceTest {
         // When, Then
         var thrown = assertThrows(DataNeedAlreadyExistsException.class,
                                   () -> new DataNeedsConfigService(file, mapper, context));
-        assertEquals("Data need with ID 'LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY' already exists.", thrown.getMessage());
+        assertEquals("Data need with ID '9bd0668f-cc19-40a8-99db-dc2cb2802b17' already exists.", thrown.getMessage());
     }
 
     @Test
@@ -101,7 +101,7 @@ class DataNeedsConfigServiceTest {
 
         try (MockedStatic<DataNeedUtils> utilsStatic = Mockito.mockStatic(DataNeedUtils.class)) {
             // When
-            assertDoesNotThrow(() -> service.findDataNeedAndCalculateStartAndEnd("LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
+            assertDoesNotThrow(() -> service.findDataNeedAndCalculateStartAndEnd("9bd0668f-cc19-40a8-99db-dc2cb2802b17",
                                                                                  LocalDate.now(ZoneId.of("UTC")),
                                                                                  Period.parse("P0D"),
                                                                                  Period.parse("P0D")));

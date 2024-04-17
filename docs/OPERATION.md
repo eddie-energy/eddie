@@ -58,7 +58,7 @@ web application as it's implemented using standard HTML custom elements.
 <!-- ... -->
 <eddie-connect-button
         connection-id="1"
-        data-need-id="LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY"
+        data-need-id="9bd0668f-cc19-40a8-99db-dc2cb2802b17"
 ></eddie-connect-button>
 ```
 
@@ -166,7 +166,7 @@ the ID is a mandatory field.
 ```json
 {
   "type": "validated",
-  "id": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
+   "id": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
   "name": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
   "description": "Historical validated consumption data for the last three months, one measurement per day",
   "purpose": "Some purpose",

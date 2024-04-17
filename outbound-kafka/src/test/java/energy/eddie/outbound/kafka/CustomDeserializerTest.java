@@ -40,7 +40,7 @@ class CustomDeserializerTest {
                   "revisionNumber": "0.82",
                   "type": "Z04",
                   "createdDateTime": "2024-01-25T09:09Z",
-                  "description": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
+                  "description": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
                   "senderMarketParticipantMRID": {
                     "codingScheme": "NDK",
                     "value": "epId"
@@ -97,7 +97,7 @@ class CustomDeserializerTest {
                 () -> assertEquals("0.82", res.getRevisionNumber()),
                 () -> assertEquals(MessageTypeList.PERMISSION_ADMINISTRATION_DOCUMENT, res.getType()),
                 () -> assertEquals("2024-01-25T09:09Z", res.getCreatedDateTime()),
-                () -> assertEquals("LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY", res.getDescription()),
+                () -> assertEquals("9bd0668f-cc19-40a8-99db-dc2cb2802b17", res.getDescription()),
                 () -> assertEquals(RoleTypeList.PARTY_CONNECTED_TO_GRID,
                                    res.getSenderMarketParticipantMarketRoleType()),
                 () -> assertEquals(RoleTypeList.PERMISSION_ADMINISTRATOR,
