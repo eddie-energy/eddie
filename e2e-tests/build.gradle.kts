@@ -16,6 +16,7 @@ dependencies {
     testImplementation("org.slf4j:slf4j-simple:2.0.10")
 
     testImplementation(libs.junit.jupiter)
+    implementation(libs.jackson.databind)
     testImplementation("org.assertj:assertj-core:3.25.2")
 }
 
