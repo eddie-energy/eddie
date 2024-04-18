@@ -1,0 +1,18 @@
+[
+  {
+    "type": "validated",
+    "id": "This is not a UUID",
+    "name": "Some Name",
+    "description": "Historical validated consumption data for the next 10 days, one measurement per day",
+    "purpose": "Some purpose",
+    "policyLink": "https://example.com/toc",
+    "duration": {
+      "type": "relativeDuration",
+      "start": "P1D",
+      "end": "P10D"
+    },
+    "energyType": "ELECTRICITY",
+    "minGranularity": "P1D",
+    "maxGranularity": "P1D"
+  }
+]

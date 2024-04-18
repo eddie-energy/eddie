@@ -55,7 +55,7 @@ public class DataNeedsConfigService implements DataNeedsService {
             String dataNeedsFilePath,
             ObjectMapper mapper,
             LocalValidatorFactoryBean validator
-    ) throws IOException, DataNeedAlreadyExistsException {
+    ) throws IOException, DataNeedAlreadyExistsException, ValidationException {
         File file = new File(dataNeedsFilePath);
         TypeReference<List<DataNeed>> listOfDataNeedsTypeReference = new TypeReference<>() {};
         List<DataNeed> dataNeedsFromFile = mapper.readValue(file, listOfDataNeedsTypeReference);
@@ -63,9 +63,16 @@ public class DataNeedsConfigService implements DataNeedsService {
         for (DataNeed dataNeed : dataNeedsFromFile) {
             Set<ConstraintViolation<DataNeed>> violations = validator.validate(dataNeed);
 
-            String id = dataNeed.id();
-            if (!violations.isEmpty()) {
+            String id;
+            try {
+                id = UUID.fromString(dataNeed.id()).toString();
+            } catch (IllegalArgumentException ignored) {
+                throw new ValidationException(
+                        "Data need ID '%s' is not a valid UUID".formatted(dataNeed.id()));
+            }
 
+
+            if (!violations.isEmpty()) {
                 String errorsString = Arrays.toString(
                         violations
                                 .stream()

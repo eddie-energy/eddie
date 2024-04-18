@@ -60,12 +60,22 @@ class DataNeedsConfigServiceTest {
     }
 
     @Test
-    void givenInvalidDataNeed_throwsException() throws IOException {
-        String file = new ClassPathResource("test-invalid-data-needs.json").getFile().getAbsolutePath();
+    void givenInvalidDataNeedName_throwsException() throws IOException {
+        String file = new ClassPathResource("test-invalid-data-needs-name.json").getFile().getAbsolutePath();
 
         // When, Then
         var thrown = assertThrows(ValidationException.class, () -> new DataNeedsConfigService(file, mapper, context));
-        assertThat(thrown.getMessage()).startsWith("Failed to validate data need with ID 'INVALID'");
+        assertThat(thrown.getMessage()).startsWith(
+                "Failed to validate data need with ID 'b02e137a-cb39-4ca2-adce-c7193d16322d'");
+    }
+
+    @Test
+    void givenInvalidDataNeedId_throwsException() throws IOException {
+        String file = new ClassPathResource("test-invalid-data-needs-id.json").getFile().getAbsolutePath();
+
+        // When, Then
+        var thrown = assertThrows(ValidationException.class, () -> new DataNeedsConfigService(file, mapper, context));
+        assertThat(thrown.getMessage()).startsWith("Data need ID 'This is not a UUID' is not a valid UUID");
     }
 
     @Test
