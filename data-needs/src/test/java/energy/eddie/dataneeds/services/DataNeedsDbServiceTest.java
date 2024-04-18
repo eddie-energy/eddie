@@ -180,7 +180,7 @@ class DataNeedsDbServiceTest {
     @Test
     void givenValidDataNeedId_findAndCalculateRelativeStartAndEnd_callsUtils() {
         // Given
-        final String id = "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY";
+        final String id = "9bd0668f-cc19-40a8-99db-dc2cb2802b17";
         when(mockRepository.findById(id)).thenReturn(Optional.of(exampleVhd));
 
 

@@ -126,7 +126,7 @@ class CustomSerializerTest {
                   "revisionNumber": "0.82",
                   "type": "Z04",
                   "createdDateTime": "2024-01-25T09:09Z",
-                  "description": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
+                  "description": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
                   "senderMarketParticipantMRID": {
                     "codingScheme": "NDK",
                     "value": "epId"
@@ -178,7 +178,7 @@ class CustomSerializerTest {
                 .withRevisionNumber(V0_82.version())
                 .withType(MessageTypeList.PERMISSION_ADMINISTRATION_DOCUMENT)
                 .withCreatedDateTime("2024-01-25T09:09Z")
-                .withDescription("LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY")
+                .withDescription("9bd0668f-cc19-40a8-99db-dc2cb2802b17")
                 .withSenderMarketParticipantMarketRoleType(RoleTypeList.PARTY_CONNECTED_TO_GRID)
                 .withReceiverMarketParticipantMarketRoleType(RoleTypeList.PERMISSION_ADMINISTRATOR)
                 .withProcessProcessType(ProcessTypeList.ACCESS_TO_METERED_DATA)

@@ -1,7 +1,7 @@
 [
   {
     "type": "validated",
-    "id": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
+    "id": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
     "name": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
     "description": "Historical validated consumption data for the last three months, one measurement per day",
     "purpose": "Some purpose",
@@ -17,7 +17,7 @@
   },
   {
     "type": "validated",
-    "id": "NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY",
+    "id": "dcbc1c74-37bd-4c5b-ab2e-fd0be9c1edf3",
     "name": "NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY",
     "description": "Historical validated consumption data for the next 10 days, one measurement per day",
     "purpose": "Some purpose",
@@ -33,7 +33,7 @@
   },
   {
     "type": "genericAiida",
-    "id": "FUTURE_NEAR_REALTIME_DATA",
+    "id": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
     "name": "FUTURE_NEAR_REALTIME_DATA",
     "description": "Near realtime consumption data from the smart meter",
     "purpose": "purpose",
@@ -51,7 +51,7 @@
   },
   {
     "type": "validated",
-    "id": "LAST_3_MONTHS_HOURLY_MEASUREMENTS_PER_DAY",
+    "id": "b35dc783-a25e-487a-a914-6064bdd7feb5",
     "name": "LAST_3_MONTHS_HOURLY_MEASUREMENTS_PER_DAY",
     "description": "Historical validated consumption data for the last three months, one measurement per hour",
     "purpose": "Some purpose",

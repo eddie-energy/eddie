@@ -245,7 +245,7 @@ class DataNeedsManagementFullTest {
                 Arguments.of(
                         "{\"type\":\"genericAiida\",\"name\":\"name\",\"description\":\"foo\",\"purpose\":\"purpose\",\"policyLink\":\"https://example.com/toc\",\"transmissionInterval\":2,\"duration\":{\"type\":\"relativeDuration\",\"durationStart\":\"-P10D\",\"durationEnd\":\"P10D\"},\"dataTags\":[\"1.8.0\",\"1.7.0\"]}"),
                 Arguments.of(
-                        "{\"type\":\"validated\",\"id\":\"NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY\",\"name\":\"NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY\",\"description\":\"Historical validated consumption data for the next 10 days, one measurement per day\",\"purpose\":\"Some purpose\",\"policyLink\":\"https://example.com/toc\",\"duration\":{\"type\":\"absoluteDuration\",\"start\":\"2024-04-01\",\"end\":\"2024-04-05\"},\"energyType\":\"ELECTRICITY\",\"minGranularity\":\"P1D\",\"maxGranularity\":\"P1D\"}"),
+                        "{\"type\":\"validated\",\"id\":\"dcbc1c74-37bd-4c5b-ab2e-fd0be9c1edf3\",\"name\":\"NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY\",\"description\":\"Historical validated consumption data for the next 10 days, one measurement per day\",\"purpose\":\"Some purpose\",\"policyLink\":\"https://example.com/toc\",\"duration\":{\"type\":\"absoluteDuration\",\"start\":\"2024-04-01\",\"end\":\"2024-04-05\"},\"energyType\":\"ELECTRICITY\",\"minGranularity\":\"P1D\",\"maxGranularity\":\"P1D\"}"),
                 Arguments.of(
                         "{\"type\":\"account\",\"policyLink\":\"https://example.com/toc\",\"name\":\"My Account Point Data Need\",\"description\":\"Some longtext\",\"purpose\":\"A purpose\"}")
         );

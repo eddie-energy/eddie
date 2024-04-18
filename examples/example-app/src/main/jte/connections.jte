@@ -45,7 +45,7 @@ content = @`
         <eddie-connect-button
                 class="uk-display-block"
                 connection-id="${nextConnectionId}"
-                data-need-id="LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY"
+                data-need-id="9bd0668f-cc19-40a8-99db-dc2cb2802b17"
         ></eddie-connect-button>
     </div>
     <div class="uk-flex uk-margin uk-flex-middle">
@@ -53,7 +53,7 @@ content = @`
         <eddie-connect-button
                 class="uk-display-block"
                 connection-id="${nextConnectionId}"
-                data-need-id="NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY"
+                data-need-id="dcbc1c74-37bd-4c5b-ab2e-fd0be9c1edf3"
         ></eddie-connect-button>
     </div>
     <div class="uk-flex uk-margin uk-flex-middle">
@@ -61,7 +61,7 @@ content = @`
         <eddie-connect-button
                 class="uk-display-block"
                 connection-id="${nextConnectionId}"
-                data-need-id="FUTURE_NEAR_REALTIME_DATA"
+                data-need-id="5dc71d7e-e8cd-4403-a3a8-d3c095c97a84"
         ></eddie-connect-button>
     </div>
     <div class="uk-flex uk-margin uk-flex-middle">
@@ -77,7 +77,7 @@ content = @`
         <eddie-connect-button
                 class="uk-display-block"
                 connection-id="${nextConnectionId}"
-                data-need-id="LAST_3_MONTHS_HOURLY_MEASUREMENTS_PER_DAY"
+                data-need-id="b35dc783-a25e-487a-a914-6064bdd7feb5"
         ></eddie-connect-button>
     </div>
 `
