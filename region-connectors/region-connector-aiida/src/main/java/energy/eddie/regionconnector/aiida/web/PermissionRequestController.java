@@ -1,11 +1,10 @@
 package energy.eddie.regionconnector.aiida.web;
 
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.aiida.services.AiidaRegionConnectorService;
+import energy.eddie.regionconnector.aiida.services.PermissionCreationValidationSendingService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -20,11 +19,11 @@ import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSI
 
 @RestController
 public class PermissionRequestController {
-    private final AiidaRegionConnectorService aiidaService;
+    private final PermissionCreationValidationSendingService service;
 
     @Autowired
-    public PermissionRequestController(AiidaRegionConnectorService aiidaService) {
-        this.aiidaService = aiidaService;
+    public PermissionRequestController(PermissionCreationValidationSendingService service) {
+        this.service = service;
     }
 
     @PostMapping(value = PATH_PERMISSION_REQUEST,
@@ -32,9 +31,8 @@ public class PermissionRequestController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PermissionDto> createPermissionRequest(
             @Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation
-    )
-            throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
-        var permissionDto = aiidaService.createNewPermission(permissionRequestForCreation);
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException {
+        var permissionDto = service.createValidateAndSendPermissionRequest(permissionRequestForCreation);
         var permissionId = permissionDto.permissionId();
 
         var location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)

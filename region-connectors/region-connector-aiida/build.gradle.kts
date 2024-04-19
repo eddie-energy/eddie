@@ -25,6 +25,7 @@ dependencies {
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
+    implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.kafka)
 
     implementation(libs.reactor.core)
