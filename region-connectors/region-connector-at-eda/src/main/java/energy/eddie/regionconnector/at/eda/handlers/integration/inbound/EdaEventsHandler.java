@@ -20,17 +20,16 @@ public class EdaEventsHandler {
     private final Outbox outbox;
     private final AtPermissionRequestRepository repository;
 
-    public EdaEventsHandler(EdaAdapter edaAdapter, Outbox outbox,
-                            AtPermissionRequestRepository repository) {
+    public EdaEventsHandler(EdaAdapter edaAdapter, Outbox outbox, AtPermissionRequestRepository repository) {
         this.outbox = outbox;
         this.repository = repository;
         edaAdapter.getCMRequestStatusStream()
-                .subscribe(this::processIncomingCmStatusMessages);
+                  .subscribe(this::processIncomingCmStatusMessages);
     }
 
     /**
-     * Process a CMRequestStatus and emit a ConnectionStatusMessage if possible,
-     * also adds connectionId and permissionId for identification
+     * Process a CMRequestStatus and emit a ConnectionStatusMessage if possible, also adds connectionId and permissionId
+     * for identification
      *
      * @param cmRequestStatus the CMRequestStatus to process
      */
@@ -42,7 +41,7 @@ public class EdaEventsHandler {
         if (optionalPermissionRequest.isEmpty()) {
             // should not happen if a persistent mapping is used.
             LOGGER.error("Received CMRequestStatus for unknown conversationId {} or requestId {} with payload: {}",
-                        cmRequestStatus.getConversationId(), cmRequestStatus.getCMRequestId(), cmRequestStatus);
+                         cmRequestStatus.getConversationId(), cmRequestStatus.getCMRequestId(), cmRequestStatus);
             return;
         }
         transitionPermissionRequest(cmRequestStatus, optionalPermissionRequest.get());
@@ -63,7 +62,7 @@ public class EdaEventsHandler {
                 Optional<String> cmConsentId = cmRequestStatus.getCMConsentId();
                 if (cmConsentId.isEmpty()) {
                     LOGGER.error("Got accept message without consent id for permission request with permission id {}",
-                                permissionId);
+                                 permissionId);
                     return;
                 }
                 outbox.commit(new AcceptedEvent(
@@ -76,19 +75,22 @@ public class EdaEventsHandler {
             case ERROR -> {
                 // If the DSO does not exist EDA will respond with an error without sending a received-message.
                 // In that case the error message is an implicit received-message.
-                if (request.status() == PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT) {
+                if (request.status() == PermissionProcessStatus.VALIDATED) {
                     outbox.commit(
                             new EdaAnswerEvent(permissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
                                                cmRequestStatus.getMessage()));
                 }
-                outbox.commit(new EdaAnswerEvent(permissionId, PermissionProcessStatus.INVALID,
-                                                 cmRequestStatus.getMessage()));
+                outbox.commit(
+                        new EdaAnswerEvent(permissionId, PermissionProcessStatus.INVALID, cmRequestStatus.getMessage())
+                );
             }
             case REJECTED -> outbox.commit(
                     new EdaAnswerEvent(permissionId, PermissionProcessStatus.REJECTED, cmRequestStatus.getMessage()));
             case RECEIVED -> outbox.commit(
-                    new EdaAnswerEvent(permissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
-                                       cmRequestStatus.getMessage()));
+                    new EdaAnswerEvent(permissionId,
+                                       PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
+                                       cmRequestStatus.getMessage())
+            );
             default -> {
                 // Other CMRequestStatus do not change the state of the permission request,
                 // because they have no matching state in the consent process model

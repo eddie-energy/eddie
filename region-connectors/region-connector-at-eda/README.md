@@ -23,7 +23,8 @@ depends on the way you deploy the region connector.
 
 | Configuration values                                       | Description                                                                                                                                                                                                                                                                                                                                                                                            |
 |------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `region-connector.at.eda.eligibleparty.id `                | The company identification number you get from registering as a service provider with ebUtillitis,                                                                                                                                                                                                                                                                                                     |
+| `region-connector.at.eda.eligibleparty.id `                | The company identification number you get from registering as a service provider with ebUtillitis.                                                                                                                                                                                                                                                                                                     |
+| `region-connector.at.eda.retry`                            | The retry configuration, when a failed request should be retried uses spring cron syntax.                                                                                                                                                                                                                                                                                                              |
 | `region-connector.at.eda.ponton.messenger.adapter.id`      | The Id the region connector uses to connect with the PontonXP Messenger. This should match the default value configured in the messenger.                                                                                                                                                                                                                                                              |
 | `region-connector.at.eda.ponton.messenger.adapter.version` | Version number of the adapter                                                                                                                                                                                                                                                                                                                                                                          |
 | `region-connector.at.eda.ponton.messenger.hostname`        | URL or IP address of your PontonXP Messenger.                                                                                                                                                                                                                                                                                                                                                          |
@@ -38,6 +39,7 @@ Example configuration for an `application.properties` file:
 
 ```properties
 region-connector.at.eda.eligibleparty.id=EP123456
+region-connector.at.eda.retry=0 0 */1 * * *
 region-connector.at.eda.ponton.messenger.adapter.id=Eddie
 region-connector.at.eda.ponton.messenger.adapter.version=1.0.0
 region-connector.at.eda.ponton.messenger.hostname=pontonxp.messenger.com
@@ -58,6 +60,7 @@ Example configuration for dotenv file:
 
 ```dotenv
 REGION_CONNECTOR_AT_EDA_ELIGIBLEPARTY_ID=EP123456
+REGION_CONNECTOR_AT_EDA_RETRY=0 0 */1 * * *
 REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_ADAPTER_ID=Eddie
 REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_ADAPTER_VERSION=1.0.0
 REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_HOSTNAME=pontonxp.messenger.com

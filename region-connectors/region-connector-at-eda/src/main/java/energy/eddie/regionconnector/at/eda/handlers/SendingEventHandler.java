@@ -9,7 +9,6 @@ import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ExceptionEvent;
-import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
 import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
@@ -65,15 +64,10 @@ public class SendingEventHandler implements EventHandler<PermissionEvent> {
                 configuration,
                 permissionRequest.created()
         );
-        PermissionEvent nextEvent = null;
         try {
             edaAdapter.sendCMRequest(ccmoRequest);
-            nextEvent = new SimpleEvent(permissionId,
-                                        PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT);
         } catch (TransmissionException e) {
-            nextEvent = new ExceptionEvent(permissionId, PermissionProcessStatus.UNABLE_TO_SEND, e);
-        } finally {
-            outbox.commit(nextEvent);
+            outbox.commit(new ExceptionEvent(permissionId, PermissionProcessStatus.UNABLE_TO_SEND, e));
         }
     }
 }
