@@ -1,6 +1,7 @@
 package energy.eddie.core;
 
-import energy.eddie.RegionConnectorsOpenApiConfig;
+import eddie.energy.europeanmasterdata.EuropeanMasterDataSpringConfig;
+import energy.eddie.OpenApiDocs;
 import energy.eddie.api.utils.Shared;
 import energy.eddie.dataneeds.DataNeedsSpringConfig;
 import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;
@@ -96,7 +97,7 @@ public class CoreSpringConfig implements WebMvcConfigurer {
         context.register(SharedBeansRegistrar.class);
         context.register(RegionConnectorsCommonControllerAdvice.class);
         enableSpringDoc(context);
-        context.register(RegionConnectorsOpenApiConfig.class);
+        context.register(OpenApiDocs.class);
 
         DispatcherServlet dispatcherServlet = new DispatcherServlet(context);
         String urlMapping = DATA_NEEDS_URL_MAPPING_PREFIX + "/*";
@@ -109,6 +110,26 @@ public class CoreSpringConfig implements WebMvcConfigurer {
         connectorServletBean.setLoadOnStartup(2);
 
         LOGGER.info("Created ServletRegistrationBean for data needs, urlMapping is {}", urlMapping);
+        return connectorServletBean;
+    }
+
+    @Bean
+    public ServletRegistrationBean<DispatcherServlet> europeanMasterDataDispatcherServlet() {
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        context.register(EuropeanMasterDataSpringConfig.class);
+        enableSpringDoc(context);
+
+        DispatcherServlet dispatcherServlet = new DispatcherServlet(context);
+        String urlMapping = "/european-masterdata/*";
+        ServletRegistrationBean<DispatcherServlet> connectorServletBean = new ServletRegistrationBean<>(
+                dispatcherServlet,
+                urlMapping
+        );
+
+        connectorServletBean.setName("european-masterdata");
+        connectorServletBean.setLoadOnStartup(2);
+
+        LOGGER.info("Created ServletRegistrationBean for european-masterdata, urlMapping is {}", urlMapping);
         return connectorServletBean;
     }
 }

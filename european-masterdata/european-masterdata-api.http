@@ -1,0 +1,11 @@
+### GET available permission administrators
+GET http://localhost:8080/european-masterdata/api/permission-administrators
+
+### GET available permission administrators by id
+GET http://localhost:8080/european-masterdata/api/permission-administrators/AT007240
+
+### GET available metered date administrators
+GET http://localhost:8080/european-masterdata/api/metered-data-administrators
+
+### GET available metered date administrators by id
+GET http://localhost:8080/european-masterdata/api/metered-data-administrators/AT007240

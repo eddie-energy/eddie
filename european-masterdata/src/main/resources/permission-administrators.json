@@ -444,7 +444,7 @@
     "country": "at",
     "company": "Joh. Pengg Holding Gesellschaft m.b.H.",
     "companyId": "AT008930",
-    "jumpOffUrl": "",
+    "jumpOffUrl": "http://www.pengg-holding.com/",
     "regionConnector": "at-eda"
   },
   {
@@ -780,7 +780,7 @@
     "country": "at",
     "company": "Städtische Betriebe Rottenmann GmbH",
     "companyId": "AT008350",
-    "jumpOffUrl": "",
+    "jumpOffUrl": "http://www.sb-rottenmann.at/login",
     "regionConnector": "at-eda"
   },
   {

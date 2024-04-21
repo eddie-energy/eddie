@@ -17,7 +17,7 @@ import { setBasePath } from "https://cdn.jsdelivr.net/npm/@shoelace-style/shoela
 import buttonIcon from "../resources/logo.svg?raw";
 import headerImage from "../resources/header.svg?raw";
 
-import PERMISSION_ADMINISTRATORS from "../resources/permission-administrators.json";
+import PERMISSION_ADMINISTRATORS from "../../../../european-masterdata/src/main/resources/permission-administrators.json";
 
 setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn");
 
