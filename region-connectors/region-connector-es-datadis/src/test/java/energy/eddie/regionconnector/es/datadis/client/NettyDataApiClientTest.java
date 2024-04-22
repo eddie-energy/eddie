@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 
 class NettyDataApiClientTest {
 
-    static ObjectMapper mapper = MeteringDataProvider.objectMapper;
+    private final ObjectMapper mapper = MeteringDataProvider.objectMapper;
 
     static MockWebServer mockBackEnd;
     private static String basePath;

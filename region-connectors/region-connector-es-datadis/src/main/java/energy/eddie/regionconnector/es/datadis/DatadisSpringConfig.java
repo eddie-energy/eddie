@@ -58,7 +58,9 @@ public class DatadisSpringConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
-        return new ObjectMapper().registerModule(new Jdk8Module()).registerModule(new JavaTimeModule());
+        return new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .registerModule(new Jdk8Module());
     }
 
     @Bean
@@ -89,9 +91,10 @@ public class DatadisSpringConfig {
     @Bean
     public DatadisTokenProvider datadisTokenProvider(
             DatadisConfig config,
-            HttpClient httpClient
+            HttpClient httpClient,
+            ObjectMapper mapper
     ) {
-        return new NettyDatadisTokenProvider(config, httpClient);
+        return new NettyDatadisTokenProvider(config, httpClient, mapper);
     }
 
     @Bean

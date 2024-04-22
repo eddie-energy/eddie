@@ -2,11 +2,11 @@ package energy.eddie.regionconnector.aiida.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.ConnectionStatusMessageMixin;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.aiida.AiidaSpringConfig;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaDataSourceInformation;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
@@ -41,7 +41,7 @@ class AiidaKafkaTest {
 
     @BeforeEach
     void setUp() {
-        mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        mapper = new AiidaSpringConfig().objectMapper();
         mapper.addMixIn(ConnectionStatusMessage.class, ConnectionStatusMessageMixin.class);
 
         aiidaKafka = new AiidaKafka(mapper,

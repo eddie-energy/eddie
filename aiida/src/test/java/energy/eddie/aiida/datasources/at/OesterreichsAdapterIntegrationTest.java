@@ -1,7 +1,7 @@
 package energy.eddie.aiida.datasources.at;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.record.IntegerAiidaRecord;
 import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.aiida.utils.MqttConfig.MqttConfigBuilder;
@@ -64,7 +64,7 @@ class OesterreichsAdapterIntegrationTest {
     @BeforeEach
     void setUp() throws IOException {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
-        mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        mapper = new AiidaConfiguration().objectMapper();
 
         var toxiproxyClient = new ToxiproxyClient(toxiproxy.getHost(), toxiproxy.getControlPort());
         proxy = toxiproxyClient.createProxy("mqtt", "0.0.0.0:8666", "mqtt:1883");

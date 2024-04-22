@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.es.datadis.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
@@ -25,7 +25,7 @@ import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMeta
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class NettySupplyApiClientTest {
-    static ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
     static MockWebServer mockBackEnd;
     private static String basePath;
 
@@ -49,7 +49,6 @@ class NettySupplyApiClientTest {
                 () -> Mono.just("token"),
                 basePath);
 
-        var mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         var supply = new Supply("a", "a", "a", "a", "a", "a", LocalDate.now(ZONE_ID_SPAIN), null, 4, "3");
 
         String body = mapper.writeValueAsString(List.of(supply));

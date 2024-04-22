@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -28,11 +30,13 @@ class ApiCredentialsTest {
         );
     }
 
+    private final ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
+
     @Test
     void refreshToken_returnsRefreshToken() {
         // Given
         String refreshToken = "jwt";
-        ApiCredentials credentials = new ApiCredentials(null, refreshToken);
+        ApiCredentials credentials = new ApiCredentials(null, refreshToken, mapper);
 
         // When
         var res = credentials.refreshToken();
@@ -51,7 +55,7 @@ class ApiCredentialsTest {
 
         var customerApi = mock(EnerginetCustomerApi.class);
         when(customerApi.accessToken("jwt")).thenReturn(Mono.just("validToken"));
-        ApiCredentials credentials = new ApiCredentials(customerApi, "jwt", accessToken);
+        ApiCredentials credentials = new ApiCredentials(customerApi, "jwt", accessToken, mapper);
 
         // When
         var res = credentials.accessToken();
@@ -72,7 +76,7 @@ class ApiCredentialsTest {
 
         var customerApi = mock(EnerginetCustomerApi.class);
         when(customerApi.accessToken("jwt")).thenReturn(Mono.just("validToken"));
-        ApiCredentials credentials = new ApiCredentials(customerApi, "jwt", accessToken);
+        ApiCredentials credentials = new ApiCredentials(customerApi, "jwt", accessToken, mapper);
 
         // When
         var res = credentials.accessToken();
@@ -92,7 +96,7 @@ class ApiCredentialsTest {
 
         var customerApi = mock(EnerginetCustomerApi.class);
         when(customerApi.accessToken("jwt")).thenReturn(Mono.just("validToken"));
-        ApiCredentials credentials = new ApiCredentials(customerApi, "jwt", accessToken);
+        ApiCredentials credentials = new ApiCredentials(customerApi, "jwt", accessToken, mapper);
 
         // When
         // Then

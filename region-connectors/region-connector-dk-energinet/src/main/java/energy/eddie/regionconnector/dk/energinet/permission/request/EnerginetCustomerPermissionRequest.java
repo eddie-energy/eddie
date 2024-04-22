@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
@@ -58,7 +59,8 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
             LocalDate start,
             LocalDate end,
             Granularity granularity,
-            StateBuilderFactory factory
+            StateBuilderFactory factory,
+            ObjectMapper mapper
     ) {
         super(DK_ZONE_ID);
         requireNonNull(permissionId);
@@ -67,7 +69,7 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
 
         this.permissionId = requireNonNull(permissionId);
         this.connectionId = requireNonNull(request.connectionId());
-        this.credentials = new ApiCredentials(apiClient, requireNonNull(request.refreshToken()));
+        this.credentials = new ApiCredentials(apiClient, requireNonNull(request.refreshToken()), mapper);
         this.meteringPoint = requireNonNull(request.meteringPoint());
         this.dataNeedId = requireNonNull(request.dataNeedId());
         this.refreshToken = request.refreshToken();
@@ -80,8 +82,8 @@ public class EnerginetCustomerPermissionRequest extends TimestampedPermissionReq
     }
 
     @Override
-    public DkEnerginetCustomerPermissionRequest withApiClient(EnerginetCustomerApi client) {
-        this.credentials = new ApiCredentials(client, refreshToken);
+    public DkEnerginetCustomerPermissionRequest withApiClient(EnerginetCustomerApi client, ObjectMapper mapper) {
+        this.credentials = new ApiCredentials(client, refreshToken, mapper);
         return this;
     }
 

@@ -1,8 +1,8 @@
 package energy.eddie.aiida.streamers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.aiida.aggregator.Aggregator;
+import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
@@ -50,7 +50,7 @@ class StreamerManagerTest {
 
     @BeforeEach
     void setUp() {
-        ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        ObjectMapper mapper = new AiidaConfiguration().objectMapper();
         manager = new StreamerManager(mapper, scheduler, Duration.ofSeconds(10), aggregatorMock);
 
         var permissionId = "72831e2c-a01c-41b8-9db6-3f51670df7a5";

@@ -21,18 +21,24 @@ public final class ApiCredentials {
     };
     private final EnerginetCustomerApi customerApi;
     private final String refreshToken;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
     @Nullable
     private String accessToken;
 
-    public ApiCredentials(EnerginetCustomerApi customerApi, String refreshToken) {
-        this(customerApi, refreshToken, null);
+    public ApiCredentials(EnerginetCustomerApi customerApi, String refreshToken, ObjectMapper mapper) {
+        this(customerApi, refreshToken, null, mapper);
     }
 
-    public ApiCredentials(EnerginetCustomerApi customerApi, String refreshToken, @Nullable String accessToken) {
+    public ApiCredentials(
+            EnerginetCustomerApi customerApi,
+            String refreshToken,
+            @Nullable String accessToken,
+            ObjectMapper mapper
+    ) {
         this.customerApi = customerApi;
         this.refreshToken = refreshToken;
         this.accessToken = accessToken;
+        this.mapper = mapper;
     }
 
     public String refreshToken() {

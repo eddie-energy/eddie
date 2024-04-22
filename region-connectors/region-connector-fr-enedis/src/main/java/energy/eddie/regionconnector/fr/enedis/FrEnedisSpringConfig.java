@@ -64,7 +64,9 @@ public class FrEnedisSpringConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
-        return new ObjectMapper().registerModule(new JavaTimeModule()).registerModule(new Jdk8Module());
+        return new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .registerModule(new Jdk8Module());
     }
 
     @Bean

@@ -3,7 +3,7 @@ package energy.eddie.aiida.datasources.at;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.aiida.config.AiidaConfiguration;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,7 +15,7 @@ class OesterreichAdapterJsonTest {
      */
     @Test
     void verify_isProperlyDeserialized() throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        ObjectMapper mapper = new AiidaConfiguration().objectMapper();
 
         SimpleModule module = new SimpleModule();
         module.addDeserializer(OesterreichAdapterJson.AdapterValue.class, new OesterreichsEnergieAdapterValueDeserializer(null));

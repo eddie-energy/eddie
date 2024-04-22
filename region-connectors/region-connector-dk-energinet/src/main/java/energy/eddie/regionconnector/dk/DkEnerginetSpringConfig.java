@@ -1,5 +1,8 @@
 package energy.eddie.regionconnector.dk;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
@@ -127,5 +130,12 @@ public class DkEnerginetSpringConfig {
             FulfillmentService fulfillmentService
     ) {
         return new MeterReadingPermissionUpdateAndFulfillmentService(fulfillmentService);
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .registerModule(new Jdk8Module());
     }
 }

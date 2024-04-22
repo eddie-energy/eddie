@@ -1,11 +1,13 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request.states;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.FutureStateException;
 import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
@@ -66,6 +68,7 @@ class EnerginetCustomerValidatedStateTest {
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
         doReturn(Mono.just("token")).when(apiClient).accessToken(anyString());
         StateBuilderFactory factory = new StateBuilderFactory();
+        ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
         var forCreation = new PermissionRequestForCreation(connectionId,
                                                            refreshToken,
                                                            meteringPoint,
@@ -77,7 +80,8 @@ class EnerginetCustomerValidatedStateTest {
                                                                        start,
                                                                        end,
                                                                        granularity,
-                                                                       factory);
+                                                                       factory,
+                                                                       mapper);
         var state = new EnerginetCustomerValidatedState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
@@ -170,6 +174,7 @@ class EnerginetCustomerValidatedStateTest {
         String connectionId = "cid";
         String dataNeedId = "dataNeedId";
         StateBuilderFactory factory = new StateBuilderFactory();
+        ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
         var forCreation = new PermissionRequestForCreation(connectionId,
                                                            refreshToken,
                                                            meteringPoint,
@@ -181,7 +186,8 @@ class EnerginetCustomerValidatedStateTest {
                                                                        start,
                                                                        end,
                                                                        granularity,
-                                                                       factory);
+                                                                       factory,
+                                                                       mapper);
         var state = new EnerginetCustomerValidatedState(permissionRequest, factory);
         permissionRequest.changeState(state);
         return permissionRequest;

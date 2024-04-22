@@ -1,8 +1,7 @@
 package energy.eddie.aiida.models.record;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.aiida.config.AiidaConfiguration;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -63,7 +62,7 @@ class AiidaRecordFactoryTest {
 
     @Test
     void givenValidCode_jsonMapping_asExpected() throws JsonProcessingException {
-        var mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        var mapper = new AiidaConfiguration().objectMapper();
         var begin = Instant.parse("2023-10-01T10:00:00.00Z");
 
         var integerRecord = AiidaRecordFactory.createRecord("1.7.0", begin, 372);

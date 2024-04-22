@@ -1,8 +1,10 @@
 package energy.eddie.regionconnector.dk.energinet;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.states.TerminatedPermissionRequestState;
 import energy.eddie.api.v0.HealthState;
+import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
@@ -73,13 +75,14 @@ class EnerginetRegionConnectorTest {
         LocalDate end = start.plusDays(10);
         var creation = new PermissionRequestForCreation("cid", "token", "mpid", "dnid");
         StateBuilderFactory factory = new StateBuilderFactory();
+        ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
         var permissionRequest = new EnerginetCustomerPermissionRequest("pid",
                                                                        creation,
                                                                        mock(EnerginetCustomerApi.class),
                                                                        start,
                                                                        end,
                                                                        Granularity.PT15M,
-                                                                       factory);
+                                                                       factory, mapper);
         EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(permissionRequest, factory);
         permissionRequest.changeState(state);
         PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);

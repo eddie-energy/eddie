@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
@@ -36,6 +37,8 @@ class PermissionRequestFactoryTest {
     private ValidatedHistoricalDataDataNeed mockDataNeed;
     @Mock
     private GenericAiidaDataNeed mockAiidaNeed;
+    @Mock
+    private ObjectMapper mockMapper;
 
     @Test
     void testCreatePermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException {
@@ -51,7 +54,8 @@ class PermissionRequestFactoryTest {
         var permissionRequestFactory = new PermissionRequestFactory(customerApi,
                                                                     Set.of(),
                                                                     new StateBuilderFactory(),
-                                                                    mockDataNeedsService);
+                                                                    mockDataNeedsService,
+                                                                    mockMapper);
         // When
         PermissionRequest permissionRequest = permissionRequestFactory.create(requestForCreation);
 
@@ -71,11 +75,13 @@ class PermissionRequestFactoryTest {
                                                                        start,
                                                                        end,
                                                                        Granularity.PT1H,
-                                                                       new StateBuilderFactory());
+                                                                       new StateBuilderFactory(),
+                                                                       mockMapper);
         var permissionRequestFactory = new PermissionRequestFactory(customerApi,
                                                                     Set.of(),
                                                                     new StateBuilderFactory(),
-                                                                    mockDataNeedsService);
+                                                                    mockDataNeedsService,
+                                                                    mockMapper);
 
         // When
         PermissionRequest wrapped = permissionRequestFactory.create(permissionRequest);
@@ -93,7 +99,8 @@ class PermissionRequestFactoryTest {
         var permissionRequestFactory = new PermissionRequestFactory(customerApi,
                                                                     Set.of(),
                                                                     new StateBuilderFactory(),
-                                                                    mockDataNeedsService);
+                                                                    mockDataNeedsService,
+                                                                    mockMapper);
         var creation = new PermissionRequestForCreation("foo", "bar", "blo", "lah");
 
         // When, Then
@@ -113,7 +120,8 @@ class PermissionRequestFactoryTest {
         var permissionRequestFactory = new PermissionRequestFactory(customerApi,
                                                                     Set.of(),
                                                                     new StateBuilderFactory(),
-                                                                    mockDataNeedsService);
+                                                                    mockDataNeedsService,
+                                                                    mockMapper);
         var creation = new PermissionRequestForCreation("foo", "bar", "blo", "lah");
 
         // When, Then

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import org.junit.jupiter.api.Disabled;
@@ -15,7 +15,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 
 class NettyAuthorizationApiClientIntegrationTest {
-    static ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
     String requestNif = "replace_me";
     String token = "replace_me";
 

@@ -1,7 +1,7 @@
 package energy.eddie.aiida.streamers.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
@@ -69,7 +69,7 @@ class KafkaStreamerIntegrationTest {
 
         records = List.of(record1, record2, record3, record4);
 
-        mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        mapper = new AiidaConfiguration().objectMapper();
     }
 
     @Test

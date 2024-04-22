@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("rawtypes")
 class NettyAuthorizationApiClientTest {
-    static ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
     static MockWebServer mockBackEnd;
 
     private static String basePath;
