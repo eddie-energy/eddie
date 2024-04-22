@@ -5,10 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
-public record SupplyRetryFilter(Throwable throwable) {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SupplyRetryFilter.class);
+import java.util.List;
 
-    public boolean filter() {
+public record DatadisApiRetryFilter(Class<?> requestType, List<Class<?>> nonRetryableExceptions) {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DatadisApiRetryFilter.class);
+
+    public boolean filter(Throwable throwable) {
         Throwable cause = throwable;
         while (cause.getCause() != null) {
             cause = cause.getCause();
@@ -18,7 +20,13 @@ public record SupplyRetryFilter(Throwable throwable) {
                 apiException.statusCode() == HttpStatus.BAD_REQUEST.value())) {
             return false;
         }
-        LOGGER.info("Retrying supply request due to exception", cause);
+        for (Class<?> nonRetryableException : nonRetryableExceptions) {
+            if (nonRetryableException.isInstance(cause)) {
+                return false;
+            }
+        }
+
+        LOGGER.info("Retrying {} request due to exception", requestType.getName(), cause);
         return true;
     }
 }

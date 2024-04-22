@@ -37,10 +37,21 @@ public interface EsPermissionRequest extends MeterReadingPermissionRequest {
      */
     Optional<Integer> pointType();
 
+    /**
+     * In Spain, a metering point always has consumption, but they can additionally have production as well.
+     *
+     * @return true if the metering point associated with this permission request supports production data.
+     */
+    boolean productionSupport();
+
     DatadisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory);
 
     @InvokeExtensions
-    void setDistributorCodeAndPointType(DistributorCode distributorCode, Integer pointType);
+    void setDistributorCodePointTypeAndProductionSupport(
+            DistributorCode distributorCode,
+            Integer pointType,
+            boolean productionSupport
+    );
 
     /**
      * Decide what kind of metering data is requested.

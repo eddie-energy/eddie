@@ -128,8 +128,9 @@ class DatadisPermissionRequestTest {
         assertEquals(expected, request.latestMeterReadingEndDate().get());
     }
 
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
-    void setDistributorCodeAndPointType_worksAsExpected() {
+    void setAccountingPointData_worksAsExpected() {
         // Given
         var request = new DatadisPermissionRequest(permissionId,
                                                    requestForCreation,
@@ -142,11 +143,15 @@ class DatadisPermissionRequestTest {
 
 
         // When
-        request.setDistributorCodeAndPointType(expectedDistributorCode, expectedPointType);
+        request.setDistributorCodePointTypeAndProductionSupport(expectedDistributorCode, expectedPointType, true);
 
         // Then
-        assertTrue(request.distributorCode().isPresent());
-        assertEquals(expectedDistributorCode, request.distributorCode().get());
-        assertTrue(request.pointType().isPresent());
+        assertAll(
+                () -> assertTrue(request.distributorCode().isPresent()),
+                () -> assertEquals(expectedDistributorCode, request.distributorCode().get()),
+                () -> assertTrue(request.pointType().isPresent()),
+                () -> assertEquals(expectedPointType, request.pointType().get()),
+                () -> assertTrue(request.productionSupport())
+        );
     }
 }

@@ -47,6 +47,7 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     private PermissionProcessStatus status;
     @Nullable
     private String errorMessage;
+    private boolean productionSupport;
 
     // just for JPA
     @SuppressWarnings("NullAway.Init")
@@ -186,6 +187,12 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     }
 
     @Override
+    public boolean productionSupport() {
+        return productionSupport;
+    }
+
+
+    @Override
     public DatadisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
         this.state = factory
                 .create(this, status)
@@ -194,9 +201,14 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     }
 
     @Override
-    public void setDistributorCodeAndPointType(DistributorCode distributorCode, Integer pointType) {
+    public void setDistributorCodePointTypeAndProductionSupport(
+            DistributorCode distributorCode,
+            Integer pointType,
+            boolean productionSupport
+    ) {
         this.distributorCode = distributorCode;
         this.pointType = pointType;
+        this.productionSupport = productionSupport;
     }
 
     @Override

@@ -18,17 +18,18 @@ class DatadisEddieValidatedHistoricalDataMarketDocumentProviderTest {
                 datadisConfig,
                 () -> CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME
         );
-        IdentifiableMeteringData identifiableMeteringData = IntermediateValidatedHistoricalDocumentTest.identifiableMeterReading();
+        IdentifiableMeteringData identifiableMeteringData = IntermediateValidatedHistoricalDocumentTest.identifiableMeterReading(
+                false);
         var provider = new DatadisEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(), factory);
 
         // When
         StepVerifier.create(provider.getEddieValidatedHistoricalDataMarketDocumentStream())
-                .then(() -> {
-                    testPublisher.emit(identifiableMeteringData);
-                    testPublisher.complete();
-                })
-                .expectNextCount(1)
-                .verifyComplete();
+                    .then(() -> {
+                        testPublisher.emit(identifiableMeteringData);
+                        testPublisher.complete();
+                    })
+                    .expectNextCount(1)
+                    .verifyComplete();
 
         // Clean-Up
         provider.close();

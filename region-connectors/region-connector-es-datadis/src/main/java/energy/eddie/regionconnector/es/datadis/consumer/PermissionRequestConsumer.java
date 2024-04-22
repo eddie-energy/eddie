@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.es.datadis.consumer;
 
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
-import energy.eddie.regionconnector.es.datadis.dtos.Supply;
+import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.services.HistoricalDataService;
@@ -21,8 +21,15 @@ public class PermissionRequestConsumer {
         this.historicalDataService = historicalDataService;
     }
 
-    public void acceptPermission(EsPermissionRequest permissionRequest, Supply supply) {
-        permissionRequest.setDistributorCodeAndPointType(DistributorCode.fromCode(supply.distributorCode()), supply.pointType());
+    public void acceptPermission(
+            EsPermissionRequest permissionRequest,
+            AccountingPointData accountingPointData
+    ) {
+        permissionRequest.setDistributorCodePointTypeAndProductionSupport(
+                DistributorCode.fromCode(accountingPointData.supply().distributorCode()),
+                accountingPointData.supply().pointType(),
+                accountingPointData.contractDetails().installedCapacity().isPresent()
+        );
         try {
             permissionRequest.accept();
             historicalDataService.fetchAvailableHistoricalData(permissionRequest);
