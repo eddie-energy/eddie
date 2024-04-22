@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
-import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -20,7 +20,7 @@ public class HistoricalDataService {
     }
 
     @Async
-    public void fetchHistoricalMeterReadings(FrEnedisPermissionRequest permissionRequest) {
+    public void fetchHistoricalMeterReadings(FrEnedisPermissionRequest permissionRequest, String usagePointId) {
         LocalDate permissionStart = permissionRequest.start();
         LocalDate permissionEnd = permissionRequest.end();
 
@@ -32,6 +32,6 @@ public class HistoricalDataService {
         }
 
         var end = now.isAfter(permissionEnd) ? permissionEnd.plusDays(1) : now;
-        pollingService.fetchMeterReadings(permissionRequest, permissionStart, end);
+        pollingService.fetchMeterReadings(permissionRequest, permissionStart, end, usagePointId);
     }
 }

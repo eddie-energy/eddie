@@ -44,7 +44,7 @@ class MeterReadingPermissionRequestUpdateAndFulfillmentServiceTest {
         permissionRequest.updateLatestMeterReadingEndDate(latest);
 
         MeterReadingPermissionUpdateAndFulfillmentService service = new MeterReadingPermissionUpdateAndFulfillmentService(
-                new FulfillmentService());
+                new StateFulfillmentService());
 
         // When
         service.tryUpdateAndFulfillPermissionRequest(permissionRequest, () -> end);
@@ -72,7 +72,7 @@ class MeterReadingPermissionRequestUpdateAndFulfillmentServiceTest {
         permissionRequest.updateLatestMeterReadingEndDate(latest);
 
         MeterReadingPermissionUpdateAndFulfillmentService service = new MeterReadingPermissionUpdateAndFulfillmentService(
-                new FulfillmentService());
+                new StateFulfillmentService());
 
         // When
         service.tryUpdateAndFulfillPermissionRequest(permissionRequest, () -> latest.minusDays(1));
@@ -91,7 +91,7 @@ class MeterReadingPermissionRequestUpdateAndFulfillmentServiceTest {
         MeterReadingPermissionRequest permissionRequest = acceptedPermissionRequest(today);
 
         MeterReadingPermissionUpdateAndFulfillmentService service = new MeterReadingPermissionUpdateAndFulfillmentService(
-                new FulfillmentService());
+                new StateFulfillmentService());
 
         // When
         service.tryUpdateAndFulfillPermissionRequest(permissionRequest, () -> end);

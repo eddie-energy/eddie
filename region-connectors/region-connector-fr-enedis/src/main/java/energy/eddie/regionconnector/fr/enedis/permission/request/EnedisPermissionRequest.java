@@ -4,64 +4,61 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
-import java.util.UUID;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 
 @Entity
 @Table(schema = "fr_enedis", name = "enedis_permission_request")
+@SuppressWarnings("NullAway")
 public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
     private static final EnedisDataSourceInformation dataSourceInformation = new EnedisDataSourceInformation();
     @Id
     @Column(name = "permission_id")
-    private String permissionId;
+    private final String permissionId;
     @Column(name = "connection_id")
-    private String connectionId;
-    @Column(name = "start_date")
-    private LocalDate start;
-    @Column(name = "end_date")
-    private LocalDate end;
+    private final String connectionId;
+    @Column(name = "permission_start")
+    private final LocalDate start;
+    @Column(name = "permission_end")
+    private final LocalDate end;
     @Column(name = "data_need_id")
-    private String dataNeedId;
-    @Transient
-    private PermissionRequestState state;
+    private final String dataNeedId;
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
-    private PermissionProcessStatus status;
+    private final PermissionProcessStatus status;
     @Column(name = "granularity")
     @Enumerated(EnumType.STRING)
-    private Granularity granularity;
+    private final Granularity granularity;
     @Nullable
     @Column(name = "usage_point_id")
-    private String usagePointId;
+    private final String usagePointId;
     @Nullable
     @Column(name = "latest_meter_reading_end_date")
-    private LocalDate latestMeterReadingEndDate;
+    private final LocalDate latestMeterReadingEndDate;
 
     @Column(name = "created")
-    private ZonedDateTime created;
+    private final ZonedDateTime created;
 
     // just for JPA
     @SuppressWarnings("NullAway.Init")
     protected EnedisPermissionRequest() {
-    }
-
-    public EnedisPermissionRequest(
-            String connectionId,
-            String dataNeedId,
-            LocalDate start,
-            LocalDate end,
-            Granularity granularity,
-            StateBuilderFactory factory
-    ) {
-        this(UUID.randomUUID().toString(), connectionId, dataNeedId, start, end, granularity, factory);
+        permissionId = null;
+        connectionId = null;
+        start = null;
+        end = null;
+        dataNeedId = null;
+        status = null;
+        granularity = null;
+        usagePointId = null;
+        latestMeterReadingEndDate = null;
+        created = null;
     }
 
     public EnedisPermissionRequest(
@@ -71,25 +68,43 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
             LocalDate start,
             LocalDate end,
             Granularity granularity,
-            StateBuilderFactory factory
+            PermissionProcessStatus status
     ) {
-        this.created = ZonedDateTime.now(ZONE_ID_FR);
-        this.permissionId = permissionId;
-        this.connectionId = connectionId;
-        this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
-        this.dataNeedId = dataNeedId;
-        this.start = start;
-        this.end = end;
-        this.status = state.status();
-        this.granularity = granularity;
+        this(permissionId,
+             connectionId,
+             dataNeedId,
+             start,
+             end,
+             granularity,
+             status,
+             null,
+             null,
+             ZonedDateTime.now(ZONE_ID_FR));
     }
 
-    @Override
-    public FrEnedisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
-        this.state = factory
-                .create(this, status)
-                .build();
-        return this;
+    @SuppressWarnings("java:S107")
+    public EnedisPermissionRequest(
+            String permissionId,
+            String connectionId,
+            String dataNeedId,
+            LocalDate start,
+            LocalDate end,
+            Granularity granularity,
+            PermissionProcessStatus status,
+            @Nullable String usagePointId,
+            @Nullable LocalDate latestMeterReadingEndDate,
+            ZonedDateTime created
+    ) {
+        this.permissionId = permissionId;
+        this.connectionId = connectionId;
+        this.start = start;
+        this.end = end;
+        this.dataNeedId = dataNeedId;
+        this.status = status;
+        this.granularity = granularity;
+        this.usagePointId = usagePointId;
+        this.latestMeterReadingEndDate = latestMeterReadingEndDate;
+        this.created = created;
     }
 
     @Override
@@ -97,11 +112,6 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
         return Optional.ofNullable(usagePointId);
     }
 
-    @SuppressWarnings("NullableProblems")
-    @Override
-    public void setUsagePointId(String usagePointId) {
-        this.usagePointId = usagePointId;
-    }
 
     @Override
     public Granularity granularity() {
@@ -130,7 +140,7 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
 
     @Override
     public PermissionRequestState state() {
-        return state;
+        return null;
     }
 
     @Override
@@ -145,8 +155,7 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
 
     @Override
     public void changeState(PermissionRequestState state) {
-        this.state = state;
-        this.status = state.status();
+        throw new IllegalStateException("Not used anymore");
     }
 
     @Override
@@ -166,6 +175,6 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
 
     @Override
     public void updateLatestMeterReadingEndDate(LocalDate date) {
-        this.latestMeterReadingEndDate = date;
+        throw new IllegalStateException("Not used anymore");
     }
 }

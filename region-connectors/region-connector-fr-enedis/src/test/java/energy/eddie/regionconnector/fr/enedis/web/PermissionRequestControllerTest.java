@@ -5,7 +5,8 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.fr.enedis.permission.request.persistence.EnedisPermissionRequestRepository;
+import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionEventRepository;
+import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,9 @@ class PermissionRequestControllerTest {
     @MockBean
     private PermissionRequestService permissionRequestService;
     @MockBean
-    private EnedisPermissionRequestRepository unusedRepository;
+    private FrPermissionRequestRepository unusedRepository;
+    @MockBean
+    private FrPermissionEventRepository permissionEventRepository;
 
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {

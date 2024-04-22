@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.fr.enedis.providers.v0;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.dto.IntervalReading;
 import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
-import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

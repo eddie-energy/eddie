@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.providers.agnostic;
 
+import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
-import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;

@@ -43,7 +43,7 @@ class FrEnedisTest extends E2eTestSetup {
                                            .click());
 
         assertThat(buttonPage.locator("fr-enedis-pa-ce"))
-                .containsText("The request status is: PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT");
+                .containsText("The request status is: VALIDATED");
 
         var redirectUrl = requestDetails.url() +
                 "/authorization-callback" +

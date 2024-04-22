@@ -38,6 +38,7 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.C
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
+import energy.eddie.regionconnector.shared.services.StateFulfillmentService;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
@@ -189,7 +190,7 @@ public class AtEdaBeanConfig {
 
     @Bean
     public FulfillmentService fulfillmentService() {
-        return new FulfillmentService();
+        return new StateFulfillmentService();
     }
 
     @Bean

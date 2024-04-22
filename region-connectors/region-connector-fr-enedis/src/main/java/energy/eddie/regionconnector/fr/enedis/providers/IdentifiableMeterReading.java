@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.providers;
 
+import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
-import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.shared.utils.MeterReadingEndDate;
 
 import java.time.LocalDate;
