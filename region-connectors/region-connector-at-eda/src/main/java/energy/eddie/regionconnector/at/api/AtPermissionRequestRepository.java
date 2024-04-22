@@ -1,11 +1,13 @@
 package energy.eddie.regionconnector.at.api;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * The repository for PermissionRequests.
@@ -34,4 +36,6 @@ public interface AtPermissionRequestRepository extends PermissionRequestReposito
     List<AtPermissionRequest> findAcceptedAndFulfilledByMeteringPointIdAndDate(String meteringPointId, LocalDate date);
 
     Optional<AtPermissionRequest> findByConsentId(String consentId);
+
+    List<AtPermissionRequest> findByStatusIn(Set<PermissionProcessStatus> status);
 }

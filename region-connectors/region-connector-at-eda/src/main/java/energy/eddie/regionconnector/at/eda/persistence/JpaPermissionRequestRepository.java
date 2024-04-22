@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.at.eda.persistence;
 
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 @Transactional(readOnly = true)
@@ -43,4 +45,7 @@ public interface JpaPermissionRequestRepository extends PagingAndSortingReposito
 
     @Override
     Optional<AtPermissionRequest> findByConsentId(@Param("consentId") String consentId);
+
+    @Override
+    List<AtPermissionRequest> findByStatusIn(Set<PermissionProcessStatus> status);
 }

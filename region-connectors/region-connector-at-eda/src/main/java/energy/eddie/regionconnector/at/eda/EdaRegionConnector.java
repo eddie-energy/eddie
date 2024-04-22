@@ -1,11 +1,8 @@
 package energy.eddie.regionconnector.at.eda;
 
 import energy.eddie.api.v0.*;
-import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
-import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
-import energy.eddie.regionconnector.at.eda.permission.request.events.TerminationEvent;
-import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
+import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +21,6 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
     private final EdaAdapter edaAdapter;
     private final AtPermissionRequestRepository repository;
     private final Outbox outbox;
-    private final AtConfiguration atConfiguration;
 
     /**
      * Used to send permission state messages.
@@ -36,13 +32,12 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
             EdaAdapter edaAdapter,
             AtPermissionRequestRepository repository,
             Sinks.Many<ConnectionStatusMessage> permissionStateMessages,
-            Outbox outbox, AtConfiguration atConfiguration
+            Outbox outbox
     ) throws TransmissionException {
         this.edaAdapter = edaAdapter;
         this.repository = repository;
         this.permissionStateMessages = permissionStateMessages;
         this.outbox = outbox;
-        this.atConfiguration = atConfiguration;
         edaAdapter.start();
     }
 
@@ -70,16 +65,8 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
             LOGGER.warn("No permission with this id found: {}", permissionId);
             return;
         }
-        AtPermissionRequest permissionRequest = request.get();
-        var revoke = new CCMORevoke(permissionRequest,
-                                    atConfiguration.eligiblePartyId(),
-                                    "Terminated by eligible party");
-        try {
-            edaAdapter.sendCMRevoke(revoke);
-        } catch (Exception e) {
-            LOGGER.warn("Error trying to terminate permission request.", e);
-        }
-        outbox.commit(new TerminationEvent(permissionId, revoke.reason()));
+        outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.TERMINATED));
+        outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
     }
 
     @Override

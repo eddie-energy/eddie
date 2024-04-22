@@ -119,7 +119,7 @@ class EdaEventsHandlerTest {
         var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
                                                          "conversationId", null, "dsoId", null, null,
                                                          AllowedGranularity.PT15M,
-                                                         PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT,
+                                                         PermissionProcessStatus.VALIDATED,
                                                          "", null, null);
         when(repository.findByConversationIdOrCMRequestId("conversationId", null))
                 .thenReturn(Optional.of(permissionRequest));

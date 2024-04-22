@@ -24,23 +24,14 @@ public enum PermissionProcessStatus {
      */
     UNABLE_TO_SEND,
     /**
-     * The permission request has been sent to the permission administrator.
-     * The process waits for an answer by the PA.
-     */
-    RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE,
-    /**
      * The permission request is being sent to the permission administrator and waits for an acknowledgement.
      */
+    @Deprecated(forRemoval = true)
     PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT,
     /**
      * The permission request is now being processed by the PA.
      */
     SENT_TO_PERMISSION_ADMINISTRATOR,
-    /**
-     * Not implemented or fully defined.
-     * To be done in <a href="https://github.com/eddie-energy/eddie/issues/177">GH-177</a>.
-     */
-    CANCELLED,
     /**
      * A user can forgo the option of accepting a permission request.
      * In that case the request will time out.
@@ -70,4 +61,21 @@ public enum PermissionProcessStatus {
      * The permission request has been fulfilled, i.e. all data has been delivered.
      */
     FULFILLED,
+    /**
+     * The permission request specifies energy data that is not available for that final customer.
+     */
+    UNFULFILLABLE,
+    /**
+     * A follow-up state for {@code UNFULFILLABLE, FULFILLED, TERMINATED}, since sometimes these states have to be
+     * externally terminated.
+     */
+    REQUIRES_EXTERNAL_TERMINATION,
+    /**
+     * The external termination process failed.
+     */
+    FAILED_TO_TERMINATE,
+    /**
+     * The external termination process was successful
+     */
+    EXTERNALLY_TERMINATED
 }

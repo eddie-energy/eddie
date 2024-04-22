@@ -4,7 +4,6 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
-import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -42,7 +41,7 @@ class EdaRegionConnectorTest {
 
         // when
         // then
-        assertDoesNotThrow(() -> new EdaRegionConnector(edaAdapter, repository, sink, outbox, null));
+        assertDoesNotThrow(() -> new EdaRegionConnector(edaAdapter, repository, sink, outbox));
     }
 
     @Test
@@ -50,17 +49,17 @@ class EdaRegionConnectorTest {
         // given
         when(repository.findByPermissionId("permissionId")).thenReturn(Optional.empty());
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, null, null);
+        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, null);
 
         // when
         // then
         assertDoesNotThrow(() -> regionConnector.terminatePermission("permissionId"));
 
-        verify(edaAdapter, never()).sendCMRevoke(any());
+        verify(outbox, never()).commit(any());
     }
 
     @Test
-    void terminateExistingPermission_sendsCmRevoke() throws TransmissionException {
+    void terminateExistingPermission_emitsTermination() throws TransmissionException {
         // given
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
@@ -71,45 +70,20 @@ class EdaRegionConnectorTest {
                                                          "consentId", ZonedDateTime.now(ZoneOffset.UTC));
         when(repository.findByPermissionId("permissionId")).thenReturn(Optional.of(permissionRequest));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        var epId = new PlainAtConfiguration("epId", null);
-        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox, epId);
+        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox);
 
         // when
         regionConnector.terminatePermission("permissionId");
 
         // then
-        verify(edaAdapter).sendCMRevoke(any());
-        verify(outbox).commit(any());
-    }
-
-    @Test
-    void terminatePermission_edaThrows_terminatesOnEPSide() throws TransmissionException {
-        // given
-        var start = LocalDate.now(ZoneOffset.UTC);
-        var end = start.plusDays(10);
-        doThrow(new TransmissionException(null)).when(edaAdapter).sendCMRevoke(any());
-        var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
-                                                         "conversationId", "mid", "dsoId", start, end,
-                                                         AllowedGranularity.PT15M,
-                                                         PermissionProcessStatus.ACCEPTED, "",
-                                                         "consentId", ZonedDateTime.now(ZoneOffset.UTC));
-        when(repository.findByPermissionId("permissionId")).thenReturn(Optional.of(permissionRequest));
-        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        var epId = new PlainAtConfiguration("epId", null);
-        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox, epId);
-
-        // when
-        regionConnector.terminatePermission("permissionId");
-
-        // then
-        verify(outbox).commit(any());
+        verify(outbox, times(2)).commit(any());
     }
 
     @Test
     void getMetadata_returnExpectedMetadata() throws TransmissionException {
         // given
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox, null);
+        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox);
 
         // when
         var result = regionConnector.getMetadata();
@@ -122,7 +96,7 @@ class EdaRegionConnectorTest {
     void close_ClosesRelatedResources() throws Exception {
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
 
-        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox, null);
+        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox);
 
         regionConnector.close();
 
@@ -135,7 +109,7 @@ class EdaRegionConnectorTest {
         when(edaAdapter.health()).thenReturn(Map.of("service", HealthState.UP));
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
 
-        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox, null);
+        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox);
 
         // When
         var res = regionConnector.health();
@@ -148,7 +122,7 @@ class EdaRegionConnectorTest {
     void close_emitsCompleteOnPublisherForConnectionStatusMessages() throws Exception {
         // Given
         Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox, null);
+        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox);
         StepVerifier stepVerifier = StepVerifier.create(regionConnector.getConnectionStatusMessageStream())
                                                 .expectComplete()
                                                 .verifyLater();

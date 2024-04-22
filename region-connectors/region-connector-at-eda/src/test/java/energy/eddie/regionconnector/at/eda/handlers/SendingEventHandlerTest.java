@@ -39,7 +39,7 @@ class SendingEventHandlerTest {
     private ArgumentCaptor<PermissionEvent> captor;
 
     @Test
-    void testAcceptCommitsPendingEvent_whenPontonAvailable() {
+    void testAcceptSendsCmRequest_whenPontonAvailable() throws TransmissionException {
         // Given
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
@@ -58,9 +58,7 @@ class SendingEventHandlerTest {
         handler.accept(event);
 
         // Then
-        verify(outbox).commit(captor.capture());
-        assertThat(captor.getValue().status())
-                .isEqualTo(PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT);
+        verify(edaAdapter).sendCMRequest(any());
     }
 
     @Test
