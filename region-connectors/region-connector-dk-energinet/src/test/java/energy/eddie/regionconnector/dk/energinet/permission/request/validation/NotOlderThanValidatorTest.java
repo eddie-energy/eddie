@@ -1,6 +1,8 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request.validation;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
@@ -61,12 +63,14 @@ class NotOlderThanValidatorTest {
 
     private EnerginetCustomerPermissionRequest createTestRequest(LocalDate start, LocalDate end) {
         var forCreation = new PermissionRequestForCreation("bar", "too", "laa", "luu");
+        ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
         return new EnerginetCustomerPermissionRequest("foo",
                                                       forCreation,
                                                       mockApiClient,
                                                       start,
                                                       end,
                                                       Granularity.PT1H,
-                                                      new StateBuilderFactory());
+                                                      new StateBuilderFactory(),
+                                                      mapper);
     }
 }

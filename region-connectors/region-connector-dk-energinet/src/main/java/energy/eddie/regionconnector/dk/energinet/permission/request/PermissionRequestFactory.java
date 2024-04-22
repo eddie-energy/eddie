@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
@@ -26,18 +27,21 @@ public class PermissionRequestFactory {
     private final Set<Extension<DkEnerginetCustomerPermissionRequest>> extensions;
     private final StateBuilderFactory stateBuilderFactory;
     private final DataNeedsService dataNeedsService;
+    private final ObjectMapper mapper;
 
     public PermissionRequestFactory(
             EnerginetCustomerApi customerApi,
             Set<Extension<DkEnerginetCustomerPermissionRequest>> extensions,
             StateBuilderFactory stateBuilderFactory,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")  // defined in parent context
-            DataNeedsService dataNeedsService
+            DataNeedsService dataNeedsService,
+            ObjectMapper mapper
     ) {
         this.customerApi = customerApi;
         this.extensions = extensions;
         this.stateBuilderFactory = stateBuilderFactory;
         this.dataNeedsService = dataNeedsService;
+        this.mapper = mapper;
     }
 
     public DkEnerginetCustomerPermissionRequest create(PermissionRequestForCreation request) throws DataNeedNotFoundException, UnsupportedDataNeedException {
@@ -61,7 +65,8 @@ public class PermissionRequestFactory {
                 wrapper.calculatedStart(),
                 wrapper.calculatedEnd(),
                 granularity,
-                stateBuilderFactory);
+                stateBuilderFactory,
+                mapper);
         return PermissionRequestProxy.createProxy(
                 permissionRequest,
                 extensions,
@@ -82,7 +87,7 @@ public class PermissionRequestFactory {
 
     public DkEnerginetCustomerPermissionRequest create(DkEnerginetCustomerPermissionRequest permissionRequest) {
         return PermissionRequestProxy.createProxy(
-                permissionRequest.withApiClient(customerApi).withStateBuilderFactory(stateBuilderFactory),
+                permissionRequest.withApiClient(customerApi, mapper).withStateBuilderFactory(stateBuilderFactory),
                 extensions,
                 DkEnerginetCustomerPermissionRequest.class,
                 PermissionRequestProxy.CreationInfo.RECREATED

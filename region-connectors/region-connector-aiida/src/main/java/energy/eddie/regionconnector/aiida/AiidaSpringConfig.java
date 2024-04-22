@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.aiida;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.ConnectionStatusMessageMixin;
 import energy.eddie.api.agnostic.RegionConnector;
@@ -56,10 +57,10 @@ public class AiidaSpringConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
-        var mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.addMixIn(ConnectionStatusMessage.class, ConnectionStatusMessageMixin.class);
-        return mapper;
+        return new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .registerModule(new Jdk8Module())
+                .addMixIn(ConnectionStatusMessage.class, ConnectionStatusMessageMixin.class);
     }
 
     @Bean

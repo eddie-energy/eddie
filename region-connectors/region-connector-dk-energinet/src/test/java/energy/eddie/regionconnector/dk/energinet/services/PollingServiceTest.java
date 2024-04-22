@@ -1,7 +1,9 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocument;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponse;
@@ -46,6 +48,8 @@ class PollingServiceTest {
     @Mock
     private PermissionRequestService permissionRequestService;
     private PollingService pollingService;
+    private final ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
+
 
 
     @BeforeEach
@@ -77,7 +81,8 @@ class PollingServiceTest {
                 start,
                 end,
                 Granularity.PT1H,
-                factory
+                factory,
+                mapper
         );
         WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(),
                                                                                     "",
@@ -118,7 +123,8 @@ class PollingServiceTest {
                 start,
                 end,
                 Granularity.PT1H,
-                new StateBuilderFactory()
+                new StateBuilderFactory(),
+                mapper
         );
         WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(),
                                                                                     "",
@@ -159,7 +165,8 @@ class PollingServiceTest {
                 start,
                 end,
                 Granularity.PT1H,
-                factory
+                factory,
+                mapper
         );
         WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                                                                                     "",
@@ -201,7 +208,8 @@ class PollingServiceTest {
                 start,
                 end,
                 Granularity.PT1H,
-                factory
+                factory,
+                mapper
         );
         permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest, factory));
         doReturn(Mono.just("token"))
@@ -263,7 +271,8 @@ class PollingServiceTest {
                 start,
                 end,
                 Granularity.PT1H,
-                factory
+                factory,
+                mapper
         );
         permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest, factory));
 
@@ -298,7 +307,8 @@ class PollingServiceTest {
                 start1,
                 end1,
                 Granularity.PT1H,
-                factory
+                factory,
+                mapper
         );
 
         permissionRequest1.changeState(new EnerginetCustomerAcceptedState(permissionRequest1, factory));
@@ -327,7 +337,8 @@ class PollingServiceTest {
                 start2,
                 end2,
                 Granularity.PT1H,
-                factory
+                factory,
+                mapper
         );
         permissionRequest2.changeState(new EnerginetCustomerAcceptedState(permissionRequest2, factory));
         doReturn(Mono.just("token"))

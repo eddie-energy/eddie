@@ -1,9 +1,11 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request.states;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.agnostic.process.model.states.TerminatedPermissionRequestState;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
@@ -24,13 +26,15 @@ class EnerginetCustomerAcceptedStateTest {
                                                                                            "mpid",
                                                                                            "dnid");
     private final StateBuilderFactory factory = new StateBuilderFactory();
+    private final ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
     private final EnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest("pid",
                                                                                                                 creation,
                                                                                                                 mock(EnerginetCustomerApi.class),
                                                                                                                 start,
                                                                                                                 end,
                                                                                                                 Granularity.PT15M,
-                                                                                                                factory);
+                                                                                                                factory,
+                                                                                                                mapper);
 
     @Test
     void status_returnsAccepted() {

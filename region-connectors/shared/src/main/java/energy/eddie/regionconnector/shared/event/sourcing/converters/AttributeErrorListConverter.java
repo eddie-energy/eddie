@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
+import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
@@ -12,7 +13,7 @@ import java.util.List;
 
 @Converter
 public class AttributeErrorListConverter implements AttributeConverter<List<AttributeError>, String> {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapperConfig().objectMapper();
 
     @Override
     @Nullable

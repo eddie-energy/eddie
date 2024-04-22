@@ -210,7 +210,8 @@ class PermissionRequestControllerTest {
                     LocalDate.now(DK_ZONE_ID),
                     LocalDate.now(DK_ZONE_ID).plusDays(5),
                     Granularity.PT1H,
-                    new StateBuilderFactory()
+                    new StateBuilderFactory(),
+                    mapper
             );
         });
 
@@ -246,7 +247,8 @@ class PermissionRequestControllerTest {
                                                           LocalDate.now(DK_ZONE_ID),
                                                           LocalDate.now(DK_ZONE_ID).plusDays(5),
                                                           Granularity.PT1H,
-                                                          new StateBuilderFactory()
+                                                          new StateBuilderFactory(),
+                                                          mapper
             );
         });
 

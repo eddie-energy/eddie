@@ -1,8 +1,10 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
@@ -35,6 +37,7 @@ class PermissionRequestServiceTest {
     @Mock
     private PermissionRequestFactory requestFactory;
     private PermissionRequestService service;
+    private final ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
 
     @BeforeEach
     void setUp() {
@@ -105,7 +108,8 @@ class PermissionRequestServiceTest {
                                                                        start,
                                                                        end,
                                                                        Granularity.PT15M,
-                                                                       factory);
+                                                                       factory,
+                                                                       mapper);
         var state = new EnerginetCustomerAcceptedState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
@@ -144,7 +148,8 @@ class PermissionRequestServiceTest {
                                                                         start,
                                                                         end,
                                                                         Granularity.PT15M,
-                                                                        factory);
+                                                                        factory,
+                                                                        mapper);
         permissionRequest1.changeState(new EnerginetCustomerAcceptedState(permissionRequest1, factory));
         var permissionRequest2 = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(),
                                                                         creation,
@@ -152,7 +157,8 @@ class PermissionRequestServiceTest {
                                                                         start,
                                                                         end,
                                                                         Granularity.PT15M,
-                                                                        factory);
+                                                                        factory,
+                                                                        mapper);
         when(requestFactory.create(permissionRequest1))
                 .thenReturn(permissionRequest1);
 

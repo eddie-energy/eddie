@@ -13,8 +13,7 @@ public class MeteringDataProvider {
 
     public static List<MeteringData> loadMeteringData() throws IOException {
         try (InputStream is = MeteringDataProvider.class.getClassLoader().getResourceAsStream("consumptionKWh.json")) {
-            return objectMapper.readValue(is, new TypeReference<>() {
-            });
+            return objectMapper.readValue(is, new TypeReference<>() {});
         }
     }
 

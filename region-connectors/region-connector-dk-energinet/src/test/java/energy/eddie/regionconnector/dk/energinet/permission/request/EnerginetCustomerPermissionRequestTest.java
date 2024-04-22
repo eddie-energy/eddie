@@ -1,7 +1,9 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
+import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.states.EnerginetCustomerRejectedState;
@@ -26,6 +28,7 @@ class EnerginetCustomerPermissionRequestTest {
         String meteringPoint = "meteringPoint";
         Granularity granularity = Granularity.PT1H;
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
+        ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
         var forCreation = new PermissionRequestForCreation(connectionId,
                 refreshToken,
                 meteringPoint,
@@ -38,7 +41,8 @@ class EnerginetCustomerPermissionRequestTest {
                 start,
                 end,
                 granularity,
-                new StateBuilderFactory());
+                                                             new StateBuilderFactory(),
+                                                             mapper);
 
         // Then
         assertEquals(permissionId, request.permissionId());
@@ -62,6 +66,7 @@ class EnerginetCustomerPermissionRequestTest {
         String meteringPoint = "meteringPoint";
         Granularity granularity = Granularity.PT1H;
         EnerginetCustomerApi apiClient = mock(EnerginetCustomerApi.class);
+        ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
         var forCreation = new PermissionRequestForCreation(connectionId,
                 refreshToken,
                 meteringPoint,
@@ -74,7 +79,8 @@ class EnerginetCustomerPermissionRequestTest {
                 start,
                 end,
                 granularity,
-                new StateBuilderFactory());
+                                                             new StateBuilderFactory(),
+                                                             mapper);
         PermissionRequestState newState = new EnerginetCustomerRejectedState(request);
 
         // When

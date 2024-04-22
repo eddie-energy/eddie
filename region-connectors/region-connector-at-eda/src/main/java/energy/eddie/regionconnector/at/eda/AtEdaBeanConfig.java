@@ -1,5 +1,8 @@
 package energy.eddie.regionconnector.at.eda;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.ponton.xp.adapter.api.ConnectionException;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
@@ -228,5 +231,12 @@ public class AtEdaBeanConfig {
                                                          cimConfig,
                                                          pr -> TRANSMISSION_CYCLE.name(),
                                                          AT_ZONE_ID);
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .registerModule(new Jdk8Module());
     }
 }

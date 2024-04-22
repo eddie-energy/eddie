@@ -1,9 +1,11 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request.states;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.FutureStateException;
 import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
@@ -19,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 class EnerginetCustomerPendingAcknowledgmentStateTest {
+    private final ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
     @Test
     void status_returnsPendingAcknowledgement() {
         // Given
@@ -54,7 +57,8 @@ class EnerginetCustomerPendingAcknowledgmentStateTest {
                                                                        start,
                                                                        start.plusDays(5),
                                                                        granularity,
-                                                                       factory);
+                                                                       factory,
+                                                                       mapper);
         EnerginetCustomerPendingAcknowledgmentState state = new EnerginetCustomerPendingAcknowledgmentState(
                 permissionRequest,
                 factory);

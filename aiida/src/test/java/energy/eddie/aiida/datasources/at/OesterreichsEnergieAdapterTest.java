@@ -2,8 +2,8 @@ package energy.eddie.aiida.datasources.at;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.aiida.TestUtils;
+import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.record.IntegerAiidaRecord;
 import energy.eddie.aiida.models.record.StringAiidaRecord;
 import energy.eddie.aiida.utils.MqttConfig;
@@ -40,7 +40,7 @@ class OesterreichsEnergieAdapterTest {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
         config = new MqttConfigBuilder("tcp://localhost:1883", "MyTestTopic").build();
-        mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        mapper = new AiidaConfiguration().objectMapper();
         adapter = new OesterreichsEnergieAdapter(config, mapper);
     }
 

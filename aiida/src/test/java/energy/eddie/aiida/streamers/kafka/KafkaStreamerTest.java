@@ -3,7 +3,7 @@ package energy.eddie.aiida.streamers.kafka;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.permission.KafkaStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
@@ -91,7 +91,7 @@ class KafkaStreamerTest {
         record2 = AiidaRecordFactory.createRecord("1.8.0", now.plusSeconds(2), 20);
         record3 = AiidaRecordFactory.createRecord("C.1.0", now.plusSeconds(3), "SomeString");
 
-        mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        mapper = new AiidaConfiguration().objectMapper();
         recordPublisher = TestPublisher.create();
         statusMessagePublisher = TestPublisher.create();
         mockProducer = new MockProducer<>(true, new StringSerializer(), new StringSerializer());

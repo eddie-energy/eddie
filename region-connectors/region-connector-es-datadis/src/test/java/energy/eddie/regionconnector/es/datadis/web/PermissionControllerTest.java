@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisDataSourceInformation;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.persistence.DatadisPermissionRequestRepository;
@@ -43,7 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = {PermissionController.class}, properties = "eddie.jwt.hmac.secret=RbNQrp0Dfd+fNoTalQQTd5MRurblhcDtVYaPGoDsg8Q=")
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 class PermissionControllerTest {
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
     @Autowired
     private MockMvc mockMvc;
     @MockBean

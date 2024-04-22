@@ -1,10 +1,9 @@
 package energy.eddie.regionconnector.fr.enedis.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.HealthState;
+import energy.eddie.regionconnector.fr.enedis.FrEnedisSpringConfig;
 import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import okhttp3.mockwebserver.MockResponse;
@@ -32,6 +31,7 @@ import static org.mockito.Mockito.mock;
 class EnedisApiClientTest {
     private static MockWebServer mockBackEnd;
     private static WebClient webClient;
+    private final ObjectMapper objectMapper = new FrEnedisSpringConfig().objectMapper();
 
     @BeforeEach
     void setUp() throws IOException {
@@ -42,9 +42,7 @@ class EnedisApiClientTest {
                 .baseUrl(basePath)
                 .codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs()
                         .jackson2JsonDecoder(new Jackson2JsonDecoder(
-                                new ObjectMapper()
-                                        .registerModule(new JavaTimeModule())
-                                        .registerModule(new Jdk8Module()),
+                                objectMapper,
                                 MediaType.APPLICATION_JSON)))
                 .build();
     }

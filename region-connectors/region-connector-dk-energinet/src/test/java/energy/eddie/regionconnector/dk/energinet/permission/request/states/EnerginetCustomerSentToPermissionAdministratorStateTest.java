@@ -1,9 +1,11 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request.states;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.FutureStateException;
 import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
@@ -18,6 +20,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 class EnerginetCustomerSentToPermissionAdministratorStateTest {
+    private final ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
+
     @Test
     void status_returnsSentToPermissionAdministrator() {
         // Given
@@ -54,7 +58,8 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
                                                                        start,
                                                                        end,
                                                                        granularity,
-                                                                       factory);
+                                                                       factory,
+                                                                       mapper);
         var state = new EnerginetCustomerSentToPermissionAdministratorState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
@@ -89,7 +94,8 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
                                                                        start,
                                                                        end,
                                                                        granularity,
-                                                                       factory);
+                                                                       factory,
+                                                                       mapper);
         var state = new EnerginetCustomerSentToPermissionAdministratorState(permissionRequest, factory);
         permissionRequest.changeState(state);
 
@@ -121,7 +127,8 @@ class EnerginetCustomerSentToPermissionAdministratorStateTest {
         var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId, forCreation, apiClient,
                                                                        start,
                                                                        end,
-                                                                       granularity, factory);
+                                                                       granularity, factory,
+                                                                       mapper);
         var state = new EnerginetCustomerSentToPermissionAdministratorState(permissionRequest, factory);
         permissionRequest.changeState(state);
 

@@ -19,19 +19,20 @@ import static java.util.Objects.requireNonNull;
 public class NettyDatadisTokenProvider implements DatadisTokenProvider {
     private final DatadisConfig config;
     private final HttpClient httpClient;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
     private final URI tokenEndpoint;
     @Nullable
     private String token;
     private long expiryTime;
 
-    public NettyDatadisTokenProvider(DatadisConfig config, HttpClient httpClient) {
+    public NettyDatadisTokenProvider(DatadisConfig config, HttpClient httpClient, ObjectMapper mapper) {
         requireNonNull(config);
         requireNonNull(httpClient);
 
         this.config = config;
         this.httpClient = httpClient;
         this.tokenEndpoint = URI.create(config.basePath()).resolve("nikola-auth/tokens/login");
+        this.mapper = mapper;
     }
 
     @Override

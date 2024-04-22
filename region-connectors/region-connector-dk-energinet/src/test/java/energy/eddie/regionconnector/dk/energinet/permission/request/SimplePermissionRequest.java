@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
@@ -57,7 +58,7 @@ public final class SimplePermissionRequest implements DkEnerginetCustomerPermiss
     }
 
     @Override
-    public DkEnerginetCustomerPermissionRequest withApiClient(EnerginetCustomerApi client) {
+    public DkEnerginetCustomerPermissionRequest withApiClient(EnerginetCustomerApi client, ObjectMapper mapper) {
         return null;
     }
 
