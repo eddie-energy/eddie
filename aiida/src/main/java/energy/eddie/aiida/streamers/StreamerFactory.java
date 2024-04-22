@@ -2,8 +2,12 @@ package energy.eddie.aiida.streamers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
+import energy.eddie.aiida.errors.StreamerCreationFailedException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.utils.MqttFactory;
+import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
+import org.eclipse.paho.mqttv5.common.MqttException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -28,16 +32,29 @@ public class StreamerFactory {
             Sinks.One<String> terminationRequestSink,
             ObjectMapper mapper
     ) {
-        return new AiidaStreamer(recordFlux, statusMessageFlux, terminationRequestSink) {
-            @Override
-            public void connect() {
-                // dummy
-            }
+        var mqttConfig = permission.mqttStreamingConfig();
 
-            @Override
-            public void close() {
-                terminationRequestSink.tryEmitEmpty();
-            }
-        };
+        String permissionId = permission.permissionId();
+        if (mqttConfig == null) {
+            // TODO unwrap once PermissionService is reworked --> GH-929
+            throw new RuntimeException(new StreamerCreationFailedException(
+                    "MqttStreamingConfig for permission '%s' is null".formatted(
+                            permissionId)));
+        }
+
+        try {
+            var client = MqttFactory.getMqttAsyncClient(mqttConfig.serverUri(),
+                                                        mqttConfig.username(),
+                                                        new MqttDefaultFilePersistence("mqtt-persistence/" + permissionId));
+            return new MqttStreamer(recordFlux,
+                                    statusMessageFlux,
+                                    terminationRequestSink,
+                                    mqttConfig,
+                                    client,
+                                    mapper);
+        } catch (MqttException exception) {
+            // TODO unwrap once PermissionService is reworked --> GH-929
+            throw new RuntimeException(new StreamerCreationFailedException(exception));
+        }
     }
 }

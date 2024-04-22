@@ -3,6 +3,7 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.dtos.PermissionDto;
 import energy.eddie.aiida.errors.*;
+import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
@@ -118,7 +119,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                                                   dto.expirationTime(),
                                                   dto.grantTime(),
                                                   dto.connectionId(),
-                                                  dto.requestedCodes());
+                                                  dto.requestedCodes(),
+                                                  MqttStreamingConfig.getFixedConfig(dto.permissionId()));
         newPermission = repository.save(newPermission);
 
         var now = Instant.now(clock);

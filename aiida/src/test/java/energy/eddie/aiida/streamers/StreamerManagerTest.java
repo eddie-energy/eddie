@@ -6,6 +6,7 @@ import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
+import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +54,8 @@ class StreamerManagerTest {
                                     expiration,
                                     grant,
                                     connectionId,
-                                    codes);
+                                    codes,
+                                    MqttStreamingConfig.getFixedConfig(permissionId));
     }
 
     @Test
