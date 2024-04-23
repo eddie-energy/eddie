@@ -14,8 +14,8 @@ import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCus
 import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.states.EnerginetCustomerAcceptedState;
-import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
+import energy.eddie.regionconnector.shared.services.StateFulfillmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,7 +56,7 @@ class PollingServiceTest {
     void setUp() {
         pollingService = new PollingService(customerApi,
                                             permissionRequestService,
-                                            new MeterReadingPermissionUpdateAndFulfillmentService(new FulfillmentService()));
+                                            new MeterReadingPermissionUpdateAndFulfillmentService(new StateFulfillmentService()));
     }
 
     @Test

@@ -1,17 +1,19 @@
 package energy.eddie.regionconnector.fr.enedis;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.states.TerminatedPermissionRequestState;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.HealthState;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.permission.request.SimplePermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
-import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisAcceptedState;
-import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisInvalidState;
-import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
+import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 
 import java.time.Clock;
@@ -20,113 +22,95 @@ import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.assertArg;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class EnedisRegionConnectorTest {
+    @Mock
+    private FrPermissionRequestRepository repository;
+    @Mock
+    private EnedisApi enedisApi;
+    @Spy
+    private Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
+    @Mock
+    private Outbox outbox;
+    @InjectMocks
+    private EnedisRegionConnector rc;
+
     @Test
     void health_returnsHealthChecks() {
         // Given
-        var enedisApi = mock(EnedisApi.class);
         when(enedisApi.health()).thenReturn(Map.of("service", HealthState.UP));
-        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        try (var rc = new EnedisRegionConnector(enedisApi, mock(PermissionRequestService.class), sink)) {
 
-            // When
-            var res = rc.health();
+        // When
+        var res = rc.health();
 
-            // Then
-            assertEquals(Map.of("service", HealthState.UP), res);
-        }
+        // Then
+        assertEquals(Map.of("service", HealthState.UP), res);
     }
 
     @Test
     void getMetadata_returnsExpected() {
         // Given
-        var enedisApi = mock(EnedisApi.class);
-        var permissionRequestService = mock(PermissionRequestService.class);
-        Sinks.Many<ConnectionStatusMessage> connectionStatusSink = Sinks.many().multicast().onBackpressureBuffer();
-        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, connectionStatusSink)) {
+        // When
+        var res = rc.getMetadata();
 
-            // When
-            var res = rc.getMetadata();
-
-            // Then
-            assertEquals(EnedisRegionConnectorMetadata.getInstance(), res);
-        }
+        // Then
+        assertEquals(EnedisRegionConnectorMetadata.getInstance(), res);
     }
 
     @Test
     void terminatePermission_withNonExistentPermissionId_doesNotThrow() {
         // Given
-        var enedisApi = mock(EnedisApi.class);
-        when(enedisApi.health()).thenReturn(Map.of("service", HealthState.UP));
-        PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
-        when(permissionRequestService.findPermissionRequestByPermissionId(anyString())).thenReturn(Optional.empty());
-        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink)) {
+        when(repository.findByPermissionId(anyString())).thenReturn(Optional.empty());
 
-            // When
-            // Then
-            assertDoesNotThrow(() -> rc.terminatePermission("pid"));
-        }
+        // When
+        // Then
+        assertDoesNotThrow(() -> rc.terminatePermission("pid"));
     }
 
     @Test
     void terminatePermission_withExistingPermissionId_terminates() {
         // Given
-        var enedisApi = mock(EnedisApi.class);
-        when(enedisApi.health()).thenReturn(Map.of("service", HealthState.UP));
-        PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
-        var factory = new StateBuilderFactory();
         var request = new EnedisPermissionRequest(
+                "pid",
                 "cid",
                 "dnid",
                 LocalDate.now(ZoneOffset.UTC),
                 LocalDate.now(ZoneOffset.UTC),
                 Granularity.P1D,
-                factory
+                PermissionProcessStatus.ACCEPTED
         );
-        request.changeState(new FrEnedisAcceptedState(request, factory));
-        when(permissionRequestService.findPermissionRequestByPermissionId(anyString()))
+        when(repository.findByPermissionId(anyString()))
                 .thenReturn(Optional.of(request));
-        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink);
 
         // When
         rc.terminatePermission("pid");
         // Then
-        assertInstanceOf(TerminatedPermissionRequestState.class, request.state());
-
-        // Clean-Up
-        rc.close();
+        verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.TERMINATED, event.status())));
     }
 
     @Test
     void terminatePermission_withWrongState_doesNotThrow() {
         // Given
-        var enedisApi = mock(EnedisApi.class);
-        when(enedisApi.health()).thenReturn(Map.of("service", HealthState.UP));
-        PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
-        SimplePermissionRequest request = new SimplePermissionRequest(
+        var request = new EnedisPermissionRequest(
                 "pid",
                 "cid",
                 "dnid",
-                Optional.of("upId"),
                 LocalDate.now(Clock.systemUTC()),
                 LocalDate.now(Clock.systemUTC()),
-                new FrEnedisInvalidState(null),
-                Granularity.P1D
+                Granularity.P1D,
+                PermissionProcessStatus.CREATED
         );
-        when(permissionRequestService.findPermissionRequestByPermissionId(anyString())).thenReturn(Optional.of(request));
-        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-        try (var rc = new EnedisRegionConnector(enedisApi, permissionRequestService, sink)) {
+        when(repository.findByPermissionId(anyString())).thenReturn(Optional.of(request));
 
-            // When
-            // Then
-            assertDoesNotThrow(() -> rc.terminatePermission("pid"));
-        }
+        // When
+        // Then
+        assertDoesNotThrow(() -> rc.terminatePermission("pid"));
     }
 }

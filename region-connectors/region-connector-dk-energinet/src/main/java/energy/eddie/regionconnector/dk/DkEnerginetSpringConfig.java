@@ -26,6 +26,7 @@ import energy.eddie.regionconnector.shared.permission.requests.extensions.Saving
 import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.ConsentMarketDocumentExtension;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
+import energy.eddie.regionconnector.shared.services.StateFulfillmentService;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -122,7 +123,7 @@ public class DkEnerginetSpringConfig {
 
     @Bean
     public FulfillmentService fulfillmentService() {
-        return new FulfillmentService();
+        return new StateFulfillmentService();
     }
 
     @Bean

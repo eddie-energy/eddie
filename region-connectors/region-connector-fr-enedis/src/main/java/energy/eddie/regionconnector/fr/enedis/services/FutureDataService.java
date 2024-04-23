@@ -1,6 +1,8 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
-import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,18 +18,18 @@ public class FutureDataService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FutureDataService.class);
 
     private final PollingService pollingService;
-    private final PermissionRequestService permissionRequestService;
+    private final FrPermissionRequestRepository repository;
 
-    public FutureDataService(PollingService pollingService, PermissionRequestService permissionRequestService) {
+    public FutureDataService(PollingService pollingService, FrPermissionRequestRepository repository) {
         this.pollingService = pollingService;
-        this.permissionRequestService = permissionRequestService;
+        this.repository = repository;
     }
 
     @SuppressWarnings("java:S6857") // Sonar thinks this is malformed, but it's not
     @Scheduled(cron = "${region-connector.fr.enedis.polling:0 0 17 * * *}", zone = "Europe/Paris")
     public void fetchMeterReadings() {
-        List<FrEnedisPermissionRequest> acceptedPermissionRequests = permissionRequestService
-                .findAllAcceptedPermissionRequests();
+        List<FrEnedisPermissionRequest> acceptedPermissionRequests = repository
+                .findAllByStatus(PermissionProcessStatus.ACCEPTED);
 
         if (acceptedPermissionRequests.isEmpty()) {
             LOGGER.info("Found no permission requests to fetch meter readings for");
@@ -54,6 +56,9 @@ public class FutureDataService {
     private void fetchMeteringDataForRequest(FrEnedisPermissionRequest permissionRequest, LocalDate today) {
         LocalDate lastPulledOrStart = permissionRequest.latestMeterReadingEndDate().orElse(permissionRequest.start());
 
-        pollingService.fetchMeterReadings(permissionRequest, lastPulledOrStart, today);
+        pollingService.fetchMeterReadings(permissionRequest,
+                                          lastPulledOrStart,
+                                          today,
+                                          permissionRequest.usagePointId().orElseThrow());
     }
 }

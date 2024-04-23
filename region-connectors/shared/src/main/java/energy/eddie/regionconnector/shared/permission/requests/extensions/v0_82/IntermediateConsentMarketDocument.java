@@ -129,7 +129,9 @@ public class IntermediateConsentMarketDocument<T extends PermissionRequest> {
 
     @Nullable
     private String transmissionSchedule() {
-        if (!permissionRequest.start().isAfter(LocalDate.now(ZoneOffset.UTC))) {
+        // Not all permission requests contain a start date from the beginning, this is just a fact of the process model, where validation happens after the creation of the permission request.
+        // Only validated permission requests contain start and end dates.
+        if (permissionRequest.start() == null || !permissionRequest.start().isAfter(LocalDate.now(ZoneOffset.UTC))) {
             return null;
         }
         return transmissionScheduleProvider.findTransmissionSchedule(permissionRequest);

@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.fr.enedis.web;
 
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
@@ -50,7 +49,7 @@ public class PermissionRequestController {
             @RequestBody
             @Valid
             PermissionRequestForCreation permissionRequest
-    ) throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException {
         CreatedPermissionRequest createdPermissionRequest = permissionRequestService.createPermissionRequest(permissionRequest);
         URI location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
                 .expand(createdPermissionRequest.permissionId());
@@ -62,7 +61,7 @@ public class PermissionRequestController {
     @GetMapping(value = "/authorization-callback")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<String> callback(@RequestParam("state") String stateString, @RequestParam("usage_point_id") String usagePointId)
-            throws StateTransitionException, PermissionNotFoundException {
+            throws PermissionNotFoundException {
         permissionRequestService.authorizePermissionRequest(stateString, usagePointId);
         return ResponseEntity.ok("Access Granted. You can close this tab now.");
     }

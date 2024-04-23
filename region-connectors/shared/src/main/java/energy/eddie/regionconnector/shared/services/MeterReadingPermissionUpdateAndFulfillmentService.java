@@ -6,17 +6,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
+import java.util.function.BiConsumer;
 
 public class MeterReadingPermissionUpdateAndFulfillmentService {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             MeterReadingPermissionUpdateAndFulfillmentService.class);
 
     private final FulfillmentService fulfillmentService;
+    private final BiConsumer<MeterReadingPermissionRequest, LocalDate> meterReadingUpdater;
+
+    public MeterReadingPermissionUpdateAndFulfillmentService(FulfillmentService fulfillmentService) {
+        this(fulfillmentService, MeterReadingPermissionRequest::updateLatestMeterReadingEndDate);
+    }
 
     public MeterReadingPermissionUpdateAndFulfillmentService(
-            FulfillmentService fulfillmentService
+            FulfillmentService fulfillmentService,
+            BiConsumer<MeterReadingPermissionRequest, LocalDate> meterReadingUpdater
     ) {
         this.fulfillmentService = fulfillmentService;
+        this.meterReadingUpdater = meterReadingUpdater;
     }
 
     /**
@@ -55,7 +63,7 @@ public class MeterReadingPermissionUpdateAndFulfillmentService {
                   .addArgument(permissionRequest::latestMeterReadingEndDate)
                   .addArgument(meterReadingEndDate)
                   .log("{}: Updating latest meter reading for permission request {} from {} to {}");
-            permissionRequest.updateLatestMeterReadingEndDate(meterReadingEndDate);
+            meterReadingUpdater.accept(permissionRequest, meterReadingEndDate);
             return true;
         }
 

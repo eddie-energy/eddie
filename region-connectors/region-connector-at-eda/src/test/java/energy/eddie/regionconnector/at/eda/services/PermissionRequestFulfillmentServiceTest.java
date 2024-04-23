@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionReque
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
+import energy.eddie.regionconnector.shared.services.StateFulfillmentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,7 +28,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestFulfillmentServiceTest {
-    private final FulfillmentService fulfillmentService = new FulfillmentService();
+    private final FulfillmentService fulfillmentService = new StateFulfillmentService();
     @Mock
     private Outbox outbox;
 

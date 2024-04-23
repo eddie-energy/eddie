@@ -1,24 +1,21 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.dataneeds.utils.DataNeedWrapper;
+import energy.eddie.regionconnector.fr.enedis.permission.events.FrAcceptedEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
-import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.fr.enedis.permission.request.states.FrEnedisPendingAcknowledgmentState;
+import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -29,14 +26,15 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 class PermissionRequestServiceTest {
     @SuppressWarnings("unused")
@@ -46,17 +44,19 @@ class PermissionRequestServiceTest {
 
     @Autowired
     private PermissionRequestService permissionRequestService;
-    @Autowired
-    private PermissionRequestRepository<FrEnedisPermissionRequest> repository;
+    @MockBean
+    private FrPermissionRequestRepository repository;
     @MockBean
     private HistoricalDataService historicalDataService;
     @MockBean
     private DataNeedsService dataNeedsService;
     @Mock
     private ValidatedHistoricalDataDataNeed mockVhdDataNeed;
+    @MockBean
+    private Outbox outbox;
 
     @Test
-    void testCreatePermissionRequest_createsPermissionRequest() throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
+    void testCreatePermissionRequest_createsPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
         var request = new PermissionRequestForCreation("cid", "dnid");
         var wrapper = new DataNeedWrapper(mockVhdDataNeed,
@@ -69,52 +69,38 @@ class PermissionRequestServiceTest {
         when(mockVhdDataNeed.minGranularity()).thenReturn(Granularity.P1D);
 
         // When
-        var res = permissionRequestService.createPermissionRequest(request);
-        var permissionRequest = repository.findByPermissionId(res.permissionId());
+        permissionRequestService.createPermissionRequest(request);
 
         // Then
-        assertTrue(permissionRequest.isPresent());
-        assertEquals("cid", permissionRequest.get().connectionId());
-        assertEquals(PermissionProcessStatus.PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT,
-                     permissionRequest.get().status());
+        verify(outbox, times(2)).commit(any());
     }
 
     @Test
-    @DirtiesContext
-    void testAuthorizePermissionRequest_acceptsPermissionRequest() throws StateTransitionException, PermissionNotFoundException {
+    void testAuthorizePermissionRequest_acceptsPermissionRequest() throws PermissionNotFoundException {
         // Given
-        var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
-        var end = LocalDate.now(ZoneOffset.UTC);
-        StateBuilderFactory factory = new StateBuilderFactory();
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
-        request.changeState(new FrEnedisPendingAcknowledgmentState(request, factory));
-        repository.save(request);
-
+        when(repository.existsById("pid"))
+                .thenReturn(true);
 
         // When
         permissionRequestService.authorizePermissionRequest("pid", "upid");
+
         // Then
-        FrEnedisPermissionRequest updatedRequest = repository.findByPermissionId("pid").orElseThrow();
-        assertEquals(PermissionProcessStatus.ACCEPTED, updatedRequest.status());
+        verify(outbox).commit(argThat(event -> event.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
+        verify(outbox).commit(isA(FrAcceptedEvent.class));
     }
 
     @Test
-    @DirtiesContext
-    void testAuthorizePermissionRequestWithNullUsageId_rejectsPermissionRequest() throws StateTransitionException, PermissionNotFoundException {
+    void testAuthorizePermissionRequestWithNullUsageId_rejectsPermissionRequest() throws PermissionNotFoundException {
         // Given
-        var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
-        var end = LocalDate.now(ZoneOffset.UTC);
-        StateBuilderFactory factory = new StateBuilderFactory();
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
-        request.changeState(new FrEnedisPendingAcknowledgmentState(request, factory));
-        repository.save(request);
-
+        when(repository.existsById("pid"))
+                .thenReturn(true);
 
         // When
         permissionRequestService.authorizePermissionRequest("pid", null);
+
         // Then
-        FrEnedisPermissionRequest updatedRequest = repository.findByPermissionId("pid").orElseThrow();
-        assertEquals(PermissionProcessStatus.REJECTED, updatedRequest.status());
+        verify(outbox).commit(argThat(event -> event.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
+        verify(outbox).commit(argThat(event -> event.status() == PermissionProcessStatus.REJECTED));
     }
 
     @Test
@@ -130,9 +116,18 @@ class PermissionRequestServiceTest {
         // Given
         var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
         var end = LocalDate.now(ZoneOffset.UTC);
-        StateBuilderFactory factory = new StateBuilderFactory();
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
-        repository.save(request);
+        var request = new EnedisPermissionRequest("pid",
+                                                  "cid",
+                                                  "dnid",
+                                                  start,
+                                                  end,
+                                                  Granularity.P1D,
+                                                  PermissionProcessStatus.VALIDATED,
+                                                  null,
+                                                  null,
+                                                  ZonedDateTime.now(ZoneOffset.UTC));
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(request));
 
         // When
         var res = permissionRequestService.findConnectionStatusMessageById("pid");
@@ -148,71 +143,24 @@ class PermissionRequestServiceTest {
         // Given
         var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
         var end = LocalDate.now(ZoneOffset.UTC);
-        StateBuilderFactory factory = new StateBuilderFactory();
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
-        repository.save(request);
+        var request = new EnedisPermissionRequest("pid",
+                                                  "cid",
+                                                  "dnid",
+                                                  start,
+                                                  end,
+                                                  Granularity.P1D,
+                                                  PermissionProcessStatus.VALIDATED,
+                                                  null,
+                                                  null,
+                                                  ZonedDateTime.now(ZoneOffset.UTC));
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(request));
 
         // When
         var res = permissionRequestService.findConnectionStatusMessageById("asdfasdfadsf");
 
         // Then
         assertTrue(res.isEmpty());
-    }
-
-    @Test
-    @DirtiesContext
-    void testFindPermissionRequestById_returnsPermissionRequest() {
-        // Given
-        var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
-        var end = LocalDate.now(ZoneOffset.UTC);
-        StateBuilderFactory factory = new StateBuilderFactory();
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
-        repository.save(request);
-
-        // When
-        var res = permissionRequestService.findPermissionRequestByPermissionId("pid");
-
-        // Then
-        assertTrue(res.isPresent());
-        assertEquals(request.permissionId(), res.get().permissionId());
-    }
-
-    @Test
-    @DirtiesContext
-    void testFindPermissionRequestById_withNotExistingPermissionId_returnsEmpty() {
-        // Given
-        var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
-        var end = LocalDate.now(ZoneOffset.UTC);
-        StateBuilderFactory factory = new StateBuilderFactory();
-        var request = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
-        repository.save(request);
-
-        // When
-        var res = permissionRequestService.findPermissionRequestByPermissionId("asdfasdfadsf");
-
-        // Then
-        assertTrue(res.isEmpty());
-    }
-
-    @Test
-    @DirtiesContext
-    void testFindTimedOutPermissionRequests_returnsPermissionRequests() throws StateTransitionException {
-        // Given
-        var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
-        var end = LocalDate.now(ZoneOffset.UTC);
-        StateBuilderFactory factory = new StateBuilderFactory();
-        var request1 = new EnedisPermissionRequest("pid", "cid", "dnid", start, end, Granularity.P1D, factory);
-        var request2 = new EnedisPermissionRequest("pid2", "cid2", "dnid", start, end, Granularity.P1D, factory);
-        request1.validate();
-        request1.sendToPermissionAdministrator();
-        repository.save(request1);
-        repository.save(request2);
-
-        // When
-        var res = permissionRequestService.findTimedOutPermissionRequests(0);
-
-        // Then
-        assertEquals(1, res.size());
     }
 
     @Test

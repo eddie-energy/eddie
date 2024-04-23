@@ -18,10 +18,10 @@ import java.time.ZonedDateTime;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("NullAway")
-class FulfillmentServiceTest {
+class StateFulfillmentServiceTest {
 
     LocalDate today = LocalDate.now(ZoneOffset.UTC);
-    FulfillmentService fulfillmentService = new FulfillmentService();
+    FulfillmentService fulfillmentService = new StateFulfillmentService();
 
 
     @Test

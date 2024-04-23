@@ -14,8 +14,8 @@ import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCod
 import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
-import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
+import energy.eddie.regionconnector.shared.services.StateFulfillmentService;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,7 +44,7 @@ import static org.mockito.Mockito.*;
 class DataApiServiceTest {
     private final DataApi dataApi = mock(DataApi.class);
     private final MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService =
-            new MeterReadingPermissionUpdateAndFulfillmentService(new FulfillmentService());
+            new MeterReadingPermissionUpdateAndFulfillmentService(new StateFulfillmentService());
     private final Sinks.Many<IdentifiableMeteringData> meteringDataSink = Sinks.many()
                                                                                .multicast()
                                                                                .onBackpressureBuffer();

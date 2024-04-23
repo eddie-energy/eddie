@@ -1,15 +1,20 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
+import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
+import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
-import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
-import energy.eddie.regionconnector.shared.services.FulfillmentService;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.services.EventFulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -19,6 +24,7 @@ import reactor.test.StepVerifier;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,29 +32,36 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class HistoricalDataServiceTest {
-
+    @Mock
+    private Outbox outbox;
     private final MeterReadingPermissionUpdateAndFulfillmentService service =
-            new MeterReadingPermissionUpdateAndFulfillmentService(new FulfillmentService());
+            new MeterReadingPermissionUpdateAndFulfillmentService(
+                    new EventFulfillmentService(outbox, FrSimpleEvent::new),
+                    (pr, end) -> {}
+            );
+    @Mock
+    private EnedisApi enedisApi;
 
     @Test
     void fetchHistoricalMeterReadings_requestDataFor11Days_batchesFetchCallsInto2_andEmitsMeterReading() throws Exception {
         // Given
-        EnedisApi enedisApi = mock(EnedisApi.class);
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, service, sink);
+        PollingService pollingService = new PollingService(enedisApi, service, sink, outbox);
         HistoricalDataService historicalDataService = new HistoricalDataService(pollingService);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        StateBuilderFactory factory = new StateBuilderFactory();
         FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
                                                                         "cid",
                                                                         "dnid",
                                                                         start,
                                                                         end,
                                                                         Granularity.PT30M,
-                                                                        factory);
-        request.setUsagePointId("usagePointId");
+                                                                        PermissionProcessStatus.ACCEPTED,
+                                                                        "usagePointId",
+                                                                        null,
+                                                                        ZonedDateTime.now(ZoneOffset.UTC));
 
         when(enedisApi.getConsumptionMeterReading(anyString(), eq(start), eq(start.plusWeeks(1)), any()))
                 .thenReturn(Mono.just(new MeterReading("usagePointId",
@@ -65,7 +78,7 @@ class HistoricalDataServiceTest {
                                                        null,
                                                        List.of())));
         // When
-        historicalDataService.fetchHistoricalMeterReadings(request);
+        historicalDataService.fetchHistoricalMeterReadings(request, "usagePointId");
 
         // Then
         StepVerifier.create(sink.asFlux())
@@ -88,21 +101,21 @@ class HistoricalDataServiceTest {
     @Test
     void fetchHistoricalMeterReadings_requestDataFor20Days_SecondBatchFails_callsApiForOnlyFirst2Batch() throws Exception {
         // Given
-        EnedisApi enedisApi = mock(EnedisApi.class);
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, service, sink);
+        PollingService pollingService = new PollingService(enedisApi, service, sink, outbox);
         HistoricalDataService historicalDataService = new HistoricalDataService(pollingService);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(30);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        StateBuilderFactory factory = new StateBuilderFactory();
         FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
                                                                         "cid",
                                                                         "dnid",
                                                                         start,
                                                                         end,
                                                                         Granularity.PT30M,
-                                                                        factory);
-        request.setUsagePointId("usagePointId");
+                                                                        PermissionProcessStatus.ACCEPTED,
+                                                                        "usagePointId",
+                                                                        null,
+                                                                        ZonedDateTime.now(ZoneOffset.UTC));
 
         when(enedisApi.getConsumptionMeterReading(anyString(), eq(start), eq(start.plusWeeks(1)), any()))
                 .thenReturn(Mono.just(new MeterReading("usagePointId",
@@ -119,7 +132,7 @@ class HistoricalDataServiceTest {
                                                                          null,
                                                                          null)));
         // When
-        historicalDataService.fetchHistoricalMeterReadings(request);
+        historicalDataService.fetchHistoricalMeterReadings(request, "usagePointId");
 
         // Then
         StepVerifier.create(sink.asFlux())
@@ -144,23 +157,23 @@ class HistoricalDataServiceTest {
     @Test
     void fetchHistoricalMeterReadings_doesNothing_IfPermissionIsNotActive() throws Exception {
         // Given
-        EnedisApi enedisApi = mock(EnedisApi.class);
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, service, sink);
+        PollingService pollingService = new PollingService(enedisApi, service, sink, outbox);
         HistoricalDataService historicalDataService = new HistoricalDataService(pollingService);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).plusDays(10);
-        StateBuilderFactory factory = new StateBuilderFactory();
         FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
                                                                         "cid",
                                                                         "dnid",
                                                                         start,
                                                                         end,
                                                                         Granularity.P1D,
-                                                                        factory);
-        request.setUsagePointId("usagePointId");
+                                                                        PermissionProcessStatus.CREATED,
+                                                                        "usagePointId",
+                                                                        null,
+                                                                        ZonedDateTime.now(ZoneOffset.UTC));
         // When
-        historicalDataService.fetchHistoricalMeterReadings(request);
+        historicalDataService.fetchHistoricalMeterReadings(request, "usagePointId");
 
         // Then
         StepVerifier.create(sink.asFlux())

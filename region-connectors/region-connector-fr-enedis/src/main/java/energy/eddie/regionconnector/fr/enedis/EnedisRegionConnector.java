@@ -1,9 +1,10 @@
 package energy.eddie.regionconnector.fr.enedis;
 
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.*;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
-import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
+import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
+import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -19,16 +20,19 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
     private final EnedisApi enedisApi;
-    private final PermissionRequestService permissionRequestService;
+    private final FrPermissionRequestRepository repository;
+    private final Outbox outbox;
 
     public EnedisRegionConnector(
             EnedisApi enedisApi,
-            PermissionRequestService permissionRequestService,
-            Sinks.Many<ConnectionStatusMessage> connectionStatusSink
+            Sinks.Many<ConnectionStatusMessage> connectionStatusSink,
+            FrPermissionRequestRepository repository,
+            Outbox outbox
     ) {
         this.enedisApi = enedisApi;
-        this.permissionRequestService = permissionRequestService;
         this.connectionStatusSink = connectionStatusSink;
+        this.repository = repository;
+        this.outbox = outbox;
     }
 
     @Override
@@ -44,15 +48,11 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
     @Override
     public void terminatePermission(String permissionId) {
         LOGGER.info("{} got termination request for permission {}", REGION_CONNECTOR_ID, permissionId);
-        var permissionRequest = permissionRequestService.findPermissionRequestByPermissionId(permissionId);
+        var permissionRequest = repository.findByPermissionId(permissionId);
         if (permissionRequest.isEmpty()) {
             return;
         }
-        try {
-            permissionRequest.get().terminate();
-        } catch (StateTransitionException e) {
-            LOGGER.error("PermissionRequest with permissionID {} cannot be revoked", permissionId, e);
-        }
+        outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.TERMINATED));
     }
 
     @Override

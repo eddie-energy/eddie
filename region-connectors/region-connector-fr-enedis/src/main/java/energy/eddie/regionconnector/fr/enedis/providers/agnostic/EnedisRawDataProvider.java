@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.fr.enedis.providers.agnostic;
 
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
-import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;

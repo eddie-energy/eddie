@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RegionConnector;
-import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
@@ -12,18 +11,21 @@ import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguratio
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
+import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisTokenProvider;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
-import energy.eddie.regionconnector.fr.enedis.permission.request.PermissionRequestFactory;
-import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
-import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.events.FrInternalPollingEvent;
+import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
+import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionEventRepository;
+import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.ConsentMarketDocumentExtension;
+import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
+import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
+import energy.eddie.regionconnector.shared.services.EventFulfillmentService;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
@@ -37,8 +39,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
-
-import java.util.Set;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID;
@@ -114,52 +114,52 @@ public class FrEnedisSpringConfig {
     }
 
     @Bean
-    public Set<Extension<FrEnedisPermissionRequest>> extensions(
-            PermissionRequestRepository<FrEnedisPermissionRequest> repository,
-            Sinks.Many<ConnectionStatusMessage> messages,
-            Sinks.Many<ConsentMarketDocument> cmds,
-            EnedisConfiguration config,
-            CommonInformationModelConfiguration cimConfig
-    ) {
-        return Set.of(
-                new SavingExtension<>(repository),
-                new MessagingExtension<>(messages),
-                new ConsentMarketDocumentExtension<>(
-                        cmds,
-                        config.clientId(),
-                        cimConfig.eligiblePartyNationalCodingScheme().value(),
-                        ZONE_ID_FR
-                )
-        );
-    }
-
-    @Bean
-    public PermissionRequestFactory factory(
-            Set<Extension<FrEnedisPermissionRequest>> extensions,
-            StateBuilderFactory stateBuilderFactory
-    ) {
-        return new PermissionRequestFactory(extensions, stateBuilderFactory);
-    }
-
-    @Bean
-    public StateBuilderFactory stateBuilderFactory() {
-        return new StateBuilderFactory();
-    }
-
-    @Bean
     public ConsentMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<ConsentMarketDocument> sink) {
         return new CommonConsentMarketDocumentProvider(sink);
     }
 
     @Bean
-    FulfillmentService fulfillmentService() {
-        return new FulfillmentService();
+    FulfillmentService fulfillmentService(Outbox outbox) {
+        return new EventFulfillmentService(outbox, FrSimpleEvent::new);
     }
 
     @Bean
     MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService(
-            FulfillmentService fulfillmentService
+            FulfillmentService fulfillmentService,
+            Outbox outbox
     ) {
-        return new MeterReadingPermissionUpdateAndFulfillmentService(fulfillmentService);
+        return new MeterReadingPermissionUpdateAndFulfillmentService(
+                fulfillmentService,
+                (pr, meterReading) -> outbox.commit(new FrInternalPollingEvent(pr.permissionId(), meterReading))
+        );
+    }
+
+    @Bean
+    public EventBus eventBus() {
+        return new EventBusImpl();
+    }
+
+    @Bean
+    public Outbox outbox(EventBus eventBus, FrPermissionEventRepository permissionEventRepository) {
+        return new Outbox(eventBus, permissionEventRepository);
+    }
+
+    @Bean
+    public ConsentMarketDocumentMessageHandler<FrEnedisPermissionRequest> consentMarketDocumentMessageHandler(
+            EventBus eventBus,
+            FrPermissionRequestRepository repository,
+            Sinks.Many<ConsentMarketDocument> sink,
+            EnedisConfiguration config,
+            CommonInformationModelConfiguration cimConfig
+    ) {
+        return new ConsentMarketDocumentMessageHandler<>(
+                eventBus,
+                repository,
+                sink,
+                config.clientId(),
+                cimConfig,
+                pr -> null,
+                ZONE_ID_FR
+        );
     }
 }

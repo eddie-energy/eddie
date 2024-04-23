@@ -1,9 +1,5 @@
 package energy.eddie.regionconnector.fr.enedis.utils;
 
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.permission.request.StateBuilderFactory;
-import energy.eddie.regionconnector.fr.enedis.permission.request.api.FrEnedisPermissionRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,21 +14,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class EnedisDurationTest {
 
     private static Stream<Arguments> testEnedisDuration_returnsISODuration_ifEndIsInFuture_methodSource() {
-        LocalDate start = LocalDate.now(ZoneOffset.UTC);
+        LocalDate now = LocalDate.now(ZoneOffset.UTC);
         return Stream.of(
-                Arguments.of(start, start.plusDays(3), "P3D"),
-                Arguments.of(start, start.plusYears(3), "P1095D")
+                Arguments.of(now.plusDays(3), "P3D"),
+                Arguments.of(now.plusYears(3), "P1095D")
         );
     }
 
     @Test
     void testEnedisDuration_returnsISODurationOfOneDay_ifEndIsInPast() {
         // Given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        LocalDate end = start.plusDays(3);
-        StateBuilderFactory factory = new StateBuilderFactory();
-        FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("cid", "dnid", start, end, Granularity.P1D, factory);
-        EnedisDuration duration = new EnedisDuration(permissionRequest);
+        LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
+        EnedisDuration duration = new EnedisDuration(end);
 
         // When
         var res = duration.toString();
@@ -43,11 +36,9 @@ class EnedisDurationTest {
 
     @ParameterizedTest
     @MethodSource("testEnedisDuration_returnsISODuration_ifEndIsInFuture_methodSource")
-    void testEnedisDuration_returnsISODuration_ifEndIsInFuture(LocalDate start, LocalDate end, String expected) {
+    void testEnedisDuration_returnsISODuration_ifEndIsInFuture(LocalDate end, String expected) {
         // Given
-        StateBuilderFactory factory = new StateBuilderFactory();
-        FrEnedisPermissionRequest permissionRequest = new EnedisPermissionRequest("cid", "dnid", start, end, Granularity.P1D, factory);
-        EnedisDuration duration = new EnedisDuration(permissionRequest);
+        EnedisDuration duration = new EnedisDuration(end);
 
         // When
         var res = duration.toString();
