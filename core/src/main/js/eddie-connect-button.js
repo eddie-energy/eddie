@@ -478,10 +478,12 @@ class EddieConnectButton extends LitElement {
         <div>
           ${this._selectedPermissionAdministrator
             ? html`
-                ${until(
-                  this.getRegionConnectorElement(),
-                  html` <sl-spinner></sl-spinner>`
-                )}
+                <eddie-notification-handler>
+                  ${until(
+                    this.getRegionConnectorElement(),
+                    html`<sl-spinner></sl-spinner>`
+                  )}
+                </eddie-notification-handler>
               `
             : html`
                 <sl-alert variant="warning" open>

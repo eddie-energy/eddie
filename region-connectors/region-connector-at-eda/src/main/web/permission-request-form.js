@@ -232,8 +232,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
               : ""}
           </sl-alert>`}
       </div>
-
-      ${this.alerts}
     `;
   }
 }

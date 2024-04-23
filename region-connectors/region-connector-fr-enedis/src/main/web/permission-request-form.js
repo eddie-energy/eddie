@@ -186,8 +186,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           <p>The request status is: ${this._requestStatus}</p>
         </sl-alert>`}
       </div>
-
-      ${this.alerts}
     `;
   }
 }

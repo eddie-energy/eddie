@@ -60,7 +60,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       .finally(() => {
         // request failed if no request status was set
         if (!this._requestStatus) {
-          this._isSubmitDisabled = false
+          this._isSubmitDisabled = false;
         }
       });
   }
@@ -147,7 +147,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           millisecondsToWait / 1000
         } seconds`,
         variant: "danger",
-        duration: millisecondsToWait.toString(),
+        duration: millisecondsToWait,
       });
       await this.awaitRetry(millisecondsToWait, maxRetries);
       return;
@@ -202,7 +202,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
         <br />
 
-        ${this.alerts}
         ${this._requestStatus &&
         html` <sl-alert open>
           <sl-icon slot="icon" name="info-circle"></sl-icon>

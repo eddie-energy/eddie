@@ -294,7 +294,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
         <br />
 
-        ${this.alerts}
         ${this._requestStatus &&
         html` <sl-alert open>
           <sl-icon slot="icon" name="info-circle"></sl-icon>

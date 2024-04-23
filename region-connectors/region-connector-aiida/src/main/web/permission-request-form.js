@@ -89,7 +89,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
         set up a new permission and enter the token below the QR code.
       </p>
 
-      ${this.alerts}
       ${!this._aiidaCode
         ? html`<sl-button
             @click="${this.requestPermission}"

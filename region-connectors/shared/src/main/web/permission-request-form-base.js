@@ -1,27 +1,11 @@
 import { html, LitElement } from "lit";
 import { createRef, ref } from "lit/directives/ref.js";
 
-const VARIANT_ICONS = {
-  info: "info-circle",
-  success: "check2-circle",
-  warning: "exclamation-triangle",
-  danger: "exclamation-octagon",
-};
-
 class PermissionRequestFormBase extends LitElement {
   ERROR_TITLE = "An error occurred";
   MAX_RETRIES = 60; // Retry polling for 5 minutes
 
-  static properties = {
-    alerts: { type: Array },
-  };
-
   restartPollingButtonRef = createRef();
-
-  constructor() {
-    super();
-    this.alerts = [];
-  }
 
   permissionId = null;
   location = null;
@@ -56,32 +40,6 @@ class PermissionRequestFormBase extends LitElement {
     });
   }
 
-  notify({
-    title,
-    message,
-    reason = "",
-    variant = "info",
-    duration = Infinity,
-    extraFunctionality = [],
-  }) {
-    const alert = html`<sl-alert
-        variant="${variant}"
-        duration="${duration}"
-        closable
-        open
-      >
-        <sl-icon name="${VARIANT_ICONS[variant]}" slot="icon"></sl-icon>
-        <p>
-          <strong>${title}</strong><br />
-          ${message}${reason && " Reason: " + reason}
-        </p>
-        ${extraFunctionality.map((element) => element)}
-      </sl-alert>
-      <br />`;
-    this.alerts.push(alert);
-    this.requestUpdate();
-  }
-
   startOrRestartAutomaticPermissionStatusPolling = () => {
     if (this.restartPollingButtonRef.value) {
       const parent = this.restartPollingButtonRef.value.parentElement;
@@ -100,44 +58,51 @@ class PermissionRequestFormBase extends LitElement {
       });
   };
 
-  handleStatus(status, reason = "") {
-    const title = "Request completed!";
+  /**
+   * Dispatch a custom event to render a user notification.
+   * @param {Object} notification
+   * @param {string} notification.title
+   * @param {string} notification.message
+   * @param {string} [notification.reason=""]
+   * @param {string} [notification.variant="info"]
+   * @param {number} [notification.duration=Infinity]
+   * @param {string[]} [notification.extraFunctionality=[]]
+   */
+  notify({
+    title,
+    message,
+    reason = "",
+    variant = "info",
+    duration = Infinity,
+    extraFunctionality = [],
+  }) {
+    this.dispatchEvent(
+      new CustomEvent("eddie-notification", {
+        detail: {
+          title,
+          message,
+          reason,
+          variant,
+          duration,
+          extraFunctionality,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
 
-    if (status === "ACCEPTED") {
-      this.notify({
-        title,
-        message: "Your permission request was accepted.",
-        variant: "success",
-        duration: 5000,
-      });
-    } else if (status === "REJECTED") {
-      this.notify({
-        title,
-        message: "The permission request has been rejected.",
-        reason,
-      });
-    } else if (status === "INVALID") {
-      this.notify({
-        title,
-        message: "The permission request was invalid.",
-        reason,
-        variant: "warning",
-      });
-    } else if (status === "TERMINATED") {
-      this.notify({
-        title,
-        message: "The permission request was terminated.",
-        reason,
-        variant: "warning",
-      });
-    } else if (status === "FULFILLED") {
-      this.notify({
-        title,
-        message: "The permission request was fulfilled.",
-        variant: "success",
-        duration: 5000,
-      });
-    }
+  handleStatus(status, reason = "") {
+    this.dispatchEvent(
+      new CustomEvent("eddie-request-status", {
+        detail: {
+          status,
+          reason,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 }
 
