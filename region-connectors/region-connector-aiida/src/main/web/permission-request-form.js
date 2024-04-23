@@ -48,23 +48,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           });
         } else {
           return response.json().then((json) => {
-            json.errors.map((error) => {
-              this.notify({
-                title: this.ERROR_TITLE,
-                message: error.message,
-                variant: "danger",
-              });
-            });
+            json.errors.map(({ message }) => this.error(message));
           });
         }
       })
-      .catch((error) => {
-        this.notify({
-          title: this.ERROR_TITLE,
-          message: error,
-          variant: "danger",
-        });
-      })
+      .catch((error) => this.error(error))
       .finally(() => {
         if (!this._aiidaCode) {
           this._isSubmitDisabled = false;

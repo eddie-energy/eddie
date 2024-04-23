@@ -50,13 +50,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     this._isSubmitDisabled = true;
 
     this.createPermissionRequest(jsonData)
-      .catch((error) =>
-        this.notify({
-          title: this.ERROR_TITLE,
-          message: error,
-          variant: "danger",
-        })
-      )
+      .catch((error) => this.error(error))
       .finally(() => {
         // request failed if no request status was set
         if (!this._requestStatus) {
@@ -66,63 +60,51 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   }
 
   async createPermissionRequest(payload) {
-    try {
-      const response = await fetch(REQUEST_URL, {
-        body: JSON.stringify(payload),
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const result = await response.json();
+    const response = await fetch(REQUEST_URL, {
+      body: JSON.stringify(payload),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const result = await response.json();
 
-      if (response.status === 201) {
-        const locationHeader = "Location";
-        if (response.headers.has(locationHeader)) {
-          this.location = BASE_URL + response.headers.get(locationHeader);
-        } else {
-          throw new Error("Header 'Location' is missing");
-        }
-
-        this.notify({
-          title: "Permission request created!",
-          message: "Your permission request was created successfully.",
-          variant: "success",
-          duration: 5000,
-        });
-
-        this.startOrRestartAutomaticPermissionStatusPolling();
-      } else if (response.status === 400) {
-        // An error on the client side happened, and it should be displayed as alert in the form
-        let errorMessage;
-
-        if (result["errors"] == null || result["errors"].length === 0) {
-          errorMessage =
-            "Something went wrong when creating the permission request, please try again later.";
-        } else {
-          errorMessage = result["errors"]
-            .map(function (error) {
-              return error.message;
-            })
-            .join("<br>");
-        }
-
-        this.notify({
-          title: this.ERROR_TITLE,
-          message: errorMessage,
-          variant: "danger",
-        });
+    if (response.status === 201) {
+      const locationHeader = "Location";
+      if (response.headers.has(locationHeader)) {
+        this.location = BASE_URL + response.headers.get(locationHeader);
       } else {
-        const errorMessage =
-          "Something went wrong when creating the permission request, please try again later.";
-        this.notify({
-          title: this.ERROR_TITLE,
-          message: errorMessage,
-          variant: "danger",
-        });
+        throw new Error("Header 'Location' is missing");
       }
-    } catch (e) {
-      this.notify({ title: this.ERROR_TITLE, message: e, variant: "danger" });
+
+      this.notify({
+        title: "Permission request created!",
+        message: "Your permission request was created successfully.",
+        variant: "success",
+        duration: 5000,
+      });
+
+      this.startOrRestartAutomaticPermissionStatusPolling();
+    } else if (response.status === 400) {
+      // An error on the client side happened, and it should be displayed as alert in the form
+      let errorMessage;
+
+      if (result["errors"] == null || result["errors"].length === 0) {
+        errorMessage =
+          "Something went wrong when creating the permission request, please try again later.";
+      } else {
+        errorMessage = result["errors"]
+          .map(function (error) {
+            return error.message;
+          })
+          .join("<br>");
+      }
+
+      this.error(errorMessage);
+    } else {
+      const errorMessage =
+        "Something went wrong when creating the permission request, please try again later.";
+      this.error(errorMessage);
     }
   }
 
@@ -131,24 +113,19 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
     if (response.status === 404) {
       // No permission request was created
-      this.notify({
-        title: this.ERROR_TITLE,
-        message: "Your permission request could not be created.",
-        variant: "danger",
-      });
+      this.error("Your permission request could not be created.");
       return;
     }
+
     if (response.status !== 200) {
       // An unexpected status code was sent, try again in 10 seconds
       const millisecondsToWait = 10000;
-      this.notify({
-        title: this.ERROR_TITLE,
-        message: `An unexpected error happened, trying again in ${
+      this.error(
+        `An unexpected error happened, trying again in ${
           millisecondsToWait / 1000
         } seconds`,
-        variant: "danger",
-        duration: millisecondsToWait,
-      });
+        millisecondsToWait
+      );
       await this.awaitRetry(millisecondsToWait, maxRetries);
       return;
     }
