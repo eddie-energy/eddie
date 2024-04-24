@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.es.datadis.web;
 
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata;
+import energy.eddie.regionconnector.es.datadis.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
@@ -27,7 +27,6 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
@@ -76,21 +75,21 @@ public class PermissionController {
     @PostMapping(value = PATH_PERMISSION_REQUEST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, String>> requestPermission(
+    public ResponseEntity<CreatedPermissionRequest> requestPermission(
             @Valid @RequestBody PermissionRequestForCreation requestForCreation,
             HttpServletRequest request,
             HttpServletResponse response
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, StateTransitionException, JwtCreationFailedException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         var permissionRequest = service.createAndSendPermissionRequest(requestForCreation);
 
-        String permissionId = permissionRequest.permissionId();
+        var permissionId = permissionRequest.permissionId();
         LOGGER.info("New Permission Request created with PermissionId {}", permissionId);
 
         jwtUtil.setJwtCookie(request, response, DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
 
         var location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
                 .expand(permissionId);
-        return ResponseEntity.created(location).body(Map.of("permissionId", permissionId));
+        return ResponseEntity.created(location).body(permissionRequest);
     }
 
     @PatchMapping(value = PATH_PERMISSION_ACCEPTED)
@@ -100,7 +99,7 @@ public class PermissionController {
     }
 
     @PatchMapping(value = PATH_PERMISSION_REJECTED)
-    public ResponseEntity<String> rejectPermission(@PathVariable String permissionId) throws PermissionNotFoundException, StateTransitionException {
+    public ResponseEntity<String> rejectPermission(@PathVariable String permissionId) throws PermissionNotFoundException {
         service.rejectPermission(permissionId);
         return ResponseEntity.ok(permissionId);
     }

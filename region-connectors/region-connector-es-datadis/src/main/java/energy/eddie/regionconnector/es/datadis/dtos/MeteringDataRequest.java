@@ -12,19 +12,27 @@ import java.time.LocalDate;
  * @param authorizedNif   NIF of the user for which the data is requested
  * @param meteringPoint   Metering point for which the data is requested (from Supply request)
  * @param distributorCode Distributor code for associated with the metering point (from Supply request)
- * @param startDate       Start date of the period for which the data is requested (inclusive, only year and month are used)
- * @param endDate         End date of the period for which the data is requested (inclusive, only year and month are used)
+ * @param startDate       Start date of the period for which the data is requested (inclusive, only year and month are
+ *                        used)
+ * @param endDate         End date of the period for which the data is requested (inclusive, only year and month are
+ *                        used)
  * @param measurementType Type of measurement (hourly or quarter-hourly)
  * @param pointType       Type of metering point (from Supply request)
  */
 public record MeteringDataRequest(String authorizedNif, String meteringPoint, String distributorCode,
                                   LocalDate startDate, LocalDate endDate, MeasurementType measurementType,
                                   String pointType) {
-    public static MeteringDataRequest fromPermissionRequest(EsPermissionRequest permissionRequest, LocalDate startDate, LocalDate endDate) {
+    public static MeteringDataRequest fromPermissionRequest(
+            EsPermissionRequest permissionRequest,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
         return new MeteringDataRequest(
                 permissionRequest.nif(),
                 permissionRequest.meteringPointId(),
-                permissionRequest.distributorCode().map(DistributorCode::getCode).orElseThrow(() -> new IllegalStateException("")),
+                permissionRequest.distributorCode()
+                                 .map(DistributorCode::getCode)
+                                 .orElseThrow(() -> new IllegalStateException("")),
                 startDate,
                 endDate,
                 permissionRequest.measurementType(),

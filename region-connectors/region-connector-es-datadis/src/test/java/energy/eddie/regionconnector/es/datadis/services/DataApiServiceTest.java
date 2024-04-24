@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
@@ -8,20 +9,26 @@ import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
-import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsInternalPollingEvent;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
-import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.services.EventFulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
-import energy.eddie.regionconnector.shared.services.StateFulfillmentService;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
@@ -29,25 +36,31 @@ import reactor.test.StepVerifier;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.MAXIMUM_MONTHS_IN_THE_PAST;
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings("resource")
+@ExtendWith(MockitoExtension.class)
 class DataApiServiceTest {
-    private final DataApi dataApi = mock(DataApi.class);
-    private final MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService =
-            new MeterReadingPermissionUpdateAndFulfillmentService(new StateFulfillmentService());
     private final Sinks.Many<IdentifiableMeteringData> meteringDataSink = Sinks.many()
                                                                                .multicast()
                                                                                .onBackpressureBuffer();
+    @Mock
+    private DataApi dataApi;
+    @Mock
+    private Outbox outbox;
+    @Captor
+    private ArgumentCaptor<PermissionEvent> eventCaptor;
+    private MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService;
 
     private static Stream<Arguments> variousTimeRanges() {
         LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
@@ -58,6 +71,19 @@ class DataApiServiceTest {
                 Arguments.of(now.minusYears(1), now, "1 year: 12 months ago"),
                 Arguments.of(now.minusMonths(20), now.minusMonths(19), "1 month: 20 months ago")
         );
+    }
+
+    @BeforeEach
+    @SuppressWarnings("DirectInvocationOnMock")
+        // The outbox is a mock, but it is not directly called here, but it needs to be called by the UpdateAndFulfillmentService
+    void setUp() {
+        meterReadingPermissionUpdateAndFulfillmentService =
+                new MeterReadingPermissionUpdateAndFulfillmentService(
+                        new EventFulfillmentService(
+                                outbox,
+                                EsSimpleEvent::new
+                        ),
+                        (pr, last) -> outbox.commit(new EsInternalPollingEvent(pr.permissionId(), last)));
     }
 
     @Test
@@ -73,7 +99,8 @@ class DataApiServiceTest {
 
         var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
-                                                meterReadingPermissionUpdateAndFulfillmentService);
+                                                meterReadingPermissionUpdateAndFulfillmentService,
+                                                outbox);
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
@@ -89,25 +116,25 @@ class DataApiServiceTest {
     }
 
     private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
-        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
+        return new DatadisPermissionRequest(
+                "permissionId",
                 "connectionId",
                 "dataNeedId",
+                Granularity.PT1H,
                 "nif",
-                "meteringPointId");
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
-                                                                             permissionRequestForCreation,
-                                                                             start,
-                                                                             end,
-                                                                             Granularity.PT1H,
-                                                                             stateBuilderFactory);
-        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
-                                                         .build());
-        permissionRequest.setDistributorCodePointTypeAndProductionSupport(DistributorCode.ASEME, 1, false);
-        return permissionRequest;
+                "meteringPointId",
+                start,
+                end,
+                DistributorCode.ASEME,
+                1,
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                null,
+                false,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     void fetchDataForPermissionRequest_dataEndDateEqualPermissionEndDate_doesNotFulfillPermissionRequest() throws IOException {
         // Given
@@ -122,24 +149,21 @@ class DataApiServiceTest {
 
         var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
-                                                meterReadingPermissionUpdateAndFulfillmentService);
+                                                meterReadingPermissionUpdateAndFulfillmentService,
+                                                outbox);
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
 
         // Then
         StepVerifier.create(meteringDataSink.asFlux())
-                    .assertNext(identifiableMeteringData -> assertAll(
-                            () -> assertEquals(PermissionProcessStatus.ACCEPTED, permissionRequest.status()),
-                            () -> assertEquals(intermediateMeteringData.end(),
-                                               permissionRequest.latestMeterReadingEndDate().get())
-                    ))
+                    .expectNextCount(1)
                     .then(dataApiService::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(2));
+        verify(outbox).commit(isA(EsInternalPollingEvent.class));
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     void fetchDataForPermissionRequest_dataEndDateAfterPermissionEndDate_fulfillsPermissionRequest() throws IOException {
         // Given
@@ -156,23 +180,25 @@ class DataApiServiceTest {
 
         var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
-                                                meterReadingPermissionUpdateAndFulfillmentService);
+                                                meterReadingPermissionUpdateAndFulfillmentService,
+                                                outbox);
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
 
         // Then
         StepVerifier.create(meteringDataSink.asFlux())
-                    .assertNext(identifiableMeteringData -> assertAll(
-                            () -> assertEquals(PermissionProcessStatus.FULFILLED, permissionRequest.status()),
-                            () -> assertEquals(end, permissionRequest.latestMeterReadingEndDate().get())
-                    ))
+                    .expectNextCount(1)
                     .then(dataApiService::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(2));
+
+        verify(outbox, times(2)).commit(eventCaptor.capture());
+        // First one is the polling event, we're not testing for that
+        var second = eventCaptor.getAllValues().get(1);
+        assertEquals(PermissionProcessStatus.FULFILLED, second.status());
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     void fetchDataForPermissionRequest_dataEndDateBeforePermissionEndDate_doesNotFulfillPermissionRequest() throws IOException {
         // Given
@@ -188,21 +214,19 @@ class DataApiServiceTest {
         Sinks.Many<IdentifiableMeteringData> sink = Sinks.many().multicast().onBackpressureBuffer();
         var dataApiService = new DataApiService(dataApi,
                                                 sink,
-                                                meterReadingPermissionUpdateAndFulfillmentService);
+                                                meterReadingPermissionUpdateAndFulfillmentService,
+                                                outbox);
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
 
         // Then
         StepVerifier.create(sink.asFlux())
-                    .assertNext(identifiableMeteringData -> assertAll(
-                            () -> assertEquals(PermissionProcessStatus.ACCEPTED, permissionRequest.status()),
-                            () -> assertEquals(intermediateMeteringData.end(),
-                                               permissionRequest.latestMeterReadingEndDate().get())
-                    ))
+                    .expectNextCount(1)
                     .then(dataApiService::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(2));
+        verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.ACCEPTED, event.status())));
     }
 
 
@@ -220,20 +244,21 @@ class DataApiServiceTest {
 
         var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
-                                                meterReadingPermissionUpdateAndFulfillmentService);
+                                                meterReadingPermissionUpdateAndFulfillmentService,
+                                                outbox);
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
 
         // Then
         verify(dataApi).getConsumptionKwh(expectedMeteringDataRequest);
-        assertEquals(PermissionProcessStatus.REVOKED, permissionRequest.status());
         verifyNoMoreInteractions(dataApi);
 
         StepVerifier.create(meteringDataSink.asFlux())
                     .then(dataApiService::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(2));
+        verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
     }
 
     @Test
@@ -249,7 +274,8 @@ class DataApiServiceTest {
 
         var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
-                                                meterReadingPermissionUpdateAndFulfillmentService);
+                                                meterReadingPermissionUpdateAndFulfillmentService,
+                                                outbox);
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
@@ -284,7 +310,8 @@ class DataApiServiceTest {
 
         var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
-                                                meterReadingPermissionUpdateAndFulfillmentService);
+                                                meterReadingPermissionUpdateAndFulfillmentService,
+                                                outbox);
         var now = LocalDate.now(ZONE_ID_SPAIN);
         var expectedNrOfRetries = ChronoUnit.MONTHS.between(now.minusMonths(MAXIMUM_MONTHS_IN_THE_PAST), start);
         // When

@@ -1,14 +1,14 @@
 package energy.eddie.regionconnector.es.datadis.filter;
 
-import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
-import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,6 +19,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -111,116 +112,27 @@ class MeteringDataFilterTest {
             LocalDate requestedEndDate,
             MeasurementType measurementType
     ) {
-        return new EsPermissionRequest() {
-            @Override
-            public String nif() {
-                return "";
-            }
-
-            @Override
-            public String meteringPointId() {
-                return "";
-            }
-
-            @Override
-            public Optional<DistributorCode> distributorCode() {
-                return Optional.empty();
-            }
-
-            @Override
-            public Optional<Integer> pointType() {
-                return Optional.empty();
-            }
-
-            @Override
-            public boolean productionSupport() {
-                return false;
-            }
-
-            @Override
-            public DatadisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
-                return null;
-            }
-
-            @Override
-            public void setDistributorCodePointTypeAndProductionSupport(
-                    DistributorCode distributorCode,
-                    Integer pointType,
-                    boolean productionSupport
-            ) {
-
-            }
-
-            @Override
-            public MeasurementType measurementType() {
-                return measurementType;
-            }
-
-            @Override
-            public String errorMessage() {
-                return "";
-            }
-
-            @Override
-            public void setErrorMessage(@Nullable String errorMessage) {
-
-            }
-
-            @Override
-            public Optional<LocalDate> latestMeterReadingEndDate() {
-                return Optional.empty();
-            }
-
-            @Override
-            public void updateLatestMeterReadingEndDate(LocalDate date) {
-
-            }
-
-            @Override
-            public String permissionId() {
-                return "";
-            }
-
-            @Override
-            public String connectionId() {
-                return "";
-            }
-
-            @Override
-            public String dataNeedId() {
-                return "";
-            }
-
-            @Override
-            public PermissionRequestState state() {
-                return null;
-            }
-
-            @Override
-            public DataSourceInformation dataSourceInformation() {
-                return null;
-            }
-
-            @Override
-            public ZonedDateTime created() {
-                return null;
-            }
-
-            @Override
-            public void changeState(PermissionRequestState state) {
-
-            }
-
-            @Override
-            public LocalDate start() {
-                return requestedStartDate;
-            }
-
-            @Override
-            public LocalDate end() {
-                return requestedEndDate;
-            }
+        var granularity = switch (measurementType) {
+            case HOURLY -> Granularity.PT1H;
+            case QUARTER_HOURLY -> Granularity.PT15M;
         };
+        return new DatadisPermissionRequest(
+                "1",
+                "1",
+                "1",
+                granularity,
+                "1",
+                "1",
+                requestedStartDate,
+                requestedEndDate,
+                null,
+                null,
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                null,
+                false,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
     }
 
     private static ZonedDateTime expectedStart(MeasurementType measurementType, LocalDate requestedStartDate) {

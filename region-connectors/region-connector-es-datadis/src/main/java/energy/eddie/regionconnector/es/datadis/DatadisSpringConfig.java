@@ -17,16 +17,20 @@ import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
 import energy.eddie.regionconnector.es.datadis.client.*;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsInternalPollingEvent;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
+import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionEventRepository;
+import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.Extension;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.MessagingExtension;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.SavingExtension;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.ConsentMarketDocumentExtension;
+import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
+import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
+import energy.eddie.regionconnector.shared.services.EventFulfillmentService;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
-import energy.eddie.regionconnector.shared.services.StateFulfillmentService;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -36,8 +40,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.netty.http.client.HttpClient;
-
-import java.util.Set;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID;
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
@@ -145,39 +147,66 @@ public class DatadisSpringConfig {
     }
 
     @Bean
-    public Set<Extension<EsPermissionRequest>> permissionRequestExtensions(
-            EsPermissionRequestRepository repository,
-            Sinks.Many<ConnectionStatusMessage> messages,
-            Sinks.Many<ConsentMarketDocument> cmds,
-            DatadisConfig config,
-            CommonInformationModelConfiguration cimConfig
-    ) {
-        return Set.of(
-                new SavingExtension<>(repository),
-                new MessagingExtension<>(messages),
-                new ConsentMarketDocumentExtension<>(
-                        cmds,
-                        config.username(),
-                        cimConfig.eligiblePartyNationalCodingScheme().value(),
-                        ZONE_ID_SPAIN
-                )
-        );
-    }
-
-    @Bean
     public ConsentMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<ConsentMarketDocument> sink) {
         return new CommonConsentMarketDocumentProvider(sink);
     }
 
     @Bean
-    public FulfillmentService fulfillmentService() {
-        return new StateFulfillmentService();
+    public FulfillmentService fulfillmentService(Outbox outbox) {
+        return new EventFulfillmentService(outbox, EsSimpleEvent::new);
     }
 
     @Bean
     public MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService(
-            FulfillmentService fulfillmentService
+            FulfillmentService fulfillmentService,
+            Outbox outbox
     ) {
-        return new MeterReadingPermissionUpdateAndFulfillmentService(fulfillmentService);
+        return new MeterReadingPermissionUpdateAndFulfillmentService(
+                fulfillmentService,
+                (request, date) -> outbox.commit(new EsInternalPollingEvent(request.permissionId(), date))
+        );
+    }
+
+    @Bean
+    public EventBus eventBus() {
+        return new EventBusImpl();
+    }
+
+    @Bean
+    public Outbox outbox(EventBus eventBus, EsPermissionEventRepository repository) {
+        return new Outbox(eventBus, repository);
+    }
+
+    @Bean
+    public ConsentMarketDocumentMessageHandler<EsPermissionRequest> cmdHandler(
+            EventBus eventBus,
+            EsPermissionRequestRepository esPermissionRequestRepository,
+            Sinks.Many<ConsentMarketDocument> sink,
+            DatadisConfig config,
+            CommonInformationModelConfiguration cimConfig
+    ) {
+        return new ConsentMarketDocumentMessageHandler<>(
+                eventBus,
+                esPermissionRequestRepository,
+                sink,
+                config.username(),
+                cimConfig,
+                pr -> null,
+                ZONE_ID_SPAIN
+        );
+    }
+
+    @Bean
+    public ConnectionStatusMessageHandler<EsPermissionRequest> connectionStatusMessageHandler(
+            EventBus eventBus,
+            Sinks.Many<ConnectionStatusMessage> csm,
+            EsPermissionRequestRepository repository
+    ) {
+        return new ConnectionStatusMessageHandler<>(
+                eventBus,
+                csm,
+                repository,
+                pr -> ""
+        );
     }
 }

@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.PermissionRequest;
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
+import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
@@ -11,20 +11,27 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
+import energy.eddie.regionconnector.es.datadis.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.es.datadis.permission.request.PermissionRequestFactory;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsCreatedEvent;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsMalformedEvent;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsValidatedEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequestRepository;
+import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.UUID;
 
 @Service
 public class PermissionRequestService {
@@ -37,26 +44,27 @@ public class PermissionRequestService {
      */
     private static final Period MAX_TIME_IN_THE_FUTURE = Period.ofMonths(
             DatadisRegionConnectorMetadata.MAXIMUM_MONTHS_IN_THE_FUTURE).minusDays(1);
+    private static final String DATA_NEED_ID = "dataNeedId";
     private final EsPermissionRequestRepository repository;
-    private final PermissionRequestFactory permissionRequestFactory;
     private final AccountingPointDataService accountingPointDataService;
     private final PermissionRequestConsumer permissionRequestConsumer;
     private final DataNeedsService dataNeedsService;
+    private final Outbox outbox;
 
     @Autowired
     public PermissionRequestService(
             EsPermissionRequestRepository repository,
-            PermissionRequestFactory permissionRequestFactory,
             AccountingPointDataService accountingPointDataService,
             PermissionRequestConsumer permissionRequestConsumer,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // Injected from another spring context
-            DataNeedsService dataNeedsService
+            DataNeedsService dataNeedsService,
+            Outbox outbox
     ) {
         this.repository = repository;
-        this.permissionRequestFactory = permissionRequestFactory;
         this.accountingPointDataService = accountingPointDataService;
         this.permissionRequestConsumer = permissionRequestConsumer;
         this.dataNeedsService = dataNeedsService;
+        this.outbox = outbox;
     }
 
     public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
@@ -88,20 +96,15 @@ public class PermissionRequestService {
 
     private EsPermissionRequest getPermissionRequestById(String permissionId) throws PermissionNotFoundException {
         return repository.findByPermissionId(permissionId)
-                         .map(permissionRequestFactory::create)
                          .orElseThrow(() -> new PermissionNotFoundException(permissionId));
     }
 
-    public void rejectPermission(String permissionId) throws PermissionNotFoundException, StateTransitionException {
+    public void rejectPermission(String permissionId) throws PermissionNotFoundException {
         var permissionRequest = getPermissionRequestById(permissionId);
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Got request to reject permission {}", permissionRequest.permissionId());
         }
-        permissionRequest.reject();
-    }
-
-    public Stream<EsPermissionRequest> getAllAcceptedPermissionRequests() {
-        return repository.findAllAccepted().map(permissionRequestFactory::create);
+        outbox.commit(new EsSimpleEvent(permissionId, PermissionProcessStatus.REJECTED));
     }
 
     /**
@@ -110,23 +113,39 @@ public class PermissionRequestService {
      *
      * @param requestForCreation basis for the permission request.
      * @return a validated permission request, that was sent to the permission administrator.
-     * @throws StateTransitionException     if something happens during validation or transmission of the permission
-     *                                      request.
      * @throws DataNeedNotFoundException    if the data need does not exist.
      * @throws UnsupportedDataNeedException if the region connector does not support the data need.
      */
-    public PermissionRequest createAndSendPermissionRequest(
+    public CreatedPermissionRequest createAndSendPermissionRequest(
             PermissionRequestForCreation requestForCreation
-    ) throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException {
         LOGGER.info("Got request to create a new permission, request was: {}", requestForCreation);
+        var permissionId = UUID.randomUUID().toString();
+        var dataNeedId = requestForCreation.dataNeedId();
+        outbox.commit(new EsCreatedEvent(permissionId,
+                                         requestForCreation.connectionId(),
+                                         dataNeedId,
+                                         requestForCreation.nif(),
+                                         requestForCreation.meteringPointId()));
         var refDate = LocalDate.now(DatadisRegionConnectorMetadata.ZONE_ID_SPAIN);
 
-        var dataNeed = dataNeedsService.findById(requestForCreation.dataNeedId())
-                                       .orElseThrow(() -> new DataNeedNotFoundException(requestForCreation.dataNeedId()));
+        var dataNeed = dataNeedsService.findById(requestForCreation.dataNeedId());
+        if (dataNeed.isEmpty()) {
+            outbox.commit(new EsMalformedEvent(
+                    permissionId,
+                    List.of(new AttributeError(DATA_NEED_ID, "DataNeed not found"))
+            ));
+            throw new DataNeedNotFoundException(dataNeedId);
+        }
 
-        if (!(dataNeed instanceof ValidatedHistoricalDataDataNeed vhdDataNeed)) {
+        if (!(dataNeed.get() instanceof ValidatedHistoricalDataDataNeed vhdDataNeed)) {
+            outbox.commit(new EsMalformedEvent(
+                    permissionId,
+                    List.of(new AttributeError(DATA_NEED_ID,
+                                               "This region connector only supports ValidatedHistoricalData DataNeeds"))
+            ));
             throw new UnsupportedDataNeedException(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                   requestForCreation.dataNeedId(),
+                                                   dataNeedId,
                                                    "This region connector only supports ValidatedHistoricalData DataNeeds");
         }
 
@@ -136,32 +155,38 @@ public class PermissionRequestService {
                 MAX_TIME_IN_THE_PAST,
                 MAX_TIME_IN_THE_FUTURE
         );
-        var granularity = findGranularity(vhdDataNeed.id(), vhdDataNeed.minGranularity(), vhdDataNeed.maxGranularity());
-        var request = permissionRequestFactory.create(requestForCreation,
-                                                      dataNeedWrapper.calculatedStart(),
-                                                      dataNeedWrapper.calculatedEnd(),
-                                                      granularity);
-        request.validate();
-        request.sendToPermissionAdministrator();
-        request.receivedPermissionAdministratorResponse();
-        return request;
+        var granularity = findGranularity(vhdDataNeed.minGranularity(), vhdDataNeed.maxGranularity());
+        if (granularity == null) {
+            outbox.commit(new EsMalformedEvent(
+                    permissionId,
+                    List.of(new AttributeError(DATA_NEED_ID,
+                                               "Unsupported granularity"))
+            ));
+            throw new UnsupportedDataNeedException(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                   dataNeedId,
+                                                   "Unsupported granularity");
+        }
+        outbox.commit(new EsValidatedEvent(
+                permissionId,
+                dataNeedWrapper.calculatedStart(),
+                dataNeedWrapper.calculatedEnd(),
+                granularity
+        ));
+        return new CreatedPermissionRequest(permissionId);
     }
 
-    private static Granularity findGranularity(
-            String dataNeedId, Granularity min,
-            Granularity max
-    ) throws UnsupportedDataNeedException {
+    @Nullable
+    private static Granularity findGranularity(Granularity min, Granularity max) {
         for (Granularity granularity : DatadisRegionConnectorMetadata.SUPPORTED_GRANULARITIES) {
             if (granularity.minutes() >= min.minutes() && granularity.minutes() <= max.minutes()) {
                 return granularity;
             }
         }
-        throw new UnsupportedDataNeedException(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID, dataNeedId,
-                                               "Unsupported granularity");
+        return null;
     }
 
-    public void terminatePermission(String permissionId) throws PermissionNotFoundException, StateTransitionException {
+    public void terminatePermission(String permissionId) throws PermissionNotFoundException {
         var permissionRequest = getPermissionRequestById(permissionId);
-        permissionRequest.terminate();
+        outbox.commit(new EsSimpleEvent(permissionRequest.permissionId(), PermissionProcessStatus.TERMINATED));
     }
 }

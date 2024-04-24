@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.es.datadis;
 
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
@@ -35,8 +34,6 @@ public class DatadisRegionConnector implements RegionConnector {
             permissionRequestService.terminatePermission(permissionId);
         } catch (PermissionNotFoundException e) {
             LOGGER.error("Got request to terminate permission with ID {}, but it couldn't be found", permissionId);
-        } catch (StateTransitionException e) {
-            LOGGER.error("Error while terminating a permission request", e);
         }
     }
 
