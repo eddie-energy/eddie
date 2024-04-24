@@ -32,6 +32,8 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     private final PermissionProcessStatus status;
     @Column(name = "termination_topic")
     private final String terminationTopic;
+    @Column(name = "mqtt_username")
+    private final String mqttUsername;
     @Column(name = "created")
     private final Instant created;
 
@@ -44,9 +46,11 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
         this.end = null;
         this.status = null;
         this.terminationTopic = null;
+        this.mqttUsername = null;
         this.created = null;
     }
 
+    @SuppressWarnings("java:S107") // permission request requires a lot of top-level fields
     public AiidaPermissionRequest(
             String permissionId,
             String connectionId,
@@ -55,6 +59,7 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
             LocalDate end,
             PermissionProcessStatus status,
             String terminationTopic,
+            String mqttUsername,
             Instant created
     ) {
         this.permissionId = permissionId;
@@ -64,6 +69,7 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
         this.end = end;
         this.status = status;
         this.terminationTopic = terminationTopic;
+        this.mqttUsername = mqttUsername;
         this.created = created;
     }
 
