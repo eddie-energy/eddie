@@ -174,11 +174,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             type="text"
             .helpText=${this.accountingPointId
               ? "The service has already provided a Zählpunktnummer. If this value is incorrect, please contact the service provider."
-              : "Enter your Zählpunktnummer for the request to show up in your DSO portal. Leave blank to search for the generated Consent Request ID."}
+              : "Enter your 33-character Zählpunktnummer for the request to show up in your DSO portal. Leave blank to search for the generated Consent Request ID."}
             name="meteringPointId"
             minlength="33"
             maxlength="33"
-            placeholder="${this.companyId}"
+            placeholder="${this.companyId}..."
             .value="${this.accountingPointId
               ? this.accountingPointId
               : nothing}"
@@ -203,8 +203,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
                 <sl-icon slot="icon" name="info-circle"></sl-icon>
                 <p>Your permission request is being processed.</p>
                 <p>
-                  Please wait for the request to finish. 
-                  This process may take several minutes!
+                  Please wait for the request to finish. This process may take
+                  several minutes!
                 </p>
               </sl-alert>`
           : ""}
