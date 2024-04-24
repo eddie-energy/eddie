@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.aiida.services;
 
+import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
@@ -12,9 +13,16 @@ import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.KafkaStreamingConfig;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
+import energy.eddie.regionconnector.aiida.mqtt.MqttDto;
+import energy.eddie.regionconnector.aiida.mqtt.MqttService;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.events.CreatedEvent;
+import energy.eddie.regionconnector.aiida.permission.request.events.MqttCredentialsCreatedEvent;
 import energy.eddie.regionconnector.aiida.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.apache.kafka.common.errors.InvalidTopicException;
 import org.apache.kafka.common.internals.Topic;
 import org.slf4j.Logger;
@@ -22,27 +30,36 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.*;
+import java.util.Optional;
 import java.util.UUID;
 
+import static energy.eddie.api.v0.PermissionProcessStatus.*;
+
 @Component
-public class PermissionCreationValidationSendingService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionCreationValidationSendingService.class);
+public class AiidaPermissionService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiidaPermissionService.class);
     private final Outbox outbox;
     private final DataNeedsService dataNeedsService;
     private final Clock clock;
     private final AiidaConfiguration configuration;
+    private final MqttService mqttService;
+    private final AiidaPermissionRequestViewRepository aiidaPermissionRequestViewRepository;
 
-    public PermissionCreationValidationSendingService(
+    public AiidaPermissionService(
             Outbox outbox,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")  // defined in core
             DataNeedsService dataNeedsService,
             Clock clock,
-            AiidaConfiguration configuration
+            AiidaConfiguration configuration,
+            MqttService mqttService,
+            AiidaPermissionRequestViewRepository aiidaPermissionRequestViewRepository
     ) {
         this.outbox = outbox;
         this.dataNeedsService = dataNeedsService;
         this.clock = clock;
         this.configuration = configuration;
+        this.mqttService = mqttService;
+        this.aiidaPermissionRequestViewRepository = aiidaPermissionRequestViewRepository;
     }
 
     public PermissionDto createValidateAndSendPermissionRequest(
@@ -79,9 +96,9 @@ public class PermissionCreationValidationSendingService {
 
         outbox.commit(createdEvent);
         // no validation for AIIDA requests necessary
-        outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.VALIDATED));
+        outbox.commit(new SimpleEvent(permissionId, VALIDATED));
         // we consider displaying the QR code to the user as SENT_TO_PERMISSION_ADMINISTRATOR for AIIDA
-        outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
+        outbox.commit(new SimpleEvent(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR));
 
         var kafkaConfig = new KafkaStreamingConfig(
                 configuration.kafkaBoostrapServers(),
@@ -145,5 +162,55 @@ public class PermissionCreationValidationSendingService {
         var topic = configuration.kafkaTerminationTopicPrefix() + "_" + permissionId;
         Topic.validate(topic);
         return topic;
+    }
+
+    public MqttDto acceptPermission(String permissionId) throws CredentialsAlreadyExistException, PermissionNotFoundException, PermissionStateTransitionException {
+        checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, ACCEPTED);
+
+        outbox.commit(new SimpleEvent(permissionId, ACCEPTED));
+
+        var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId);
+
+        outbox.commit(new MqttCredentialsCreatedEvent(permissionId, mqttDto.username()));
+
+        return mqttDto;
+    }
+
+    public void unableToFulFillPermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException {
+        checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, UNFULFILLABLE);
+
+        outbox.commit(new SimpleEvent(permissionId, UNFULFILLABLE));
+    }
+
+    public void rejectPermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException {
+        checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, REJECTED);
+
+        outbox.commit(new SimpleEvent(permissionId, REJECTED));
+    }
+
+    private void checkIfPermissionHasValidStatus(
+            String permissionId,
+            PermissionProcessStatus requiredStatus,
+            PermissionProcessStatus desiredNextStatus
+    ) throws PermissionNotFoundException, PermissionStateTransitionException {
+        Optional<AiidaPermissionRequest> optional = aiidaPermissionRequestViewRepository.findById(permissionId);
+        if (optional.isEmpty()) {
+            LOGGER.warn(
+                    "Got request check if permission {} is in status {} before transitioning it to status {}, but there is no permission with this ID in the database",
+                    permissionId,
+                    requiredStatus,
+                    desiredNextStatus);
+            throw new PermissionNotFoundException(permissionId);
+        }
+        var request = optional.get();
+
+        // check if in valid previous state because we are reacting to an external event
+        if (request.status() != requiredStatus) {
+            throw new PermissionStateTransitionException(
+                    permissionId,
+                    desiredNextStatus,
+                    requiredStatus,
+                    request.status());
+        }
     }
 }

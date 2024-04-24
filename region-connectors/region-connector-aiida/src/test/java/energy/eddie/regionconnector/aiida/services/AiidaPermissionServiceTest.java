@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.aiida.services;
 
+import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
+import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
@@ -10,11 +12,19 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
+import energy.eddie.regionconnector.aiida.mqtt.MqttDto;
+import energy.eddie.regionconnector.aiida.mqtt.MqttService;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
+import energy.eddie.regionconnector.aiida.permission.request.events.MqttCredentialsCreatedEvent;
+import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -31,7 +41,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PermissionCreationValidationSendingServiceTest {
+class AiidaPermissionServiceTest {
     private final String connectionId = "testConnId";
     private final String dataNeedId = "testDataNeedId";
     @Mock
@@ -44,7 +54,17 @@ class PermissionCreationValidationSendingServiceTest {
     private ValidatedHistoricalDataDataNeed unsupportedDataNeed;
     @Mock
     private RelativeDuration mockRelativeDuration;
-    private PermissionCreationValidationSendingService service;
+    @Mock
+    private AiidaPermissionRequestViewRepository mockViewRepository;
+    @Mock
+    private MqttService mockMqttService;
+    @Mock
+    private AiidaPermissionRequest mockRequest;
+    @Mock
+    private MqttDto mockMqttDto;
+    @Captor
+    private ArgumentCaptor<PermissionEvent> permissionEventCaptor;
+    private AiidaPermissionService service;
 
     @BeforeEach
     void setUp() {
@@ -58,7 +78,12 @@ class PermissionCreationValidationSendingServiceTest {
         );
         var fixedClock = Clock.fixed(Instant.parse("2023-10-15T15:00:00Z"),
                                      REGION_CONNECTOR_ZONE_ID);
-        service = new PermissionCreationValidationSendingService(mockOutbox, mockDataNeedsService, fixedClock, config);
+        service = new AiidaPermissionService(mockOutbox,
+                                             mockDataNeedsService,
+                                             fixedClock,
+                                             config,
+                                             mockMqttService,
+                                             mockViewRepository);
     }
 
     @Test
@@ -197,5 +222,120 @@ class PermissionCreationValidationSendingServiceTest {
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.CREATED));
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.VALIDATED));
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
+    }
+
+    @Test
+    void givenNonExistingPermissionId_rejectPermission_throwsException() {
+        // Given
+        var permissionId = "nonExistingPermissionId";
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.empty());
+
+        // When, Then
+        assertThrows(PermissionNotFoundException.class, () -> service.rejectPermission(permissionId));
+    }
+
+    @Test
+    void givenPermissionInInvalidState_rejectPermission_throwsException() {
+        // Given
+        var permissionId = "invalidStateId";
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.status()).thenReturn(PermissionProcessStatus.CREATED);
+
+        // When, Then
+        assertThrows(PermissionStateTransitionException.class, () -> service.rejectPermission(permissionId));
+    }
+
+    @Test
+    void givenValidInput_rejectPermission_emitsRejectedStatusEvent() throws PermissionNotFoundException, PermissionStateTransitionException {
+        // Given
+        var permissionId = "testId";
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.status()).thenReturn(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+
+        // When
+        service.rejectPermission(permissionId);
+
+        // Then
+        verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.REJECTED
+                && event.permissionId().equals(permissionId)));
+    }
+
+    @Test
+    void givenNonExistingPermissionId_unableToFulFillPermission_throwsException() {
+        // Given
+        var permissionId = "nonExistingPermissionId";
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.empty());
+
+        // When, Then
+        assertThrows(PermissionNotFoundException.class, () -> service.unableToFulFillPermission(permissionId));
+    }
+
+    @Test
+    void givenPermissionInInvalidState_unableToFulFillPermission_throwsException() {
+        // Given
+        var permissionId = "invalidStateId";
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.status()).thenReturn(PermissionProcessStatus.CREATED);
+
+        // When, Then
+        assertThrows(PermissionStateTransitionException.class, () -> service.unableToFulFillPermission(permissionId));
+    }
+
+    @Test
+    void givenValidInput_unableToFulFillPermission_emitsUnfulfillableStatusEvent() throws PermissionNotFoundException, PermissionStateTransitionException {
+        // Given
+        var permissionId = "testId";
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.status()).thenReturn(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+
+        // When
+        service.unableToFulFillPermission(permissionId);
+
+        // Then
+        verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.UNFULFILLABLE
+                && event.permissionId().equals(permissionId)));
+    }
+
+    @Test
+    void givenNonExistingPermissionId_acceptPermission_throwsException() {
+        // Given
+        var permissionId = "nonExistingPermissionId";
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.empty());
+
+        // When, Then
+        assertThrows(PermissionNotFoundException.class, () -> service.acceptPermission(permissionId));
+    }
+
+    @Test
+    void givenPermissionInInvalidState_acceptPermission_throwsException() {
+        // Given
+        var permissionId = "permissionId";
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.status()).thenReturn(PermissionProcessStatus.CREATED);
+
+        // When, Then
+        assertThrows(PermissionStateTransitionException.class, () -> service.acceptPermission(permissionId));
+    }
+
+    @Test
+    void givenValidInput_acceptPermission_createsCredentials_andEmitsAcceptedAndCreatedCredentialsEvent() throws PermissionNotFoundException, PermissionStateTransitionException, CredentialsAlreadyExistException {
+        // Given
+        var permissionId = "testId";
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.status()).thenReturn(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+        when(mockMqttService.createCredentialsAndAclForPermission(permissionId)).thenReturn(mockMqttDto);
+
+        // When
+        MqttDto mqttDto = service.acceptPermission(permissionId);
+
+        // Then
+        verify(mockOutbox, times(2)).commit(permissionEventCaptor.capture());
+        assertEquals(2, permissionEventCaptor.getAllValues().size());
+        assertEquals(PermissionProcessStatus.ACCEPTED, permissionEventCaptor.getAllValues().getFirst().status());
+        assertEquals(permissionId, permissionEventCaptor.getAllValues().getFirst().permissionId());
+
+        assertInstanceOf(MqttCredentialsCreatedEvent.class, permissionEventCaptor.getAllValues().get(1));
+        assertEquals(PermissionProcessStatus.ACCEPTED, permissionEventCaptor.getAllValues().get(1).status());
+        assertEquals(permissionId, permissionEventCaptor.getAllValues().get(1).permissionId());
     }
 }
