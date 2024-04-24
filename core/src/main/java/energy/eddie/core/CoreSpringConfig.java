@@ -2,6 +2,7 @@ package energy.eddie.core;
 
 import eddie.energy.europeanmasterdata.EuropeanMasterDataSpringConfig;
 import energy.eddie.OpenApiDocs;
+import energy.eddie.admin.console.AdminConsoleSpringConfig;
 import energy.eddie.api.utils.Shared;
 import energy.eddie.dataneeds.DataNeedsSpringConfig;
 import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;
@@ -130,6 +131,26 @@ public class CoreSpringConfig implements WebMvcConfigurer {
         connectorServletBean.setLoadOnStartup(2);
 
         LOGGER.info("Created ServletRegistrationBean for european-masterdata, urlMapping is {}", urlMapping);
+        return connectorServletBean;
+    }
+
+    @Bean
+    public ServletRegistrationBean<DispatcherServlet> adminConsoleDispatcherServlet() {
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        context.register(AdminConsoleSpringConfig.class);
+        enableSpringDoc(context);
+
+        DispatcherServlet dispatcherServlet = new DispatcherServlet(context);
+        String urlMapping = "/admin-console/*";
+        ServletRegistrationBean<DispatcherServlet> connectorServletBean = new ServletRegistrationBean<>(
+                dispatcherServlet,
+                urlMapping
+        );
+
+        connectorServletBean.setName("admin-console");
+        connectorServletBean.setLoadOnStartup(2);
+
+        LOGGER.info("Created ServletRegistrationBean for admin-console, urlMapping is {}", urlMapping);
         return connectorServletBean;
     }
 }
