@@ -206,9 +206,9 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
             List<String> enabledRegionConnectorNames
     ) {
         // copy list to prevent that modifications of enabledRegionConnectorNames influence the Bean and thereby other application parts
-        List<String> unmodifiableCopy = enabledRegionConnectorNames.stream().toList();
+        List<String> copy = new ArrayList<>(enabledRegionConnectorNames);
         AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
-                .genericBeanDefinition(List.class, () -> unmodifiableCopy)
+                .genericBeanDefinition(List.class, () -> copy)
                 .getBeanDefinition();
         registry.registerBeanDefinition(ENABLED_REGION_CONNECTOR_BEAN_NAME, beanDefinition);
     }
