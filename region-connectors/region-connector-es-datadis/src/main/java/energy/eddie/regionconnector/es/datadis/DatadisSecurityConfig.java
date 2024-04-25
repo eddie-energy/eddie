@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.RegionConnectorSecurityConfig;
 import energy.eddie.regionconnector.shared.security.JwtAuthorizationManager;
-import energy.eddie.regionconnector.shared.security.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -32,12 +31,6 @@ public class DatadisSecurityConfig {
 
     @Bean
     @ConditionalOnProperty(value = DATADIS_ENABLED_PROPERTY, havingValue = "true")
-    public JwtAuthorizationManager datadisAuthorizationManager(JwtUtil jwtUtil) {
-        return new JwtAuthorizationManager(jwtUtil);
-    }
-
-    @Bean
-    @ConditionalOnProperty(value = DATADIS_ENABLED_PROPERTY, havingValue = "true")
     public MvcRequestMatcher.Builder datadisMvcRequestMatcher(HandlerMappingIntrospector introspector) {
         return new MvcRequestMatcher.Builder(introspector).servletPath(
                 "/" + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID);
@@ -48,7 +41,7 @@ public class DatadisSecurityConfig {
     public SecurityFilterChain datadisSecurityFilterChain(
             MvcRequestMatcher.Builder datadisMvcRequestMatcher,
             HttpSecurity http,
-            JwtAuthorizationManager datadisAuthorizationManager,
+            JwtAuthorizationManager jwtCookieAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper
     ) throws Exception {
@@ -59,8 +52,8 @@ public class DatadisSecurityConfig {
 // @formatter:off   all calls for one request pattern should be on one line
                         .requestMatchers(datadisMvcRequestMatcher.pattern(PATH_PERMISSION_REQUEST)).permitAll()
                         .requestMatchers(datadisMvcRequestMatcher.pattern(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)).permitAll()
-                        .requestMatchers(datadisMvcRequestMatcher.pattern(PATH_PERMISSION_ACCEPTED)).access(datadisAuthorizationManager)
-                        .requestMatchers(datadisMvcRequestMatcher.pattern(PATH_PERMISSION_REJECTED)).access(datadisAuthorizationManager)
+                        .requestMatchers(datadisMvcRequestMatcher.pattern(PATH_PERMISSION_ACCEPTED)).access(jwtCookieAuthorizationManager)
+                        .requestMatchers(datadisMvcRequestMatcher.pattern(PATH_PERMISSION_REJECTED)).access(jwtCookieAuthorizationManager)
                         .requestMatchers(datadisMvcRequestMatcher.pattern("/" + CE_FILE_NAME)).permitAll()
                         .requestMatchers(datadisMvcRequestMatcher.pattern("/" + SWAGGER_DOC_PATH)).permitAll()
                         .anyRequest().denyAll()
