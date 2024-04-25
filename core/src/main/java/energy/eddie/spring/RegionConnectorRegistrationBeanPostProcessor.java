@@ -62,8 +62,8 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
      * </p>
      * <p>
      * The DispatcherServlet has its URL mapping set to
-     * "/{@value CommonPaths#ALL_REGION_CONNECTORS_BASE_URL_PATH}/{RC-NAME}/*" whereas {@code RC-NAME} is specified
-     * by {@link RegionConnector#name()}.
+     * "/{@value CommonPaths#ALL_REGION_CONNECTORS_BASE_URL_PATH}/{RC-NAME}/*" whereas {@code RC-NAME} is specified by
+     * {@link RegionConnector#name()}.
      * </p>
      *
      * @param registry the bean definition registry used by the application context
@@ -205,8 +205,10 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
             BeanDefinitionRegistry registry,
             List<String> enabledRegionConnectorNames
     ) {
+        // copy list to prevent that modifications of enabledRegionConnectorNames influence the Bean and thereby other application parts
+        List<String> unmodifiableCopy = enabledRegionConnectorNames.stream().toList();
         AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
-                .genericBeanDefinition(List.class, () -> enabledRegionConnectorNames)
+                .genericBeanDefinition(List.class, () -> unmodifiableCopy)
                 .getBeanDefinition();
         registry.registerBeanDefinition(ENABLED_REGION_CONNECTOR_BEAN_NAME, beanDefinition);
     }
