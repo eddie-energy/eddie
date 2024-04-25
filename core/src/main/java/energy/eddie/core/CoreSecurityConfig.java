@@ -1,5 +1,6 @@
 package energy.eddie.core;
 
+import energy.eddie.regionconnector.shared.security.JwtAuthorizationManager;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,5 +68,10 @@ public class CoreSecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public JwtAuthorizationManager jwtCookieAuthorizationManager(JwtUtil jwtUtil) {
+        return new JwtAuthorizationManager(jwtUtil, true);
     }
 }

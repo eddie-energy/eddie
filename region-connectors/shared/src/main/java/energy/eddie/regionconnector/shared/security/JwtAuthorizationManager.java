@@ -1,8 +1,10 @@
 package energy.eddie.regionconnector.shared.security;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
@@ -15,39 +17,44 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-/**
- * Manages authorization by checking if the requested permissionId is saved in the JWT token that is supplied as a
- * cookie in the request. The JWT's signature is validated to prevent the acceptance of tampered tokens. The
- * permissionId is expected to be a path variable of the request URL.
- */
 public class JwtAuthorizationManager implements AuthorizationManager<RequestAuthorizationContext> {
+    public static final String BEARER_PREFIX = "Bearer ";
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtAuthorizationManager.class);
     private final JwtUtil jwtUtil;
+    private final boolean getJwtFromCookie;
 
-    public JwtAuthorizationManager(JwtUtil jwtUtil) {
+    /**
+     * Creates a new {@link AuthorizationManager} that enforces authorization by checking the JWT that is supplied with
+     * the request. It checks whether the combination of region connector ID and permission ID from the request URL are
+     * contained in the JWT and is therefore only suitable for requests where the permissionId is a path parameter of
+     * the request. For example, for a request with the URL
+     * {@code /region-connectors/es-datadis/permission-request/exampleId/rejected} to be allowed, the list of
+     * permissions stored in the JWT has to contain the ID {@code exampleId} associated with the region connector
+     * {@code es-datadis}.
+     * <br>
+     * The JWT can either be read from a cookie or from the {@value HttpHeaders#AUTHORIZATION} header. The JWT's
+     * signature is validated to prevent the acceptance of tampered tokens.
+     *
+     * @param jwtUtil          {@link JwtUtil} used to parse and validate the JWTs.
+     * @param getJwtFromCookie If true, the JWT is extracted from a cookie named {@value JwtUtil#JWT_COOKIE_NAME},
+     *                         otherwise it is fetched from the {@value HttpHeaders#AUTHORIZATION} header.
+     */
+    public JwtAuthorizationManager(JwtUtil jwtUtil, boolean getJwtFromCookie) {
         this.jwtUtil = jwtUtil;
+        this.getJwtFromCookie = getJwtFromCookie;
     }
 
     @Override
     public AuthorizationDecision check(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
         String requestURI = context.getRequest().getRequestURI();
-
-
-        Optional<Cookie> jwtCookie = Optional.ofNullable(context.getRequest().getCookies())
-                                             .map(Arrays::asList)
-                                             .orElse(Collections.emptyList())
-                                             .stream()
-                                             .filter(cookie -> cookie.getName().equals(JwtUtil.JWT_COOKIE_NAME))
-                                             .findFirst();
-
-        if (jwtCookie.isEmpty()) {
-            LOGGER.trace("Denying authorization for request URI {} because no JWT cookie was included in the request",
-                         requestURI);
-            throw new AccessDeniedException("No JWT cookie provided");
+        String jwt;
+        if (getJwtFromCookie) {
+            jwt = getJwtFromCookie(context.getRequest());
+        } else {
+            jwt = getJwtFromHeader(context.getRequest());
         }
 
-        var permissions = jwtUtil.getPermissions(jwtCookie.get().getValue());
-
+        var permissions = jwtUtil.getPermissions(jwt);
 
         String requestedPermissionId = context.getVariables().get("permissionId");
         String requestedConnectorId = context.getRequest().getHttpServletMapping().getServletName();
@@ -72,5 +79,45 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
         }
 
         return new AuthorizationDecision(true);
+    }
+
+    /**
+     * Reads and returns the JWT stored in the cookie named {@value JwtUtil#JWT_COOKIE_NAME}.
+     *
+     * @throws AccessDeniedException Thrown if the cookie is not present.
+     */
+    private String getJwtFromCookie(HttpServletRequest request) throws AccessDeniedException {
+        Optional<Cookie> jwtCookie = Optional.ofNullable(request.getCookies())
+                                             .map(Arrays::asList)
+                                             .orElse(Collections.emptyList())
+                                             .stream()
+                                             .filter(cookie -> cookie.getName().equals(JwtUtil.JWT_COOKIE_NAME))
+                                             .findFirst();
+
+        if (jwtCookie.isEmpty()) {
+            LOGGER.trace("Denying authorization for request URI {} because no JWT cookie was included in the request",
+                         request.getRequestURI());
+            throw new AccessDeniedException("No JWT cookie provided");
+        }
+
+        return jwtCookie.get().getValue();
+    }
+
+    /**
+     * Reads and returns the JWT stored in the {@value HttpHeaders#AUTHORIZATION} header.
+     *
+     * @throws AccessDeniedException Thrown if the request has no {@value HttpHeaders#AUTHORIZATION} header or its value
+     *                               does not start with {@value #BEARER_PREFIX}.
+     */
+    private String getJwtFromHeader(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+        if (authorizationHeader == null || !authorizationHeader.trim().startsWith(BEARER_PREFIX)) {
+            LOGGER.trace("Denying authorization for request URI {} because no JWT was included as " + HttpHeaders.AUTHORIZATION + " header",
+                         request.getRequestURI());
+            throw new AccessDeniedException("No header with JWT provided");
+        }
+
+        return authorizationHeader.substring(BEARER_PREFIX.length());
     }
 }
