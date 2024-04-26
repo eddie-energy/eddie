@@ -1,6 +1,4 @@
-import net.ltgt.gradle.errorprone.CheckSeverity
-import net.ltgt.gradle.errorprone.errorprone
-import java.util.*
+import energy.eddie.configureJavaCompileWithErrorProne
 
 plugins {
     application
@@ -76,12 +74,4 @@ tasks.getByName<Test>("test") {
     useJUnitPlatform()
 }
 
-tasks.withType<JavaCompile>().configureEach {
-    if (!name.lowercase(Locale.getDefault()).contains("test")) {
-        options.errorprone {
-            check("NullAway", CheckSeverity.ERROR)
-            option("NullAway:AnnotatedPackages", "energy.eddie")
-            option("NullAway:ExcludedFieldAnnotations", "com.google.inject.Inject")
-        }
-    }
-}
+configureJavaCompileWithErrorProne("energy.eddie.examples")

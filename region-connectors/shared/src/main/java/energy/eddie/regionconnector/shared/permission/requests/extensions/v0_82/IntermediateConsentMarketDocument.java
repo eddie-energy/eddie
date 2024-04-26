@@ -118,6 +118,7 @@ public class IntermediateConsentMarketDocument<T extends PermissionRequest> {
                 );
     }
 
+    @Nullable
     private CodingSchemeTypeList getCodingScheme() {
         try {
             return CodingSchemeTypeList.fromValue("N" + permissionRequest.dataSourceInformation().countryCode());

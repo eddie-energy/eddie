@@ -23,6 +23,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -80,7 +81,7 @@ class JwtUtilTest {
         HashMap<String, List<String>> value = new HashMap<>();
         value.put("test-rc", List.of("foo", "bar"));
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .issueTime(new Date())
+                .issueTime(Date.from(Instant.now()))
                 .claim("permissions", value)
                 .build();
         System.out.println(defaultJWSMinter.mint(header, claimsSet.toPayload(), null).serialize());
@@ -158,7 +159,7 @@ class JwtUtilTest {
             assertEquals(3, permissions.get("test-rc").size());
             assertThat(permissions.get("test-rc")).hasSameElementsAs(List.of("foo", "bar", "newPermissionId"));
 
-            assertThat(claimsSet.get().getIssueTime()).isBefore(new Date());
+            assertThat(claimsSet.get().getIssueTime()).isBefore(Instant.now());
 
             return true;
         }));

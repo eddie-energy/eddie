@@ -70,7 +70,7 @@ tasks.withType<JavaCompile>().configureEach {
     if (!name.lowercase(Locale.getDefault()).contains("test")) {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
-            option("NullAway:AnnotatedPackages", "energy.eddie")
+            option("NullAway:AnnotatedPackages", "energy.eddie.api")
 
             // disable warnings for generated classes
             option("NullAway:TreatGeneratedAsUnannotated", true)

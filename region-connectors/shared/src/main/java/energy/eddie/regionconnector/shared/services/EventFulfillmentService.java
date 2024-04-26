@@ -23,6 +23,7 @@ public class EventFulfillmentService implements FulfillmentService {
     }
 
 
+    @Override
     public void tryFulfillPermissionRequest(PermissionRequest permissionRequest) {
         LOGGER.atInfo()
               .addArgument(() -> permissionRequest.dataSourceInformation().regionConnectorId())
