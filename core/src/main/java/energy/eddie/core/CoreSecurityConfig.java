@@ -74,4 +74,9 @@ public class CoreSecurityConfig {
     public JwtAuthorizationManager jwtCookieAuthorizationManager(JwtUtil jwtUtil) {
         return new JwtAuthorizationManager(jwtUtil, true);
     }
+
+    @Bean
+    public JwtAuthorizationManager jwtHeaderAuthorizationManager(JwtUtil jwtUtil) {
+        return new JwtAuthorizationManager(jwtUtil, false);
+    }
 }

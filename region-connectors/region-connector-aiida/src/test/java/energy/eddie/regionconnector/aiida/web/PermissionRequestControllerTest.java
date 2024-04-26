@@ -1,5 +1,13 @@
 package energy.eddie.regionconnector.aiida.web;
 
+import com.jayway.jsonpath.JsonPath;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.nimbusds.jose.proc.BadJOSEException;
+import com.nimbusds.jose.proc.JWSVerificationKeySelector;
+import com.nimbusds.jose.proc.SecurityContext;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.dataneeds.web.DataNeedsAdvice;
@@ -10,24 +18,36 @@ import energy.eddie.regionconnector.aiida.mqtt.MqttService;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionEventRepository;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
 import energy.eddie.regionconnector.aiida.services.AiidaPermissionService;
+import energy.eddie.regionconnector.shared.security.JwtUtil;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriTemplate;
 
+import java.text.ParseException;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
 import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_UPDATE_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.aiida.web.PermissionRequestControllerTest.HMAC_SECRET;
+import static energy.eddie.regionconnector.shared.security.JwtUtil.JWS_ALGORITHM;
+import static energy.eddie.regionconnector.shared.security.JwtUtil.JWT_PERMISSIONS_CLAIM;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -35,10 +55,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
-@WebMvcTest(PermissionRequestController.class)
+@WebMvcTest(controllers = PermissionRequestController.class, properties = "eddie.jwt.hmac.secret=" + HMAC_SECRET)
 @TestPropertySource(locations = "classpath:application-test.properties")
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 class PermissionRequestControllerTest {
+    static final String HMAC_SECRET = "RbNQrp0Dfd+fNoTalQQTd5MRurblhcDtVYaPGoDsg8Q=";
     @Autowired
     private MockMvc mockMvc;
     @MockBean
@@ -62,6 +83,11 @@ class PermissionRequestControllerTest {
         @Bean
         public DataNeedsAdvice dataNeedsAdvice() {
             return new DataNeedsAdvice();
+        }
+
+        @Bean
+        public JwtUtil jwtUtil(@Value("${eddie.jwt.hmac.secret}") String jwtHmacSecret) {
+            return new JwtUtil(jwtHmacSecret);
         }
     }
 
@@ -148,6 +174,45 @@ class PermissionRequestControllerTest {
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
                                    is("Region connector 'aiida' does not support data need with ID 'test': Is a test reason.")));
+    }
+
+    @Test
+    void givenValidInput_createPermissionRequest_returnsJwtWithOnlyNewPermissionId() throws Exception {
+        // Given
+        var newPermissionId = "TestOnlyNewPermissionId";
+        var mockDto = mock(PermissionDto.class);
+        when(service.createValidateAndSendPermissionRequest(any())).thenReturn(mockDto);
+        when(mockDto.permissionId()).thenReturn(newPermissionId);
+        var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\"}";
+
+        // When
+        String response = mockMvc.perform(post("/permission-request")
+                                                  .content(json)
+                                                  .contentType(MediaType.APPLICATION_JSON)
+                                                  .header(HttpHeaders.AUTHORIZATION,
+                                                          // this JWT contains other permission IDs as well
+                                                          "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTQwMzUwMjYsInBlcm1pc3Npb25zIjp7ImVzLWRhdGFkaXMiOlsiZm9vIiwiYmFyIl0sImRrLWVuZXJnaW5ldCI6WyJNdXN0Iiwic3RpbGwiLCJiZSIsInByZXNlbnQiXSwiYWlpZGEiOlsiYW5vdGhlcklkIl19fQ.CtYysLrv90-nkH3D2KhzXOmbqkIF--Up_QZGxbf9npQ"))
+                                 // Then
+                                 .andExpect(status().isCreated())
+                                 .andReturn().getResponse().getContentAsString();
+
+        String jwtValue = JsonPath.read(response, "$.accessToken");
+
+        Map<String, List<String>> permissions = extractPermissionsFromJwt(jwtValue);
+
+        assertEquals(1, permissions.size());
+        assertEquals(newPermissionId, permissions.get("aiida").getFirst());
+    }
+
+    private Map<String, List<String>> extractPermissionsFromJwt(String jwt) throws BadJOSEException, ParseException, JOSEException {
+        ImmutableSecret<SecurityContext> immutableSecret = new ImmutableSecret<>(Base64.getDecoder()
+                                                                                       .decode(HMAC_SECRET));
+        var keySelector = new JWSVerificationKeySelector<>(JWS_ALGORITHM, immutableSecret);
+        var defaultProcessor = new DefaultJWTProcessor<>();
+        defaultProcessor.setJWSKeySelector(keySelector);
+
+        JWTClaimsSet claims = defaultProcessor.process(jwt, null);
+        return (Map<String, List<String>>) claims.getClaim(JWT_PERMISSIONS_CLAIM);
     }
 
     @Test
