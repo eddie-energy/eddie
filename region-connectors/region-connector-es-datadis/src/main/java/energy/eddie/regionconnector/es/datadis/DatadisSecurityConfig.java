@@ -24,8 +24,7 @@ import static energy.eddie.regionconnector.es.datadis.web.PermissionController.P
 import static energy.eddie.regionconnector.es.datadis.web.PermissionController.PATH_PERMISSION_REJECTED;
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.CE_FILE_NAME;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.*;
 
 @RegionConnectorSecurityConfig
 public class DatadisSecurityConfig {
@@ -63,6 +62,7 @@ public class DatadisSecurityConfig {
                         .requestMatchers(datadisMvcRequestMatcher.pattern(PATH_PERMISSION_ACCEPTED)).access(datadisAuthorizationManager)
                         .requestMatchers(datadisMvcRequestMatcher.pattern(PATH_PERMISSION_REJECTED)).access(datadisAuthorizationManager)
                         .requestMatchers(datadisMvcRequestMatcher.pattern("/" + CE_FILE_NAME)).permitAll()
+                        .requestMatchers(datadisMvcRequestMatcher.pattern("/" + SWAGGER_DOC_PATH)).permitAll()
                         .anyRequest().denyAll()
 // @formatter:on
                 )
