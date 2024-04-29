@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
@@ -12,9 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.core.publisher.Sinks;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -35,8 +32,6 @@ class EnedisRegionConnectorTest {
     private FrPermissionRequestRepository repository;
     @Mock
     private EnedisApi enedisApi;
-    @Spy
-    private Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
     @Mock
     private Outbox outbox;
     @InjectMocks

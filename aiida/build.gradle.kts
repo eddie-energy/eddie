@@ -1,5 +1,4 @@
-import net.ltgt.gradle.errorprone.CheckSeverity
-import net.ltgt.gradle.errorprone.errorprone
+import energy.eddie.configureJavaCompileWithErrorProne
 
 plugins {
     java
@@ -64,14 +63,7 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-tasks.withType<JavaCompile>().configureEach {
-    if (!name.lowercase().contains("test")) {
-        options.errorprone {
-            check("NullAway", CheckSeverity.ERROR)
-            option("NullAway:AnnotatedPackages", "energy.eddie.aiida")
-        }
-    }
-}
+configureJavaCompileWithErrorProne("energy.eddie.aiida")
 
 tasks.named<Test>("test") {
     description = "Runs all tests except integration tests."
@@ -100,17 +92,6 @@ tasks.register<Test>("integrationTest") {
         events("passed")
     }
 }
-
-tasks.withType<Test>().configureEach {
-    finalizedBy(tasks.jacocoTestReport)
-}
-
-tasks.withType<JacocoReport> {
-    reports {
-        xml.required.set(true)
-    }
-}
-
 
 jib {
     from {

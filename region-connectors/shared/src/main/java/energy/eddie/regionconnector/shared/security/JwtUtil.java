@@ -20,6 +20,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.util.WebUtils;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 public class JwtUtil {
@@ -84,7 +85,7 @@ public class JwtUtil {
                 .build();
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .issueTime(new Date())
+                .issueTime(Date.from(Instant.now()))
                 .claim(JWT_PERMISSIONS_CLAIM, permissions)
                 .build();
 

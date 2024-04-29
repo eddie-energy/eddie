@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.es.datadis.dtos.ContractDetails;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class ContractDetailsProvider {
@@ -31,7 +32,7 @@ public class ContractDetailsProvider {
     public static String loadRawContractDetails() throws IOException {
         try (InputStream is = ContractDetailsProvider.class.getClassLoader()
                                                            .getResourceAsStream("contractDetails.json")) {
-            return new String(is.readAllBytes());
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
         }
     }
 }

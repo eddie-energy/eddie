@@ -1,6 +1,4 @@
-import net.ltgt.gradle.errorprone.CheckSeverity
-import net.ltgt.gradle.errorprone.errorprone
-import java.util.*
+import energy.eddie.configureJavaCompileWithErrorProne
 
 plugins {
     application
@@ -81,11 +79,4 @@ tasks.register("run-core", JavaExec::class) {
     environment["JDBC_URL"] = "jdbc:postgresql://localhost:5432/eddie"
 }
 
-tasks.withType<JavaCompile>().configureEach {
-    if (!name.lowercase(Locale.getDefault()).contains("test")) {
-        options.errorprone {
-            check("NullAway", CheckSeverity.ERROR)
-            option("NullAway:AnnotatedPackages", "energy.eddie")
-        }
-    }
-}
+configureJavaCompileWithErrorProne("energy.eddie.core")

@@ -14,7 +14,9 @@ import java.time.temporal.ChronoUnit;
  * See <a href="https://eepublicdownloads.entsoe.eu/clean-documents/pre2015/resources/Transparency/MoP%20Ref16%20-%20The%20problem%20statement%20process.pdf#page=11">entsoe.eu</a>
  */
 public class EsmpTimeInterval {
+    @Nullable
     private final EsmpDateTime start;
+    @Nullable
     private final EsmpDateTime end;
 
     public EsmpTimeInterval(@Nullable ZonedDateTime start, @Nullable ZonedDateTime end) {
@@ -32,10 +34,12 @@ public class EsmpTimeInterval {
         this.end = new EsmpDateTime(end, format, zoneId, ChronoUnit.MINUTES);
     }
 
+    @Nullable
     public String start() {
         return start == null ? Strings.EMPTY : start.toString();
     }
 
+    @Nullable
     public String end() {
         return end == null ? Strings.EMPTY : end.toString();
     }

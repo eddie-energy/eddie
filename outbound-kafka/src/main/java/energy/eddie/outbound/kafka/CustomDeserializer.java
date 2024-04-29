@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import jakarta.annotation.Nullable;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ public class CustomDeserializer implements Deserializer<ConsentMarketDocument> {
             .registerModule(new Jdk8Module());
 
     @Override
+    @Nullable
     public ConsentMarketDocument deserialize(String topic, byte[] data) {
         try {
             return mapper.readValue(data, ConsentMarketDocument.class);

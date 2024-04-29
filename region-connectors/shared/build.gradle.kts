@@ -1,6 +1,4 @@
-import net.ltgt.gradle.errorprone.CheckSeverity
-import net.ltgt.gradle.errorprone.errorprone
-import java.util.*
+import energy.eddie.configureJavaCompileWithErrorProne
 
 plugins {
     id("energy.eddie.java-conventions")
@@ -46,11 +44,4 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<JavaCompile>().configureEach {
-    if (!name.lowercase(Locale.getDefault()).contains("test")) {
-        options.errorprone {
-            check("NullAway", CheckSeverity.ERROR)
-            option("NullAway:AnnotatedPackages", "eddie.energy")
-        }
-    }
-}
+configureJavaCompileWithErrorProne("energy.eddie.regionconnector.shared")
