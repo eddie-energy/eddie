@@ -71,10 +71,6 @@ class AiidaPermissionServiceTest {
     @BeforeEach
     void setUp() {
         PlainAiidaConfiguration config = new PlainAiidaConfiguration(
-                "localhost:1234",
-                "testData",
-                "testStatus",
-                "testTerminationPrefix",
                 "customerId",
                 4,
                 HANDSHAKE_URL

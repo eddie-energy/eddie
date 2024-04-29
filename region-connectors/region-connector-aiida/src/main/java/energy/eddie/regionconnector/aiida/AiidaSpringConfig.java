@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.aiida;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import energy.eddie.api.agnostic.ConnectionStatusMessageMixin;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
@@ -28,7 +27,6 @@ import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Flux;
@@ -46,14 +44,9 @@ import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_C
 @EnableWebMvc
 @SpringBootApplication
 @RegionConnector(name = REGION_CONNECTOR_ID)
-@EnableKafka
 public class AiidaSpringConfig {
     @Bean
     public AiidaConfiguration aiidaConfiguration(
-            @Value("${" + KAFKA_BOOTSTRAP_SERVERS + "}") String kafkaBootstrapServers,
-            @Value("${" + KAFKA_DATA_TOPIC + "}") String kafkaDataTopic,
-            @Value("${" + KAFKA_STATUS_MESSAGES_TOPIC + "}") String kafkaStatusMessagesTopic,
-            @Value("${" + KAFKA_TERMINATION_TOPIC_PREFIX + "}") String kafkaTerminationTopicPrefix,
             @Value("${" + CUSTOMER_ID + "}") String customerId,
             @Value("${" + BCRYPT_STRENGTH + "}") int bCryptStrength,
             @Value("${" + EDDIE_PUBLIC_URL + "}") String eddiePublicUrl
@@ -61,16 +54,14 @@ public class AiidaSpringConfig {
         String eddieUrl = eddiePublicUrl.endsWith("/") ? eddiePublicUrl : eddiePublicUrl + "/";
         String handshakeUrl = eddieUrl + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + REGION_CONNECTOR_ID + PATH_UPDATE_PERMISSION_REQUEST;
 
-        return new PlainAiidaConfiguration(kafkaBootstrapServers, kafkaDataTopic, kafkaStatusMessagesTopic,
-                                           kafkaTerminationTopicPrefix, customerId, bCryptStrength, handshakeUrl);
+        return new PlainAiidaConfiguration(customerId, bCryptStrength, handshakeUrl);
     }
 
     @Bean
     public ObjectMapper objectMapper() {
         return new ObjectMapper()
                 .registerModule(new JavaTimeModule())
-                .registerModule(new Jdk8Module())
-                .addMixIn(ConnectionStatusMessage.class, ConnectionStatusMessageMixin.class);
+                .registerModule(new Jdk8Module());
     }
 
     @Bean
