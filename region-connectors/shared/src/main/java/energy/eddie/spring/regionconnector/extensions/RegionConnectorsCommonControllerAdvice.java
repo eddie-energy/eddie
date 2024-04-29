@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
+import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.agnostic.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
@@ -42,7 +43,9 @@ public class RegionConnectorsCommonControllerAdvice {
      * @return ResponseEntity with status code 400 and an error message.
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, List<EddieApiError>>> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException exception
+    ) {
         LOGGER.debug("Invalid request body", exception);
         String errorDetails = "Invalid request body.";
 
@@ -78,9 +81,9 @@ public class RegionConnectorsCommonControllerAdvice {
     }
 
     /**
-     * Returns an array of the valid enum constants for the field that could not be matched.
-     * If the field is of type {@link energy.eddie.api.agnostic.Granularity} and annotated with
-     * {@link SupportedGranularities}, only the supported granularities are returned.
+     * Returns an array of the valid enum constants for the field that could not be matched. If the field is of type
+     * {@link energy.eddie.api.agnostic.Granularity} and annotated with {@link SupportedGranularities}, only the
+     * supported granularities are returned.
      *
      * @param invalidFormatEx Exception that was caused by an invalid enum value.
      * @return Array of valid enum constants.
@@ -103,8 +106,10 @@ public class RegionConnectorsCommonControllerAdvice {
     }
 
     /**
-     * @param exception HttpMessageNotReadableException that might have been caused by an Enum not being able to be matched.
-     * @return True if the passed exception is an {@link InvalidFormatException} and the target that couldn't be matched is an Enum.
+     * @param exception HttpMessageNotReadableException that might have been caused by an Enum not being able to be
+     *                  matched.
+     * @return True if the passed exception is an {@link InvalidFormatException} and the target that couldn't be matched
+     * is an Enum.
      */
     private boolean isEnumCauseOfException(HttpMessageNotReadableException exception) {
         return exception.getCause() instanceof InvalidFormatException invalidFormatEx
@@ -112,7 +117,9 @@ public class RegionConnectorsCommonControllerAdvice {
     }
 
     @ExceptionHandler(value = {SendToPermissionAdministratorException.class})
-    protected ResponseEntity<Map<String, List<EddieApiError>>> handleSendToPermissionAdministratorException(SendToPermissionAdministratorException exception) {
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleSendToPermissionAdministratorException(
+            SendToPermissionAdministratorException exception
+    ) {
         LOGGER.info("Error occurred while sending a permission request to a PA", exception);
 
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
@@ -123,8 +130,10 @@ public class RegionConnectorsCommonControllerAdvice {
 
     @ExceptionHandler(StateTransitionException.class)
     // Use ResponseEntity instead of @ResponseStatus to be able to test the return status code and as it's recommended for REST APIs
-    public ResponseEntity<Map<String, List<EddieApiError>>> handleStateTransitionException(StateTransitionException
-                                                                                                   stateTransitionException) {
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleStateTransitionException(
+            StateTransitionException
+                    stateTransitionException
+    ) {
         var errorMsg = "An error occurred while trying to transition a permission request to a new state.";
         LOGGER.warn(errorMsg, stateTransitionException);
 
@@ -158,5 +167,13 @@ public class RegionConnectorsCommonControllerAdvice {
         LOGGER.error("JwtCreationFailedException exception occurred", exception);
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
+    }
+
+    @ExceptionHandler(PermissionStateTransitionException.class)
+    public ResponseEntity<Map<String, List<EddieApiError>>> handlePermissionStateTransitionException(
+            PermissionStateTransitionException ex
+    ) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(ex.getMessage())));
+        return ResponseEntity.badRequest().body(errors);
     }
 }

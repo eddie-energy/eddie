@@ -1,0 +1,18 @@
+package energy.eddie.regionconnector.aiida.permission.request.events;
+
+import org.junit.jupiter.api.Test;
+
+import static energy.eddie.api.v0.PermissionProcessStatus.ACCEPTED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class MqttCredentialsCreatedEventTest {
+    @Test
+    void newMqttCredentialsCreatedEvent_usesStatusAccepted() {
+        // When
+        MqttCredentialsCreatedEvent event = new MqttCredentialsCreatedEvent("foo", "bar");
+
+        // Then
+        assertEquals(ACCEPTED, event.status());
+        assertEquals("foo", event.permissionId());
+    }
+}

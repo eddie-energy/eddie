@@ -6,10 +6,12 @@ import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PastStateException;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
+import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.agnostic.process.model.SendToPermissionAdministratorException;
 import energy.eddie.api.agnostic.process.model.states.CreatedPermissionRequestState;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.shared.validation.SupportedGranularities;
@@ -43,7 +45,8 @@ class RegionConnectorsCommonControllerAdviceTest {
         var exception = new HttpMessageNotReadableException("", mock(HttpInputMessage.class));
 
         // When
-        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleHttpMessageNotReadableException(exception);
+        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleHttpMessageNotReadableException(
+                exception);
 
         // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -69,7 +72,8 @@ class RegionConnectorsCommonControllerAdviceTest {
         var exception = new HttpMessageNotReadableException("", mockInvalidFormatEx, mock(HttpInputMessage.class));
 
         // When
-        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleHttpMessageNotReadableException(exception);
+        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleHttpMessageNotReadableException(
+                exception);
 
         // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -78,7 +82,8 @@ class RegionConnectorsCommonControllerAdviceTest {
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
         // Only the annotated values are included in the valid values array
-        assertEquals("granularity: Invalid enum value: 'P1Y'. Valid values: [PT15M, P1D].", responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+        assertEquals("granularity: Invalid enum value: 'P1Y'. Valid values: [PT15M, P1D].",
+                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 
     record TestClassWithGranularity(String ignored,
@@ -114,10 +119,13 @@ class RegionConnectorsCommonControllerAdviceTest {
     @Test
     void givenSendToPermissionAdministratorException_returnsBadRequestIfUserFault() {
         // Given
-        var exception = new SendToPermissionAdministratorException(mock(PermissionRequestState.class), "Test message", true);
+        var exception = new SendToPermissionAdministratorException(mock(PermissionRequestState.class),
+                                                                   "Test message",
+                                                                   true);
 
         // When
-        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleSendToPermissionAdministratorException(exception);
+        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleSendToPermissionAdministratorException(
+                exception);
 
         // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -131,10 +139,13 @@ class RegionConnectorsCommonControllerAdviceTest {
     @Test
     void givenSendToPermissionAdministratorException_returnsInternalErrorIfNotUserFault() {
         // Given
-        var exception = new SendToPermissionAdministratorException(mock(PermissionRequestState.class), "Test message", false);
+        var exception = new SendToPermissionAdministratorException(mock(PermissionRequestState.class),
+                                                                   "Test message",
+                                                                   false);
 
         // When
-        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleSendToPermissionAdministratorException(exception);
+        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleSendToPermissionAdministratorException(
+                exception);
 
         // Then
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
@@ -159,7 +170,8 @@ class RegionConnectorsCommonControllerAdviceTest {
         assertNotNull(responseBody);
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertEquals("An error occurred while trying to transition a permission request to a new state.", responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+        assertEquals("An error occurred while trying to transition a permission request to a new state.",
+                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 
     @Test
@@ -174,7 +186,8 @@ class RegionConnectorsCommonControllerAdviceTest {
         var exception = new MethodArgumentNotValidException(mock(MethodParameter.class), bindingResult);
 
         // When
-        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleMethodArgumentNotValidException(exception);
+        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleMethodArgumentNotValidException(
+                exception);
 
         // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -255,5 +268,28 @@ class RegionConnectorsCommonControllerAdviceTest {
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
         assertEquals("Failed to create JWT",
                      responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+    }
+
+    @Test
+    void givenPermissionStateTransitionException_returnsBadRequest() {
+        // Given
+        var exception = new PermissionStateTransitionException("myId",
+                                                               PermissionProcessStatus.ACCEPTED,
+                                                               PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
+                                                               PermissionProcessStatus.FULFILLED);
+
+        // When
+        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handlePermissionStateTransitionException(
+                exception);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        var responseBody = response.getBody();
+        assertNotNull(responseBody);
+        assertEquals(1, responseBody.size());
+        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
+        assertEquals(
+                "Cannot transition permission 'myId' to state 'ACCEPTED', as it is not in a one of the permitted states '[SENT_TO_PERMISSION_ADMINISTRATOR]' but in state 'FULFILLED'",
+                responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 }
