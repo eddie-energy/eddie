@@ -1,11 +1,8 @@
 package energy.eddie.regionconnector.shared.security;
 
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JOSEObjectType;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
-import com.nimbusds.jose.mint.DefaultJWSMinter;
+import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -23,12 +20,16 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.text.ParseException;
 import java.time.Instant;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.shared.security.JwtUtil.JWS_ALGORITHM;
+import static energy.eddie.regionconnector.shared.security.JwtUtil.JWT_PERMISSIONS_CLAIM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -46,6 +47,7 @@ class JwtUtilTest {
     private HttpServletResponse mockResponse;
     @Mock
     private Cookie mockCookie;
+    private DefaultJWTProcessor<SecurityContext> processor;
 
     public static Stream<Arguments> invalidJwtSource() {
         return Stream.of(
@@ -65,26 +67,14 @@ class JwtUtilTest {
     }
 
     @BeforeEach
-    void setUp() throws JOSEException {
+    void setUp() {
         jwtUtil = new JwtUtil(testSecret);
 
-        byte[] secretBytes = Base64.getDecoder().decode(testSecret);
-        ImmutableSecret<SecurityContext> immutableSecret = new ImmutableSecret<>(secretBytes);
-        DefaultJWSMinter<SecurityContext> defaultJWSMinter = new DefaultJWSMinter<>();
-        defaultJWSMinter.setJWKSource(immutableSecret);
-
-        JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.HS256)
-                .type(JOSEObjectType.JWT)
-                .build();
-
-        // TODO remove
-        HashMap<String, List<String>> value = new HashMap<>();
-        value.put("test-rc", List.of("foo", "bar"));
-        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .issueTime(Date.from(Instant.now()))
-                .claim("permissions", value)
-                .build();
-        System.out.println(defaultJWSMinter.mint(header, claimsSet.toPayload(), null).serialize());
+        var keySelector = new JWSVerificationKeySelector<>(JWS_ALGORITHM,
+                                                           new ImmutableSecret<>(Base64.getDecoder()
+                                                                                       .decode(testSecret)));
+        processor = new DefaultJWTProcessor<>();
+        processor.setJWSKeySelector(keySelector);
     }
 
     @Test
@@ -130,12 +120,6 @@ class JwtUtilTest {
 
     @Test
     void setJwtCookie_addsExistingAndNewPermissionIds() throws JwtCreationFailedException {
-        var keySelector = new JWSVerificationKeySelector<>(JWS_ALGORITHM,
-                                                           new ImmutableSecret<>(Base64.getDecoder()
-                                                                                       .decode(testSecret)));
-        var processor = new DefaultJWTProcessor<>();
-        processor.setJWSKeySelector(keySelector);
-
         // Given
         String existingJwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTI1NjAyMTIsInBlcm1pc3Npb25zIjp7InRlc3QtcmMiOlsiZm9vIiwiYmFyIl19fQ.pb9lkYbzK2JTY9HkRlgb8LBZg35baS_F54kAOE4DD_Y";
         when(mockCookie.getValue()).thenReturn(existingJwt);
@@ -153,7 +137,7 @@ class JwtUtilTest {
             assertDoesNotThrow(() -> claimsSet.set(processor.process(jwt, null)));
             assertNotNull(claimsSet.get());
             Map<String, List<String>> permissions = (Map<String, List<String>>) claimsSet.get()
-                                                                                         .getClaim(JwtUtil.JWT_PERMISSIONS_CLAIM);
+                                                                                         .getClaim(JWT_PERMISSIONS_CLAIM);
 
             assertEquals(1, permissions.size());
             assertEquals(3, permissions.get("test-rc").size());
@@ -163,5 +147,20 @@ class JwtUtilTest {
 
             return true;
         }));
+    }
+
+    @Test
+    void createAiidaJwt_returnsJwtWithOnlyNewPermissionId() throws JwtCreationFailedException, BadJOSEException, ParseException, JOSEException {
+        // Given
+        String newPermissionId = "myTestId";
+
+        // When
+        String jwt = jwtUtil.createAiidaJwt(newPermissionId);
+
+        // Then
+        JWTClaimsSet claims = processor.process(jwt, null);
+        var permissions = (Map<String, List<String>>) claims.getClaim(JWT_PERMISSIONS_CLAIM);
+        assertEquals(1, permissions.size());
+        assertEquals(newPermissionId, permissions.get("aiida").getFirst());
     }
 }
