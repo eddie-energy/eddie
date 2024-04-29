@@ -14,10 +14,10 @@ If the EP service requires near real-time data, the connect button sends a reque
 a new permission. The region connector sends a response with all the necessary information that AIIDA requires to start
 the data sharing. This information is displayed to the customer, and they will enter it in AIIDA.
 When the customer grants the permission, their AIIDA instance will send data and status messages to separate topics
-on the Kafka broker.
+on the MQTT broker.
 
-All messages are sent directly from AIIDA to the Kafka broker, nothing is routed through this
-region connector (RC) and there is no direct communication between this RC and any AIIDA instance.
+All messages are sent directly from AIIDA to the MQTT broker, nothing is routed through this
+region connector (RC).
 
 This RC also subscribes to the status message topic and updates the internal status of a permission when
 such a message is received.
@@ -27,8 +27,8 @@ customer revokes a permission_), this RC publishes a special message on the term
 specific permission. The AIIDA instance is subscribed to this topic and will therefore receive and honor the termination
 request.
 
-The topics for near real-time data and connection status messages are shared by **all** AIIDA instances.
-Only the termination topic is unique for each permission.
+There is a dedicated topic per AIIDA instance and permission for the near real-time data and connection status messages.
+ACLs and authentication ensure that only the permitted AIIDA instance may publish/subscribe to these topics.
 
 ## Prerequisites
 
@@ -36,12 +36,6 @@ Only the termination topic is unique for each permission.
 
 | Configuration values                                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                   |
 |---------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `region-connector.aiida.server.port=9988`               | Port on which the region-connector should listen.                                                                                                                                                                                                                                                                                                                                                                             |
-| `region-connector.aiida.kafka.bootstrap-servers`        | List of Kafka bootstrap servers, to which AIIDA instances should send the near real-time data and status messages. The region-connector also connects to this broker to listen for connection status messages. By default, the same value as specified for `kafka.bootstrap.servers` is used. Note that these brokers need to be accessible by the AIIDA instances (i.e. via the public internet).                            |
-| `region-connector.aiida.kafka.data-topic`               | Kafka topic name, where to all AIIDA instances should stream their near real-time data.<br/>Make sure to only use characters allowed for Kafka topic names.                                                                                                                                                                                                                                                                   |
-| `region-connector.aiida.kafka.status-messages-topic`    | Kafka topic name, where to all AIIDA instances should send ConnectionStatusMessages.<br/>Make sure to only use characters allowed for Kafka topic names.                                                                                                                                                                                                                                                                      |
-| `region-connector.aiida.kafka.termination-topic-prefix` | To avoid unnecessary traffic and for better security, each AIIDA instance gets a custom termination topic. The topic is created by concatenating this prefix and the permissionID of the permission with an underscore (_). Make sure that the prefix only contains characters that are valid for a Kafka topic name.                                                                                                         |               
-| `region-connector.aiida.kafka.group-id`                 | ID of the consumer group that the region-connector should be part of. Use `region-connector-aiida` unless a specific group-id is required.                                                                                                                                                                                                                                                                                    |
 | `region-connector.aiida.customer.id`                    | A unique ID of the eligible party, should not be changed.                                                                                                                                                                                                                                                                                                                                                                     |
 | `region-connector.aiida.bcrypt.strength`                | Strength to be used by the BCryptPasswordEncoder instance used to hash the passwords for the MQTT user accounts for the AIIDA instances. It should be configured to a value that the hashing of a password takes around ~1 second. See also <a href="https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/crypto/bcrypt/BCrypt.html">Spring documentation for BCryptPasswordEncoder</a>. |
 
@@ -50,12 +44,6 @@ Only the termination topic is unique for each permission.
 Example configuration for an `application.properties` file:
 
 ```properties
-region-connector.aiida.server.port=9988
-region-connector.aiida.kafka.bootstrap-servers=localhost:9092
-region-connector.aiida.kafka.data-topic=aiida_data
-region-connector.aiida.kafka.status-messages-topic=aiida_status_messages
-region-connector.aiida.kafka.termination-topic-prefix=aiida_termination
-region-connector.aiida.kafka.group-id=region-connector-aiida
 region-connector.aiida.customer.id=my-unique-id
 region-connector.aiida.bcrypt.strength=14
 ```
@@ -70,12 +58,6 @@ When using environment variables, the configuration values need to be converted 
 Example configuration for dotenv file:
 
 ```dotenv
-REGION_CONNECTOR_AIIDA_SERVER_PORT=9988
-REGION_CONNECTOR_AIIDA_KAFKA_BOOTSTRAP_SERVERS=localhost:9092
-REGION_CONNECTOR_AIIDA_KAFKA_DATA_TOPIC=aiida_data
-REGION_CONNECTOR_AIIDA_KAFKA_STATUS_MESSAGES_TOPIC=aiida_status_messages
-REGION_CONNECTOR_AIIDA_KAFKA_TERMINATION_TOPIC_PREFIX=aiida_termination
-REGION_CONNECTOR_AIIDA_KAFKA_GROUP_ID=region-connector-aiida
 REGION_CONNECTOR_AIIDA_CUSTOMER_ID=my-unique-id
 REGION_CONNECTOR_AIIDA_BCRYPT_STRENGTH=14
 ```

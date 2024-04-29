@@ -83,11 +83,6 @@ There are several parameters to configure the core via the environment:
 Be aware that EDDIE Core needs a PostgreSQL database to function properly.
 The example [docker-compose.yml](env/docker-compose.yml) contains a *db* service that you can use.
 
-To prevent any Kafka clients from spamming log messages every second, a running Kafka cluster is
-recommended. An example can be found in the [docker-compose.yml](env/docker-compose.yml) as well.
-Alternatively, you can disable Kafka in the [application.properties](core/src/main/resources/application.properties)
-(not recommended).
-
 ## Building docker images locally
 
 Building and running can be done using `docker compose` with the files provided in the `/env` folder. For performing a
