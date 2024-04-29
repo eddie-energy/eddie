@@ -10,7 +10,6 @@ public record IntermediateMeteringData(
         LocalDate start,
         LocalDate end
 ) {
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd");
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
     public static IntermediateMeteringData fromMeteringData(List<MeteringData> meteringData) {
@@ -23,8 +22,7 @@ public record IntermediateMeteringData(
         return new IntermediateMeteringData(meteringData, start, end);
     }
 
-    private static LocalDate parseDate(String dateString, String timeString) {
-        LocalDate date = LocalDate.parse(dateString, DATE_FORMAT);
+    private static LocalDate parseDate(LocalDate date, String timeString) {
         LocalTime time = LocalTime.parse(timeString, TIME_FORMAT);
 
         // Datadis API returns the time 24:00 for the next day, this is parsed as LocalTime.MIN, but we need to add a day to the date

@@ -17,6 +17,15 @@ public class MeteringDataProvider {
         }
     }
 
+    public static List<MeteringData> loadMeteringDataWithDaylightSavings() throws IOException {
+        try (InputStream is = MeteringDataProvider.class.getClassLoader()
+                                                        .getResourceAsStream(
+                                                                "consumptionKWh_2023-10-01_to_2024-04-17.json")) {
+            return objectMapper.readValue(is, new TypeReference<>() {
+            });
+        }
+    }
+
     public static List<MeteringData> loadSurplusMeteringData() throws IOException {
         try (InputStream is = MeteringDataProvider.class.getClassLoader()
                                                         .getResourceAsStream("consumptionKWh-withSurplus.json")) {
