@@ -16,7 +16,6 @@ import reactor.test.publisher.TestPublisher;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
@@ -66,10 +65,11 @@ class DatadisMvp1ConsumptionRecordProviderTest {
                                                                              end,
                                                                              Granularity.PT1H,
                                                                              stateBuilderFactory);
-        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED).build());
+        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
+                                                         .build());
 
         var meteringData = new MeteringData("CUPS",
-                                            end.plusDays(1).format(DateTimeFormatter.ofPattern("yyyy/MM/dd")),
+                                            end.plusDays(1),
                                             "00:00",
                                             123.123,
                                             ObtainMethod.REAL,

@@ -1,16 +1,18 @@
 package energy.eddie.regionconnector.es.datadis.filter;
 
-import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.process.model.PermissionRequestState;
+import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
-import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
-import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
+import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -18,26 +20,28 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
 class MeteringDataFilterTest {
 
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd");
     private static IntermediateMeteringData hourlyIntermediateMeteringData;
     private static IntermediateMeteringData quarterHourlyIntermediateMeteringData;
+    private static IntermediateMeteringData hourlyIntermediateMeteringDataWithDaylightSavings;
 
     @BeforeAll
     static void setUp() throws IOException {
         List<MeteringData> meteringData = MeteringDataProvider.loadMeteringData();
+        List<MeteringData> meteringDataWithDaylightSavings = MeteringDataProvider.loadMeteringDataWithDaylightSavings();
         List<MeteringData> quarterHourlyMeteringData = fromHourlyMeteringData(meteringData);
         quarterHourlyIntermediateMeteringData = IntermediateMeteringData.fromMeteringData(quarterHourlyMeteringData);
         hourlyIntermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData);
+        hourlyIntermediateMeteringDataWithDaylightSavings = IntermediateMeteringData.fromMeteringData(
+                meteringDataWithDaylightSavings);
     }
 
     private static List<MeteringData> fromHourlyMeteringData(List<MeteringData> meteringData) {
@@ -85,11 +89,11 @@ class MeteringDataFilterTest {
         assertAll(
                 () -> assertEquals(expectedSize, result.meteringData().size()),
                 () -> assertEquals(expectedStart.toLocalDate(), result.start()),
-                () -> assertEquals(expectedStart.toLocalDate().format(DATE_FORMAT),
+                () -> assertEquals(expectedStart.toLocalDate(),
                                    result.meteringData().getFirst().date()),
                 () -> assertEquals(expectedStart.toLocalTime().toString(), result.meteringData().getFirst().time()),
                 () -> assertEquals(expectedEnd.toLocalDate(), result.end()),
-                () -> assertEquals(expectedEnd.toLocalDate().minusDays(1).format(DATE_FORMAT),
+                () -> assertEquals(expectedEnd.toLocalDate().minusDays(1),
                                    result.meteringData().getLast().date()),
                 () -> assertEquals("24:00", result.meteringData().getLast().time())
         );
@@ -107,19 +111,116 @@ class MeteringDataFilterTest {
             LocalDate requestedEndDate,
             MeasurementType measurementType
     ) {
-        var granularity = switch (measurementType) {
-            case HOURLY -> Granularity.PT1H;
-            case QUARTER_HOURLY -> Granularity.PT15M;
+        return new EsPermissionRequest() {
+            @Override
+            public String nif() {
+                return "";
+            }
+
+            @Override
+            public String meteringPointId() {
+                return "";
+            }
+
+            @Override
+            public Optional<DistributorCode> distributorCode() {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<Integer> pointType() {
+                return Optional.empty();
+            }
+
+            @Override
+            public boolean productionSupport() {
+                return false;
+            }
+
+            @Override
+            public DatadisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
+                return null;
+            }
+
+            @Override
+            public void setDistributorCodePointTypeAndProductionSupport(
+                    DistributorCode distributorCode,
+                    Integer pointType,
+                    boolean productionSupport
+            ) {
+
+            }
+
+            @Override
+            public MeasurementType measurementType() {
+                return measurementType;
+            }
+
+            @Override
+            public String errorMessage() {
+                return "";
+            }
+
+            @Override
+            public void setErrorMessage(@Nullable String errorMessage) {
+
+            }
+
+            @Override
+            public Optional<LocalDate> latestMeterReadingEndDate() {
+                return Optional.empty();
+            }
+
+            @Override
+            public void updateLatestMeterReadingEndDate(LocalDate date) {
+
+            }
+
+            @Override
+            public String permissionId() {
+                return "";
+            }
+
+            @Override
+            public String connectionId() {
+                return "";
+            }
+
+            @Override
+            public String dataNeedId() {
+                return "";
+            }
+
+            @Override
+            public PermissionRequestState state() {
+                return null;
+            }
+
+            @Override
+            public DataSourceInformation dataSourceInformation() {
+                return null;
+            }
+
+            @Override
+            public ZonedDateTime created() {
+                return null;
+            }
+
+            @Override
+            public void changeState(PermissionRequestState state) {
+
+            }
+
+            @Override
+            public LocalDate start() {
+                return requestedStartDate;
+            }
+
+            @Override
+            public LocalDate end() {
+                return requestedEndDate;
+            }
         };
-        return new DatadisPermissionRequest(
-                "1",
-                new PermissionRequestForCreation("1", "1", "1", "1"),
-                requestedStartDate,
-                requestedEndDate,
-                granularity,
-                new StateBuilderFactory(mock(AuthorizationApi.class)
-                )
-        );
     }
 
     private static ZonedDateTime expectedStart(MeasurementType measurementType, LocalDate requestedStartDate) {
@@ -127,6 +228,31 @@ class MeteringDataFilterTest {
             case HOURLY -> requestedStartDate.atStartOfDay(ZONE_ID_SPAIN).plusHours(1);
             case QUARTER_HOURLY -> requestedStartDate.atStartOfDay(ZONE_ID_SPAIN).plusMinutes(15);
         };
+    }
+
+    @Test
+    void filter_containingDaylightSavings() {
+        var intermediateMeteringData = hourlyIntermediateMeteringDataWithDaylightSavings;
+        LocalDate requestedStartDate = LocalDate.of(2023, 10, 25); // DST ends 2023/10/29
+        LocalDate requestedEndDate = LocalDate.of(2024, 4, 2); // DST starts 2024/03/31
+        ZonedDateTime expectedEnd = requestedEndDate.plusDays(1).atStartOfDay(ZONE_ID_SPAIN);
+        EsPermissionRequest permissionRequest = setupPermissionRequest(requestedStartDate, requestedEndDate,
+                                                                       MeasurementType.HOURLY);
+        ZonedDateTime expectedStart = expectedStart(MeasurementType.HOURLY, requestedStartDate);
+
+        //benchmark filter
+        var filter = new MeteringDataFilter(intermediateMeteringData, permissionRequest);
+        var result = filter.filter().blockOptional(Duration.ofSeconds(2)).orElseThrow();
+        assertAll(
+                () -> assertEquals(expectedStart.toLocalDate(), result.start()),
+                () -> assertEquals(expectedStart.toLocalDate(),
+                                   result.meteringData().getFirst().date()),
+                () -> assertEquals(expectedStart.toLocalTime().toString(), result.meteringData().getFirst().time()),
+                () -> assertEquals(expectedEnd.toLocalDate(), result.end()),
+                () -> assertEquals(expectedEnd.toLocalDate().minusDays(1),
+                                   result.meteringData().getLast().date()),
+                () -> assertEquals("24:00", result.meteringData().getLast().time())
+        );
     }
 
     @ParameterizedTest
