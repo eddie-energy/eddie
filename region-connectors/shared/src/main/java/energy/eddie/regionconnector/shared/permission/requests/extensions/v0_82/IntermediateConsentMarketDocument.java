@@ -123,7 +123,9 @@ public class IntermediateConsentMarketDocument<T extends PermissionRequest> {
         try {
             return CodingSchemeTypeList.fromValue("N" + permissionRequest.dataSourceInformation().countryCode());
         } catch (IllegalArgumentException e) {
-            LOGGER.warn("Unknown country code.", e);
+            // prevent exception spamming until GH-638 is implemented
+            if (!permissionRequest.dataSourceInformation().countryCode().equalsIgnoreCase("aiida"))
+                LOGGER.warn("Unknown country code.", e);
             return null;
         }
     }
