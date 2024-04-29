@@ -24,14 +24,17 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.TransmissionScheduleProvider;
+import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.annotation.EnableKafka;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.security.SecureRandom;
 import java.time.Clock;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
@@ -49,10 +52,11 @@ public class AiidaSpringConfig {
             @Value("${" + KAFKA_DATA_TOPIC + "}") String kafkaDataTopic,
             @Value("${" + KAFKA_STATUS_MESSAGES_TOPIC + "}") String kafkaStatusMessagesTopic,
             @Value("${" + KAFKA_TERMINATION_TOPIC_PREFIX + "}") String kafkaTerminationTopicPrefix,
-            @Value("${" + CUSTOMER_ID + "}") String customerId
+            @Value("${" + CUSTOMER_ID + "}") String customerId,
+            @Value("${" + BCRYPT_STRENGTH + "}") int bCryptStrength
     ) {
-        return new PlainAiidaConfiguration(kafkaBootstrapServers, kafkaDataTopic,
-                                           kafkaStatusMessagesTopic, kafkaTerminationTopicPrefix, customerId);
+        return new PlainAiidaConfiguration(kafkaBootstrapServers, kafkaDataTopic, kafkaStatusMessagesTopic,
+                                           kafkaTerminationTopicPrefix, customerId, bCryptStrength);
     }
 
     @Bean
@@ -139,5 +143,15 @@ public class AiidaSpringConfig {
                                                          cimConfig,
                                                          transmissionScheduleProvider,
                                                          AiidaRegionConnectorMetadata.REGION_CONNECTOR_ZONE_ID);
+    }
+
+    @Bean
+    public PasswordGenerator passwordGenerator() {
+        return new PasswordGenerator(new SecureRandom());
+    }
+
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder(AiidaConfiguration configuration) {
+        return new BCryptPasswordEncoder(configuration.bCryptStrength());
     }
 }

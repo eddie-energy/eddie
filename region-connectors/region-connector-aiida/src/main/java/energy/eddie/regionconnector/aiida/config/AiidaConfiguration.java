@@ -8,6 +8,7 @@ public interface AiidaConfiguration {
     String KAFKA_TERMINATION_TOPIC_PREFIX = PREFIX + "kafka.termination-topic-prefix";
     String KAFKA_GROUP_ID = PREFIX + "kafka.group-id";
     String CUSTOMER_ID = PREFIX + "customer.id";
+    String BCRYPT_STRENGTH = PREFIX + "bcrypt.strength";
 
     /**
      * Returns the list of Kafka brokers to which this region connector will connect to, and which will be added
@@ -45,4 +46,13 @@ public interface AiidaConfiguration {
      * @return customerId
      */
     String customerId();
+
+    /**
+     * Strength to be used by {@link org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder}.
+     *
+     * @see <a
+     * href="https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/crypto/bcrypt/BCrypt.html">Spring
+     * documentation for BCryptPasswordEncoder</a>
+     */
+    int bCryptStrength();
 }

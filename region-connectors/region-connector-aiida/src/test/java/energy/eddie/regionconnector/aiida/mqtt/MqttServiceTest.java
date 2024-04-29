@@ -1,0 +1,104 @@
+package energy.eddie.regionconnector.aiida.mqtt;
+
+import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
+import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import java.util.List;
+import java.util.stream.StreamSupport;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class MqttServiceTest {
+    @Mock
+    private MqttUserRepository mockUserRepository;
+    @Mock
+    private MqttAclRepository mockAclRepository;
+    @Mock
+    private PasswordGenerator mockPasswordGenerator;
+    @Mock
+    private BCryptPasswordEncoder mockEncoder;
+    @Captor
+    private ArgumentCaptor<MqttUser> mqttUserCaptor;
+    @Captor
+    private ArgumentCaptor<Iterable<MqttAcl>> mqttAclCaptor;
+    private MqttService mqttService;
+
+    @BeforeEach
+    void setUp() {
+        mqttService = new MqttService(mockUserRepository,
+                                      mockAclRepository,
+                                      mockPasswordGenerator,
+                                      mockEncoder);
+    }
+
+    @Test
+    void givenAlreadyExistingCredentials_throwsException() {
+        // Given
+        when(mockUserRepository.existsByPermissionId(anyString())).thenReturn(true);
+
+        // When, Then
+        assertThrows(CredentialsAlreadyExistException.class,
+                     () -> mqttService.createCredentialsAndAclForPermission("foo"));
+    }
+
+    @Test
+    void givenPermissionId_createsAndSavesUserAndAcls() throws CredentialsAlreadyExistException {
+        // Given
+        String permissionId = "testId";
+        String password = "MySuperSafePassword";
+        String hash = "myHash";
+        when(mockUserRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(mockPasswordGenerator.generatePassword(anyInt())).thenReturn(password);
+        when(mockEncoder.encode(anyString())).thenReturn(hash);
+
+        // When
+        MqttDto dto = mqttService.createCredentialsAndAclForPermission(permissionId);
+
+        // Then
+        verify(mockUserRepository).save(mqttUserCaptor.capture());
+        assertEquals(permissionId, mqttUserCaptor.getValue().permissionId());
+        // verify permissionId is used as username
+        assertEquals(permissionId, mqttUserCaptor.getValue().username());
+        assertFalse(mqttUserCaptor.getValue().isSuperuser());
+        // ensure password hash is stored and not plaintext password
+        assertEquals(hash, mqttUserCaptor.getValue().passwordHash());
+
+        // verify ACLs
+        verify(mockAclRepository).saveAll(mqttAclCaptor.capture());
+        List<MqttAcl> acls = StreamSupport.stream(mqttAclCaptor.getValue().spliterator(), false).toList();
+
+        assertEquals("aiida/v1/testId/data", acls.getFirst().topic());
+        assertEquals(MqttAction.PUBLISH, acls.getFirst().action());
+        assertEquals(MqttAclType.ALLOW, acls.getFirst().aclType());
+        assertEquals(permissionId, acls.getFirst().username());
+
+        assertEquals("aiida/v1/testId/status", acls.get(1).topic());
+        assertEquals(MqttAction.PUBLISH, acls.get(1).action());
+        assertEquals(MqttAclType.ALLOW, acls.get(1).aclType());
+        assertEquals(permissionId, acls.get(1).username());
+
+        assertEquals("aiida/v1/testId/termination", acls.get(2).topic());
+        assertEquals(MqttAction.SUBSCRIBE, acls.get(2).action());
+        assertEquals(MqttAclType.ALLOW, acls.get(2).aclType());
+        assertEquals(permissionId, acls.get(2).username());
+
+
+        assertEquals(permissionId, dto.username());
+        assertEquals(password, dto.password());
+        assertEquals("aiida/v1/testId/data", dto.dataTopic());
+        assertEquals("aiida/v1/testId/status", dto.statusTopic());
+        assertEquals("aiida/v1/testId/termination", dto.terminationTopic());
+    }
+}

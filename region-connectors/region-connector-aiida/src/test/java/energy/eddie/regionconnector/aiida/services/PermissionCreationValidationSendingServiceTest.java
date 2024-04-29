@@ -53,7 +53,8 @@ class PermissionCreationValidationSendingServiceTest {
                 "testData",
                 "testStatus",
                 "testTerminationPrefix",
-                "customerId"
+                "customerId",
+                4
         );
         var fixedClock = Clock.fixed(Instant.parse("2023-10-15T15:00:00Z"),
                                      REGION_CONNECTOR_ZONE_ID);
@@ -157,6 +158,7 @@ class PermissionCreationValidationSendingServiceTest {
                                                                     end,
                                                                     PermissionProcessStatus.CREATED,
                                                                     "terminationTopic",
+                                                                    "foo",
                                                                     Instant.now());
         var expectedStart = request.start().atStartOfDay(ZoneOffset.UTC).toInstant();
         var expectedEnd = ZonedDateTime.of(request.end(), LocalTime.MAX.withNano(0), ZoneOffset.UTC).toInstant();
