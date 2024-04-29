@@ -42,7 +42,7 @@ public class SendingEventHandler implements EventHandler<PermissionEvent> {
         this.repository = repository;
         this.outbox = outbox;
         eventBus.filteredFlux(PermissionProcessStatus.VALIDATED)
-                .subscribe(this::accept);
+                .subscribe(this::threadedAccept);
     }
 
     @Override
@@ -69,5 +69,9 @@ public class SendingEventHandler implements EventHandler<PermissionEvent> {
         } catch (TransmissionException e) {
             outbox.commit(new ExceptionEvent(permissionId, PermissionProcessStatus.UNABLE_TO_SEND, e));
         }
+    }
+
+    private void threadedAccept(PermissionEvent permissionEvent) {
+        Thread.startVirtualThread(() -> accept(permissionEvent));
     }
 }
