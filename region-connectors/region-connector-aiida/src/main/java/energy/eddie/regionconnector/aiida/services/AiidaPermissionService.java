@@ -10,9 +10,8 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
-import energy.eddie.regionconnector.aiida.dtos.KafkaStreamingConfig;
-import energy.eddie.regionconnector.aiida.dtos.PermissionDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.aiida.dtos.QrCodeDto;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.mqtt.MqttDto;
 import energy.eddie.regionconnector.aiida.mqtt.MqttService;
@@ -22,14 +21,17 @@ import energy.eddie.regionconnector.aiida.permission.request.events.MqttCredenti
 import energy.eddie.regionconnector.aiida.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
-import org.apache.kafka.common.errors.InvalidTopicException;
-import org.apache.kafka.common.internals.Topic;
+import energy.eddie.regionconnector.shared.security.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriTemplate;
 
-import java.time.*;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,6 +46,7 @@ public class AiidaPermissionService {
     private final AiidaConfiguration configuration;
     private final MqttService mqttService;
     private final AiidaPermissionRequestViewRepository aiidaPermissionRequestViewRepository;
+    private final JwtUtil jwtUtil;
 
     public AiidaPermissionService(
             Outbox outbox,
@@ -52,7 +55,9 @@ public class AiidaPermissionService {
             Clock clock,
             AiidaConfiguration configuration,
             MqttService mqttService,
-            AiidaPermissionRequestViewRepository aiidaPermissionRequestViewRepository
+            AiidaPermissionRequestViewRepository aiidaPermissionRequestViewRepository,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // is injected from another Spring context
+            JwtUtil jwtUtil
     ) {
         this.outbox = outbox;
         this.dataNeedsService = dataNeedsService;
@@ -60,11 +65,12 @@ public class AiidaPermissionService {
         this.configuration = configuration;
         this.mqttService = mqttService;
         this.aiidaPermissionRequestViewRepository = aiidaPermissionRequestViewRepository;
+        this.jwtUtil = jwtUtil;
     }
 
-    public PermissionDto createValidateAndSendPermissionRequest(
+    public QrCodeDto createValidateAndSendPermissionRequest(
             PermissionRequestForCreation forCreation
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         var permissionId = UUID.randomUUID().toString();
         LOGGER.info("Creating new permission request with ID {}", permissionId);
 
@@ -100,23 +106,10 @@ public class AiidaPermissionService {
         // we consider displaying the QR code to the user as SENT_TO_PERMISSION_ADMINISTRATOR for AIIDA
         outbox.commit(new SimpleEvent(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR));
 
-        var kafkaConfig = new KafkaStreamingConfig(
-                configuration.kafkaBoostrapServers(),
-                configuration.kafkaDataTopic(),
-                configuration.kafkaStatusMessagesTopic(),
-                terminationTopic
-        );
+        var handshakeUrl = new UriTemplate(configuration.handshakeUrl()).expand(permissionId).toString();
+        var jwtString = jwtUtil.createAiidaJwt(permissionId);
 
-        return new PermissionDto(
-                permissionId,
-                genericAiidaDataNeed.name(),
-                genericAiidaDataNeed.id(),
-                ZonedDateTime.of(startDate, LocalTime.MIN, ZoneOffset.UTC).toInstant(),
-                ZonedDateTime.of(endDate, LocalTime.MAX.withNano(0), ZoneOffset.UTC).toInstant(),
-                createdEvent.connectionId(),
-                genericAiidaDataNeed.dataTags(),
-                kafkaConfig
-        );
+        return new QrCodeDto(permissionId, genericAiidaDataNeed.name(), handshakeUrl, jwtString);
     }
 
     /**
@@ -149,19 +142,8 @@ public class AiidaPermissionService {
         return wrapper.calculatedEnd();
     }
 
-    /**
-     * Creates the termination topic name by concatenating the termination topic prefix and the permissionId with an
-     * underscore.
-     *
-     * @param permissionId Id of permission request
-     * @return Kafka topic name
-     * @throws InvalidTopicException If the resulting topic name is invalid. This indicates that either the permissionId
-     *                               is not a valid UUID-4, or the prefix is invalid.
-     */
-    private String terminationTopicForPermissionId(String permissionId) throws InvalidTopicException {
-        var topic = configuration.kafkaTerminationTopicPrefix() + "_" + permissionId;
-        Topic.validate(topic);
-        return topic;
+    private String terminationTopicForPermissionId(String permissionId) {
+        return "aiida/v1/" + permissionId + "/termination";
     }
 
     public MqttDto acceptPermission(String permissionId) throws CredentialsAlreadyExistException, PermissionNotFoundException, PermissionStateTransitionException {

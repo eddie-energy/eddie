@@ -9,7 +9,8 @@ public record PlainAiidaConfiguration(
         String kafkaStatusMessagesTopic,
         String kafkaTerminationTopicPrefix,
         String customerId,
-        int bCryptStrength
+        int bCryptStrength,
+        String handshakeUrl
 ) implements AiidaConfiguration {
 
     /**

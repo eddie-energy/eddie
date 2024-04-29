@@ -16,16 +16,40 @@ class PlainAiidaConfigurationTest {
         var valid = "ValidTopicName";
 
         assertThrows(InvalidTopicException.class,
-                     () -> new PlainAiidaConfiguration("localhost:9093", invalidTopic, valid, valid, "customerId", 4));
+                     () -> new PlainAiidaConfiguration("localhost:9093",
+                                                       invalidTopic,
+                                                       valid,
+                                                       valid,
+                                                       "customerId",
+                                                       4,
+                                                       "http://localhost:8080"));
         assertThrows(InvalidTopicException.class,
-                     () -> new PlainAiidaConfiguration("localhost:9093", valid, invalidTopic, valid, "customerId", 4));
+                     () -> new PlainAiidaConfiguration("localhost:9093",
+                                                       valid,
+                                                       invalidTopic,
+                                                       valid,
+                                                       "customerId",
+                                                       4,
+                                                       "http://localhost:8080"));
         assertThrows(InvalidTopicException.class,
-                     () -> new PlainAiidaConfiguration("localhost:9093", valid, valid, invalidTopic, "customerId", 4));
+                     () -> new PlainAiidaConfiguration("localhost:9093",
+                                                       valid,
+                                                       valid,
+                                                       invalidTopic,
+                                                       "customerId",
+                                                       4,
+                                                       "http://localhost:8080"));
     }
 
     @Test
     void givenValidTopic_doesNotThrow() {
         var valid = "ValidTopicName";
-        assertDoesNotThrow(() -> new PlainAiidaConfiguration("localhost:9093", valid, valid, valid, "customerId", 4));
+        assertDoesNotThrow(() -> new PlainAiidaConfiguration("localhost:9093",
+                                                             valid,
+                                                             valid,
+                                                             valid,
+                                                             "customerId",
+                                                             4,
+                                                             "http://localhost:8080"));
     }
 }

@@ -9,10 +9,11 @@ public interface AiidaConfiguration {
     String KAFKA_GROUP_ID = PREFIX + "kafka.group-id";
     String CUSTOMER_ID = PREFIX + "customer.id";
     String BCRYPT_STRENGTH = PREFIX + "bcrypt.strength";
+    String EDDIE_PUBLIC_URL = "eddie.public.url";
 
     /**
-     * Returns the list of Kafka brokers to which this region connector will connect to, and which will be added
-     * to any permission requests, i.e. where AIIDA instances will send their data.
+     * Returns the list of Kafka brokers to which this region connector will connect to, and which will be added to any
+     * permission requests, i.e. where AIIDA instances will send their data.
      *
      * @return List of Kafka bootstrap servers.
      */
@@ -33,8 +34,8 @@ public interface AiidaConfiguration {
     String kafkaStatusMessagesTopic();
 
     /**
-     * Prefix that should be used for Kafka topics on which the termination request for a specific
-     * AIIDA instances will be published by this region connector.
+     * Prefix that should be used for Kafka topics on which the termination request for a specific AIIDA instances will
+     * be published by this region connector.
      *
      * @return Kafka topic name prefix.
      */
@@ -55,4 +56,10 @@ public interface AiidaConfiguration {
      * documentation for BCryptPasswordEncoder</a>
      */
     int bCryptStrength();
+
+    /**
+     * URL which should be used by AIIDA instances as an endpoint for the handshake. Is a template with a placeholder
+     * {@code permissionId} that can be replaced by using {@link org.springframework.web.util.UriTemplate}.
+     */
+    String handshakeUrl();
 }

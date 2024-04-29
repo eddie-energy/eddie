@@ -40,6 +40,8 @@ import java.time.Clock;
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID;
 import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
+import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_UPDATE_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
 
 @EnableWebMvc
 @SpringBootApplication
@@ -53,10 +55,14 @@ public class AiidaSpringConfig {
             @Value("${" + KAFKA_STATUS_MESSAGES_TOPIC + "}") String kafkaStatusMessagesTopic,
             @Value("${" + KAFKA_TERMINATION_TOPIC_PREFIX + "}") String kafkaTerminationTopicPrefix,
             @Value("${" + CUSTOMER_ID + "}") String customerId,
-            @Value("${" + BCRYPT_STRENGTH + "}") int bCryptStrength
+            @Value("${" + BCRYPT_STRENGTH + "}") int bCryptStrength,
+            @Value("${" + EDDIE_PUBLIC_URL + "}") String eddiePublicUrl
     ) {
+        String eddieUrl = eddiePublicUrl.endsWith("/") ? eddiePublicUrl : eddiePublicUrl + "/";
+        String handshakeUrl = eddieUrl + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + REGION_CONNECTOR_ID + PATH_UPDATE_PERMISSION_REQUEST;
+
         return new PlainAiidaConfiguration(kafkaBootstrapServers, kafkaDataTopic, kafkaStatusMessagesTopic,
-                                           kafkaTerminationTopicPrefix, customerId, bCryptStrength);
+                                           kafkaTerminationTopicPrefix, customerId, bCryptStrength, handshakeUrl);
     }
 
     @Bean
