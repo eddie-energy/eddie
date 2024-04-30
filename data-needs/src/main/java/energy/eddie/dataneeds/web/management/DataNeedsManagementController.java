@@ -120,7 +120,7 @@ public class DataNeedsManagementController {
                       .orElseThrow(() -> new DataNeedNotFoundException(id, false));
     }
 
-    @Operation(summary = "Delete an existing data need")
+    @Operation(summary = "Delete an existing data need. Please note that deleting a data need will negatively influence all permission requests for that data need that are not yet in a terminal state, possibly rendering them useless.")
     @Parameter(in = ParameterIn.PATH, name = "id", example = "7f57cf16-5121-42a6-919e-7f7335826e64", schema = @Schema(type = "String"))
     @ApiResponse(responseCode = "200",
             description = "OK",
