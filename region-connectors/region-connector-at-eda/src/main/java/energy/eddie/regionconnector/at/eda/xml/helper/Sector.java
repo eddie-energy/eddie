@@ -11,7 +11,11 @@ public enum Sector {
     }
 
     public static Sector fromValue(String v) {
-        return valueOf(v);
+        return switch (v) {
+            case "01" -> ELECTRICITY;
+            case "02" -> GAS;
+            default -> throw new IllegalArgumentException(v);
+        };
     }
 
     public String value() {
