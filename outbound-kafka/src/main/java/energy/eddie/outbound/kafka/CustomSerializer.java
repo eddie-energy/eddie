@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
+import energy.eddie.api.v0_82.cim.EddieAccountingPointMarketDocument;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import org.apache.kafka.common.serialization.Serializer;
@@ -31,20 +32,12 @@ class CustomSerializer implements Serializer<Object> {
                     serializeEddieValidatedHistoricalDataMarketDocument(vhd);
             case ConsentMarketDocument cmd -> serializeConsentMarketDocument(cmd);
             case RawDataMessage rawDataMessage -> serializeRawDataMessage(rawDataMessage);
+            case EddieAccountingPointMarketDocument accountingPointMarketDocument ->
+                    serializeEddieAccountingPointMarketDocument(accountingPointMarketDocument);
             case null -> new byte[0];
             default -> throw new UnsupportedOperationException("Unsupported object type: " + data.getClass());
         };
     }
-
-    private byte[] serializeRawDataMessage(RawDataMessage message) {
-        try {
-            // use vhdObjectMapper to make timestamps human-readable
-            return vhdObjectMapper.writeValueAsBytes(message);
-        } catch (JsonProcessingException e) {
-            throw new RawDataMessageSerializationException(e);
-        }
-    }
-
 
     private byte[] serializeJson(Object data) {
         try {
@@ -70,6 +63,23 @@ class CustomSerializer implements Serializer<Object> {
         }
     }
 
+    private byte[] serializeRawDataMessage(RawDataMessage message) {
+        try {
+            // use vhdObjectMapper to make timestamps human-readable
+            return vhdObjectMapper.writeValueAsBytes(message);
+        } catch (JsonProcessingException e) {
+            throw new RawDataMessageSerializationException(e);
+        }
+    }
+
+    private byte[] serializeEddieAccountingPointMarketDocument(EddieAccountingPointMarketDocument data) {
+        try {
+            return vhdObjectMapper.writeValueAsBytes(data);
+        } catch (JsonProcessingException e) {
+            throw new EddieAccountingPointMarketDocumentSerializationException(e);
+        }
+    }
+
     @Override
     public void close() {
         stringSerializer.close();
@@ -83,6 +93,13 @@ class CustomSerializer implements Serializer<Object> {
 
     public static class EddieValidatedHistoricalDataMarketDocumentSerializationException extends RuntimeException {
         public EddieValidatedHistoricalDataMarketDocumentSerializationException(Throwable cause) {
+            super(cause);
+        }
+    }
+
+
+    public static class EddieAccountingPointMarketDocumentSerializationException extends RuntimeException {
+        public EddieAccountingPointMarketDocumentSerializationException(Throwable cause) {
             super(cause);
         }
     }

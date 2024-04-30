@@ -7,7 +7,9 @@ import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordOutboundConnector;
 import energy.eddie.api.v0_82.ConsentMarketDocumentOutboundConnector;
+import energy.eddie.api.v0_82.EddieAccountingPointMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentOutboundConnector;
+import energy.eddie.api.v0_82.cim.EddieAccountingPointMarketDocument;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import org.apache.kafka.clients.producer.Callback;
@@ -29,6 +31,7 @@ public class KafkaConnector implements
         EddieValidatedHistoricalDataMarketDocumentOutboundConnector,
         ConsentMarketDocumentOutboundConnector,
         RawDataOutboundConnector,
+        EddieAccountingPointMarketDocumentOutboundConnector,
         Closeable {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaProducer<String, Object> kafkaProducer;
@@ -124,6 +127,25 @@ public class KafkaConnector implements
     @Override
     public void close() {
         kafkaProducer.close();
+    }
+
+    @Override
+    public void setEddieAccountingPointMarketDocumentStream(Flux<EddieAccountingPointMarketDocument> marketDocumentStream) {
+        marketDocumentStream
+                .publishOn(Schedulers.boundedElastic())
+                .subscribe(this::produceEddieAccountingPointMarketDocument);
+    }
+
+    private void produceEddieAccountingPointMarketDocument(
+            EddieAccountingPointMarketDocument marketDocument
+    ) {
+        ProducerRecord<String, Object> toSend = new ProducerRecord<>("accounting-point-market-document",
+                                                                     marketDocument.connectionId().orElse(null),
+                                                                     marketDocument);
+        kafkaProducer.send(toSend,
+                           new KafkaCallback("Could not produce accounting point market document message"));
+        LOGGER.debug("Produced accounting point market document message for permission request {}",
+                     marketDocument.permissionId());
     }
 
     private record KafkaCallback(String errorLogMessage) implements Callback {
