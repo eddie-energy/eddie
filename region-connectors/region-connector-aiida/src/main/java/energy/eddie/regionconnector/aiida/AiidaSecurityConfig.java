@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.es.datadis;
+package energy.eddie.regionconnector.aiida;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.EddieApiError;
@@ -19,43 +19,41 @@ import java.util.List;
 import java.util.Map;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
-import static energy.eddie.regionconnector.es.datadis.web.PermissionController.PATH_PERMISSION_ACCEPTED;
-import static energy.eddie.regionconnector.es.datadis.web.PermissionController.PATH_PERMISSION_REJECTED;
+import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_UPDATE_PERMISSION_REQUEST;
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.CE_FILE_NAME;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.*;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.SWAGGER_DOC_PATH;
 
 @RegionConnectorSecurityConfig
-public class DatadisSecurityConfig {
-    private static final String DATADIS_ENABLED_PROPERTY = "region-connector.es.datadis.enabled";
+public class AiidaSecurityConfig {
+    private static final String AIIDA_ENABLED_PROPERTY = "region-connector.aiida.enabled";
 
     @Bean
-    @ConditionalOnProperty(value = DATADIS_ENABLED_PROPERTY, havingValue = "true")
-    public MvcRequestMatcher.Builder datadisMvcRequestMatcher(HandlerMappingIntrospector introspector) {
+    @ConditionalOnProperty(value = AIIDA_ENABLED_PROPERTY, havingValue = "true")
+    public MvcRequestMatcher.Builder aiidaMvcRequestMatcher(HandlerMappingIntrospector introspector) {
         return new MvcRequestMatcher.Builder(introspector).servletPath(
-                "/" + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID);
+                "/" + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID);
     }
 
     @Bean
-    @ConditionalOnProperty(value = DATADIS_ENABLED_PROPERTY, havingValue = "true")
-    public SecurityFilterChain datadisSecurityFilterChain(
-            MvcRequestMatcher.Builder datadisMvcRequestMatcher,
+    @ConditionalOnProperty(value = AIIDA_ENABLED_PROPERTY, havingValue = "true")
+    public SecurityFilterChain aiidaSecurityFilterChain(
+            MvcRequestMatcher.Builder aiidaMvcRequestMatcher,
             HttpSecurity http,
-            JwtAuthorizationManager jwtCookieAuthorizationManager,
+            JwtAuthorizationManager jwtHeaderAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper
     ) throws Exception {
         return http
-                .securityMatcher(datadisMvcRequestMatcher.pattern("/**"))    // apply following rules only to requests of this DispatcherServlet
+                .securityMatcher(aiidaMvcRequestMatcher.pattern("/**"))    // apply following rules only to requests of this DispatcherServlet
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
 // @formatter:off   all calls for one request pattern should be on one line
-                        .requestMatchers(datadisMvcRequestMatcher.pattern(PATH_PERMISSION_REQUEST)).permitAll()
-                        .requestMatchers(datadisMvcRequestMatcher.pattern(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)).permitAll()
-                        .requestMatchers(datadisMvcRequestMatcher.pattern(PATH_PERMISSION_ACCEPTED)).access(jwtCookieAuthorizationManager)
-                        .requestMatchers(datadisMvcRequestMatcher.pattern(PATH_PERMISSION_REJECTED)).access(jwtCookieAuthorizationManager)
-                        .requestMatchers(datadisMvcRequestMatcher.pattern("/" + CE_FILE_NAME)).permitAll()
-                        .requestMatchers(datadisMvcRequestMatcher.pattern("/" + SWAGGER_DOC_PATH)).permitAll()
+                        .requestMatchers(aiidaMvcRequestMatcher.pattern(PATH_PERMISSION_REQUEST)).permitAll()
+                        .requestMatchers(aiidaMvcRequestMatcher.pattern(PATH_UPDATE_PERMISSION_REQUEST)).access(jwtHeaderAuthorizationManager)
+                        .requestMatchers(aiidaMvcRequestMatcher.pattern("/" + CE_FILE_NAME)).permitAll()
+                        .requestMatchers(aiidaMvcRequestMatcher.pattern("/" + SWAGGER_DOC_PATH)).permitAll()
                         .anyRequest().denyAll()
 // @formatter:on
                 )

@@ -59,7 +59,7 @@ public class JwtUtil {
      * as any other permissions that were already present in the supplied JWT. The returned cookie has the
      * <i>HttpOnly</i> attribute set and <i>SameSite</i> is set to <i>strict</i>.
      *
-     * @param jwt               Cookie which contains the existing JWT. May be null if no JWT was included in a
+     * @param jwtCookie         Cookie which contains the existing JWT. May be null if no JWT was included in a
      *                          request.
      * @param regionConnectorId ID of the region connector that created the new permission.
      * @param permissionId      ID of the newly created permission.
@@ -67,14 +67,14 @@ public class JwtUtil {
      * @throws JwtCreationFailedException If for any reason the creation of the JWT failed.
      */
     private ResponseCookie getJwtCookie(
-            @Nullable Cookie jwt,
+            @Nullable Cookie jwtCookie,
             String regionConnectorId,
             String permissionId
     ) throws JwtCreationFailedException {
         Map<String, List<String>> permissions = new HashMap<>();
 
-        if (jwt != null)
-            permissions.putAll(getPermissions(jwt.getValue()));
+        if (jwtCookie != null)
+            permissions.putAll(getPermissions(jwtCookie.getValue()));
 
         List<String> permissionsForConnector = permissions.getOrDefault(regionConnectorId, new ArrayList<>());
         permissionsForConnector.add(permissionId);
@@ -144,5 +144,37 @@ public class JwtUtil {
             LOGGER.trace("Failed to get existing permissions from JWT {}", jwtString, exception);
         }
         return Collections.emptyMap();
+    }
+
+    /**
+     * Creates a new signed JWT and adds the supplied {@code permissionId} to the map of permitted permissions. The
+     * returned JWT is intended to be included by the AIIDA instance when it makes the handshake requests. To allow the
+     * reusing of {@link JwtAuthorizationManager}, the map has a similar layout as the cookie JWT, but the map of
+     * permitted permissions will always only consist of the "aiida" region-connector ID and the supplied
+     * {@code permissionId}.
+     *
+     * @param permissionId ID of the newly created permission.
+     * @return Serialized JWT.
+     * @throws JwtCreationFailedException If for any reason the creation of the JWT failed.
+     */
+    public String createAiidaJwt(String permissionId) throws JwtCreationFailedException {
+        Map<String, List<String>> permissions = new HashMap<>();
+
+        permissions.put("aiida", List.of(permissionId));
+
+        JWSHeader header = new JWSHeader.Builder(JWS_ALGORITHM)
+                .type(JOSEObjectType.JWT)
+                .build();
+
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .issueTime(Date.from(Instant.now()))
+                .claim(JWT_PERMISSIONS_CLAIM, permissions)
+                .build();
+
+        try {
+            return minter.mint(header, claimsSet.toPayload(), null).serialize();
+        } catch (JOSEException e) {
+            throw new JwtCreationFailedException(e);
+        }
     }
 }
