@@ -7,6 +7,7 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.dataneeds.utils.DataNeedWrapper;
+import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
@@ -46,15 +47,21 @@ public class PermissionRequestFactory {
 
     public DkEnerginetCustomerPermissionRequest create(PermissionRequestForCreation request) throws DataNeedNotFoundException, UnsupportedDataNeedException {
         var referenceDate = LocalDate.now(DK_ZONE_ID);
-        DataNeedWrapper wrapper = dataNeedsService.findDataNeedAndCalculateStartAndEnd(request.dataNeedId(),
-                                                                                       referenceDate,
-                                                                                       PERIOD_EARLIEST_START,
-                                                                                       PERIOD_LATEST_END);
 
-        if (!(wrapper.timeframedDataNeed() instanceof ValidatedHistoricalDataDataNeed vhdDataNeed))
+        var dataNeed = dataNeedsService.findById(request.dataNeedId())
+                                       .orElseThrow(() -> new DataNeedNotFoundException(request.dataNeedId()));
+        if (!(dataNeed instanceof ValidatedHistoricalDataDataNeed vhdDataNeed))
             throw new UnsupportedDataNeedException(EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                    request.dataNeedId(),
                                                    "This region connector only supports validated historical data data needs.");
+
+        DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(
+                vhdDataNeed,
+                referenceDate,
+                PERIOD_EARLIEST_START,
+                PERIOD_LATEST_END
+        );
+
 
         var granularity = validateAndGetGranularity(vhdDataNeed);
 

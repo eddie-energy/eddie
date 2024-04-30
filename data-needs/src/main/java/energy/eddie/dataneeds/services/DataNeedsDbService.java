@@ -1,19 +1,14 @@
 package energy.eddie.dataneeds.services;
 
-import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.persistence.DataNeedsNameAndIdProjection;
 import energy.eddie.dataneeds.persistence.DataNeedsRepository;
-import energy.eddie.dataneeds.utils.DataNeedUtils;
-import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.time.Period;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,18 +32,6 @@ public class DataNeedsDbService implements DataNeedsService {
     @Override
     public Optional<DataNeed> findById(String id) {
         return repository.findById(id);
-    }
-
-    @Override
-    public DataNeedWrapper findDataNeedAndCalculateStartAndEnd(
-            String dataNeedId,
-            LocalDate referenceDate,
-            Period earliestStart,
-            Period latestEnd
-    ) throws DataNeedNotFoundException, IllegalArgumentException {
-        DataNeed dataNeed = repository.findById(dataNeedId)
-                                      .orElseThrow(() -> new DataNeedNotFoundException(dataNeedId, true));
-        return DataNeedUtils.calculateRelativeStartAndEnd(dataNeed, referenceDate, earliestStart, latestEnd);
     }
 
     /**

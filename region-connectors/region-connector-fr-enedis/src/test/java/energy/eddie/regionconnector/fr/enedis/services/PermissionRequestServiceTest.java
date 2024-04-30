@@ -2,11 +2,11 @@ package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.duration.AbsoluteDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrAcceptedEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
@@ -52,6 +52,8 @@ class PermissionRequestServiceTest {
     private DataNeedsService dataNeedsService;
     @Mock
     private ValidatedHistoricalDataDataNeed mockVhdDataNeed;
+    @Mock
+    private AbsoluteDuration absoluteDuration;
     @MockBean
     private Outbox outbox;
 
@@ -59,13 +61,10 @@ class PermissionRequestServiceTest {
     void testCreatePermissionRequest_createsPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
         var request = new PermissionRequestForCreation("cid", "dnid");
-        var wrapper = new DataNeedWrapper(mockVhdDataNeed,
-                                          LocalDate.now(ZONE_ID_FR),
-                                          LocalDate.now(ZONE_ID_FR).plusDays(10));
-        when(dataNeedsService.findDataNeedAndCalculateStartAndEnd(any(),
-                                                                  any(),
-                                                                  any(),
-                                                                  any())).thenReturn(wrapper);
+        when(dataNeedsService.findById("dnid")).thenReturn(Optional.of(mockVhdDataNeed));
+        when(mockVhdDataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(LocalDate.now(ZONE_ID_FR));
+        when(absoluteDuration.end()).thenReturn(LocalDate.now(ZONE_ID_FR).plusDays(10));
         when(mockVhdDataNeed.minGranularity()).thenReturn(Granularity.P1D);
 
         // When
@@ -164,15 +163,12 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void givenUnsupportedGranularity_throws() throws DataNeedNotFoundException {
+    void givenUnsupportedGranularity_throws() {
         // Given
-        var wrapper = new DataNeedWrapper(mockVhdDataNeed,
-                                          LocalDate.now(ZONE_ID_FR),
-                                          LocalDate.now(ZONE_ID_FR).plusDays(10));
-        when(dataNeedsService.findDataNeedAndCalculateStartAndEnd(any(),
-                                                                  any(),
-                                                                  any(),
-                                                                  any())).thenReturn(wrapper);
+        when(dataNeedsService.findById(any())).thenReturn(Optional.of(mockVhdDataNeed));
+        when(mockVhdDataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(LocalDate.now(ZONE_ID_FR));
+        when(absoluteDuration.end()).thenReturn(LocalDate.now(ZONE_ID_FR).plusDays(10));
         when(mockVhdDataNeed.minGranularity()).thenReturn(Granularity.P1Y);
         PermissionRequestForCreation create = new PermissionRequestForCreation("foo", "bar");
 

@@ -4,12 +4,11 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.duration.AbsoluteDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
@@ -52,9 +51,9 @@ class PermissionRequestServiceTest {
     @Mock
     private DataNeedsService dataNeedsService;
     @Mock
-    private ValidatedHistoricalDataDataNeed validatedHistoricalDataDataNeed;
+    private AbsoluteDuration absoluteDuration;
     @Mock
-    private AiidaDataNeed aiidaDataNeed;
+    private ValidatedHistoricalDataDataNeed validatedHistoricalDataDataNeed;
     @InjectMocks
     private PermissionRequestService service;
 
@@ -231,9 +230,10 @@ class PermissionRequestServiceTest {
                 mockPermissionRequest);
         when(validatedHistoricalDataDataNeed.minGranularity()).thenReturn(Granularity.PT15M);
         when(validatedHistoricalDataDataNeed.maxGranularity()).thenReturn(Granularity.PT1H);
-        when(dataNeedsService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any()))
-                .thenReturn(new DataNeedWrapper(validatedHistoricalDataDataNeed, LocalDate.now(ZONE_ID_SPAIN),
-                                                LocalDate.now(ZONE_ID_SPAIN)));
+        when(dataNeedsService.findById(any())).thenReturn(Optional.of(validatedHistoricalDataDataNeed));
+        when(validatedHistoricalDataDataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(LocalDate.now(ZONE_ID_SPAIN));
+        when(absoluteDuration.end()).thenReturn(LocalDate.now(ZONE_ID_SPAIN));
 
         // When
         service.createAndSendPermissionRequest(mockCreationRequest);
@@ -242,19 +242,19 @@ class PermissionRequestServiceTest {
         verify(mockPermissionRequest).validate();
         verify(mockPermissionRequest).sendToPermissionAdministrator();
         verify(mockPermissionRequest).receivedPermissionAdministratorResponse();
-        verify(dataNeedsService).findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any());
         verifyNoMoreInteractions(mockPermissionRequest);
     }
 
     @Test
-    void createAndSendPermissionRequest_withUnsupportedGranularities_throws() throws DataNeedNotFoundException {
+    void createAndSendPermissionRequest_withUnsupportedGranularities_throws() {
         // Given
         var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
         when(validatedHistoricalDataDataNeed.minGranularity()).thenReturn(Granularity.PT5M);
         when(validatedHistoricalDataDataNeed.maxGranularity()).thenReturn(Granularity.PT5M);
-        when(dataNeedsService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any()))
-                .thenReturn(new DataNeedWrapper(validatedHistoricalDataDataNeed, LocalDate.now(ZONE_ID_SPAIN),
-                                                LocalDate.now(ZONE_ID_SPAIN)));
+        when(dataNeedsService.findById(any())).thenReturn(Optional.of(validatedHistoricalDataDataNeed));
+        when(validatedHistoricalDataDataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(LocalDate.now(ZONE_ID_SPAIN));
+        when(absoluteDuration.end()).thenReturn(LocalDate.now(ZONE_ID_SPAIN));
 
         // When
         // Then
@@ -263,12 +263,15 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void createAndSendPermissionRequest_withInvalidDataNeed_throws() throws DataNeedNotFoundException {
+    void createAndSendPermissionRequest_withInvalidDataNeed_throws() {
         // Given
         var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
-        when(dataNeedsService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any()))
-                .thenReturn(
-                        new DataNeedWrapper(aiidaDataNeed, LocalDate.now(ZONE_ID_SPAIN), LocalDate.now(ZONE_ID_SPAIN)));
+        when(dataNeedsService.findById(any())).thenReturn(Optional.of(validatedHistoricalDataDataNeed));
+        when(validatedHistoricalDataDataNeed.duration()).thenReturn(absoluteDuration);
+        when(validatedHistoricalDataDataNeed.minGranularity()).thenReturn(Granularity.P1D);
+        when(validatedHistoricalDataDataNeed.maxGranularity()).thenReturn(Granularity.P1D);
+        when(absoluteDuration.start()).thenReturn(LocalDate.now(ZONE_ID_SPAIN));
+        when(absoluteDuration.end()).thenReturn(LocalDate.now(ZONE_ID_SPAIN));
 
         // When
 

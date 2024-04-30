@@ -4,24 +4,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.dataneeds.duration.RelativeDuration;
-import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.persistence.DataNeedsNameAndIdProjection;
 import energy.eddie.dataneeds.persistence.DataNeedsRepository;
-import energy.eddie.dataneeds.utils.DataNeedUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,11 +28,11 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DataNeedsDbServiceTest {
+    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     @Mock
     private DataNeedsRepository mockRepository;
     @InjectMocks
     private DataNeedsDbService service;
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     private DataNeed exampleVhd;
 
     @BeforeEach
@@ -164,35 +157,5 @@ class DataNeedsDbServiceTest {
         // Then
         verify(mockRepository).deleteById(id);
         verifyNoMoreInteractions(mockRepository);
-    }
-
-
-    @Test
-    void givenInvalidDataNeedId_findAndCalculateRelativeStartAndEnd_throwsException() {
-        // When, Then
-        assertThrows(DataNeedNotFoundException.class, () ->
-                service.findDataNeedAndCalculateStartAndEnd("UNKNOWN ID",
-                                                            LocalDate.now(ZoneId.of("UTC")),
-                                                            Period.parse("P0D"),
-                                                            Period.parse("P0D")));
-    }
-
-    @Test
-    void givenValidDataNeedId_findAndCalculateRelativeStartAndEnd_callsUtils() {
-        // Given
-        final String id = "9bd0668f-cc19-40a8-99db-dc2cb2802b17";
-        when(mockRepository.findById(id)).thenReturn(Optional.of(exampleVhd));
-
-
-        try (MockedStatic<DataNeedUtils> utilsStatic = Mockito.mockStatic(DataNeedUtils.class)) {
-            // When
-            assertDoesNotThrow(() -> service.findDataNeedAndCalculateStartAndEnd(id,
-                                                                                 LocalDate.now(ZoneId.of("UTC")),
-                                                                                 Period.parse("P0D"),
-                                                                                 Period.parse("P0D")));
-
-            // Then
-            utilsStatic.verify(() -> DataNeedUtils.calculateRelativeStartAndEnd(any(), any(), any(), any()));
-        }
     }
 }

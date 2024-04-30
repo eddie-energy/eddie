@@ -3,12 +3,12 @@ package energy.eddie.regionconnector.aiida.services;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.duration.AbsoluteDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
@@ -56,6 +56,8 @@ class AiidaPermissionServiceTest {
     @Mock
     private GenericAiidaDataNeed mockDataNeed;
     @Mock
+    private AbsoluteDuration absoluteDuration;
+    @Mock
     private ValidatedHistoricalDataDataNeed unsupportedDataNeed;
     @Mock
     private AiidaPermissionRequestViewRepository mockViewRepository;
@@ -93,11 +95,10 @@ class AiidaPermissionServiceTest {
     }
 
     @Test
-    void givenNonExistingDataNeedId_createValidateAndSendPermissionRequest_throwsException() throws DataNeedNotFoundException {
+    void givenNonExistingDataNeedId_createValidateAndSendPermissionRequest_throwsException() {
         // Given
         var dataNeedId = "NonExisting";
-        when(mockDataNeedsService.findDataNeedAndCalculateStartAndEnd(anyString(), any(), any(), any())).thenThrow(
-                DataNeedNotFoundException.class);
+        when(mockDataNeedsService.findById(anyString())).thenReturn(Optional.empty());
 
         // Then
         assertThrows(DataNeedNotFoundException.class,
@@ -107,12 +108,9 @@ class AiidaPermissionServiceTest {
     }
 
     @Test
-    void givenUnsupportedDataNeed_createValidateAndSendPermissionRequest_throwsException() throws DataNeedNotFoundException {
+    void givenUnsupportedDataNeed_createValidateAndSendPermissionRequest_throwsException() {
         // Given
-        DataNeedWrapper wrapper = new DataNeedWrapper(unsupportedDataNeed,
-                                                      LocalDate.now(REGION_CONNECTOR_ZONE_ID),
-                                                      LocalDate.now(REGION_CONNECTOR_ZONE_ID));
-        when(mockDataNeedsService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any())).thenReturn(wrapper);
+        when(mockDataNeedsService.findById(anyString())).thenReturn(Optional.of(unsupportedDataNeed));
 
         // When, Then
         assertThrows(UnsupportedDataNeedException.class,
@@ -126,8 +124,10 @@ class AiidaPermissionServiceTest {
         var start = LocalDate.parse("2023-01-01");
         var end = LocalDate.parse("2023-01-25");
         when(mockDataNeed.name()).thenReturn("Test Service");
-        DataNeedWrapper wrapper = new DataNeedWrapper(mockDataNeed, start, end);
-        when(mockDataNeedsService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any())).thenReturn(wrapper);
+        when(mockDataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(start);
+        when(absoluteDuration.end()).thenReturn(end);
+        when(mockDataNeedsService.findById(anyString())).thenReturn(Optional.of(mockDataNeed));
         when(mockJwtUtil.createAiidaJwt(anyString())).thenReturn("myToken");
 
         // When
@@ -151,8 +151,10 @@ class AiidaPermissionServiceTest {
         var forCreation = new PermissionRequestForCreation(connectionId, dataNeedId);
         var start = LocalDate.parse("2023-01-01");
         var end = LocalDate.parse("2023-01-25");
-        DataNeedWrapper wrapper = new DataNeedWrapper(mockDataNeed, start, end);
-        when(mockDataNeedsService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any())).thenReturn(wrapper);
+        when(mockDataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(start);
+        when(absoluteDuration.end()).thenReturn(end);
+        when(mockDataNeedsService.findById(anyString())).thenReturn(Optional.of(mockDataNeed));
 
         // When
         service.createValidateAndSendPermissionRequest(forCreation);

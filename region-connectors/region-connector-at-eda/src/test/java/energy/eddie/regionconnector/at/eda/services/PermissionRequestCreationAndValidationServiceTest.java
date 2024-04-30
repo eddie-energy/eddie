@@ -2,11 +2,11 @@ package energy.eddie.regionconnector.at.eda.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
+import energy.eddie.dataneeds.duration.AbsoluteDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -32,7 +33,7 @@ class PermissionRequestCreationAndValidationServiceTest {
     @Mock
     private ValidatedHistoricalDataDataNeed mockDataNeed;
     @Mock
-    private DataNeedWrapper mockWrapper;
+    private AbsoluteDuration absoluteDuration;
     @Mock
     private AtConfiguration mockConfig;
     @InjectMocks
@@ -41,12 +42,12 @@ class PermissionRequestCreationAndValidationServiceTest {
     @Test
     void createValidPermissionRequest() throws ValidationException, DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
-        when(mockService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any())).thenReturn(mockWrapper);
+        when(mockService.findById(any())).thenReturn(Optional.of(mockDataNeed));
         when(mockDataNeed.minGranularity()).thenReturn(Granularity.PT15M);
-        when(mockWrapper.timeframedDataNeed()).thenReturn(mockDataNeed);
         LocalDate start = LocalDate.now(AT_ZONE_ID).minusDays(10);
-        when(mockWrapper.calculatedStart()).thenReturn(start);
-        when(mockWrapper.calculatedEnd()).thenReturn(start.plusDays(5));
+        when(mockDataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(start);
+        when(absoluteDuration.end()).thenReturn(start.plusDays(5));
         when(mockConfig.eligiblePartyId()).thenReturn("AT999999");
 
 
@@ -61,14 +62,14 @@ class PermissionRequestCreationAndValidationServiceTest {
     }
 
     @Test
-    void createInvalidPermissionRequest() throws DataNeedNotFoundException {
+    void createInvalidPermissionRequest() {
         // Given
-        when(mockService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any())).thenReturn(mockWrapper);
+        when(mockService.findById(any())).thenReturn(Optional.of(mockDataNeed));
         when(mockDataNeed.minGranularity()).thenReturn(Granularity.PT15M);
-        when(mockWrapper.timeframedDataNeed()).thenReturn(mockDataNeed);
         LocalDate start = LocalDate.now(AT_ZONE_ID).minusDays(10);
-        when(mockWrapper.calculatedStart()).thenReturn(start);
-        when(mockWrapper.calculatedEnd()).thenReturn(start.plusDays(5));
+        when(mockDataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(start);
+        when(absoluteDuration.end()).thenReturn(start.plusDays(5));
         when(mockConfig.eligiblePartyId()).thenReturn("AT999999");
 
 
@@ -83,11 +84,11 @@ class PermissionRequestCreationAndValidationServiceTest {
     }
 
     @Test
-    void givenInvalidGranularity_createAndValidatePermissionRequest_throwsException() throws DataNeedNotFoundException {
+    void givenInvalidGranularity_createAndValidatePermissionRequest_throwsException() {
         // Given
-        when(mockWrapper.timeframedDataNeed()).thenReturn(mockDataNeed);
-        when(mockService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any())).thenReturn(mockWrapper);
+        when(mockService.findById(any())).thenReturn(Optional.of(mockDataNeed));
         when(mockDataNeed.minGranularity()).thenReturn(Granularity.PT5M);
+        when(mockDataNeed.duration()).thenReturn(absoluteDuration);
         PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
                                                                            "dnid", "AT000000");
 

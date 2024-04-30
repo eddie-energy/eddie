@@ -3,7 +3,6 @@ package energy.eddie.dataneeds.utils;
 import energy.eddie.dataneeds.duration.AbsoluteDuration;
 import energy.eddie.dataneeds.duration.CalendarUnit;
 import energy.eddie.dataneeds.duration.RelativeDuration;
-import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,19 +14,10 @@ import java.time.Period;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DataNeedUtilsTest {
-    @Mock
-    private AccountingPointDataNeed accountDataNeed;
-    @Mock
-    private TimeframedDataNeed dataNeed;
-    @Mock
-    private AbsoluteDuration absoluteDuration;
-    @Mock
-    private RelativeDuration relativeDuration;
     private final LocalDate start = LocalDate.of(2024, 4, 1);
     private final LocalDate end = LocalDate.of(2024, 4, 25);
     private final LocalDate referenceDate = LocalDate.of(2024, 4, 10);
@@ -35,16 +25,12 @@ class DataNeedUtilsTest {
     private final Period latestEnd = Period.parse("P2Y");
     private final Period desiredRelativeStart = Period.parse("-P5D");
     private final Period desiredRelativeEnd = Period.parse("P18D");
-
-    @Test
-    void givenAccountDataNeed_throws() {
-        // Given
-        when(accountDataNeed.id()).thenReturn("someId");
-
-        // When
-        assertThrows(IllegalArgumentException.class,
-                     () -> DataNeedUtils.calculateRelativeStartAndEnd(accountDataNeed, null, null, null));
-    }
+    @Mock
+    private TimeframedDataNeed dataNeed;
+    @Mock
+    private AbsoluteDuration absoluteDuration;
+    @Mock
+    private RelativeDuration relativeDuration;
 
     @Test
     void givenAbsoluteDuration_returnsAbsoluteDates() {
@@ -54,7 +40,7 @@ class DataNeedUtilsTest {
         when(absoluteDuration.end()).thenReturn(end);
 
         // When
-        DataNeedWrapper wrapper = DataNeedUtils.calculateRelativeStartAndEnd(dataNeed, null, null, null);
+        DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed, null, null, null);
 
         // Then
         assertEquals(start, wrapper.calculatedStart());
@@ -69,10 +55,10 @@ class DataNeedUtilsTest {
         when(relativeDuration.end()).thenReturn(Optional.of(desiredRelativeEnd));
 
         // When
-        DataNeedWrapper wrapper = DataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
-                                                                             referenceDate,
-                                                                             earliestStart,
-                                                                             latestEnd);
+        DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
+                                                                                       referenceDate,
+                                                                                       earliestStart,
+                                                                                       latestEnd);
 
         // Then
         assertEquals(LocalDate.of(2022, 4, 10), wrapper.calculatedStart());
@@ -87,10 +73,10 @@ class DataNeedUtilsTest {
         when(relativeDuration.end()).thenReturn(Optional.empty());
 
         // When
-        DataNeedWrapper wrapper = DataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
-                                                                             referenceDate,
-                                                                             earliestStart,
-                                                                             latestEnd);
+        DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
+                                                                                       referenceDate,
+                                                                                       earliestStart,
+                                                                                       latestEnd);
 
         // Then
         assertEquals(LocalDate.of(2024, 4, 5), wrapper.calculatedStart());
@@ -105,10 +91,10 @@ class DataNeedUtilsTest {
         when(relativeDuration.end()).thenReturn(Optional.empty());
 
         // When
-        DataNeedWrapper wrapper = DataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
-                                                                             referenceDate,
-                                                                             earliestStart,
-                                                                             latestEnd);
+        DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
+                                                                                       referenceDate,
+                                                                                       earliestStart,
+                                                                                       latestEnd);
 
         // Then
         assertEquals(LocalDate.of(2022, 4, 10), wrapper.calculatedStart());
@@ -124,10 +110,10 @@ class DataNeedUtilsTest {
         when(relativeDuration.stickyStartCalendarUnit()).thenReturn(Optional.of(CalendarUnit.WEEK));
 
         // When
-        DataNeedWrapper wrapper = DataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
-                                                                             referenceDate,
-                                                                             earliestStart,
-                                                                             latestEnd);
+        DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
+                                                                                       referenceDate,
+                                                                                       earliestStart,
+                                                                                       latestEnd);
 
         // Then
         assertEquals(LocalDate.of(2024, 4, 1), wrapper.calculatedStart());
@@ -144,10 +130,10 @@ class DataNeedUtilsTest {
         when(relativeDuration.stickyStartCalendarUnit()).thenReturn(Optional.of(CalendarUnit.MONTH));
 
         // When
-        DataNeedWrapper wrapper = DataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
-                                                                             referenceDate,
-                                                                             earliestStart,
-                                                                             latestEnd);
+        DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
+                                                                                       referenceDate,
+                                                                                       earliestStart,
+                                                                                       latestEnd);
 
         // Then
         assertEquals(LocalDate.of(2024, 3, 1), wrapper.calculatedStart());
@@ -164,10 +150,10 @@ class DataNeedUtilsTest {
         when(relativeDuration.stickyStartCalendarUnit()).thenReturn(Optional.of(CalendarUnit.YEAR));
 
         // When
-        DataNeedWrapper wrapper = DataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
-                                                                             referenceDate,
-                                                                             earliestStart,
-                                                                             latestEnd);
+        DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
+                                                                                       referenceDate,
+                                                                                       earliestStart,
+                                                                                       latestEnd);
 
         // Then
         assertEquals(LocalDate.of(2024, 1, 1), wrapper.calculatedStart());
