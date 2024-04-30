@@ -144,8 +144,7 @@ cim.eligible-party.national-coding-scheme=NAT
 #### Data need configuration
 
 A data need describes a configuration for the _Connect Button_. By using that button, the type of data and time frame is
-predefined
-so that the EP application receives data that it actually needs to perform its job.
+predefined so that the EP application receives data that it actually needs to perform its job.
 
 Data needs can be configured in two ways: via a JSON file that is read on startup, they can be created via a REST-ful
 API which stores the data needs in the core's database.
@@ -206,6 +205,9 @@ A data need is mandatory for each _Connect with EDDIE_ Button.
 
 Please see the OpenAPI documentation (default: http://localhost:8080/data-needs/swagger-ui/index.html) for further
 details about all possible data need types and their respective fields.
+Please note that while the REST-ful API allows that data needs are deleted, it might not be a good idea to delete a data
+need in production. This is because permission requests reference the data need and deleting the data need may render
+the data needs useless.
 
 ### External system related
 
