@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.RawDataOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordOutboundConnector;
 import energy.eddie.api.v0_82.ConsentMarketDocumentOutboundConnector;
+import energy.eddie.api.v0_82.EddieAccountingPointMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.core.services.*;
@@ -61,7 +62,8 @@ public class OutboundKafkaConfig {
             KafkaConnector kafkaConnector,
             PermissionService permissionService
     ) {
-        ((Mvp1ConnectionStatusMessageOutboundConnector) kafkaConnector).setConnectionStatusMessageStream(permissionService.getConnectionStatusMessageStream());
+        ((Mvp1ConnectionStatusMessageOutboundConnector) kafkaConnector).setConnectionStatusMessageStream(
+                permissionService.getConnectionStatusMessageStream());
         return kafkaConnector;
     }
 
@@ -79,7 +81,7 @@ public class OutboundKafkaConfig {
             KafkaConnector kafkaConnector,
             EddieValidatedHistoricalDataMarketDocumentService cimService
     ) {
-        ((EddieValidatedHistoricalDataMarketDocumentOutboundConnector) kafkaConnector).setEddieValidatedHistoricalDataMarketDocumentStream(cimService.getEddieValidatedHistoricalDataMarketDocumentStream());
+        kafkaConnector.setEddieValidatedHistoricalDataMarketDocumentStream(cimService.getEddieValidatedHistoricalDataMarketDocumentStream());
         return kafkaConnector;
     }
 
@@ -93,6 +95,16 @@ public class OutboundKafkaConfig {
     }
 
     @Bean
+    EddieAccountingPointMarketDocumentOutboundConnector eddieAccountingPointMarketDocumentOutboundConnector(
+            KafkaConnector kafkaConnector,
+            EddieAccountingPointMarketDocumentService cimService
+    ) {
+        kafkaConnector.setEddieAccountingPointMarketDocumentStream(cimService.getEddieAccountingPointMarketDocumentStream());
+        return kafkaConnector;
+    }
+
+
+    @Bean
     @ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
     RawDataOutboundConnector rawDataOutboundConnector(
             KafkaConnector kafkaConnector,
@@ -103,8 +115,10 @@ public class OutboundKafkaConfig {
     }
 
     @Bean
-    TerminationConnector terminationConnector(Properties kafkaProperties,
-                                              @Value("${kafka.termination.topic:terminations}") String terminationTopic) {
+    TerminationConnector terminationConnector(
+            Properties kafkaProperties,
+            @Value("${kafka.termination.topic:terminations}") String terminationTopic
+    ) {
         return new TerminationKafkaConnector(kafkaProperties, terminationTopic);
     }
 }

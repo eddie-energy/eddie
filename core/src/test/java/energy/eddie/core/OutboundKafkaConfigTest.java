@@ -1,9 +1,6 @@
 package energy.eddie.core;
 
-import energy.eddie.core.services.ConsentMarketDocumentService;
-import energy.eddie.core.services.ConsumptionRecordService;
-import energy.eddie.core.services.EddieValidatedHistoricalDataMarketDocumentService;
-import energy.eddie.core.services.PermissionService;
+import energy.eddie.core.services.*;
 import energy.eddie.outbound.kafka.KafkaConnector;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -19,8 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.when;
 
 /**
- * Tests that the {@link KafkaConnector} is only created if <i>kafka.enabled=true</i> and verifies that then
- * the according outbound connectors are created.
+ * Tests that the {@link KafkaConnector} is only created if <i>kafka.enabled=true</i> and verifies that then the
+ * according outbound connectors are created.
  */
 class OutboundKafkaConfigTest {
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
@@ -109,7 +106,8 @@ class OutboundKafkaConfigTest {
 
         @Bean
         public EddieValidatedHistoricalDataMarketDocumentService eddieValidatedHistoricalDataMarketDocumentService() {
-            EddieValidatedHistoricalDataMarketDocumentService mock = Mockito.mock(EddieValidatedHistoricalDataMarketDocumentService.class);
+            EddieValidatedHistoricalDataMarketDocumentService mock = Mockito.mock(
+                    EddieValidatedHistoricalDataMarketDocumentService.class);
             when(mock.getEddieValidatedHistoricalDataMarketDocumentStream()).thenReturn(Flux.empty());
             return mock;
         }
@@ -118,6 +116,13 @@ class OutboundKafkaConfigTest {
         public ConsentMarketDocumentService consentMarketDocumentService() {
             ConsentMarketDocumentService mock = Mockito.mock(ConsentMarketDocumentService.class);
             when(mock.getConsentMarketDocumentStream()).thenReturn(Flux.empty());
+            return mock;
+        }
+
+        @Bean
+        public EddieAccountingPointMarketDocumentService eddieAccountingPointMarketDocumentService() {
+            EddieAccountingPointMarketDocumentService mock = Mockito.mock(EddieAccountingPointMarketDocumentService.class);
+            when(mock.getEddieAccountingPointMarketDocumentStream()).thenReturn(Flux.empty());
             return mock;
         }
     }
