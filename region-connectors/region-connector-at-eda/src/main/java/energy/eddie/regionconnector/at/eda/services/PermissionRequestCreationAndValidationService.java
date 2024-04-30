@@ -6,6 +6,7 @@ import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
@@ -84,6 +85,7 @@ public class PermissionRequestCreationAndValidationService {
                     vhdDataNeed,
                     referenceDate
             );
+            case AccountingPointDataNeed ignored -> ccmoRequestForAccountingPoint(permissionRequest, referenceDate);
             default -> throw new UnsupportedDataNeedException(
                     EdaRegionConnectorMetadata.REGION_CONNECTOR_ID,
                     dataNeed.id(),
@@ -145,6 +147,27 @@ public class PermissionRequestCreationAndValidationService {
                 ),
                 RequestDataType.METERING_DATA,
                 granularity,
+                TRANSMISSION_CYCLE,
+                configuration,
+                ZonedDateTime.now(AT_ZONE_ID)
+        );
+    }
+
+    private CCMORequest ccmoRequestForAccountingPoint(
+            PermissionRequestForCreation permissionRequestForCreation,
+            LocalDate referenceDate
+    ) {
+        return new CCMORequest(
+                new DsoIdAndMeteringPoint(
+                        permissionRequestForCreation.dsoId(),
+                        permissionRequestForCreation.meteringPointId()
+                ),
+                new CCMOTimeFrame(
+                        referenceDate,
+                        null
+                ),
+                RequestDataType.MASTER_DATA,
+                AllowedGranularity.P1D,
                 TRANSMISSION_CYCLE,
                 configuration,
                 ZonedDateTime.now(AT_ZONE_ID)
