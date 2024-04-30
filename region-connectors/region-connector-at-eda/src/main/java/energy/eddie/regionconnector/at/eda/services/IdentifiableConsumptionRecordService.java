@@ -36,13 +36,14 @@ public class IdentifiableConsumptionRecordService {
         LocalDate startDate = consumptionRecord.startDate();
         LocalDate endDate = consumptionRecord.endDate();
         String meteringPoint = consumptionRecord.meteringPoint();
+
         List<AtPermissionRequest> permissionRequests = repository
-                .findAcceptedAndFulfilledByMeteringPointIdAndDate(
-                        meteringPoint,
-                        startDate
-                )
-                .stream()
-                .toList();
+                .findByConversationIdOrCMRequestId(consumptionRecord.conversationId(), null)
+                .map(List::of)
+                .orElseGet(() -> repository
+                        .findAcceptedAndFulfilledByMeteringPointIdAndDate(meteringPoint, startDate)
+                        .stream()
+                        .toList());
 
         if (permissionRequests.isEmpty()) {
             LOGGER.warn("No permission requests found for consumption record with date {}", startDate);
