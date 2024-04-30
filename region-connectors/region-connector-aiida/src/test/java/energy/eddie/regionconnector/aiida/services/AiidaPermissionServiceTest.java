@@ -15,12 +15,14 @@ import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistExce
 import energy.eddie.regionconnector.aiida.mqtt.MqttDto;
 import energy.eddie.regionconnector.aiida.mqtt.MqttService;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
+import energy.eddie.regionconnector.aiida.permission.request.events.FailedToTerminateEvent;
 import energy.eddie.regionconnector.aiida.permission.request.events.MqttCredentialsCreatedEvent;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
+import org.eclipse.paho.mqttv5.common.MqttException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +34,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -73,7 +76,10 @@ class AiidaPermissionServiceTest {
         PlainAiidaConfiguration config = new PlainAiidaConfiguration(
                 "customerId",
                 4,
-                HANDSHAKE_URL
+                HANDSHAKE_URL,
+                "tcp://localhost:1883",
+                null,
+                null
         );
         var fixedClock = Clock.fixed(Instant.parse("2023-10-15T15:00:00Z"),
                                      REGION_CONNECTOR_ZONE_ID);
@@ -270,5 +276,57 @@ class AiidaPermissionServiceTest {
         assertInstanceOf(MqttCredentialsCreatedEvent.class, permissionEventCaptor.getAllValues().get(1));
         assertEquals(PermissionProcessStatus.ACCEPTED, permissionEventCaptor.getAllValues().get(1).status());
         assertEquals(permissionId, permissionEventCaptor.getAllValues().get(1).permissionId());
+    }
+
+    @Test
+    void givenPermissionInInvalidState_terminatePermission_emitsFailedToTerminateEvent() {
+        // Given
+        var permissionId = "fooBarThisIsMyId";
+        var expectedMessage = "Cannot transition permission '%s' to state '%s', as it is not in a one of the permitted states '%s' but in state '%s'".formatted(
+                permissionId,
+                PermissionProcessStatus.TERMINATED.name(),
+                List.of(PermissionProcessStatus.ACCEPTED),
+                PermissionProcessStatus.FULFILLED);
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.status()).thenReturn(PermissionProcessStatus.FULFILLED);
+
+        // When
+        service.terminatePermission(permissionId);
+
+        // Then
+        verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.FAILED_TO_TERMINATE
+                && event instanceof FailedToTerminateEvent failedEvent
+                && failedEvent.message().equals(expectedMessage)));
+    }
+
+    @Test
+    void givenExceptionDuringTerminate_terminatePermission_emitsFailedToTerminateEvent() throws MqttException {
+        // Given
+        var permissionId = "fooBarThisIsMyId";
+        doThrow(new MqttException(1234567)).when(mockMqttService).sendTerminationRequest(any());
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
+
+        // When
+        service.terminatePermission(permissionId);
+
+        // Then
+        verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.FAILED_TO_TERMINATE
+                && event instanceof FailedToTerminateEvent failedEvent
+                && failedEvent.message().contains("1234567")));
+    }
+
+    @Test
+    void givenSuccessfulSend_terminatePermission_emitsTerminatedEvent() {
+        // Given
+        var permissionId = "fooBarThisIsMyId2";
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
+
+        // When
+        service.terminatePermission(permissionId);
+
+        // Then
+        verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.TERMINATED));
     }
 }

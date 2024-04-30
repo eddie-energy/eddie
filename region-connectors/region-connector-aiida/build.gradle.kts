@@ -25,8 +25,8 @@ dependencies {
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.security)
-
     implementation(libs.reactor.core)
+    implementation(libs.eclipse.paho.mqttv5.client)
 
 
     testImplementation(libs.junit.jupiter)

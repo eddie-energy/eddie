@@ -1,7 +1,12 @@
 package energy.eddie.regionconnector.aiida.config;
 
+import jakarta.annotation.Nullable;
+
 public record PlainAiidaConfiguration(
         String customerId,
         int bCryptStrength,
-        String handshakeUrl
+        String handshakeUrl,
+        String mqttServerUri,
+        @Nullable String mqttUsername,
+        @Nullable String mqttPassword
 ) implements AiidaConfiguration {}

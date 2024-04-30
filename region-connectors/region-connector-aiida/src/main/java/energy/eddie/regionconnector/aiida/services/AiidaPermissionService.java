@@ -17,6 +17,7 @@ import energy.eddie.regionconnector.aiida.mqtt.MqttDto;
 import energy.eddie.regionconnector.aiida.mqtt.MqttService;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.events.CreatedEvent;
+import energy.eddie.regionconnector.aiida.permission.request.events.FailedToTerminateEvent;
 import energy.eddie.regionconnector.aiida.permission.request.events.MqttCredentialsCreatedEvent;
 import energy.eddie.regionconnector.aiida.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
@@ -170,7 +171,7 @@ public class AiidaPermissionService {
         outbox.commit(new SimpleEvent(permissionId, REJECTED));
     }
 
-    private void checkIfPermissionHasValidStatus(
+    private AiidaPermissionRequest checkIfPermissionHasValidStatus(
             String permissionId,
             PermissionProcessStatus requiredStatus,
             PermissionProcessStatus desiredNextStatus
@@ -193,6 +194,22 @@ public class AiidaPermissionService {
                     desiredNextStatus,
                     requiredStatus,
                     request.status());
+        }
+
+        return request;
+    }
+
+    public void terminatePermission(String permissionId) {
+        LOGGER.info("Got request to terminate permission {}", permissionId);
+
+        // TODO How to handle ACLs for both events? Delete immediately? Schedule task? --> GH-970
+        try {
+            AiidaPermissionRequest request = checkIfPermissionHasValidStatus(permissionId, ACCEPTED, TERMINATED);
+            mqttService.sendTerminationRequest(request);
+            outbox.commit(new SimpleEvent(permissionId, TERMINATED));
+        } catch (Exception e) {
+            outbox.commit(new FailedToTerminateEvent(permissionId, e.getMessage()));
+            LOGGER.warn("Cannot terminate permission {}", permissionId, e);
         }
     }
 }

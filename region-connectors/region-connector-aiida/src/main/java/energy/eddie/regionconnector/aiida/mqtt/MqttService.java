@@ -1,12 +1,21 @@
 package energy.eddie.regionconnector.aiida.mqtt;
 
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
+import org.eclipse.paho.mqttv5.client.IMqttToken;
+import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
+import org.eclipse.paho.mqttv5.client.MqttCallback;
+import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
+import org.eclipse.paho.mqttv5.common.MqttException;
+import org.eclipse.paho.mqttv5.common.MqttMessage;
+import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
@@ -18,17 +27,21 @@ public class MqttService {
     private final MqttAclRepository aclRepository;
     private final PasswordGenerator passwordGenerator;
     private final BCryptPasswordEncoder encoder;
+    private final MqttAsyncClient mqttClient;
 
     public MqttService(
             MqttUserRepository userRepository,
             MqttAclRepository aclRepository,
             PasswordGenerator passwordGenerator,
-            BCryptPasswordEncoder encoder
+            BCryptPasswordEncoder encoder,
+            MqttAsyncClient mqttClient
     ) {
         this.userRepository = userRepository;
         this.aclRepository = aclRepository;
         this.passwordGenerator = passwordGenerator;
         this.encoder = encoder;
+        this.mqttClient = mqttClient;
+        this.mqttClient.setCallback(new LoggingMqttCallback());
     }
 
     /**
@@ -36,8 +49,9 @@ public class MqttService {
      * allow the new user to publish data and status messages, as well as to subscribe to its termination topic. The
      * newly created user and ACLs will be available to the MQTT broker, if it's configured to read from the database.
      * <p>
-     *     <b>Important:</b> This method does not validate if there is a permission with the ID {@code permissionId}.
+     * <b>Important:</b> This method does not validate if there is a permission with the ID {@code permissionId}.
      * </p>
+     *
      * @param permissionId For which permission to create the user.
      * @return MqttDto that contains the topics and the {@link MqttUser} with its password.
      * @throws IllegalArgumentException If there is already a MqttUser for the permissionId.
@@ -127,4 +141,43 @@ public class MqttService {
     private record UserPasswordWrapper(MqttUser user, String rawPassword) {}
 
     private record Topics(String publishTopic, String statusMessageTopic, String terminationTopic) {}
+
+    public void sendTerminationRequest(AiidaPermissionRequest permissionRequest) throws MqttException {
+        mqttClient.publish(permissionRequest.terminationTopic(),
+                           permissionRequest.permissionId().getBytes(StandardCharsets.UTF_8),
+                           1,
+                           true);
+    }
+
+    private static class LoggingMqttCallback implements MqttCallback {
+        @Override
+        public void disconnected(MqttDisconnectResponse disconnectResponse) {
+            LOGGER.warn("Disconnected from MQTT broker {}", disconnectResponse);
+        }
+
+        @Override
+        public void mqttErrorOccurred(MqttException exception) {
+            LOGGER.error("Mqtt error occurred", exception);
+        }
+
+        @Override
+        public void messageArrived(String topic, MqttMessage message) {
+            // Not needed, as no messages are read from the broker
+        }
+
+        @Override
+        public void deliveryComplete(IMqttToken token) {
+            LOGGER.trace("Delivery complete for MqttToken {}", token);
+        }
+
+        @Override
+        public void connectComplete(boolean reconnect, String serverURI) {
+            LOGGER.info("Connected to MQTT broker {}, was because of reconnect: {}", serverURI, reconnect);
+        }
+
+        @Override
+        public void authPacketArrived(int reasonCode, MqttProperties properties) {
+            // Not needed, as no advanced authentication is required
+        }
+    }
 }

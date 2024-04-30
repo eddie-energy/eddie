@@ -1,7 +1,10 @@
 package energy.eddie.regionconnector.aiida.mqtt;
 
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
+import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
+import org.eclipse.paho.mqttv5.common.MqttException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
@@ -29,6 +33,10 @@ class MqttServiceTest {
     private PasswordGenerator mockPasswordGenerator;
     @Mock
     private BCryptPasswordEncoder mockEncoder;
+    @Mock
+    private MqttAsyncClient mockAsyncClient;
+    @Mock
+    private AiidaPermissionRequest mockRequest;
     @Captor
     private ArgumentCaptor<MqttUser> mqttUserCaptor;
     @Captor
@@ -40,7 +48,8 @@ class MqttServiceTest {
         mqttService = new MqttService(mockUserRepository,
                                       mockAclRepository,
                                       mockPasswordGenerator,
-                                      mockEncoder);
+                                      mockEncoder,
+                                      mockAsyncClient);
     }
 
     @Test
@@ -100,5 +109,19 @@ class MqttServiceTest {
         assertEquals("aiida/v1/testId/data", dto.dataTopic());
         assertEquals("aiida/v1/testId/status", dto.statusTopic());
         assertEquals("aiida/v1/testId/termination", dto.terminationTopic());
+    }
+
+    @Test
+    void verify_sendTerminationRequest_sendsViaMqttClient() throws MqttException {
+        // Given
+        var permissionId = "testMyId";
+        when(mockRequest.permissionId()).thenReturn(permissionId);
+        when(mockRequest.terminationTopic()).thenReturn("MyTopic");
+
+        // When
+        mqttService.sendTerminationRequest(mockRequest);
+
+        // Then
+        verify(mockAsyncClient).publish("MyTopic", permissionId.getBytes(StandardCharsets.UTF_8), 1, true);
     }
 }

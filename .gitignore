@@ -119,3 +119,12 @@ regionconnector-fr-enedis.properties
 
 # ignore ponton authentification file
 id.dat
+
+# ignore paho mqtt persistence directories
+aiida/mqtt-persistence/
+mqtt-persistence/
+region-connector-aiida/mqtt-persistence
+region-connectors/region-connector-aiida/region-connector-aiida/mqtt-persistence/
+
+# ignore local run configuration
+application-local.properties

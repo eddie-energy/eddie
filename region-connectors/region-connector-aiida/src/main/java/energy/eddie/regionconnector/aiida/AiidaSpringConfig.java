@@ -12,7 +12,6 @@ import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
-import energy.eddie.regionconnector.aiida.dtos.TerminationRequest;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionEventRepository;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
@@ -24,19 +23,27 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.C
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
+import org.eclipse.paho.mqttv5.client.IMqttToken;
+import org.eclipse.paho.mqttv5.client.MqttActionListener;
+import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
+import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
+import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
+import org.eclipse.paho.mqttv5.common.MqttException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.Clock;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
-import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID;
+import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.*;
 import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
 import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_UPDATE_PERMISSION_REQUEST;
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
@@ -45,16 +52,32 @@ import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_C
 @SpringBootApplication
 @RegionConnector(name = REGION_CONNECTOR_ID)
 public class AiidaSpringConfig {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiidaSpringConfig.class);
+
     @Bean
     public AiidaConfiguration aiidaConfiguration(
             @Value("${" + CUSTOMER_ID + "}") String customerId,
             @Value("${" + BCRYPT_STRENGTH + "}") int bCryptStrength,
-            @Value("${" + EDDIE_PUBLIC_URL + "}") String eddiePublicUrl
+            @Value("${" + EDDIE_PUBLIC_URL + "}") String eddiePublicUrl,
+            @Value("${" + MQTT_SERVER_URI + "}") String mqttServerUri,
+            @Value("${" + MQTT_USERNAME + ":}") String mqttUsername,
+            @Value("${" + MQTT_PASSWORD + ":}") String mqttPassword
     ) {
         String eddieUrl = eddiePublicUrl.endsWith("/") ? eddiePublicUrl : eddiePublicUrl + "/";
         String handshakeUrl = eddieUrl + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + REGION_CONNECTOR_ID + PATH_UPDATE_PERMISSION_REQUEST;
 
-        return new PlainAiidaConfiguration(customerId, bCryptStrength, handshakeUrl);
+        if (mqttUsername != null && mqttUsername.trim().isEmpty())
+            mqttUsername = null;
+
+        if (mqttPassword != null && mqttPassword.trim().isEmpty())
+            mqttPassword = null;
+
+        return new PlainAiidaConfiguration(customerId,
+                                           bCryptStrength,
+                                           handshakeUrl,
+                                           mqttServerUri,
+                                           mqttUsername,
+                                           mqttPassword);
     }
 
     @Bean
@@ -62,19 +85,6 @@ public class AiidaSpringConfig {
         return new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .registerModule(new Jdk8Module());
-    }
-
-    @Bean
-    public Sinks.Many<TerminationRequest> terminationRequestSink() {
-        return Sinks
-                .many()
-                .unicast()
-                .onBackpressureBuffer();
-    }
-
-    @Bean
-    public Flux<TerminationRequest> terminationRequestFlux(Sinks.Many<TerminationRequest> terminationRequestSink) {
-        return terminationRequestSink.asFlux();
     }
 
     @Bean
@@ -139,7 +149,7 @@ public class AiidaSpringConfig {
                                                          configuration.customerId(),
                                                          cimConfig,
                                                          transmissionScheduleProvider,
-                                                         AiidaRegionConnectorMetadata.REGION_CONNECTOR_ZONE_ID);
+                                                         REGION_CONNECTOR_ZONE_ID);
     }
 
     @Bean
@@ -150,5 +160,43 @@ public class AiidaSpringConfig {
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder(AiidaConfiguration configuration) {
         return new BCryptPasswordEncoder(configuration.bCryptStrength());
+    }
+
+    /**
+     * Creates a new {@link MqttAsyncClient} and initiates the connection to
+     * {@link AiidaConfiguration#mqttServerUri()}.
+     */
+    @Bean
+    public MqttAsyncClient mqttClient(AiidaConfiguration configuration) throws MqttException {
+        MqttAsyncClient client = new MqttAsyncClient(configuration.mqttServerUri(),
+                                                     MQTT_CLIENT_ID,
+                                                     new MqttDefaultFilePersistence(
+                                                             "./region-connector-aiida/mqtt-persistence"));
+
+        MqttConnectionOptions connectionOptions = new MqttConnectionOptions();
+        connectionOptions.setCleanStart(false);
+        connectionOptions.setAutomaticReconnect(true);
+        connectionOptions.setAutomaticReconnectDelay(1, 30);
+
+        if (configuration.mqttUsername() != null)
+            connectionOptions.setUserName(configuration.mqttUsername());
+
+        String password = configuration.mqttPassword();
+        if (password != null)
+            connectionOptions.setPassword(password.getBytes(StandardCharsets.UTF_8));
+
+        client.connect(connectionOptions, null, new MqttActionListener() {
+            @Override
+            public void onSuccess(IMqttToken asyncActionToken) {
+                LOGGER.info("Successfully connected to MQTT broker {}", configuration.mqttServerUri());
+            }
+
+            @Override
+            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                LOGGER.error("Failed to connect to MQTT broker {}", configuration.mqttServerUri(), exception);
+            }
+        });
+
+        return client;
     }
 }

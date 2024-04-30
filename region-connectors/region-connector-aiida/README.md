@@ -34,10 +34,13 @@ ACLs and authentication ensure that only the permitted AIIDA instance may publis
 
 ### Configuration of the Region Connector
 
-| Configuration values                                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                   |
-|---------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `region-connector.aiida.customer.id`                    | A unique ID of the eligible party, should not be changed.                                                                                                                                                                                                                                                                                                                                                                     |
-| `region-connector.aiida.bcrypt.strength`                | Strength to be used by the BCryptPasswordEncoder instance used to hash the passwords for the MQTT user accounts for the AIIDA instances. It should be configured to a value that the hashing of a password takes around ~1 second. See also <a href="https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/crypto/bcrypt/BCrypt.html">Spring documentation for BCryptPasswordEncoder</a>. |
+| Configuration values                     | Description                                                                                                                                                                                                                                                                                                                                                                                                                   |
+|------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `region-connector.aiida.customer.id`     | A unique ID of the eligible party, should not be changed.                                                                                                                                                                                                                                                                                                                                                                     |
+| `region-connector.aiida.bcrypt.strength` | Strength to be used by the BCryptPasswordEncoder instance used to hash the passwords for the MQTT user accounts for the AIIDA instances. It should be configured to a value that the hashing of a password takes around ~1 second. See also <a href="https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/crypto/bcrypt/BCrypt.html">Spring documentation for BCryptPasswordEncoder</a>. |
+| `region-connector.aiida.mqtt.server.uri` | URI of the MQTT server which the AIIDA instances and the region connector use for communication.                                                                                                                                                                                                                                                                                                                              |
+| `region-connector.aiida.mqtt.username`   | (Optional) Username to use when connecting to the MQTT broker (if not supplied, no username is used).                                                                                                                                                                                                                                                                                                                         |
+| `region-connector.aiida.mqtt.password`   | (Optional) Password to use when connecting to the MQTT broker (if not supplied, no password is used).                                                                                                                                                                                                                                                                                                                         |
 
 ### .properties file
 
@@ -46,6 +49,9 @@ Example configuration for an `application.properties` file:
 ```properties
 region-connector.aiida.customer.id=my-unique-id
 region-connector.aiida.bcrypt.strength=14
+region-connector.aiida.mqtt.server.uri=tcp://localhost:1883
+region-connector.aiida.mqtt.username=testAccount
+region-connector.aiida.mqtt.password=superSafe
 ```
 
 ### Environment variables
@@ -60,6 +66,9 @@ Example configuration for dotenv file:
 ```dotenv
 REGION_CONNECTOR_AIIDA_CUSTOMER_ID=my-unique-id
 REGION_CONNECTOR_AIIDA_BCRYPT_STRENGTH=14
+REGION_CONNECTOR_AIIDA_MQTT_SERVER_URI=tcp://localhost:1883
+REGION_CONNECTOR_AIIDA_MQTT_USERNAME=testAccount
+REGION_CONNECTOR_AIIDA_MQTT_PASSWORD=superSafe
 ```
 
 ## Running the Region Connector via EDDIE
