@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cp:MasterData
+        xmlns:cp="http://www.ebutilities.at/schemata/customerprocesses/masterdata/01p32"
+        xmlns:ct="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20">
+    <cp:MarketParticipantDirectory DocumentMode="PROD" Duplicate="false"
+                                   SchemaVersion="01.32">
+        <ct:RoutingHeader>
+            <ct:Sender AddressType="ECNumber">
+                <ct:MessageAddress>AT099999</ct:MessageAddress>
+            </ct:Sender>
+            <ct:Receiver AddressType="ECNumber">
+                <ct:MessageAddress>AT100000</ct:MessageAddress>
+            </ct:Receiver>
+            <ct:DocumentCreationDateTime>2023-12-17T09:30:47Z</ct:DocumentCreationDateTime>
+        </ct:RoutingHeader>
+        <ct:Sector>01</ct:Sector>
+        <cp:MessageCode>ANTWORT_GN</cp:MessageCode>
+    </cp:MarketParticipantDirectory>
+    <cp:ProcessDirectory>
+        <ct:MessageId>AT09999901234572022081314235688</ct:MessageId>
+        <ct:ConversationId>AT09999901234562022081314235688</ct:ConversationId>
+        <ct:ProcessDate>2022-08-13</ct:ProcessDate>
+        <ct:MeteringPoint>AT099999012340000000000123456789</ct:MeteringPoint>
+        <cp:ContractPartner>
+            <cp:Salutation>a</cp:Salutation>
+            <cp:Name1 Changed="false">Random Company</cp:Name1>
+            <cp:ContractPartnerNumber>123456789</cp:ContractPartnerNumber>
+            <cp:CompanyRegistryNo>123456789</cp:CompanyRegistryNo>
+            <cp:VATNumber>123456789</cp:VATNumber>
+            <cp:Email>random@company.at</cp:Email>
+        </cp:ContractPartner>
+        <cp:DeliveryAddress>
+            <cp:ZIP Changed="false">1234</cp:ZIP>
+            <cp:City Changed="false">Neustadt</cp:City>
+            <cp:Street Changed="false">Obere Straße</cp:Street>
+            <cp:StreetNo Changed="false">27</cp:StreetNo>
+            <cp:DoorNumber Changed="false">3</cp:DoorNumber>
+        </cp:DeliveryAddress>
+        <cp:BillingData>
+            <cp:ReferenceNumber>123456</cp:ReferenceNumber>
+            <cp:GridInvoiceRecipient Changed="false">CUSTOMER</cp:GridInvoiceRecipient>
+            <cp:BudgetBillingCycle Changed="false">01</cp:BudgetBillingCycle>
+            <cp:MeterReadingMonth Changed="false">5</cp:MeterReadingMonth>
+            <cp:ConsumptionBillingCycle Changed="false">12</cp:ConsumptionBillingCycle>
+            <cp:ConsumptionBillingMonth Changed="false">5</cp:ConsumptionBillingMonth>
+            <cp:YearMonthOfNextBill>202305</cp:YearMonthOfNextBill>
+        </cp:BillingData>
+        <cp:MeteringPointData>
+            <cp:DeviceType Changed="false">IME</cp:DeviceType>
+            <cp:Device>
+                <cp:DeviceNumber Changed="false">123456789</cp:DeviceNumber>
+                <cp:MeterCode>1-1:1.8.1</cp:MeterCode>
+                <cp:MeterCode>1-1:1.8.2</cp:MeterCode>
+            </cp:Device>
+            <cp:SupStatus>ON</cp:SupStatus>
+            <cp:DSOTariffClass Changed="false">N</cp:DSOTariffClass>
+            <cp:EnergyDirection>GENERATION</cp:EnergyDirection>
+            <cp:EnergyCommunity Changed="false">NONE</cp:EnergyCommunity>
+            <cp:TypeOfGeneration Changed="false">NONE</cp:TypeOfGeneration>
+            <cp:ForecastConsumption>2500</cp:ForecastConsumption>
+            <cp:SupplyOfLastResort>false</cp:SupplyOfLastResort>
+            <cp:LoadProfileType Changed="false">H0</cp:LoadProfileType>
+            <cp:ElectricitySpecificData>
+                <cp:GridUsageLevel Changed="false">7</cp:GridUsageLevel>
+                <cp:GridLossLevel Changed="false">7</cp:GridLossLevel>
+            </cp:ElectricitySpecificData>
+        </cp:MeteringPointData>
+        <cp:InvoiceRecipient>
+            <cp:PartnerData>
+                <cp:Salutation>a</cp:Salutation>
+                <cp:Name1 Changed="false">Muster</cp:Name1>
+                <cp:Name2 Changed="false">Max</cp:Name2>
+                <cp:ContractPartnerNumber>123456789</cp:ContractPartnerNumber>
+                <cp:DateOfBirth>1957-08-13</cp:DateOfBirth>
+                <cp:Email>max@muster.at</cp:Email>
+            </cp:PartnerData>
+            <cp:AddressData>
+                <cp:ZIP Changed="false">1234</cp:ZIP>
+                <cp:City Changed="false">Neustadt</cp:City>
+                <cp:Street Changed="false">Obere Straße</cp:Street>
+                <cp:StreetNo Changed="false">27</cp:StreetNo>
+                <cp:DoorNumber Changed="false">3</cp:DoorNumber>
+            </cp:AddressData>
+        </cp:InvoiceRecipient>
+    </cp:ProcessDirectory>
+</cp:MasterData>
