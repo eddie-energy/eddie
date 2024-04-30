@@ -5,6 +5,7 @@ import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.time.Instant;
@@ -31,9 +32,14 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     @Column(name = "status")
     private final PermissionProcessStatus status;
     @Column(name = "termination_topic")
+    @Nullable
     private final String terminationTopic;
     @Column(name = "mqtt_username")
+    @Nullable
     private final String mqttUsername;
+    @Column(name = "message")
+    @Nullable
+    private final String message;
     @Column(name = "created")
     private final Instant created;
 
@@ -47,30 +53,8 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
         this.status = null;
         this.terminationTopic = null;
         this.mqttUsername = null;
+        this.message = null;
         this.created = null;
-    }
-
-    @SuppressWarnings("java:S107") // permission request requires a lot of top-level fields
-    public AiidaPermissionRequest(
-            String permissionId,
-            String connectionId,
-            String dataNeedId,
-            LocalDate start,
-            LocalDate end,
-            PermissionProcessStatus status,
-            String terminationTopic,
-            String mqttUsername,
-            Instant created
-    ) {
-        this.permissionId = permissionId;
-        this.connectionId = connectionId;
-        this.dataNeedId = dataNeedId;
-        this.start = start;
-        this.end = end;
-        this.status = status;
-        this.terminationTopic = terminationTopic;
-        this.mqttUsername = mqttUsername;
-        this.created = created;
     }
 
     @Override
@@ -104,8 +88,21 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     }
 
     @Override
+    @Nullable
     public String terminationTopic() {
         return terminationTopic;
+    }
+
+    @Override
+    @Nullable
+    public String mqttUsername() {
+        return mqttUsername;
+    }
+
+    @Override
+    @Nullable
+    public String message() {
+        return message;
     }
 
     @Override
