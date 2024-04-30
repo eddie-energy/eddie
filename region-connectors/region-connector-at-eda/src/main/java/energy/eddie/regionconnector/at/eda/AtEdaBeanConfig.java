@@ -17,7 +17,9 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import energy.eddie.regionconnector.at.eda.ponton.NoOpEdaAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
@@ -31,6 +33,7 @@ import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistori
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
 import energy.eddie.regionconnector.at.eda.provider.v0_82.EdaEddieValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecordService;
+import energy.eddie.regionconnector.at.eda.services.IdentifiableMasterDataService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -97,8 +100,20 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
+    public Flux<IdentifiableMasterData> identifiableMasterDataFlux(
+            IdentifiableMasterDataService identifiableMasterDataService
+    ) {
+        return identifiableMasterDataService.getIdentifiableMasterDataStream();
+    }
+
+    @Bean
     public Flux<EdaConsumptionRecord> consumptionRecordStream(EdaAdapter edaAdapter) {
         return edaAdapter.getConsumptionRecordStream();
+    }
+
+    @Bean
+    public Flux<EdaMasterData> masterDataStream(EdaAdapter edaAdapter) {
+        return edaAdapter.getMasterDataStream();
     }
 
     @Bean
