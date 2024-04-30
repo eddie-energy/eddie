@@ -110,17 +110,17 @@ public class PermissionRequestCreationAndValidationService {
                 permissionRequest.dataNeedId(),
                 new EdaDataSourceInformation(permissionRequest.dsoId()),
                 created,
-                wrapper.calculatedStart(),
-                wrapper.calculatedEnd(),
+                ccmoRequest.start(),
+                ccmoRequest.end().orElse(ccmoRequest.start()),
                 permissionRequest.meteringPointId(),
-                granularity,
+                ccmoRequest.granularity(),
                 ccmoRequest.cmRequestId(),
                 ccmoRequest.messageId()
         );
         outbox.commit(event);
         var errors = validateAttributes(event);
         if (errors.isEmpty()) {
-            outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.VALIDATED));
+            outbox.commit(new ValidatedEvent(permissionId, ccmoRequest));
             return new CreatedPermissionRequest(permissionId, ccmoRequest.cmRequestId());
         } else {
             outbox.commit(new MalformedEvent(permissionId, errors));
