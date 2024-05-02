@@ -331,4 +331,31 @@ class AiidaPermissionServiceTest {
         // Then
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.TERMINATED));
     }
+
+    @Test
+    void givenNonExistingPermissionId_detailsForPermission_throws() {
+        // Given
+        when(mockViewRepository.findByPermissionId(anyString())).thenReturn(Optional.empty());
+
+        // When, Then
+        assertThrows(PermissionNotFoundException.class, () -> service.detailsForPermission("nonExistingPermissionId"));
+    }
+
+    @Test
+    void givenValidPermissionId_detailsForPermission_returnsAsExpected() throws DataNeedNotFoundException, PermissionNotFoundException {
+        // Given
+        when(mockViewRepository.findByPermissionId("fooBar")).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.permissionId()).thenReturn("fooBar");
+        when(mockRequest.dataNeedId()).thenReturn("dataNeedId");
+        when(mockDataNeedsService.findById("dataNeedId")).thenReturn(Optional.of(mockDataNeed));
+        when(mockDataNeed.name()).thenReturn("MyName");
+
+        // When
+        var details = service.detailsForPermission("fooBar");
+
+        // Then
+        assertEquals("fooBar", details.request().permissionId());
+        assertEquals("dataNeedId", details.request().dataNeedId());
+        assertEquals("MyName", details.dataNeed().name());
+    }
 }

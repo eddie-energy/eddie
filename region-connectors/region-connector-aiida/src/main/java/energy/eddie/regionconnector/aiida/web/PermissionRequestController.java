@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.regionconnector.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.dtos.PermissionUpdateDto;
 import energy.eddie.regionconnector.aiida.dtos.QrCodeDto;
@@ -30,7 +31,7 @@ import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSI
 
 @RestController
 public class PermissionRequestController {
-    public static final String PATH_UPDATE_PERMISSION_REQUEST = PATH_PERMISSION_REQUEST + "/{permissionId}";
+    public static final String PATH_HANDSHAKE_PERMISSION_REQUEST = PATH_PERMISSION_REQUEST + "/{permissionId}";
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final AiidaPermissionService permissionService;
 
@@ -53,7 +54,7 @@ public class PermissionRequestController {
         return ResponseEntity.created(location).body(qrCodeDto);
     }
 
-    @PatchMapping(value = PATH_UPDATE_PERMISSION_REQUEST,
+    @PatchMapping(value = PATH_HANDSHAKE_PERMISSION_REQUEST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updatePermissionRequest(
@@ -82,5 +83,10 @@ public class PermissionRequestController {
                                                   List.of(new EddieApiError("Operation not supported"))));
             }
         }
+    }
+
+    @GetMapping(value = PATH_HANDSHAKE_PERMISSION_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PermissionDetailsDto> getPermissionDetails(@PathVariable String permissionId) throws DataNeedNotFoundException, PermissionNotFoundException {
+        return ResponseEntity.ok(permissionService.detailsForPermission(permissionId));
     }
 }

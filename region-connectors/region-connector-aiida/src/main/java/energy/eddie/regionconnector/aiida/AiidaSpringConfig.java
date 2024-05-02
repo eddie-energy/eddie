@@ -45,7 +45,7 @@ import java.time.Clock;
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.*;
 import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
-import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_UPDATE_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_HANDSHAKE_PERMISSION_REQUEST;
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
 
 @EnableWebMvc
@@ -64,7 +64,7 @@ public class AiidaSpringConfig {
             @Value("${" + MQTT_PASSWORD + ":}") String mqttPassword
     ) {
         String eddieUrl = eddiePublicUrl.endsWith("/") ? eddiePublicUrl : eddiePublicUrl + "/";
-        String handshakeUrl = eddieUrl + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + REGION_CONNECTOR_ID + PATH_UPDATE_PERMISSION_REQUEST;
+        String handshakeUrl = eddieUrl + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + REGION_CONNECTOR_ID + PATH_HANDSHAKE_PERMISSION_REQUEST;
 
         if (mqttUsername != null && mqttUsername.trim().isEmpty())
             mqttUsername = null;

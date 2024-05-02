@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.aiida.permission.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
@@ -19,14 +21,21 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     private static final AiidaDataSourceInformation dataSourceInformation = new AiidaDataSourceInformation();
     @Id
     @Column(name = "permission_id")
+    @JsonProperty(value = "permission_id")
     private final String permissionId;
     @Column(name = "connection_id")
+    @JsonProperty(value = "connection_id")
     private final String connectionId;
     @Column(name = "data_need_id")
+    @JsonProperty(value = "data_need_id")
     private final String dataNeedId;
     @Column(name = "permission_start")
+    @JsonProperty
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private final LocalDate start;
     @Column(name = "permission_end")
+    @JsonProperty
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private final LocalDate end;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

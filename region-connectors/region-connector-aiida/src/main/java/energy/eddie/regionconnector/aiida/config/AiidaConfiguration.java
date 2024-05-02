@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.aiida.config;
 
 import jakarta.annotation.Nullable;
+import org.springframework.web.util.UriTemplate;
 
 public interface AiidaConfiguration {
     String PREFIX = "region-connector.aiida.";
@@ -29,7 +30,9 @@ public interface AiidaConfiguration {
 
     /**
      * URL which should be used by AIIDA instances as an endpoint for the handshake. Is a template with a placeholder
-     * {@code permissionId} that can be replaced by using {@link org.springframework.web.util.UriTemplate}.
+     * {@code permissionId} that can be replaced by using {@link UriTemplate}. A PATCH request to this URL can be used
+     * to change the state of the permission request (e.g. to ACCEPTED), whereas a GET request will return the details
+     * of the permission request.
      */
     String handshakeUrl();
 
