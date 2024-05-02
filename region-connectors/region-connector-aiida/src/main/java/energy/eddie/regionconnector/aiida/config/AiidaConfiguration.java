@@ -1,9 +1,14 @@
 package energy.eddie.regionconnector.aiida.config;
 
+import jakarta.annotation.Nullable;
+
 public interface AiidaConfiguration {
     String PREFIX = "region-connector.aiida.";
     String CUSTOMER_ID = PREFIX + "customer.id";
     String BCRYPT_STRENGTH = PREFIX + "bcrypt.strength";
+    String MQTT_SERVER_URI = PREFIX + "mqtt.server.uri";
+    String MQTT_USERNAME = PREFIX + "mqtt.username";
+    String MQTT_PASSWORD = PREFIX + "mqtt.password";
     String EDDIE_PUBLIC_URL = "eddie.public.url";
 
     /**
@@ -27,4 +32,21 @@ public interface AiidaConfiguration {
      * {@code permissionId} that can be replaced by using {@link org.springframework.web.util.UriTemplate}.
      */
     String handshakeUrl();
+
+    /**
+     * URI of the MQTT broker to which termination requests should be published.
+     */
+    String mqttServerUri();
+
+    /**
+     * Optional username to use to authenticate to the MQTT broker.
+     */
+    @Nullable
+    String mqttUsername();
+
+    /**
+     * Optional password to use to authenticate to the MQTT broker.
+     */
+    @Nullable
+    String mqttPassword();
 }

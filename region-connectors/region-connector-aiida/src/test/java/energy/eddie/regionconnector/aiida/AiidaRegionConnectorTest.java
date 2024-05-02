@@ -3,9 +3,11 @@ package energy.eddie.regionconnector.aiida;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.regionconnector.aiida.services.AiidaPermissionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
@@ -15,9 +17,12 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class AiidaRegionConnectorTest {
+    @Mock
+    private AiidaPermissionService mockService;
     private final String expectedRcId = "aiida";
     private AiidaRegionConnector connector;
     private final Sinks.Many<ConnectionStatusMessage> statusSink = Sinks.many().multicast().onBackpressureBuffer();
@@ -25,7 +30,7 @@ class AiidaRegionConnectorTest {
 
     @BeforeEach
     void setUp() {
-        connector = new AiidaRegionConnector(statusSink, documentSink);
+        connector = new AiidaRegionConnector(statusSink, documentSink, mockService);
     }
 
     @Test
@@ -35,10 +40,14 @@ class AiidaRegionConnectorTest {
 
     @Test
     void verify_terminate_callsMqtt() {
+        // Given
         var permissionId = UUID.randomUUID().toString();
+
+        // When
         connector.terminatePermission(permissionId);
 
-        // TODO verify MQTT call --> GH-963
+        // Then
+        verify(mockService).terminatePermission(permissionId);
     }
 
     @Test
