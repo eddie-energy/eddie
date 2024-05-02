@@ -3,12 +3,12 @@ package energy.eddie.regionconnector.dk.energinet.permission.request;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.dataneeds.duration.AbsoluteDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import org.junit.jupiter.api.Test;
@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Set;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
@@ -32,7 +33,7 @@ class PermissionRequestFactoryTest {
     @Mock
     private DataNeedsService mockDataNeedsService;
     @Mock
-    private DataNeedWrapper mockWrapper;
+    private AbsoluteDuration absoluteDuration;
     @Mock
     private ValidatedHistoricalDataDataNeed mockDataNeed;
     @Mock
@@ -44,11 +45,10 @@ class PermissionRequestFactoryTest {
     void testCreatePermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
         var requestForCreation = new PermissionRequestForCreation("foo", "token", "bar", "foo");
-        when(mockDataNeedsService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any())).thenReturn(
-                mockWrapper);
-        when(mockWrapper.calculatedStart()).thenReturn(LocalDate.now(DK_ZONE_ID));
-        when(mockWrapper.calculatedEnd()).thenReturn(LocalDate.now(DK_ZONE_ID).plusDays(5));
-        when(mockWrapper.timeframedDataNeed()).thenReturn(mockDataNeed);
+        when(mockDataNeedsService.findById(any())).thenReturn(Optional.of(mockDataNeed));
+        when(mockDataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(LocalDate.now(DK_ZONE_ID));
+        when(absoluteDuration.end()).thenReturn(LocalDate.now(DK_ZONE_ID).plusDays(5));
         when(mockDataNeed.minGranularity()).thenReturn(Granularity.PT15M);
 
         var permissionRequestFactory = new PermissionRequestFactory(customerApi,
@@ -91,11 +91,9 @@ class PermissionRequestFactoryTest {
     }
 
     @Test
-    void givenUnsupportedDataNeedType_throws() throws DataNeedNotFoundException {
+    void givenUnsupportedDataNeedType_throws() {
         // Given
-        when(mockDataNeedsService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any())).thenReturn(
-                mockWrapper);
-        when(mockWrapper.timeframedDataNeed()).thenReturn(mockAiidaNeed);
+        when(mockDataNeedsService.findById(any())).thenReturn(Optional.of(mockAiidaNeed));
         var permissionRequestFactory = new PermissionRequestFactory(customerApi,
                                                                     Set.of(),
                                                                     new StateBuilderFactory(),
@@ -111,11 +109,12 @@ class PermissionRequestFactoryTest {
     }
 
     @Test
-    void givenUnsupportedGranularity_throws() throws DataNeedNotFoundException {
+    void givenUnsupportedGranularity_throws() {
         // Given
-        when(mockDataNeedsService.findDataNeedAndCalculateStartAndEnd(any(), any(), any(), any())).thenReturn(
-                mockWrapper);
-        when(mockWrapper.timeframedDataNeed()).thenReturn(mockDataNeed);
+        when(mockDataNeedsService.findById(any())).thenReturn(Optional.of(mockDataNeed));
+        when(mockDataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(LocalDate.now(DK_ZONE_ID));
+        when(absoluteDuration.end()).thenReturn(LocalDate.now(DK_ZONE_ID).plusDays(5));
         when(mockDataNeed.minGranularity()).thenReturn(Granularity.PT5M);
         var permissionRequestFactory = new PermissionRequestFactory(customerApi,
                                                                     Set.of(),

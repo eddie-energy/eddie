@@ -5,9 +5,11 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.dataneeds.utils.DataNeedWrapper;
+import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
@@ -75,19 +77,25 @@ public class AiidaPermissionService {
         var permissionId = UUID.randomUUID().toString();
         LOGGER.info("Creating new permission request with ID {}", permissionId);
 
+
+        var dataNeed = dataNeedsService.findById(forCreation.dataNeedId())
+                                       .orElseThrow(() -> new DataNeedNotFoundException(forCreation.dataNeedId()));
+
         LocalDate today = LocalDate.now(clock);
-
-        DataNeedWrapper wrapper = dataNeedsService.findDataNeedAndCalculateStartAndEnd(
-                forCreation.dataNeedId(),
-                today,
-                // in case of open end/start, fixed values are used
-                Period.ZERO,
-                Period.ZERO);
-
-        if (!(wrapper.timeframedDataNeed() instanceof GenericAiidaDataNeed genericAiidaDataNeed))
+        if (!(dataNeed instanceof GenericAiidaDataNeed genericAiidaDataNeed))
             throw new UnsupportedDataNeedException(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                    forCreation.dataNeedId(),
                                                    "Only GenericDataNeeds are currently supported.");
+
+
+        DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(
+                genericAiidaDataNeed,
+                today,
+                // in case of open end/start, fixed values are used
+                Period.ZERO,
+                Period.ZERO
+        );
+
 
         // use nice looking fixed values if data need uses open start/end --> only possible for AIIDA because it has no real limits how long data can be accessed
         LocalDate startDate = getAppropriateStartDate(wrapper);
@@ -117,7 +125,8 @@ public class AiidaPermissionService {
      * Returns the calculated start date from the wrapper or the fixed start date if the data need is using open start.
      *
      * @param wrapper Wrapper as returned from
-     *                {@link DataNeedsService#findDataNeedAndCalculateStartAndEnd(String, LocalDate, Period, Period)}
+     *                {@link TimeframedDataNeedUtils#calculateRelativeStartAndEnd(TimeframedDataNeed, LocalDate, Period,
+     *                Period)}
      * @return LocalDate to use as start date for the permission request.
      */
     private static LocalDate getAppropriateStartDate(DataNeedWrapper wrapper) {
@@ -132,7 +141,8 @@ public class AiidaPermissionService {
      * Returns the calculated end date from the wrapper or the fixed end date if the data need is using open start.
      *
      * @param wrapper Wrapper as returned from
-     *                {@link DataNeedsService#findDataNeedAndCalculateStartAndEnd(String, LocalDate, Period, Period)}
+     *                {@link TimeframedDataNeedUtils#calculateRelativeStartAndEnd(TimeframedDataNeed, LocalDate, Period,
+     *                Period)} (String, LocalDate, Period, Period)}
      * @return LocalDate to use as end date for the permission request.
      */
     private static LocalDate getAppropriateEndDate(DataNeedWrapper wrapper) {

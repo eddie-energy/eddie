@@ -8,6 +8,7 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
@@ -119,18 +120,26 @@ public class PermissionRequestService {
     ) throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
         LOGGER.info("Got request to create a new permission, request was: {}", requestForCreation);
         var refDate = LocalDate.now(DatadisRegionConnectorMetadata.ZONE_ID_SPAIN);
-        var dataNeed = dataNeedsService.findDataNeedAndCalculateStartAndEnd(requestForCreation.dataNeedId(), refDate,
-                                                                            MAX_TIME_IN_THE_PAST,
-                                                                            MAX_TIME_IN_THE_FUTURE);
-        if (!(dataNeed.timeframedDataNeed() instanceof ValidatedHistoricalDataDataNeed vhdDataNeed)) {
+
+        var dataNeed = dataNeedsService.findById(requestForCreation.dataNeedId())
+                                       .orElseThrow(() -> new DataNeedNotFoundException(requestForCreation.dataNeedId()));
+
+        if (!(dataNeed instanceof ValidatedHistoricalDataDataNeed vhdDataNeed)) {
             throw new UnsupportedDataNeedException(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                    requestForCreation.dataNeedId(),
                                                    "This region connector only supports ValidatedHistoricalData DataNeeds");
         }
+
+        var dataNeedWrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(
+                vhdDataNeed,
+                refDate,
+                MAX_TIME_IN_THE_PAST,
+                MAX_TIME_IN_THE_FUTURE
+        );
         var granularity = findGranularity(vhdDataNeed.id(), vhdDataNeed.minGranularity(), vhdDataNeed.maxGranularity());
         var request = permissionRequestFactory.create(requestForCreation,
-                                                      dataNeed.calculatedStart(),
-                                                      dataNeed.calculatedEnd(),
+                                                      dataNeedWrapper.calculatedStart(),
+                                                      dataNeedWrapper.calculatedEnd(),
                                                       granularity);
         request.validate();
         request.sendToPermissionAdministrator();

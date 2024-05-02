@@ -9,6 +9,7 @@ import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.dto.*;
+import energy.eddie.regionconnector.at.eda.dto.masterdata.*;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.HealthCheck;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.MessengerStatus;
@@ -16,6 +17,7 @@ import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationType;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConnectionTestImpl;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
+import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
 import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,8 +29,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.StepVerifier;
 
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.at.eda.models.CMRequestStatus.Status.ERROR;
@@ -263,8 +267,58 @@ class PontonXPAdapterTest {
             }
 
             @Override
+            public String messageId() {
+                return "";
+            }
+
+            @Override
+            public Sector sector() {
+                return null;
+            }
+
+            @Override
+            public XMLGregorianCalendar documentCreationDateTime() {
+                return null;
+            }
+
+            @Override
+            public String senderMessageAddress() {
+                return "";
+            }
+
+            @Override
+            public String receiverMessageAddress() {
+                return "";
+            }
+
+            @Override
             public String meteringPoint() {
                 return null;
+            }
+
+            @Override
+            public MeteringPointData meteringPointData() {
+                return null;
+            }
+
+            @Override
+            public Optional<BillingData> billingData() {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<ContractPartner> contractPartner() {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<DeliveryAddress> installationAddress() {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<InvoiceRecipient> invoiceRecipient() {
+                return Optional.empty();
             }
 
             @Override

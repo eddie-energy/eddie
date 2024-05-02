@@ -192,8 +192,10 @@ fun generateBindingsFile(xsdFile: File, bindingsFilePath: String) {
             for (j in 0 until enumerationElements.length) {
                 val enumElement = enumerationElements.item(j) as Element
                 val value = enumElement.getAttribute("value")
-                val doc = enumElement.getElementsByTagName("xs:documentation").item(0).textContent.trimEnd()
-                val javaName = doc.toJavaEnumName()
+                val doc = enumElement.getElementsByTagName("xs:documentation")
+                val javaName = if (doc.length > 0) { // only use the documentation if it exists
+                    doc.item(0).textContent.trimEnd().toJavaEnumName()
+                } else value.toJavaEnumName()
                 // Makes the generated enums have usable names
                 bindings.append("                <typesafeEnumMember name=\"$javaName\" value=\"$value\"/>\n")
             }
