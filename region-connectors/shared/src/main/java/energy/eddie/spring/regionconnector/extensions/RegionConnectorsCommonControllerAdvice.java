@@ -10,7 +10,6 @@ import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
-import energy.eddie.regionconnector.shared.validation.SupportedGranularities;
 import energy.eddie.regionconnector.shared.web.StateValidationErrors;
 import energy.eddie.regionconnector.shared.web.ValidationErrors;
 import org.slf4j.Logger;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +51,7 @@ public class RegionConnectorsCommonControllerAdvice {
             var invalidFormatEx = (InvalidFormatException) exception.getCause();
 
             var fieldName = invalidFormatEx.getPath().getLast().getFieldName();
-            Object[] validEnumConstants = getValidEnumConstantsAndFieldName(invalidFormatEx);
+            Object[] validEnumConstants = invalidFormatEx.getTargetType().getEnumConstants();
 
             errorDetails = String.format("%s: Invalid enum value: '%s'. Valid values: %s.",
                                          fieldName, invalidFormatEx.getValue(), Arrays.toString(validEnumConstants));
@@ -78,31 +76,6 @@ public class RegionConnectorsCommonControllerAdvice {
     private boolean isInvalidFormatExceptionCauseOfException(HttpMessageNotReadableException exception) {
         return exception.getCause() instanceof InvalidFormatException invalidFormatEx
                 && invalidFormatEx.getPath() != null;
-    }
-
-    /**
-     * Returns an array of the valid enum constants for the field that could not be matched. If the field is of type
-     * {@link energy.eddie.api.agnostic.Granularity} and annotated with {@link SupportedGranularities}, only the
-     * supported granularities are returned.
-     *
-     * @param invalidFormatEx Exception that was caused by an invalid enum value.
-     * @return Array of valid enum constants.
-     */
-    private Object[] getValidEnumConstantsAndFieldName(InvalidFormatException invalidFormatEx) {
-        try {
-            // try to get array of supported granularities from annotation
-            var reference = invalidFormatEx.getPath().getLast();
-            var fieldName = reference.getFieldName();
-            var fieldClass = reference.getFrom();
-            Class<?> fromClass = Class.forName(((Class<?>) fieldClass).getName());
-            Field field = fromClass.getDeclaredField(fieldName);
-            SupportedGranularities annotation = field.getAnnotation(SupportedGranularities.class);
-            return annotation.value();
-        } catch (Exception ignoredException) {
-            // the field is either not of type Granularity or not annotated, treat it as a normal enum field and return all enum constants
-        }
-
-        return invalidFormatEx.getTargetType().getEnumConstants();
     }
 
     /**

@@ -14,7 +14,6 @@ import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
-import energy.eddie.regionconnector.shared.validation.SupportedGranularities;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
@@ -27,6 +26,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -82,12 +82,11 @@ class RegionConnectorsCommonControllerAdviceTest {
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
         // Only the annotated values are included in the valid values array
-        assertEquals("granularity: Invalid enum value: 'P1Y'. Valid values: [PT15M, P1D].",
-                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+        assertEquals("granularity: Invalid enum value: 'P1Y'. Valid values: " + Arrays.toString(Granularity.values()) + ".",
+                responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 
     record TestClassWithGranularity(String ignored,
-                                    @SupportedGranularities({Granularity.PT15M, Granularity.P1D})
                                     Granularity granularity) {
     }
 
