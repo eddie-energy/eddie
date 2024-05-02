@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.aiida.services;
 
+import energy.eddie.api.agnostic.aiida.MqttDto;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
@@ -15,7 +16,6 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
-import energy.eddie.regionconnector.aiida.mqtt.MqttDto;
 import energy.eddie.regionconnector.aiida.mqtt.MqttService;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.events.FailedToTerminateEvent;

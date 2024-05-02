@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.aiida.dtos;
+package energy.eddie.api.agnostic.aiida;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

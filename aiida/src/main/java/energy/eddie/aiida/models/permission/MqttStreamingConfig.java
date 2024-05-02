@@ -1,5 +1,6 @@
 package energy.eddie.aiida.models.permission;
 
+import energy.eddie.api.agnostic.aiida.MqttDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -44,6 +45,16 @@ public class MqttStreamingConfig {
 
     @SuppressWarnings("NullAway.Init") // required by JPA
     protected MqttStreamingConfig() {
+    }
+
+    public MqttStreamingConfig(String permissionId, MqttDto mqttDto) {
+        this.permissionId = permissionId;
+        this.username = mqttDto.username();
+        this.password = mqttDto.password();
+        this.serverUri = mqttDto.serverUri();
+        this.dataTopic = mqttDto.dataTopic();
+        this.statusTopic = mqttDto.statusTopic();
+        this.terminationTopic = mqttDto.terminationTopic();
     }
 
     public String permissionId() {
