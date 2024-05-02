@@ -23,7 +23,7 @@ class ValidatedHistoricalDataMarketDocumentBuilderTest {
     @Test
     void build_afterConstruction_setsStaticData() {
         var validatedHistoricalDataMarketDocument = new ValidatedHistoricalDataMarketDocumentBuilder(mock(
-                SeriesPeriodBuilder.class), mock(TimeSeriesBuilder.class)).build();
+                SeriesPeriodBuilderFactory.class), mock(TimeSeriesBuilderFactory.class)).build();
 
         assertEquals("0.82", validatedHistoricalDataMarketDocument.getRevisionNumber());
         assertEquals(MessageTypeList.MEASUREMENT_VALUE_DOCUMENT, validatedHistoricalDataMarketDocument.getType());
@@ -47,7 +47,7 @@ class ValidatedHistoricalDataMarketDocumentBuilderTest {
                 .setDocumentCreationDateTime(date);
 
         ValidatedHistoricalDataMarketDocumentBuilder uut = new ValidatedHistoricalDataMarketDocumentBuilder(
-                mock(SeriesPeriodBuilder.class), mock(TimeSeriesBuilder.class))
+                mock(SeriesPeriodBuilderFactory.class), mock(TimeSeriesBuilderFactory.class))
                 .withRoutingHeaderData(consumptionRecord, CodingSchemeTypeList.NORWAY_NATIONAL_CODING_SCHEME);
         var validatedHistoricalDataMarketDocument = uut.build();
 
@@ -83,6 +83,8 @@ class ValidatedHistoricalDataMarketDocumentBuilderTest {
         when(seriesPeriodBuilder.withEnergy(any())).thenReturn(seriesPeriodBuilder);
         when(seriesPeriodBuilder.withEnergyData(any())).thenReturn(seriesPeriodBuilder);
         when(seriesPeriodBuilder.build()).thenReturn(new SeriesPeriodComplexType());
+        SeriesPeriodBuilderFactory seriesPeriodBuilderFactory = mock(SeriesPeriodBuilderFactory.class);
+        when(seriesPeriodBuilderFactory.create()).thenReturn(seriesPeriodBuilder);
 
         TimeSeriesBuilder timeSeriesBuilder = mock(TimeSeriesBuilder.class);
         when(timeSeriesBuilder.withConsumptionRecord(any())).thenReturn(timeSeriesBuilder);
@@ -90,10 +92,12 @@ class ValidatedHistoricalDataMarketDocumentBuilderTest {
         when(timeSeriesBuilder.withEnergyData(any())).thenReturn(timeSeriesBuilder);
         when(timeSeriesBuilder.withSeriesPeriod(any())).thenReturn(timeSeriesBuilder);
         when(timeSeriesBuilder.build()).thenReturn(new TimeSeriesComplexType());
+        TimeSeriesBuilderFactory timeSeriesBuilderFactory = mock(TimeSeriesBuilderFactory.class);
+        when(timeSeriesBuilderFactory.create()).thenReturn(timeSeriesBuilder);
 
 
         ValidatedHistoricalDataMarketDocumentBuilder uut = new ValidatedHistoricalDataMarketDocumentBuilder(
-                seriesPeriodBuilder, timeSeriesBuilder)
+                seriesPeriodBuilderFactory, timeSeriesBuilderFactory)
                 .withConsumptionRecord(consumptionRecord);
         var validatedHistoricalDataMarketDocument = uut.build();
 

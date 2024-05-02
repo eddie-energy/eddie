@@ -23,18 +23,18 @@ public class ValidatedHistoricalDataMarketDocumentBuilder {
             .withSenderMarketParticipantMarketRoleType(RoleTypeList.METERING_POINT_ADMINISTRATOR)
             .withReceiverMarketParticipantMarketRoleType(RoleTypeList.CONSUMER)
             .withProcessProcessType(ProcessTypeList.REALISED);
-    private final SeriesPeriodBuilder seriesPeriodBuilder;
-    private final TimeSeriesBuilder timeSeriesBuilder;
+    private final SeriesPeriodBuilderFactory seriesPeriodBuilderFactory;
+    private final TimeSeriesBuilderFactory timeSeriesBuilderFactory;
 
     public ValidatedHistoricalDataMarketDocumentBuilder(
-            SeriesPeriodBuilder seriesPeriodBuilder,
-            TimeSeriesBuilder timeSeriesBuilder
+            SeriesPeriodBuilderFactory seriesPeriodBuilderFactory,
+            TimeSeriesBuilderFactory timeSeriesBuilderFactory
     ) {
-        requireNonNull(seriesPeriodBuilder);
-        requireNonNull(timeSeriesBuilder);
+        requireNonNull(seriesPeriodBuilderFactory);
+        requireNonNull(timeSeriesBuilderFactory);
 
-        this.seriesPeriodBuilder = seriesPeriodBuilder;
-        this.timeSeriesBuilder = timeSeriesBuilder;
+        this.seriesPeriodBuilderFactory = seriesPeriodBuilderFactory;
+        this.timeSeriesBuilderFactory = timeSeriesBuilderFactory;
     }
 
 
@@ -62,11 +62,13 @@ public class ValidatedHistoricalDataMarketDocumentBuilder {
         var timeSeriesList = new ValidatedHistoricalDataMarketDocument.TimeSeriesList();
         for (Energy energy : consumptionRecord.energy()) {
             for (EnergyData energyData : energy.energyData()) {
-                SeriesPeriodComplexType seriesPeriod = seriesPeriodBuilder
+                SeriesPeriodComplexType seriesPeriod = seriesPeriodBuilderFactory
+                        .create()
                         .withEnergy(energy)
                         .withEnergyData(energyData)
                         .build();
-                TimeSeriesComplexType timeSeries = timeSeriesBuilder
+                TimeSeriesComplexType timeSeries = timeSeriesBuilderFactory
+                        .create()
                         .withConsumptionRecord(consumptionRecord)
                         .withEnergy(energy)
                         .withEnergyData(energyData)
