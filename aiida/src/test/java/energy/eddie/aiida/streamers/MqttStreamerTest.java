@@ -1,6 +1,5 @@
 package energy.eddie.aiida.streamers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
@@ -8,6 +7,7 @@ import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordFactory;
+import energy.eddie.aiida.repositories.FailedToSendRepository;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -37,6 +37,8 @@ class MqttStreamerTest {
     private IMqttToken mockToken;
     @Mock
     private MqttMessage mockMessage;
+    @Mock
+    private FailedToSendRepository mockRepository;
     private final ObjectMapper mapper = new AiidaConfiguration().objectMapper();
     private final TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
     private final TestPublisher<ConnectionStatusMessage> statusMessagePublisher = TestPublisher.create();
@@ -63,7 +65,10 @@ class MqttStreamerTest {
                                     terminationSink,
                                     mqttStreamingConfig,
                                     mockClient,
-                                    mapper);
+                                    mapper,
+                                    mockRepository);
+
+        when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
     }
 
 
@@ -109,7 +114,7 @@ class MqttStreamerTest {
     }
 
     @Test
-    void givenAiidaRecord_sendsViaMqtt() throws MqttException, JsonProcessingException, InterruptedException {
+    void givenAiidaRecord_sendsViaMqtt() throws MqttException, InterruptedException {
         // Given
         streamer.connect();
         // manually call callback
@@ -128,7 +133,7 @@ class MqttStreamerTest {
     }
 
     @Test
-    void givenStatusMessage_sendsViaMqtt() throws MqttException, JsonProcessingException, InterruptedException {
+    void givenStatusMessage_sendsViaMqtt() throws MqttException, InterruptedException {
         // Given
         streamer.connect();
         // manually call callback
@@ -219,4 +224,6 @@ class MqttStreamerTest {
         // Then
         verify(mockClient, never()).publish(any(), any(), anyInt(), anyBoolean());
     }
+
+    // TODO test persistence when exception thrown
 }

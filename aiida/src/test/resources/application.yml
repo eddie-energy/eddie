@@ -10,7 +10,3 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
-
-aiida:
-  streamer:
-    poll_interval: 10
