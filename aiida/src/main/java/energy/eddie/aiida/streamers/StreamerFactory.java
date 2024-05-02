@@ -5,6 +5,7 @@ import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.errors.StreamerCreationFailedException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.utils.MqttFactory;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -30,7 +31,8 @@ public class StreamerFactory {
             Flux<AiidaRecord> recordFlux,
             Flux<ConnectionStatusMessage> statusMessageFlux,
             Sinks.One<String> terminationRequestSink,
-            ObjectMapper mapper
+            ObjectMapper mapper,
+            FailedToSendRepository failedToSendRepository
     ) {
         var mqttConfig = permission.mqttStreamingConfig();
 
@@ -51,7 +53,8 @@ public class StreamerFactory {
                                     terminationRequestSink,
                                     mqttConfig,
                                     client,
-                                    mapper);
+                                    mapper,
+                                    failedToSendRepository);
         } catch (MqttException exception) {
             // TODO unwrap once PermissionService is reworked --> GH-929
             throw new RuntimeException(new StreamerCreationFailedException(exception));

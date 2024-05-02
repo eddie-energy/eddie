@@ -6,6 +6,7 @@ import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.repositories.FailedToSendRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,15 +28,17 @@ public class StreamerManager implements AutoCloseable {
     private final Map<String, StreamerSinkContainer> streamers;
     private final Aggregator aggregator;
     private final Sinks.Many<String> terminationRequests;
+    private final FailedToSendRepository failedToSendRepository;
 
     /**
      * The mapper is passed to the {@link AiidaStreamer} instances that which use it to convert POJOs to JSON.
      * As the mapper is shared, make sure the used implementation is thread-safe and supports sharing.
      */
     @Autowired
-    public StreamerManager(ObjectMapper mapper, Aggregator aggregator) {
+    public StreamerManager(ObjectMapper mapper, Aggregator aggregator, FailedToSendRepository failedToSendRepository) {
         this.mapper = mapper;
         this.aggregator = aggregator;
+        this.failedToSendRepository = failedToSendRepository;
 
         streamers = new HashMap<>();
         terminationRequests = Sinks.many().unicast().onBackpressureBuffer();
@@ -66,7 +69,7 @@ public class StreamerManager implements AutoCloseable {
         });
 
         var streamer = StreamerFactory.getAiidaStreamer(permission, recordFlux, statusMessageSink.asFlux(),
-                                                        streamerTerminationRequestSink, mapper);
+                                                        streamerTerminationRequestSink, mapper, failedToSendRepository);
         streamer.connect();
 
         StreamerSinkContainer container = new StreamerSinkContainer(streamer, statusMessageSink);

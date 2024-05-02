@@ -1,14 +1,14 @@
 package energy.eddie.aiida.streamers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.aiida.aggregator.Aggregator;
-import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.repositories.FailedToSendRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,13 +30,15 @@ import static org.mockito.Mockito.*;
 class StreamerManagerTest {
     @Mock
     private Aggregator aggregatorMock;
+    @Mock
+    private FailedToSendRepository mockRepository;
     private Permission permission;
     private StreamerManager manager;
 
     @BeforeEach
     void setUp() {
         ObjectMapper mapper = new AiidaConfiguration().objectMapper();
-        manager = new StreamerManager(mapper, aggregatorMock);
+        manager = new StreamerManager(mapper, aggregatorMock, mockRepository);
 
         var permissionId = "72831e2c-a01c-41b8-9db6-3f51670df7a5";
         var dataNeedId = "dataNeedId";
@@ -65,7 +67,8 @@ class StreamerManagerTest {
         // first time should result in valid creation
         assertDoesNotThrow(() -> manager.createNewStreamerForPermission(permission));
 
-        var thrown = assertThrows(IllegalStateException.class, () -> manager.createNewStreamerForPermission(permission));
+        var thrown = assertThrows(IllegalStateException.class,
+                                  () -> manager.createNewStreamerForPermission(permission));
 
         assertThat(thrown.getMessage(), startsWith("An AiidaStreamer for permission "));
     }
@@ -81,8 +84,7 @@ class StreamerManagerTest {
         try (MockedStatic<StreamerFactory> mockStatic = mockStatic(StreamerFactory.class)) {
             // Given
             var mockStreamer = mock(AiidaStreamer.class);
-            mockStatic.when(() -> StreamerFactory.getAiidaStreamer(any(),
-                                                                   any(), any(), any(), any()))
+            mockStatic.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any(), any()))
                       .thenReturn(mockStreamer);
             when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
 
@@ -108,11 +110,15 @@ class StreamerManagerTest {
     @Test
     void givenConnectionStatusMessage_afterStreamerHasBeenClosed_sendNewConnectionStatusMessageForPermission_throws() {
         var acceptedMessageTimestamp = Instant.parse("2023-09-11T22:00:00.00Z");
-        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(), acceptedMessageTimestamp, PermissionStatus.ACCEPTED, permission.permissionId());
+        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(),
+                                                          permission.dataNeedId(),
+                                                          acceptedMessageTimestamp,
+                                                          PermissionStatus.ACCEPTED,
+                                                          permission.permissionId());
 
         try (MockedStatic<StreamerFactory> mockStatic = mockStatic(StreamerFactory.class)) {
             var streamerMock = mock(AiidaStreamer.class);
-            mockStatic.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any()))
+            mockStatic.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any(), any()))
                       .thenReturn(streamerMock);
             when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
 
@@ -134,8 +140,7 @@ class StreamerManagerTest {
     void verify_close_closesAllStreamers() {
         try (MockedStatic<StreamerFactory> mockStatic = mockStatic(StreamerFactory.class)) {
             var mockStreamer = mock(AiidaStreamer.class);
-            mockStatic.when(() -> StreamerFactory.getAiidaStreamer(any(),
-                                                                   any(), any(), any(), any()))
+            mockStatic.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any(), any()))
                       .thenReturn(mockStreamer);
             when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
 
