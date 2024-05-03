@@ -1,18 +1,24 @@
 package energy.eddie.regionconnector.aiida.web;
 
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.dataneeds.web.DataNeedsAdvice;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
+import energy.eddie.regionconnector.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.regionconnector.aiida.dtos.QrCodeDto;
 import energy.eddie.regionconnector.aiida.mqtt.MqttDto;
 import energy.eddie.regionconnector.aiida.mqtt.MqttService;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
+import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionEventRepository;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
 import energy.eddie.regionconnector.aiida.services.AiidaPermissionService;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -25,16 +31,21 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriTemplate;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.time.Instant;
+import java.time.LocalDate;
+
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
-import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_UPDATE_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_HANDSHAKE_PERMISSION_REQUEST;
 import static energy.eddie.regionconnector.aiida.web.PermissionRequestControllerTest.HMAC_SECRET;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.util.ReflectionTestUtils.setField;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
@@ -46,7 +57,7 @@ class PermissionRequestControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @MockBean
-    private AiidaPermissionService service;
+    private AiidaPermissionService mockService;
     @MockBean
     private AiidaPermissionEventRepository mockRepository;
     @MockBean
@@ -55,6 +66,10 @@ class PermissionRequestControllerTest {
     private DataNeedsService unusedDataNeedsService;
     @MockBean
     private MqttService unusedMqttService;
+    @Mock
+    private AiidaPermissionRequest mockRequest;
+    @Mock
+    private AiidaDataNeed mockAiidaDataNeed;
 
     @TestConfiguration
     static class ControllerTestConfiguration {
@@ -100,7 +115,7 @@ class PermissionRequestControllerTest {
         // Given
         var permissionId = "SomeId";
         var mockDto = mock(QrCodeDto.class);
-        when(service.createValidateAndSendPermissionRequest(any())).thenReturn(mockDto);
+        when(mockService.createValidateAndSendPermissionRequest(any())).thenReturn(mockDto);
         when(mockDto.permissionId()).thenReturn(permissionId);
         var requestJson = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"11\",\"extra\":\"information\"}";
         var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId)
@@ -114,17 +129,17 @@ class PermissionRequestControllerTest {
                .andExpect(status().isCreated())
                .andExpect(header().string("Location", is(expectedLocationHeader)))
                .andExpect(jsonPath("$.permissionId", is(permissionId)));
-        verify(service).createValidateAndSendPermissionRequest(any());
+        verify(mockService).createValidateAndSendPermissionRequest(any());
     }
 
     @Test
     void givenValidInput_createPermissionRequest_asExpected() throws Exception {
         // Given
         var permissionId = "SecondSomeId";
-        when(service.createValidateAndSendPermissionRequest(any())).thenReturn(new QrCodeDto(permissionId,
-                                                                                             "serviceName",
-                                                                                             "http://localhost:8080/example",
-                                                                                             "token"));
+        when(mockService.createValidateAndSendPermissionRequest(any())).thenReturn(new QrCodeDto(permissionId,
+                                                                                                 "serviceName",
+                                                                                                 "http://localhost:8080/example",
+                                                                                                 "token"));
         var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\"}";
         var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId)
                                                                                             .toString();
@@ -141,13 +156,13 @@ class PermissionRequestControllerTest {
                .andExpect(jsonPath("$.handshakeUrl", is("http://localhost:8080/example")))
                .andExpect(jsonPath("$.accessToken", is("token")));
 
-        verify(service).createValidateAndSendPermissionRequest(any());
+        verify(mockService).createValidateAndSendPermissionRequest(any());
     }
 
     @Test
     void givenUnsupportedDataNeedId_createPermissionRequest_returnsBadRequest() throws Exception {
         // Given
-        when(service.createValidateAndSendPermissionRequest(any())).thenThrow(new UnsupportedDataNeedException(
+        when(mockService.createValidateAndSendPermissionRequest(any())).thenThrow(new UnsupportedDataNeedException(
                 AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
                 "test",
                 "Is a test reason."));
@@ -170,7 +185,7 @@ class PermissionRequestControllerTest {
         var json = "{\"operation\":\"INVALID_VALUE_BLA\"}";
 
         // When
-        mockMvc.perform(patch(PATH_UPDATE_PERMISSION_REQUEST, permissionId)
+        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId)
                                 .content(json)
                                 .contentType(MediaType.APPLICATION_JSON))
                // Then
@@ -187,7 +202,7 @@ class PermissionRequestControllerTest {
         var json = "{\"operation\":\"REJECT\"}";
 
         // When
-        mockMvc.perform(patch(PATH_UPDATE_PERMISSION_REQUEST, permissionId)
+        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId)
                                 .content(json)
                                 .contentType(MediaType.APPLICATION_JSON))
                // Then
@@ -201,7 +216,7 @@ class PermissionRequestControllerTest {
         var json = "{\"operation\":\"UNFULFILLABLE\"}";
 
         // When
-        mockMvc.perform(patch(PATH_UPDATE_PERMISSION_REQUEST, permissionId)
+        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId)
                                 .content(json)
                                 .contentType(MediaType.APPLICATION_JSON))
                // Then
@@ -213,14 +228,14 @@ class PermissionRequestControllerTest {
         // Given
         var permissionId = "someTestId";
         var json = "{\"operation\":\"ACCEPT\"}";
-        when(service.acceptPermission(permissionId)).thenReturn(new MqttDto(permissionId,
-                                                                            "MySuperSafePassword",
-                                                                            "data",
-                                                                            "status",
-                                                                            "termination"));
+        when(mockService.acceptPermission(permissionId)).thenReturn(new MqttDto(permissionId,
+                                                                                "MySuperSafePassword",
+                                                                                "data",
+                                                                                "status",
+                                                                                "termination"));
 
         // When
-        mockMvc.perform(patch(PATH_UPDATE_PERMISSION_REQUEST, permissionId)
+        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId)
                                 .content(json)
                                 .contentType(MediaType.APPLICATION_JSON))
                // Then
@@ -231,4 +246,50 @@ class PermissionRequestControllerTest {
                .andExpect(jsonPath("$.statusTopic", is("status")))
                .andExpect(jsonPath("$.terminationTopic", is("termination")));
     }
+
+    @Test
+    void getPermissionDetails_returnsAsExpected() throws Exception {
+        // Given
+        var permissionId = "someTestId";
+        when(mockRequest.permissionId()).thenReturn(permissionId);
+        when(mockAiidaDataNeed.name()).thenReturn("Some Name");
+        when(mockService.detailsForPermission(permissionId)).thenReturn(
+                new PermissionDetailsDto(createDummyRequest(), new DummyAiidaDataNeed()));
+
+        // When
+        mockMvc.perform(get(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId))
+               // Then
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.permission_request").exists())
+               .andExpect(jsonPath("$.permission_request.permission_id", is("somePermissionId")))
+               .andExpect(jsonPath("$.permission_request.data_need_id", is("someDataNeedId")))
+               .andExpect(jsonPath("$.permission_request.start", is("2000-01-01")))
+               .andExpect(jsonPath("$.permission_request.end", is("9999-12-31")))
+               .andExpect(jsonPath("$.permission_request.connection_id", is("someConnectionId")))
+               .andExpect(jsonPath("$.permission_request.status").doesNotExist())
+               .andExpect(jsonPath("$.permission_request.terminationTopic").doesNotExist())
+               .andExpect(jsonPath("$.permission_request.termination_topic").doesNotExist());
+    }
+
+    private AiidaPermissionRequestInterface createDummyRequest() throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        Constructor<?> constructor = AiidaPermissionRequest.class.getDeclaredConstructors()[0];
+        constructor.setAccessible(true);
+
+        AiidaPermissionRequest request = (AiidaPermissionRequest) constructor.newInstance();
+
+        setField(request, "permissionId", "somePermissionId");
+        setField(request, "connectionId", "someConnectionId");
+        setField(request, "dataNeedId", "someDataNeedId");
+        setField(request, "start", LocalDate.of(2000, 1, 1));
+        setField(request, "end", LocalDate.of(9999, 12, 31));
+        setField(request, "status", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+        setField(request, "terminationTopic", "someTopic");
+        setField(request, "mqttUsername", "someUsername");
+        setField(request, "message", "someMessage");
+        setField(request, "created", Instant.now());
+
+        return request;
+    }
+
+    private static class DummyAiidaDataNeed extends AiidaDataNeed {}
 }

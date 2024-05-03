@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
-import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_UPDATE_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_HANDSHAKE_PERMISSION_REQUEST;
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.CE_FILE_NAME;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
@@ -51,7 +51,7 @@ public class AiidaSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 // @formatter:off   all calls for one request pattern should be on one line
                         .requestMatchers(aiidaMvcRequestMatcher.pattern(PATH_PERMISSION_REQUEST)).permitAll()
-                        .requestMatchers(aiidaMvcRequestMatcher.pattern(PATH_UPDATE_PERMISSION_REQUEST)).access(jwtHeaderAuthorizationManager)
+                        .requestMatchers(aiidaMvcRequestMatcher.pattern(PATH_HANDSHAKE_PERMISSION_REQUEST)).access(jwtHeaderAuthorizationManager)
                         .requestMatchers(aiidaMvcRequestMatcher.pattern("/" + CE_FILE_NAME)).permitAll()
                         .requestMatchers(aiidaMvcRequestMatcher.pattern("/" + SWAGGER_DOC_PATH)).permitAll()
                         .anyRequest().denyAll()

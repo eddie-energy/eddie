@@ -5,6 +5,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -12,6 +13,7 @@ import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
+import energy.eddie.regionconnector.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.dtos.QrCodeDto;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
@@ -48,7 +50,7 @@ public class AiidaPermissionService {
     private final Clock clock;
     private final AiidaConfiguration configuration;
     private final MqttService mqttService;
-    private final AiidaPermissionRequestViewRepository aiidaPermissionRequestViewRepository;
+    private final AiidaPermissionRequestViewRepository viewRepository;
     private final JwtUtil jwtUtil;
 
     public AiidaPermissionService(
@@ -58,7 +60,7 @@ public class AiidaPermissionService {
             Clock clock,
             AiidaConfiguration configuration,
             MqttService mqttService,
-            AiidaPermissionRequestViewRepository aiidaPermissionRequestViewRepository,
+            AiidaPermissionRequestViewRepository viewRepository,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // is injected from another Spring context
             JwtUtil jwtUtil
     ) {
@@ -67,7 +69,7 @@ public class AiidaPermissionService {
         this.clock = clock;
         this.configuration = configuration;
         this.mqttService = mqttService;
-        this.aiidaPermissionRequestViewRepository = aiidaPermissionRequestViewRepository;
+        this.viewRepository = viewRepository;
         this.jwtUtil = jwtUtil;
     }
 
@@ -186,7 +188,7 @@ public class AiidaPermissionService {
             PermissionProcessStatus requiredStatus,
             PermissionProcessStatus desiredNextStatus
     ) throws PermissionNotFoundException, PermissionStateTransitionException {
-        Optional<AiidaPermissionRequest> optional = aiidaPermissionRequestViewRepository.findById(permissionId);
+        Optional<AiidaPermissionRequest> optional = viewRepository.findById(permissionId);
         if (optional.isEmpty()) {
             LOGGER.warn(
                     "Got request check if permission {} is in status {} before transitioning it to status {}, but there is no permission with this ID in the database",
@@ -221,5 +223,23 @@ public class AiidaPermissionService {
             outbox.commit(new FailedToTerminateEvent(permissionId, e.getMessage()));
             LOGGER.warn("Cannot terminate permission {}", permissionId, e);
         }
+    }
+
+    /**
+     * Returns a wrapper containing the {@link AiidaPermissionRequest} and its associated {@link DataNeed}.
+     *
+     * @throws PermissionNotFoundException If there is no permission with the specified ID saved in the DB.
+     * @throws DataNeedNotFoundException   If the data need referenced in the permission request cannot be found in the
+     *                                     DB.
+     */
+    public PermissionDetailsDto detailsForPermission(String permissionId) throws PermissionNotFoundException, DataNeedNotFoundException {
+        AiidaPermissionRequest request = viewRepository.findByPermissionId(permissionId)
+                                                       .orElseThrow(() -> new PermissionNotFoundException(
+                                                               permissionId));
+
+        DataNeed dataNeed = dataNeedsService.findById(request.dataNeedId())
+                                            .orElseThrow(() -> new DataNeedNotFoundException(request.dataNeedId()));
+
+        return new PermissionDetailsDto(request, dataNeed);
     }
 }
