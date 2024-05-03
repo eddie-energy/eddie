@@ -75,3 +75,51 @@ REGION_CONNECTOR_AIIDA_MQTT_PASSWORD=superSafe
 
 If you are using EDDIE, the region connector should appear in the list of available
 region connectors if it has been configured correctly.
+
+## MQTT broker interface
+
+The AIIDA region connector requires a MQTT broker to properly function. AIIDA instances will send their data messages to
+this MQTT broker, and it is used as a means of communication between the AIIDA region connector and the AIIDA instances.
+The region connector will create a user with a random password for each permission and the AIIDA instance can fetch
+these credentials only once from the region connector. Access control lists (ACLs) for the user are created, to ensure
+that the AIIDA instance may only publish/subscribe to authorized topics. The credentials of the user is stored in the
+PostgreSQL database used by EDDIE core, in the `aiida` schema. The password is hashed and salted using BCrypt.
+
+A dedicated user with only read access to the two tables of the ERM diagram shown below should be created for the MQTT
+broker.
+
+![AIIDA MQTT Broker.svg](images/AIIDA_MQTT_Broker.svg)
+
+![MQTT Broker ERM.svg](images/MQTT_Broker_ERM.svg)
+
+## EMQX MQTT broker
+
+EMQX MQTT broker supports authentication and authorization using PostgreSQL as backend. Visit the dashboard of the
+broker (by default running on port 18083), to add the database as source for authentication and authorization.
+The following two SQL queries can be used in combination with the above tables for authentication and authorization
+respectively.
+
+```SQL
+SELECT password_hash
+FROM aiida.aiida_mqtt_user
+WHERE username = ${username}
+LIMIT 1;
+
+SELECT LOWER(action) AS action, LOWER(acl_type) AS permission, topic
+FROM aiida.aiida_mqtt_acl
+WHERE username = ${username};
+```
+
+Note that while enums are often used in uppercase, EMQX requires the `action` and `acl_type` to be in lowercase and
+named `action` and `permission` respectively.
+
+Please ensure, that you use a dedicated database user for the EMQX broker, and that you grant this user read permissions
+to the `aiida.aiida_mqtt_user` and `aiida.aiida_mqtt_acl` tables.
+
+```SQL
+CREATE USER emqx WITH PASSWORD 'REPLACE_ME_WITH_SAFE_PASSWORD';
+GRANT USAGE ON SCHEMA aiida TO emqx;
+GRANT SELECT ON aiida.aiida_mqtt_acl TO emqx;
+GRANT SELECT ON aiida.aiida_mqtt_user TO emqx;
+GRANT CONNECT ON DATABASE eddie TO emqx;
+```
