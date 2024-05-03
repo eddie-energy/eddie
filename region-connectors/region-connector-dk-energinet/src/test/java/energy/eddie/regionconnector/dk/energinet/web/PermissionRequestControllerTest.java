@@ -2,18 +2,15 @@ package energy.eddie.regionconnector.dk.energinet.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.web.DataNeedsAdvice;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
-import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
-import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetDataSourceInformation;
-import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
-import energy.eddie.regionconnector.dk.energinet.permission.request.persistence.DkEnerginetCustomerPermissionRequestRepository;
+import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionEventRepository;
+import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionCreationService;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
@@ -32,16 +29,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.util.UriTemplate;
 import reactor.core.publisher.Flux;
 
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
-import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -57,29 +51,13 @@ class PermissionRequestControllerTest {
     @MockBean
     private PermissionCreationService creationService;
     @MockBean
-    private DkEnerginetCustomerPermissionRequestRepository repository;
+    private DkPermissionRequestRepository repository;
+    @MockBean
+    private DkPermissionEventRepository eventRepository;
     @MockBean
     private Flux<IdentifiableApiResponse> unused;
     @Autowired
     private ObjectMapper mapper;
-
-    /**
-     * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
-     * whole core is started. To be able to properly test the controller's error responses, manually add the advice to
-     * this test class.
-     */
-    @TestConfiguration
-    static class ControllerTestConfiguration {
-        @Bean
-        public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
-            return new RegionConnectorsCommonControllerAdvice();
-        }
-
-        @Bean
-        public DataNeedsAdvice dataNeedsAdvice() {
-            return new DataNeedsAdvice();
-        }
-    }
 
     @Test
     void givenNoPermissionId_returnsNotFound() throws Exception {
@@ -158,7 +136,7 @@ class PermissionRequestControllerTest {
                 EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID,
                 null,
                 "Unsupported granularity: 'JUST_FOR_TEST'");
-        when(creationService.createAndSendPermissionRequest(any())).thenThrow(exception);
+        when(creationService.createPermissionRequest(any())).thenThrow(exception);
 
         ObjectNode jsonNode = mapper.createObjectNode()
                                     .put("connectionId", "23")
@@ -201,19 +179,7 @@ class PermissionRequestControllerTest {
         var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId)
                                                                                             .toString();
 
-        when(creationService.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
-            PermissionRequestForCreation request = invocation.getArgument(0);
-            return new EnerginetCustomerPermissionRequest(
-                    permissionId,
-                    request,
-                    mock(EnerginetCustomerApi.class),
-                    LocalDate.now(DK_ZONE_ID),
-                    LocalDate.now(DK_ZONE_ID).plusDays(5),
-                    Granularity.PT1H,
-                    new StateBuilderFactory(),
-                    mapper
-            );
-        });
+        when(creationService.createPermissionRequest(any())).thenReturn(new CreatedPermissionRequest(permissionId));
 
         ObjectNode jsonNode = mapper.createObjectNode()
                                     .put("connectionId", "214")
@@ -239,18 +205,7 @@ class PermissionRequestControllerTest {
         var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId)
                                                                                             .toString();
 
-        when(creationService.createAndSendPermissionRequest(any())).thenAnswer(invocation -> {
-            PermissionRequestForCreation request = invocation.getArgument(0);
-            return new EnerginetCustomerPermissionRequest(permissionId,
-                                                          request,
-                                                          mock(EnerginetCustomerApi.class),
-                                                          LocalDate.now(DK_ZONE_ID),
-                                                          LocalDate.now(DK_ZONE_ID).plusDays(5),
-                                                          Granularity.PT1H,
-                                                          new StateBuilderFactory(),
-                                                          mapper
-            );
-        });
+        when(creationService.createPermissionRequest(any())).thenReturn(new CreatedPermissionRequest(permissionId));
 
         ObjectNode jsonNode = mapper.createObjectNode()
                                     .put("connectionId", "214")
@@ -269,5 +224,23 @@ class PermissionRequestControllerTest {
                .andExpect(header().string("content-type", MediaType.APPLICATION_JSON_VALUE))
                .andExpect(jsonPath("$.permissionId", is(permissionId)))
                .andExpect(header().string("Location", is(expectedLocationHeader)));
+    }
+
+    /**
+     * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
+     * whole core is started. To be able to properly test the controller's error responses, manually add the advice to
+     * this test class.
+     */
+    @TestConfiguration
+    static class ControllerTestConfiguration {
+        @Bean
+        public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
+            return new RegionConnectorsCommonControllerAdvice();
+        }
+
+        @Bean
+        public DataNeedsAdvice dataNeedsAdvice() {
+            return new DataNeedsAdvice();
+        }
     }
 }

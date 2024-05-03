@@ -25,10 +25,6 @@ public final class ApiCredentials {
     @Nullable
     private String accessToken;
 
-    public ApiCredentials(EnerginetCustomerApi customerApi, String refreshToken, ObjectMapper mapper) {
-        this(customerApi, refreshToken, null, mapper);
-    }
-
     public ApiCredentials(
             EnerginetCustomerApi customerApi,
             String refreshToken,
@@ -39,10 +35,6 @@ public final class ApiCredentials {
         this.refreshToken = refreshToken;
         this.accessToken = accessToken;
         this.mapper = mapper;
-    }
-
-    public String refreshToken() {
-        return refreshToken;
     }
 
     public Mono<String> accessToken() {

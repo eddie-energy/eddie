@@ -1,83 +1,142 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
-import energy.eddie.api.agnostic.process.model.PastStateException;
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.dk.energinet.permission.request.PermissionRequestFactory;
-import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
-import org.junit.jupiter.api.BeforeEach;
+import energy.eddie.regionconnector.dk.energinet.permission.events.DKValidatedEvent;
+import energy.eddie.regionconnector.dk.energinet.permission.events.DkCreatedEvent;
+import energy.eddie.regionconnector.dk.energinet.permission.events.DkMalformedEvent;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionCreationServiceTest {
     @Mock
-    private PermissionRequestFactory requestFactory;
+    private Outbox outbox;
     @Mock
-    private PollingService pollingService;
+    private DataNeedsService dataNeedsService;
+    @Mock
+    private AiidaDataNeed aiidaDataNeed;
+    @Mock
+    private ValidatedHistoricalDataDataNeed vhdDataNeed;
+    @Mock
+    private RelativeDuration dataNeedDuration;
+    @InjectMocks
     private PermissionCreationService service;
-
-    @BeforeEach
-    void setUp() {
-        service = new PermissionCreationService(requestFactory, pollingService);
-    }
+    @Captor
+    private ArgumentCaptor<DkCreatedEvent> createdCaptor;
+    @Captor
+    private ArgumentCaptor<DKValidatedEvent> validatedCaptor;
 
     @Test
-    void createAndSendPermissionRequest_doesNotCallApiOnDeniedPermissionRequest() throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
+    void testCreatePermissionRequest_emitsMalformedOnUnknownDataNeed() {
         // Given
-        String connectionId = "connId";
-        String dataNeedId = "dataNeedId";
-        String refreshToken = "token";
-        String meteringPoint = "meteringPoint";
-        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId,
-                                                                                           refreshToken,
-                                                                                           meteringPoint,
-                                                                                           dataNeedId);
-
-        DkEnerginetCustomerPermissionRequest mockRequest = mock(DkEnerginetCustomerPermissionRequest.class);
-        when(requestFactory.create(requestForCreation)).thenReturn(mockRequest);
-        doThrow(PastStateException.class).when(mockRequest).accept();
+        var request = new PermissionRequestForCreation("cid",
+                                                       "refreshToken",
+                                                       "meteringPointId",
+                                                       "dnid");
+        when(dataNeedsService.findById(any()))
+                .thenReturn(Optional.empty());
 
         // When
         // Then
-        assertThrows(PastStateException.class, () -> service.createAndSendPermissionRequest(requestForCreation));
-        verify(requestFactory).create(requestForCreation);
-        verify(mockRequest).validate();
-        verify(mockRequest).sendToPermissionAdministrator();
-        verify(mockRequest).receivedPermissionAdministratorResponse();
-        verify(mockRequest, never()).accessToken();
+        assertThrows(DataNeedNotFoundException.class, () -> service.createPermissionRequest(request));
+        verify(outbox).commit(isA(DkCreatedEvent.class));
+        verify(outbox).commit(isA(DkMalformedEvent.class));
     }
 
     @Test
-    void createAndSendPermissionRequest_callsApiOnAcceptedPermissionRequest() throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
+    void testCreatePermissionRequest_emitsMalformedOnUnsupportedDataNeed() {
         // Given
-        String connectionId = "connId";
-        String dataNeedId = "dataNeedId";
-        String refreshToken = "token";
-        String meteringPoint = "meteringPoint";
-        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId,
-                                                                                           refreshToken,
-                                                                                           meteringPoint,
-                                                                                           dataNeedId);
-
-        DkEnerginetCustomerPermissionRequest mockRequest = mock(DkEnerginetCustomerPermissionRequest.class);
-        when(requestFactory.create(requestForCreation)).thenReturn(mockRequest);
+        var request = new PermissionRequestForCreation("cid",
+                                                       "refreshToken",
+                                                       "meteringPointId",
+                                                       "dnid");
+        when(dataNeedsService.findById(any()))
+                .thenReturn(Optional.of(aiidaDataNeed));
 
         // When
-        service.createAndSendPermissionRequest(requestForCreation);
-
         // Then
-        verify(requestFactory).create(requestForCreation);
-        verify(mockRequest).validate();
-        verify(mockRequest).sendToPermissionAdministrator();
-        verify(mockRequest).receivedPermissionAdministratorResponse();
-        verify(pollingService).fetchHistoricalMeterReadings(any());
+        assertThrows(UnsupportedDataNeedException.class, () -> service.createPermissionRequest(request));
+        verify(outbox).commit(isA(DkCreatedEvent.class));
+        verify(outbox).commit(isA(DkMalformedEvent.class));
+    }
+
+    @Test
+    void testCreatePermissionRequest_emitsMalformedOnUnsupportedGranularity() {
+        // Given
+        var request = new PermissionRequestForCreation("cid",
+                                                       "refreshToken",
+                                                       "meteringPointId",
+                                                       "dnid");
+        when(vhdDataNeed.duration())
+                .thenReturn(dataNeedDuration);
+        when(dataNeedsService.findById(any()))
+                .thenReturn(Optional.of(vhdDataNeed));
+
+        when(vhdDataNeed.minGranularity()).thenReturn(Granularity.PT5M);
+        when(vhdDataNeed.maxGranularity()).thenReturn(Granularity.PT5M);
+
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class, () -> service.createPermissionRequest(request));
+        verify(outbox).commit(isA(DkCreatedEvent.class));
+        verify(outbox).commit(isA(DkMalformedEvent.class));
+    }
+
+    @Test
+    void testCreatePermissionRequest_emitsValidated() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+        // Given
+        var request = new PermissionRequestForCreation("cid",
+                                                       "refreshToken",
+                                                       "meteringPointId",
+                                                       "dnid");
+        var now = LocalDate.now(ZoneOffset.UTC);
+        when(vhdDataNeed.duration())
+                .thenReturn(dataNeedDuration);
+        when(dataNeedsService.findById(any()))
+                .thenReturn(Optional.of(vhdDataNeed));
+
+        when(vhdDataNeed.minGranularity()).thenReturn(Granularity.PT15M);
+        when(vhdDataNeed.maxGranularity()).thenReturn(Granularity.P1D);
+
+        // When
+        service.createPermissionRequest(request);
+        // Then
+        verify(outbox).commit(createdCaptor.capture());
+        verify(outbox).commit(validatedCaptor.capture());
+        var created = createdCaptor.getValue();
+        assertAll(
+                () -> assertEquals("cid", created.connectionId()),
+                () -> assertEquals("refreshToken", created.refreshToken()),
+                () -> assertEquals("meteringPointId", created.meteringPointId()),
+                () -> assertEquals("dnid", created.dataNeedId())
+        );
+        var validated = validatedCaptor.getValue();
+        assertAll(
+                () -> assertEquals(now.minusYears(2), validated.start()),
+                () -> assertEquals(now.plusYears(2), validated.end())
+        );
     }
 }

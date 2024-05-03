@@ -1,12 +1,16 @@
 package energy.eddie.regionconnector.dk.energinet.utils;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.energinet.customer.model.*;
 import energy.eddie.regionconnector.dk.energinet.enums.PointQualityEnum;
-import energy.eddie.regionconnector.dk.energinet.permission.request.SimplePermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,8 +36,21 @@ class ConsumptionRecordMapperTest {
         var myEnergyMarketDocumentResponse = new MyEnergyDataMarketDocumentResponse();
         myEnergyMarketDocumentResponse.setMyEnergyDataMarketDocument(myEnergyMarketDocument);
 
-        var permissionRequest = new SimplePermissionRequest("foo", "bar", "dId");
-        IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse(permissionRequest, myEnergyMarketDocumentResponse);
+        var permissionRequest = new EnerginetPermissionRequest(
+                "foo",
+                "bar",
+                "dId",
+                "meteringPointId",
+                "refreshToken",
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                Granularity.PT1H,
+                "accessToken",
+                PermissionProcessStatus.ACCEPTED,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
+        IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse(permissionRequest,
+                                                                                   myEnergyMarketDocumentResponse);
 
         // When
         var consumptionRecord = ConsumptionRecordMapper.timeSeriesToConsumptionRecord(identifiableResponse);
@@ -52,7 +69,19 @@ class ConsumptionRecordMapperTest {
         var point = new Point();
         point.setOutQuantityQuality(illegalPointQualityEnum.name());
         point.setOutQuantityQuantity("5.42");
-        var permissionRequest = new SimplePermissionRequest();
+        var permissionRequest = new EnerginetPermissionRequest(
+                "foo",
+                "bar",
+                "dId",
+                "meteringPointId",
+                "refreshToken",
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                Granularity.PT1H,
+                "accessToken",
+                PermissionProcessStatus.ACCEPTED,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
         var period = new Period();
         period.setResolution(Granularity.P1D.name());
         period.setPoint(List.of(point));
@@ -66,7 +95,8 @@ class ConsumptionRecordMapperTest {
         var myEnergyMarketDocumentResponse = new MyEnergyDataMarketDocumentResponse();
         myEnergyMarketDocumentResponse.setMyEnergyDataMarketDocument(myEnergyMarketDocument);
 
-        IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse(permissionRequest, myEnergyMarketDocumentResponse);
+        IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse(permissionRequest,
+                                                                                   myEnergyMarketDocumentResponse);
 
         try {
             // When
@@ -81,12 +111,26 @@ class ConsumptionRecordMapperTest {
     void timeSeriesToConsumptionRecord_mapsEnerginetConsumptionRecord_energyMarketDocument_isNull() {
         // Given
         var myEnergyMarketDocumentResponse = new MyEnergyDataMarketDocumentResponse();
-        var permissionRequest = new SimplePermissionRequest();
-        IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse(permissionRequest, myEnergyMarketDocumentResponse);
+        var permissionRequest = new EnerginetPermissionRequest(
+                "foo",
+                "bar",
+                "dId",
+                "meteringPointId",
+                "refreshToken",
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                Granularity.PT1H,
+                "accessToken",
+                PermissionProcessStatus.ACCEPTED,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
+        IdentifiableApiResponse identifiableResponse = new IdentifiableApiResponse(permissionRequest,
+                                                                                   myEnergyMarketDocumentResponse);
 
         // When
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> ConsumptionRecordMapper.timeSeriesToConsumptionRecord(identifiableResponse));
+                                                       () -> ConsumptionRecordMapper.timeSeriesToConsumptionRecord(
+                                                               identifiableResponse));
 
         // Then
         assertEquals("No data available", exception.getMessage());

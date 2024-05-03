@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.providers.agnostic;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.v0.DataSourceInformation;
-import energy.eddie.regionconnector.dk.energinet.permission.request.persistence.DkEnerginetCustomerPermissionRequestRepository;
+import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -18,9 +18,12 @@ import java.time.ZonedDateTime;
 public class EnerginetRawDataProvider implements RawDataProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnerginetRawDataProvider.class);
     private final Flux<IdentifiableApiResponse> identifiableApiResponseFlux;
-    private final DkEnerginetCustomerPermissionRequestRepository repository;
+    private final DkPermissionRequestRepository repository;
 
-    public EnerginetRawDataProvider(Flux<IdentifiableApiResponse> identifiableApiResponseFlux, DkEnerginetCustomerPermissionRequestRepository repository) {
+    public EnerginetRawDataProvider(
+            Flux<IdentifiableApiResponse> identifiableApiResponseFlux,
+            DkPermissionRequestRepository repository
+    ) {
         this.identifiableApiResponseFlux = identifiableApiResponseFlux;
         this.repository = repository;
     }
@@ -36,9 +39,9 @@ public class EnerginetRawDataProvider implements RawDataProvider {
         var permissionRequest = repository.findByPermissionId(permissionId);
         DataSourceInformation dataSourceInfo = null;
 
-        if (permissionRequest.isEmpty())
+        if (permissionRequest.isEmpty()) {
             LOGGER.error("No permission with ID {} found in repository.", permissionId);
-        else {
+        } else {
             dataSourceInfo = permissionRequest.get().dataSourceInformation();
         }
 

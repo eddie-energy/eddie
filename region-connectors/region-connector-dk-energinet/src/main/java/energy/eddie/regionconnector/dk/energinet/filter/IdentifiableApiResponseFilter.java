@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.filter;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocument;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponse;
 import energy.eddie.regionconnector.dk.energinet.exceptions.ApiResponseException;
-import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public record IdentifiableApiResponseFilter(DkEnerginetCustomerPermissionRequest permissionRequest,
+public record IdentifiableApiResponseFilter(DkEnerginetPermissionRequest permissionRequest,
                                             LocalDate dateFrom,
                                             LocalDate dateTo) {
     private static final Logger LOGGER = LoggerFactory.getLogger(IdentifiableApiResponseFilter.class);

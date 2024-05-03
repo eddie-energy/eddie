@@ -4,16 +4,14 @@ import java.util.Optional;
 
 public interface PermissionRequestRepository<T extends PermissionRequest> {
     /**
-     * Save the permission request.
-     * If a request with the same permission id already exists it will be overwritten.
+     * Save the permission request. If a request with the same permission id already exists it will be overwritten.
      *
      * @param request the permission request to be saved.
      */
     void save(T request);
 
     /**
-     * Finds a permission request by its permission id.
-     * If there is no permission request it returns an empty optional.
+     * Finds a permission request by its permission id. If there is no permission request, it returns an empty optional.
      *
      * @param permissionId the id of the permission request.
      * @return an optional that contains the permission request if it exists.
@@ -21,10 +19,12 @@ public interface PermissionRequestRepository<T extends PermissionRequest> {
     Optional<T> findByPermissionId(String permissionId);
 
     /**
-     * Removes a permission request by its permission id.
+     * Gets a permission request by its permission id. If it cannot be found throws {@code EntityNotFoundException}.
+     * Should only be used when sure that the permission request exists
      *
-     * @param permissionId the permission id of the request to delete.
-     * @return true if the permission request was deleted, false if not.
+     * @param permissionId the id of the permission request.
+     * @return the permission request
+     * @throws EntityNotFoundException if the entity cannot be found
      */
-    boolean removeByPermissionId(String permissionId);
+    T getByPermissionId(String permissionId);
 }
