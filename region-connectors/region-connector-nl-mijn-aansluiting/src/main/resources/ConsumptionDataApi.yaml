@@ -1,0 +1,158 @@
+openapi: 3.1.0
+info:
+  title: Consumption Data API
+  version: "1.1"
+servers:
+  - url: /path-from-token
+tags:
+  - name: Consumption Data
+security:
+  - cmf: [ ]
+paths:
+  /consumption-data:
+    get:
+      tags:
+        - Consumption Data
+      summary: Gets the consumption data
+      description: Returns the consumption data of the metering points corresponding to
+        the given ean codes.
+      operationId: getConsumptionData
+      responses:
+        200:
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 100000
+                items:
+                  $ref: '#/components/schemas/ConsumptionData'
+        400:
+          description: Unsuccessful request
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ConsumptionData:
+      type: object
+      properties:
+        supplierEanCode:
+          type: string
+          maxLength: 13
+          pattern: ^8\d{12}$
+          nullable: true
+          description: EanCode of the current supplier of the metering point, string with 13 characters
+          example: 8234567890123
+        supplierName:
+          type: string
+          nullable: false
+          description: |
+            Name representation of the current supplier.  
+            When not available the value UNKNOWN_SUPPLIER_NAME will be returned.
+          example: "Essent Energie Verkoop Nederland bv"
+        productType:
+          type: string
+          nullable: true
+          description: |
+            Product type (dutch: productsoort)
+            - ELK: Electricity (dutch: elektriciteit)
+            - GAS: Gas (dutch: gas)
+          example: ELK
+          enum:
+            - ELK
+            - GAS
+        energyFlowDirection:
+          type: string
+          nullable: true
+          description: |
+            Energy flow direction (dutch: leveringsrichting)
+            - LVR: Deliver (dutch: leveren)
+            - TLV: Back delivery (dutch: terugleveren)
+            - CMB: Combination (dutch: combinatie)
+          example: LVR
+          enum:
+            - LVR
+            - TLV
+            - CMB
+        sjaOffPeak:
+          type: integer
+          nullable: true
+          description:
+            Annual consumptions during off peak hours, integer of max 15 characters
+          example: 1000
+          format: int64
+        sjaPeak:
+          type: integer
+          nullable: true
+          description:
+            Annual consumptions during on regular hours, integer of max 15 characters
+          example: 1000
+          format: int64
+        sjiOffPeak:
+          type: integer
+          nullable: true
+          description:
+            Annual delivery during off peak hours, integer of max 15 characters
+          example: 1000
+          format: int64
+        sjiPeak:
+          type: integer
+          nullable: true
+          description:
+            Annual delivery during on regular hours, integer of max 15 characters
+          example: 1000
+          format: int64
+        energyMeterType:
+          type: string
+          maxLength: 3
+          pattern: ^[A-Z]{3}$
+          nullable: true
+          description: |
+            Energy Meter Type (dutch: type meter)
+            - CVN: Conventional (dutch: conventioneel)
+            - SLM: Smart meter (dutch: slimme meter)
+          example: SLM
+          enum:
+            - CVN
+            - SLM
+        numberOfRegisters:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 9
+          nullable: true
+          description: The number of registers
+          example: 1
+        contractEndDate:
+          type: string
+          format: date
+          nullable: true
+          description: Contract end date as a string in the following format 'yyyy-MM-dd'
+          example: '2020-01-02'
+        subtype:
+          type: string
+          maxLength: 3
+          pattern: ^[A-Z]{3}$s
+          nullable: true
+          description: |
+            Subtype (dutch: soort aansluiting), string with 3 characters, e.g.:
+            - GWN: Gewone aansluiting
+            - ABR: Abri, bushalte (+display), Reclamezuil
+            - AFV: Afvaldepots
+          example: GWN
+    ErrorResponse:
+      required:
+        - error
+      type: object
+      properties:
+        error:
+          type: string
+          description: |
+            Type of errors that can occur
+            - invalid_token
+        errorDescription:
+          type: string
