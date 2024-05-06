@@ -6,6 +6,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
+import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
@@ -131,8 +132,8 @@ class DataApiServiceTest {
                 PermissionProcessStatus.ACCEPTED,
                 null,
                 false,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+                ZonedDateTime.now(ZoneOffset.UTC),
+                AllowedGranularity.PT15M_OR_PT1H);
     }
 
     @Test

@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
+import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestFactory;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsValidatedEvent;
@@ -53,7 +54,7 @@ class ValidatedHandlerTest {
         when(repository.findByPermissionId("pid")).thenReturn(Optional.empty());
 
         // When
-        eventBus.emit(new EsValidatedEvent("pid", now, now, Granularity.PT1H));
+        eventBus.emit(new EsValidatedEvent("pid", now, now, AllowedGranularity.PT1H));
 
         // Then
         verifyNoInteractions(outbox);
@@ -78,14 +79,14 @@ class ValidatedHandlerTest {
                 PermissionProcessStatus.VALIDATED,
                 null,
                 false,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+                ZonedDateTime.now(ZoneOffset.UTC),
+                AllowedGranularity.PT15M_OR_PT1H);
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(pr));
         when(authorizationApi.postAuthorizationRequest(any()))
                 .thenReturn(Mono.just(AuthorizationRequestResponse.fromResponse("ok")));
 
         // When
-        eventBus.emit(new EsValidatedEvent("pid", now, now, Granularity.PT1H));
+        eventBus.emit(new EsValidatedEvent("pid", now, now, AllowedGranularity.PT1H));
 
         // Then
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
@@ -111,14 +112,14 @@ class ValidatedHandlerTest {
                 PermissionProcessStatus.VALIDATED,
                 null,
                 false,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+                ZonedDateTime.now(ZoneOffset.UTC),
+                AllowedGranularity.PT15M_OR_PT1H);
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(pr));
         when(authorizationApi.postAuthorizationRequest(any()))
                 .thenReturn(Mono.error(new DatadisApiException("error", HttpResponseStatus.BAD_REQUEST, "blb")));
 
         // When
-        eventBus.emit(new EsValidatedEvent("pid", now, now, Granularity.PT1H));
+        eventBus.emit(new EsValidatedEvent("pid", now, now, AllowedGranularity.PT1H));
 
         // Then
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.UNABLE_TO_SEND, event.status())));

@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
@@ -71,8 +72,8 @@ class FutureDataServiceTest {
                 PermissionProcessStatus.ACCEPTED,
                 null,
                 false,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+                ZonedDateTime.now(ZoneOffset.UTC),
+                AllowedGranularity.PT15M_OR_PT1H);
     }
 
     @Test

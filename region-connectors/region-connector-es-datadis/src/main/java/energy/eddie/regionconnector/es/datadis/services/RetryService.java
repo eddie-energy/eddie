@@ -29,7 +29,7 @@ public class RetryService {
         for (EsPermissionRequest pr : permissionRequests) {
             var permissionId = pr.permissionId();
             LOGGER.info("Retrying permission request {}", permissionId);
-            outbox.commit(new EsValidatedEvent(permissionId, pr.start(), pr.end(), pr.granularity()));
+            outbox.commit(new EsValidatedEvent(permissionId, pr.start(), pr.end(), pr.allowedGranularity()));
         }
     }
 }

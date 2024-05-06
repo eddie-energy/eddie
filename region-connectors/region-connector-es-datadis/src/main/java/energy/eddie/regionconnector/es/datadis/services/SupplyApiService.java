@@ -8,7 +8,6 @@ import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSuppliesExcepti
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSupplyForMeteringPointException;
 import energy.eddie.regionconnector.es.datadis.filter.DatadisApiRetryFilter;
 import energy.eddie.regionconnector.es.datadis.filter.SupplyMeteringPointFilter;
-import energy.eddie.regionconnector.es.datadis.filter.SupplyPointTypeAndMeasurementTypeCombinationFilter;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import org.slf4j.Logger;
@@ -49,8 +48,6 @@ public class SupplyApiService {
      * @return A {@link Supply} object containing the supply details if successful.
      * <p>{@link NoSuppliesException} If no supplies are found for the provided NIF a nd distributor code.
      * <p>{@link NoSupplyForMeteringPointException} If no supply is found for the given metering point ID.
-     * <p>{@link InvalidPointAndMeasurementTypeCombinationException} If the point type does not support the requested
-     * measurement type.
      * <p>{@link DatadisApiException} If the API call fails.
      */
     public Mono<Supply> fetchSupplyForPermissionRequest(EsPermissionRequest permissionRequest) {
@@ -61,8 +58,6 @@ public class SupplyApiService {
                                      permissionRequest.distributorCode().map(DistributorCode::getCode).orElse(null))
                         .flatMap(supplies -> new SupplyMeteringPointFilter(supplies,
                                                                            permissionRequest.meteringPointId()).filter())
-                        .retryWhen(SUPPLY_RETRY_BACKOFF_SPEC) // Supplies are unavailable if a distributor is down, so we retry
-                        .flatMap(supply -> new SupplyPointTypeAndMeasurementTypeCombinationFilter(supply,
-                                                                                                  permissionRequest.measurementType()).filter());
+                        .retryWhen(SUPPLY_RETRY_BACKOFF_SPEC); // Supplies are unavailable if a distributor is down, so we retry
     }
 }

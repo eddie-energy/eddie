@@ -5,6 +5,7 @@ import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
+import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
@@ -49,6 +50,9 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     @Column
     private final boolean productionSupport;
     private final ZonedDateTime created;
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "text", name = "allowed_granularity")
+    private AllowedGranularity allowedGranularity;
 
     // just for JPA
     @SuppressWarnings("NullAway.Init")
@@ -68,6 +72,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
         errorMessage = null;
         productionSupport = false;
         created = null;
+        allowedGranularity = null;
     }
 
     public DatadisPermissionRequest(
@@ -84,7 +89,9 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
             @Nullable LocalDate latestMeterReadingEndDate,
             PermissionProcessStatus status,
             @Nullable String errorMessage,
-            boolean productionSupport, ZonedDateTime created
+            boolean productionSupport,
+            ZonedDateTime created,
+            AllowedGranularity allowedGranularity
     ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
@@ -101,6 +108,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
         this.errorMessage = errorMessage;
         this.productionSupport = productionSupport;
         this.created = created;
+        this.allowedGranularity = allowedGranularity;
     }
 
     @Override
@@ -179,14 +187,19 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     }
 
 
-
     @Override
     public MeasurementType measurementType() {
         return switch (granularity) {
+            case null -> throw new IllegalStateException("Granularity is null");
             case PT15M -> MeasurementType.QUARTER_HOURLY;
             case PT1H -> MeasurementType.HOURLY;
-            default -> throw new IllegalArgumentException("Unsupported granularity: " + granularity);
+            default -> throw new IllegalStateException("Unsupported granularity: " + granularity);
         };
+    }
+
+    @Override
+    public AllowedGranularity allowedGranularity() {
+        return allowedGranularity;
     }
 
     @Override
@@ -196,13 +209,13 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     }
 
     @Override
-    public Optional<LocalDate> latestMeterReadingEndDate() {
-        return Optional.ofNullable(this.latestMeterReadingEndDate);
+    public Granularity granularity() {
+        return granularity;
     }
 
     @Override
-    public Granularity granularity() {
-        return granularity;
+    public Optional<LocalDate> latestMeterReadingEndDate() {
+        return Optional.ofNullable(this.latestMeterReadingEndDate);
     }
 
     @Override

@@ -1,16 +1,14 @@
 package energy.eddie.regionconnector.es.datadis.filter;
 
-import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
+import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
-import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,7 +21,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.*;
@@ -131,8 +128,8 @@ class MeteringDataFilterTest {
                 PermissionProcessStatus.ACCEPTED,
                 null,
                 false,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+                ZonedDateTime.now(ZoneOffset.UTC),
+                AllowedGranularity.PT15M_OR_PT1H);
     }
 
     private static ZonedDateTime expectedStart(MeasurementType measurementType, LocalDate requestedStartDate) {

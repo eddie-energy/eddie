@@ -6,6 +6,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
@@ -140,8 +141,8 @@ class IntermediateValidatedHistoricalDocumentTest {
                 PermissionProcessStatus.ACCEPTED,
                 null,
                 production,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+                ZonedDateTime.now(ZoneOffset.UTC),
+                AllowedGranularity.PT15M_OR_PT1H);
         return new IdentifiableMeteringData(permissionRequest, intermediateMeteringData);
     }
 
