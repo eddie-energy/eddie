@@ -42,9 +42,11 @@ public final class IntermediateValidatedHistoricalDocument {
     private final EnedisConfiguration enedisConfig;
     private final IdentifiableMeterReading identifiableMeterReading;
 
-    IntermediateValidatedHistoricalDocument(IdentifiableMeterReading identifiableMeterReading,
-                                            CommonInformationModelConfiguration cimConfig,
-                                            EnedisConfiguration enedisConfig) {
+    IntermediateValidatedHistoricalDocument(
+            IdentifiableMeterReading identifiableMeterReading,
+            CommonInformationModelConfiguration cimConfig,
+            EnedisConfiguration enedisConfig
+    ) {
         this.identifiableMeterReading = identifiableMeterReading;
         this.cimConfig = cimConfig;
         this.enedisConfig = enedisConfig;
@@ -79,6 +81,10 @@ public final class IntermediateValidatedHistoricalDocument {
         );
     }
 
+    private MeterReading meterReading() {
+        return this.identifiableMeterReading.meterReading();
+    }
+
     private ValidatedHistoricalDataMarketDocument.TimeSeriesList timeSeriesList() {
         TimeSeriesComplexType reading = new TimeSeriesComplexType()
                 .withMRID(UUID.randomUUID().toString())
@@ -87,18 +93,22 @@ public final class IntermediateValidatedHistoricalDocument {
                 .withVersion(EnedisApiVersion.V5.name())
                 .withFlowDirectionDirection(DirectionTypeList.DOWN)
                 .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation(aggregateKind())
-                .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(CommodityKind.NONE) // No mapping available
-                .withEnergyMeasurementUnitName(UnitOfMeasureTypeList.WATT)
+                .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(CommodityKind.ELECTRICITYPRIMARYMETERED)
                 .withMarketEvaluationPointMRID(
                         new MeasurementPointIDStringComplexType()
                                 .withCodingScheme(CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME)
                                 .withValue(meterReading().usagePointId())
                 )
-                .withReasonList(REASON_LIST)
-                .withSeriesPeriodList(
-                        new TimeSeriesComplexType.SeriesPeriodList()
-                                .withSeriesPeriods(seriesPeriods())
-                );
+                .withReasonList(REASON_LIST);
+
+        reading = switch (meterReading().readingType().unit()) {
+            case "W", "VA" -> reading.withEnergyMeasurementUnitName(UnitOfMeasureTypeList.WATT)
+                                     .withSeriesPeriodList(seriesPeriods(false));
+            case "Wh" -> reading.withEnergyMeasurementUnitName(UnitOfMeasureTypeList.KILOWATT_HOUR)
+                                .withSeriesPeriodList(seriesPeriods(true));
+            default -> reading.withSeriesPeriodList(seriesPeriods(false));
+        };
+
         return new ValidatedHistoricalDataMarketDocument.TimeSeriesList()
                 .withTimeSeries(List.of(reading));
     }
@@ -107,8 +117,9 @@ public final class IntermediateValidatedHistoricalDocument {
         return switch (meterReading().readingType().measurementKind()) {
             case "power" -> EnergyProductTypeList.ACTIVE_POWER;
             case "energy" -> EnergyProductTypeList.ACTIVE_ENERGY;
-            default ->
-                    throw new IllegalStateException("Unknown measurement kind '%s'".formatted(meterReading().readingType().measurementKind()));
+            default -> throw new IllegalStateException("Unknown measurement kind '%s'".formatted(
+                    meterReading().readingType().measurementKind())
+            );
         };
     }
 
@@ -117,7 +128,7 @@ public final class IntermediateValidatedHistoricalDocument {
         return AggregateKind.valueOf(aggregate.toUpperCase(Locale.ROOT));
     }
 
-    private List<SeriesPeriodComplexType> seriesPeriods() {
+    private TimeSeriesComplexType.SeriesPeriodList seriesPeriods(boolean convertToKiloWatt) {
         var interval = new EsmpTimeInterval(
                 meterReading().start().format(ENEDIS_DATE_FORMAT),
                 meterReading().end().format(ENEDIS_DATE_FORMAT),
@@ -130,9 +141,14 @@ public final class IntermediateValidatedHistoricalDocument {
         int position = 0;
         for (IntervalReading intervalReading
                 : meterReading.intervalReadings()) {
+
+            var quantity = Double.parseDouble(intervalReading.value());
+            if (convertToKiloWatt) {
+                quantity = quantity / 1000.0;
+            }
             PointComplexType point = new PointComplexType()
                     .withPosition("%d".formatted(position))
-                    .withEnergyQuantityQuantity(new BigDecimal(intervalReading.value()))
+                    .withEnergyQuantityQuantity(BigDecimal.valueOf(quantity))
                     .withEnergyQuantityQuality(QualityTypeList.AS_PROVIDED);
             points.add(point);
             position++;
@@ -141,17 +157,14 @@ public final class IntermediateValidatedHistoricalDocument {
         var seriesPeriod = new SeriesPeriodComplexType()
                 .withResolution(resolution)
                 .withTimeInterval(new ESMPDateTimeIntervalComplexType()
-                        .withStart(interval.start())
-                        .withEnd(interval.end())
+                                          .withStart(interval.start())
+                                          .withEnd(interval.end())
                 )
                 .withPointList(
                         new SeriesPeriodComplexType.PointList()
                                 .withPoints(points)
                 );
-        return new ArrayList<>(List.of(seriesPeriod));
-    }
-
-    private MeterReading meterReading() {
-        return this.identifiableMeterReading.meterReading();
+        return new TimeSeriesComplexType.SeriesPeriodList()
+                .withSeriesPeriods(List.of(seriesPeriod));
     }
 }

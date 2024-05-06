@@ -86,7 +86,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> assertEquals(esmpTimeInterval.start(), seriesPeriod.getTimeInterval().getStart()),
                 () -> assertEquals(esmpTimeInterval.end(), seriesPeriod.getTimeInterval().getEnd()),
                 () -> assertEquals("0", seriesPeriod.getPointList().getPoints().getFirst().getPosition()),
-                () -> assertEquals(new BigDecimal(0),
+                () -> assertEquals(new BigDecimal("0.0"),
                                    seriesPeriod.getPointList().getPoints().getFirst().getEnergyQuantityQuantity())
         );
     }
@@ -149,7 +149,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> assertEquals(esmpTimeInterval.start(), seriesPeriod.getTimeInterval().getStart()),
                 () -> assertEquals(esmpTimeInterval.end(), seriesPeriod.getTimeInterval().getEnd()),
                 () -> assertEquals("0", seriesPeriod.getPointList().getPoints().getFirst().getPosition()),
-                () -> assertEquals(new BigDecimal(0),
+                () -> assertEquals(new BigDecimal("0.0"),
                                    seriesPeriod.getPointList().getPoints().getFirst().getEnergyQuantityQuantity())
         );
     }
