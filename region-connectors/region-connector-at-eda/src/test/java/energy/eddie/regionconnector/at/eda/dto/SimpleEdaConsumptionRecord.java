@@ -19,6 +19,12 @@ public class SimpleEdaConsumptionRecord implements EdaConsumptionRecord {
     private String schemaVersion;
     private XMLGregorianCalendar processDate;
     private Object originalConsumptionRecord;
+    private String messageId;
+
+    @Override
+    public String messageId() {
+        return messageId;
+    }
 
     @Override
     public String conversationId() {
@@ -73,6 +79,11 @@ public class SimpleEdaConsumptionRecord implements EdaConsumptionRecord {
     @Override
     public Object originalConsumptionRecord() {
         return originalConsumptionRecord;
+    }
+
+    public SimpleEdaConsumptionRecord setMessageId(String messageId) {
+        this.messageId = messageId;
+        return this;
     }
 
     public SimpleEdaConsumptionRecord setConversationId(String conversationId) {
