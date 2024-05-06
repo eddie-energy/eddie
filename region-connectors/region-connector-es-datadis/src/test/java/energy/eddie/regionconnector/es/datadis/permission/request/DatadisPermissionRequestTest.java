@@ -2,156 +2,81 @@ package energy.eddie.regionconnector.es.datadis.permission.request;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
-import org.junit.jupiter.api.BeforeEach;
+import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.stream.Stream;
 
-import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@ExtendWith(MockitoExtension.class)
 class DatadisPermissionRequestTest {
-    // Those are valid values
-    private final String permissionId = "Existing";
-    private final Granularity granularity = Granularity.PT15M;
-    private final LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
-    private final LocalDate requestDataFrom = now.minusDays(10);
-    private final LocalDate requestDataTo = now.minusDays(5);
-    private StateBuilderFactory factory;
-    private PermissionRequestForCreation requestForCreation;
 
-    @BeforeEach
-    void setUp() {
-        factory = new StateBuilderFactory(mock(AuthorizationApi.class));
-        String connectionId = "connId";
-        String dataNeedId = "dataNeed";
-        String meteringPointId = "7890";
-        String nif = "123456";
-        requestForCreation = new PermissionRequestForCreation(connectionId, dataNeedId, nif, meteringPointId);
-    }
-
-    @Test
-    void givenValidInput_constructor_requestIsInCreatedState() {
-        DatadisPermissionRequest request = new DatadisPermissionRequest(permissionId,
-                                                                        requestForCreation,
-                                                                        requestDataFrom,
-                                                                        requestDataTo,
-                                                                        granularity,
-                                                                        factory);
-
-        assertEquals(PermissionProcessStatus.CREATED, request.state().status());
-    }
-
-    @Test
-    void givenNull_constructor_throws() {
-        assertThrows(NullPointerException.class, () -> new DatadisPermissionRequest(null,
-                                                                                    requestForCreation,
-                                                                                    requestDataFrom,
-                                                                                    requestDataTo,
-                                                                                    granularity,
-                                                                                    factory));
-
-        assertThrows(NullPointerException.class, () -> new DatadisPermissionRequest(permissionId,
-                                                                                    null,
-                                                                                    requestDataFrom,
-                                                                                    requestDataTo,
-                                                                                    granularity,
-                                                                                    factory));
-
-        assertThrows(NullPointerException.class, () -> new DatadisPermissionRequest(permissionId,
-                                                                                    requestForCreation,
-                                                                                    requestDataFrom,
-                                                                                    requestDataTo,
-                                                                                    granularity,
-                                                                                    null));
-    }
-
-
-    @Test
-    void lastPulledMeterReading_whenConstructed_isEmpty() {
-        var request = new DatadisPermissionRequest(permissionId,
-                                                   requestForCreation,
-                                                   requestDataFrom,
-                                                   requestDataTo,
-                                                   granularity,
-                                                   factory);
-        assertTrue(request.latestMeterReadingEndDate().isEmpty());
-    }
-
-    @Test
-    void distributorCode_whenConstructed_isEmpty() {
-        var request = new DatadisPermissionRequest(permissionId,
-                                                   requestForCreation,
-                                                   requestDataFrom,
-                                                   requestDataTo,
-                                                   granularity,
-                                                   factory);
-
-        assertTrue(request.distributorCode().isEmpty());
-    }
-
-    @Test
-    void pointType_whenConstructed_IsEmpty() {
-        var request = new DatadisPermissionRequest(permissionId,
-                                                   requestForCreation,
-                                                   requestDataFrom,
-                                                   requestDataTo,
-                                                   granularity,
-                                                   factory);
-
-        assertTrue(request.pointType().isEmpty());
-    }
-
-    @Test
-    void setLastPulledMeterReading_worksAsExpected() {
-        // Given
-        var request = new DatadisPermissionRequest(permissionId,
-                                                   requestForCreation,
-                                                   requestDataFrom,
-                                                   requestDataTo,
-                                                   granularity,
-                                                   factory);
-        LocalDate expected = LocalDate.now(ZoneOffset.UTC);
-
-        // When
-        request.updateLatestMeterReadingEndDate(expected);
-
-        // Then
-        assertTrue(request.latestMeterReadingEndDate().isPresent());
-        assertEquals(expected, request.latestMeterReadingEndDate().get());
-    }
-
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
-    @Test
-    void setAccountingPointData_worksAsExpected() {
-        // Given
-        var request = new DatadisPermissionRequest(permissionId,
-                                                   requestForCreation,
-                                                   requestDataFrom,
-                                                   requestDataTo,
-                                                   granularity,
-                                                   factory);
-        DistributorCode expectedDistributorCode = DistributorCode.VIESGO;
-        var expectedPointType = 1;
-
-
-        // When
-        request.setDistributorCodePointTypeAndProductionSupport(expectedDistributorCode, expectedPointType, true);
-
-        // Then
-        assertAll(
-                () -> assertTrue(request.distributorCode().isPresent()),
-                () -> assertEquals(expectedDistributorCode, request.distributorCode().get()),
-                () -> assertTrue(request.pointType().isPresent()),
-                () -> assertEquals(expectedPointType, request.pointType().get()),
-                () -> assertTrue(request.productionSupport())
+    public static Stream<Arguments> testMeasurementType_returnsExpectedValues() {
+        return Stream.of(
+                Arguments.of(Granularity.PT1H, MeasurementType.HOURLY),
+                Arguments.of(Granularity.PT15M, MeasurementType.QUARTER_HOURLY)
         );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void testMeasurementType_returnsExpectedValues(Granularity granularity, MeasurementType measurementType) {
+        // Given
+        var pr = new DatadisPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                granularity,
+                "NIF",
+                "mpid",
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                null,
+                null,
+                null,
+                PermissionProcessStatus.CREATED,
+                null,
+                false,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
+
+        // When
+        var res = pr.measurementType();
+
+        // Then
+        assertEquals(measurementType, res);
+    }
+
+    @Test
+    void testMeasurementType_throwsOnUnexpected() {
+        // Given
+        var pr = new DatadisPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                Granularity.PT5M,
+                "NIF",
+                "mpid",
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                null,
+                null,
+                null,
+                PermissionProcessStatus.CREATED,
+                null,
+                false,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
+
+        // When
+        // Then
+        assertThrows(IllegalArgumentException.class, pr::measurementType);
     }
 }

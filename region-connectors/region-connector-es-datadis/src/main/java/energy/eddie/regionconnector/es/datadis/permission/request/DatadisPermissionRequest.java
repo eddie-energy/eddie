@@ -2,87 +2,105 @@ package energy.eddie.regionconnector.es.datadis.permission.request;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequestState;
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
-import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import energy.eddie.regionconnector.shared.permission.requests.TimestampedPermissionRequest;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Optional;
-
-import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
-import static java.util.Objects.requireNonNull;
 
 @Entity
 @Table(schema = "es_datadis", name = "datadis_permission_request")
-public class DatadisPermissionRequest extends TimestampedPermissionRequest implements EsPermissionRequest {
+@SuppressWarnings("NullAway")
+public class DatadisPermissionRequest implements EsPermissionRequest {
     @Transient
     private final DatadisDataSourceInformation dataSourceInformation = new DatadisDataSourceInformation(this);
     @Id
-    private String permissionId;
-    private String connectionId;
-    private String nif;
-    private String meteringPointId;
-    private LocalDate requestDataFrom;
-    private LocalDate requestDataTo;
+    private final String permissionId;
+    private final String connectionId;
+    private final String nif;
+    private final String meteringPointId;
+    @Column(name = "permission_start")
+    private final LocalDate start;
+    @Column(name = "permission_end")
+    private final LocalDate end;
+    private final String dataNeedId;
+    @Column(columnDefinition = "text")
     @Enumerated(EnumType.STRING)
-    private MeasurementType measurementType;
-    private String dataNeedId;
-    @Transient
-    private PermissionRequestState state;
+    private final Granularity granularity;
     @Nullable
+    @Column(columnDefinition = "text")
     @Enumerated(EnumType.STRING)
-    private DistributorCode distributorCode;
+    private final DistributorCode distributorCode;
     @Nullable
-    private Integer pointType;
-    @Column(name = "latest_meter_reading_end_date")
+    private final Integer pointType;
+    @Column(name = "latest_meter_reading")
     @Nullable
-    private LocalDate latestMeterReadingEndDate;
+    private final LocalDate latestMeterReadingEndDate;
+    @Column(columnDefinition = "text")
     @Enumerated(EnumType.STRING)
-    private PermissionProcessStatus status;
+    private final PermissionProcessStatus status;
     @Nullable
-    private String errorMessage;
-    private boolean productionSupport;
+    private final String errorMessage;
+    @Column
+    private final boolean productionSupport;
+    private final ZonedDateTime created;
 
     // just for JPA
     @SuppressWarnings("NullAway.Init")
     protected DatadisPermissionRequest() {
-        super(ZONE_ID_SPAIN);
+        permissionId = null;
+        connectionId = null;
+        granularity = null;
+        nif = null;
+        meteringPointId = null;
+        start = null;
+        end = null;
+        dataNeedId = null;
+        distributorCode = null;
+        pointType = null;
+        latestMeterReadingEndDate = null;
+        status = null;
+        errorMessage = null;
+        productionSupport = false;
+        created = null;
     }
 
     public DatadisPermissionRequest(
             String permissionId,
-            PermissionRequestForCreation requestForCreation,
+            String connectionId,
+            String dataNeedId,
+            Granularity granularity,
+            String nif,
+            String meteringPointId,
             LocalDate start,
             LocalDate end,
-            Granularity granularity,
-            StateBuilderFactory factory
+            @Nullable DistributorCode distributorCode,
+            @Nullable Integer pointType,
+            @Nullable LocalDate latestMeterReadingEndDate,
+            PermissionProcessStatus status,
+            @Nullable String errorMessage,
+            boolean productionSupport, ZonedDateTime created
     ) {
-        super(ZONE_ID_SPAIN);
-        requireNonNull(permissionId);
-        requireNonNull(requestForCreation);
-        requireNonNull(factory);
-
         this.permissionId = permissionId;
-        this.connectionId = requestForCreation.connectionId();
-        this.dataNeedId = requestForCreation.dataNeedId();
-        this.nif = requestForCreation.nif();
-        this.meteringPointId = requestForCreation.meteringPointId();
-        this.measurementType = switch (granularity) {
-            case PT15M -> MeasurementType.QUARTER_HOURLY;
-            case PT1H -> MeasurementType.HOURLY;
-            default -> throw new IllegalArgumentException("Unsupported granularity: " + granularity);
-        };
-        this.requestDataFrom = start;
-        this.requestDataTo = end;
-
-        this.state = factory.create(this, PermissionProcessStatus.CREATED).build();
-        this.status = state.status();
+        this.connectionId = connectionId;
+        this.dataNeedId = dataNeedId;
+        this.nif = nif;
+        this.meteringPointId = meteringPointId;
+        this.start = start;
+        this.end = end;
+        this.distributorCode = distributorCode;
+        this.pointType = pointType;
+        this.latestMeterReadingEndDate = latestMeterReadingEndDate;
+        this.status = status;
+        this.granularity = granularity;
+        this.errorMessage = errorMessage;
+        this.productionSupport = productionSupport;
+        this.created = created;
     }
 
     @Override
@@ -107,7 +125,7 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
 
     @Override
     public PermissionRequestState state() {
-        return state;
+        throw new IllegalStateException("Not used anymore");
     }
 
     @Override
@@ -116,54 +134,23 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     }
 
     @Override
+    public ZonedDateTime created() {
+        return created;
+    }
+
+    @Override
     public void changeState(PermissionRequestState state) {
-        this.state = state;
-        this.status = state.status();
-    }
-
-    @Override
-    public void validate() throws StateTransitionException {
-        state.validate();
-    }
-
-    @Override
-    public void sendToPermissionAdministrator() throws StateTransitionException {
-        state.sendToPermissionAdministrator();
-    }
-
-    @Override
-    public void receivedPermissionAdministratorResponse() throws StateTransitionException {
-        state.receivedPermissionAdministratorResponse();
-    }
-
-    @Override
-    public void terminate() throws StateTransitionException {
-        state.terminate();
-    }
-
-    @Override
-    public void accept() throws StateTransitionException {
-        state.accept();
-    }
-
-    @Override
-    public void invalid() throws StateTransitionException {
-        state.invalid();
-    }
-
-    @Override
-    public void reject() throws StateTransitionException {
-        state.reject();
+        throw new IllegalStateException("Not used anymore");
     }
 
     @Override
     public LocalDate start() {
-        return requestDataFrom;
+        return start;
     }
 
     @Override
     public LocalDate end() {
-        return requestDataTo;
+        return end;
     }
 
     @Override
@@ -192,28 +179,14 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     }
 
 
-    @Override
-    public DatadisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory) {
-        this.state = factory
-                .create(this, status)
-                .build();
-        return this;
-    }
-
-    @Override
-    public void setDistributorCodePointTypeAndProductionSupport(
-            DistributorCode distributorCode,
-            Integer pointType,
-            boolean productionSupport
-    ) {
-        this.distributorCode = distributorCode;
-        this.pointType = pointType;
-        this.productionSupport = productionSupport;
-    }
 
     @Override
     public MeasurementType measurementType() {
-        return this.measurementType;
+        return switch (granularity) {
+            case PT15M -> MeasurementType.QUARTER_HOURLY;
+            case PT1H -> MeasurementType.HOURLY;
+            default -> throw new IllegalArgumentException("Unsupported granularity: " + granularity);
+        };
     }
 
     @Override
@@ -223,17 +196,17 @@ public class DatadisPermissionRequest extends TimestampedPermissionRequest imple
     }
 
     @Override
-    public void setErrorMessage(@Nullable String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
-    @Override
     public Optional<LocalDate> latestMeterReadingEndDate() {
         return Optional.ofNullable(this.latestMeterReadingEndDate);
     }
 
     @Override
+    public Granularity granularity() {
+        return granularity;
+    }
+
+    @Override
     public void updateLatestMeterReadingEndDate(LocalDate date) {
-        this.latestMeterReadingEndDate = date;
+        throw new IllegalStateException("Not used anymore");
     }
 }

@@ -1,11 +1,9 @@
 package energy.eddie.regionconnector.es.datadis.permission.request.api;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
-import energy.eddie.api.agnostic.process.model.annotations.InvokeExtensions;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
-import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
-import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import jakarta.annotation.Nullable;
 
 import java.util.Optional;
@@ -44,15 +42,6 @@ public interface EsPermissionRequest extends MeterReadingPermissionRequest {
      */
     boolean productionSupport();
 
-    DatadisPermissionRequest withStateBuilderFactory(StateBuilderFactory factory);
-
-    @InvokeExtensions
-    void setDistributorCodePointTypeAndProductionSupport(
-            DistributorCode distributorCode,
-            Integer pointType,
-            boolean productionSupport
-    );
-
     /**
      * Decide what kind of metering data is requested.
      * <p>Either @{@link MeasurementType#HOURLY} or @{@link MeasurementType#QUARTER_HOURLY}.</p>
@@ -63,5 +52,5 @@ public interface EsPermissionRequest extends MeterReadingPermissionRequest {
     @Nullable
     String errorMessage();
 
-    void setErrorMessage(@Nullable String errorMessage);
+    Granularity granularity();
 }

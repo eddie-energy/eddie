@@ -1,6 +1,8 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,11 +15,11 @@ import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMeta
 @Service
 public class FutureDataService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FutureDataService.class);
-    private final PermissionRequestService permissionRequestService;
+    private final EsPermissionRequestRepository repository;
     private final DataApiService dataApiService;
 
-    public FutureDataService(PermissionRequestService permissionRequestService, DataApiService dataApiService) {
-        this.permissionRequestService = permissionRequestService;
+    public FutureDataService(EsPermissionRequestRepository repository, DataApiService dataApiService) {
+        this.repository = repository;
         this.dataApiService = dataApiService;
     }
 
@@ -27,10 +29,12 @@ public class FutureDataService {
         LocalDate today = LocalDate.now(ZONE_ID_SPAIN);
         LocalDate yesterday = today.minusDays(1);
 
-        permissionRequestService
-                .getAllAcceptedPermissionRequests()
-                .filter(permissionRequest -> isActive(permissionRequest, today))
-                .forEach(permissionRequest -> fetchMeteringDataForRequest(permissionRequest, yesterday));
+        var acceptedPermissionRequests = repository.findByStatus(PermissionProcessStatus.ACCEPTED);
+        for (EsPermissionRequest permissionRequest : acceptedPermissionRequests) {
+            if (isActive(permissionRequest, today)) {
+                fetchMeteringDataForRequest(permissionRequest, yesterday);
+            }
+        }
     }
 
     private boolean isActive(EsPermissionRequest permissionRequest, LocalDate today) {

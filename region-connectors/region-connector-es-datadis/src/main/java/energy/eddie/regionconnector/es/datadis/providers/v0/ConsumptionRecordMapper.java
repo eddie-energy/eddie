@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.es.datadis;
+package energy.eddie.regionconnector.es.datadis.providers.v0;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConsumptionPoint;

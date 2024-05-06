@@ -1,13 +1,15 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import energy.eddie.regionconnector.es.datadis.filter.MeteringDataFilter;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,16 +29,19 @@ public class DataApiService implements AutoCloseable {
     private final DataApi dataApi;
     private final Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink;
     private final MeterReadingPermissionUpdateAndFulfillmentService permissionUpdateAndFulfillmentService;
+    private final Outbox outbox;
 
 
     public DataApiService(
             DataApi dataApi,
             Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink,
-            MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService
+            MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService,
+            Outbox outbox
     ) {
         this.dataApi = dataApi;
         this.identifiableMeteringDataSink = identifiableMeteringDataSink;
         this.permissionUpdateAndFulfillmentService = meterReadingPermissionUpdateAndFulfillmentService;
+        this.outbox = outbox;
     }
 
 
@@ -89,11 +94,7 @@ public class DataApiService implements AutoCloseable {
 
         if (cause instanceof DatadisApiException exception) {
             if (exception.statusCode() == HttpStatus.FORBIDDEN.value()) {
-                try {
-                    permissionRequest.revoke();
-                } catch (StateTransitionException ex) {
-                    LOGGER.warn("Error revoking permission request", ex);
-                }
+                outbox.commit(new EsSimpleEvent(permissionRequest.permissionId(), PermissionProcessStatus.REVOKED));
             }
             if (exception.statusCode() == HttpStatus.TOO_MANY_REQUESTS.value()) {
                 request = request.minusMonths(1);

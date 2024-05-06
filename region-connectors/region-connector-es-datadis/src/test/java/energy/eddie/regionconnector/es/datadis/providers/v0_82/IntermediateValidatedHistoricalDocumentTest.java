@@ -7,10 +7,8 @@ import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
-import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
-import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
@@ -18,6 +16,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -125,22 +125,23 @@ class IntermediateValidatedHistoricalDocumentTest {
         var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(
                 production ? MeteringDataProvider.loadSurplusMeteringData() : MeteringDataProvider.loadMeteringData()
         );
-        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest(
+                "permissionId",
                 "connectionId",
                 "dataNeedId",
+                Granularity.PT1H,
                 "nif",
-                "meteringPointId"
+                "meteringPointId",
+                intermediateMeteringData.start(),
+                intermediateMeteringData.end(),
+                DistributorCode.ASEME,
+                1,
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                null,
+                production,
+                ZonedDateTime.now(ZoneOffset.UTC)
         );
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
-                                                                             permissionRequestForCreation,
-                                                                             intermediateMeteringData.start(),
-                                                                             intermediateMeteringData.end(),
-                                                                             Granularity.PT1H,
-                                                                             stateBuilderFactory);
-        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
-                                                         .build());
-        permissionRequest.setDistributorCodePointTypeAndProductionSupport(DistributorCode.ASEME, 1, production);
         return new IdentifiableMeteringData(permissionRequest, intermediateMeteringData);
     }
 

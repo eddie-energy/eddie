@@ -5,7 +5,6 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.ContractDetails;
-import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.InvalidPointAndMeasurementTypeCombinationException;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoContractsException;
@@ -13,7 +12,6 @@ import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSuppliesExcepti
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSupplyForMeteringPointException;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
-import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +23,8 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -76,22 +76,23 @@ class AccountingPointDataServiceTest {
     }
 
     private static EsPermissionRequest acceptedPermissionRequest() {
-        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
+        return new DatadisPermissionRequest(
+                "permissionId",
                 "connectionId",
                 "dataNeedId",
+                Granularity.PT1H,
                 "nif",
-                "meteringPointId");
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
-                                                                             permissionRequestForCreation,
-                                                                             LocalDate.now(ZONE_ID_SPAIN),
-                                                                             LocalDate.now(ZONE_ID_SPAIN),
-                                                                             Granularity.PT1H,
-                                                                             stateBuilderFactory);
-        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
-                                                         .build());
-        permissionRequest.setDistributorCodePointTypeAndProductionSupport(DistributorCode.IDE, 1, false);
-        return permissionRequest;
+                "meteringPointId",
+                LocalDate.now(ZONE_ID_SPAIN),
+                LocalDate.now(ZONE_ID_SPAIN),
+                DistributorCode.IDE,
+                1,
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                null,
+                false,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")

@@ -1,26 +1,32 @@
 package energy.eddie.regionconnector.es.datadis;
 
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
+@ExtendWith(MockitoExtension.class)
 class DatadisRegionConnectorTest {
-    @Test
-    void terminatePermission_callsService() throws PermissionNotFoundException, StateTransitionException {
-        // Given
-        var mockService = mock(PermissionRequestService.class);
-        var permissionId = "SomeId";
+    @Mock
+    private PermissionRequestService mockService;
+    @InjectMocks
+    private DatadisRegionConnector connector;
 
-        var connector = new DatadisRegionConnector(mockService);
+    @Test
+    void terminatePermission_callsService() throws PermissionNotFoundException {
+        // Given
+        var permissionId = "SomeId";
 
         // When
         assertDoesNotThrow(() -> connector.terminatePermission(permissionId));
@@ -29,14 +35,21 @@ class DatadisRegionConnectorTest {
         verify(mockService).terminatePermission(permissionId);
     }
 
+    @Test
+    void terminateUnknownPermission_doesNothing() throws PermissionNotFoundException {
+        // Given
+        var permissionId = "SomeId";
+        doThrow(new PermissionNotFoundException("SomeId"))
+                .when(mockService).terminatePermission("SomeId");
+
+        // When
+        // Then
+        assertDoesNotThrow(() -> connector.terminatePermission(permissionId));
+    }
 
     @Test
     void getMetadata_returnExpectedMetadata() {
         // Given
-        var mockService = mock(PermissionRequestService.class);
-
-        var connector = new DatadisRegionConnector(mockService);
-
         // When
         var result = connector.getMetadata();
 
@@ -47,9 +60,6 @@ class DatadisRegionConnectorTest {
     @Test
     void health_returnsHealthChecks() {
         // Given
-        var mockService = mock(PermissionRequestService.class);
-
-        var connector = new DatadisRegionConnector(mockService);
         var res = connector.health();
 
         assertEquals(Map.of("permissionRequestRepository", HealthState.UP), res);

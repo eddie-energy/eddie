@@ -2,10 +2,8 @@ package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
-import energy.eddie.regionconnector.es.datadis.permission.request.StateBuilderFactory;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
@@ -73,22 +73,23 @@ class HistoricalDataServiceTest {
     }
 
     private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
-        StateBuilderFactory stateBuilderFactory = new StateBuilderFactory(null);
-        PermissionRequestForCreation permissionRequestForCreation = new PermissionRequestForCreation(
+        return new DatadisPermissionRequest(
+                "permissionId",
                 "connectionId",
                 "dataNeedId",
+                Granularity.PT1H,
                 "nif",
-                "meteringPointId");
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest("permissionId",
-                                                                             permissionRequestForCreation,
-                                                                             start,
-                                                                             end,
-                                                                             Granularity.PT1H,
-                                                                             stateBuilderFactory);
-        permissionRequest.changeState(stateBuilderFactory.create(permissionRequest, PermissionProcessStatus.ACCEPTED)
-                                                         .build());
-        permissionRequest.setDistributorCodePointTypeAndProductionSupport(DistributorCode.ASEME, 1, false);
-        return permissionRequest;
+                "meteringPointId",
+                start,
+                end,
+                DistributorCode.ASEME,
+                1,
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                null,
+                false,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
     }
 
     @ParameterizedTest(name = "{2}")

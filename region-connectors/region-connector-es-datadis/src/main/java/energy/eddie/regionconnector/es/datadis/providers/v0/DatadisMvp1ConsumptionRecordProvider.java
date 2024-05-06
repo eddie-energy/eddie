@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.es.datadis.providers.v0;
 
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordProvider;
-import energy.eddie.regionconnector.es.datadis.ConsumptionRecordMapper;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
