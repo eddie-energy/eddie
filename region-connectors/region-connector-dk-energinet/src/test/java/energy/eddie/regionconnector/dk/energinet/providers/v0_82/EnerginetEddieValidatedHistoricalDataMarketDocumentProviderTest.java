@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.dk.energinet.providers.v0_82;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
-import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocument;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
@@ -132,18 +131,6 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
             verify(factory).create();
             verify(builder).withMyEnergyDataMarketDocument(any());
             verifyNoMoreInteractions(builder, factory);
-        }
-    }
-
-    private static class MyEnerginetConfiguration implements EnerginetConfiguration {
-        @Override
-        public String customerBasePath() {
-            return "customerBasePath";
-        }
-
-        @Override
-        public String customerId() {
-            return "customerId";
         }
     }
 }

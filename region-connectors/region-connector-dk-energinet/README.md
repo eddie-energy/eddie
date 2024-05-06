@@ -16,7 +16,6 @@ API endpoints are needed and already provided. Right now the customer API endpoi
 | Configuration values                                     | Description                                                                                          |
 |----------------------------------------------------------|------------------------------------------------------------------------------------------------------|
 | `region-connector.dk.energinet.customer.client.basepath` | The URL to the customer API endpoint.                                                                |
-| `region-connector.dk.energinet.customer.id`              | A unique identifier for the eligible party, should not be changed.                                   |
 | `region-connector.dk.energinet.polling`                  | Configures when future data should be polled. Uses Cron syntax. The default is 17 o'clock every day. |
 
 ### .properties file
@@ -25,7 +24,6 @@ Example configuration for an `application.properties` file:
 
 ```properties
 region-connector.dk.energinet.customer.client.basepath=https://api.eloverblik.dk/customerapi
-region-connector.dk.energinet.customer.id=my-unique-id
 region-connector.dk.energinet.polling=0 0 17 * * *
 ```
 
@@ -40,7 +38,6 @@ Example configuration for dotenv file:
 
 ```dotenv
 REGION_CONNECTOR_DK_ENERGINET_CUSTOMER_CLIENT_BASEPATH=https://api.eloverblik.dk/customerapi
-REGION_CONNECTOR_DK_ENERGINET_CUSTOMER_ID=my-unique-id
 REGION_CONNECTOR_DK_ENERGINET_POLLING=0 0 17 * * *
 ```
 

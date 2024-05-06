@@ -42,7 +42,6 @@ import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfigurat
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID;
-import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.CUSTOMER_ID_KEY;
 import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.ENERGINET_CUSTOMER_BASE_PATH_KEY;
 
 @EnableWebMvc
@@ -52,10 +51,9 @@ import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfigur
 public class DkEnerginetSpringConfig {
     @Bean
     public EnerginetConfiguration energinetConfiguration(
-            @Value("${" + ENERGINET_CUSTOMER_BASE_PATH_KEY + "}") String customerBasePath,
-            @Value("${" + CUSTOMER_ID_KEY + "}") String customerId
+            @Value("${" + ENERGINET_CUSTOMER_BASE_PATH_KEY + "}") String customerBasePath
     ) {
-        return new PlainEnerginetConfiguration(customerBasePath, customerId);
+        return new PlainEnerginetConfiguration(customerBasePath);
     }
 
     @Bean
