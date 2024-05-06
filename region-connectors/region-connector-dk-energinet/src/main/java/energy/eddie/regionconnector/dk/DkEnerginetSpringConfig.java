@@ -38,6 +38,8 @@ import reactor.core.publisher.Sinks;
 
 import java.util.Set;
 
+import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
+import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID;
 import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.CUSTOMER_ID_KEY;
@@ -78,10 +80,10 @@ public class DkEnerginetSpringConfig {
 
     @Bean
     public CommonInformationModelConfiguration cimConfig(
-            @Value("${" + CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}")
-            String codingScheme
+            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme,
+            @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallbackId
     ) {
-        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme));
+        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme), fallbackId);
     }
 
     @Bean
@@ -110,7 +112,6 @@ public class DkEnerginetSpringConfig {
             CommonInformationModelConfiguration commonInformationModelConfiguration
     ) {
         return new ValidatedHistoricalDataMarketDocumentBuilderFactory(
-                energinetConfiguration,
                 commonInformationModelConfiguration,
                 new TimeSeriesBuilderFactory(new SeriesPeriodBuilderFactory())
         );

@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocument;
@@ -36,14 +37,17 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
     @BeforeAll
     static void setUp() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JsonNullableModule());
-        try (InputStream is = EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest.class.getClassLoader().getResourceAsStream("MyEnergyDataMarketDocumentResponseListApiResponse.json")) {
-            MyEnergyDataMarketDocumentResponseListApiResponse response = objectMapper.readValue(is, MyEnergyDataMarketDocumentResponseListApiResponse.class);
+        try (InputStream is = EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest.class.getClassLoader()
+                                                                                                   .getResourceAsStream(
+                                                                                                           "MyEnergyDataMarketDocumentResponseListApiResponse.json")) {
+            MyEnergyDataMarketDocumentResponseListApiResponse response = objectMapper.readValue(is,
+                                                                                                MyEnergyDataMarketDocumentResponseListApiResponse.class);
             myEnergyDataMarketDocument = response.getResult().getFirst().getMyEnergyDataMarketDocument();
         }
 
         validatedHistoricalDataMarketDocumentBuilderFactory = new ValidatedHistoricalDataMarketDocumentBuilderFactory(
-                new MyEnerginetConfiguration(),
-                () -> CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                                                             "fallbackId"),
                 new TimeSeriesBuilderFactory(new SeriesPeriodBuilderFactory())
         );
 
@@ -63,26 +67,44 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
 
         TestPublisher<IdentifiableApiResponse> testPublisher = TestPublisher.create();
 
-        var provider = new EnerginetEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(), validatedHistoricalDataMarketDocumentBuilderFactory);
+        var provider = new EnerginetEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(),
+                                                                                       validatedHistoricalDataMarketDocumentBuilderFactory);
 
         // When & Then
         StepVerifier.create(provider.getEddieValidatedHistoricalDataMarketDocumentStream())
-                .then(() -> {
-                    testPublisher.emit(apiResponse);
-                    testPublisher.complete();
-                })
-                .assertNext(document -> {
-                    assertEquals(apiResponse.permissionRequest().permissionId(), document.permissionId().get());
-                    assertEquals(apiResponse.permissionRequest().connectionId(), document.connectionId().get());
-                    assertEquals(apiResponse.permissionRequest().dataNeedId(), document.dataNeedId().get());
+                    .then(() -> {
+                        testPublisher.emit(apiResponse);
+                        testPublisher.complete();
+                    })
+                    .assertNext(document -> {
+                        assertEquals(apiResponse.permissionRequest().permissionId(), document.permissionId().get());
+                        assertEquals(apiResponse.permissionRequest().connectionId(), document.connectionId().get());
+                        assertEquals(apiResponse.permissionRequest().dataNeedId(), document.dataNeedId().get());
 
-                    assertEquals(myEnergyDataMarketDocument.getPeriodTimeInterval().getStart(), document.marketDocument().getPeriodTimeInterval().getStart());
-                    assertEquals(myEnergyDataMarketDocument.getPeriodTimeInterval().getEnd(), document.marketDocument().getPeriodTimeInterval().getEnd());
-                    assertEquals(myEnergyDataMarketDocument.getTimeSeries().size(), document.marketDocument().getTimeSeriesList().getTimeSeries().size());
-                    assertEquals(myEnergyDataMarketDocument.getTimeSeries().getFirst().getPeriod().size(), document.marketDocument().getTimeSeriesList().getTimeSeries().getFirst().getSeriesPeriodList().getSeriesPeriods().size());
-                    assertEquals(myEnergyDataMarketDocument.getTimeSeries().getLast().getPeriod().size(), document.marketDocument().getTimeSeriesList().getTimeSeries().getLast().getSeriesPeriodList().getSeriesPeriods().size());
-                })
-                .verifyComplete();
+                        assertEquals(myEnergyDataMarketDocument.getPeriodTimeInterval().getStart(),
+                                     document.marketDocument().getPeriodTimeInterval().getStart());
+                        assertEquals(myEnergyDataMarketDocument.getPeriodTimeInterval().getEnd(),
+                                     document.marketDocument().getPeriodTimeInterval().getEnd());
+                        assertEquals(myEnergyDataMarketDocument.getTimeSeries().size(),
+                                     document.marketDocument().getTimeSeriesList().getTimeSeries().size());
+                        assertEquals(myEnergyDataMarketDocument.getTimeSeries().getFirst().getPeriod().size(),
+                                     document.marketDocument()
+                                             .getTimeSeriesList()
+                                             .getTimeSeries()
+                                             .getFirst()
+                                             .getSeriesPeriodList()
+                                             .getSeriesPeriods()
+                                             .size());
+                        assertEquals(myEnergyDataMarketDocument.getTimeSeries().getLast().getPeriod().size(),
+                                     document.marketDocument()
+                                             .getTimeSeriesList()
+                                             .getTimeSeries()
+                                             .getLast()
+                                             .getSeriesPeriodList()
+                                             .getSeriesPeriods()
+                                             .size());
+                    })
+                    .verifyComplete();
     }
 
     @Test
@@ -90,20 +112,22 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
         // Given
         ValidatedHistoricalDataMarketDocumentBuilder builder = mock(ValidatedHistoricalDataMarketDocumentBuilder.class);
         doThrow(new RuntimeException("Test exception")).when(builder).withMyEnergyDataMarketDocument(any());
-        ValidatedHistoricalDataMarketDocumentBuilderFactory factory = mock(ValidatedHistoricalDataMarketDocumentBuilderFactory.class);
+        ValidatedHistoricalDataMarketDocumentBuilderFactory factory = mock(
+                ValidatedHistoricalDataMarketDocumentBuilderFactory.class);
         when(factory.create()).thenReturn(builder);
 
         TestPublisher<IdentifiableApiResponse> testPublisher = TestPublisher.create();
 
-        try (var provider = new EnerginetEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(), factory)) {
+        try (var provider = new EnerginetEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(),
+                                                                                            factory)) {
 
             // When & Then
             StepVerifier.create(provider.getEddieValidatedHistoricalDataMarketDocumentStream())
-                    .then(() -> {
-                        testPublisher.emit(apiResponse);
-                        testPublisher.complete();
-                    })
-                    .verifyComplete();
+                        .then(() -> {
+                            testPublisher.emit(apiResponse);
+                            testPublisher.complete();
+                        })
+                        .verifyComplete();
 
             verify(factory).create();
             verify(builder).withMyEnergyDataMarketDocument(any());

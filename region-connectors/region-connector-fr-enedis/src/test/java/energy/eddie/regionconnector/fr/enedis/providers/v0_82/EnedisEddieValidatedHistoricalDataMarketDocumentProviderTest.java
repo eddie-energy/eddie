@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
@@ -35,21 +36,22 @@ class EnedisEddieValidatedHistoricalDataMarketDocumentProviderTest {
                 24);
         IntermediateVHDFactory factory = new IntermediateVHDFactory(
                 enedisConfiguration,
-                () -> CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME
+                new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                                                             "fallbackId")
         );
         var provider = new EnedisEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(), factory);
 
         // When
         StepVerifier.create(provider.getEddieValidatedHistoricalDataMarketDocumentStream())
-                .then(() -> {
-                    testPublisher.emit(identifiableMeterReading);
-                    testPublisher.complete();
-                })
-                .assertNext(vhd -> {
-                    assertTrue(vhd.permissionId().isPresent());
-                    assertEquals("pid", vhd.permissionId().get());
-                })
-                .verifyComplete();
+                    .then(() -> {
+                        testPublisher.emit(identifiableMeterReading);
+                        testPublisher.complete();
+                    })
+                    .assertNext(vhd -> {
+                        assertTrue(vhd.permissionId().isPresent());
+                        assertEquals("pid", vhd.permissionId().get());
+                    })
+                    .verifyComplete();
 
         // Clean-Up
         provider.close();

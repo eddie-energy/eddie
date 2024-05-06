@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.AggregateKind;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.cim.v0_82.vhd.SeriesPeriodComplexType;
@@ -40,7 +41,8 @@ class IntermediateValidatedHistoricalDocumentTest {
         var identifiableMeterReading = new IdentifiableMeterReading(permissionRequest, meterReading);
         var intermediateVHD = new IntermediateValidatedHistoricalDocument(
                 identifiableMeterReading,
-                () -> CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                                                             "fallbackId"),
                 new PlainEnedisConfiguration("clientId", "clientSecret", "basepath", 24)
         );
         var esmpTimeInterval = new EsmpTimeInterval(
@@ -69,15 +71,23 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> assertEquals(esmpTimeInterval.start(), marketDocument.getPeriodTimeInterval().getStart()),
                 () -> assertEquals(esmpTimeInterval.end(), marketDocument.getPeriodTimeInterval().getEnd()),
                 () -> assertEquals(ACTIVE_ENERGY, timeSeries.getProduct()),
-                () -> assertEquals(AggregateKind.SUM, timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation()),
+                () -> assertEquals(AggregateKind.SUM,
+                                   timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation()),
                 () -> assertEquals("24115050XXXXXX", timeSeries.getMarketEvaluationPointMRID().getValue()),
                 () -> assertEquals(1, timeSeries.getSeriesPeriodList().getSeriesPeriods().size()),
-                () -> assertEquals(7, timeSeries.getSeriesPeriodList().getSeriesPeriods().getFirst().getPointList().getPoints().size()),
+                () -> assertEquals(7,
+                                   timeSeries.getSeriesPeriodList()
+                                             .getSeriesPeriods()
+                                             .getFirst()
+                                             .getPointList()
+                                             .getPoints()
+                                             .size()),
                 () -> assertEquals(Granularity.P1D.name(), seriesPeriod.getResolution()),
                 () -> assertEquals(esmpTimeInterval.start(), seriesPeriod.getTimeInterval().getStart()),
                 () -> assertEquals(esmpTimeInterval.end(), seriesPeriod.getTimeInterval().getEnd()),
                 () -> assertEquals("0", seriesPeriod.getPointList().getPoints().getFirst().getPosition()),
-                () -> assertEquals(new BigDecimal(0), seriesPeriod.getPointList().getPoints().getFirst().getEnergyQuantityQuantity())
+                () -> assertEquals(new BigDecimal(0),
+                                   seriesPeriod.getPointList().getPoints().getFirst().getEnergyQuantityQuantity())
         );
     }
 
@@ -94,7 +104,8 @@ class IntermediateValidatedHistoricalDocumentTest {
         var identifiableMeterReading = new IdentifiableMeterReading(permissionRequest, meterReading);
         var intermediateVHD = new IntermediateValidatedHistoricalDocument(
                 identifiableMeterReading,
-                () -> CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                                                             "fallbackId"),
                 new PlainEnedisConfiguration("clientId", "clientSecret", "basepath", 24)
         );
         var esmpTimeInterval = new EsmpTimeInterval(
@@ -123,15 +134,23 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> assertEquals(esmpTimeInterval.start(), marketDocument.getPeriodTimeInterval().getStart()),
                 () -> assertEquals(esmpTimeInterval.end(), marketDocument.getPeriodTimeInterval().getEnd()),
                 () -> assertEquals(ACTIVE_POWER, timeSeries.getProduct()),
-                () -> assertEquals(AggregateKind.AVERAGE, timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation()),
+                () -> assertEquals(AggregateKind.AVERAGE,
+                                   timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation()),
                 () -> assertEquals("24115050XXXXXX", timeSeries.getMarketEvaluationPointMRID().getValue()),
                 () -> assertEquals(1, timeSeries.getSeriesPeriodList().getSeriesPeriods().size()),
-                () -> assertEquals(47, timeSeries.getSeriesPeriodList().getSeriesPeriods().getFirst().getPointList().getPoints().size()), // for some reason enedis only returns 47 values instead of 48
+                () -> assertEquals(47,
+                                   timeSeries.getSeriesPeriodList()
+                                             .getSeriesPeriods()
+                                             .getFirst()
+                                             .getPointList()
+                                             .getPoints()
+                                             .size()), // for some reason enedis only returns 47 values instead of 48
                 () -> assertEquals(Granularity.PT30M.name(), seriesPeriod.getResolution()),
                 () -> assertEquals(esmpTimeInterval.start(), seriesPeriod.getTimeInterval().getStart()),
                 () -> assertEquals(esmpTimeInterval.end(), seriesPeriod.getTimeInterval().getEnd()),
                 () -> assertEquals("0", seriesPeriod.getPointList().getPoints().getFirst().getPosition()),
-                () -> assertEquals(new BigDecimal(0), seriesPeriod.getPointList().getPoints().getFirst().getEnergyQuantityQuantity())
+                () -> assertEquals(new BigDecimal(0),
+                                   seriesPeriod.getPointList().getPoints().getFirst().getEnergyQuantityQuantity())
         );
     }
 }

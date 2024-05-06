@@ -29,8 +29,8 @@ class EdaEddieAccountingPointMarketDocumentProviderTest {
 
         IntermediateAccountingPointMarketDocumentFactory factory = new IntermediateAccountingPointMarketDocumentFactory(
                 new PlainCommonInformationModelConfiguration(
-                        CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME
-                )
+                        CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                        "fallbackId")
         );
 
         Sinks.Many<IdentifiableMasterData> identifiableMasterDataSink = Sinks.many().unicast().onBackpressureBuffer();

@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.providers.v0_82;
 
+import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
@@ -16,7 +17,8 @@ class DatadisEddieValidatedHistoricalDataMarketDocumentProviderTest {
         PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId", "clientSecret", "basepath");
         IntermediateVHDFactory factory = new IntermediateVHDFactory(
                 datadisConfig,
-                () -> CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME
+                new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.SPAIN_NATIONAL_CODING_SCHEME,
+                                                             "fallbackId")
         );
         IdentifiableMeteringData identifiableMeteringData = IntermediateValidatedHistoricalDocumentTest.identifiableMeterReading(
                 false);
