@@ -27,6 +27,7 @@ dependencies {
     implementation(project(":region-connectors:region-connector-dk-energinet"))
     implementation(project(":region-connectors:region-connector-fr-enedis"))
     implementation(project(":region-connectors:region-connector-es-datadis"))
+    implementation(project(":region-connectors:region-connector-nl-mijn-aansluiting"))
     implementation(project(":region-connectors:region-connector-simulation"))
 
     implementation(libs.spring.boot.starter.web)
