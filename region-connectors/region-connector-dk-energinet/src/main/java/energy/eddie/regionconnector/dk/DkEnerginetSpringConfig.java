@@ -91,15 +91,14 @@ public class DkEnerginetSpringConfig {
             DkEnerginetCustomerPermissionRequestRepository repository,
             Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink,
             Sinks.Many<ConsentMarketDocument> consentMarketDocumentSink,
-            CommonInformationModelConfiguration cimConfig,
-            EnerginetConfiguration energinetConfiguration
+            CommonInformationModelConfiguration cimConfig
     ) {
         return Set.of(
                 new SavingExtension<>(repository),
                 new MessagingExtension<>(connectionStatusMessageSink),
                 new ConsentMarketDocumentExtension<>(
                         consentMarketDocumentSink,
-                        energinetConfiguration.customerId(),
+                        cimConfig.eligiblePartyFallbackId(),
                         cimConfig.eligiblePartyNationalCodingScheme().value(),
                         DK_ZONE_ID
                 )
@@ -108,7 +107,6 @@ public class DkEnerginetSpringConfig {
 
     @Bean
     public ValidatedHistoricalDataMarketDocumentBuilderFactory validatedHistoricalDataMarketDocumentBuilderFactory(
-            EnerginetConfiguration energinetConfiguration,
             CommonInformationModelConfiguration commonInformationModelConfiguration
     ) {
         return new ValidatedHistoricalDataMarketDocumentBuilderFactory(
