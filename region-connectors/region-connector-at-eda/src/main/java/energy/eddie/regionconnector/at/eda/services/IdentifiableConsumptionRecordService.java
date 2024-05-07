@@ -41,9 +41,7 @@ public class IdentifiableConsumptionRecordService {
                 .findByConversationIdOrCMRequestId(consumptionRecord.conversationId(), null)
                 .map(List::of)
                 .orElseGet(() -> repository
-                        .findAcceptedAndFulfilledByMeteringPointIdAndDate(meteringPoint, startDate)
-                        .stream()
-                        .toList());
+                        .findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate(meteringPoint, startDate));
 
         if (permissionRequests.isEmpty()) {
             LOGGER.warn("No permission requests found for consumption record with date {}", startDate);

@@ -148,4 +148,45 @@ class JpaPermissionRequestRepositoryTest {
         // Then
         assertThat(res).isPresent();
     }
+
+    @Test
+    void findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate_returnsEmptyList_forNonExistingPermissionRequest() {
+        // Given
+        var start = LocalDate.of(2024, 1, 1);
+        var end = LocalDate.of(2024, 1, 31);
+        String cmRequestId = "cmRequestId";
+        PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
+                                                 end, "mid", AllowedGranularity.PT15M, cmRequestId,
+                                                 "convId");
+        permissionEventRepository.saveAndFlush(event);
+
+        // When
+        var res = permissionRequestRepository.findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate("mid",
+                                                                                                          start.plusDays(
+                                                                                                                  1));
+
+        // Then
+        assertThat(res).isEmpty();
+    }
+
+    @Test
+    void findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate_returnsPermissionRequest_forNonExistingPermissionRequest() {
+        // Given
+        var start = LocalDate.of(2024, 1, 1);
+        var end = LocalDate.of(2024, 1, 31);
+        String cmRequestId = "cmRequestId";
+        PermissionEvent event1 = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
+                                                  end, "mid", AllowedGranularity.PT15M, cmRequestId,
+                                                  "convId");
+        permissionEventRepository.saveAndFlush(event1);
+        PermissionEvent event2 = new SimpleEvent("pid", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+        permissionEventRepository.saveAndFlush(event2);
+        // When
+        var res = permissionRequestRepository.findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate("mid",
+                                                                                                          start.plusDays(
+                                                                                                                  1));
+
+        // Then
+        assertThat(res).hasSize(1);
+    }
 }

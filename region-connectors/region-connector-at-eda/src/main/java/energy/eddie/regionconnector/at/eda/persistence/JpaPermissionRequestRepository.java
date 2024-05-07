@@ -32,11 +32,27 @@ public interface JpaPermissionRequestRepository extends PagingAndSortingReposito
 
     @Override
     @Query("""
-            SELECT pr FROM EdaPermissionRequest pr
-            WHERE pr.meteringPointId = :meteringPointId
-                AND (pr.status = energy.eddie.api.v0.PermissionProcessStatus.ACCEPTED OR pr.status = energy.eddie.api.v0.PermissionProcessStatus.FULFILLED)
-                AND pr.start <= :date
-                AND (pr.end >= :date OR pr.end IS NULL)
+             SELECT pr FROM EdaPermissionRequest pr
+             WHERE pr.meteringPointId = :meteringPointId
+                 AND (pr.status = energy.eddie.api.v0.PermissionProcessStatus.ACCEPTED
+                    OR pr.status = energy.eddie.api.v0.PermissionProcessStatus.FULFILLED
+                    OR pr.status = energy.eddie.api.v0.PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
+                 AND pr.start <= :date
+                 AND (pr.end >= :date OR pr.end IS NULL)
+            """)
+    List<AtPermissionRequest> findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate(
+            @Param("meteringPointId") String meteringPointId,
+            @Param("date") LocalDate date
+    );
+
+    @Override
+    @Query("""
+             SELECT pr FROM EdaPermissionRequest pr
+             WHERE pr.meteringPointId = :meteringPointId
+                 AND (pr.status = energy.eddie.api.v0.PermissionProcessStatus.ACCEPTED
+                    OR pr.status = energy.eddie.api.v0.PermissionProcessStatus.FULFILLED)
+                 AND pr.start <= :date
+                 AND (pr.end >= :date OR pr.end IS NULL)
             """)
     List<AtPermissionRequest> findAcceptedAndFulfilledByMeteringPointIdAndDate(
             @Param("meteringPointId") String meteringPointId,
