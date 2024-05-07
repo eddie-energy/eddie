@@ -9,8 +9,6 @@ import energy.eddie.regionconnector.at.eda.dto.EnergyData;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 
-import java.util.UUID;
-
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static java.util.Objects.requireNonNull;
 
@@ -18,7 +16,6 @@ public class ValidatedHistoricalDataMarketDocumentBuilder {
 
     private final ValidatedHistoricalDataMarketDocument validatedHistoricalDataMarketDocument = new ValidatedHistoricalDataMarketDocument()
             .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
-            .withMRID(UUID.randomUUID().toString())
             .withType(MessageTypeList.MEASUREMENT_VALUE_DOCUMENT)
             .withSenderMarketParticipantMarketRoleType(RoleTypeList.METERING_POINT_ADMINISTRATOR)
             .withReceiverMarketParticipantMarketRoleType(RoleTypeList.CONSUMER)
@@ -44,6 +41,7 @@ public class ValidatedHistoricalDataMarketDocumentBuilder {
     ) {
         EsmpDateTime esmpDateTime = new EsmpDateTime(consumptionRecord.documentCreationDateTime());
         validatedHistoricalDataMarketDocument
+                .withMRID(consumptionRecord.messageId())
                 .withCreatedDateTime(esmpDateTime.toString())
                 .withSenderMarketParticipantMRID(
                         new PartyIDStringComplexType()

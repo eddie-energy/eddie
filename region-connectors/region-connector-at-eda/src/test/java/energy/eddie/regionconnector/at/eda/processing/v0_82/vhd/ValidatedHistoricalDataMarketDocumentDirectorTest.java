@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.at.eda.processing.v0_82.vhd;
 
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
@@ -42,8 +43,10 @@ class ValidatedHistoricalDataMarketDocumentDirectorTest {
                 ValidatedHistoricalDataMarketDocumentBuilderFactory.class);
         when(factory.create()).thenReturn(builder);
 
-        ValidatedHistoricalDataMarketDocumentDirector uut = new ValidatedHistoricalDataMarketDocumentDirector(() -> codingSchemeTypeList,
-                                                                                                              factory);
+        ValidatedHistoricalDataMarketDocumentDirector uut = new ValidatedHistoricalDataMarketDocumentDirector(
+                new PlainCommonInformationModelConfiguration(codingSchemeTypeList, "fallbackId"),
+                factory
+        );
 
         assertNull(uut.createValidatedHistoricalDataMarketDocument(consumptionRecord));
 

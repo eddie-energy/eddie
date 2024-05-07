@@ -42,6 +42,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.Clock;
 
+import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.*;
 import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
@@ -104,8 +105,11 @@ public class AiidaSpringConfig {
     }
 
     @Bean
-    public CommonInformationModelConfiguration cimConfig(@Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme) {
-        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme));
+    public CommonInformationModelConfiguration cimConfig(
+            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme,
+            @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallbackId
+    ) {
+        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme), fallbackId);
     }
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // Injected via parent app context

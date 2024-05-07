@@ -38,10 +38,12 @@ class ValidatedHistoricalDataMarketDocumentBuilderTest {
     void withRoutingHeaderData_setsSenderReceiverAndDate() {
         String sender = "sender";
         String receiver = "receiver";
+        String messageId = "messageId";
         ZonedDateTime date = ZonedDateTime.of(LocalDate.of(2023, 1, 1), LocalTime.MIN, AT_ZONE_ID);
 
 
         EdaConsumptionRecord consumptionRecord = new SimpleEdaConsumptionRecord()
+                .setMessageId(messageId)
                 .setSenderMessageAddress(sender)
                 .setReceiverMessageAddress(receiver)
                 .setDocumentCreationDateTime(date);
@@ -51,6 +53,7 @@ class ValidatedHistoricalDataMarketDocumentBuilderTest {
                 .withRoutingHeaderData(consumptionRecord, CodingSchemeTypeList.NORWAY_NATIONAL_CODING_SCHEME);
         var validatedHistoricalDataMarketDocument = uut.build();
 
+        assertEquals(messageId, validatedHistoricalDataMarketDocument.getMRID());
         assertEquals(sender, validatedHistoricalDataMarketDocument.getSenderMarketParticipantMRID().getValue());
         assertEquals(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
                      validatedHistoricalDataMarketDocument.getSenderMarketParticipantMRID().getCodingScheme());

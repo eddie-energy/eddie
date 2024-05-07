@@ -23,8 +23,8 @@ class IntermediateAccountingPointMarketDocumentFactoryTest {
     void mapsIncomingIdentifiableMasterDataToAccountingPointMarketDocument() throws IOException {
         IntermediateAccountingPointMarketDocumentFactory factory = new IntermediateAccountingPointMarketDocumentFactory(
                 new PlainCommonInformationModelConfiguration(
-                        CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME
-                )
+                        CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                        "fallbackId")
         );
 
         EdaMasterData edaMasterData = EdaResourceLoader.loadEdaMasterData();
@@ -126,8 +126,8 @@ class IntermediateAccountingPointMarketDocumentFactoryTest {
     void mapsIncomingIdentifiableMasterDataToAccountingPointMarketDocument_forCompany() throws IOException {
         IntermediateAccountingPointMarketDocumentFactory factory = new IntermediateAccountingPointMarketDocumentFactory(
                 new PlainCommonInformationModelConfiguration(
-                        CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME
-                )
+                        CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                        "fallbackId")
         );
 
         EdaMasterData edaMasterData = EdaResourceLoader.loadEdaMasterDataForCompany();

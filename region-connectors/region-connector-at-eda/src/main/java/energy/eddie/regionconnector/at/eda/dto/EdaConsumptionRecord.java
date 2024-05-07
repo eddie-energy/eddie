@@ -6,6 +6,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 public interface EdaConsumptionRecord {
+    String messageId();
+
     String conversationId();
 
     String meteringPoint();

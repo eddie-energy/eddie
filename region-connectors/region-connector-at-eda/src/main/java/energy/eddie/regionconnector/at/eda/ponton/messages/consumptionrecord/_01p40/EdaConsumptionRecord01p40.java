@@ -12,6 +12,11 @@ import java.util.List;
 
 public record EdaConsumptionRecord01p40(ConsumptionRecord consumptionRecord) implements EdaConsumptionRecord {
     @Override
+    public String messageId() {
+        return consumptionRecord.getProcessDirectory().getMessageId();
+    }
+
+    @Override
     public String conversationId() {
         return consumptionRecord.getProcessDirectory().getConversationId();
     }

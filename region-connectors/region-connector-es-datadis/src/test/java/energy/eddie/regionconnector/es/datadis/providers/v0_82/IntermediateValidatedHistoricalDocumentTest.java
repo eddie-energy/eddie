@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.es.datadis.providers.v0_82;
 import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
@@ -25,6 +26,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class IntermediateValidatedHistoricalDocumentTest {
 
+    public static final PlainCommonInformationModelConfiguration CIM_CONFIG = new PlainCommonInformationModelConfiguration(
+            CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+            "fallbackId"
+    );
+
     @SuppressWarnings("java:S5961") // Sonar complains about the nr of assertions
     @Test
     void eddieValidatedHistoricalDataMarketDocument_withoutProduction() throws IOException {
@@ -33,7 +39,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId", "clientSecret", "basepath");
         var intermediateVHD = new IntermediateValidatedHistoricalDocument(
                 identifiableMeteringData,
-                () -> CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                CIM_CONFIG,
                 datadisConfig
         );
 
@@ -153,7 +159,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId", "clientSecret", "basepath");
         var intermediateVHD = new IntermediateValidatedHistoricalDocument(
                 identifiableMeteringData,
-                () -> CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                CIM_CONFIG,
                 datadisConfig
         );
 

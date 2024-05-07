@@ -57,8 +57,8 @@ web application as it's implemented using standard HTML custom elements.
 <script type="module" src="${eddieUrl}/lib/eddie-components.js"></script>
 <!-- ... -->
 <eddie-connect-button
-        connection-id="1"
-        data-need-id="9bd0668f-cc19-40a8-99db-dc2cb2802b17"
+  connection-id="1"
+  data-need-id="9bd0668f-cc19-40a8-99db-dc2cb2802b17"
 ></eddie-connect-button>
 ```
 
@@ -132,14 +132,16 @@ Or you can use the following links:
 For the mapping of region specific data to the common information model (CIM) the following configuration parameters
 need to be set:
 
-| Parameter                                 | Type                               | Description                                                                         |
-|-------------------------------------------|------------------------------------|-------------------------------------------------------------------------------------|
-| cim.eligible-party.national-coding-scheme | A valid CodingSchemeTypeList value | Most of the time just 'N' + your country code e.g NAT if you are located in Austria |
+| Parameter                                 | Type                               | Description                                                                                         |
+|-------------------------------------------|------------------------------------|-----------------------------------------------------------------------------------------------------|
+| cim.eligible-party.national-coding-scheme | A valid CodingSchemeTypeList value | Most of the time just 'N' + your country code e.g NAT if you are located in Austria                 |
+| cim.eligible-party.fallback.id            | String                             | Fallback ID for the eligible party in case the region does not provide an ID for the eligible party |
 
 E.g. eligible party in Austria:
 
 ```
 cim.eligible-party.national-coding-scheme=NAT
+cim.eligible-party.fallback.id=EDDIE-Online
 ```
 
 #### Data need configuration
@@ -166,7 +168,7 @@ the ID is a mandatory field.
 ```json
 {
   "type": "validated",
-   "id": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+  "id": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
   "name": "LAST_3_MONTHS_ONE_MEASUREMENT_PER_DAY",
   "description": "Historical validated consumption data for the last three months, one measurement per day",
   "purpose": "Some purpose",

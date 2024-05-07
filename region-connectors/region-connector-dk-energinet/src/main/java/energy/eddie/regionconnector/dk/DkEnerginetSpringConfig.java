@@ -38,9 +38,10 @@ import reactor.core.publisher.Sinks;
 
 import java.util.Set;
 
+import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
+import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID;
-import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.CUSTOMER_ID_KEY;
 import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.ENERGINET_CUSTOMER_BASE_PATH_KEY;
 
 @EnableWebMvc
@@ -50,10 +51,9 @@ import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfigur
 public class DkEnerginetSpringConfig {
     @Bean
     public EnerginetConfiguration energinetConfiguration(
-            @Value("${" + ENERGINET_CUSTOMER_BASE_PATH_KEY + "}") String customerBasePath,
-            @Value("${" + CUSTOMER_ID_KEY + "}") String customerId
+            @Value("${" + ENERGINET_CUSTOMER_BASE_PATH_KEY + "}") String customerBasePath
     ) {
-        return new PlainEnerginetConfiguration(customerBasePath, customerId);
+        return new PlainEnerginetConfiguration(customerBasePath);
     }
 
     @Bean
@@ -78,10 +78,10 @@ public class DkEnerginetSpringConfig {
 
     @Bean
     public CommonInformationModelConfiguration cimConfig(
-            @Value("${" + CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}")
-            String codingScheme
+            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme,
+            @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallbackId
     ) {
-        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme));
+        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme), fallbackId);
     }
 
     @Bean
@@ -89,15 +89,14 @@ public class DkEnerginetSpringConfig {
             DkEnerginetCustomerPermissionRequestRepository repository,
             Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink,
             Sinks.Many<ConsentMarketDocument> consentMarketDocumentSink,
-            CommonInformationModelConfiguration cimConfig,
-            EnerginetConfiguration energinetConfiguration
+            CommonInformationModelConfiguration cimConfig
     ) {
         return Set.of(
                 new SavingExtension<>(repository),
                 new MessagingExtension<>(connectionStatusMessageSink),
                 new ConsentMarketDocumentExtension<>(
                         consentMarketDocumentSink,
-                        energinetConfiguration.customerId(),
+                        cimConfig.eligiblePartyFallbackId(),
                         cimConfig.eligiblePartyNationalCodingScheme().value(),
                         DK_ZONE_ID
                 )
@@ -106,11 +105,9 @@ public class DkEnerginetSpringConfig {
 
     @Bean
     public ValidatedHistoricalDataMarketDocumentBuilderFactory validatedHistoricalDataMarketDocumentBuilderFactory(
-            EnerginetConfiguration energinetConfiguration,
             CommonInformationModelConfiguration commonInformationModelConfiguration
     ) {
         return new ValidatedHistoricalDataMarketDocumentBuilderFactory(
-                energinetConfiguration,
                 commonInformationModelConfiguration,
                 new TimeSeriesBuilderFactory(new SeriesPeriodBuilderFactory())
         );

@@ -43,7 +43,7 @@ class ConsentMarketDocumentMessageHandlerTest {
         );
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
-                CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME);
+                CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "fallbackId");
         EventBus eventBus = new EventBusImpl();
         new ConsentMarketDocumentMessageHandler<>(eventBus,
                                                   repository,
@@ -69,7 +69,7 @@ class ConsentMarketDocumentMessageHandlerTest {
         Sinks.Many<ConsentMarketDocument> messages = Sinks.many().multicast().onBackpressureBuffer();
         when(repository.findByPermissionId("pid")).thenReturn(Optional.empty());
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
-                CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME);
+                CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "fallbackId");
         EventBus eventBus = new EventBusImpl();
         new ConsentMarketDocumentMessageHandler<>(eventBus,
                                                   repository,
@@ -94,7 +94,7 @@ class ConsentMarketDocumentMessageHandlerTest {
         // Given
         Sinks.Many<ConsentMarketDocument> messages = Sinks.many().multicast().onBackpressureBuffer();
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
-                CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME);
+                CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "fallbackId");
         EventBus eventBus = new EventBusImpl();
         new ConsentMarketDocumentMessageHandler<>(eventBus,
                                                   repository,
