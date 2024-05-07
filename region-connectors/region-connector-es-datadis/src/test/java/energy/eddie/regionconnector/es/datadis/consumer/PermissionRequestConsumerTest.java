@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestConsumerTest {
     private final EsPermissionRequest permissionRequest = new DatadisPermissionRequest(
-            "pid", null, null, null, null, null, null, null, null, null, null, null, null, false, null
+            "pid", null, null, null, null, null, null, null, null, null, null, null, null, false, null, null
     );
     @Mock
     private Outbox outbox;

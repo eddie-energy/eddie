@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.es.datadis.permission.handlers;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsAcceptedEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
@@ -12,6 +13,9 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -21,6 +25,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -39,6 +44,28 @@ class AcceptedHandlerTest {
     @SuppressWarnings("unused")
     private AcceptedHandler acceptedHandler;
 
+    private static Stream<Arguments> unfulfillableGranularities() {
+        return Stream.of(
+                Arguments.of(AllowedGranularity.PT15M, 3),
+                Arguments.of(AllowedGranularity.PT15M, 4)
+        );
+    }
+
+    private static Stream<Arguments> fulfillableGranularities() {
+        return Stream.of(
+                Arguments.of(AllowedGranularity.PT15M, 1, Granularity.PT15M),
+                Arguments.of(AllowedGranularity.PT15M, 2, Granularity.PT15M),
+                Arguments.of(AllowedGranularity.PT15M_OR_PT1H, 1, Granularity.PT15M),
+                Arguments.of(AllowedGranularity.PT15M_OR_PT1H, 2, Granularity.PT15M),
+                Arguments.of(AllowedGranularity.PT15M_OR_PT1H, 3, Granularity.PT1H),
+                Arguments.of(AllowedGranularity.PT15M_OR_PT1H, 4, Granularity.PT1H),
+                Arguments.of(AllowedGranularity.PT1H, 1, Granularity.PT1H),
+                Arguments.of(AllowedGranularity.PT1H, 2, Granularity.PT1H),
+                Arguments.of(AllowedGranularity.PT1H, 3, Granularity.PT1H),
+                Arguments.of(AllowedGranularity.PT1H, 4, Granularity.PT1H)
+        );
+    }
+
     @Test
     void testAccept_withUnknownPermissionRequest_doesNothing() {
         // Given
@@ -52,8 +79,12 @@ class AcceptedHandlerTest {
         verifyNoInteractions(outbox);
     }
 
-    @Test
-    void testAccept_requestsData() {
+    @ParameterizedTest
+    @MethodSource("unfulfillableGranularities")
+    void testAccept_withUnfulfillableGranularity_commitsUnfulfillableEvent(
+            AllowedGranularity allowedGranularity,
+            int supplyPointType
+    ) {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var pr = new DatadisPermissionRequest(
@@ -71,18 +102,61 @@ class AcceptedHandlerTest {
                 PermissionProcessStatus.ACCEPTED,
                 null,
                 false,
-                ZonedDateTime.now(ZoneOffset.UTC)
+                ZonedDateTime.now(ZoneOffset.UTC),
+                allowedGranularity
         );
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(pr));
 
         // When
-        eventBus.emit(new EsAcceptedEvent("pid", DistributorCode.VIESGO, 1, true));
+        eventBus.emit(new EsAcceptedEvent("pid", null, supplyPointType, false));
+
+        // Then
+        verify(outbox).commit(assertArg(event -> assertAll(
+                () -> assertEquals("pid", event.permissionId()),
+                () -> assertEquals(event.status(), event.status())
+        )));
+        verifyNoInteractions(historicalDataService);
+    }
+
+    @ParameterizedTest
+    @MethodSource("fulfillableGranularities")
+    void testAccept_requestsData(
+            AllowedGranularity allowedGranularity,
+            int supplyPointType,
+            Granularity expectedGranularity
+    ) {
+        // Given
+        var now = LocalDate.now(ZoneOffset.UTC);
+        var pr = new DatadisPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                Granularity.PT1H,
+                "nif",
+                "mid",
+                now,
+                now.plusDays(10),
+                null,
+                supplyPointType,
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                null,
+                false,
+                ZonedDateTime.now(ZoneOffset.UTC),
+                allowedGranularity
+        );
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(pr));
+
+        // When
+        eventBus.emit(new EsAcceptedEvent("pid", DistributorCode.VIESGO, supplyPointType, true));
 
         // Then
         verify(historicalDataService).fetchAvailableHistoricalData(assertArg(permissionRequest -> assertAll(
+                () -> assertEquals(expectedGranularity, permissionRequest.granularity()),
                 () -> assertEquals(Optional.of(DistributorCode.VIESGO), permissionRequest.distributorCode()),
-                () -> assertEquals(Optional.of(1), permissionRequest.pointType()),
+                () -> assertEquals(Optional.of(supplyPointType), permissionRequest.pointType()),
                 () -> assertTrue(permissionRequest.productionSupport())
         )));
     }

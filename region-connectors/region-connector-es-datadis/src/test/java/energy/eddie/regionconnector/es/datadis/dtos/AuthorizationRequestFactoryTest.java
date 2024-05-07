@@ -40,8 +40,8 @@ class AuthorizationRequestFactoryTest {
                                                    PermissionProcessStatus.ACCEPTED,
                                                    null,
                                                    false,
-                                                   ZonedDateTime.now(ZoneOffset.UTC)
-        );
+                                                   ZonedDateTime.now(ZoneOffset.UTC),
+                                                   AllowedGranularity.PT15M_OR_PT1H);
 
         AuthorizationRequestFactory factory = new AuthorizationRequestFactory();
 
@@ -67,8 +67,8 @@ class AuthorizationRequestFactoryTest {
                                                    PermissionProcessStatus.ACCEPTED,
                                                    null,
                                                    false,
-                                                   ZonedDateTime.now(ZoneOffset.UTC)
-        );
+                                                   ZonedDateTime.now(ZoneOffset.UTC),
+                                                   AllowedGranularity.PT15M_OR_PT1H);
 
         AuthorizationRequestFactory factory = new AuthorizationRequestFactory();
 
@@ -94,8 +94,8 @@ class AuthorizationRequestFactoryTest {
                                                    PermissionProcessStatus.ACCEPTED,
                                                    null,
                                                    false,
-                                                   ZonedDateTime.now(ZoneOffset.UTC)
-        );
+                                                   ZonedDateTime.now(ZoneOffset.UTC),
+                                                   AllowedGranularity.PT15M_OR_PT1H);
 
         AuthorizationRequestFactory factory = new AuthorizationRequestFactory();
 

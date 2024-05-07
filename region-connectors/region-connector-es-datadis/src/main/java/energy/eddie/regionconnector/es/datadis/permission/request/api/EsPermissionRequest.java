@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.es.datadis.permission.request.api;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
+import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import jakarta.annotation.Nullable;
 
@@ -48,6 +49,8 @@ public interface EsPermissionRequest extends MeterReadingPermissionRequest {
      * <p>Look at@{@link #pointType()} to see what is supported.</p>
      */
     MeasurementType measurementType();
+
+    AllowedGranularity allowedGranularity();
 
     @Nullable
     String errorMessage();

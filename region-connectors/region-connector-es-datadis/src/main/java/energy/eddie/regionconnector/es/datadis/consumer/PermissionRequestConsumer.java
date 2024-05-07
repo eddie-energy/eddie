@@ -30,10 +30,12 @@ public class PermissionRequestConsumer {
     ) {
         var supply = accountingPointData.supply();
         outbox.commit(
-                new EsAcceptedEvent(permissionRequest.permissionId(),
-                                    DistributorCode.fromCode(supply.distributorCode()),
-                                    supply.pointType(),
-                                    accountingPointData.contractDetails().installedCapacity().isPresent())
+                new EsAcceptedEvent(
+                        permissionRequest.permissionId(),
+                        DistributorCode.fromCode(supply.distributorCode()),
+                        supply.pointType(),
+                        accountingPointData.contractDetails().installedCapacity().isPresent()
+                )
         );
     }
 

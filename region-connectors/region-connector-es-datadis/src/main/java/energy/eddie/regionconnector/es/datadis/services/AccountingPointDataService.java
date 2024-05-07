@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
-import energy.eddie.regionconnector.es.datadis.dtos.exceptions.InvalidPointAndMeasurementTypeCombinationException;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoContractsException;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSuppliesException;
 import energy.eddie.regionconnector.es.datadis.dtos.exceptions.NoSupplyForMeteringPointException;
@@ -29,8 +28,6 @@ public class AccountingPointDataService {
      * <p>{@link NoSuppliesException} If no supplies are found for the provided NIF a nd distributor code.
      * <p>{@link NoSupplyForMeteringPointException} If no supply is found for the given metering point of the
      * permission request.
-     * <p>{@link InvalidPointAndMeasurementTypeCombinationException} If the point type of the supply does not
-     * support the requested measurement type of the permission request
      * <p>{@link NoContractsException} If no contracts are found for permission request.
      */
     public Mono<AccountingPointData> fetchAccountingPointDataForPermissionRequest(

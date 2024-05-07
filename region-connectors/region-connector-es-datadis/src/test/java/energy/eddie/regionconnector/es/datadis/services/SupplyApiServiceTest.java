@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.es.datadis.services;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
-import energy.eddie.regionconnector.es.datadis.dtos.exceptions.InvalidPointAndMeasurementTypeCombinationException;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
@@ -36,58 +35,8 @@ class SupplyApiServiceTest {
 
         // Act & Assert
         StepVerifier.create(supplyApiService.fetchSupplyForPermissionRequest(permissionRequest))
-                .expectNext(supply)
-                .verifyComplete();
-
-        verify(supplyApi).getSupplies(expectedNif, null);
-    }
-
-    @Test
-    void fetchSupplyForPermissionRequest_withInvalidPointTypeCombination_returnsInvalidPointAndMeasurementTypeCombinationException() {
-        // Arrange
-        String expectedNif = "expectedNif";
-        String meteringPointId = "expectedMeteringPointId";
-
-        EsPermissionRequest permissionRequest = mock(EsPermissionRequest.class);
-        when(permissionRequest.nif()).thenReturn(expectedNif);
-        when(permissionRequest.meteringPointId()).thenReturn(meteringPointId);
-        when(permissionRequest.measurementType()).thenReturn(MeasurementType.QUARTER_HOURLY);
-
-        Supply supply = createSupply(meteringPointId, 4);
-        SupplyApi supplyApi = mock(SupplyApi.class);
-        when(supplyApi.getSupplies(expectedNif, null)).thenReturn(Mono.just(List.of(supply)));
-
-        SupplyApiService supplyApiService = new SupplyApiService(supplyApi);
-
-        // Act & Assert
-        StepVerifier.create(supplyApiService.fetchSupplyForPermissionRequest(permissionRequest))
-                .expectError(InvalidPointAndMeasurementTypeCombinationException.class)
-                .verify();
-
-        verify(supplyApi).getSupplies(expectedNif, null);
-    }
-
-    @Test
-    void fetchSupplyForPermissionRequest_withInvalidPointTypeCombination_returnsNoSuppliesException() {
-        // Arrange
-        String expectedNif = "expectedNif";
-        String meteringPointId = "expectedMeteringPointId";
-
-        EsPermissionRequest permissionRequest = mock(EsPermissionRequest.class);
-        when(permissionRequest.nif()).thenReturn(expectedNif);
-        when(permissionRequest.meteringPointId()).thenReturn(meteringPointId);
-        when(permissionRequest.measurementType()).thenReturn(MeasurementType.QUARTER_HOURLY);
-
-        Supply supply = createSupply(meteringPointId, 4);
-        SupplyApi supplyApi = mock(SupplyApi.class);
-        when(supplyApi.getSupplies(expectedNif, null)).thenReturn(Mono.just(List.of(supply)));
-
-        SupplyApiService supplyApiService = new SupplyApiService(supplyApi);
-
-        // Act & Assert
-        StepVerifier.create(supplyApiService.fetchSupplyForPermissionRequest(permissionRequest))
-                .expectError(InvalidPointAndMeasurementTypeCombinationException.class)
-                .verify();
+                    .expectNext(supply)
+                    .verifyComplete();
 
         verify(supplyApi).getSupplies(expectedNif, null);
     }

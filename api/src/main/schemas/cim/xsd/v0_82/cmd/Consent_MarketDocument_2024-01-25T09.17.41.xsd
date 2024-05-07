@@ -2880,6 +2880,11 @@ PURPOSE
                     <xs:documentation>A112</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="UNFULFILLABLE">
+                <xs:annotation>
+                    <xs:documentation>A113</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="YMDHM_DateTime">

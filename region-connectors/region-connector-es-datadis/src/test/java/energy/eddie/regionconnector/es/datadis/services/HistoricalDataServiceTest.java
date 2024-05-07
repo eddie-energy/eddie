@@ -88,7 +88,8 @@ class HistoricalDataServiceTest {
                 PermissionProcessStatus.ACCEPTED,
                 null,
                 false,
-                ZonedDateTime.now(ZoneOffset.UTC)
+                ZonedDateTime.now(ZoneOffset.UTC),
+                null
         );
     }
 

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.permission.events;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,21 +17,26 @@ public class EsValidatedEvent extends PersistablePermissionEvent {
     @Column(name = "permission_end")
     private final LocalDate end;
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "text")
-    private final Granularity granularity;
+    @Column(columnDefinition = "text", name = "allowed_granularity")
+    private final AllowedGranularity allowedGranularity;
 
-    public EsValidatedEvent(String permissionId, LocalDate start, LocalDate end, Granularity granularity) {
+    public EsValidatedEvent(
+            String permissionId,
+            LocalDate start,
+            LocalDate end,
+            AllowedGranularity allowedGranularity
+    ) {
         super(permissionId, PermissionProcessStatus.VALIDATED);
         this.start = start;
         this.end = end;
-        this.granularity = granularity;
+        this.allowedGranularity = allowedGranularity;
     }
 
     protected EsValidatedEvent() {
         super();
         start = null;
         end = null;
-        granularity = null;
+        allowedGranularity = null;
     }
 
     public LocalDate end() {

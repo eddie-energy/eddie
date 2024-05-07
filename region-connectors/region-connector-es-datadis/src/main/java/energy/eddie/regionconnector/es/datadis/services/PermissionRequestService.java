@@ -11,6 +11,7 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
+import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsCreatedEvent;
@@ -26,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
@@ -155,8 +155,8 @@ public class PermissionRequestService {
                 MAX_TIME_IN_THE_PAST,
                 MAX_TIME_IN_THE_FUTURE
         );
-        var granularity = findGranularity(vhdDataNeed.minGranularity(), vhdDataNeed.maxGranularity());
-        if (granularity == null) {
+        var allowedMeasurementType = allowedMeasurementType(vhdDataNeed.minGranularity(), vhdDataNeed.maxGranularity());
+        if (allowedMeasurementType.isEmpty()) {
             outbox.commit(new EsMalformedEvent(
                     permissionId,
                     List.of(new AttributeError(DATA_NEED_ID,
@@ -170,19 +170,38 @@ public class PermissionRequestService {
                 permissionId,
                 dataNeedWrapper.calculatedStart(),
                 dataNeedWrapper.calculatedEnd(),
-                granularity
+                allowedMeasurementType.get()
         ));
         return new CreatedPermissionRequest(permissionId);
     }
 
-    @Nullable
-    private static Granularity findGranularity(Granularity min, Granularity max) {
+    private static Optional<AllowedGranularity> allowedMeasurementType(
+            Granularity min,
+            Granularity max
+    ) {
+        boolean hourly = false;
+        boolean quarterHourly = false;
         for (Granularity granularity : DatadisRegionConnectorMetadata.SUPPORTED_GRANULARITIES) {
             if (granularity.minutes() >= min.minutes() && granularity.minutes() <= max.minutes()) {
-                return granularity;
+                if (granularity == Granularity.PT1H) {
+                    hourly = true;
+                } else if (granularity == Granularity.PT15M) {
+                    quarterHourly = true;
+                }
             }
         }
-        return null;
+
+        if (hourly && quarterHourly) {
+            return Optional.of(AllowedGranularity.PT15M_OR_PT1H);
+        }
+        if (hourly) {
+            return Optional.of(AllowedGranularity.PT1H);
+        }
+        if (quarterHourly) {
+            return Optional.of(AllowedGranularity.PT15M);
+        }
+
+        return Optional.empty();
     }
 
     public void terminatePermission(String permissionId) throws PermissionNotFoundException {

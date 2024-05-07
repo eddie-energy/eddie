@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.es.datadis.permission.request;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
+import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -44,8 +45,8 @@ class DatadisPermissionRequestTest {
                 PermissionProcessStatus.CREATED,
                 null,
                 false,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+                ZonedDateTime.now(ZoneOffset.UTC),
+                AllowedGranularity.PT15M_OR_PT1H);
 
         // When
         var res = pr.measurementType();
@@ -72,11 +73,11 @@ class DatadisPermissionRequestTest {
                 PermissionProcessStatus.CREATED,
                 null,
                 false,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+                ZonedDateTime.now(ZoneOffset.UTC),
+                AllowedGranularity.PT15M_OR_PT1H);
 
         // When
         // Then
-        assertThrows(IllegalArgumentException.class, pr::measurementType);
+        assertThrows(IllegalStateException.class, pr::measurementType);
     }
 }

@@ -11,10 +11,7 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
-import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
-import energy.eddie.regionconnector.es.datadis.dtos.ContractDetails;
-import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.es.datadis.dtos.Supply;
+import energy.eddie.regionconnector.es.datadis.dtos.*;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -97,7 +94,8 @@ class PermissionRequestServiceTest {
                                                              PermissionProcessStatus.CREATED,
                                                              null,
                                                              false,
-                                                             ZonedDateTime.now(ZoneOffset.UTC));
+                                                             ZonedDateTime.now(ZoneOffset.UTC),
+                                                             AllowedGranularity.PT15M_OR_PT1H);
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
 
         // When
