@@ -10,8 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * The repository for PermissionRequests.
- * It saves permission requests and can query with the permission id.
+ * The repository for PermissionRequests. It saves permission requests and can query with the permission id.
  */
 public interface AtPermissionRequestRepository extends PermissionRequestRepository<AtPermissionRequest> {
 
@@ -22,7 +21,25 @@ public interface AtPermissionRequestRepository extends PermissionRequestReposito
      * @param cmRequestId    the request id of the original CM Request.
      * @return an optional, which is empty if there is no matching permission request.
      */
-    Optional<AtPermissionRequest> findByConversationIdOrCMRequestId(String conversationId, @Nullable String cmRequestId);
+    Optional<AtPermissionRequest> findByConversationIdOrCMRequestId(
+            String conversationId,
+            @Nullable String cmRequestId
+    );
+
+    /**
+     * This method returns all {@link energy.eddie.api.v0.PermissionProcessStatus#ACCEPTED},
+     * {@link energy.eddie.api.v0.PermissionProcessStatus#FULFILLED}, and
+     * {@link energy.eddie.api.v0.PermissionProcessStatus#SENT_TO_PERMISSION_ADMINISTRATOR} permission requests that are
+     * associated with the given metering point and where the date is between start and end of the permission request
+     *
+     * @param meteringPointId for which to get permission requests
+     * @param date            to filter time relevant permission requests
+     * @return a list of matching permission requests
+     */
+    List<AtPermissionRequest> findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate(
+            String meteringPointId,
+            LocalDate date
+    );
 
     /**
      * This method returns all {@link energy.eddie.api.v0.PermissionProcessStatus#ACCEPTED} and
@@ -33,7 +50,10 @@ public interface AtPermissionRequestRepository extends PermissionRequestReposito
      * @param date            to filter time relevant permission requests
      * @return a list of matching permission requests
      */
-    List<AtPermissionRequest> findAcceptedAndFulfilledByMeteringPointIdAndDate(String meteringPointId, LocalDate date);
+    List<AtPermissionRequest> findAcceptedAndFulfilledByMeteringPointIdAndDate(
+            String meteringPointId,
+            LocalDate date
+    );
 
     Optional<AtPermissionRequest> findByConsentId(String consentId);
 
