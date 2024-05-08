@@ -15,7 +15,7 @@ import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPer
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.services.EventFulfillmentService;
+import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,7 +64,7 @@ class PollingServiceTest {
                 customerApi,
                 repository,
                 new MeterReadingPermissionUpdateAndFulfillmentService(
-                        new EventFulfillmentService(outbox, DkSimpleEvent::new),
+                        new FulfillmentService(outbox, DkSimpleEvent::new),
                         (reading, end) -> outbox.commit(new DkInternalPollingEvent(reading.permissionId(), end))
                 ),
                 outbox,

@@ -38,7 +38,7 @@ public class PermissionRequestFulfillmentService {
                   .addArgument(identifiableConsumptionRecord::meterReadingEndDate)
                   .log("Checking if permission request {} is fulfilled. Permission end date: {}, metering period end date: {}");
 
-            // if we request quarter hourly data up to the 24.01.2024, the last consumption record we get will have an meteringPeriodStart of 24.01.2024T23:45:00 and an meteringPeriodEnd of 25.01.2024T00:00:00
+            // if we request quarter hourly data up to the 24.01.2024, the last consumption record we get will have a meteringPeriodStart of 24.01.2024T23:45:00 and a meteringPeriodEnd of 25.01.2024T00:00:00
             // so if the permissionEnd is before the meteringPeriodEnd the permission request is fulfilled
             if (fulfillmentService.isPermissionRequestFulfilledByDate(permissionRequest,
                                                                       identifiableConsumptionRecord.meterReadingEndDate())) {

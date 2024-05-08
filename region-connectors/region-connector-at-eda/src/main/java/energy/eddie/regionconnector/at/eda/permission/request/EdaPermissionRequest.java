@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.at.eda.permission.request;
 
-import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
@@ -119,11 +118,6 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     }
 
     @Override
-    public PermissionRequestState state() {
-        return null;
-    }
-
-    @Override
     public DataSourceInformation dataSourceInformation() {
         return dataSourceInformation;
     }
@@ -131,11 +125,6 @@ public class EdaPermissionRequest implements AtPermissionRequest {
     @Override
     public ZonedDateTime created() {
         return created;
-    }
-
-    @Override
-    public void changeState(PermissionRequestState state) {
-        // NoOp
     }
 
     @Override

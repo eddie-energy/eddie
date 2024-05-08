@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.at.eda.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.dataneeds.duration.AbsoluteDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
@@ -46,10 +45,11 @@ class PermissionRequestCreationAndValidationServiceTest {
     private PermissionRequestCreationAndValidationService creationService;
 
     @Test
-    void createValidPermissionRequest_forHVDDataNeed() throws ValidationException, DataNeedNotFoundException, UnsupportedDataNeedException {
+    void createValidPermissionRequest_forHVDDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException, EdaValidationException {
         // Given
         when(mockService.findById(any())).thenReturn(Optional.of(vhdDataNeed));
         when(vhdDataNeed.minGranularity()).thenReturn(Granularity.PT15M);
+        when(vhdDataNeed.maxGranularity()).thenReturn(Granularity.PT15M);
         LocalDate start = LocalDate.now(AT_ZONE_ID).minusDays(10);
         when(vhdDataNeed.duration()).thenReturn(absoluteDuration);
         when(absoluteDuration.start()).thenReturn(start);
@@ -68,7 +68,7 @@ class PermissionRequestCreationAndValidationServiceTest {
     }
 
     @Test
-    void createValidPermissionRequest_forAccountingPointDataNeed() throws ValidationException, DataNeedNotFoundException, UnsupportedDataNeedException {
+    void createValidPermissionRequest_forAccountingPointDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException, EdaValidationException {
         // Given
         when(mockConfig.eligiblePartyId()).thenReturn("AT999999");
         when(mockService.findById(any())).thenReturn(Optional.of(accountingPointDataNeed));
@@ -87,6 +87,7 @@ class PermissionRequestCreationAndValidationServiceTest {
         // Given
         when(mockService.findById(any())).thenReturn(Optional.of(vhdDataNeed));
         when(vhdDataNeed.minGranularity()).thenReturn(Granularity.PT15M);
+        when(vhdDataNeed.maxGranularity()).thenReturn(Granularity.PT15M);
         LocalDate start = LocalDate.now(AT_ZONE_ID).minusDays(10);
         when(vhdDataNeed.duration()).thenReturn(absoluteDuration);
         when(absoluteDuration.start()).thenReturn(start);
@@ -100,7 +101,7 @@ class PermissionRequestCreationAndValidationServiceTest {
 
         // When
         // Then
-        assertThrows(ValidationException.class, () -> creationService.createAndValidatePermissionRequest(pr));
+        assertThrows(EdaValidationException.class, () -> creationService.createAndValidatePermissionRequest(pr));
         verify(mockOutbox, times(2)).commit(any());
     }
 
@@ -120,6 +121,7 @@ class PermissionRequestCreationAndValidationServiceTest {
         // Given
         when(mockService.findById(any())).thenReturn(Optional.of(vhdDataNeed));
         when(vhdDataNeed.minGranularity()).thenReturn(Granularity.PT5M);
+        when(vhdDataNeed.maxGranularity()).thenReturn(Granularity.PT5M);
         when(vhdDataNeed.duration()).thenReturn(absoluteDuration);
         PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
                                                                            "dnid", "AT000000");

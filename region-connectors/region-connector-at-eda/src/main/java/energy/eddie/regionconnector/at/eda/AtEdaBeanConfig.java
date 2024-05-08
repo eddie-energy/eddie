@@ -20,6 +20,7 @@ import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
+import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.at.eda.ponton.NoOpEdaAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
@@ -34,14 +35,13 @@ import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.Validate
 import energy.eddie.regionconnector.at.eda.provider.v0_82.EdaEddieValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecordService;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableMasterDataService;
+import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
-import energy.eddie.regionconnector.shared.services.StateFulfillmentService;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
@@ -206,8 +206,8 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public FulfillmentService fulfillmentService() {
-        return new StateFulfillmentService();
+    public FulfillmentService fulfillmentService(Outbox outbox) {
+        return new FulfillmentService(outbox, SimpleEvent::new);
     }
 
     @Bean

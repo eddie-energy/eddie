@@ -3,12 +3,11 @@ package energy.eddie.regionconnector.shared.event.sourcing.handlers.integration;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
-import energy.eddie.api.agnostic.process.model.states.ValidatedPermissionRequestState;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.SimplePermissionRequest;
+import energy.eddie.regionconnector.shared.permission.requests.SimplePermissionRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -26,14 +25,12 @@ import static org.mockito.Mockito.when;
 class ConnectionStatusMessageHandlerTest {
     @Mock
     private PermissionRequestRepository<PermissionRequest> repository;
-    @Mock
-    private ValidatedPermissionRequestState state;
 
     @Test
     void testAccept_emitsStatusMessage() {
         // Given
         Sinks.Many<ConnectionStatusMessage> messages = Sinks.many().multicast().onBackpressureBuffer();
-        var permissionRequest = new SimplePermissionRequest("pid", "cid", state, "dnid");
+        var permissionRequest = new SimplePermissionRequest("pid", "cid", "dnid", PermissionProcessStatus.VALIDATED);
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));
         EventBusImpl eventBus = new EventBusImpl();
         new ConnectionStatusMessageHandler<>(eventBus, messages, repository, pr -> "");

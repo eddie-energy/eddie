@@ -15,10 +15,6 @@ public class MeterReadingPermissionUpdateAndFulfillmentService {
     private final FulfillmentService fulfillmentService;
     private final BiConsumer<MeterReadingPermissionRequest, LocalDate> meterReadingUpdater;
 
-    public MeterReadingPermissionUpdateAndFulfillmentService(FulfillmentService fulfillmentService) {
-        this(fulfillmentService, MeterReadingPermissionRequest::updateLatestMeterReadingEndDate);
-    }
-
     public MeterReadingPermissionUpdateAndFulfillmentService(
             FulfillmentService fulfillmentService,
             BiConsumer<MeterReadingPermissionRequest, LocalDate> meterReadingUpdater

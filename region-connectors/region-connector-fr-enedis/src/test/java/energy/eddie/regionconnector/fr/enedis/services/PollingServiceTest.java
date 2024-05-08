@@ -9,7 +9,7 @@ import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.services.EventFulfillmentService;
+import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +47,7 @@ class PollingServiceTest {
         doReturn(Mono.error(WebClientResponseException.create(HttpStatus.FORBIDDEN.value(), "", null, null, null)))
                 .when(enedisApi).getConsumptionMeterReading(anyString(), any(), any(), any());
         MeterReadingPermissionUpdateAndFulfillmentService service = new MeterReadingPermissionUpdateAndFulfillmentService(
-                new EventFulfillmentService(outbox, FrSimpleEvent::new),
+                new FulfillmentService(outbox, FrSimpleEvent::new),
                 (pr, end) -> {}
         );
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
@@ -85,7 +85,7 @@ class PollingServiceTest {
                                                               null)))
                 .when(enedisApi).getConsumptionMeterReading(anyString(), any(), any(), any());
         MeterReadingPermissionUpdateAndFulfillmentService service = new MeterReadingPermissionUpdateAndFulfillmentService(
-                new EventFulfillmentService(outbox, FrSimpleEvent::new),
+                new FulfillmentService(outbox, FrSimpleEvent::new),
                 (pr, end) -> {}
         );
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
@@ -133,7 +133,7 @@ class PollingServiceTest {
                             )
                 );
         MeterReadingPermissionUpdateAndFulfillmentService service = new MeterReadingPermissionUpdateAndFulfillmentService(
-                new EventFulfillmentService(outbox, FrSimpleEvent::new),
+                new FulfillmentService(outbox, FrSimpleEvent::new),
                 (pr, end) -> {}
         );
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
@@ -174,7 +174,7 @@ class PollingServiceTest {
     void fetchHistoricalMeterReadingsThrowsIllegalStateException_givenUnsupportedGranularity() throws Exception {
         // Given
         MeterReadingPermissionUpdateAndFulfillmentService service = new MeterReadingPermissionUpdateAndFulfillmentService(
-                new EventFulfillmentService(outbox, FrSimpleEvent::new),
+                new FulfillmentService(outbox, FrSimpleEvent::new),
                 (pr, end) -> {}
         );
         Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();

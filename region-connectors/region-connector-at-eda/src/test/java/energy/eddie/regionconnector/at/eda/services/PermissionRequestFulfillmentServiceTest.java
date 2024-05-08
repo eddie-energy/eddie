@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.at.eda.services;
 
+import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
@@ -9,11 +10,11 @@ import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionReque
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
-import energy.eddie.regionconnector.shared.services.StateFulfillmentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.StepVerifier;
@@ -23,14 +24,19 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestFulfillmentServiceTest {
-    private final FulfillmentService fulfillmentService = new StateFulfillmentService();
+    @InjectMocks
+    private FulfillmentService fulfillmentService;
     @Mock
     private Outbox outbox;
+    @SuppressWarnings("unused")
+    @Mock
+    private BiFunction<String, PermissionProcessStatus, PermissionEvent> eventCtor;
 
     @Test
     void service_callsFulfill_whenMeteringDataEndIsAfterPermissionRequestEnd() {

@@ -28,7 +28,6 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
-import energy.eddie.regionconnector.shared.services.EventFulfillmentService;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
@@ -40,8 +39,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.netty.http.client.HttpClient;
-
-import java.util.Set;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
@@ -160,7 +157,7 @@ public class DatadisSpringConfig {
 
     @Bean
     public FulfillmentService fulfillmentService(Outbox outbox) {
-        return new EventFulfillmentService(outbox, EsSimpleEvent::new);
+        return new FulfillmentService(outbox, EsSimpleEvent::new);
     }
 
     @Bean

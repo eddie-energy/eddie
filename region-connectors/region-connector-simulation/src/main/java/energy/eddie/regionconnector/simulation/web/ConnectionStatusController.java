@@ -6,7 +6,7 @@ import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.IntermediateConsentMarketDocument;
+import energy.eddie.regionconnector.shared.cim.v0_82.IntermediateConsentMarketDocument;
 import energy.eddie.regionconnector.simulation.SimulationConnectorMetadata;
 import energy.eddie.regionconnector.simulation.SimulationDataSourceInformation;
 import energy.eddie.regionconnector.simulation.dtos.SetConnectionStatusRequest;

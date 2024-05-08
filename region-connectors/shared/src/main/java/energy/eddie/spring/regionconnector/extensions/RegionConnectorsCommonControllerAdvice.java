@@ -5,12 +5,8 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
-import energy.eddie.api.agnostic.process.model.SendToPermissionAdministratorException;
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
-import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
-import energy.eddie.regionconnector.shared.web.StateValidationErrors;
 import energy.eddie.regionconnector.shared.web.ValidationErrors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,41 +85,10 @@ public class RegionConnectorsCommonControllerAdvice {
                 && (invalidFormatEx.getTargetType() != null && invalidFormatEx.getTargetType().isEnum());
     }
 
-    @ExceptionHandler(value = {SendToPermissionAdministratorException.class})
-    protected ResponseEntity<Map<String, List<EddieApiError>>> handleSendToPermissionAdministratorException(
-            SendToPermissionAdministratorException exception
-    ) {
-        LOGGER.info("Error occurred while sending a permission request to a PA", exception);
-
-        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
-        var status = exception.userFault() ? HttpStatus.BAD_REQUEST : HttpStatus.INTERNAL_SERVER_ERROR;
-
-        return ResponseEntity.status(status).body(errors);
-    }
-
-    @ExceptionHandler(StateTransitionException.class)
-    // Use ResponseEntity instead of @ResponseStatus to be able to test the return status code and as it's recommended for REST APIs
-    public ResponseEntity<Map<String, List<EddieApiError>>> handleStateTransitionException(
-            StateTransitionException
-                    stateTransitionException
-    ) {
-        var errorMsg = "An error occurred while trying to transition a permission request to a new state.";
-        LOGGER.warn(errorMsg, stateTransitionException);
-
-        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(errorMsg)));
-        return ResponseEntity.internalServerError().body(errors);
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, List<EddieApiError>>> handleMethodArgumentNotValidException
             (MethodArgumentNotValidException ex) {
         var errors = new ValidationErrors(ex).asErrorsList();
-        return ResponseEntity.badRequest().body(Map.of(ERRORS_PROPERTY_NAME, errors));
-    }
-
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<Map<String, List<EddieApiError>>> handleStateValidationExceptions(ValidationException ex) {
-        var errors = new StateValidationErrors(ex).asErrorsList();
         return ResponseEntity.badRequest().body(Map.of(ERRORS_PROPERTY_NAME, errors));
     }
 

@@ -4,13 +4,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.PastStateException;
-import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
-import energy.eddie.api.agnostic.process.model.SendToPermissionAdministratorException;
-import energy.eddie.api.agnostic.process.model.states.CreatedPermissionRequestState;
-import energy.eddie.api.agnostic.process.model.validation.AttributeError;
-import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -116,64 +110,6 @@ class RegionConnectorsCommonControllerAdviceTest {
     }
 
     @Test
-    void givenSendToPermissionAdministratorException_returnsBadRequestIfUserFault() {
-        // Given
-        var exception = new SendToPermissionAdministratorException(mock(PermissionRequestState.class),
-                                                                   "Test message",
-                                                                   true);
-
-        // When
-        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleSendToPermissionAdministratorException(
-                exception);
-
-        // Then
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        var responseBody = response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(1, responseBody.size());
-        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertEquals("Test message", responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
-    }
-
-    @Test
-    void givenSendToPermissionAdministratorException_returnsInternalErrorIfNotUserFault() {
-        // Given
-        var exception = new SendToPermissionAdministratorException(mock(PermissionRequestState.class),
-                                                                   "Test message",
-                                                                   false);
-
-        // When
-        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleSendToPermissionAdministratorException(
-                exception);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        var responseBody = response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(1, responseBody.size());
-        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertEquals("Test message", responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
-    }
-
-    @Test
-    void givenStateTransitionException_returnsInternalServerError() {
-        // Given
-        var exception = new PastStateException(CreatedPermissionRequestState.class);
-
-        // When
-        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleStateTransitionException(exception);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        var responseBody = response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(1, responseBody.size());
-        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertEquals("An error occurred while trying to transition a permission request to a new state.",
-                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
-    }
-
-    @Test
     void givenMethodArgumentNotValidException_returnsBadRequest() {
         var expectedErrors = List.of(
                 new EddieApiError("field1: Error message 1"),
@@ -202,35 +138,6 @@ class RegionConnectorsCommonControllerAdviceTest {
         errors.add(new FieldError("field1", "field1", "Error message 1"));
         errors.add(new FieldError("field2", "field2", "Error message 2"));
         return errors;
-    }
-
-    @Test
-    void givenValidationException_returnsBadRequest() {
-        var expectedErrors = List.of(
-                new EddieApiError("field1: Error message 1"),
-                new EddieApiError("field1: Error message 2"),
-                new EddieApiError("field2: Error message 3"));
-
-        // Given
-        var exception = new ValidationException(mock(PermissionRequestState.class), createAttributeErrors());
-
-        // When
-        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleStateValidationExceptions(exception);
-
-        // Then
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        var responseBody = response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(1, responseBody.size());
-        assertEquals(3, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertThat(responseBody.get(ERRORS_PROPERTY_NAME)).hasSameElementsAs(expectedErrors);
-    }
-
-    private static List<AttributeError> createAttributeErrors() {
-        return List.of(
-                new AttributeError("field1", "Error message 1"),
-                new AttributeError("field1", "Error message 2"),
-                new AttributeError("field2", "Error message 3"));
     }
 
     @Test

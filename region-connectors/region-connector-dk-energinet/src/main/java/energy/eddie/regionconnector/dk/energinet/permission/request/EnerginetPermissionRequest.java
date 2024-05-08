@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
@@ -131,11 +130,6 @@ public class EnerginetPermissionRequest implements DkEnerginetPermissionRequest 
     }
 
     @Override
-    public PermissionRequestState state() {
-        return null;
-    }
-
-    @Override
     public DataSourceInformation dataSourceInformation() {
         return dataSourceInformation;
     }
@@ -143,11 +137,6 @@ public class EnerginetPermissionRequest implements DkEnerginetPermissionRequest 
     @Override
     public ZonedDateTime created() {
         return created;
-    }
-
-    @Override
-    public void changeState(PermissionRequestState state) {
-        throw new IllegalStateException("Not used anymore");
     }
 
     @Override
@@ -163,10 +152,5 @@ public class EnerginetPermissionRequest implements DkEnerginetPermissionRequest 
     @Override
     public Optional<LocalDate> latestMeterReadingEndDate() {
         return Optional.ofNullable(latestMeterReadingEndDate);
-    }
-
-    @Override
-    public void updateLatestMeterReadingEndDate(LocalDate date) {
-        throw new IllegalStateException("Not used anymore");
     }
 }
