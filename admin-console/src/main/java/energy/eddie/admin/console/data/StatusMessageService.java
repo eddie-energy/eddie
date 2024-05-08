@@ -44,6 +44,8 @@ public class StatusMessageService {
     private StatusMessage createStatusMessage(ConsentMarketDocument message) {
         return new StatusMessage(
                 message.getMRID(),
+                message.getReceiverMarketParticipantMRID().getCodingScheme().toString(),
+                message.getReceiverMarketParticipantMRID().getValue(),
                 message.getPermissionList().getPermissions().getFirst()
                         .getMktActivityRecordList().getMktActivityRecords().getFirst()
                         .getCreatedDateTime(),

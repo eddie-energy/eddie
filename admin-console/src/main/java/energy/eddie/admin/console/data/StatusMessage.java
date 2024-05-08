@@ -2,6 +2,10 @@ package energy.eddie.admin.console.data;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Entity
 @Table(name = "status_messages", schema = "admin_console")
 public class StatusMessage {
@@ -10,58 +14,66 @@ public class StatusMessage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private final Long id;
 
-    @Column(nullable = false)
-    private String permissionId; // is properties.permissionList.permissions.permissionMRID in the database
+    @Column(name = "country")
+    private final String country;
 
-    @Column(name = "timestamp")
-    private String timestamp; // properties.permissionList.permissions.mktActivityRecordList.createdDateTime in database
+    @Column(name = "dso")
+    private final String dso;
 
-    @Column(name = "status") // Define the column name for individual elements
-    private String status; //properties.permissionList.permissions.mktActivityRecords.status in database
+    @Column(name = "permission_id", nullable = false)
+    private final String permissionId;
+
+    @Column(name = "start_date")
+    private final String startDate;
+
+    @Column(name = "status")
+    private final String status;
 
     // Constructors
-    public StatusMessage(String permissionId, String timestamp, String status) {
+    public StatusMessage(String permissionId, String country, String dso, String startDate, String status) {
         this.id = 0L;
         this.permissionId = permissionId;
-        this.timestamp = timestamp;
+        this.country = country;
+        this.dso = dso;
+        this.startDate = startDate;
         this.status = status;
     }
 
     @SuppressWarnings("NullAway") // Hibernate requires a no-arg constructor
-    public StatusMessage() {
+    protected StatusMessage() {
         this.id = null;
         this.permissionId = null;
-        this.timestamp = null;
+        this.country = null;
         this.status = null;
+        this.dso = null;
+        this.startDate = null;
     }
+
 
     public Long getId() {
         return id;
     }
-
     public String getPermissionId() {
         return permissionId;
     }
-
-    public void setPermissionId(String permissionId) {
-        this.permissionId = permissionId;
+    public String getCountry() {
+        return country;
     }
-
-    public String getTimestamp() {
-        return timestamp;
+    public String getDso() {
+        return dso;
     }
-
-    public void setTimestamp(String timestamps) {
-        this.timestamp = timestamps;
+    public String getStartDate() {
+        return startDate;
     }
-
     public String getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public LocalDate getParsedStartDate() {
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+        assert this.startDate != null;
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(this.startDate, formatter);
+        return zonedDateTime.toLocalDate();
     }
-
 
 }

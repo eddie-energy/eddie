@@ -30,6 +30,9 @@ class StatusMessageServiceTest {
 
         ConsentMarketDocument cmd = new ConsentMarketDocument()
                 .withMRID("mrid")
+                .withReceiverMarketParticipantMRID(new PartyIDStringComplexType()
+                        .withCodingScheme(CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME)
+                        .withValue("Enedis"))
                 .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
                 .withPermissionList(new ConsentMarketDocument.PermissionList()
                         .withPermissions(new PermissionComplexType()
@@ -48,7 +51,7 @@ class StatusMessageServiceTest {
         verify(statusMessageRepository)
                 .save(assertArg(message -> assertAll(
                         () -> assertEquals("mrid", message.getPermissionId()),
-                        () -> assertEquals("2021-01-01T00:00:00Z", message.getTimestamp()),
+                        () -> assertEquals("2021-01-01T00:00:00Z", message.getStartDate()),
                         () -> assertEquals("A05", message.getStatus())
                 )));
     }
