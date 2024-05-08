@@ -40,7 +40,7 @@ class EddieRequestStatusHandler extends LitElement {
           title: "Permission request created!",
           message: "Your permission request was created successfully.",
           variant: "success",
-          duration: 5000,
+          duration: 10000,
         },
         bubbles: true,
         composed: true,
@@ -124,8 +124,8 @@ class EddieRequestStatusHandler extends LitElement {
       <sl-alert variant="${variant}" open>
         <sl-icon name="${VARIANT_ICONS[variant]}" slot="icon"></sl-icon>
         <p>
-          <strong>${title}</strong><br />
-          ${message} ${reason ? "<br>" + reason : ""}
+          <strong>Status: ${title}</strong><br />
+          ${message} ${reason ? " " + reason : ""}
         </p>
       </sl-alert>
     `;
