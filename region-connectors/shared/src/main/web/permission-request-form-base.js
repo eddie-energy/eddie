@@ -21,8 +21,8 @@ class PermissionRequestFormBase extends LitElement {
 
   /**
    * Dispatch a custom event to render an error notification.
-   * @param {string} message
-   * @param {number} duration
+   * @param {string} message Error details to display.
+   * @param {number} duration Duration in milliseconds to display the notification for.
    */
   error(message, duration = Infinity) {
     this.notify({
@@ -36,12 +36,12 @@ class PermissionRequestFormBase extends LitElement {
   /**
    * Dispatch a custom event to render a user notification.
    * @param {Object} notification
-   * @param {string} notification.title
-   * @param {string} notification.message
-   * @param {string} [notification.reason=""]
-   * @param {string} [notification.variant="info"]
-   * @param {number} [notification.duration=Infinity]
-   * @param {string[]} [notification.extraFunctionality=[]]
+   * @param {string} notification.title Title of the notification.
+   * @param {string} notification.message Notification details to display.
+   * @param {string} notification.reason Optional reason for a notification.
+   * @param {"info"|"success"|"warning"|"danger"} notification.variant Indicates the urgency of the notification.
+   * @param {number} notification.duration Duration in milliseconds for which the notification is displayed.
+   * @param {string[]|Node[]} notification.extraFunctionality Additional content to render at the end of the notification.
    */
   notify({
     title,
@@ -88,7 +88,7 @@ class PermissionRequestFormBase extends LitElement {
    * Errors are thrown as an `Error` object with the message as the error message.
    * This includes status codes outside the 2xx range.
    * @param {any} payload The request body to send. Will be converted to a JSON string using `JSON.stringify`.
-   * @param {RequestInit} [options] Additional options to pass to the fetch call.
+   * @param {RequestInit} options Additional options to pass to the fetch call.
    * @returns {Promise<any>} The response body as JSON.
    * @throws {Error} If the request fails or the response has a status code outside the 2xx range.
    */
