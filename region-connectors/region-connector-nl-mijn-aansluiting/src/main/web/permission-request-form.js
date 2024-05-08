@@ -14,7 +14,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
-    _requestId: { type: String },
     _isPermissionRequestCreated: { type: Boolean },
   };
 
@@ -28,60 +27,20 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     event.preventDefault();
     const formData = new FormData(event.target);
 
-    const jsonData = {
+    const payload = {
       connectionId: this.connectionId,
       dataNeedId: this.dataNeedAttributes.id,
       verificationCode: formData.get("verificationCode"),
     };
 
-    this.createPermissionRequest(jsonData)
-      .then()
-      .catch((error) => this.error(error));
-  }
-
-  async createPermissionRequest(payload) {
-    const response = await fetch(REQUEST_URL, {
-      body: JSON.stringify(payload),
-      method: "POST",
+    this.createPermissionRequest(payload, {
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const result = await response.json();
-
-    if (response.status === 201) {
-      const location = response.headers.get("Location");
-
-      if (!location) {
-        throw new Error("Header 'Location' is missing");
-      }
-
-      this._isPermissionRequestCreated = true;
-
-      this.handlePermissionRequestCreated(BASE_URL + location);
-      window.open(result["redirectUri"], "_blank");
-    } else if (response.status === 400) {
-      // An error on the client side happened, and it should be displayed as alert in the form
-      let errorMessage;
-
-      if (result["errors"] == null || result["errors"].length === 0) {
-        errorMessage =
-          "Something went wrong when creating the permission request, please try again later.";
-      } else {
-        errorMessage = result["errors"]
-          .map(function (error) {
-            return error.message;
-          })
-          .join("<br>");
-      }
-      this.error(errorMessage);
-    } else {
-      this.error(
-        "Something went wrong when creating the permission request, please try again later."
-      );
-    }
+    })
+      .then((result) => {
+        this._isPermissionRequestCreated = true;
+        window.open(result["redirectUri"], "_blank");
+      })
+      .catch((error) => this.error(error));
   }
 
   render() {

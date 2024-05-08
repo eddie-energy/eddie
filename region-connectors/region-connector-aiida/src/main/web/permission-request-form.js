@@ -7,9 +7,6 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/compone
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/qr-code/qr-code.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/copy-button/copy-button.js";
 
-const BASE_URL = new URL(import.meta.url).href.replace("ce.js", "");
-const REQUEST_URL = BASE_URL + "permission-request";
-
 class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
@@ -34,29 +31,13 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
     this._isSubmitDisabled = true;
 
-    fetch(REQUEST_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    })
-      .then((response) => {
-        if (response.ok) {
-          return response.json().then((json) => {
-            this._aiidaCode = JSON.stringify(json);
-          });
-        } else {
-          return response.json().then((json) => {
-            json.errors.map(({ message }) => this.error(message));
-          });
-        }
+    this.createPermissionRequest(body)
+      .then((result) => {
+        this._aiidaCode = JSON.stringify(result);
       })
-      .catch((error) => this.error(error))
-      .finally(() => {
-        if (!this._aiidaCode) {
-          this._isSubmitDisabled = false;
-        }
+      .catch((error) => {
+        this._isSubmitDisabled = false;
+        this.error(error);
       });
   }
 

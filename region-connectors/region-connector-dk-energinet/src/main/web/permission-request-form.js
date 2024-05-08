@@ -6,11 +6,6 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/compone
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/alert/alert.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/icon/icon.js";
 
-const BASE_URL = new URL(import.meta.url).href
-  .replace("ce.js", "")
-  .slice(0, -1);
-const REQUEST_URL = BASE_URL + "/permission-request";
-
 class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
@@ -42,54 +37,13 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     this._isSubmitDisabled = true;
 
     this.createPermissionRequest(jsonData)
-      .catch((error) => this.error(error))
-      .finally(() => {
-        // request failed if no request status was set
-        if (!this._isPermissionRequestCreated) {
-          this._isSubmitDisabled = false;
-        }
+      .then(() => {
+        this._isPermissionRequestCreated = true;
+      })
+      .catch((error) => {
+        this._isSubmitDisabled = false;
+        this.error(error);
       });
-  }
-
-  async createPermissionRequest(payload) {
-    const response = await fetch(REQUEST_URL, {
-      body: JSON.stringify(payload),
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const result = await response.json();
-
-    if (response.status === 201) {
-      const location = response.headers.get("Location");
-
-      if (!location) {
-        throw new Error("Header 'Location' is missing");
-      }
-
-      this.handlePermissionRequestCreated(BASE_URL + location);
-    } else if (response.status === 400) {
-      // An error on the client side happened, and it should be displayed as alert in the form
-      let errorMessage;
-
-      if (result["errors"] == null || result["errors"].length === 0) {
-        errorMessage =
-          "Something went wrong when creating the permission request, please try again later.";
-      } else {
-        errorMessage = result["errors"]
-          .map(function (error) {
-            return error.message;
-          })
-          .join("<br>");
-      }
-
-      this.error(errorMessage);
-    } else {
-      const errorMessage =
-        "Something went wrong when creating the permission request, please try again later.";
-      this.error(errorMessage);
-    }
   }
 
   render() {

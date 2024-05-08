@@ -1,6 +1,24 @@
 import { LitElement } from "lit";
 
 class PermissionRequestFormBase extends LitElement {
+  constructor() {
+    super();
+
+    /**
+     * Base URL of the current script inferred from the import URL.
+     * @type {string}
+     */
+    this.BASE_URL = new URL(import.meta.url).href
+      .replace("ce.js", "")
+      .slice(0, -1);
+
+    /**
+     * Endpoint for sending permission requests inferred from the base URL.
+     * @type {string}
+     */
+    this.REQUEST_URL = this.BASE_URL + "/permission-request";
+  }
+
   /**
    * Dispatch a custom event to render an error notification.
    * @param {string} message
@@ -63,6 +81,49 @@ class PermissionRequestFormBase extends LitElement {
     });
 
     this.dispatchEvent(event);
+  }
+
+  /**
+   * Create a standard permission request with the given payload.
+   * Errors are thrown as an `Error` object with the message as the error message.
+   * This includes status codes outside the 2xx range.
+   * @param {any} payload The request body to send. Will be converted to a JSON string using `JSON.stringify`.
+   * @param {RequestInit} [options] Additional options to pass to the fetch call.
+   * @returns {Promise<any>} The response body as JSON.
+   * @throws {Error} If the request fails or the response has a status code outside the 2xx range.
+   */
+  async createPermissionRequest(payload, options = {}) {
+    const response = await fetch(this.REQUEST_URL, {
+      body: JSON.stringify(payload),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      ...options,
+    });
+
+    if (response.ok) {
+      if (response.status === 201) {
+        const location = response.headers.get("Location");
+        if (!location) {
+          throw new Error("Header 'Location' is missing");
+        }
+        this.handlePermissionRequestCreated(this.BASE_URL + location);
+      }
+    } else {
+      const { errors } = await response.json();
+
+      if (errors && errors.length > 0) {
+        const message = errors.map((error) => error.message).join(". ");
+        throw new Error(message);
+      }
+
+      throw new Error(
+        "Something went wrong when creating the permission request, please try again later."
+      );
+    }
+
+    return response.json();
   }
 }
 
