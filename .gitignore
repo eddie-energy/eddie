@@ -128,3 +128,7 @@ region-connectors/region-connector-aiida/region-connector-aiida/mqtt-persistence
 
 # ignore local run configuration
 application-local.properties
+
+
+# ignore keystores
+*.jks

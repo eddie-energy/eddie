@@ -1,0 +1,47 @@
+[
+  {
+    "MarketEvaluationPoint": {
+      "MRID": "871690930000909597",
+      "RegisterList": [
+        {
+          "Meter": {
+            "MRID": "E0003000007083514"
+          },
+          "MRID": "1.8.1",
+          "ReadingList": [
+            {
+              "DateAndOrTime": {
+                "DateTime": "2023-05-01T00:00:00.000+02:00"
+              },
+              "ReadingType": {
+                "Multiplier": "k",
+                "Unit": "Wh"
+              },
+              "Value": 9738.65
+            },
+            {
+              "DateAndOrTime": {
+                "DateTime": "2023-05-02T00:00:00.000+02:00"
+              },
+              "ReadingType": {
+                "Multiplier": "k",
+                "Unit": "Wh"
+              },
+              "Value": 9838.65
+            },
+            {
+              "DateAndOrTime": {
+                "DateTime": "2023-05-03T00:00:00.000+02:00"
+              },
+              "ReadingType": {
+                "Multiplier": "k",
+                "Unit": "Wh"
+              },
+              "Value": 9948.65
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

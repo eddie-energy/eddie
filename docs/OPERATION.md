@@ -124,6 +124,7 @@ Or you can use the following links:
 * [France (Enedis)](./../region-connectors/region-connector-fr-enedis/README.md)
 * [Spain (Datadis)](./../region-connectors/region-connector-es-datadis/README.md)
 * [AIIDA (Near real-time data)](./../region-connectors/region-connector-aiida/README.md)
+* [Netherlands (Mijn Aansluiting)](./../region-connectors/region-connector-nl-mijn-aansluiting/README.md)
 
 ### Business domain related configuration
 
