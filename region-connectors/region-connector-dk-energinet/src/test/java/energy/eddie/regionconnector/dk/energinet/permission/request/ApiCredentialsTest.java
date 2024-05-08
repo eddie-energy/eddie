@@ -16,7 +16,6 @@ import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,19 +30,6 @@ class ApiCredentialsTest {
     }
 
     private final ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
-
-    @Test
-    void refreshToken_returnsRefreshToken() {
-        // Given
-        String refreshToken = "jwt";
-        ApiCredentials credentials = new ApiCredentials(null, refreshToken, mapper);
-
-        // When
-        var res = credentials.refreshToken();
-
-        // Then
-        assertEquals(refreshToken, res);
-    }
 
     @Test
     void refreshToken_returnsAccessTokenIfValid() {

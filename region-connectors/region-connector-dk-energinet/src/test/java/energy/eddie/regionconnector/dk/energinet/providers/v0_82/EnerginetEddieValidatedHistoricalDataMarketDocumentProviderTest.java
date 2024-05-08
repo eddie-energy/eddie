@@ -1,12 +1,14 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocument;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
-import energy.eddie.regionconnector.dk.energinet.permission.request.SimplePermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.SeriesPeriodBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.TimeSeriesBuilderFactory;
@@ -20,6 +22,9 @@ import reactor.test.publisher.TestPublisher;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -52,7 +57,19 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
 
         MyEnergyDataMarketDocumentResponse myEnergyDataMarketDocumentResponse = new MyEnergyDataMarketDocumentResponse();
         myEnergyDataMarketDocumentResponse.setMyEnergyDataMarketDocument(myEnergyDataMarketDocument);
-        var permissionRequest = new SimplePermissionRequest("permissionId", "connectionId", "dataNeedId");
+        var permissionRequest = new EnerginetPermissionRequest(
+                "permissionId",
+                "connectionId",
+                "dataNeedId",
+                "meteringPointId",
+                "refreshToken",
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                Granularity.PT1H,
+                "accessToken",
+                PermissionProcessStatus.ACCEPTED,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
         apiResponse = new IdentifiableApiResponse(
                 permissionRequest,
                 myEnergyDataMarketDocumentResponse
@@ -63,7 +80,6 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
     @Test
     void getEddieValidatedHistoricalDataMarketDocumentStream_producesDocumentWhenTestJsonIsUsed() {
         // Given
-
         TestPublisher<IdentifiableApiResponse> testPublisher = TestPublisher.create();
 
         var provider = new EnerginetEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(),

@@ -9,16 +9,19 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMark
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.PeriodtimeInterval;
-import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
-import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.permission.request.states.EnerginetCustomerAcceptedState;
+import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalPollingEvent;
+import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.services.EventFulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
-import energy.eddie.regionconnector.shared.services.StateFulfillmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
@@ -30,33 +33,43 @@ import reactor.test.StepVerifier;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PollingServiceTest {
+    private final ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
     @Mock
     private EnerginetCustomerApi customerApi;
     @Mock
-    private PermissionRequestService permissionRequestService;
+    private DkPermissionRequestRepository repository;
+    @Mock
+    private Outbox outbox;
+    @Captor
+    private ArgumentCaptor<DkInternalPollingEvent> pollingEventCaptor;
     private PollingService pollingService;
-    private final ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
-
-
 
     @BeforeEach
+    @SuppressWarnings("DirectInvocationOnMock")
+        // the outbox is not directly invoked
     void setUp() {
-        pollingService = new PollingService(customerApi,
-                                            permissionRequestService,
-                                            new MeterReadingPermissionUpdateAndFulfillmentService(new StateFulfillmentService()));
+        pollingService = new PollingService(
+                customerApi,
+                repository,
+                new MeterReadingPermissionUpdateAndFulfillmentService(
+                        new EventFulfillmentService(outbox, DkSimpleEvent::new),
+                        (reading, end) -> outbox.commit(new DkInternalPollingEvent(reading.permissionId(), end))
+                ),
+                outbox,
+                mapper
+        );
     }
 
     @Test
@@ -64,67 +77,22 @@ class PollingServiceTest {
         // Given
         var start = LocalDate.now(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
-        String connectionId = "connId";
-        String dataNeedId = "dataNeedId";
-        String refreshToken = "token";
-        String meteringPoint = "meteringPoint";
-        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId,
-                                                                                           refreshToken,
-                                                                                           meteringPoint,
-                                                                                           dataNeedId);
-
-        StateBuilderFactory factory = new StateBuilderFactory();
-        DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(
+        var connectionId = "connId";
+        var dataNeedId = "dataNeedId";
+        var refreshToken = "token";
+        var meteringPoint = "meteringPoint";
+        var permissionRequest = new EnerginetPermissionRequest(
                 UUID.randomUUID().toString(),
-                requestForCreation,
-                customerApi,
+                connectionId,
+                dataNeedId,
+                meteringPoint,
+                refreshToken,
                 start,
                 end,
                 Granularity.PT1H,
-                factory,
-                mapper
-        );
-        WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(),
-                                                                                    "",
-                                                                                    HttpHeaders.EMPTY,
-                                                                                    null,
-                                                                                    null);
-        permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest, factory));
-        doReturn(Mono.error(unauthorized))
-                .when(customerApi).accessToken(anyString());
-
-        // Then
-        StepVerifier.create(pollingService.identifiableMeterReadings())
-                    .then(() -> pollingService.fetchHistoricalMeterReadings(permissionRequest))
-                    .then(pollingService::close)
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
-        assertEquals(PermissionProcessStatus.REVOKED, permissionRequest.state().status());
-    }
-
-    @Test
-    void fetchingAConsumptionRecord_throwsPastStateExceptionOnWrongState() {
-        // Given
-        var start = LocalDate.now(DK_ZONE_ID).minusDays(10);
-        var end = start.plusDays(5);
-        String connectionId = "connId";
-        String dataNeedId = "dataNeedId";
-        String refreshToken = "token";
-        String meteringPoint = "meteringPoint";
-        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId,
-                                                                                           refreshToken,
-                                                                                           meteringPoint,
-                                                                                           dataNeedId);
-
-        DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(
-                UUID.randomUUID().toString(),
-                requestForCreation,
-                customerApi,
-                start,
-                end,
-                Granularity.PT1H,
-                new StateBuilderFactory(),
-                mapper
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                ZonedDateTime.now(ZoneOffset.UTC)
         );
         WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(),
                                                                                     "",
@@ -140,7 +108,7 @@ class PollingServiceTest {
                     .then(pollingService::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(2));
-        assertEquals(PermissionProcessStatus.CREATED, permissionRequest.state().status());
+        verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
     }
 
     @Test
@@ -148,32 +116,28 @@ class PollingServiceTest {
         // Given
         var start = LocalDate.now(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
-        String connectionId = "connId";
-        String dataNeedId = "dataNeedId";
-        String refreshToken = "token";
-        String meteringPoint = "meteringPoint";
-        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId,
-                                                                                           refreshToken,
-                                                                                           meteringPoint,
-                                                                                           dataNeedId);
-
-        StateBuilderFactory factory = new StateBuilderFactory();
-        DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(
+        var connectionId = "connId";
+        var dataNeedId = "dataNeedId";
+        var refreshToken = "token";
+        var meteringPoint = "meteringPoint";
+        var permissionRequest = new EnerginetPermissionRequest(
                 UUID.randomUUID().toString(),
-                requestForCreation,
-                customerApi,
+                connectionId,
+                dataNeedId,
+                meteringPoint,
+                refreshToken,
                 start,
                 end,
                 Granularity.PT1H,
-                factory,
-                mapper
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                ZonedDateTime.now(ZoneOffset.UTC)
         );
         WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                                                                                     "",
                                                                                     HttpHeaders.EMPTY,
                                                                                     null,
                                                                                     null);
-        permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest, factory));
         doReturn(Mono.error(unauthorized))
                 .when(customerApi).accessToken(anyString());
 
@@ -183,35 +147,31 @@ class PollingServiceTest {
                     .then(pollingService::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(2));
-        assertEquals(PermissionProcessStatus.ACCEPTED, permissionRequest.state().status());
+        verify(outbox, never()).commit(any());
     }
 
     @Test
     void fetchingAConsumptionRecord_emitsRecord() {
         // Given
-        LocalDate start = LocalDate.now(DK_ZONE_ID).minusDays(10);
-        LocalDate end = start.plusDays(5);
-        String connectionId = "connId";
-        String dataNeedId = "dataNeedId";
-        String refreshToken = "token";
-        String meteringPoint = "meteringPoint";
-        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId,
-                                                                                           refreshToken,
-                                                                                           meteringPoint,
-                                                                                           dataNeedId);
-
-        StateBuilderFactory factory = new StateBuilderFactory();
-        DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(
+        var start = LocalDate.now(DK_ZONE_ID).minusDays(10);
+        var end = start.plusDays(5);
+        var connectionId = "connId";
+        var dataNeedId = "dataNeedId";
+        var refreshToken = "token";
+        var meteringPoint = "meteringPoint";
+        var permissionRequest = new EnerginetPermissionRequest(
                 UUID.randomUUID().toString(),
-                requestForCreation,
-                customerApi,
+                connectionId,
+                dataNeedId,
+                meteringPoint,
+                refreshToken,
                 start,
                 end,
                 Granularity.PT1H,
-                factory,
-                mapper
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                ZonedDateTime.now(ZoneOffset.UTC)
         );
-        permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest, factory));
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
         MyEnergyDataMarketDocumentResponse resultItem = new MyEnergyDataMarketDocumentResponse();
@@ -240,13 +200,14 @@ class PollingServiceTest {
                             () -> assertEquals(permissionRequest.permissionId(), mr.permissionRequest().permissionId()),
                             () -> assertEquals(permissionRequest.connectionId(), mr.permissionRequest().connectionId()),
                             () -> assertEquals(permissionRequest.dataNeedId(), mr.permissionRequest().dataNeedId()),
-                            () -> assertNotNull(mr.apiResponse()),
-                            () -> assertEquals(Optional.of(end),
-                                               permissionRequest.latestMeterReadingEndDate())
+                            () -> assertNotNull(mr.apiResponse())
                     ))
                     .then(pollingService::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(2));
+        verify(outbox).commit(pollingEventCaptor.capture());
+        var res = pollingEventCaptor.getValue();
+        assertEquals(end, res.latestMeterReadingEndDate());
     }
 
     @Test
@@ -254,27 +215,24 @@ class PollingServiceTest {
         // Given
         var start = LocalDate.now(DK_ZONE_ID).plusDays(1);
         var end = start.plusDays(5);
-        String connectionId = "connId";
-        String dataNeedId = "dataNeedId";
-        String refreshToken = "token";
-        String meteringPoint = "meteringPoint";
-        PermissionRequestForCreation requestForCreation = new PermissionRequestForCreation(connectionId,
-                                                                                           refreshToken,
-                                                                                           meteringPoint,
-                                                                                           dataNeedId);
-
-        StateBuilderFactory factory = new StateBuilderFactory();
-        DkEnerginetCustomerPermissionRequest permissionRequest = new EnerginetCustomerPermissionRequest(
+        var connectionId = "connId";
+        var dataNeedId = "dataNeedId";
+        var refreshToken = "token";
+        var meteringPoint = "meteringPoint";
+        var accessToken = "accessToken";
+        var permissionRequest = new EnerginetPermissionRequest(
                 UUID.randomUUID().toString(),
-                requestForCreation,
-                customerApi,
+                connectionId,
+                dataNeedId,
+                meteringPoint,
+                refreshToken,
                 start,
                 end,
                 Granularity.PT1H,
-                factory,
-                mapper
+                accessToken,
+                PermissionProcessStatus.ACCEPTED,
+                ZonedDateTime.now(ZoneOffset.UTC)
         );
-        permissionRequest.changeState(new EnerginetCustomerAcceptedState(permissionRequest, factory));
 
         // When
         pollingService.fetchHistoricalMeterReadings(permissionRequest);
@@ -292,26 +250,24 @@ class PollingServiceTest {
         var end1 = start1.plusDays(5);
         var start2 = LocalDate.now(DK_ZONE_ID).plusDays(1);
         var end2 = start2.plusDays(5);
-        String dataNeedId = "dataNeedId";
-        String refreshToken = "token";
-        String meteringPoint = "meteringPoint";
-        PermissionRequestForCreation requestForCreation1 = new PermissionRequestForCreation("connId1",
-                                                                                            refreshToken,
-                                                                                            meteringPoint,
-                                                                                            dataNeedId);
-        StateBuilderFactory factory = new StateBuilderFactory();
-        DkEnerginetCustomerPermissionRequest permissionRequest1 = new EnerginetCustomerPermissionRequest(
+        var connectionId = "connId";
+        var dataNeedId = "dataNeedId";
+        var refreshToken = "token";
+        var meteringPoint = "meteringPoint";
+        var permissionRequest1 = new EnerginetPermissionRequest(
                 UUID.randomUUID().toString(),
-                requestForCreation1,
-                customerApi,
+                connectionId,
+                dataNeedId,
+                meteringPoint,
+                refreshToken,
                 start1,
                 end1,
                 Granularity.PT1H,
-                factory,
-                mapper
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                ZonedDateTime.now(ZoneOffset.UTC)
         );
 
-        permissionRequest1.changeState(new EnerginetCustomerAcceptedState(permissionRequest1, factory));
         MyEnergyDataMarketDocumentResponse resultItem = new MyEnergyDataMarketDocumentResponse();
         resultItem.setMyEnergyDataMarketDocument(new MyEnergyDataMarketDocument()
                                                          .periodTimeInterval(new PeriodtimeInterval()
@@ -325,26 +281,23 @@ class PollingServiceTest {
                 .addResultItem(resultItem);
         when(customerApi.getTimeSeries(eq(start1), any(), any(), any(), eq("token"), any()))
                 .thenReturn(Mono.just(data));
-
-        PermissionRequestForCreation requestForCreation2 = new PermissionRequestForCreation("connId2",
-                                                                                            refreshToken,
-                                                                                            meteringPoint,
-                                                                                            dataNeedId);
-        DkEnerginetCustomerPermissionRequest permissionRequest2 = new EnerginetCustomerPermissionRequest(
+        DkEnerginetPermissionRequest permissionRequest2 = new EnerginetPermissionRequest(
                 UUID.randomUUID().toString(),
-                requestForCreation2,
-                customerApi,
+                connectionId,
+                dataNeedId,
+                meteringPoint,
+                refreshToken,
                 start2,
                 end2,
                 Granularity.PT1H,
-                factory,
-                mapper
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                ZonedDateTime.now(ZoneOffset.UTC)
         );
-        permissionRequest2.changeState(new EnerginetCustomerAcceptedState(permissionRequest2, factory));
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
 
-        when(permissionRequestService.findAllAcceptedPermissionRequests())
+        when(repository.findAllByStatus(PermissionProcessStatus.ACCEPTED))
                 .thenReturn(List.of(permissionRequest1, permissionRequest2));
 
         // Then
@@ -357,10 +310,11 @@ class PollingServiceTest {
                             () -> assertEquals(permissionRequest1.connectionId(),
                                                mr.permissionRequest().connectionId()),
                             () -> assertEquals(permissionRequest1.dataNeedId(), mr.permissionRequest().dataNeedId()),
-                            () -> assertNotNull(mr.apiResponse()),
-                            () -> assertEquals(Optional.of(end1),
-                                               permissionRequest1.latestMeterReadingEndDate())
+                            () -> assertNotNull(mr.apiResponse())
                     ))
                     .verifyComplete();
+        verify(outbox).commit(pollingEventCaptor.capture());
+        var res = pollingEventCaptor.getValue();
+        assertEquals(end1, res.latestMeterReadingEndDate());
     }
 }

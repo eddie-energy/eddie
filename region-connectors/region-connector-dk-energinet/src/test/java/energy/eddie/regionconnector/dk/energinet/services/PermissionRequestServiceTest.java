@@ -1,48 +1,34 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
-import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.permission.request.PermissionRequestFactory;
-import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
-import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.permission.request.persistence.DkEnerginetCustomerPermissionRequestRepository;
-import energy.eddie.regionconnector.dk.energinet.permission.request.states.EnerginetCustomerAcceptedState;
-import org.junit.jupiter.api.BeforeEach;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.List;
+import java.time.ZonedDateTime;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestServiceTest {
     @Mock
-    private DkEnerginetCustomerPermissionRequestRepository repository;
+    private DkPermissionRequestRepository repository;
     @Mock
+    @SuppressWarnings("unused")
     private EnerginetCustomerApi customerApi;
-    @Mock
-    private PermissionRequestFactory requestFactory;
+    @InjectMocks
     private PermissionRequestService service;
-    private final ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
-
-    @BeforeEach
-    void setUp() {
-        service = new PermissionRequestService(requestFactory, repository);
-    }
 
     @Test
     void givenNonExistingId_findConnectionStatusMessageById_returnsEmptyOptional() {
@@ -58,15 +44,21 @@ class PermissionRequestServiceTest {
     void givenExistingId_findConnectionStatusMessageById_returnsNonEmptyOptional() {
         // Given
         var permissionId = "a0ec0288-7eaf-4aa2-8387-77c6413cfd31";
-        String connectionId = "connId";
-        String dataNeedId = "dataNeedId";
-        var permissionRequest = mock(EnerginetCustomerPermissionRequest.class);
-
-        doReturn(permissionId).when(permissionRequest).permissionId();
-        doReturn(connectionId).when(permissionRequest).connectionId();
-        doReturn(dataNeedId).when(permissionRequest).dataNeedId();
-        doReturn(PermissionProcessStatus.ACCEPTED).when(permissionRequest).status();
-
+        var connectionId = "connId";
+        var dataNeedId = "dataNeedId";
+        var permissionRequest = new EnerginetPermissionRequest(
+                permissionId,
+                connectionId,
+                dataNeedId,
+                "meteringPointId",
+                "refreshToken",
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                Granularity.P1D,
+                "accessToken",
+                PermissionProcessStatus.ACCEPTED,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
 
         // When
@@ -80,95 +72,5 @@ class PermissionRequestServiceTest {
         assertEquals(dataNeedId, status.dataNeedId());
         assertEquals(PermissionProcessStatus.ACCEPTED, status.status());
         assertNotNull(status.timestamp());
-    }
-
-    @Test
-    void givenNonExistingId_findPermissionRequestById_returnsEmptyOptional() {
-        var permissionId = "NonExistingId";
-
-        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.empty());
-
-        Optional<DkEnerginetCustomerPermissionRequest> permissionRequest = service.findByPermissionId(permissionId);
-        assertTrue(permissionRequest.isEmpty());
-    }
-
-    @Test
-    void givenExistingId_findPermissionRequestById_returnsNonEmptyOptional() {
-        // Given
-        var permissionId = "a0ec0288-7eaf-4aa2-8387-77c6413cfd31";
-        String connectionId = "connId";
-        String dataNeedId = "dataNeedId";
-        var start = LocalDate.now(ZoneOffset.UTC);
-        var end = start.plusDays(10);
-        var creation = new PermissionRequestForCreation(connectionId, "token", "mpid", dataNeedId);
-        StateBuilderFactory factory = new StateBuilderFactory();
-        var permissionRequest = new EnerginetCustomerPermissionRequest(permissionId,
-                                                                       creation,
-                                                                       customerApi,
-                                                                       start,
-                                                                       end,
-                                                                       Granularity.PT15M,
-                                                                       factory,
-                                                                       mapper);
-        var state = new EnerginetCustomerAcceptedState(permissionRequest, factory);
-        permissionRequest.changeState(state);
-
-        when(repository.findByPermissionId(permissionId))
-                .thenReturn(Optional.of(permissionRequest));
-        when(requestFactory.create(permissionRequest))
-                .thenReturn(permissionRequest);
-
-        // When
-        var optionalPermissionRequest = service.findByPermissionId(permissionId);
-
-        // Then
-        assertTrue(optionalPermissionRequest.isPresent());
-        var result = optionalPermissionRequest.get();
-        assertEquals(permissionId, result.permissionId());
-        assertEquals(connectionId, result.connectionId());
-        assertEquals(dataNeedId, result.dataNeedId());
-        assertEquals(PermissionProcessStatus.ACCEPTED, result.state().status());
-    }
-
-    @Test
-    void findAllAccepted_returnsAllAcceptedPermissionRequests() {
-        // Given
-        String connectionId = "connId";
-        String dataNeedId = "dataNeedId";
-        var start = LocalDate.now(ZoneOffset.UTC);
-        var end = start.plusDays(10);
-        var creation = new PermissionRequestForCreation(connectionId,
-                                                        "token",
-                                                        "mpid",
-                                                        dataNeedId);
-        StateBuilderFactory factory = new StateBuilderFactory();
-        var permissionRequest1 = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(),
-                                                                        creation,
-                                                                        customerApi,
-                                                                        start,
-                                                                        end,
-                                                                        Granularity.PT15M,
-                                                                        factory,
-                                                                        mapper);
-        permissionRequest1.changeState(new EnerginetCustomerAcceptedState(permissionRequest1, factory));
-        var permissionRequest2 = new EnerginetCustomerPermissionRequest(UUID.randomUUID().toString(),
-                                                                        creation,
-                                                                        customerApi,
-                                                                        start,
-                                                                        end,
-                                                                        Granularity.PT15M,
-                                                                        factory,
-                                                                        mapper);
-        when(requestFactory.create(permissionRequest1))
-                .thenReturn(permissionRequest1);
-
-        when(repository.findAllByStatusIs(PermissionProcessStatus.ACCEPTED))
-                .thenReturn(List.of(permissionRequest1, permissionRequest2));
-
-        // When
-        var res = service.findAllAcceptedPermissionRequests();
-
-        // Then
-        assertEquals(List.of(permissionRequest1), res);
     }
 }

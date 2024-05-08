@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.providers.agnostic;
 
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponse;
-import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetCustomerPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
 import energy.eddie.regionconnector.shared.utils.MeterReadingEndDate;
 
 import java.time.LocalDate;
@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 
 public record IdentifiableApiResponse(
-        DkEnerginetCustomerPermissionRequest permissionRequest,
+        DkEnerginetPermissionRequest permissionRequest,
         MyEnergyDataMarketDocumentResponse apiResponse
 ) implements MeterReadingEndDate {
     @Override

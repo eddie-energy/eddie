@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.dk.energinet.web;
 
-import energy.eddie.api.agnostic.process.model.StateTransitionException;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
@@ -66,8 +65,8 @@ public class PermissionRequestController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedPermissionRequest> permissionRequest(@Valid @RequestBody PermissionRequestForCreation requestForCreation)
-            throws StateTransitionException, DataNeedNotFoundException, UnsupportedDataNeedException {
-        var permissionId = permissionCreationService.createAndSendPermissionRequest(requestForCreation).permissionId();
+            throws DataNeedNotFoundException, UnsupportedDataNeedException {
+        var permissionId = permissionCreationService.createPermissionRequest(requestForCreation).permissionId();
         LOGGER.info("New Permission Request with PermissionId: {}", permissionId);
 
         var location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)

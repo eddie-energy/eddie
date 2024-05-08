@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.aiida.permission.request.persistence;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +27,7 @@ public interface AiidaPermissionRequestViewRepository extends PermissionRequestR
     }
 
     @Override
-    default boolean removeByPermissionId(String permissionId) {
-        throw new UnsupportedOperationException("Not supported by this repository as it is just reading a database view");
+    default AiidaPermissionRequest getByPermissionId(String permissionId) {
+        return findById(permissionId).orElseThrow(EntityNotFoundException::new);
     }
 }

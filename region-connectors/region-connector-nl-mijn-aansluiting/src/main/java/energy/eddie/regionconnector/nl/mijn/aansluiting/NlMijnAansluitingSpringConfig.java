@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata.NL_ZONE_ID;
 import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata.REGION_CONNECTOR_ID;
@@ -148,9 +149,11 @@ public class NlMijnAansluitingSpringConfig {
 
     @Bean
     public CommonInformationModelConfiguration commonInformationModelConfiguration(
-            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingSchemeTypeList
+            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingSchemeTypeList,
+            @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallback
     ) {
-        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingSchemeTypeList));
+        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingSchemeTypeList),
+                                                            fallback);
     }
 
     @Bean

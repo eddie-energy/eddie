@@ -1,40 +1,47 @@
 package energy.eddie.regionconnector.dk.energinet;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.states.TerminatedPermissionRequestState;
 import energy.eddie.api.v0.HealthState;
-import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
-import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
-import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetCustomerPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.permission.request.SimplePermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.permission.request.StateBuilderFactory;
-import energy.eddie.regionconnector.dk.energinet.permission.request.states.EnerginetCustomerAcceptedState;
-import energy.eddie.regionconnector.dk.energinet.permission.request.states.EnerginetCustomerInvalidState;
-import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.assertArg;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class EnerginetRegionConnectorTest {
+    @Mock
+    private Outbox outbox;
+    @Mock
+    private DkPermissionRequestRepository repository;
+    @Mock
+    private EnerginetCustomerApi energinetCustomerApi;
+    @InjectMocks
+    private EnerginetRegionConnector rc;
+
     @Test
     void health_returnsHealthChecks() {
         // Given
-        var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);
         when(energinetCustomerApi.health()).thenReturn(Mono.just(Map.of("service", HealthState.UP)));
-        var rc = new EnerginetRegionConnector(energinetCustomerApi, mock(PermissionRequestService.class));
 
         // When
         var res = rc.health();
@@ -44,9 +51,6 @@ class EnerginetRegionConnectorTest {
     @Test
     void getMetadata_returnsExpected() {
         // Given
-        var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);
-        var rc = new EnerginetRegionConnector(energinetCustomerApi, mock(PermissionRequestService.class));
-
         // When
         var result = rc.getMetadata();
 
@@ -56,11 +60,7 @@ class EnerginetRegionConnectorTest {
     @Test
     void terminatePermission_withNonExistentPermissionId_doesNotThrow() {
         // Given
-        var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);
-        when(energinetCustomerApi.health()).thenReturn(Mono.just(Map.of("service", HealthState.UP)));
-        PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
-        when(permissionRequestService.findByPermissionId(anyString())).thenReturn(Optional.empty());
-        var rc = new EnerginetRegionConnector(energinetCustomerApi, permissionRequestService);
+        when(repository.findByPermissionId(anyString())).thenReturn(Optional.empty());
 
         // When
         // Then
@@ -70,48 +70,45 @@ class EnerginetRegionConnectorTest {
     @Test
     void terminatePermission_withExistingPermissionId_terminates() {
         // Given
-        var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);
-        LocalDate start = LocalDate.now(ZoneOffset.UTC);
-        LocalDate end = start.plusDays(10);
-        var creation = new PermissionRequestForCreation("cid", "token", "mpid", "dnid");
-        StateBuilderFactory factory = new StateBuilderFactory();
-        ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
-        var permissionRequest = new EnerginetCustomerPermissionRequest("pid",
-                                                                       creation,
-                                                                       mock(EnerginetCustomerApi.class),
-                                                                       start,
-                                                                       end,
-                                                                       Granularity.PT15M,
-                                                                       factory, mapper);
-        EnerginetCustomerAcceptedState state = new EnerginetCustomerAcceptedState(permissionRequest, factory);
-        permissionRequest.changeState(state);
-        PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
-        when(permissionRequestService.findByPermissionId(anyString())).thenReturn(Optional.of(permissionRequest));
-        var rc = new EnerginetRegionConnector(energinetCustomerApi, permissionRequestService);
+        var permissionRequest = new EnerginetPermissionRequest(
+                "pid",
+                "cid",
+                "dataNeedId",
+                "meteringPointId",
+                "refreshToken",
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                Granularity.P1D,
+                "accessToken",
+                PermissionProcessStatus.ACCEPTED,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
+        when(repository.findByPermissionId(anyString())).thenReturn(Optional.of(permissionRequest));
 
         // When
         rc.terminatePermission("pid");
 
         // Then
-        assertInstanceOf(TerminatedPermissionRequestState.class, permissionRequest.state());
+        verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.TERMINATED, event.status())));
     }
 
     @Test
     void terminatePermission_withWrongState_doesNotThrow() {
         // Given
-        var energinetCustomerApi = mock(EnerginetCustomerApiClient.class);
-        when(energinetCustomerApi.health()).thenReturn(Mono.just(Map.of("service", HealthState.UP)));
-        SimplePermissionRequest request = new SimplePermissionRequest(
+        var request = new EnerginetPermissionRequest(
                 "pid",
                 "cid",
                 "dataNeedId",
-                LocalDate.now(Clock.systemUTC()),
-                LocalDate.now(Clock.systemUTC()),
-                new EnerginetCustomerInvalidState(null)
+                "meteringPointId",
+                "refreshToken",
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                Granularity.P1D,
+                "accessToken",
+                PermissionProcessStatus.CREATED,
+                ZonedDateTime.now(ZoneOffset.UTC)
         );
-        PermissionRequestService permissionRequestService = mock(PermissionRequestService.class);
-        when(permissionRequestService.findByPermissionId(anyString())).thenReturn(Optional.of(request));
-        var rc = new EnerginetRegionConnector(energinetCustomerApi, permissionRequestService);
+        when(repository.findByPermissionId(anyString())).thenReturn(Optional.of(request));
 
         // When
         // Then
