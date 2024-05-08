@@ -1,0 +1,82 @@
+{
+  "CREATED": {
+    "title": "Request Created",
+    "message": "Permission Request has been created, but not validated or sent to a permission administrator",
+    "variant": "info"
+  },
+  "VALIDATED": {
+    "title": "Request Validated",
+    "message": "The permission request has been validated.",
+    "variant": "info"
+  },
+  "MALFORMED": {
+    "title": "Request Malformed",
+    "message": "The permission request is malformed. Send it again to retry validation.",
+    "variant": "danger"
+  },
+  "UNABLE_TO_SEND": {
+    "title": "Request Not Sent",
+    "message": "We are unable to send the permission request to the permission administrator. Please contact your service provider.",
+    "variant": "danger"
+  },
+  "SENT_TO_PERMISSION_ADMINISTRATOR": {
+    "title": "Request Sent",
+    "message": "The permission request is now being processed by the permission administrator.",
+    "variant": "info"
+  },
+  "TIMED_OUT": {
+    "title": "Request Timed Out",
+    "message": "The permission request was not accepted by the user in time. Please try again.",
+    "variant": "warning"
+  },
+  "ACCEPTED": {
+    "title": "Request Accepted",
+    "message": "The user accepted the permission request.",
+    "variant": "success"
+  },
+  "REJECTED": {
+    "title": "Request Rejected",
+    "message": "The user rejected the permission request.",
+    "variant": "danger"
+  },
+  "INVALID": {
+    "title": "Invalid Request",
+    "message": "The permission request is not formatted correctly or contains semantic errors and is invalid.",
+    "variant": "danger"
+  },
+  "REVOKED": {
+    "title": "Request Revoked",
+    "message": "The user revoked the permission via the permission administrator or the permission administrator themselves removed the permission.",
+    "variant": "warning"
+  },
+  "TERMINATED": {
+    "title": "Request Terminated",
+    "message": "The permission was terminated by the eligible party.",
+    "variant": "danger"
+  },
+  "FULFILLED": {
+    "title": "Request Fulfilled",
+    "message": "The permission request has been fulfilled, i.e. all data has been delivered.",
+    "variant": "success"
+  },
+  "UNFULFILLABLE": {
+    "title": "Request Unfulfillable",
+    "message": "The permission request specifies energy data that is not available for that final customer.",
+    "variant": "danger"
+  },
+  "REQUIRES_EXTERNAL_TERMINATION": {
+    "title": "Requires External Termination",
+    "message": "A follow-up state for UNFULFILLABLE, FULFILLED, TERMINATED, since sometimes these states have to be externally terminated.",
+    "variant": "warning"
+  },
+  "FAILED_TO_TERMINATE": {
+    "title": "Failed to Terminate",
+    "message": "The external termination process failed.",
+    "variant": "danger"
+  },
+  "EXTERNALLY_TERMINATED": {
+    "title": "Externally Terminated",
+    "message": "The external termination process was successful",
+    "variant": "success"
+  }
+}

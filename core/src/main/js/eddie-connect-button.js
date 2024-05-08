@@ -199,7 +199,13 @@ class EddieConnectButton extends LitElement {
       element.setAttribute("accounting-point-id", this.accountingPointId);
     }
 
-    return element;
+    const notificationHandler = document.createElement("eddie-notification-handler");
+    const requestStatusHandler = document.createElement("eddie-request-status-handler");
+
+    requestStatusHandler.appendChild(element);
+    notificationHandler.appendChild(requestStatusHandler);
+
+    return notificationHandler;
   }
 
   getPermissionAdministratorByCompanyId(companyId) {
@@ -478,12 +484,10 @@ class EddieConnectButton extends LitElement {
         <div>
           ${this._selectedPermissionAdministrator
             ? html`
-                <eddie-notification-handler>
-                  ${until(
-                    this.getRegionConnectorElement(),
-                    html`<sl-spinner></sl-spinner>`
-                  )}
-                </eddie-notification-handler>
+                ${until(
+                  this.getRegionConnectorElement(),
+                  html`<sl-spinner></sl-spinner>`
+                )}
               `
             : html`
                 <sl-alert variant="warning" open>

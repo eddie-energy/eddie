@@ -18,11 +18,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     connectionId: { attribute: "connection-id" },
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
     accountingPointId: { attribute: "accounting-point-id" },
-    _requestId: { type: String },
-    _requestStatus: { type: String },
-    _isCooldown: { type: Boolean },
+    _isPermissionRequestCreated: { type: Boolean },
     _isSubmitDisabled: { type: Boolean },
-    _isSubmitHidden: { type: Boolean },
     _areResponseButtonsDisabled: { type: Boolean },
   };
 
@@ -31,14 +28,9 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   constructor() {
     super();
 
-    this._requestStatus = "";
+    this._isPermissionRequestCreated = false;
     this._isSubmitDisabled = false;
-    this._isSubmitHidden = false;
     this._areResponseButtonsDisabled = false;
-  }
-
-  isFormFilled(formData) {
-    return !!(formData.get("meteringPointId") && formData.get("nif"));
   }
 
   handleSubmit(event) {
@@ -46,23 +38,19 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
     const formData = new FormData(event.target);
 
-    if (!this.isFormFilled(formData)) {
-      return;
-    }
-
-    let jsonData = {};
-    jsonData.connectionId = this.connectionId;
-    jsonData.meteringPointId = formData.get("meteringPointId");
-    jsonData.nif = formData.get("nif");
-    jsonData.dataNeedId = this.dataNeedAttributes.id;
+    let jsonData = {
+      connectionId: this.connectionId,
+      meteringPointId: formData.get("meteringPointId"),
+      nif: formData.get("nif"),
+      dataNeedId: this.dataNeedAttributes.id,
+    };
 
     this._isSubmitDisabled = true;
 
     this.createPermissionRequest(jsonData)
       .catch((error) => this.error(error))
       .finally(() => {
-        // request failed if no request status was set
-        if (!this._requestStatus) {
+        if (!this._isPermissionRequestCreated) {
           this._isSubmitDisabled = false;
         }
       });
@@ -80,19 +68,15 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     const result = await response.json();
 
     if (response.status === 201) {
-      const locationHeader = "Location";
-      if (response.headers.has(locationHeader)) {
-        this.location = BASE_URL + response.headers.get(locationHeader);
-      } else {
+      const location = response.headers.get("Location");
+
+      if (!location) {
         throw new Error("Header 'Location' is missing");
       }
 
-      this.notify({
-        title: "Permission request created!",
-        message: "Your permission request was created successfully.",
-        variant: "success",
-        duration: 5000,
-      });
+      this.permissionId = result["permissionId"];
+
+      this.handlePermissionRequestCreated(BASE_URL + location);
     } else if (response.status === 400) {
       // An error on the client side happened, and it should be displayed as alert in the form
       let errorMessage;
@@ -109,57 +93,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       }
 
       this.error(errorMessage);
-
-      return;
     } else {
       this.error(
         "Something went wrong when creating the permission request, please try again later."
       );
-
-      return;
     }
-
-    this.permissionId = result["permissionId"];
-    this.startOrRestartAutomaticPermissionStatusPolling();
-  }
-
-  async requestPermissionStatus(location, maxRetries) {
-    const response = await fetch(location);
-
-    if (response.status === 404) {
-      // No permission request was created
-      this.error("Your permission request could not be created.");
-      return;
-    }
-
-    if (response.status !== 200) {
-      // An unexpected status code was sent, try again in 10 seconds
-      const millisecondsToWait = 10000;
-      this.error(
-        `An unexpected error happened, trying again in ${
-          millisecondsToWait / 1000
-        } seconds`,
-        millisecondsToWait
-      );
-      await this.awaitRetry(millisecondsToWait, maxRetries);
-      return;
-    }
-
-    const result = await response.json();
-    const currentStatus = result["status"];
-    this._requestStatus = currentStatus;
-
-    if (
-      currentStatus === "SENT_TO_PERMISSION_ADMINISTRATOR" ||
-      currentStatus === "RECEIVED_PERMISSION_ADMINISTRATOR_RESPONSE"
-    ) {
-      this._isSubmitHidden = true;
-    }
-
-    this.handleStatus(currentStatus, result["message"]);
-
-    // Wait for status update
-    await this.awaitRetry(5000, maxRetries);
   }
 
   accepted() {
@@ -217,7 +155,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
           <sl-button
             ?disabled="${this._isSubmitDisabled}"
-            ?hidden="${this._isSubmitHidden}"
             type="submit"
             variant="primary"
           >
@@ -225,7 +162,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           </sl-button>
         </form>
 
-        <div ?hidden="${!this._isSubmitHidden}">
+        <div ?hidden="${!this._isPermissionRequestCreated}">
           <p>Please accept the authorization request in your Datadis portal.</p>
           <a
             href="https://datadis.es/authorized-users"
@@ -255,14 +192,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             </sl-button>
           </div>
         </div>
-
-        <br />
-
-        ${this._requestStatus &&
-        html` <sl-alert open>
-          <sl-icon slot="icon" name="info-circle"></sl-icon>
-          <p>The request status is: ${this._requestStatus}</p>
-        </sl-alert>`}
       </div>
     `;
   }

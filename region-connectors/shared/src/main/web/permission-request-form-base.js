@@ -1,5 +1,4 @@
-import { html, LitElement } from "lit";
-import { createRef, ref } from "lit/directives/ref.js";
+import { LitElement } from "lit";
 
 class PermissionRequestFormBase extends LitElement {
   /**
@@ -50,17 +49,20 @@ class PermissionRequestFormBase extends LitElement {
     this.dispatchEvent(event);
   }
 
-  handleStatus(status, reason = "") {
-    this.dispatchEvent(
-      new CustomEvent("eddie-request-status", {
-        detail: {
-          status,
-          reason,
-        },
-        bubbles: true,
-        composed: true,
-      })
-    );
+  /**
+   * Dispatch a custom event to handle that a permission request was created.
+   * @param {string} location The location of the created permission request.
+   */
+  handlePermissionRequestCreated(location) {
+    const event = new CustomEvent("eddie-request-created", {
+      detail: {
+        location,
+      },
+      bubbles: true,
+      composed: true,
+    });
+
+    this.dispatchEvent(event);
   }
 }
 

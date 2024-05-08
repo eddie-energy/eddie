@@ -27,10 +27,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   handleSubmit(event) {
     event.preventDefault();
 
-    const jsonData = {};
-    jsonData.connectionId = this.connectionId;
-    jsonData.dataNeedId = this.dataNeedAttributes.id;
-    jsonData.granularity = this.dataNeedAttributes.granularity;
+    const jsonData = {
+      connectionId: this.connectionId,
+      dataNeedId: this.dataNeedAttributes.id,
+      granularity: this.dataNeedAttributes.granularity,
+    };
 
     this.createPermissionRequest(jsonData).catch((error) => this.error(error));
   }
@@ -47,19 +48,14 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     const result = await response.json();
 
     if (response.status === 201) {
-      const locationHeader = "Location";
-      if (response.headers.has(locationHeader)) {
-        this.location = BASE_URL + response.headers.get(locationHeader);
-      } else {
+      const location = response.headers.get("Location");
+
+      if (!location) {
         throw new Error("Header 'Location' is missing");
       }
 
-      this.notify({
-        title: "Permission request created!",
-        message: "Your permission request was created successfully.",
-        variant: "success",
-        duration: 5000,
-      });
+      this.handlePermissionRequestCreated(BASE_URL + location);
+      window.open(result["redirectUri"], "_blank");
     } else if (response.status === 400) {
       // An error on the client side happened, and it should be displayed as alert in the form
       let errorMessage;
@@ -75,50 +71,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           .join("<br>");
       }
       this.error(errorMessage);
-
-      return;
     } else {
       this.error(
         "Something went wrong when creating the permission request, please try again later."
       );
-
-      return;
     }
-
-    this.startOrRestartAutomaticPermissionStatusPolling();
-    window.open(result["redirectUri"], "_blank");
-  }
-
-  async requestPermissionStatus(location, maxRetries) {
-    const response = await fetch(location);
-
-    if (response.status === 404) {
-      // No permission request was created
-      this.error("Your permission request could not be created.");
-      return;
-    }
-
-    if (response.status !== 200) {
-      // An unexpected status code was sent, try again in 10 seconds
-      const millisecondsToWait = 10000;
-      this.error(
-        `An unexpected error happened, trying again in ${
-          millisecondsToWait / 1000
-        } seconds`,
-        millisecondsToWait
-      );
-      await this.awaitRetry(millisecondsToWait, maxRetries);
-      return;
-    }
-
-    const result = await response.json();
-    const currentStatus = result["status"];
-    this._requestStatus = currentStatus;
-
-    this.handleStatus(currentStatus, result["message"]);
-
-    // Wait for status update
-    await this.awaitRetry(5000, maxRetries);
   }
 
   render() {
@@ -152,14 +109,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           </label>
           <input id="submit" type="submit" hidden />
         </form>
-
-        ${this._requestStatus &&
-        html` <sl-alert open>
-          <sl-icon slot="icon" name="info-circle"></sl-icon>
-
-          <p>The CM request ID for this connection is: ${this._requestId}</p>
-          <p>The request status is: ${this._requestStatus}</p>
-        </sl-alert>`}
       </div>
     `;
   }

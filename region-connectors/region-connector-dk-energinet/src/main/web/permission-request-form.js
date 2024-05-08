@@ -17,29 +17,21 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
     accountingPointId: { attribute: "accounting-point-id" },
     _requestId: { type: String },
-    _requestStatus: { type: String },
+    _isPermissionRequestCreated: { type: Boolean },
     _isSubmitDisabled: { type: Boolean },
   };
 
   constructor() {
     super();
 
-    this._requestStatus = "";
+    this._isPermissionRequestCreated = false;
     this._isSubmitDisabled = false;
-  }
-
-  isFormFilled(formData) {
-    return !!(formData.get("refreshToken") && formData.get("meteringPoint"));
   }
 
   handleSubmit(event) {
     event.preventDefault();
 
     const formData = new FormData(event.target);
-
-    if (!this.isFormFilled(formData)) {
-      return;
-    }
 
     const jsonData = {};
     jsonData.refreshToken = formData.get("refreshToken");
@@ -53,7 +45,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       .catch((error) => this.error(error))
       .finally(() => {
         // request failed if no request status was set
-        if (!this._requestStatus) {
+        if (!this._isPermissionRequestCreated) {
           this._isSubmitDisabled = false;
         }
       });
@@ -70,21 +62,13 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     const result = await response.json();
 
     if (response.status === 201) {
-      const locationHeader = "Location";
-      if (response.headers.has(locationHeader)) {
-        this.location = BASE_URL + response.headers.get(locationHeader);
-      } else {
+      const location = response.headers.get("Location");
+
+      if (!location) {
         throw new Error("Header 'Location' is missing");
       }
 
-      this.notify({
-        title: "Permission request created!",
-        message: "Your permission request was created successfully.",
-        variant: "success",
-        duration: 5000,
-      });
-
-      this.startOrRestartAutomaticPermissionStatusPolling();
+      this.handlePermissionRequestCreated(BASE_URL + location);
     } else if (response.status === 400) {
       // An error on the client side happened, and it should be displayed as alert in the form
       let errorMessage;
@@ -106,38 +90,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
         "Something went wrong when creating the permission request, please try again later.";
       this.error(errorMessage);
     }
-  }
-
-  async requestPermissionStatus(location, maxRetries) {
-    const response = await fetch(location);
-
-    if (response.status === 404) {
-      // No permission request was created
-      this.error("Your permission request could not be created.");
-      return;
-    }
-
-    if (response.status !== 200) {
-      // An unexpected status code was sent, try again in 10 seconds
-      const millisecondsToWait = 10000;
-      this.error(
-        `An unexpected error happened, trying again in ${
-          millisecondsToWait / 1000
-        } seconds`,
-        millisecondsToWait
-      );
-      await this.awaitRetry(millisecondsToWait, maxRetries);
-      return;
-    }
-
-    const result = await response.json();
-    const currentStatus = result["status"];
-    this._requestStatus = currentStatus;
-
-    this.handleStatus(currentStatus, result["message"]);
-
-    // Wait for status update
-    await this.awaitRetry(5000, maxRetries);
   }
 
   render() {
@@ -176,15 +128,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             Connect
           </sl-button>
         </form>
-
-        <br />
-
-        ${this._requestStatus &&
-        html` <sl-alert open>
-          <sl-icon slot="icon" name="info-circle"></sl-icon>
-
-          <p>The request status is: ${this._requestStatus}</p>
-        </sl-alert>`}
       </div>
     `;
   }
