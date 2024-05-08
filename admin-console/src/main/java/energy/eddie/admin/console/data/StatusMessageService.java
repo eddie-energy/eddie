@@ -42,8 +42,16 @@ public class StatusMessageService {
     }
 
     private StatusMessage createStatusMessage(ConsentMarketDocument message) {
+        String country = "";
+        if (message.getReceiverMarketParticipantMRID().getCodingScheme() == null) {
+            country = "Unknown";
+        } else {
+            country = message.getReceiverMarketParticipantMRID().getCodingScheme().toString();
+        }
         return new StatusMessage(
                 message.getMRID(),
+                country,
+                message.getReceiverMarketParticipantMRID().getValue(),
                 message.getPermissionList().getPermissions().getFirst()
                         .getMktActivityRecordList().getMktActivityRecords().getFirst()
                         .getCreatedDateTime(),

@@ -1,14 +1,124 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html data-theme="business" lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8">
-  <title>Spring Boot Thymeleaf Test</title>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Admin-console</title>
+
+  <!-- Stylesheets -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.11.1/dist/full.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css" rel="stylesheet">
+  <link href="/admin-console/styles.css" rel="stylesheet" type="text/css">
+
+  <!-- Scripts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+  <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+  <script src="/admin-console/scripts.js"></script>
 </head>
-<body>
-<h1>Welcome to Spring Boot Thymeleaf</h1>
-<p>
-  Hey there!
-  <th:block th:text="${message}">message</th:block>
-</p>
+
+<body class="m-8">
+<!-- Navigation -->
+<nav class="flex items-center justify-between flex-wrap p-6">
+  <div class="flex items-center text-white mr-6">
+    <div class="flex items-center w-auto h-24">
+      <img alt="local EDDIE logo" class="w-auto h-full" src="/admin-console/EDDIE_logo.png" title="local EDDIE logo">
+    </div>
+  </div>
+  <label class="flex cursor-pointer gap-2">
+    <svg fill="none" height="20" stroke="var(--primary-color)" stroke-linecap="round" stroke-linejoin="round"
+         stroke-width="2"
+         viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+    </svg>
+    <input class="toggle theme-controller" type="checkbox" value="emerald"/>
+    <svg fill="none" height="20" stroke="var(--primary-color)" stroke-linecap="round" stroke-linejoin="round"
+         stroke-width="2"
+         viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="5"/>
+      <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>
+    </svg>
+  </label>
+</nav>
+
+<!-- Main Content -->
+<main>
+  <h1 class="text-5xl font-bold pt-20">Welcome to the Admin Console</h1>
+  <h2 class="text-2xl font-bold pb-12" th:text="${title}">title</h2>
+
+  <div class="overflow-x-auto">
+    <table class="table w-full mt-8" id="statusMessageTable">
+      <thead>
+      <tr>
+        <th>Country</th>
+        <th>DSO</th>
+        <th>PermissionId</th>
+        <th>Start Date</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="statusMessage, statusMessagesStat : ${statusMessages}">
+        <td th:text="${statusMessage.country}"></td>
+        <td th:text="${statusMessage.dso}"></td>
+        <td th:text="${statusMessage.permissionId}"></td>
+          <td th:text="${#temporals.format(statusMessage.getParsedStartDate(), 'dd-MM-yyyy HH:mm:ss')}"></td>
+        <td>
+          <span th:class="${statusDisplays[statusMessagesStat.index] == 'Active' ? 'bg-green-500 text-white px-2 py-1 rounded' : nonTerminatableStatuses.contains(statusDisplays[statusMessagesStat.index]) ? 'bg-red-500 text-white px-2 py-1 rounded' : 'bg-stone-400 text-white px-2 py-1 rounded'}"
+                th:text="${statusDisplays[statusMessagesStat.index]}"></span>
+        </td>
+        <td>
+          <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" data-modal-target="popup-modal"
+                  data-modal-toggle="popup-modal"
+                  th:data-permission-id="${statusMessage.permissionId}"
+                  th:if="${!nonTerminatableStatuses.contains(statusDisplays[statusMessagesStat.index])}">
+            Terminate
+          </button>
+
+          <!-- Modal toggle -->
+          <div class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full" id="popup-modal"
+               tabindex="-1">
+            <div class="relative p-4 w-full max-w-md max-h-full">
+              <div class="relative rounded-lg shadow">
+                <button class="absolute top-3 end-2.5 rounded-lg w-8 h-8 ms-auto inline-flex justify-center items-center"
+                        data-modal-hide="popup-modal"
+                        type="button">
+                  <svg aria-hidden="true" class="w-3 h-3" fill="none" viewBox="0 0 14 14"
+                       xmlns="http://www.w3.org/2000/svg">
+                    <path d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" stroke="#f3f3f3" stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="2"/>
+                  </svg>
+                  <span class="sr-only">Close modal</span>
+                </button>
+                <div class="p-4 md:p-5 text-center">
+                  <svg aria-hidden="true" class="mx-auto mb-4 w-12 h-12" fill="none" viewBox="0 0 20 20"
+                       xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="var(--primary-color)" stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="2"/>
+                  </svg>
+                  <h3 class="mb-5 text-lg font-normal" id="modal-question" style="color: var(--text-color);">Are you
+                    sure you want to terminate this permission?</h3>
+                  <button class="font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center" data-modal-hide="popup-modal"
+                          type="button">
+                    Yes, I'm sure
+                  </button>
+                  <button class="py-2.5 px-5 ms-3 font-medium rounded-lg" data-modal-hide="popup-modal" type="button">
+                    No, cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
 </body>
+
 </html>
