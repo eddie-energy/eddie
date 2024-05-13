@@ -14,31 +14,24 @@ public class StatusMessageService {
 
     private final StatusMessageRepository statusMessageRepository;
     private final ConsentMarketDocumentServiceInterface consentMarketDocumentService;
-    private static Logger LOGGER = LoggerFactory.getLogger(StatusMessageService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StatusMessageService.class);
 
     public StatusMessageService(StatusMessageRepository statusMessageRepository,
                                 ConsentMarketDocumentServiceInterface consentMarketDocumentService) {
         this.statusMessageRepository = statusMessageRepository;
         this.consentMarketDocumentService = consentMarketDocumentService;
+        subscribeToFlux();
     }
 
-    static void setLogger(Logger logger) {
-        LOGGER = logger;
-    }
-
-    public void subscribeToFlux() {
-        if (consentMarketDocumentService == null) {
-            LOGGER.error("ConsentMarketDocumentService is null. Cannot subscribe to Flux.");
-            return;
-        }
+    private void subscribeToFlux() {
         Flux<ConsentMarketDocument> flux = consentMarketDocumentService.getConsentMarketDocumentStream();
         flux
-                .publishOn(Schedulers.boundedElastic()) // Use boundedElastic for non-blocking save operations
+                .publishOn(Schedulers.boundedElastic())
                 .doOnError(error -> LOGGER.error("Error receiving messages from the Flux stream: {}", error.getMessage(), error))
                 .subscribe(this::processMessage);
     }
 
-    void processMessage(ConsentMarketDocument message) {
+    private void processMessage(ConsentMarketDocument message) {
         try {
             StatusMessage statusMessage = createStatusMessage(message);
             statusMessageRepository.save(statusMessage);
