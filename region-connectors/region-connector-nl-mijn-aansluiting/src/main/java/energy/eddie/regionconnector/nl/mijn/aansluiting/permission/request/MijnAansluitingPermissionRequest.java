@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.PermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
@@ -91,11 +90,6 @@ public class MijnAansluitingPermissionRequest implements NlPermissionRequest {
     }
 
     @Override
-    public PermissionRequestState state() {
-        throw new UnsupportedOperationException("This method is not supported anymore");
-    }
-
-    @Override
     public DataSourceInformation dataSourceInformation() {
         return new MijnAansluitingDataSourceInformation();
     }
@@ -103,11 +97,6 @@ public class MijnAansluitingPermissionRequest implements NlPermissionRequest {
     @Override
     public ZonedDateTime created() {
         return created;
-    }
-
-    @Override
-    public void changeState(PermissionRequestState state) {
-        throw new UnsupportedOperationException("This method is not supported anymore");
     }
 
     @Override

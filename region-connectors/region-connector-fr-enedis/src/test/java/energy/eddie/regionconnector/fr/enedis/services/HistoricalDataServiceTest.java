@@ -9,7 +9,7 @@ import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.services.EventFulfillmentService;
+import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,7 +38,7 @@ class HistoricalDataServiceTest {
     private Outbox outbox;
     private final MeterReadingPermissionUpdateAndFulfillmentService service =
             new MeterReadingPermissionUpdateAndFulfillmentService(
-                    new EventFulfillmentService(outbox, FrSimpleEvent::new),
+                    new FulfillmentService(outbox, FrSimpleEvent::new),
                     (pr, end) -> {}
             );
     @Mock

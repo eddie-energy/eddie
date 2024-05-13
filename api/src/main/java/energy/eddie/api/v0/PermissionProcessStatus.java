@@ -24,11 +24,6 @@ public enum PermissionProcessStatus {
      */
     UNABLE_TO_SEND,
     /**
-     * The permission request is being sent to the permission administrator and waits for an acknowledgement.
-     */
-    @Deprecated(forRemoval = true)
-    PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT,
-    /**
      * The permission request is now being processed by the PA.
      */
     SENT_TO_PERMISSION_ADMINISTRATOR,

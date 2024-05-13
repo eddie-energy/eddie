@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.shared.event.sourcing.handlers.integration;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
-import energy.eddie.api.agnostic.process.model.states.ValidatedPermissionRequestState;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
@@ -10,7 +9,7 @@ import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.SimplePermissionRequest;
+import energy.eddie.regionconnector.shared.permission.requests.SimplePermissionRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -29,8 +28,6 @@ import static org.mockito.Mockito.when;
 class ConsentMarketDocumentMessageHandlerTest {
     @Mock
     private PermissionRequestRepository<PermissionRequest> repository;
-    @Mock
-    private ValidatedPermissionRequestState state;
 
     @Test
     void testAccept_emitsConsentMarketDocument() {
@@ -39,7 +36,7 @@ class ConsentMarketDocumentMessageHandlerTest {
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         var permissionRequest = new SimplePermissionRequest(
-                "pid", "cid", state, "dnid", start, end, ZonedDateTime.now(ZoneOffset.UTC)
+                "pid", "cid", "dnid", start, end, ZonedDateTime.now(ZoneOffset.UTC), PermissionProcessStatus.VALIDATED
         );
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(

@@ -1,9 +1,8 @@
 package energy.eddie.regionconnector.simulation.permission.request;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
-import energy.eddie.api.agnostic.process.model.PermissionRequestState;
-import energy.eddie.api.agnostic.process.model.TerminalPermissionRequestState;
 import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.simulation.SimulationDataSourceInformation;
 import energy.eddie.regionconnector.simulation.dtos.SetConnectionStatusRequest;
 import jakarta.annotation.Nullable;
@@ -33,8 +32,9 @@ public record SimulationPermissionRequest(SetConnectionStatusRequest req) implem
     }
 
     @Override
-    public PermissionRequestState state() {
-        return (TerminalPermissionRequestState) () -> req.connectionStatus;
+    @SuppressWarnings("NullAway")
+    public PermissionProcessStatus status() {
+        return req.connectionStatus;
     }
 
     @Override
@@ -45,11 +45,6 @@ public record SimulationPermissionRequest(SetConnectionStatusRequest req) implem
     @Override
     public ZonedDateTime created() {
         return ZonedDateTime.now(ZoneOffset.UTC);
-    }
-
-    @Override
-    public void changeState(PermissionRequestState state) {
-        // No-Op
     }
 
     @Override

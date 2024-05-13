@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82;
+package energy.eddie.regionconnector.shared.cim.v0_82;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;

@@ -28,7 +28,6 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
-import energy.eddie.regionconnector.shared.services.EventFulfillmentService;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
@@ -98,7 +97,7 @@ public class DkEnerginetSpringConfig {
 
     @Bean
     public FulfillmentService fulfillmentService(Outbox outbox) {
-        return new EventFulfillmentService(outbox, DkSimpleEvent::new);
+        return new FulfillmentService(outbox, DkSimpleEvent::new);
     }
 
     @Bean

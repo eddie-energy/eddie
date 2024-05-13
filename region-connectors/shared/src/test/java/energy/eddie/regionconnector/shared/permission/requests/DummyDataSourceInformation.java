@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.shared.permission.requests.extensions;
+package energy.eddie.regionconnector.shared.permission.requests;
 
 import energy.eddie.api.v0.DataSourceInformation;
 

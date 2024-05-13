@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.aiida.services;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
-import energy.eddie.regionconnector.shared.permission.requests.extensions.v0_82.TransmissionScheduleProvider;
+import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

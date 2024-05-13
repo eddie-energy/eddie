@@ -1,8 +1,6 @@
 package energy.eddie.regionconnector.at.eda.services;
 
-import energy.eddie.api.agnostic.process.model.states.MalformedPermissionRequestState;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
-import energy.eddie.api.agnostic.process.model.validation.ValidationException;
 import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
@@ -18,21 +16,18 @@ import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionReq
 import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.MalformedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEvent;
-import energy.eddie.regionconnector.at.eda.permission.request.validation.CompletelyInThePastOrInTheFutureEventValidator;
 import energy.eddie.regionconnector.at.eda.permission.request.validation.MeteringPointMatchesDsoIdValidator;
-import energy.eddie.regionconnector.at.eda.permission.request.validation.NotOlderThanValidator;
-import energy.eddie.regionconnector.at.eda.permission.request.validation.StartIsBeforeOrEqualEndValidator;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
 import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
 import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.validation.GranularityChoice;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -42,12 +37,9 @@ import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.*;
 @Component
 public class PermissionRequestCreationAndValidationService {
     private static final Set<Validator<CreatedEvent>> VALIDATORS = Set.of(
-            new NotOlderThanValidator(ChronoUnit.MONTHS, MAXIMUM_MONTHS_IN_THE_PAST),
-            new CompletelyInThePastOrInTheFutureEventValidator(),
-            new StartIsBeforeOrEqualEndValidator(),
             new MeteringPointMatchesDsoIdValidator()
     );
-
+    private final GranularityChoice granularityChoice = new GranularityChoice(SUPPORTED_GRANULARITIES);
     private final AtConfiguration configuration;
     private final Outbox outbox;
     private final DataNeedsService dataNeedsService;
@@ -69,12 +61,10 @@ public class PermissionRequestCreationAndValidationService {
      *
      * @param permissionRequest the DTO that is the base for the created and validated permission request.
      * @return a DTO with the id of the created and validated permission request
-     * @throws ValidationException if the permission request is invalid, a <code>ValidationException</code> is thrown
-     *                             containing all the erroneous fields and a description for each one.
      */
     public CreatedPermissionRequest createAndValidatePermissionRequest(
             PermissionRequestForCreation permissionRequest
-    ) throws ValidationException, DataNeedNotFoundException, UnsupportedDataNeedException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, EdaValidationException {
         var referenceDate = LocalDate.now(AT_ZONE_ID);
         var dataNeed = dataNeedsService.findById(permissionRequest.dataNeedId())
                                        .orElseThrow(() -> new DataNeedNotFoundException(permissionRequest.dataNeedId()));
@@ -115,8 +105,7 @@ public class PermissionRequestCreationAndValidationService {
             return new CreatedPermissionRequest(permissionId, ccmoRequest.cmRequestId());
         } else {
             outbox.commit(new MalformedEvent(permissionId, errors));
-            throw new ValidationException(new MalformedPermissionRequestState() {
-            }, errors);
+            throw new EdaValidationException(errors);
         }
     }
 
@@ -129,11 +118,13 @@ public class PermissionRequestCreationAndValidationService {
                                                                            referenceDate,
                                                                            PERIOD_EARLIEST_START,
                                                                            PERIOD_LATEST_END);
-        AllowedGranularity granularity = switch (vhdDataNeed.minGranularity()) {
+
+        var granularity = switch (granularityChoice.find(vhdDataNeed.minGranularity(),
+                                                         vhdDataNeed.maxGranularity())) {
             case PT15M -> AllowedGranularity.PT15M;
             case P1D -> AllowedGranularity.P1D;
-            default -> throw new UnsupportedDataNeedException(EdaRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                              vhdDataNeed.id(),
+            case null, default -> throw new UnsupportedDataNeedException(EdaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                                         vhdDataNeed.id(),
                                                               "Unsupported granularity: '" + vhdDataNeed.minGranularity() + "'");
         };
         return new CCMORequest(

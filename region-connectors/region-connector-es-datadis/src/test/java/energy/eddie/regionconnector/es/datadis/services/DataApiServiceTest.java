@@ -17,7 +17,7 @@ import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCod
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.services.EventFulfillmentService;
+import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,7 +80,7 @@ class DataApiServiceTest {
     void setUp() {
         meterReadingPermissionUpdateAndFulfillmentService =
                 new MeterReadingPermissionUpdateAndFulfillmentService(
-                        new EventFulfillmentService(
+                        new FulfillmentService(
                                 outbox,
                                 EsSimpleEvent::new
                         ),

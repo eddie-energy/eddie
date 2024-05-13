@@ -25,7 +25,6 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
-import energy.eddie.regionconnector.shared.services.EventFulfillmentService;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
@@ -122,7 +121,7 @@ public class FrEnedisSpringConfig {
 
     @Bean
     FulfillmentService fulfillmentService(Outbox outbox) {
-        return new EventFulfillmentService(outbox, FrSimpleEvent::new);
+        return new FulfillmentService(outbox, FrSimpleEvent::new);
     }
 
     @Bean
