@@ -45,4 +45,19 @@ class GranularityChoiceTest {
         // Then
         assertNull(res);
     }
+
+    @Test
+    void testFindAll_returnsAllMatchingGranularities() {
+        // Given
+        var choice = new GranularityChoice(List.of(Granularity.PT30M,
+                                                   Granularity.PT1H,
+                                                   Granularity.P1D,
+                                                   Granularity.P1Y));
+
+        // When
+        var res = choice.findAll(Granularity.PT1H, Granularity.P1M);
+
+        // Then
+        assertEquals(List.of(Granularity.PT1H, Granularity.P1D), res);
+    }
 }

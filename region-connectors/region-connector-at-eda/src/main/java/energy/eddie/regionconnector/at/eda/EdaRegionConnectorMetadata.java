@@ -2,6 +2,9 @@ package energy.eddie.regionconnector.at.eda;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 
 import javax.annotation.Nullable;
@@ -16,6 +19,8 @@ public class EdaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final Period PERIOD_LATEST_END = Period.ofMonths(36);
     public static final ZoneId AT_ZONE_ID = ZoneId.of("Europe/Vienna");
     public static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(Granularity.PT15M, Granularity.P1D);
+    public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(ValidatedHistoricalDataDataNeed.class,
+                                                                                       AccountingPointDataNeed.class);
     @Nullable
     private static EdaRegionConnectorMetadata instance = null;
 

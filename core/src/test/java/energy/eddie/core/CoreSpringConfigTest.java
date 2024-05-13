@@ -1,5 +1,6 @@
 package energy.eddie.core;
 
+import energy.eddie.core.services.DataNeedCalculationRouter;
 import energy.eddie.core.services.HealthService;
 import energy.eddie.core.services.MetadataService;
 import energy.eddie.core.web.PermissionFacadeController;
@@ -28,6 +29,8 @@ class CoreSpringConfigTest {
         private MetadataService unusedMetadataService;
         @MockBean
         private HealthService unusedHealthService;
+        @MockBean
+        private DataNeedCalculationRouter dataNeedCalculationRouter;
 
         @Test
         void givenNoCorsMappingProperty_addsNoCorsMapping() throws Exception {
@@ -48,6 +51,8 @@ class CoreSpringConfigTest {
         private MetadataService unusedMetadataService;
         @MockBean
         private HealthService unusedHealthService;
+        @MockBean
+        private DataNeedCalculationRouter dataNeedCalculationRouter;
 
         @Test
         void givenCorsMappingProperty_addsCorsHeader() throws Exception {

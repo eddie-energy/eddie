@@ -1,9 +1,13 @@
 package energy.eddie.core.web;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.core.services.DataNeedCalculationRouter;
 import energy.eddie.core.services.HealthService;
 import energy.eddie.core.services.MetadataService;
+import energy.eddie.core.services.data.need.DataNeedCalculation;
+import energy.eddie.core.services.data.need.Timeframe;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -11,11 +15,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.aMapWithSize;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -31,6 +36,8 @@ class PermissionFacadeControllerTest {
     private MetadataService metadataService;
     @MockBean
     private HealthService healthService;
+    @MockBean
+    private DataNeedCalculationRouter router;
 
     @Test
     void regionConnectorsMetadata_returnsAllRegionConnectorsMetadata() throws Exception {
@@ -40,8 +47,8 @@ class PermissionFacadeControllerTest {
         ));
 
         mockMvc.perform(get("/api/region-connectors-metadata"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)));
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$", hasSize(2)));
     }
 
     @Test
@@ -52,8 +59,25 @@ class PermissionFacadeControllerTest {
         when(healthService.getRegionConnectorHealth()).thenReturn(Map.of("first", first, "second", second));
 
         mockMvc.perform(get("/api/region-connectors-health"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.first", aMapWithSize(2)))
-                .andExpect(jsonPath("$.second", aMapWithSize(1)));
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.first", aMapWithSize(2)))
+               .andExpect(jsonPath("$.second", aMapWithSize(1)));
+    }
+
+    @Test
+    void regionConnectorsCalculateDataNeed_returnsAllRegionConnectorsHealth() throws Exception {
+        var now = LocalDate.now(ZoneOffset.UTC);
+        when(router.calculateFor("at-eda", "9bd0668f-cc19-40a8-99db-dc2cb2802b17"))
+                .thenReturn(new DataNeedCalculation(
+                        true,
+                        List.of(Granularity.PT15M),
+                        new Timeframe(now, now),
+                        new Timeframe(now, now)
+                ));
+
+        mockMvc.perform(get("/api/region-connectors/at-eda/data-needs/9bd0668f-cc19-40a8-99db-dc2cb2802b17"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.supportsDataNeed", is(true)))
+               .andExpect(jsonPath("$.granularities", hasSize(1)));
     }
 }
