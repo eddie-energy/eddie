@@ -74,9 +74,9 @@ public final class IntermediateValidatedHistoricalDocument {
                 .withTimeSeriesList(timeSeriesList());
         FrEnedisPermissionRequest permissionRequest = identifiableMeterReading.permissionRequest();
         return new EddieValidatedHistoricalDataMarketDocument(
-                Optional.of(permissionRequest.connectionId()),
-                Optional.of(permissionRequest.permissionId()),
-                Optional.of(permissionRequest.dataNeedId()),
+                permissionRequest.connectionId(),
+                permissionRequest.permissionId(),
+                permissionRequest.dataNeedId(),
                 vhd
         );
     }

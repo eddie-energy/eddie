@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class IntermediateAccountingPointMarketDocumentFactoryTest {
 
-    @SuppressWarnings({"DataFlowIssue", "java:S5961"}) // nr of assertions
+    @SuppressWarnings({"java:S5961", "OptionalGetWithoutIsPresent"}) // nr of assertions
     @Test
     void mapsIncomingIdentifiableMasterDataToAccountingPointMarketDocument() throws IOException {
         IntermediateAccountingPointMarketDocumentFactory factory = new IntermediateAccountingPointMarketDocumentFactory(
@@ -50,9 +50,9 @@ class IntermediateAccountingPointMarketDocumentFactoryTest {
         var cp = ap.getContractPartyList().getContractParties().getFirst();
         var add = ap.getAddressList().getAddresses().getFirst();
         assertAll(
-                () -> assertEquals(permissionRequest.permissionId(), res.permissionId().get()),
-                () -> assertEquals(permissionRequest.connectionId(), res.connectionId().get()),
-                () -> assertEquals(permissionRequest.dataNeedId(), res.dataNeedId().get()),
+                () -> assertEquals(permissionRequest.permissionId(), res.permissionId()),
+                () -> assertEquals(permissionRequest.connectionId(), res.connectionId()),
+                () -> assertEquals(permissionRequest.dataNeedId(), res.dataNeedId()),
                 () -> assertEquals(edaMasterData.messageId(), md.getMRID()),
                 () -> assertEquals(CommonInformationModelVersions.V0_82.version(), md.getRevisionNumber()),
                 () -> assertEquals(MessageTypeList.ACCOUNTING_POINT_MASTER_DATA, md.getType()),
@@ -155,9 +155,9 @@ class IntermediateAccountingPointMarketDocumentFactoryTest {
         var invoiceCP = ap.getContractPartyList().getContractParties().getLast();
         var invoiceADD = ap.getAddressList().getAddresses().getLast();
         assertAll(
-                () -> assertEquals(permissionRequest.permissionId(), res.permissionId().get()),
-                () -> assertEquals(permissionRequest.connectionId(), res.connectionId().get()),
-                () -> assertEquals(permissionRequest.dataNeedId(), res.dataNeedId().get()),
+                () -> assertEquals(permissionRequest.permissionId(), res.permissionId()),
+                () -> assertEquals(permissionRequest.connectionId(), res.connectionId()),
+                () -> assertEquals(permissionRequest.dataNeedId(), res.dataNeedId()),
                 () -> assertEquals(edaMasterData.messageId(), md.getMRID()),
                 () -> assertEquals(CommonInformationModelVersions.V0_82.version(), md.getRevisionNumber()),
                 () -> assertEquals(MessageTypeList.ACCOUNTING_POINT_MASTER_DATA, md.getType()),

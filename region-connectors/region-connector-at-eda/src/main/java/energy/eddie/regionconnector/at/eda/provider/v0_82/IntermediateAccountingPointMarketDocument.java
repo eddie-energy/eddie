@@ -27,9 +27,9 @@ public class IntermediateAccountingPointMarketDocument {
 
     public EddieAccountingPointMarketDocument eddieAccountingPointMarketDocument() {
         return new EddieAccountingPointMarketDocument(
-                Optional.of(identifiableMasterData.permissionRequest().connectionId()),
-                Optional.of(identifiableMasterData.permissionRequest().permissionId()),
-                Optional.of(identifiableMasterData.permissionRequest().dataNeedId()),
+                identifiableMasterData.permissionRequest().connectionId(),
+                identifiableMasterData.permissionRequest().permissionId(),
+                identifiableMasterData.permissionRequest().dataNeedId(),
                 accountingPointMarketDocument(identifiableMasterData.masterData())
         );
     }

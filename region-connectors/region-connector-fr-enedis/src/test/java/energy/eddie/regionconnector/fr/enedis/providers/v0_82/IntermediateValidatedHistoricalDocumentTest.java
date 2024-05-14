@@ -21,7 +21,8 @@ import java.time.LocalDate;
 import static energy.eddie.cim.v0_82.vhd.EnergyProductTypeList.ACTIVE_ENERGY;
 import static energy.eddie.cim.v0_82.vhd.EnergyProductTypeList.ACTIVE_POWER;
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -59,14 +60,12 @@ class IntermediateValidatedHistoricalDocumentTest {
 
         // Then
         // The optional is checked, but intellij does not infer this.
-        //noinspection OptionalGetWithoutIsPresent
         assertAll(
-                () -> assertTrue(res.permissionId().isPresent()),
-                () -> assertTrue(res.connectionId().isPresent()),
-                () -> assertTrue(res.dataNeedId().isPresent()),
-                () -> assertEquals("pid", res.permissionId().get()),
-                () -> assertEquals("cid", res.connectionId().get()),
-                () -> assertEquals("dnid", res.dataNeedId().get()),
+
+
+                () -> assertEquals("pid", res.permissionId()),
+                () -> assertEquals("cid", res.connectionId()),
+                () -> assertEquals("dnid", res.dataNeedId()),
                 () -> assertEquals("clientId", marketDocument.getReceiverMarketParticipantMRID().getValue()),
                 () -> assertEquals(esmpTimeInterval.start(), marketDocument.getPeriodTimeInterval().getStart()),
                 () -> assertEquals(esmpTimeInterval.end(), marketDocument.getPeriodTimeInterval().getEnd()),
@@ -122,14 +121,12 @@ class IntermediateValidatedHistoricalDocumentTest {
 
         // Then
         // The optional is checked, but intellij does not infer this.
-        //noinspection OptionalGetWithoutIsPresent
         assertAll(
-                () -> assertTrue(res.permissionId().isPresent()),
-                () -> assertTrue(res.connectionId().isPresent()),
-                () -> assertTrue(res.dataNeedId().isPresent()),
-                () -> assertEquals("pid", res.permissionId().get()),
-                () -> assertEquals("cid", res.connectionId().get()),
-                () -> assertEquals("dnid", res.dataNeedId().get()),
+
+
+                () -> assertEquals("pid", res.permissionId()),
+                () -> assertEquals("cid", res.connectionId()),
+                () -> assertEquals("dnid", res.dataNeedId()),
                 () -> assertEquals("clientId", marketDocument.getReceiverMarketParticipantMRID().getValue()),
                 () -> assertEquals(esmpTimeInterval.start(), marketDocument.getPeriodTimeInterval().getStart()),
                 () -> assertEquals(esmpTimeInterval.end(), marketDocument.getPeriodTimeInterval().getEnd()),

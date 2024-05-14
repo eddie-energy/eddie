@@ -49,7 +49,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                                                                                 null);
 
     @Test
-    @SuppressWarnings({"java:S5961", "OptionalGetWithoutIsPresent"})
+    @SuppressWarnings({"java:S5961"})
         // The CIM requires too many asserts
     void testToEddieValidatedHistoricalDataMarketDocuments_withValidObisCode() throws IOException {
         // Given
@@ -64,9 +64,9 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
         assertEquals(1, res.size());
         var eddieVHD = res.getFirst();
         assertAll(
-                () -> assertEquals("cid", eddieVHD.connectionId().get()),
-                () -> assertEquals("pid", eddieVHD.permissionId().get()),
-                () -> assertEquals("dnid", eddieVHD.dataNeedId().get())
+                () -> assertEquals("cid", eddieVHD.connectionId()),
+                () -> assertEquals("pid", eddieVHD.permissionId()),
+                () -> assertEquals("dnid", eddieVHD.dataNeedId())
         );
         var vhd = eddieVHD.marketDocument();
         assertAll(

@@ -12,7 +12,6 @@ import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -47,10 +46,7 @@ class EnedisEddieValidatedHistoricalDataMarketDocumentProviderTest {
                         testPublisher.emit(identifiableMeterReading);
                         testPublisher.complete();
                     })
-                    .assertNext(vhd -> {
-                        assertTrue(vhd.permissionId().isPresent());
-                        assertEquals("pid", vhd.permissionId().get());
-                    })
+                    .assertNext(vhd -> assertEquals("pid", vhd.permissionId()))
                     .verifyComplete();
 
         // Clean-Up

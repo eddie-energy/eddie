@@ -16,7 +16,6 @@ import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
@@ -78,9 +77,9 @@ public final class IntermediateValidatedHistoricalDocument {
            .withTimeSeriesList(timeSeriesList(timeframe));
         var permissionRequest = identifiableMeteringData.permissionRequest();
         return new EddieValidatedHistoricalDataMarketDocument(
-                Optional.of(permissionRequest.connectionId()),
-                Optional.of(permissionRequest.permissionId()),
-                Optional.of(permissionRequest.dataNeedId()),
+                permissionRequest.connectionId(),
+                permissionRequest.permissionId(),
+                permissionRequest.dataNeedId(),
                 vhd
         );
     }

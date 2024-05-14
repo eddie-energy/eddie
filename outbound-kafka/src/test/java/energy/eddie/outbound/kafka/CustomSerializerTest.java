@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Optional;
 
 import static energy.eddie.api.CommonInformationModelVersions.V0_82;
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,7 +41,16 @@ class CustomSerializerTest {
     void testSerialize_StatusMessageData() {
         String topic = "test";
         ZonedDateTime now = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        ConnectionStatusMessage data = new ConnectionStatusMessage("connectionId", "permissionId", "dataNeedId", new TestDataSourceInformation("cc", "rc", "pa", "mda"), now, PermissionProcessStatus.ACCEPTED, "Granted");
+        ConnectionStatusMessage data = new ConnectionStatusMessage("connectionId",
+                                                                   "permissionId",
+                                                                   "dataNeedId",
+                                                                   new TestDataSourceInformation("cc",
+                                                                                                 "rc",
+                                                                                                 "pa",
+                                                                                                 "mda"),
+                                                                   now,
+                                                                   PermissionProcessStatus.ACCEPTED,
+                                                                   "Granted");
         byte[] expected = "{\"connectionId\":\"connectionId\",\"permissionId\":\"permissionId\",\"dataNeedId\":\"dataNeedId\",\"dataSourceInformation\":{\"countryCode\":\"cc\",\"meteredDataAdministratorId\":\"mda\",\"permissionAdministratorId\":\"pa\",\"regionConnectorId\":\"rc\"},\"timestamp\":1672531200.000000000,\"status\":\"ACCEPTED\",\"message\":\"Granted\"}"
                 .getBytes(StandardCharsets.UTF_8);
 
@@ -78,16 +86,16 @@ class CustomSerializerTest {
         Object data = new Object();
 
         assertThrows(UnsupportedOperationException.class,
-                () -> customSerializer.serialize(topic, data));
+                     () -> customSerializer.serialize(topic, data));
     }
 
     @Test
     void testSerialize_EddieValidatedHistoricalDataMarketDocument() throws JsonProcessingException {
         String topic = "test";
         EddieValidatedHistoricalDataMarketDocument data = new EddieValidatedHistoricalDataMarketDocument(
-                Optional.of("connectionId"),
-                Optional.of("permissionId"),
-                Optional.of("dataNeedId"),
+                "connectionId",
+                "permissionId",
+                "dataNeedId",
                 new energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocument()
         );
         byte[] expected = new ObjectMapper()
@@ -107,8 +115,12 @@ class CustomSerializerTest {
         var expectedString = "{\"permissionId\":\"foo\",\"connectionId\":\"bar\",\"dataNeedId\":\"id1\",\"dataSourceInformation\":{\"countryCode\":\"TEST\",\"meteredDataAdministratorId\":\"tEsT\",\"permissionAdministratorId\":\"TeSt\",\"regionConnectorId\":\"test\"},\"timestamp\":\"2024-01-16T12:00:00Z\",\"rawPayload\":\"rawPayload with <xml> and <html> stuff and special Ϸ ϲ ℻ characters\"}";
         var topic = "myTest";
         var dataSourceInformation = new TestDataSourceInformation("TEST", "test", "TeSt", "tEsT");
-        var message = new RawDataMessage("foo", "bar", "id1", dataSourceInformation,
-                ZonedDateTime.parse("2024-01-16T12:00:00Z"), "rawPayload with <xml> and <html> stuff and special Ϸ ϲ ℻ characters");
+        var message = new RawDataMessage("foo",
+                                         "bar",
+                                         "id1",
+                                         dataSourceInformation,
+                                         ZonedDateTime.parse("2024-01-16T12:00:00Z"),
+                                         "rawPayload with <xml> and <html> stuff and special Ϸ ϲ ℻ characters");
 
         // When
         var result = customSerializer.serialize(topic, message);
@@ -172,7 +184,7 @@ class CustomSerializerTest {
                   }
                 }
                 """.replace("\n", "")
-                .replace(" ", "");
+                   .replace(" ", "");
         var cmd = new ConsentMarketDocument()
                 .withMRID("permissionId")
                 .withRevisionNumber(V0_82.version())

@@ -9,12 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
-import java.util.Optional;
-
 import static java.util.Objects.requireNonNull;
 
 /**
- * This class is for processing incoming consumption records by mapping it to ValidatedHistoricalDataMarketDocuments and emitting it for all matching permission requests
+ * This class is for processing incoming consumption records by mapping it to ValidatedHistoricalDataMarketDocuments and
+ * emitting it for all matching permission requests
  */
 public class EdaEddieValidatedHistoricalDataMarketDocumentProvider implements EddieValidatedHistoricalDataMarketDocumentProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaEddieValidatedHistoricalDataMarketDocumentProvider.class);
@@ -24,7 +23,8 @@ public class EdaEddieValidatedHistoricalDataMarketDocumentProvider implements Ed
 
     public EdaEddieValidatedHistoricalDataMarketDocumentProvider(
             ValidatedHistoricalDataMarketDocumentDirector validatedHistoricalDataMarketDocumentDirector,
-            Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux) {
+            Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux
+    ) {
         requireNonNull(validatedHistoricalDataMarketDocumentDirector);
         requireNonNull(identifiableConsumptionRecordFlux);
 
@@ -34,6 +34,25 @@ public class EdaEddieValidatedHistoricalDataMarketDocumentProvider implements Ed
                 .flatMap(this::mapToValidatedHistoricalMarketDocument);  // the mapping method is called for each element for each subscriber if we at some point have multiple subscribers, consider using publish().refCount()
     }
 
+    private Flux<EddieValidatedHistoricalDataMarketDocument> mapToValidatedHistoricalMarketDocument(
+            IdentifiableConsumptionRecord identifiableConsumptionRecord
+    ) {
+        try {
+            var marketDocument = director.createValidatedHistoricalDataMarketDocument(identifiableConsumptionRecord.consumptionRecord());
+
+            return Flux.fromIterable(identifiableConsumptionRecord.permissionRequests())
+                       .map(permissionRequest -> new EddieValidatedHistoricalDataMarketDocument(
+                               permissionRequest.connectionId(),
+                               permissionRequest.permissionId(),
+                               permissionRequest.dataNeedId(),
+                               marketDocument
+                       ));
+        } catch (InvalidMappingException e) {
+            LOGGER.error("Error while trying to create ValidatedHistoricalDataMarketDocument from consumption record",
+                         e);
+            return Flux.empty();
+        }
+    }
 
     @Override
     public Flux<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
@@ -43,21 +62,5 @@ public class EdaEddieValidatedHistoricalDataMarketDocumentProvider implements Ed
     @Override
     public void close() throws Exception {
         // Nothing to clean up, flux is closed when the underlying flux is closed
-    }
-
-    private Flux<EddieValidatedHistoricalDataMarketDocument> mapToValidatedHistoricalMarketDocument(IdentifiableConsumptionRecord identifiableConsumptionRecord) {
-        try {
-            var marketDocument = director.createValidatedHistoricalDataMarketDocument(identifiableConsumptionRecord.consumptionRecord());
-
-            return Flux.fromIterable(identifiableConsumptionRecord.permissionRequests()).map(permissionRequest -> new EddieValidatedHistoricalDataMarketDocument(
-                    Optional.ofNullable(permissionRequest.connectionId()),
-                    Optional.ofNullable(permissionRequest.permissionId()),
-                    Optional.ofNullable(permissionRequest.dataNeedId()),
-                    marketDocument
-            ));
-        } catch (InvalidMappingException e) {
-            LOGGER.error("Error while trying to create ValidatedHistoricalDataMarketDocument from consumption record", e);
-            return Flux.empty();
-        }
     }
 }

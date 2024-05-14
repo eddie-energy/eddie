@@ -107,7 +107,7 @@ public class KafkaListener implements Runnable {
         TimeSeriesComplexType timeSeries = document.marketDocument().getTimeSeriesList().getTimeSeries().getFirst();
         TimeSeriesComplexType.SeriesPeriodList seriesPeriods = timeSeries.getSeriesPeriodList();
 
-        String connectionId = document.connectionId().orElseThrow();
+        String connectionId = document.connectionId();
         String meteringPoint = timeSeries.getMarketEvaluationPointMRID().getValue();
         ZonedDateTime startDateTime = ZonedDateTime.parse(document.marketDocument().getPeriodTimeInterval().getStart());
         Integer resolution = meteringIntervalForCode.get(seriesPeriods.getSeriesPeriods().getFirst().getResolution());

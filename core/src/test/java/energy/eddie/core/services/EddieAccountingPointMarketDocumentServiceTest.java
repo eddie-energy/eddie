@@ -10,7 +10,6 @@ import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
-import java.util.Optional;
 
 import static org.mockito.Mockito.mock;
 
@@ -30,15 +29,15 @@ class EddieAccountingPointMarketDocumentServiceTest {
         EddieAccountingPointMarketDocumentProvider provider1 = createProvider(sink1);
         EddieAccountingPointMarketDocumentProvider provider2 = createProvider(sink2);
 
-        var one = new EddieAccountingPointMarketDocument(Optional.of("one"), Optional.empty(), Optional.empty(), mock(
+        var one = new EddieAccountingPointMarketDocument("one", "one", "one", mock(
                 AccountingPointMarketDocument.class));
-        var two = new EddieAccountingPointMarketDocument(Optional.of("two"),
-                                                         Optional.empty(),
-                                                         Optional.empty(),
+        var two = new EddieAccountingPointMarketDocument("two",
+                                                         "two",
+                                                         "two",
                                                          mock(AccountingPointMarketDocument.class));
-        var three = new EddieAccountingPointMarketDocument(Optional.of("three"),
-                                                           Optional.empty(),
-                                                           Optional.empty(),
+        var three = new EddieAccountingPointMarketDocument("three",
+                                                           "three",
+                                                           "three",
                                                            mock(AccountingPointMarketDocument.class));
 
         // When

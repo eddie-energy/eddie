@@ -2,8 +2,6 @@ package energy.eddie.api.v0_82.cim;
 
 import energy.eddie.cim.v0_82.ap.AccountingPointMarketDocument;
 
-import java.util.Optional;
-
 /**
  * Specific implementation of {@link EddieMarketDocument} for validated historical data market documents.
  *
@@ -13,9 +11,9 @@ import java.util.Optional;
  * @param marketDocument The validated historical data market document
  */
 public record EddieAccountingPointMarketDocument(
-        Optional<String> connectionId,
-        Optional<String> permissionId,
-        Optional<String> dataNeedId,
+        String connectionId,
+        String permissionId,
+        String dataNeedId,
         AccountingPointMarketDocument marketDocument
 ) implements EddieMarketDocument<AccountingPointMarketDocument> {
 }
