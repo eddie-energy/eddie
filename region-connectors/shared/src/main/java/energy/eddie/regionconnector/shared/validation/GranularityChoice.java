@@ -35,7 +35,7 @@ public class GranularityChoice {
      * @param max     the higher acceptable granularity
      * @return true if the current granularity is between the min and max, otherwise false
      */
-    private static boolean isBetween(Granularity current, Granularity min, Granularity max) {
+    public static boolean isBetween(Granularity current, Granularity min, Granularity max) {
         var minutes = current.minutes();
         return min.minutes() <= minutes && minutes <= max.minutes();
     }

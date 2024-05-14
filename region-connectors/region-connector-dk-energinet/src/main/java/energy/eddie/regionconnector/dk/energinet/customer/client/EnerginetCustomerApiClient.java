@@ -3,11 +3,9 @@ package energy.eddie.regionconnector.dk.energinet.customer.client;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
-import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
-import energy.eddie.regionconnector.dk.energinet.customer.api.IsAliveApi;
-import energy.eddie.regionconnector.dk.energinet.customer.api.MeterDataApi;
-import energy.eddie.regionconnector.dk.energinet.customer.api.TokenApi;
+import energy.eddie.regionconnector.dk.energinet.customer.api.*;
 import energy.eddie.regionconnector.dk.energinet.customer.invoker.ApiClient;
+import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointDetailsCustomerDtoResponseListApiResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.StringApiResponse;
@@ -33,6 +31,7 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     private final ApiClient apiClient;
     private final TokenApi tokenApi;
     private final MeterDataApi meterDataApi;
+    private final MeteringPointsApi meteringPointsApi;
     private final IsAliveApi isAliveApi;
 
     @Autowired
@@ -42,13 +41,21 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
         tokenApi = new TokenApi(apiClient);
         meterDataApi = new MeterDataApi(apiClient);
         isAliveApi = new IsAliveApi(apiClient);
+        meteringPointsApi = new MeteringPointsApi(apiClient);
     }
 
-    public EnerginetCustomerApiClient(ApiClient apiClient, TokenApi tokenApi, MeterDataApi meterDataApi, IsAliveApi isAliveApi) {
+    EnerginetCustomerApiClient(
+            ApiClient apiClient,
+            TokenApi tokenApi,
+            MeterDataApi meterDataApi,
+            IsAliveApi isAliveApi,
+            MeteringPointsApi meteringPointsApi
+    ) {
         this.apiClient = apiClient;
         this.tokenApi = tokenApi;
         this.meterDataApi = meterDataApi;
         this.isAliveApi = isAliveApi;
+        this.meteringPointsApi = meteringPointsApi;
     }
 
     private void throwIfInvalidTimeframe(LocalDate start, LocalDate end) throws DateTimeException {
@@ -77,7 +84,7 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
         synchronized (apiClient) {
             setApiKey(refreshToken);
             return tokenApi.apiTokenGet()
-                    .mapNotNull(StringApiResponse::getResult);
+                           .mapNotNull(StringApiResponse::getResult);
         }
     }
 
@@ -105,6 +112,17 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
         }
     }
 
+    @Override
+    public Mono<MeteringPointDetailsCustomerDtoResponseListApiResponse> getMeteringPointDetails(
+            MeteringPointsRequest meteringPointsRequest,
+            String accessToken
+    ) {
+        synchronized (apiClient) {
+            setApiKey(accessToken);
+            return meteringPointsApi.apiMeteringpointsMeteringpointGetdetailsPost(meteringPointsRequest);
+        }
+    }
+
     private void setApiKey(String token) {
         apiClient.setApiKey("Bearer " + token);
     }
@@ -113,11 +131,11 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     public Mono<Map<String, HealthState>> health() {
         return isAlive()
                 .map(isAlive -> Map.of(
-                                IS_ALIVE_API,
-                                Boolean.TRUE.equals(isAlive)
-                                        ? HealthState.UP
-                                        : HealthState.DOWN
-                        )
+                             IS_ALIVE_API,
+                             Boolean.TRUE.equals(isAlive)
+                                     ? HealthState.UP
+                                     : HealthState.DOWN
+                     )
                 );
     }
 }

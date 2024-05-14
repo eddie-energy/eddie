@@ -5,14 +5,18 @@ import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.IsAliveApi;
 import energy.eddie.regionconnector.dk.energinet.customer.api.MeterDataApi;
+import energy.eddie.regionconnector.dk.energinet.customer.api.MeteringPointsApi;
 import energy.eddie.regionconnector.dk.energinet.customer.api.TokenApi;
 import energy.eddie.regionconnector.dk.energinet.customer.invoker.ApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.model.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
@@ -32,8 +36,23 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ExtendWith(MockitoExtension.class)
 class EnerginetCustomerApiClientTest {
     private static final int MAX_PERIOD = 730;
+    @Mock
+    private IsAliveApi isAliveApi;
+    @Mock
+    private TokenApi tokenApi;
+    @Mock
+    private MeterDataApi meterDataApi;
+    @Mock
+    private MeteringPointsApi meteringPointsApi;
+    @Mock
+    private EnerginetConfiguration config;
+    @Mock
+    private MeteringPointsRequest meteringPointsRequest;
+    @Mock
+    private Granularity granularity;
 
     static Stream<Arguments> getTimeSeries_invalidTimeFrame_throws() {
         var endBeforeStart = LocalDate.of(2023, 1, 1);
@@ -54,10 +73,10 @@ class EnerginetCustomerApiClientTest {
         );
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Test
     void health_returnHealthUpState() {
         // Given
-        var config = mock(EnerginetConfiguration.class);
         when(config.customerBasePath()).thenReturn("path");
 
         var client = new EnerginetCustomerApiClient(config);
@@ -75,10 +94,10 @@ class EnerginetCustomerApiClientTest {
         );
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Test
     void health_returnHealthDownState() {
         // Given
-        var config = mock(EnerginetConfiguration.class);
         when(config.customerBasePath()).thenReturn("path");
 
         var client = new EnerginetCustomerApiClient(config);
@@ -100,9 +119,6 @@ class EnerginetCustomerApiClientTest {
     @MethodSource
     void getTimeSeries_invalidTimeFrame_throws(LocalDate start, LocalDate end) {
         // Given
-        Granularity granularity = mock(Granularity.class);
-        var meteringPointsRequest = mock(MeteringPointsRequest.class);
-        var config = mock(EnerginetConfiguration.class);
         when(config.customerBasePath()).thenReturn("path");
 
         var client = new EnerginetCustomerApiClient(config);
@@ -112,7 +128,13 @@ class EnerginetCustomerApiClientTest {
         // When
         // Then
         //noinspection ReactiveStreamsUnusedPublisher
-        assertThrows(DateTimeException.class, () -> client.getTimeSeries(start, end, granularity, meteringPointsRequest, token, userCorrelationId));
+        assertThrows(DateTimeException.class,
+                     () -> client.getTimeSeries(start,
+                                                end,
+                                                granularity,
+                                                meteringPointsRequest,
+                                                token,
+                                                userCorrelationId));
     }
 
     @Test
@@ -120,9 +142,6 @@ class EnerginetCustomerApiClientTest {
         // Given
         var end = LocalDate.now(DK_ZONE_ID).minusDays(1);
         var startExceedsMaxPeriod = end.minusDays(MAX_PERIOD + 1);
-        Granularity granularity = mock(Granularity.class);
-        var meteringPointsRequest = mock(MeteringPointsRequest.class);
-        var config = mock(EnerginetConfiguration.class);
         when(config.customerBasePath()).thenReturn("path");
 
         var client = new EnerginetCustomerApiClient(config);
@@ -132,65 +151,72 @@ class EnerginetCustomerApiClientTest {
         // When
         // Then
         //noinspection ReactiveStreamsUnusedPublisher
-        assertThrows(DateTimeException.class, () -> client.getTimeSeries(startExceedsMaxPeriod, end, granularity, meteringPointsRequest, "token", userCorrelationId));
+        assertThrows(DateTimeException.class,
+                     () -> client.getTimeSeries(startExceedsMaxPeriod,
+                                                end,
+                                                granularity,
+                                                meteringPointsRequest,
+                                                "token",
+                                                userCorrelationId));
     }
 
     @ParameterizedTest
     @MethodSource
     void isAlive_returnsMonoWithBoolean(boolean expected) {
         // Given
-        IsAliveApi isAliveApi = mock(IsAliveApi.class);
         when(isAliveApi.apiIsaliveGet()).thenReturn(Mono.just(expected));
-        var customerApi = new EnerginetCustomerApiClient(new ApiClient(), null, null, isAliveApi);
+        var customerApi = new EnerginetCustomerApiClient(new ApiClient(), null, null, isAliveApi, null);
 
         // When
         Mono<Boolean> result = customerApi.isAlive();
 
         // Then
         StepVerifier.create(result)
-                .expectNext(expected)
-                .verifyComplete();
+                    .expectNext(expected)
+                    .verifyComplete();
     }
 
     @Test
     void accessToken_returnsToken() {
         // Given
-        TokenApi tokenApi = mock(TokenApi.class);
         when(tokenApi.apiTokenGet()).thenReturn(Mono.just(new StringApiResponse().result("token")));
-        var customerApi = new EnerginetCustomerApiClient(new ApiClient(), tokenApi, null, null);
+        var customerApi = new EnerginetCustomerApiClient(new ApiClient(), tokenApi, null, null, null);
 
         // When
         Mono<String> result = customerApi.accessToken("refreshToken");
 
         // Then
         StepVerifier.create(result)
-                .expectNext("token")
-                .verifyComplete();
+                    .expectNext("token")
+                    .verifyComplete();
     }
 
     @Test
     void accessToken_throwsIfUnauthorized() {
         // Given
-        TokenApi tokenApi = mock(TokenApi.class);
-        HttpClientErrorException unauthorized = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "Unauthorized", HttpHeaders.EMPTY, "".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+        HttpClientErrorException unauthorized = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED,
+                                                                                "Unauthorized",
+                                                                                HttpHeaders.EMPTY,
+                                                                                "".getBytes(StandardCharsets.UTF_8),
+                                                                                StandardCharsets.UTF_8);
         when(tokenApi.apiTokenGet()).thenReturn(Mono.error(unauthorized));
-        var customerApi = new EnerginetCustomerApiClient(new ApiClient(), tokenApi, null, null);
+        var customerApi = new EnerginetCustomerApiClient(new ApiClient(), tokenApi, null, null, null);
 
         // When
         Mono<String> result = customerApi.accessToken("refreshToken");
 
         // Then
         StepVerifier.create(result)
-                .expectError(HttpClientErrorException.Unauthorized.class)
-                .verify();
+                    .expectError(HttpClientErrorException.Unauthorized.class)
+                    .verify();
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Test
     void getTimeSeries_returnsConsumptionRecord() {
         // Given
         var start = LocalDate.of(2023, 1, 1);
         var end = LocalDate.of(2023, 1, 2);
-        MeterDataApi meterDataApi = mock(MeterDataApi.class);
         var document = new MyEnergyDataMarketDocument()
                 .periodTimeInterval(
                         new PeriodtimeInterval()
@@ -215,9 +241,13 @@ class EnerginetCustomerApiClientTest {
                                 .id("ID")
                                 .myEnergyDataMarketDocument(document)
                 );
-        when(meterDataApi.apiMeterdataGettimeseriesDateFromDateToAggregationPost(anyString(), anyString(), anyString(), any(), any()))
+        when(meterDataApi.apiMeterdataGettimeseriesDateFromDateToAggregationPost(anyString(),
+                                                                                 anyString(),
+                                                                                 anyString(),
+                                                                                 any(),
+                                                                                 any()))
                 .thenReturn(Mono.just(data));
-        var customerApi = new EnerginetCustomerApiClient(new ApiClient(), null, meterDataApi, null);
+        var customerApi = new EnerginetCustomerApiClient(new ApiClient(), null, meterDataApi, null, null);
 
         // When
         var result = customerApi.getTimeSeries(
@@ -231,12 +261,12 @@ class EnerginetCustomerApiClientTest {
 
         // Then
         StepVerifier.create(result)
-                .assertNext(response -> assertAll(
-                        () -> assertNotNull(response.getResult()),
-                        () -> assertNotNull(response.getResult().getFirst()),
-                        () -> assertEquals("ID", response.getResult().getFirst().getId())
-                ))
-                .verifyComplete();
+                    .assertNext(response -> assertAll(
+                            () -> assertNotNull(response.getResult()),
+                            () -> assertNotNull(response.getResult().getFirst()),
+                            () -> assertEquals("ID", response.getResult().getFirst().getId())
+                    ))
+                    .verifyComplete();
     }
 
     @Test
@@ -244,11 +274,18 @@ class EnerginetCustomerApiClientTest {
         // Given
         LocalDate start = LocalDate.of(2023, 1, 1);
         LocalDate end = LocalDate.of(2023, 1, 2);
-        MeterDataApi meterDataApi = mock(MeterDataApi.class);
-        HttpClientErrorException unauthorized = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "Unauthorized", HttpHeaders.EMPTY, "".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
-        when(meterDataApi.apiMeterdataGettimeseriesDateFromDateToAggregationPost(anyString(), anyString(), anyString(), any(), any()))
+        HttpClientErrorException unauthorized = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED,
+                                                                                "Unauthorized",
+                                                                                HttpHeaders.EMPTY,
+                                                                                "".getBytes(StandardCharsets.UTF_8),
+                                                                                StandardCharsets.UTF_8);
+        when(meterDataApi.apiMeterdataGettimeseriesDateFromDateToAggregationPost(anyString(),
+                                                                                 anyString(),
+                                                                                 anyString(),
+                                                                                 any(),
+                                                                                 any()))
                 .thenReturn(Mono.error(unauthorized));
-        var customerApi = new EnerginetCustomerApiClient(new ApiClient(), null, meterDataApi, null);
+        var customerApi = new EnerginetCustomerApiClient(new ApiClient(), null, meterDataApi, null, null);
 
         // When
         var result = customerApi.getTimeSeries(
@@ -262,7 +299,51 @@ class EnerginetCustomerApiClientTest {
 
         // Then
         StepVerifier.create(result)
-                .expectError(HttpClientErrorException.Unauthorized.class)
-                .verify();
+                    .expectError(HttpClientErrorException.Unauthorized.class)
+                    .verify();
+    }
+
+    @Test
+    void getMeteringPointDetails_returnsMeteringPointDetails() {
+        // Given
+        var document = new MeteringPointDetailsCustomerDtoResponseListApiResponse();
+
+        when(meteringPointsApi.apiMeteringpointsMeteringpointGetdetailsPost(any()))
+                .thenReturn(Mono.just(document));
+        var customerApi = new EnerginetCustomerApiClient(new ApiClient(), null, null, null, meteringPointsApi);
+
+        // When
+        var result = customerApi.getMeteringPointDetails(
+                new MeteringPointsRequest(), "accessToken"
+        );
+
+        // Then
+        StepVerifier.create(result)
+                    .assertNext(response -> assertEquals(document, response))
+                    .verifyComplete();
+    }
+
+    @Test
+    void getMeteringPointDetails_throwsExceptionWhenUnauthorized() {
+        // Given
+        HttpClientErrorException unauthorized = HttpClientErrorException.create(HttpStatus.UNAUTHORIZED,
+                                                                                "Unauthorized",
+                                                                                HttpHeaders.EMPTY,
+                                                                                "".getBytes(StandardCharsets.UTF_8),
+                                                                                StandardCharsets.UTF_8);
+        when(meteringPointsApi.apiMeteringpointsMeteringpointGetdetailsPost(any()))
+                .thenReturn(Mono.error(unauthorized));
+        var customerApi = new EnerginetCustomerApiClient(new ApiClient(), null, null, null, meteringPointsApi);
+
+        // When
+        var result = customerApi.getMeteringPointDetails(
+                new MeteringPointsRequest(),
+                "accessToken"
+        );
+
+        // Then
+        StepVerifier.create(result)
+                    .expectError(HttpClientErrorException.Unauthorized.class)
+                    .verify();
     }
 }

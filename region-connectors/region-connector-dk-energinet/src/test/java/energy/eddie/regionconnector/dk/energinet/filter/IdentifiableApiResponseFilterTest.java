@@ -46,10 +46,10 @@ class IdentifiableApiResponseFilterTest {
 
         LocalDate from = LocalDate.now(DK_ZONE_ID).minusDays(1);
         LocalDate to = from.plusDays(1);
-        var filter = new IdentifiableApiResponseFilter(permissionRequest, from, to);
+        var filter = new IdentifiableApiResponseFilter();
 
         // When & Then
-        StepVerifier.create(filter.filter(List.of(response)))
+        StepVerifier.create(filter.filter(permissionRequest, from, to, List.of(response)))
                     .expectError(ApiResponseException.class)
                     .verify();
     }
@@ -77,10 +77,10 @@ class IdentifiableApiResponseFilterTest {
 
         LocalDate from = LocalDate.now(DK_ZONE_ID).minusDays(1);
         LocalDate to = from.plusDays(1);
-        var filter = new IdentifiableApiResponseFilter(permissionRequest, from, to);
+        var filter = new IdentifiableApiResponseFilter();
 
         // When & Then
-        StepVerifier.create(filter.filter(List.of(response)))
+        StepVerifier.create(filter.filter(permissionRequest, from, to, List.of(response)))
                     .expectNextCount(0)
                     .verifyComplete();
     }
@@ -110,10 +110,10 @@ class IdentifiableApiResponseFilterTest {
         document.setPeriodTimeInterval(new PeriodtimeInterval().start(start.toString()).end(end.toString()));
         response.setMyEnergyDataMarketDocument(document);
 
-        var filter = new IdentifiableApiResponseFilter(spy, start, end);
+        var filter = new IdentifiableApiResponseFilter();
 
         // When & Then
-        StepVerifier.create(filter.filter(List.of(response)))
+        StepVerifier.create(filter.filter(spy, start, end, List.of(response)))
                     .assertNext(apiResponse -> assertEquals(response, apiResponse.apiResponse()))
                     .verifyComplete();
     }
