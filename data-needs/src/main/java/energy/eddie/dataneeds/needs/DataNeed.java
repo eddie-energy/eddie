@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.SmartMeterAiidaDataNeed;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,7 +28,7 @@ import java.time.Instant;
         @JsonSubTypes.Type(value = GenericAiidaDataNeed.class, name = GenericAiidaDataNeed.DISCRIMINATOR_VALUE)
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public abstract class DataNeed {
+public abstract class DataNeed implements DataNeedInterface {
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     @Id
     @Column(name = "data_need_id")

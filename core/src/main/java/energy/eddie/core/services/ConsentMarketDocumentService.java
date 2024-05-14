@@ -24,6 +24,7 @@ public class ConsentMarketDocumentService implements ConsentMarketDocumentServic
                              .subscribe();
     }
 
+    @Override
     public Flux<ConsentMarketDocument> getConsentMarketDocumentStream() {
         return consentMarketDocumentSink.asFlux();
     }
