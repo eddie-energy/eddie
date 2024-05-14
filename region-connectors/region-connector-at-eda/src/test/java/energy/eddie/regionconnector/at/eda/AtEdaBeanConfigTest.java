@@ -31,7 +31,7 @@ class AtEdaBeanConfigTest {
         AtEdaBeanConfig springConfig = new AtEdaBeanConfig();
 
         // When
-        AtConfiguration atConfiguration = springConfig.atConfiguration("AT00001", null);
+        AtConfiguration atConfiguration = springConfig.atConfiguration("AT00001");
 
         // Then
         assertNotNull(atConfiguration);

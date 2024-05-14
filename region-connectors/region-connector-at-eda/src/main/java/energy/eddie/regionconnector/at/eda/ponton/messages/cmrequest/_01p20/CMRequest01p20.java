@@ -47,9 +47,7 @@ public record CMRequest01p20(
 
     private ProcessDirectory makeProcessDirectory(CCMORequest ccmoRequest) {
         var messageId = ccmoRequest.messageId();
-        String prefixedConversationId = ccmoRequest.conversationIdPrefix()
-                                                   .map(prefix -> prefix + messageId)
-                                                   .orElse(messageId);
+        String prefixedConversationId = ccmoRequest.messageId();
         return new ProcessDirectory()
                 .withCMRequest(makeReqType(ccmoRequest))
                 .withCMRequestId(ccmoRequest.cmRequestId())
