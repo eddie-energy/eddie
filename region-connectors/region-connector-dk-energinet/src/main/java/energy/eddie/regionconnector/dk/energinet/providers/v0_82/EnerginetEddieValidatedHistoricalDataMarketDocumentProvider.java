@@ -10,22 +10,27 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 import java.util.Objects;
-import java.util.Optional;
 
 @Component
 public class EnerginetEddieValidatedHistoricalDataMarketDocumentProvider implements EddieValidatedHistoricalDataMarketDocumentProvider {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EnerginetEddieValidatedHistoricalDataMarketDocumentProvider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+            EnerginetEddieValidatedHistoricalDataMarketDocumentProvider.class);
     private final Flux<EddieValidatedHistoricalDataMarketDocument> eddieValidatedHistoricalDataMarketDocumentFlux;
     private final ValidatedHistoricalDataMarketDocumentBuilderFactory validatedHistoricalDataMarketDocumentBuilderFactory;
 
-    public EnerginetEddieValidatedHistoricalDataMarketDocumentProvider(Flux<IdentifiableApiResponse> identifiableApiResponseFlux, ValidatedHistoricalDataMarketDocumentBuilderFactory validatedHistoricalDataMarketDocumentBuilderFactory) {
+    public EnerginetEddieValidatedHistoricalDataMarketDocumentProvider(
+            Flux<IdentifiableApiResponse> identifiableApiResponseFlux,
+            ValidatedHistoricalDataMarketDocumentBuilderFactory validatedHistoricalDataMarketDocumentBuilderFactory
+    ) {
         this.eddieValidatedHistoricalDataMarketDocumentFlux = identifiableApiResponseFlux
                 .flatMap(this::mapToValidatedHistoricalMarketDocument).
                 share();
         this.validatedHistoricalDataMarketDocumentBuilderFactory = validatedHistoricalDataMarketDocumentBuilderFactory;
     }
 
-    private Flux<EddieValidatedHistoricalDataMarketDocument> mapToValidatedHistoricalMarketDocument(IdentifiableApiResponse response) {
+    private Flux<EddieValidatedHistoricalDataMarketDocument> mapToValidatedHistoricalMarketDocument(
+            IdentifiableApiResponse response
+    ) {
         try {
             var responseMarketDocument = Objects.requireNonNull(response.apiResponse().getMyEnergyDataMarketDocument());
             var validatedHistoricalDataMarketDocument = validatedHistoricalDataMarketDocumentBuilderFactory
@@ -35,9 +40,9 @@ public class EnerginetEddieValidatedHistoricalDataMarketDocumentProvider impleme
 
             return Flux.just(
                     new EddieValidatedHistoricalDataMarketDocument(
-                            Optional.of(response.permissionRequest().connectionId()),
-                            Optional.of(response.permissionRequest().permissionId()),
-                            Optional.of(response.permissionRequest().dataNeedId()),
+                            response.permissionRequest().connectionId(),
+                            response.permissionRequest().permissionId(),
+                            response.permissionRequest().dataNeedId(),
                             validatedHistoricalDataMarketDocument)
             );
         } catch (Exception e) {

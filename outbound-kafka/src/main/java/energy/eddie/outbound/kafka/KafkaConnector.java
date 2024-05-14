@@ -85,7 +85,7 @@ public class KafkaConnector implements
             EddieValidatedHistoricalDataMarketDocument marketDocument
     ) {
         ProducerRecord<String, Object> toSend = new ProducerRecord<>("validated-historical-data",
-                                                                     marketDocument.connectionId().orElse(null),
+                                                                     marketDocument.connectionId(),
                                                                      marketDocument);
         kafkaProducer.send(toSend,
                            new KafkaCallback("Could not produce validated historical data market document message"));
@@ -140,7 +140,7 @@ public class KafkaConnector implements
             EddieAccountingPointMarketDocument marketDocument
     ) {
         ProducerRecord<String, Object> toSend = new ProducerRecord<>("accounting-point-market-document",
-                                                                     marketDocument.connectionId().orElse(null),
+                                                                     marketDocument.connectionId(),
                                                                      marketDocument);
         kafkaProducer.send(toSend,
                            new KafkaCallback("Could not produce accounting point market document message"));

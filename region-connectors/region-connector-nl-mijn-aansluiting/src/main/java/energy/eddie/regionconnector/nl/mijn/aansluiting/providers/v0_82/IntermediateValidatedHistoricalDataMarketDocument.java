@@ -18,7 +18,6 @@ import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 class IntermediateValidatedHistoricalDataMarketDocument {
 
@@ -142,9 +141,9 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             vhd.withTimeSeriesList(new ValidatedHistoricalDataMarketDocument.TimeSeriesList()
                                            .withTimeSeries(timeSeriesList));
             vhds.add(
-                    new EddieValidatedHistoricalDataMarketDocument(Optional.of(permissionRequest.connectionId()),
-                                                                   Optional.of(permissionRequest.permissionId()),
-                                                                   Optional.of(permissionRequest.dataNeedId()),
+                    new EddieValidatedHistoricalDataMarketDocument(permissionRequest.connectionId(),
+                                                                   permissionRequest.permissionId(),
+                                                                   permissionRequest.dataNeedId(),
                                                                    vhd)
             );
         }

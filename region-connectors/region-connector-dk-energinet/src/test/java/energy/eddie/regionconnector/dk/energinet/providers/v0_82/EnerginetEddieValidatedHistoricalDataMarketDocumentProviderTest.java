@@ -29,7 +29,7 @@ import java.time.ZonedDateTime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-@SuppressWarnings({"resource", "OptionalGetWithoutIsPresent"})
+@SuppressWarnings({"resource"})
 class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
 
     static MyEnergyDataMarketDocument myEnergyDataMarketDocument;
@@ -92,9 +92,9 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
                         testPublisher.complete();
                     })
                     .assertNext(document -> {
-                        assertEquals(apiResponse.permissionRequest().permissionId(), document.permissionId().get());
-                        assertEquals(apiResponse.permissionRequest().connectionId(), document.connectionId().get());
-                        assertEquals(apiResponse.permissionRequest().dataNeedId(), document.dataNeedId().get());
+                        assertEquals(apiResponse.permissionRequest().permissionId(), document.permissionId());
+                        assertEquals(apiResponse.permissionRequest().connectionId(), document.connectionId());
+                        assertEquals(apiResponse.permissionRequest().dataNeedId(), document.dataNeedId());
 
                         assertEquals(myEnergyDataMarketDocument.getPeriodTimeInterval().getStart(),
                                      document.marketDocument().getPeriodTimeInterval().getStart());

@@ -15,7 +15,7 @@ import reactor.test.publisher.TestPublisher;
 import java.time.Duration;
 import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -51,24 +51,24 @@ class EdaEddieValidatedHistoricalDataMarketDocumentProviderTest {
                                                                                  null));
                             testPublisher.complete();
                         })
-                        .assertNext(cr -> {
-                            assertThat(cr.permissionId()).hasValue(expectedString1);
-                            assertThat(cr.connectionId()).hasValue(expectedString1);
-                            assertThat(cr.dataNeedId()).hasValue(expectedString1);
-                            assertEquals(validatedHistoricalDataMarketDocument, cr.marketDocument());
-                        })
-                        .assertNext(cr -> {
-                            assertThat(cr.permissionId()).hasValue(expectedString2);
-                            assertThat(cr.connectionId()).hasValue(expectedString2);
-                            assertThat(cr.dataNeedId()).hasValue(expectedString2);
-                            assertEquals(validatedHistoricalDataMarketDocument, cr.marketDocument());
-                        })
-                        .assertNext(cr -> {
-                            assertThat(cr.permissionId()).hasValue(expectedString3);
-                            assertThat(cr.connectionId()).hasValue(expectedString3);
-                            assertThat(cr.dataNeedId()).hasValue(expectedString3);
-                            assertEquals(validatedHistoricalDataMarketDocument, cr.marketDocument());
-                        })
+                        .assertNext(md -> assertAll(
+                                () -> assertEquals(expectedString1, md.permissionId()),
+                                () -> assertEquals(expectedString1, md.connectionId()),
+                                () -> assertEquals(expectedString1, md.dataNeedId()),
+                                () -> assertEquals(validatedHistoricalDataMarketDocument, md.marketDocument())
+                        ))
+                        .assertNext(md -> assertAll(
+                                () -> assertEquals(expectedString2, md.permissionId()),
+                                () -> assertEquals(expectedString2, md.connectionId()),
+                                () -> assertEquals(expectedString2, md.dataNeedId()),
+                                () -> assertEquals(validatedHistoricalDataMarketDocument, md.marketDocument())
+                        ))
+                        .assertNext(md -> assertAll(
+                                () -> assertEquals(expectedString3, md.permissionId()),
+                                () -> assertEquals(expectedString3, md.connectionId()),
+                                () -> assertEquals(expectedString3, md.dataNeedId()),
+                                () -> assertEquals(validatedHistoricalDataMarketDocument, md.marketDocument())
+                        ))
                         .expectComplete()
                         .verify(Duration.ofSeconds(2));
         }

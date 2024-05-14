@@ -15,7 +15,6 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public record IntermediateValidatedHistoricalDataMarketDocument(ConsumptionRecord consumptionRecord,
@@ -27,10 +26,11 @@ public record IntermediateValidatedHistoricalDataMarketDocument(ConsumptionRecor
 
     public EddieValidatedHistoricalDataMarketDocument value() {
         ZonedDateTime endDate = consumptionRecord.getStartDateTime()
-                .plus(
-                        Duration.parse(consumptionRecord.getMeteringInterval())
-                                .multipliedBy(consumptionRecord.getConsumptionPoints().size())
-                );
+                                                 .plus(
+                                                         Duration.parse(consumptionRecord.getMeteringInterval())
+                                                                 .multipliedBy(consumptionRecord.getConsumptionPoints()
+                                                                                                .size())
+                                                 );
         var timeframe = new EsmpTimeInterval(
                 consumptionRecord.getStartDateTime(),
                 endDate
@@ -90,15 +90,17 @@ public record IntermediateValidatedHistoricalDataMarketDocument(ConsumptionRecor
                                             ));
 
         return new EddieValidatedHistoricalDataMarketDocument(
-                Optional.of(consumptionRecord.getConnectionId()),
-                Optional.of(consumptionRecord.getPermissionId()),
-                Optional.of(consumptionRecord.getDataNeedId()),
+                consumptionRecord.getConnectionId(),
+                consumptionRecord.getPermissionId(),
+                consumptionRecord.getDataNeedId(),
                 vhd
         );
     }
 
-    private List<SeriesPeriodComplexType> seriesPeriods(ConsumptionRecord consumptionRecord,
-                                                        EsmpTimeInterval interval) {
+    private List<SeriesPeriodComplexType> seriesPeriods(
+            ConsumptionRecord consumptionRecord,
+            EsmpTimeInterval interval
+    ) {
         String resolution = consumptionRecord.getMeteringInterval();
         List<PointComplexType> points = new ArrayList<>();
         int position = 0;
