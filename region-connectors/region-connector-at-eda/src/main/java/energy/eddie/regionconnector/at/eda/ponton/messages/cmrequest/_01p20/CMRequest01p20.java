@@ -47,12 +47,12 @@ public record CMRequest01p20(
 
     private ProcessDirectory makeProcessDirectory(CCMORequest ccmoRequest) {
         var messageId = ccmoRequest.messageId();
-        String prefixedConversationId = ccmoRequest.messageId();
+        String conversationID = ccmoRequest.messageId();
         return new ProcessDirectory()
                 .withCMRequest(makeReqType(ccmoRequest))
                 .withCMRequestId(ccmoRequest.cmRequestId())
                 .withMessageId(messageId)
-                .withConversationId(prefixedConversationId)
+                .withConversationId(conversationID)
                 .withProcessDate(DateTimeConverter.dateToXml(LocalDate.now(AT_ZONE_ID)))
                 .withMeteringPoint(ccmoRequest.meteringPointId().orElse(null));
     }

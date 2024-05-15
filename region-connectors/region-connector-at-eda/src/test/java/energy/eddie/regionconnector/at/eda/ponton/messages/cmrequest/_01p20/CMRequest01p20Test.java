@@ -64,27 +64,4 @@ class CMRequest01p20Test {
         var res = request.cmRequest();
         assertFalse(res.getProcessDirectory().getConversationId().startsWith("prefix"));
     }
-
-  /*  @Test
-    void toCmRequest_withPrefixAddsPrefixToConversationId() {
-        // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
-        LocalDate end = start.plusMonths(1);
-        CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
-        DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
-                                                                                "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007");
-        var request = new CMRequest01p20(new CCMORequest(dsoIdAndMeteringPoint,
-                                                         timeFrame,
-                                                         RequestDataType.METERING_DATA,
-                                                         AllowedGranularity.P1D,
-                                                         AllowedTransmissionCycle.D,
-                                                         atConfiguration,
-                                                         ZonedDateTime.now(AT_ZONE_ID)));
-
-        // when
-        // then
-        var res = request.cmRequest();
-        assertTrue(res.getProcessDirectory().getConversationId().startsWith("prefix-"));
-   } */
 }
