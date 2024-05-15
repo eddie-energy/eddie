@@ -154,7 +154,35 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void testCreatePermissionRequest_withInvalidEnergyType_throws() throws DataNeedNotFoundException {
+    void testCreatePermissionRequest_withInvalidStartDate_throws() {
+        // Given
+        var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
+        when(dataNeedsService.findById("dnid"))
+                .thenReturn(Optional.of(vhdDataNeed));
+        when(vhdDataNeed.minGranularity())
+                .thenReturn(Granularity.PT5M);
+        when(vhdDataNeed.maxGranularity())
+                .thenReturn(Granularity.P1D);
+        when(vhdDataNeed.energyType())
+                .thenReturn(EnergyType.ELECTRICITY);
+        when(vhdDataNeed.duration())
+                .thenReturn(dataNeedDuration);
+        when(dataNeedDuration.start())
+                .thenReturn(Optional.of(Period.ofYears(-100)));
+        when(dataNeedDuration.end())
+                .thenReturn(Optional.of(Period.ofDays(-1)));
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> permissionRequestService.createPermissionRequest(permissionRequest));
+        verify(outbox).commit(isA(NlCreatedEvent.class));
+        verify(outbox).commit(malformedCaptor.capture());
+        var res = malformedCaptor.getValue();
+        assertThat(res.errors()).hasSize(1);
+    }
+
+    @Test
+    void testCreatePermissionRequest_withInvalidEnergyType_throws() {
         // Given
         var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
         when(dataNeedsService.findById("dnid"))
@@ -173,7 +201,7 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void testCreatePermissionRequest_withInvalidDataNeedType_throws() throws DataNeedNotFoundException {
+    void testCreatePermissionRequest_withInvalidDataNeedType_throws() {
         // Given
         var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
         when(dataNeedsService.findById("dnid"))

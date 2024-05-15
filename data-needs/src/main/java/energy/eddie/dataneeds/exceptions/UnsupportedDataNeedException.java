@@ -7,4 +7,9 @@ public class UnsupportedDataNeedException extends Exception {
                                  dataNeedId,
                                  errorReason));
     }
+
+    public UnsupportedDataNeedException(String dataNeedId, String errorReason) {
+        super("Data need with ID '%s' is not supported: %s"
+                      .formatted(dataNeedId, errorReason));
+    }
 }

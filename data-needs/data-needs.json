@@ -39,9 +39,9 @@
     "purpose": "purpose",
     "policyLink": "https://example.com/toc",
     "duration": {
-      "type": "absoluteDuration",
-      "start": "2024-04-01",
-      "end": "2024-04-05"
+      "type": "relativeDuration",
+      "start": "P1D",
+      "end": "P10D"
     },
     "transmissionInterval": 5,
     "dataTags": [

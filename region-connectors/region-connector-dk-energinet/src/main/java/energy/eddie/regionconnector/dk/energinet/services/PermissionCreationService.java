@@ -6,6 +6,7 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
 import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
@@ -71,10 +72,17 @@ public class PermissionCreationService {
                                                    dataNeedId,
                                                    UNSUPPORTED_DATA_NEED_MESSAGE);
         }
-        var wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(vhdDataNeed,
+        DataNeedWrapper wrapper;
+        try {
+            wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(vhdDataNeed,
                                                                            referenceDate,
                                                                            PERIOD_EARLIEST_START,
                                                                            PERIOD_LATEST_END);
+        } catch (UnsupportedDataNeedException e) {
+            outbox.commit(new DkMalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID,
+                                                                                        e.getMessage()))));
+            throw e;
+        }
         var granularity = granularityChoice.find(vhdDataNeed.minGranularity(), vhdDataNeed.maxGranularity());
         if (granularity == null) {
             outbox.commit(new DkMalformedEvent(permissionId,

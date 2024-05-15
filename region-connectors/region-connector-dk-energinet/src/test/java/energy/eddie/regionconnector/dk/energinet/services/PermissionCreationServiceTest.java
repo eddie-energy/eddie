@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.ZoneOffset;
 import java.util.Optional;
 
@@ -83,6 +84,25 @@ class PermissionCreationServiceTest {
         verify(outbox).commit(isA(DkMalformedEvent.class));
     }
 
+    @Test
+    void testCreatePermissionRequest_emitsMalformedOnInvalidTimeframe() {
+        // Given
+        var request = new PermissionRequestForCreation("cid",
+                                                       "refreshToken",
+                                                       "meteringPointId",
+                                                       "dnid");
+        when(dataNeedsService.findById(any()))
+                .thenReturn(Optional.of(vhdDataNeed));
+        when(vhdDataNeed.duration())
+                .thenReturn(dataNeedDuration);
+        when(dataNeedDuration.end())
+                .thenReturn(Optional.of(Period.ofYears(1000)));
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class, () -> service.createPermissionRequest(request));
+        verify(outbox).commit(isA(DkCreatedEvent.class));
+        verify(outbox).commit(isA(DkMalformedEvent.class));
+    }
     @Test
     void testCreatePermissionRequest_emitsMalformedOnUnsupportedGranularity() {
         // Given

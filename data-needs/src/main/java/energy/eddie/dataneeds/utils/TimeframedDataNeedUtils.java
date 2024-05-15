@@ -3,6 +3,7 @@ package energy.eddie.dataneeds.utils;
 import energy.eddie.dataneeds.duration.AbsoluteDuration;
 import energy.eddie.dataneeds.duration.CalendarUnit;
 import energy.eddie.dataneeds.duration.RelativeDuration;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 
 import java.time.DayOfWeek;
@@ -36,17 +37,22 @@ public class TimeframedDataNeedUtils {
             LocalDate referenceDate,
             Period earliestStart,
             Period latestEnd
-    ) throws IllegalArgumentException {
-        if (timeframedDataNeed.duration() instanceof AbsoluteDuration absoluteDuration)
+    ) throws IllegalArgumentException, UnsupportedDataNeedException {
+        var earliestStartDate = referenceDate.plus(earliestStart);
+        var latestEndDate = referenceDate.plus(latestEnd);
+        if (timeframedDataNeed.duration() instanceof AbsoluteDuration absoluteDuration) {
+            earliestStartIsAfterStartThrows(timeframedDataNeed, earliestStartDate, absoluteDuration.start());
+            latestEndIsBeforeEndThrows(timeframedDataNeed, latestEndDate, absoluteDuration.end());
             return new DataNeedWrapper(timeframedDataNeed, absoluteDuration.start(), absoluteDuration.end());
+        }
 
         var duration = ((RelativeDuration) timeframedDataNeed.duration());
         Optional<Period> durationStart = duration.start();
         Optional<Period> durationEnd = duration.end();
         Optional<CalendarUnit> stickToStart = duration.stickyStartCalendarUnit();
 
-        var calculatedStart = durationStart.map(referenceDate::plus).orElseGet(() -> referenceDate.plus(earliestStart));
-        var calculatedEnd = durationEnd.map(referenceDate::plus).orElseGet(() -> referenceDate.plus(latestEnd));
+        var calculatedStart = durationStart.map(referenceDate::plus).orElse(earliestStartDate);
+        var calculatedEnd = durationEnd.map(referenceDate::plus).orElse(latestEndDate);
 
         if (stickToStart.isPresent()) {
             // overwrite start if date need specifies sticky start
@@ -57,6 +63,28 @@ public class TimeframedDataNeedUtils {
             };
         }
 
+        earliestStartIsAfterStartThrows(timeframedDataNeed, earliestStartDate, calculatedStart);
+        latestEndIsBeforeEndThrows(timeframedDataNeed, latestEndDate, calculatedEnd);
         return new DataNeedWrapper(timeframedDataNeed, calculatedStart, calculatedEnd);
+    }
+
+    private static void earliestStartIsAfterStartThrows(
+            TimeframedDataNeed timeframedDataNeed,
+            LocalDate earliestStartDate,
+            LocalDate start
+    ) throws UnsupportedDataNeedException {
+        if (earliestStartDate.isAfter(start)) {
+            throw new UnsupportedDataNeedException(timeframedDataNeed.id(), "Earliest start is after start");
+        }
+    }
+
+    private static void latestEndIsBeforeEndThrows(
+            TimeframedDataNeed timeframedDataNeed,
+            LocalDate latestEndDate,
+            LocalDate end
+    ) throws UnsupportedDataNeedException {
+        if (latestEndDate.isBefore(end)) {
+            throw new UnsupportedDataNeedException(timeframedDataNeed.id(), "Latest end is before end");
+        }
     }
 }

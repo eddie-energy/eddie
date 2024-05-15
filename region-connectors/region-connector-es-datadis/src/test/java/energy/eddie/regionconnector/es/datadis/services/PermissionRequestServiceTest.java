@@ -250,6 +250,20 @@ class PermissionRequestServiceTest {
     }
 
     @Test
+    void createAndSendPermissionRequest_withInvalidTimeframe_throws() {
+        // Given
+        var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
+        when(dataNeedsService.findById(any())).thenReturn(Optional.of(validatedHistoricalDataDataNeed));
+        when(validatedHistoricalDataDataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(LocalDate.now(ZONE_ID_SPAIN));
+        when(absoluteDuration.end()).thenReturn(LocalDate.now(ZONE_ID_SPAIN).plusYears(1000));
+
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> service.createAndSendPermissionRequest(mockCreationRequest));
+    }
+    @Test
     void createAndSendPermissionRequest_withInvalidDataNeed_throws() {
         // Given
         var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");

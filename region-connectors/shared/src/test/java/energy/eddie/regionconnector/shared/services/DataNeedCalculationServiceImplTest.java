@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.shared.services;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
@@ -38,8 +39,8 @@ class DataNeedCalculationServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new DataNeedCalculationServiceImpl(
-                List.of(Granularity.PT5M, Granularity.PT15M, Granularity.P1D),
-                List.of(ValidatedHistoricalDataDataNeed.class),
+                List.of(Granularity.PT15M, Granularity.P1D),
+                List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
                 Period.ofDays(-10),
                 Period.ofDays(10),
                 regionConnectorMetadata
@@ -47,154 +48,123 @@ class DataNeedCalculationServiceImplTest {
     }
 
     @Test
-    void testSupportedGranularities_returnsCorrectGranularities() {
+    void testCalculate_returnsCorrect_forFutureVHDDataNeed() {
         // Given
+        when(vhdDataNeed.duration())
+                .thenReturn(duration);
+        when(duration.start())
+                .thenReturn(Optional.of(Period.ZERO));
+        when(duration.end())
+                .thenReturn(Optional.of(Period.ofDays(5)));
         when(vhdDataNeed.minGranularity())
-                .thenReturn(Granularity.PT15M);
+                .thenReturn(Granularity.PT5M);
+        when(vhdDataNeed.maxGranularity())
+                .thenReturn(Granularity.P1Y);
+        var now = LocalDate.now(ZoneOffset.UTC);
+        var timeframe = new Timeframe(now, now.plusDays(5));
+
+        // When
+        var res = service.calculate(vhdDataNeed);
+
+        // Then
+        assertAll(
+                () -> assertTrue(res.supportsDataNeed()),
+                () -> assertEquals(List.of(Granularity.PT15M, Granularity.P1D), res.granularities()),
+                () -> assertEquals(timeframe, res.permissionTimeframe()),
+                () -> assertEquals(timeframe, res.energyDataTimeframe())
+        );
+    }
+
+    @Test
+    void testCalculate_returnsCorrect_forPastVHDDataNeed() {
+        // Given
+        when(vhdDataNeed.duration())
+                .thenReturn(duration);
+        when(duration.start())
+                .thenReturn(Optional.of(Period.ofDays(-5)));
+        when(duration.end())
+                .thenReturn(Optional.of(Period.ofDays(-1)));
+        when(vhdDataNeed.minGranularity())
+                .thenReturn(Granularity.PT5M);
+        when(vhdDataNeed.maxGranularity())
+                .thenReturn(Granularity.P1Y);
+        var now = LocalDate.now(ZoneOffset.UTC);
+        var timeframe = new Timeframe(now.minusDays(5), now.minusDays(1));
+
+        // When
+        var res = service.calculate(vhdDataNeed);
+
+        // Then
+        assertAll(
+                () -> assertTrue(res.supportsDataNeed()),
+                () -> assertEquals(List.of(Granularity.PT15M, Granularity.P1D), res.granularities()),
+                () -> assertEquals(new Timeframe(now, now), res.permissionTimeframe()),
+                () -> assertEquals(timeframe, res.energyDataTimeframe())
+        );
+    }
+
+    @Test
+    void testCalculate_returnsCorrect_forInvalidTimeframedVHDDataNeed() {
+        // Given
+        when(vhdDataNeed.duration())
+                .thenReturn(duration);
+        when(duration.start())
+                .thenReturn(Optional.of(Period.ofDays(-100)));
+        when(duration.end())
+                .thenReturn(Optional.of(Period.ofDays(-1)));
+        when(vhdDataNeed.minGranularity())
+                .thenReturn(Granularity.PT5M);
         when(vhdDataNeed.maxGranularity())
                 .thenReturn(Granularity.P1Y);
 
         // When
-        var res = service.supportedGranularities(vhdDataNeed);
+        var res = service.calculate(vhdDataNeed);
 
         // Then
-        assertEquals(List.of(Granularity.PT15M, Granularity.P1D), res);
+        assertFalse(res.supportsDataNeed());
     }
 
     @Test
-    void testSupportedGranularities_ofAccountingPointDataNeed_returnsEmptyList() {
+    void testCalculate_returnsEmptyCalculationOnUnsupportedDataNeed() {
         // Given
         // When
-        var res = service.supportedGranularities(accountingPointDataNeed);
-
-        // Then
-        assertTrue(res.isEmpty());
-    }
-
-    @Test
-    void testSupportedDataNeed_returnsTrue() {
-        // Given
-        // When
-        var res = service.supportsDataNeed(vhdDataNeed);
-
-        // Then
-        assertTrue(res);
-    }
-
-    @Test
-    void testSupportedDataNeed_returnsFalse() {
-        // Given
-        // When
-        var res = service.supportsDataNeed(aiidaDataNeed);
-
-        // Then
-        assertFalse(res);
-    }
-
-    @Test
-    void testCalculatePermissionStartAndEnd_ofAccountingPointDataNeed_returnsCorrect() {
-        // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        // When
-        var res = service.calculatePermissionStartAndEndDate(accountingPointDataNeed);
+        var res = service.calculate(aiidaDataNeed);
 
         // Then
         assertAll(
-                () -> assertEquals(now, res.key()),
-                () -> assertEquals(now, res.value())
+                () -> assertFalse(res.supportsDataNeed()),
+                () -> assertNull(res.energyDataTimeframe()),
+                () -> assertNull(res.permissionTimeframe()),
+                () -> assertNull(res.granularities())
         );
     }
 
     @Test
-    void testCalculatePermissionStartAndEnd_ofFutureDataNeed_returnsCorrect() {
+    void testCalculate_returnsCalculationOnNonEnergyDataNeed() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        when(vhdDataNeed.duration())
-                .thenReturn(duration);
-        when(duration.start())
-                .thenReturn(Optional.of(Period.ofDays(-100)));
-        when(duration.end())
-                .thenReturn(Optional.of(Period.ofDays(5)));
+        var timeframe = new Timeframe(now, now);
+
         // When
-        var res = service.calculatePermissionStartAndEndDate(vhdDataNeed);
+        var res = service.calculate(accountingPointDataNeed);
 
         // Then
         assertAll(
-                () -> assertEquals(now, res.key()),
-                () -> assertEquals(now.plusDays(5), res.value())
+                () -> assertTrue(res.supportsDataNeed()),
+                () -> assertNull(res.energyDataTimeframe()),
+                () -> assertEquals(timeframe, res.permissionTimeframe()),
+                () -> assertEquals(List.of(), res.granularities())
         );
     }
 
     @Test
-    void testCalculatePermissionStartAndEnd_ofHistoricDataNeed_returnsCorrect() {
-        // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        when(vhdDataNeed.duration())
-                .thenReturn(duration);
-        when(duration.start())
-                .thenReturn(Optional.of(Period.ofDays(-100)));
-        when(duration.end())
-                .thenReturn(Optional.of(Period.ofDays(-5)));
-        // When
-        var res = service.calculatePermissionStartAndEndDate(vhdDataNeed);
-
-        // Then
-        assertAll(
-                () -> assertEquals(now, res.key()),
-                () -> assertEquals(now, res.value())
-        );
-    }
-
-    @Test
-    void testCalculateEnergyStartAndEnd_ofHistoricDataNeed_returnsCorrect() {
-        // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        when(vhdDataNeed.duration())
-                .thenReturn(duration);
-        when(duration.start())
-                .thenReturn(Optional.of(Period.ofDays(-100)));
-        when(duration.end())
-                .thenReturn(Optional.of(Period.ofDays(-5)));
-        // When
-        var res = service.calculateEnergyDataStartAndEndDate(vhdDataNeed);
-
-        // Then
-        assertAll(
-                () -> assertNotNull(res),
-                () -> assertEquals(now.minusDays(100), res.key()),
-                () -> assertEquals(now.minusDays(5), res.value())
-        );
-    }
-
-    @Test
-    void testCalculateEnergyStartAndEnd_ofFutureDataNeed_returnsCorrect() {
-        // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        when(vhdDataNeed.duration())
-                .thenReturn(duration);
-        when(duration.start())
-                .thenReturn(Optional.of(Period.ofDays(5)));
-        when(duration.end())
-                .thenReturn(Optional.of(Period.ofDays(10)));
-        // When
-        var res = service.calculateEnergyDataStartAndEndDate(vhdDataNeed);
-
-        // Then
-        assertAll(
-                () -> assertNotNull(res),
-                () -> assertEquals(now.plusDays(5), res.key()),
-                () -> assertEquals(now.plusDays(10), res.value())
-        );
-    }
-
-    @Test
-    void testCalculateEnergyStartAndEnd_ofAccountPointDataNeed_returnsCorrect() {
+    void testCalculate_returnsNotSupported() {
         // Given
         // When
-        var res = service.calculateEnergyDataStartAndEndDate(accountingPointDataNeed);
+        var res = service.calculate(aiidaDataNeed);
 
         // Then
-        assertNull(res);
+        assertFalse(res.supportsDataNeed());
     }
 
     @Test

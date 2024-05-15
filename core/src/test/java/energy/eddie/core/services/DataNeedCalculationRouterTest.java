@@ -1,9 +1,9 @@
 package energy.eddie.core.services;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.utils.Pair;
-import energy.eddie.core.services.data.need.Timeframe;
+import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
@@ -61,74 +61,26 @@ class DataNeedCalculationRouterTest {
     }
 
     @Test
-    void testCalculate_returnsEmptyCalculationOnUnsupportedDataNeed() throws UnknownRegionConnectorException, DataNeedNotFoundException {
-        // Given
+    void testCalculate_returnsCalculation() throws UnknownRegionConnectorException, DataNeedNotFoundException {
+
         when(dataNeedsService.findById(any()))
                 .thenReturn(Optional.of(dataNeed));
-        when(service.supportsDataNeed(dataNeed))
-                .thenReturn(false);
-        // When
-        var res = router.calculateFor("at-eda", "dnid");
-
-        // Then
-        assertAll(
-                () -> assertFalse(res.supportsDataNeed()),
-                () -> assertNull(res.energyDataTimeframe()),
-                () -> assertNull(res.permissionTimeframe()),
-                () -> assertNull(res.granularities())
-        );
-    }
-
-    @Test
-    void testCalculate_returnsCalculationOnDataNeed() throws UnknownRegionConnectorException, DataNeedNotFoundException {
-        // Given
-        when(dataNeedsService.findById(any()))
-                .thenReturn(Optional.of(dataNeed));
-        when(service.supportsDataNeed(dataNeed))
-                .thenReturn(true);
-        when(service.supportedGranularities(dataNeed))
-                .thenReturn(List.of(Granularity.PT15M));
-        var now = LocalDate.now(ZoneOffset.UTC);
-        var timeframe = new Pair<>(now, now);
-        when(service.calculatePermissionStartAndEndDate(dataNeed))
-                .thenReturn(timeframe);
-        when(service.calculateEnergyDataStartAndEndDate(dataNeed))
-                .thenReturn(timeframe);
+        var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
+        when(service.calculate(dataNeed))
+                .thenReturn(new DataNeedCalculation(
+                        true,
+                        List.of(Granularity.PT15M),
+                        timeframe,
+                        timeframe
+                ));
         // When
         var res = router.calculateFor("at-eda", "dnid");
 
         // Then
         assertAll(
                 () -> assertTrue(res.supportsDataNeed()),
-                () -> assertEquals(new Timeframe(now, now), res.energyDataTimeframe()),
-                () -> assertEquals(new Timeframe(now, now), res.permissionTimeframe()),
-                () -> assertEquals(List.of(Granularity.PT15M), res.granularities())
-        );
-    }
-
-    @Test
-    void testCalculate_returnsCalculationOnNonEnergyDataNeed() throws UnknownRegionConnectorException, DataNeedNotFoundException {
-        // Given
-        when(dataNeedsService.findById(any()))
-                .thenReturn(Optional.of(dataNeed));
-        when(service.supportsDataNeed(dataNeed))
-                .thenReturn(true);
-        when(service.supportedGranularities(dataNeed))
-                .thenReturn(List.of(Granularity.PT15M));
-        var now = LocalDate.now(ZoneOffset.UTC);
-        var timeframe = new Pair<>(now, now);
-        when(service.calculatePermissionStartAndEndDate(dataNeed))
-                .thenReturn(timeframe);
-        when(service.calculateEnergyDataStartAndEndDate(dataNeed))
-                .thenReturn(null);
-        // When
-        var res = router.calculateFor("at-eda", "dnid");
-
-        // Then
-        assertAll(
-                () -> assertTrue(res.supportsDataNeed()),
-                () -> assertNull(res.energyDataTimeframe()),
-                () -> assertEquals(new Timeframe(now, now), res.permissionTimeframe()),
+                () -> assertEquals(timeframe, res.energyDataTimeframe()),
+                () -> assertEquals(timeframe, res.permissionTimeframe()),
                 () -> assertEquals(List.of(Granularity.PT15M), res.granularities())
         );
     }

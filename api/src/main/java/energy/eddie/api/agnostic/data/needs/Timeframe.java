@@ -1,4 +1,4 @@
-package energy.eddie.core.services.data.need;
+package energy.eddie.api.agnostic.data.needs;
 
 import java.time.LocalDate;
 

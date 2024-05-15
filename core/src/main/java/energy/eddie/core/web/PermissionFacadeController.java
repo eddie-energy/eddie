@@ -1,12 +1,12 @@
 package energy.eddie.core.web;
 
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.core.services.DataNeedCalculationRouter;
 import energy.eddie.core.services.HealthService;
 import energy.eddie.core.services.MetadataService;
 import energy.eddie.core.services.UnknownRegionConnectorException;
-import energy.eddie.core.services.data.need.DataNeedCalculation;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

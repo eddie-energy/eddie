@@ -1,4 +1,4 @@
-package energy.eddie.core.services.data.need;
+package energy.eddie.api.agnostic.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
 import jakarta.annotation.Nullable;

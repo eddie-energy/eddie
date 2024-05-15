@@ -34,6 +34,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -121,8 +122,8 @@ class AiidaPermissionServiceTest {
     @Test
     void givenValidInput_createValidateAndSendPermissionRequest_returnsAsExpected() throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         // Given
-        var start = LocalDate.parse("2023-01-01");
-        var end = LocalDate.parse("2023-01-25");
+        var start = LocalDate.now(ZoneOffset.UTC);
+        var end = start.plusDays(24);
         when(mockDataNeed.name()).thenReturn("Test Service");
         when(mockDataNeed.duration()).thenReturn(absoluteDuration);
         when(absoluteDuration.start()).thenReturn(start);
@@ -149,8 +150,8 @@ class AiidaPermissionServiceTest {
     void givenValidInput_createValidateAndSendPermissionRequest_commitsThreeEvents() throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         // Given
         var forCreation = new PermissionRequestForCreation(connectionId, dataNeedId);
-        var start = LocalDate.parse("2023-01-01");
-        var end = LocalDate.parse("2023-01-25");
+        var start = LocalDate.now(ZoneOffset.UTC);
+        var end = start.plusDays(24);
         when(mockDataNeed.duration()).thenReturn(absoluteDuration);
         when(absoluteDuration.start()).thenReturn(start);
         when(absoluteDuration.end()).thenReturn(end);

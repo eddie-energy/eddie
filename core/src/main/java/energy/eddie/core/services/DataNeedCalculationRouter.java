@@ -1,8 +1,7 @@
 package energy.eddie.core.services;
 
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.core.services.data.need.DataNeedCalculation;
-import energy.eddie.core.services.data.need.Timeframe;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -39,17 +38,6 @@ public class DataNeedCalculationRouter {
         }
         var dataNeed = dataNeedsService.findById(dataNeedId)
                                        .orElseThrow(() -> new DataNeedNotFoundException(dataNeedId));
-        if (!service.supportsDataNeed(dataNeed)) {
-            return new DataNeedCalculation(false);
-        }
-        var granularities = service.supportedGranularities(dataNeed);
-        var permissionStartEnd = service.calculatePermissionStartAndEndDate(dataNeed);
-        var energyDataStartEnd = service.calculateEnergyDataStartAndEndDate(dataNeed);
-        return new DataNeedCalculation(
-                true,
-                granularities,
-                new Timeframe(permissionStartEnd.key(), permissionStartEnd.value()),
-                energyDataStartEnd == null ? null : new Timeframe(energyDataStartEnd.key(), energyDataStartEnd.value())
-        );
+        return service.calculate(dataNeed);
     }
 }

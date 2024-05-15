@@ -9,6 +9,7 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.PermissionRequestForCreation;
@@ -95,9 +96,16 @@ public class PermissionRequestService {
                                                    UNSUPPORTED_GRANULARITY_MESSAGE);
         }
 
-        var timeframe = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed, now.toLocalDate(),
+        DataNeedWrapper timeframe;
+        try {
+            timeframe = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed, now.toLocalDate(),
                                                                              MAX_PERIOD_IN_PAST,
                                                                              MAX_PERIOD_IN_FUTURE);
+        } catch (UnsupportedDataNeedException e) {
+            outbox.commit(new NlMalformedEvent(permissionId,
+                                               List.of(new AttributeError(DATA_NEED_ID, e.getMessage()))));
+            throw e;
+        }
         OAuthRequestPayload oauthRequest = oAuthManager.createAuthorizationUrl(
                 permissionRequest.verificationCode());
         outbox.commit(new NlValidatedEvent(permissionId,
