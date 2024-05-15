@@ -27,6 +27,14 @@ public class StatusMessage {
         this.status = status;
     }
 
+    @SuppressWarnings("NullAway") // Hibernate requires a no-arg constructor
+    public StatusMessage() {
+        this.id = null;
+        this.permissionId = null;
+        this.timestamps = null;
+        this.status = null;
+    }
+
     public Long getId() {
         return id;
     }
