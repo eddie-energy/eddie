@@ -23,7 +23,7 @@ class CCMORequestTest {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
+        AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007");
         ZonedDateTime dt = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
         CCMORequest ccmoRequest = new CCMORequest(
                 dsoIdAndMeteringPoint,
@@ -50,7 +50,7 @@ class CCMORequestTest {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
+        AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007");
         ZonedDateTime dt = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
         CCMORequest ccmoRequest = new CCMORequest(
                 dsoIdAndMeteringPoint,

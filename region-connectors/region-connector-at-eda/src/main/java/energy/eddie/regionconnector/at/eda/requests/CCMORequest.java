@@ -45,8 +45,4 @@ public record CCMORequest(
     public String eligiblePartyId() {
         return configuration.eligiblePartyId();
     }
-
-    public Optional<String> conversationIdPrefix() {
-        return configuration.conversationIdPrefix();
-    }
 }

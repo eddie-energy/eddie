@@ -46,7 +46,6 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.C
 import energy.eddie.regionconnector.shared.services.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
-import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
@@ -63,7 +62,6 @@ import java.io.IOException;
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.*;
-import static energy.eddie.regionconnector.at.eda.config.AtConfiguration.CONVERSATION_ID_PREFIX;
 import static energy.eddie.regionconnector.at.eda.config.AtConfiguration.ELIGIBLE_PARTY_ID_KEY;
 import static energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration.*;
 
@@ -89,10 +87,9 @@ public class AtEdaBeanConfig {
 
     @Bean
     public AtConfiguration atConfiguration(
-            @Value("${" + ELIGIBLE_PARTY_ID_KEY + "}") String eligiblePartyId,
-            @Value("${" + CONVERSATION_ID_PREFIX + ":#{null}}") @Nullable String conversationIdPrefix
+            @Value("${" + ELIGIBLE_PARTY_ID_KEY + "}") String eligiblePartyId
     ) {
-        return new PlainAtConfiguration(eligiblePartyId, conversationIdPrefix);
+        return new PlainAtConfiguration(eligiblePartyId);
     }
 
     @Bean

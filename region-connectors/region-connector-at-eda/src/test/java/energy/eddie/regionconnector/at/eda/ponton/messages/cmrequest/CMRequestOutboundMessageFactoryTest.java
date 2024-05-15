@@ -40,7 +40,7 @@ public abstract class CMRequestOutboundMessageFactoryTest {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007", null);
+        AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007");
         var request = new CCMORequest(dsoIdAndMeteringPoint,
                                       timeFrame,
                                       RequestDataType.METERING_DATA,
