@@ -16,7 +16,7 @@ import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.List;
 
 public class DataNeedCalculationServiceImpl implements DataNeedCalculationService<DataNeed> {
@@ -25,19 +25,22 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
     private final Period latestEnd;
     private final RegionConnectorMetadata regionConnectorMetadata;
     private final GranularityChoice granularityChoice;
+    private final ZoneId referenceTimezone;
 
     public DataNeedCalculationServiceImpl(
             List<Granularity> granularities,
             List<Class<? extends DataNeed>> supportedDataNeeds,
             Period earliestStart,
             Period latestEnd,
-            RegionConnectorMetadata regionConnectorMetadata
+            RegionConnectorMetadata regionConnectorMetadata,
+            ZoneId referenceTimezone
     ) {
         this.supportedDataNeeds = supportedDataNeeds;
         this.earliestStart = earliestStart;
         this.latestEnd = latestEnd;
         this.regionConnectorMetadata = regionConnectorMetadata;
         this.granularityChoice = new GranularityChoice(granularities);
+        this.referenceTimezone = referenceTimezone;
     }
 
     @Override
@@ -104,20 +107,22 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
             return null;
         }
         DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(timeframedDataNeed,
-                                                                                       LocalDate.now(ZoneOffset.UTC),
+                                                                                       LocalDate.now(referenceTimezone),
                                                                                        earliestStart,
                                                                                        latestEnd);
         return new Timeframe(wrapper.calculatedStart(), wrapper.calculatedEnd());
     }
 
     /**
-     * Currently, only supports the start and end date for a permission specific for Austria.
+     * Calculates that timeframe of the permission that is needed to request all energy data in its timeframe. For
+     * example, past energy data can be request in one day, but future energy data needs permission to request it until
+     * the end of the energy data timeframe.
      *
      * @param energyDataTimeframe the energy data timeframe that is the basis of the calculation
      * @return the start and end date of the permission
      */
     private Timeframe calculatePermissionStartAndEndDate(@Nullable Timeframe energyDataTimeframe) {
-        var now = LocalDate.now(ZoneOffset.UTC);
+        var now = LocalDate.now(referenceTimezone);
         if (energyDataTimeframe != null && energyDataTimeframe.end().isAfter(now)) {
             return new Timeframe(now, energyDataTimeframe.end());
         }

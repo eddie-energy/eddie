@@ -16,6 +16,10 @@ public class DkMalformedEvent extends PersistablePermissionEvent {
     @Column(name = "errors", columnDefinition = "text")
     private final List<AttributeError> errors;
 
+    public DkMalformedEvent(String permissionId, AttributeError error) {
+        this(permissionId, List.of(error));
+    }
+
     public DkMalformedEvent(String permissionId, List<AttributeError> errors) {
         super(permissionId, PermissionProcessStatus.MALFORMED);
         this.errors = errors;
