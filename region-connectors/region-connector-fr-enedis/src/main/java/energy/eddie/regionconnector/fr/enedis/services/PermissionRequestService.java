@@ -7,6 +7,7 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
@@ -31,6 +32,7 @@ import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetada
 
 @Service
 public class PermissionRequestService {
+    private static final String DATA_NEED_ID = "dataNeedId";
     private final FrPermissionRequestRepository repository;
     private final EnedisConfiguration configuration;
     private final DataNeedsService dataNeedsService;
@@ -61,24 +63,31 @@ public class PermissionRequestService {
                                          permissionRequestForCreation.dataNeedId()));
         if (!(dataNeed instanceof ValidatedHistoricalDataDataNeed vhdDataNeed)) {
             outbox.commit(new FrMalformedEvent(permissionId,
-                                               List.of(new AttributeError("dataNeedId", "Unsupported data need"))));
+                                               List.of(new AttributeError(DATA_NEED_ID, "Unsupported data need"))));
             throw new UnsupportedDataNeedException(EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                    permissionRequestForCreation.dataNeedId(),
                                                    "This region connector only supports validated historical data data needs.");
         }
 
-        var wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(
-                vhdDataNeed,
-                referenceDate,
-                PERIOD_EARLIEST_START,
-                PERIOD_LATEST_END
-        );
+        DataNeedWrapper wrapper;
+        try {
+            wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(
+                    vhdDataNeed,
+                    referenceDate,
+                    PERIOD_EARLIEST_START,
+                    PERIOD_LATEST_END
+            );
+        } catch (UnsupportedDataNeedException e) {
+            outbox.commit(new FrMalformedEvent(permissionId,
+                                               List.of(new AttributeError(DATA_NEED_ID, e.getMessage()))));
+            throw e;
+        }
 
         var granularity = switch (vhdDataNeed.minGranularity()) {
             case PT30M, P1D -> vhdDataNeed.minGranularity();
             default -> {
                 outbox.commit(new FrMalformedEvent(permissionId,
-                                                   List.of(new AttributeError("dataNeedId",
+                                                   List.of(new AttributeError(DATA_NEED_ID,
                                                                               "Unsupported granularity"))));
                 throw new UnsupportedDataNeedException(EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                        permissionRequestForCreation.dataNeedId(),

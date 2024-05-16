@@ -123,6 +123,21 @@ class PermissionRequestCreationAndValidationServiceTest {
         when(vhdDataNeed.minGranularity()).thenReturn(Granularity.PT5M);
         when(vhdDataNeed.maxGranularity()).thenReturn(Granularity.PT5M);
         when(vhdDataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(LocalDate.now(AT_ZONE_ID).minusDays(5));
+        when(absoluteDuration.end()).thenReturn(LocalDate.now(AT_ZONE_ID).minusDays(1));
+        PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
+                                                                           "dnid", "AT000000");
+
+        // When, Then
+        assertThrows(UnsupportedDataNeedException.class, () -> creationService.createAndValidatePermissionRequest(pr));
+    }
+
+    @Test
+    void givenInvalidStart_createAndValidatePermissionRequest_throwsException() {
+        // Given
+        when(mockService.findById(any())).thenReturn(Optional.of(vhdDataNeed));
+        when(vhdDataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(LocalDate.now(AT_ZONE_ID).minusYears(5));
         PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
                                                                            "dnid", "AT000000");
 

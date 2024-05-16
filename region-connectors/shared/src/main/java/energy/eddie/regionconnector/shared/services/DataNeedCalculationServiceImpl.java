@@ -1,12 +1,15 @@
 package energy.eddie.regionconnector.shared.services;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.utils.Pair;
+import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.shared.validation.GranularityChoice;
 import jakarta.annotation.Nullable;
@@ -38,7 +41,33 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
     }
 
     @Override
-    public boolean supportsDataNeed(DataNeed dataNeed) {
+    public DataNeedCalculation calculate(DataNeed dataNeed) {
+        if (!supportsDataNeedType(dataNeed)) {
+            return new DataNeedCalculation(false);
+        }
+        var supportedGranularities = supportedGranularities(dataNeed);
+        Timeframe energyStartAndEndDate;
+        try {
+            energyStartAndEndDate = calculateEnergyDataStartAndEndDateOrThrow(dataNeed);
+        } catch (UnsupportedDataNeedException e) {
+            return new DataNeedCalculation(false);
+        }
+        var permissionStartAndEndDate = calculatePermissionStartAndEndDate(energyStartAndEndDate);
+        return new DataNeedCalculation(
+                true,
+                supportedGranularities,
+                permissionStartAndEndDate,
+                energyStartAndEndDate
+        );
+    }
+
+    /**
+     * Determines if the region-connector supports this data need type.
+     *
+     * @param dataNeed the data need, which should be checked
+     * @return if the data need is supported
+     */
+    private boolean supportsDataNeedType(DataNeed dataNeed) {
         for (Class<? extends DataNeed> supportedDataNeed : supportedDataNeeds) {
             if (supportedDataNeed.isInstance(dataNeed)) {
                 return true;
@@ -47,8 +76,14 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         return false;
     }
 
-    @Override
-    public List<Granularity> supportedGranularities(DataNeed dataNeed) {
+    /**
+     * Calculates a list of supported granularities based on a data need. If the data need is not a timeframed data
+     * need, an empty list is returned.
+     *
+     * @param dataNeed the data need
+     * @return a list of supported granularities, which can be empty if the data need is not a timeframed data need.
+     */
+    private List<Granularity> supportedGranularities(DataNeed dataNeed) {
         if (!(dataNeed instanceof ValidatedHistoricalDataDataNeed vhdDN)) {
             return List.of();
         }
@@ -56,32 +91,37 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
     }
 
     /**
-     * Currently, only supports the start and end date for a permission specific for Austria.
+     * Calculates the start and end date of the energy data, if the data need requires energy data. Otherwise, it
+     * returns null.
      *
-     * @param dataNeed the data need, which should be used for the calculations
-     * @return the start and end date of the permission
+     * @param dataNeed the data need
+     * @return start and end date of the energy data.
+     * @throws UnsupportedDataNeedException if the data need is not meant for energy data
      */
-    @Override
-    public Pair<LocalDate, LocalDate> calculatePermissionStartAndEndDate(DataNeed dataNeed) {
-        var now = LocalDate.now(ZoneOffset.UTC);
-        var res = calculateEnergyDataStartAndEndDate(dataNeed);
-        if (res != null && res.value().isAfter(now)) {
-            return new Pair<>(now, res.value());
-        }
-        return new Pair<>(now, now);
-    }
-
-    @Override
     @Nullable
-    public Pair<LocalDate, LocalDate> calculateEnergyDataStartAndEndDate(DataNeed dataNeed) {
+    private Timeframe calculateEnergyDataStartAndEndDateOrThrow(DataNeed dataNeed) throws UnsupportedDataNeedException {
         if (!(dataNeed instanceof TimeframedDataNeed timeframedDataNeed)) {
             return null;
         }
-        var wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(timeframedDataNeed,
-                                                                           LocalDate.now(ZoneOffset.UTC),
-                                                                           earliestStart,
-                                                                           latestEnd);
-        return new Pair<>(wrapper.calculatedStart(), wrapper.calculatedEnd());
+        DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(timeframedDataNeed,
+                                                                                       LocalDate.now(ZoneOffset.UTC),
+                                                                                       earliestStart,
+                                                                                       latestEnd);
+        return new Timeframe(wrapper.calculatedStart(), wrapper.calculatedEnd());
+    }
+
+    /**
+     * Currently, only supports the start and end date for a permission specific for Austria.
+     *
+     * @param energyDataTimeframe the energy data timeframe that is the basis of the calculation
+     * @return the start and end date of the permission
+     */
+    private Timeframe calculatePermissionStartAndEndDate(@Nullable Timeframe energyDataTimeframe) {
+        var now = LocalDate.now(ZoneOffset.UTC);
+        if (energyDataTimeframe != null && energyDataTimeframe.end().isAfter(now)) {
+            return new Timeframe(now, energyDataTimeframe.end());
+        }
+        return new Timeframe(now, now);
     }
 
     @Override

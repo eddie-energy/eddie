@@ -95,7 +95,7 @@ public class AiidaPermissionService {
                 today,
                 // in case of open end/start, fixed values are used
                 Period.ZERO,
-                Period.ZERO
+                Period.ofYears(9999)
         );
 
 

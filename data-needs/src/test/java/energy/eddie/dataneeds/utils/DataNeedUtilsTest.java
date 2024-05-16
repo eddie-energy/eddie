@@ -3,6 +3,7 @@ package energy.eddie.dataneeds.utils;
 import energy.eddie.dataneeds.duration.AbsoluteDuration;
 import energy.eddie.dataneeds.duration.CalendarUnit;
 import energy.eddie.dataneeds.duration.RelativeDuration;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +15,7 @@ import java.time.Period;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,14 +35,17 @@ class DataNeedUtilsTest {
     private RelativeDuration relativeDuration;
 
     @Test
-    void givenAbsoluteDuration_returnsAbsoluteDates() {
+    void givenAbsoluteDuration_returnsAbsoluteDates() throws UnsupportedDataNeedException {
         // Given
         when(dataNeed.duration()).thenReturn(absoluteDuration);
         when(absoluteDuration.start()).thenReturn(start);
         when(absoluteDuration.end()).thenReturn(end);
 
         // When
-        DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed, null, null, null);
+        DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
+                                                                                       referenceDate,
+                                                                                       earliestStart,
+                                                                                       latestEnd);
 
         // Then
         assertEquals(start, wrapper.calculatedStart());
@@ -48,7 +53,38 @@ class DataNeedUtilsTest {
     }
 
     @Test
-    void givenOpenStart_returnsOpenStartDate() {
+    void givenAbsoluteDurationWithTooEarlyStart_throws() {
+        // Given
+        when(dataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(start);
+
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class, () ->
+                TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
+                                                                     referenceDate,
+                                                                     Period.ofDays(1),
+                                                                     latestEnd));
+    }
+
+    @Test
+    void givenAbsoluteDurationWithTooLateEnd_throws() {
+        // Given
+        when(dataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(start);
+        when(absoluteDuration.end()).thenReturn(end);
+
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class, () ->
+                TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
+                                                                     referenceDate,
+                                                                     earliestStart,
+                                                                     Period.ofDays(1)));
+    }
+
+    @Test
+    void givenOpenStart_returnsOpenStartDate() throws UnsupportedDataNeedException {
         // Given
         when(dataNeed.duration()).thenReturn(relativeDuration);
         when(relativeDuration.start()).thenReturn(Optional.empty());
@@ -66,7 +102,7 @@ class DataNeedUtilsTest {
     }
 
     @Test
-    void givenOpenEnd_returnsOpenEndDate() {
+    void givenOpenEnd_returnsOpenEndDate() throws UnsupportedDataNeedException {
         // Given
         when(dataNeed.duration()).thenReturn(relativeDuration);
         when(relativeDuration.start()).thenReturn(Optional.of(desiredRelativeStart));
@@ -84,7 +120,7 @@ class DataNeedUtilsTest {
     }
 
     @Test
-    void givenOpenStartAndEnd_returnsOpenStartAndEndDate() {
+    void givenOpenStartAndEnd_returnsOpenStartAndEndDate() throws UnsupportedDataNeedException {
         // Given
         when(dataNeed.duration()).thenReturn(relativeDuration);
         when(relativeDuration.start()).thenReturn(Optional.empty());
@@ -102,7 +138,7 @@ class DataNeedUtilsTest {
     }
 
     @Test
-    void givenOpenEndAndStickyStartWeek_returnsAsExpected() {
+    void givenOpenEndAndStickyStartWeek_returnsAsExpected() throws UnsupportedDataNeedException {
         // Given
         when(dataNeed.duration()).thenReturn(relativeDuration);
         when(relativeDuration.start()).thenReturn(Optional.of(desiredRelativeStart));
@@ -121,7 +157,7 @@ class DataNeedUtilsTest {
     }
 
     @Test
-    void givenEndAndStickyStartMonth_returnsAsExpected() {
+    void givenEndAndStickyStartMonth_returnsAsExpected() throws UnsupportedDataNeedException {
         // Given
         var otherDesiredRelativeStart = Period.parse("-P15D");
         when(dataNeed.duration()).thenReturn(relativeDuration);
@@ -141,7 +177,43 @@ class DataNeedUtilsTest {
     }
 
     @Test
-    void givenEndAndStickyStartYear_returnsAsExpected() {
+    void givenEndAndTooEarlyStart_throws() {
+        // Given
+        var otherDesiredRelativeStart = Period.parse("-P15D");
+        when(dataNeed.duration()).thenReturn(relativeDuration);
+        when(relativeDuration.start()).thenReturn(Optional.of(otherDesiredRelativeStart));
+        when(relativeDuration.end()).thenReturn(Optional.of(desiredRelativeEnd));
+        when(relativeDuration.stickyStartCalendarUnit()).thenReturn(Optional.of(CalendarUnit.MONTH));
+
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
+                                                                                referenceDate,
+                                                                                Period.ofDays(1),
+                                                                                latestEnd));
+    }
+
+    @Test
+    void givenTooLateEndAndStart_throws() {
+        // Given
+        var otherDesiredRelativeStart = Period.parse("-P15D");
+        when(dataNeed.duration()).thenReturn(relativeDuration);
+        when(relativeDuration.start()).thenReturn(Optional.of(otherDesiredRelativeStart));
+        when(relativeDuration.end()).thenReturn(Optional.of(desiredRelativeEnd));
+        when(relativeDuration.stickyStartCalendarUnit()).thenReturn(Optional.of(CalendarUnit.MONTH));
+
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed,
+                                                                                referenceDate,
+                                                                                earliestStart,
+                                                                                Period.ofDays(1)));
+    }
+
+    @Test
+    void givenEndAndStickyStartYear_returnsAsExpected() throws UnsupportedDataNeedException {
         // Given
         var otherDesiredRelativeStart = Period.parse("-P15D");
         when(dataNeed.duration()).thenReturn(relativeDuration);

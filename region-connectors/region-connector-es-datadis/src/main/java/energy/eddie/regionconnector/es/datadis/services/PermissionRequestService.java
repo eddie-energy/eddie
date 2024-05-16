@@ -8,6 +8,7 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
@@ -149,12 +150,18 @@ public class PermissionRequestService {
                                                    "This region connector only supports ValidatedHistoricalData DataNeeds");
         }
 
-        var dataNeedWrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(
-                vhdDataNeed,
-                refDate,
-                MAX_TIME_IN_THE_PAST,
-                MAX_TIME_IN_THE_FUTURE
-        );
+        DataNeedWrapper dataNeedWrapper;
+        try {
+            dataNeedWrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(
+                    vhdDataNeed,
+                    refDate,
+                    MAX_TIME_IN_THE_PAST,
+                    MAX_TIME_IN_THE_FUTURE
+            );
+        } catch (UnsupportedDataNeedException e) {
+            outbox.commit(new EsMalformedEvent(permissionId, List.of(new AttributeError(dataNeedId, e.getMessage()))));
+            throw e;
+        }
         var allowedMeasurementType = allowedMeasurementType(vhdDataNeed.minGranularity(), vhdDataNeed.maxGranularity());
         if (allowedMeasurementType.isEmpty()) {
             outbox.commit(new EsMalformedEvent(

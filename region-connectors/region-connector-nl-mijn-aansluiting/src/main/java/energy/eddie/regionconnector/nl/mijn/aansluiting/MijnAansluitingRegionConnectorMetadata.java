@@ -12,8 +12,8 @@ import java.util.SequencedCollection;
 
 public class MijnAansluitingRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "nl-mijn-aansluiting";
-    public static final Period MAX_PERIOD_IN_PAST = Period.ofYears(2);
-    public static final Period MAX_PERIOD_IN_FUTURE = Period.ofYears(Integer.MAX_VALUE);
+    public static final Period MAX_PERIOD_IN_PAST = Period.ofYears(-2);
+    public static final Period MAX_PERIOD_IN_FUTURE = Period.ofYears(9999);
     public static final SequencedCollection<Granularity> SUPPORTED_GRANULARITIES = List.of(Granularity.P1D);
     public static final SequencedCollection<EnergyType> SUPPORTED_ENERGY_TYPES = List.of(EnergyType.NATURAL_GAS,
                                                                                          EnergyType.ELECTRICITY);

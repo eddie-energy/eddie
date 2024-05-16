@@ -18,7 +18,6 @@ import energy.eddie.regionconnector.aiida.services.AiidaPermissionService;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -58,18 +57,18 @@ class PermissionRequestControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private AiidaPermissionService mockService;
+    @SuppressWarnings("unused")
     @MockBean
     private AiidaPermissionEventRepository mockRepository;
+    @SuppressWarnings("unused")
     @MockBean
     private AiidaPermissionRequestViewRepository mockViewRepository;
+    @SuppressWarnings("unused")
     @MockBean
     private DataNeedsService unusedDataNeedsService;
+    @SuppressWarnings("unused")
     @MockBean
     private MqttService unusedMqttService;
-    @Mock
-    private AiidaPermissionRequest mockRequest;
-    @Mock
-    private AiidaDataNeed mockAiidaDataNeed;
 
     @TestConfiguration
     static class ControllerTestConfiguration {
@@ -251,8 +250,6 @@ class PermissionRequestControllerTest {
     void getPermissionDetails_returnsAsExpected() throws Exception {
         // Given
         var permissionId = "someTestId";
-        when(mockRequest.permissionId()).thenReturn(permissionId);
-        when(mockAiidaDataNeed.name()).thenReturn("Some Name");
         when(mockService.detailsForPermission(permissionId)).thenReturn(
                 new PermissionDetailsDto(createDummyRequest(), new DummyAiidaDataNeed()));
 

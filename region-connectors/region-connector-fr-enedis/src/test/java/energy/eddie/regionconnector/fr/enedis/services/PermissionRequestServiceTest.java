@@ -6,6 +6,7 @@ import energy.eddie.dataneeds.duration.AbsoluteDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrAcceptedEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
@@ -46,12 +47,15 @@ class PermissionRequestServiceTest {
     private PermissionRequestService permissionRequestService;
     @MockBean
     private FrPermissionRequestRepository repository;
+    @SuppressWarnings("unused")
     @MockBean
     private HistoricalDataService historicalDataService;
     @MockBean
     private DataNeedsService dataNeedsService;
     @Mock
     private ValidatedHistoricalDataDataNeed mockVhdDataNeed;
+    @Mock
+    private AiidaDataNeed unsupportedDataNeed;
     @Mock
     private AbsoluteDuration absoluteDuration;
     @MockBean
@@ -71,6 +75,35 @@ class PermissionRequestServiceTest {
         permissionRequestService.createPermissionRequest(request);
 
         // Then
+        verify(outbox, times(2)).commit(any());
+    }
+
+    @Test
+    void testCreatePermissionRequest_emitsMalformedOnInvalidDataNeed() {
+        // Given
+        var request = new PermissionRequestForCreation("cid", "dnid");
+        when(dataNeedsService.findById("dnid")).thenReturn(Optional.of(unsupportedDataNeed));
+
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> permissionRequestService.createPermissionRequest(request));
+        verify(outbox, times(2)).commit(any());
+    }
+
+    @Test
+    void testCreatePermissionRequest_emitsMalformedOnInvalidTimeframe() {
+        // Given
+        var request = new PermissionRequestForCreation("cid", "dnid");
+        when(dataNeedsService.findById("dnid")).thenReturn(Optional.of(mockVhdDataNeed));
+        when(mockVhdDataNeed.duration()).thenReturn(absoluteDuration);
+        when(absoluteDuration.start()).thenReturn(LocalDate.now(ZONE_ID_FR));
+        when(absoluteDuration.end()).thenReturn(LocalDate.now(ZONE_ID_FR).plusYears(1000));
+
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> permissionRequestService.createPermissionRequest(request));
         verify(outbox, times(2)).commit(any());
     }
 
