@@ -264,7 +264,8 @@ public class AtEdaBeanConfig {
                 SUPPORTED_DATA_NEEDS,
                 PERIOD_EARLIEST_START,
                 PERIOD_LATEST_END,
-                EdaRegionConnectorMetadata.getInstance()
+                EdaRegionConnectorMetadata.getInstance(),
+                AT_ZONE_ID
         );
     }
 }

@@ -1,9 +1,12 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.dataneeds.duration.RelativeDuration;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -21,8 +24,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,7 +45,7 @@ class PermissionCreationServiceTest {
     @Mock
     private ValidatedHistoricalDataDataNeed vhdDataNeed;
     @Mock
-    private RelativeDuration dataNeedDuration;
+    private DataNeedCalculationService<DataNeed> calculationService;
     @InjectMocks
     private PermissionCreationService service;
     @Captor
@@ -76,6 +79,8 @@ class PermissionCreationServiceTest {
                                                        "dnid");
         when(dataNeedsService.findById(any()))
                 .thenReturn(Optional.of(aiidaDataNeed));
+        when(calculationService.calculate(aiidaDataNeed))
+                .thenReturn(new DataNeedCalculation(false));
 
         // When
         // Then
@@ -93,16 +98,15 @@ class PermissionCreationServiceTest {
                                                        "dnid");
         when(dataNeedsService.findById(any()))
                 .thenReturn(Optional.of(vhdDataNeed));
-        when(vhdDataNeed.duration())
-                .thenReturn(dataNeedDuration);
-        when(dataNeedDuration.end())
-                .thenReturn(Optional.of(Period.ofYears(1000)));
+        when(calculationService.calculate(vhdDataNeed))
+                .thenReturn(new DataNeedCalculation(false));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class, () -> service.createPermissionRequest(request));
         verify(outbox).commit(isA(DkCreatedEvent.class));
         verify(outbox).commit(isA(DkMalformedEvent.class));
     }
+
     @Test
     void testCreatePermissionRequest_emitsMalformedOnUnsupportedGranularity() {
         // Given
@@ -110,13 +114,12 @@ class PermissionCreationServiceTest {
                                                        "refreshToken",
                                                        "meteringPointId",
                                                        "dnid");
-        when(vhdDataNeed.duration())
-                .thenReturn(dataNeedDuration);
         when(dataNeedsService.findById(any()))
                 .thenReturn(Optional.of(vhdDataNeed));
 
-        when(vhdDataNeed.minGranularity()).thenReturn(Granularity.PT5M);
-        when(vhdDataNeed.maxGranularity()).thenReturn(Granularity.PT5M);
+        var now = LocalDate.now(ZoneOffset.UTC);
+        when(calculationService.calculate(vhdDataNeed))
+                .thenReturn(new DataNeedCalculation(true, List.of(), null, new Timeframe(now, now)));
 
         // When
         // Then
@@ -133,13 +136,14 @@ class PermissionCreationServiceTest {
                                                        "meteringPointId",
                                                        "dnid");
         var now = LocalDate.now(ZoneOffset.UTC);
-        when(vhdDataNeed.duration())
-                .thenReturn(dataNeedDuration);
         when(dataNeedsService.findById(any()))
                 .thenReturn(Optional.of(vhdDataNeed));
 
-        when(vhdDataNeed.minGranularity()).thenReturn(Granularity.PT15M);
-        when(vhdDataNeed.maxGranularity()).thenReturn(Granularity.P1D);
+        when(calculationService.calculate(vhdDataNeed))
+                .thenReturn(new DataNeedCalculation(true,
+                                                    List.of(Granularity.PT15M),
+                                                    null,
+                                                    new Timeframe(now.minusYears(2), now.plusYears(2))));
 
         // When
         service.createPermissionRequest(request);

@@ -43,7 +43,8 @@ class DataNeedCalculationServiceImplTest {
                 List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
                 Period.ofDays(-10),
                 Period.ofDays(10),
-                regionConnectorMetadata
+                regionConnectorMetadata,
+                ZoneOffset.UTC
         );
     }
 

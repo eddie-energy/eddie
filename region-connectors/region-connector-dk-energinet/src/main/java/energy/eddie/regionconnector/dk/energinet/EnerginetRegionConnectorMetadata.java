@@ -2,6 +2,8 @@ package energy.eddie.regionconnector.dk.energinet;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 
 import javax.annotation.Nullable;
 import java.time.Period;
@@ -18,6 +20,10 @@ public class EnerginetRegionConnectorMetadata implements RegionConnectorMetadata
                                                                             Granularity.P1D,
                                                                             Granularity.P1M,
                                                                             Granularity.P1Y);
+    public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(
+            ValidatedHistoricalDataDataNeed.class
+    );
+
     @Nullable
     private static EnerginetRegionConnectorMetadata instance = null;
 
