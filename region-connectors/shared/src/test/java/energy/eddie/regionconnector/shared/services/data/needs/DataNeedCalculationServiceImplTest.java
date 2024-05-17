@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.shared.services;
+package energy.eddie.regionconnector.shared.services.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.Timeframe;

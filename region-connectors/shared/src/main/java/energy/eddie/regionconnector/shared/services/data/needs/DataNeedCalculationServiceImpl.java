@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.shared.services;
+package energy.eddie.regionconnector.shared.services.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
@@ -11,6 +11,8 @@ import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
+import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
+import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionTimeframeStrategy;
 import energy.eddie.regionconnector.shared.validation.GranularityChoice;
 import jakarta.annotation.Nullable;
 
@@ -26,6 +28,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
     private final RegionConnectorMetadata regionConnectorMetadata;
     private final GranularityChoice granularityChoice;
     private final ZoneId referenceTimezone;
+    private final PermissionTimeframeStrategy strategy;
 
     public DataNeedCalculationServiceImpl(
             List<Granularity> granularities,
@@ -35,12 +38,33 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
             RegionConnectorMetadata regionConnectorMetadata,
             ZoneId referenceTimezone
     ) {
+        this(
+                granularities,
+                supportedDataNeeds,
+                earliestStart,
+                latestEnd,
+                regionConnectorMetadata,
+                referenceTimezone,
+                new PermissionEndIsEnergyDataEndStrategy(referenceTimezone)
+        );
+    }
+
+    public DataNeedCalculationServiceImpl(
+            List<Granularity> granularities,
+            List<Class<? extends DataNeed>> supportedDataNeeds,
+            Period earliestStart,
+            Period latestEnd,
+            RegionConnectorMetadata regionConnectorMetadata,
+            ZoneId referenceTimezone,
+            PermissionTimeframeStrategy strategy
+    ) {
         this.supportedDataNeeds = supportedDataNeeds;
         this.earliestStart = earliestStart;
         this.latestEnd = latestEnd;
         this.regionConnectorMetadata = regionConnectorMetadata;
         this.granularityChoice = new GranularityChoice(granularities);
         this.referenceTimezone = referenceTimezone;
+        this.strategy = strategy;
     }
 
     @Override
@@ -55,7 +79,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         } catch (UnsupportedDataNeedException e) {
             return new DataNeedCalculation(false);
         }
-        var permissionStartAndEndDate = calculatePermissionStartAndEndDate(energyStartAndEndDate);
+        var permissionStartAndEndDate = strategy.permissionTimeframe(energyStartAndEndDate);
         return new DataNeedCalculation(
                 true,
                 supportedGranularities,
@@ -111,22 +135,6 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
                                                                                        earliestStart,
                                                                                        latestEnd);
         return new Timeframe(wrapper.calculatedStart(), wrapper.calculatedEnd());
-    }
-
-    /**
-     * Calculates that timeframe of the permission that is needed to request all energy data in its timeframe. For
-     * example, past energy data can be request in one day, but future energy data needs permission to request it until
-     * the end of the energy data timeframe.
-     *
-     * @param energyDataTimeframe the energy data timeframe that is the basis of the calculation
-     * @return the start and end date of the permission
-     */
-    private Timeframe calculatePermissionStartAndEndDate(@Nullable Timeframe energyDataTimeframe) {
-        var now = LocalDate.now(referenceTimezone);
-        if (energyDataTimeframe != null && energyDataTimeframe.end().isAfter(now)) {
-            return new Timeframe(now, energyDataTimeframe.end());
-        }
-        return new Timeframe(now, now);
     }
 
     @Override

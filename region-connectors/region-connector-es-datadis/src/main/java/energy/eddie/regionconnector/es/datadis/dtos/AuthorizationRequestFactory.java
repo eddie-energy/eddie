@@ -1,6 +1,9 @@
 package energy.eddie.regionconnector.es.datadis.dtos;
 
+import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.regionconnector.es.datadis.data.needs.calculation.strategies.DatadisStrategy;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
+import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionTimeframeStrategy;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -11,13 +14,14 @@ import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMeta
 
 @Component
 public class AuthorizationRequestFactory {
+    private final PermissionTimeframeStrategy strategy = new DatadisStrategy();
     public AuthorizationRequest fromPermissionRequest(EsPermissionRequest permissionRequest) {
         return from(permissionRequest.nif(), permissionRequest.meteringPointId(), permissionRequest.end());
     }
 
     public AuthorizationRequest from(String nif, String meteringPointId, LocalDate end) {
         LocalDate permissionStart = LocalDate.now(ZONE_ID_SPAIN);
-        LocalDate permissionEnd = calculatePermissionEnd(permissionStart, end);
+        LocalDate permissionEnd = strategy.permissionTimeframe(new Timeframe(permissionStart, end)).end();
 
         return new AuthorizationRequest(
                 permissionStart,
@@ -25,13 +29,5 @@ public class AuthorizationRequestFactory {
                 nif,
                 List.of(meteringPointId)
         );
-    }
-
-    private LocalDate calculatePermissionEnd(LocalDate permissionStart, LocalDate permissionRequestEnd) {
-        if (!permissionStart.isBefore(permissionRequestEnd)) {
-            return permissionStart.plusDays(1); // if all the data is in the past we only need access for 1 day
-        }
-
-        return permissionRequestEnd.plusDays(1); // Datadis requires end + 1 in order to get the data for the last day
     }
 }
