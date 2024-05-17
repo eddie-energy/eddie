@@ -13,8 +13,8 @@ import java.util.List;
 public class EnerginetRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "dk-energinet";
     public static final ZoneId DK_ZONE_ID = ZoneId.of("Europe/Copenhagen");
-    public static final Period PERIOD_EARLIEST_START = Period.ofYears(-2);
-    public static final Period PERIOD_LATEST_END = Period.ofYears(2);
+    public static final Period PERIOD_EARLIEST_START = Period.ofYears(-4);
+    public static final Period PERIOD_LATEST_END = Period.ofYears(3);
     public static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(Granularity.PT15M,
                                                                             Granularity.PT1H,
                                                                             Granularity.P1D,
