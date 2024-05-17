@@ -16,12 +16,16 @@ public class FrMalformedEvent extends PersistablePermissionEvent {
     @Column(name = "errors", columnDefinition = "text")
     private final List<AttributeError> errors;
 
+    protected FrMalformedEvent() {
+        errors = List.of();
+    }
+
+    public FrMalformedEvent(String permissionId, AttributeError error) {
+        this(permissionId, List.of(error));
+    }
+
     public FrMalformedEvent(String permissionId, List<AttributeError> errors) {
         super(permissionId, PermissionProcessStatus.MALFORMED);
         this.errors = errors;
-    }
-
-    protected FrMalformedEvent() {
-        errors = List.of();
     }
 }

@@ -4,12 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RegionConnector;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
@@ -25,6 +27,7 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
+import energy.eddie.regionconnector.shared.services.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
@@ -41,8 +44,7 @@ import reactor.core.publisher.Sinks;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID;
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.*;
 import static energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration.*;
 
 @EnableWebMvc
@@ -160,6 +162,18 @@ public class FrEnedisSpringConfig {
                 config.clientId(),
                 cimConfig,
                 pr -> null,
+                ZONE_ID_FR
+        );
+    }
+
+    @Bean
+    public DataNeedCalculationService<DataNeed> dataNeedCalculationService() {
+        return new DataNeedCalculationServiceImpl(
+                SUPPORTED_GRANULARITIES,
+                SUPPORTED_DATA_NEEDS,
+                PERIOD_EARLIEST_START,
+                PERIOD_LATEST_END,
+                EnedisRegionConnectorMetadata.getInstance(),
                 ZONE_ID_FR
         );
     }
