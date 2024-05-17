@@ -1,14 +1,20 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.duration.AbsoluteDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrAcceptedEvent;
+import energy.eddie.regionconnector.fr.enedis.permission.events.FrCreatedEvent;
+import energy.eddie.regionconnector.fr.enedis.permission.events.FrMalformedEvent;
+import energy.eddie.regionconnector.fr.enedis.permission.events.FrValidatedEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
@@ -28,6 +34,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
@@ -56,26 +63,29 @@ class PermissionRequestServiceTest {
     private ValidatedHistoricalDataDataNeed mockVhdDataNeed;
     @Mock
     private AiidaDataNeed unsupportedDataNeed;
-    @Mock
-    private AbsoluteDuration absoluteDuration;
     @MockBean
     private Outbox outbox;
+    @MockBean
+    private DataNeedCalculationService<DataNeed> calculationService;
 
     @Test
     void testCreatePermissionRequest_createsPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
         var request = new PermissionRequestForCreation("cid", "dnid");
+        var now = LocalDate.now(ZONE_ID_FR);
         when(dataNeedsService.findById("dnid")).thenReturn(Optional.of(mockVhdDataNeed));
-        when(mockVhdDataNeed.duration()).thenReturn(absoluteDuration);
-        when(absoluteDuration.start()).thenReturn(LocalDate.now(ZONE_ID_FR));
-        when(absoluteDuration.end()).thenReturn(LocalDate.now(ZONE_ID_FR).plusDays(10));
-        when(mockVhdDataNeed.minGranularity()).thenReturn(Granularity.P1D);
+        when(calculationService.calculate(mockVhdDataNeed))
+                .thenReturn(new DataNeedCalculation(true,
+                                                    List.of(Granularity.P1D),
+                                                    new Timeframe(now, now.plusDays(10)),
+                                                    new Timeframe(now, now.plusDays(10))));
 
         // When
         permissionRequestService.createPermissionRequest(request);
 
         // Then
-        verify(outbox, times(2)).commit(any());
+        verify(outbox).commit(isA(FrCreatedEvent.class));
+        verify(outbox).commit(isA(FrValidatedEvent.class));
     }
 
     @Test
@@ -83,12 +93,14 @@ class PermissionRequestServiceTest {
         // Given
         var request = new PermissionRequestForCreation("cid", "dnid");
         when(dataNeedsService.findById("dnid")).thenReturn(Optional.of(unsupportedDataNeed));
-
+        when(calculationService.calculate(unsupportedDataNeed))
+                .thenReturn(new DataNeedCalculation(false));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,
                      () -> permissionRequestService.createPermissionRequest(request));
-        verify(outbox, times(2)).commit(any());
+        verify(outbox).commit(isA(FrCreatedEvent.class));
+        verify(outbox).commit(isA(FrMalformedEvent.class));
     }
 
     @Test
@@ -96,15 +108,18 @@ class PermissionRequestServiceTest {
         // Given
         var request = new PermissionRequestForCreation("cid", "dnid");
         when(dataNeedsService.findById("dnid")).thenReturn(Optional.of(mockVhdDataNeed));
-        when(mockVhdDataNeed.duration()).thenReturn(absoluteDuration);
-        when(absoluteDuration.start()).thenReturn(LocalDate.now(ZONE_ID_FR));
-        when(absoluteDuration.end()).thenReturn(LocalDate.now(ZONE_ID_FR).plusYears(1000));
+        when(calculationService.calculate(mockVhdDataNeed))
+                .thenReturn(new DataNeedCalculation(true,
+                                                    List.of(Granularity.P1D),
+                                                    null,
+                                                    null));
 
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,
                      () -> permissionRequestService.createPermissionRequest(request));
-        verify(outbox, times(2)).commit(any());
+        verify(outbox).commit(isA(FrCreatedEvent.class));
+        verify(outbox).commit(isA(FrMalformedEvent.class));
     }
 
     @Test
@@ -198,15 +213,19 @@ class PermissionRequestServiceTest {
     @Test
     void givenUnsupportedGranularity_throws() {
         // Given
+        var now = LocalDate.now(ZoneOffset.UTC);
         when(dataNeedsService.findById(any())).thenReturn(Optional.of(mockVhdDataNeed));
-        when(mockVhdDataNeed.duration()).thenReturn(absoluteDuration);
-        when(absoluteDuration.start()).thenReturn(LocalDate.now(ZONE_ID_FR));
-        when(absoluteDuration.end()).thenReturn(LocalDate.now(ZONE_ID_FR).plusDays(10));
-        when(mockVhdDataNeed.minGranularity()).thenReturn(Granularity.P1Y);
+        when(calculationService.calculate(mockVhdDataNeed))
+                .thenReturn(new DataNeedCalculation(true,
+                                                    List.of(),
+                                                    new Timeframe(now, now.plusDays(10)),
+                                                    new Timeframe(now, now.plusDays(10))));
         PermissionRequestForCreation create = new PermissionRequestForCreation("foo", "bar");
 
         // When, Then
         assertThrows(UnsupportedDataNeedException.class,
                      () -> permissionRequestService.createPermissionRequest(create));
+        verify(outbox).commit(isA(FrCreatedEvent.class));
+        verify(outbox).commit(isA(FrMalformedEvent.class));
     }
 }
