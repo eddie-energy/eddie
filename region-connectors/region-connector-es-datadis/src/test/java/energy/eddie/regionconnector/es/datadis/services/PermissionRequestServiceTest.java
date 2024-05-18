@@ -1,17 +1,22 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.duration.AbsoluteDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
 import energy.eddie.regionconnector.es.datadis.dtos.*;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsCreatedEvent;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsMalformedEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -19,6 +24,8 @@ import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundExceptio
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -29,6 +36,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
@@ -46,11 +54,11 @@ class PermissionRequestServiceTest {
     @Mock
     private DataNeedsService dataNeedsService;
     @Mock
-    private AbsoluteDuration absoluteDuration;
-    @Mock
     private ValidatedHistoricalDataDataNeed validatedHistoricalDataDataNeed;
     @Mock
     private Outbox outbox;
+    @Mock
+    private DataNeedCalculationService<DataNeed> calculationService;
     @InjectMocks
     private PermissionRequestService service;
     @Captor
@@ -212,12 +220,15 @@ class PermissionRequestServiceTest {
     void createAndSendPermissionRequest_emitsCreatedAndValidated() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
         var creationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
-        when(validatedHistoricalDataDataNeed.minGranularity()).thenReturn(Granularity.PT15M);
-        when(validatedHistoricalDataDataNeed.maxGranularity()).thenReturn(Granularity.PT1H);
         when(dataNeedsService.findById(any())).thenReturn(Optional.of(validatedHistoricalDataDataNeed));
-        when(validatedHistoricalDataDataNeed.duration()).thenReturn(absoluteDuration);
-        when(absoluteDuration.start()).thenReturn(LocalDate.now(ZONE_ID_SPAIN));
-        when(absoluteDuration.end()).thenReturn(LocalDate.now(ZONE_ID_SPAIN));
+        var now = LocalDate.now(ZONE_ID_SPAIN);
+        when(calculationService.calculate(validatedHistoricalDataDataNeed))
+                .thenReturn(new DataNeedCalculation(
+                        true,
+                        List.of(Granularity.PT15M, Granularity.PT1H),
+                        new Timeframe(now, now),
+                        new Timeframe(now, now)
+                ));
 
         // When
         service.createAndSendPermissionRequest(creationRequest);
@@ -232,21 +243,24 @@ class PermissionRequestServiceTest {
         assertEquals(PermissionProcessStatus.VALIDATED, second.status());
     }
 
-    @Test
-    void createAndSendPermissionRequest_withUnsupportedGranularities_throws() {
+    @ParameterizedTest
+    @NullAndEmptySource
+    void createAndSendPermissionRequest_withInvalidGranularities_throws(List<Granularity> granularities) {
         // Given
         var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
-        when(validatedHistoricalDataDataNeed.minGranularity()).thenReturn(Granularity.PT5M);
-        when(validatedHistoricalDataDataNeed.maxGranularity()).thenReturn(Granularity.PT5M);
         when(dataNeedsService.findById(any())).thenReturn(Optional.of(validatedHistoricalDataDataNeed));
-        when(validatedHistoricalDataDataNeed.duration()).thenReturn(absoluteDuration);
-        when(absoluteDuration.start()).thenReturn(LocalDate.now(ZONE_ID_SPAIN));
-        when(absoluteDuration.end()).thenReturn(LocalDate.now(ZONE_ID_SPAIN));
-
+        var now = LocalDate.now(ZONE_ID_SPAIN);
+        when(calculationService.calculate(validatedHistoricalDataDataNeed))
+                .thenReturn(new DataNeedCalculation(true,
+                                                    granularities,
+                                                    new Timeframe(now, now),
+                                                    new Timeframe(now, now)));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,
                      () -> service.createAndSendPermissionRequest(mockCreationRequest));
+        verify(outbox).commit(isA(EsCreatedEvent.class));
+        verify(outbox).commit(isA(EsMalformedEvent.class));
     }
 
     @Test
@@ -254,31 +268,43 @@ class PermissionRequestServiceTest {
         // Given
         var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
         when(dataNeedsService.findById(any())).thenReturn(Optional.of(validatedHistoricalDataDataNeed));
-        when(validatedHistoricalDataDataNeed.duration()).thenReturn(absoluteDuration);
-        when(absoluteDuration.start()).thenReturn(LocalDate.now(ZONE_ID_SPAIN));
-        when(absoluteDuration.end()).thenReturn(LocalDate.now(ZONE_ID_SPAIN).plusYears(1000));
-
+        when(calculationService.calculate(validatedHistoricalDataDataNeed))
+                .thenReturn(new DataNeedCalculation(true, List.of(Granularity.PT1H), null, null));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,
                      () -> service.createAndSendPermissionRequest(mockCreationRequest));
+        verify(outbox).commit(isA(EsCreatedEvent.class));
+        verify(outbox).commit(isA(EsMalformedEvent.class));
     }
+
+    @Test
+    void createAndSendPermissionRequest_withUnknownDataNeed_throws() {
+        // Given
+        var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
+        when(dataNeedsService.findById(any())).thenReturn(Optional.empty());
+
+        // When
+        // Then
+        assertThrows(DataNeedNotFoundException.class,
+                     () -> service.createAndSendPermissionRequest(mockCreationRequest));
+        verify(outbox).commit(isA(EsCreatedEvent.class));
+        verify(outbox).commit(isA(EsMalformedEvent.class));
+    }
+
     @Test
     void createAndSendPermissionRequest_withInvalidDataNeed_throws() {
         // Given
         var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
         when(dataNeedsService.findById(any())).thenReturn(Optional.of(validatedHistoricalDataDataNeed));
-        when(validatedHistoricalDataDataNeed.duration()).thenReturn(absoluteDuration);
-        when(validatedHistoricalDataDataNeed.minGranularity()).thenReturn(Granularity.P1D);
-        when(validatedHistoricalDataDataNeed.maxGranularity()).thenReturn(Granularity.P1D);
-        when(absoluteDuration.start()).thenReturn(LocalDate.now(ZONE_ID_SPAIN));
-        when(absoluteDuration.end()).thenReturn(LocalDate.now(ZONE_ID_SPAIN));
-
+        when(calculationService.calculate(validatedHistoricalDataDataNeed))
+                .thenReturn(new DataNeedCalculation(false));
         // When
-
         // Then
         assertThrows(UnsupportedDataNeedException.class,
                      () -> service.createAndSendPermissionRequest(mockCreationRequest));
+        verify(outbox).commit(isA(EsCreatedEvent.class));
+        verify(outbox).commit(isA(EsMalformedEvent.class));
     }
 
     @Test

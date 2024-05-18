@@ -1,15 +1,14 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.dataneeds.utils.DataNeedWrapper;
-import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
@@ -28,8 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.Period;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,20 +34,13 @@ import java.util.UUID;
 @Service
 public class PermissionRequestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestService.class);
-    private static final Period MAX_TIME_IN_THE_PAST = Period.ofMonths(
-            -DatadisRegionConnectorMetadata.MAXIMUM_MONTHS_IN_THE_PAST);
-    /**
-     * The maximum time in the future that a permission request can be created for. 24 months minus one day. Datadis API
-     * is exclusive on the end date, so we need to subtract one day here.
-     */
-    private static final Period MAX_TIME_IN_THE_FUTURE = Period.ofMonths(
-            DatadisRegionConnectorMetadata.MAXIMUM_MONTHS_IN_THE_FUTURE).minusDays(1);
     private static final String DATA_NEED_ID = "dataNeedId";
     private final EsPermissionRequestRepository repository;
     private final AccountingPointDataService accountingPointDataService;
     private final PermissionRequestConsumer permissionRequestConsumer;
     private final DataNeedsService dataNeedsService;
     private final Outbox outbox;
+    private final DataNeedCalculationService<DataNeed> calculationService;
 
     @Autowired
     public PermissionRequestService(
@@ -59,13 +49,15 @@ public class PermissionRequestService {
             PermissionRequestConsumer permissionRequestConsumer,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // Injected from another spring context
             DataNeedsService dataNeedsService,
-            Outbox outbox
+            Outbox outbox,
+            DataNeedCalculationService<DataNeed> calculationService
     ) {
         this.repository = repository;
         this.accountingPointDataService = accountingPointDataService;
         this.permissionRequestConsumer = permissionRequestConsumer;
         this.dataNeedsService = dataNeedsService;
         this.outbox = outbox;
+        this.calculationService = calculationService;
     }
 
     public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
@@ -128,8 +120,6 @@ public class PermissionRequestService {
                                          dataNeedId,
                                          requestForCreation.nif(),
                                          requestForCreation.meteringPointId()));
-        var refDate = LocalDate.now(DatadisRegionConnectorMetadata.ZONE_ID_SPAIN);
-
         var dataNeed = dataNeedsService.findById(requestForCreation.dataNeedId());
         if (dataNeed.isEmpty()) {
             outbox.commit(new EsMalformedEvent(
@@ -139,7 +129,10 @@ public class PermissionRequestService {
             throw new DataNeedNotFoundException(dataNeedId);
         }
 
-        if (!(dataNeed.get() instanceof ValidatedHistoricalDataDataNeed vhdDataNeed)) {
+        var calculation = calculationService.calculate(dataNeed.get());
+        if (!calculation.supportsDataNeed()
+            || calculation.energyDataTimeframe() == null
+            || calculation.permissionTimeframe() == null) {
             outbox.commit(new EsMalformedEvent(
                     permissionId,
                     List.of(new AttributeError(DATA_NEED_ID,
@@ -149,55 +142,47 @@ public class PermissionRequestService {
                                                    dataNeedId,
                                                    "This region connector only supports ValidatedHistoricalData DataNeeds");
         }
-
-        DataNeedWrapper dataNeedWrapper;
-        try {
-            dataNeedWrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(
-                    vhdDataNeed,
-                    refDate,
-                    MAX_TIME_IN_THE_PAST,
-                    MAX_TIME_IN_THE_FUTURE
-            );
-        } catch (UnsupportedDataNeedException e) {
-            outbox.commit(new EsMalformedEvent(permissionId, List.of(new AttributeError(dataNeedId, e.getMessage()))));
-            throw e;
+        if (calculation.granularities() == null || calculation.granularities().isEmpty()) {
+            throwUnsupportedGranularity(permissionId, dataNeedId);
         }
-        var allowedMeasurementType = allowedMeasurementType(vhdDataNeed.minGranularity(), vhdDataNeed.maxGranularity());
+        //noinspection DataFlowIssue
+        var allowedMeasurementType = allowedMeasurementType(calculation.granularities());
         if (allowedMeasurementType.isEmpty()) {
-            outbox.commit(new EsMalformedEvent(
-                    permissionId,
-                    List.of(new AttributeError(DATA_NEED_ID,
-                                               "Unsupported granularity"))
-            ));
-            throw new UnsupportedDataNeedException(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                   dataNeedId,
-                                                   "Unsupported granularity");
+            throwUnsupportedGranularity(permissionId, dataNeedId);
         }
+        //noinspection OptionalGetWithoutIsPresent
         outbox.commit(new EsValidatedEvent(
                 permissionId,
-                dataNeedWrapper.calculatedStart(),
-                dataNeedWrapper.calculatedEnd(),
+                calculation.energyDataTimeframe().start(),
+                calculation.energyDataTimeframe().end(),
                 allowedMeasurementType.get()
         ));
         return new CreatedPermissionRequest(permissionId);
     }
 
-    private static Optional<AllowedGranularity> allowedMeasurementType(
-            Granularity min,
-            Granularity max
-    ) {
+    private void throwUnsupportedGranularity(
+            String permissionId,
+            String dataNeedId
+    ) throws UnsupportedDataNeedException {
+        outbox.commit(new EsMalformedEvent(
+                permissionId,
+                List.of(new AttributeError(DATA_NEED_ID,
+                                           "Unsupported granularity"))
+        ));
+        throw new UnsupportedDataNeedException(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                               dataNeedId,
+                                               "Unsupported granularity");
+    }
+
+    private static Optional<AllowedGranularity> allowedMeasurementType(List<Granularity> granularities) {
         boolean hourly = false;
         boolean quarterHourly = false;
-        for (Granularity granularity : DatadisRegionConnectorMetadata.SUPPORTED_GRANULARITIES) {
-            if (granularity.minutes() >= min.minutes() && granularity.minutes() <= max.minutes()) {
-                if (granularity == Granularity.PT1H) {
-                    hourly = true;
-                } else if (granularity == Granularity.PT15M) {
-                    quarterHourly = true;
-                }
-            }
+        if (granularities.contains(Granularity.PT1H)) {
+            hourly = true;
         }
-
+        if (granularities.contains(Granularity.PT15M)) {
+            quarterHourly = true;
+        }
         if (hourly && quarterHourly) {
             return Optional.of(AllowedGranularity.PT15M_OR_PT1H);
         }

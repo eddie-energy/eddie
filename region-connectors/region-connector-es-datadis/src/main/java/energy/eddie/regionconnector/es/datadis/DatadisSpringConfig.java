@@ -4,12 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RegionConnector;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.ContractApi;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
@@ -17,6 +19,7 @@ import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
 import energy.eddie.regionconnector.es.datadis.client.*;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.data.needs.calculation.strategies.DatadisStrategy;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsInternalPollingEvent;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
@@ -30,6 +33,7 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.C
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
+import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -42,8 +46,7 @@ import reactor.netty.http.client.HttpClient;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
-import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID;
-import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.*;
 
 
 @EnableWebMvc
@@ -211,6 +214,19 @@ public class DatadisSpringConfig {
                 csm,
                 repository,
                 pr -> ""
+        );
+    }
+
+    @Bean
+    public DataNeedCalculationService<DataNeed> dataNeedCalculationService() {
+        return new DataNeedCalculationServiceImpl(
+                SUPPORTED_GRANULARITIES,
+                SUPPORTED_DATA_NEEDS,
+                PERIOD_EARLIEST_START,
+                PERIOD_LATEST_END,
+                DatadisRegionConnectorMetadata.getInstance(),
+                ZONE_ID_SPAIN,
+                new DatadisStrategy()
         );
     }
 }
