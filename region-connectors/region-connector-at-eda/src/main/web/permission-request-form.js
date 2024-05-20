@@ -83,18 +83,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             </sl-button>
           </div>
         </form>
-
-        ${this._isSubmitDisabled
-          ? html`<br />
-              <sl-alert open>
-                <sl-icon slot="icon" name="info-circle"></sl-icon>
-                <p>Your permission request is being processed.</p>
-                <p>
-                  Please wait for the request to finish. This process may take
-                  several minutes!
-                </p>
-              </sl-alert>`
-          : ""}
+        
         ${this._isPermissionRequestCreated ?
         html`<br />
           <sl-alert open>
