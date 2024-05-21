@@ -42,21 +42,21 @@ class FrEnedisTest extends E2eTestSetup {
                                            )
                                            .click());
 
-        assertThat(buttonPage.locator("fr-enedis-pa-ce"))
-                .containsText("The request status is: VALIDATED");
+        assertThat(buttonPage.locator("body")).containsText(
+                "Status: Request Validated The permission request has been validated.");
 
         var redirectUrl = requestDetails.url() +
-                "/authorization-callback" +
-                "?state=" + requestDetails.permissionId() +
-                "&usage_point_id=" + SANDBOX_METERING_POINT_WITH_ACCEPTED_CONSENT;
+                          "/authorization-callback" +
+                          "?state=" + requestDetails.permissionId() +
+                          "&usage_point_id=" + SANDBOX_METERING_POINT_WITH_ACCEPTED_CONSENT;
         page.navigate(redirectUrl);
         page.close();
         page = buttonPage;
 
-        var locator = buttonPage.locator("fr-enedis-pa-ce", new Page.LocatorOptions().setHasText("FULFILLED"));
-
+        var locator = buttonPage.locator("body", new Page.LocatorOptions().setHasText("Fulfilled"));
         locator.waitFor(new Locator.WaitForOptions().setTimeout(120_000));
-        assertThat(locator).containsText("The request status is: FULFILLED");
+        assertThat(locator).containsText(
+                "Status: Request Fulfilled The permission request has been fulfilled, i.e. all data has been delivered.");
     }
 
     static class RequestDetails {
