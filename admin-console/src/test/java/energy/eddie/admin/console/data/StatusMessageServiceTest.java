@@ -25,7 +25,8 @@ class StatusMessageServiceTest {
         TestPublisher<ConsentMarketDocument> testPublisher = TestPublisher.create();
         when(consentMarketDocumentService.getConsentMarketDocumentStream())
                 .thenReturn(testPublisher.flux());
-        StatusMessageService statusMessageService = new StatusMessageService(statusMessageRepository, consentMarketDocumentService);
+        StatusMessageService statusMessageService = new StatusMessageService(statusMessageRepository,
+                                                                             consentMarketDocumentService);
 
         ConsentMarketDocument cmd = new ConsentMarketDocument()
                 .withMRID("mrid")
@@ -42,11 +43,12 @@ class StatusMessageServiceTest {
                 );
         // When
         testPublisher.emit(cmd);
+
         // Then
         verify(statusMessageRepository)
                 .save(assertArg(message -> assertAll(
                         () -> assertEquals("mrid", message.getPermissionId()),
-                        () -> assertEquals("2021-01-01T00:00:00Z", message.getTimestamps()),
+                        () -> assertEquals("2021-01-01T00:00:00Z", message.getTimestamp()),
                         () -> assertEquals("A05", message.getStatus())
                 )));
     }

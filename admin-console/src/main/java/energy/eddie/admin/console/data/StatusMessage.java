@@ -14,16 +14,16 @@ public class StatusMessage {
     private String permissionId; // is properties.permissionList.permissions.permissionMRID in the database
 
     @Column(name = "timestamp")
-    private String timestamps; // properties.permissionList.permissions.mktActivityRecordList.createdDateTime in database
+    private String timestamp; // properties.permissionList.permissions.mktActivityRecordList.createdDateTime in database
 
     @Column(name = "status") // Define the column name for individual elements
     private String status; //properties.permissionList.permissions.mktActivityRecords.status in database
 
     // Constructors
-    public StatusMessage(String permissionId, String timestamps, String status) {
+    public StatusMessage(String permissionId, String timestamp, String status) {
         this.id = 0L;
         this.permissionId = permissionId;
-        this.timestamps = timestamps;
+        this.timestamp = timestamp;
         this.status = status;
     }
 
@@ -31,7 +31,7 @@ public class StatusMessage {
     public StatusMessage() {
         this.id = null;
         this.permissionId = null;
-        this.timestamps = null;
+        this.timestamp = null;
         this.status = null;
     }
 
@@ -47,12 +47,12 @@ public class StatusMessage {
         this.permissionId = permissionId;
     }
 
-    public String getTimestamps() {
-        return timestamps;
+    public String getTimestamp() {
+        return timestamp;
     }
 
-    public void setTimestamps(String timestamps) {
-        this.timestamps = timestamps;
+    public void setTimestamp(String timestamps) {
+        this.timestamp = timestamps;
     }
 
     public String getStatus() {
