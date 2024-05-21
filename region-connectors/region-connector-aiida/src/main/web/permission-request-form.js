@@ -10,7 +10,7 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/compone
 class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
-    dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
+    dataNeedId: { attribute: "data-need-id" },
     _isConnected: { type: Boolean },
     _aiidaCode: { type: String },
     _isSubmitDisabled: { type: Boolean },
@@ -25,7 +25,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
   requestPermission(_event) {
     let body = {
-      dataNeedId: this.dataNeedAttributes.id,
+      dataNeedId: this.dataNeedId,
       connectionId: this.connectionId,
     };
 

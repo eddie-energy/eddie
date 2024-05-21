@@ -180,10 +180,7 @@ class EddieConnectButton extends LitElement {
 
     const element = document.createElement(customElementName);
     element.setAttribute("connection-id", this.connectionId);
-    element.setAttribute(
-      "data-need-attributes",
-      JSON.stringify(this._dataNeedAttributes)
-    );
+    element.setAttribute("data-need-id", this.dataNeedId);
     element.setAttribute(
       "jump-off-url",
       this._selectedPermissionAdministrator.jumpOffUrl

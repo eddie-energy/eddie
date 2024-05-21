@@ -9,7 +9,7 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/compone
 class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
-    dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
+    dataNeedId: { attribute: "data-need-id" },
     accountingPointId: { attribute: "accounting-point-id" },
     _requestId: { type: String },
     _isPermissionRequestCreated: { type: Boolean },
@@ -32,7 +32,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     jsonData.refreshToken = formData.get("refreshToken");
     jsonData.meteringPoint = formData.get("meteringPoint");
     jsonData.connectionId = this.connectionId;
-    jsonData.dataNeedId = this.dataNeedAttributes.id;
+    jsonData.dataNeedId = this.dataNeedId;
 
     this._isSubmitDisabled = true;
 

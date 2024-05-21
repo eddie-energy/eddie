@@ -3,7 +3,7 @@ import { css, html, LitElement } from "https://esm.sh/lit";
 class SimulationConnectorButtonCe extends LitElement {
   static properties = {
     connectionId: { attribute: "connection-id" },
-    dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
+    dataNeedId: { attribute: "data-need-id" },
   };
   /**
    * CSS variables for Bootstrap. Unfortunately, Bootstrap defines its variables
@@ -30,7 +30,7 @@ class SimulationConnectorButtonCe extends LitElement {
       "?connectionId=" +
       encodeURIComponent(this.connectionId) +
       "&dataNeedId=" +
-      encodeURIComponent(this.dataNeedAttributes.id);
+      encodeURIComponent(this.dataNeedId);
     window.open(url, "_blank");
   }
 
@@ -60,31 +60,7 @@ class SimulationConnectorButtonCe extends LitElement {
             </tr>
             <tr>
               <td>id</td>
-              <td>${this.dataNeedAttributes.id}</td>
-            </tr>
-            <tr>
-              <td>description</td>
-              <td>${this.dataNeedAttributes.description}</td>
-            </tr>
-            <tr>
-              <td>type</td>
-              <td>${this.dataNeedAttributes.type}</td>
-            </tr>
-            <tr>
-              <td>granularity</td>
-              <td>${this.dataNeedAttributes.granularity}</td>
-            </tr>
-            <tr>
-              <td>durationStart</td>
-              <td>${this.dataNeedAttributes.durationStart}</td>
-            </tr>
-            <tr>
-              <td>durationOpenEnd</td>
-              <td>${this.dataNeedAttributes.durationOpenEnd}</td>
-            </tr>
-            <tr>
-              <td>durationEnd</td>
-              <td>${this.dataNeedAttributes.durationEnd}</td>
+              <td>${this.dataNeedId}</td>
             </tr>
           </tbody>
         </table>
