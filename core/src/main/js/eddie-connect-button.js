@@ -84,8 +84,6 @@ class EddieConnectButton extends LitElement {
     _availableConnectors: { type: Object },
     _availableCountries: { type: Array },
     _dataNeedAttributes: { type: Object },
-    _dataNeedTypes: { type: Array },
-    _dataNeedGranularities: { type: Array },
     _isValidConfiguration: { type: Boolean, state: true },
   };
   static styles = css`
