@@ -3,6 +3,8 @@ package energy.eddie.regionconnector.nl.mijn.aansluiting;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.EnergyType;
+import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 
 import javax.annotation.Nullable;
 import java.time.Period;
@@ -14,10 +16,11 @@ public class MijnAansluitingRegionConnectorMetadata implements RegionConnectorMe
     public static final String REGION_CONNECTOR_ID = "nl-mijn-aansluiting";
     public static final Period MAX_PERIOD_IN_PAST = Period.ofYears(-2);
     public static final Period MAX_PERIOD_IN_FUTURE = Period.ofYears(9999);
-    public static final SequencedCollection<Granularity> SUPPORTED_GRANULARITIES = List.of(Granularity.P1D);
+    public static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(Granularity.P1D);
     public static final SequencedCollection<EnergyType> SUPPORTED_ENERGY_TYPES = List.of(EnergyType.NATURAL_GAS,
                                                                                          EnergyType.ELECTRICITY);
     public static final ZoneId NL_ZONE_ID = ZoneId.of("Europe/Amsterdam");
+    public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(ValidatedHistoricalDataDataNeed.class);
     @Nullable
     private static MijnAansluitingRegionConnectorMetadata instance = null;
 

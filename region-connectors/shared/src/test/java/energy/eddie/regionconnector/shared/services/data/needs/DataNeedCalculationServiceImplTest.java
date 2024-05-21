@@ -7,6 +7,7 @@ import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -156,6 +157,71 @@ class DataNeedCalculationServiceImplTest {
                 () -> assertEquals(timeframe, res.permissionTimeframe()),
                 () -> assertEquals(List.of(), res.granularities())
         );
+    }
+
+    @Test
+    void testCalculate_returnsUnsupported_withFailingAdditionalCheck() {
+        // Given
+        when(vhdDataNeed.duration())
+                .thenReturn(duration);
+        when(duration.start())
+                .thenReturn(Optional.of(Period.ofDays(-5)));
+        when(duration.end())
+                .thenReturn(Optional.of(Period.ofDays(-1)));
+        when(vhdDataNeed.minGranularity())
+                .thenReturn(Granularity.PT5M);
+        when(vhdDataNeed.maxGranularity())
+                .thenReturn(Granularity.P1Y);
+        service = new DataNeedCalculationServiceImpl(
+                List.of(Granularity.PT15M, Granularity.P1D),
+                List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
+                Period.ofDays(-10),
+                Period.ofDays(10),
+                regionConnectorMetadata,
+                ZoneOffset.UTC,
+                new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
+                List.of(
+                        dataNeed -> true,
+                        dataNeed -> false
+                )
+        );
+        // When
+        var res = service.calculate(vhdDataNeed);
+
+        // Then
+        assertFalse(res.supportsDataNeed());
+    }
+
+    @Test
+    void testCalculate_returnsSupported_withSuccessfullAdditionalCheck() {
+        // Given
+        when(vhdDataNeed.duration())
+                .thenReturn(duration);
+        when(duration.start())
+                .thenReturn(Optional.of(Period.ofDays(-5)));
+        when(duration.end())
+                .thenReturn(Optional.of(Period.ofDays(-1)));
+        when(vhdDataNeed.minGranularity())
+                .thenReturn(Granularity.PT5M);
+        when(vhdDataNeed.maxGranularity())
+                .thenReturn(Granularity.P1Y);
+        service = new DataNeedCalculationServiceImpl(
+                List.of(Granularity.PT15M, Granularity.P1D),
+                List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
+                Period.ofDays(-10),
+                Period.ofDays(10),
+                regionConnectorMetadata,
+                ZoneOffset.UTC,
+                new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
+                List.of(
+                        dataNeed -> true
+                )
+        );
+        // When
+        var res = service.calculate(vhdDataNeed);
+
+        // Then
+        assertTrue(res.supportsDataNeed());
     }
 
     @Test

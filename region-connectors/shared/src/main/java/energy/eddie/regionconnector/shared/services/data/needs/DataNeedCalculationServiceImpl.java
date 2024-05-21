@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class DataNeedCalculationServiceImpl implements DataNeedCalculationService<DataNeed> {
     private final List<Class<? extends DataNeed>> supportedDataNeeds;
@@ -29,6 +30,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
     private final GranularityChoice granularityChoice;
     private final ZoneId referenceTimezone;
     private final PermissionTimeframeStrategy strategy;
+    private final List<Predicate<DataNeed>> additionalChecks;
 
     public DataNeedCalculationServiceImpl(
             List<Granularity> granularities,
@@ -45,10 +47,12 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
                 latestEnd,
                 regionConnectorMetadata,
                 referenceTimezone,
-                new PermissionEndIsEnergyDataEndStrategy(referenceTimezone)
+                new PermissionEndIsEnergyDataEndStrategy(referenceTimezone),
+                List.of()
         );
     }
 
+    @SuppressWarnings("java:S107")
     public DataNeedCalculationServiceImpl(
             List<Granularity> granularities,
             List<Class<? extends DataNeed>> supportedDataNeeds,
@@ -56,7 +60,8 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
             Period latestEnd,
             RegionConnectorMetadata regionConnectorMetadata,
             ZoneId referenceTimezone,
-            PermissionTimeframeStrategy strategy
+            PermissionTimeframeStrategy strategy,
+            List<Predicate<DataNeed>> additionalChecks
     ) {
         this.supportedDataNeeds = supportedDataNeeds;
         this.earliestStart = earliestStart;
@@ -65,6 +70,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         this.granularityChoice = new GranularityChoice(granularities);
         this.referenceTimezone = referenceTimezone;
         this.strategy = strategy;
+        this.additionalChecks = additionalChecks;
     }
 
     @Override
@@ -81,7 +87,8 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         }
         var permissionStartAndEndDate = strategy.permissionTimeframe(energyStartAndEndDate);
         return new DataNeedCalculation(
-                true,
+                additionalChecks.stream()
+                                .allMatch(check -> check.test(dataNeed)),
                 supportedGranularities,
                 permissionStartAndEndDate,
                 energyStartAndEndDate
