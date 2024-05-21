@@ -12,10 +12,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +27,16 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DataNeedCalculationServiceImplTest {
+    @Spy
+    private final RegionConnectorMetadata regionConnectorMetadata = new RegionConnectorMetadataImpl(
+            "id",
+            "AT",
+            1,
+            Period.ofDays(-10),
+            Period.ofDays(10),
+            List.of(Granularity.PT15M, Granularity.P1D),
+            ZoneOffset.UTC
+    );
     @Mock
     private ValidatedHistoricalDataDataNeed vhdDataNeed;
     @Mock
@@ -33,19 +45,13 @@ class DataNeedCalculationServiceImplTest {
     private GenericAiidaDataNeed aiidaDataNeed;
     @Mock
     private AccountingPointDataNeed accountingPointDataNeed;
-    @Mock
-    private RegionConnectorMetadata regionConnectorMetadata;
     private DataNeedCalculationServiceImpl service;
 
     @BeforeEach
     void setUp() {
         service = new DataNeedCalculationServiceImpl(
-                List.of(Granularity.PT15M, Granularity.P1D),
                 List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
-                Period.ofDays(-10),
-                Period.ofDays(10),
-                regionConnectorMetadata,
-                ZoneOffset.UTC
+                regionConnectorMetadata
         );
     }
 
@@ -173,12 +179,8 @@ class DataNeedCalculationServiceImplTest {
         when(vhdDataNeed.maxGranularity())
                 .thenReturn(Granularity.P1Y);
         service = new DataNeedCalculationServiceImpl(
-                List.of(Granularity.PT15M, Granularity.P1D),
                 List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
-                Period.ofDays(-10),
-                Period.ofDays(10),
                 regionConnectorMetadata,
-                ZoneOffset.UTC,
                 new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
                 List.of(
                         dataNeed -> true,
@@ -206,12 +208,8 @@ class DataNeedCalculationServiceImplTest {
         when(vhdDataNeed.maxGranularity())
                 .thenReturn(Granularity.P1Y);
         service = new DataNeedCalculationServiceImpl(
-                List.of(Granularity.PT15M, Granularity.P1D),
                 List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
-                Period.ofDays(-10),
-                Period.ofDays(10),
                 regionConnectorMetadata,
-                ZoneOffset.UTC,
                 new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
                 List.of(
                         dataNeed -> true
@@ -245,4 +243,12 @@ class DataNeedCalculationServiceImplTest {
         // Then
         assertEquals("id", res);
     }
+
+    private record RegionConnectorMetadataImpl(String id,
+                                               String countryCode,
+                                               long coveredMeteringPoints,
+                                               Period earliestStart,
+                                               Period latestEnd,
+                                               List<Granularity> supportedGranularities,
+                                               ZoneId timeZone) implements RegionConnectorMetadata {}
 }

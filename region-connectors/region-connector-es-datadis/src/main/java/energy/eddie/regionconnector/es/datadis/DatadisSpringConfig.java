@@ -222,12 +222,8 @@ public class DatadisSpringConfig {
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService() {
         return new DataNeedCalculationServiceImpl(
-                SUPPORTED_GRANULARITIES,
                 SUPPORTED_DATA_NEEDS,
-                PERIOD_EARLIEST_START,
-                PERIOD_LATEST_END,
                 DatadisRegionConnectorMetadata.getInstance(),
-                ZONE_ID_SPAIN,
                 new DatadisStrategy(),
                 List.of()
         );

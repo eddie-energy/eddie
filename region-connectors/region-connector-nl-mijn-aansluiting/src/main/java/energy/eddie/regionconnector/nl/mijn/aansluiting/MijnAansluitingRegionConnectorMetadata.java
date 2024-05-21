@@ -49,4 +49,24 @@ public class MijnAansluitingRegionConnectorMetadata implements RegionConnectorMe
         // TODO calculate/find out, see GH-946
         return 0;
     }
+
+    @Override
+    public Period earliestStart() {
+        return MAX_PERIOD_IN_PAST;
+    }
+
+    @Override
+    public Period latestEnd() {
+        return MAX_PERIOD_IN_FUTURE;
+    }
+
+    @Override
+    public List<Granularity> supportedGranularities() {
+        return SUPPORTED_GRANULARITIES;
+    }
+
+    @Override
+    public ZoneId timeZone() {
+        return NL_ZONE_ID;
+    }
 }

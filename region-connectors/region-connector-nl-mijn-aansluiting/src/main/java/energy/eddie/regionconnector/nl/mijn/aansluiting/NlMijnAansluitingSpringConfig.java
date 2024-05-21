@@ -193,12 +193,8 @@ public class NlMijnAansluitingSpringConfig {
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService() {
         return new DataNeedCalculationServiceImpl(
-                SUPPORTED_GRANULARITIES,
                 SUPPORTED_DATA_NEEDS,
-                MAX_PERIOD_IN_PAST,
-                MAX_PERIOD_IN_FUTURE,
                 MijnAansluitingRegionConnectorMetadata.getInstance(),
-                NL_ZONE_ID,
                 new PermissionEndIsEnergyDataEndStrategy(NL_ZONE_ID),
                 List.of(new SupportsEnergyTypePredicate())
         );

@@ -159,12 +159,8 @@ public class DkEnerginetSpringConfig {
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService() {
         return new DataNeedCalculationServiceImpl(
-                SUPPORTED_GRANULARITIES,
                 SUPPORTED_DATA_NEEDS,
-                PERIOD_EARLIEST_START,
-                PERIOD_LATEST_END,
-                EnerginetRegionConnectorMetadata.getInstance(),
-                DK_ZONE_ID
+                EnerginetRegionConnectorMetadata.getInstance()
         );
     }
 }
