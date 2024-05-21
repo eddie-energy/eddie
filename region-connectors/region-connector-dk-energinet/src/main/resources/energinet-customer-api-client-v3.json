@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "Eloverblik.Api.CustomerApi",
-    "description": "\r\n<p>This API enables you to access your own data.\r\nThere are two requirements to fulfill in order to get data:\r\n1) You need to be authorized.\r\n2) You need to create a relation to the metering points that you will access.\r\n\r\nAuthorization is handled by using tokens. At first you will need a refresh token. You can generate a refresh token in the portal. \r\nHaving a refresh token you can then access the /token endpoint and get a short lived access token. Using the access token all the below endpoints are accessible.\r\n\r\nRelations to metering points. In order to access data from a metering point you need to add a relation to the metering point. \r\nCheck out the description of the different endpoints below on how to manage these relations.\r\n\r\nCorrelation id. It is possible to set a correlation id in the request header. Using the 'X-User-Correlation-ID' (with an UUID). \r\nWhen provided this id will follow the request and finally end in the response header. This id can be used for tracking the request. \r\nParallel to this id there is another internally id (Also a UUID), which is also returned in the response header as 'X-Correlation-ID'.</p>\r\n\r\n<h3>Limitations</h3>\r\n<p>At times, we may experience higher loads than our underlying data provider, DataHub, can handle. Therefore we have enforced some limitations on the usage of this API:</p>\r\n\r\n<ul style=\"list-style-type:disc;\">\r\n    <li>Calls to GetToken are restricted to 1 per minute per IP address.</li>\r\n    <li>The total number of calls per IP address is restricted to 25 per minute.</li>\r\n    <li>The total number of calls for <b>all</b> users is restricted to 400 per minute.</li>\r\n    <li>You can request data for a maximum period of 730 days at a time</li>\r\n</ul>\r\n\r\n<p>If you exceed any one of these limits, you will get an http error 429 - Too many requests.</br>\r\nIf DataHub is not able to keep up with the demand - even if the above limits are not exceeded - you may get an http error 503 - DataHub unavailable.</p>\r\n\r\n<h3>Usage recommendations</h3>\r\n<ul style=\"list-style-type:disc;\">\r\n    <li>Bundle requests for 10 metering points at a time.</li>\r\n    <li>Spread out multiple requests over a longer period.</li>\r\n    <li>Don't request data for periods of several years repeatedly.</li>\r\n    <li>If you get an error 429 or 503, wait 1min. before retrying.</li>\r\n    <li>If you get an error, then try to reduce the amount of metering points or reduce the date period of the request.</li>\r\n    <li>The Data Access token is active for 24h and should not need to be refreshed more than once a day.</li>\r\n</ul>\r\n\r\n<h3>Possible system error codes</h3>\r\n<p><i>General</i>: NoError = 10000, WrongNumberOfArguments = 10001, NoCprConsent = 10007</p>\r\n\r\n<p><i>MeteringPoint</i>: WrongMeteringPointIdOrWebAccessCode = 20000, MeteringPointBlocked = 20001, MeteringPointRelationAlreadyExist = 20002, MeteringPointIdNot18CharsLong = 20003\r\nMeteringPointAliasTooLong = 20005, WebAccessCodeNot8CharsLong = 20006, WebAccessCodeContainsIllegalChars = 20007, MeteringPointNotFound = 20008, MeteringPointIsChild = 20009,\r\nRelationNotFound = 20010, UnknownError = 20011, Unauthorized = 20012</p>\r\n\r\n<p><i>MeterData</i>: FromDateIsGreaterThanToday = 30000, FromDateIsGreaterThanToDate = 30001, ToDateCantBeEqualToFromDate = 30002, ToDateIsGreaterThanToday = 30003,\r\nInvalidDateFormat = 30004, InvalidRequestParameters = 30005, AccessToMeterPointDenied = 30006, NoMeterPointDataAviliable = 30007, RequestedAggregationUnavaliable = 30008,\r\nMaximumMeterPointsExceeded = 30009, InvalidMeterpointID = 30010, InternalServerError = 30011, DateNotCoveredByPowerOfAttorney = 30012</p>\r\n\r\n<p><i>Token</i>: WrongTokenType = 50000, TokenNotValid = 50001, ErrorCreatingToken = 50002, TokenRegistrationFailed = 50003, TokenAlreadyActive = 50004,\r\nTokenAlreadyDeactivaed = 50005</p>\r\n\r\n<p><i>ThirdParty</i>: ThirdPartyNotFound = 60000</p>\r\n\r\n<p>Link to API description.</p>\r\n\r\n<a href=\"https://energinet.dk/media/xmdlhgel/customer-and-third-party-api-for-datahub-eloverblik-data-description.pdf\">https://energinet.dk/media/xmdlhgel/customer-and-third-party-api-for-datahub-eloverblik-data-description.pdf</a>\r\n\r\n<p>Link to API technical description.</p>\r\n\r\n<a href=\"https://energinet.dk/media/3ykdgxol/customer-and-third-party-api-for-datahub-eloverblik-technical-description.pdf\">https://energinet.dk/media/3ykdgxol/customer-and-third-party-api-for-datahub-eloverblik-technical-description.pdf</a>\r\n\r\n<p>Link to usage recommendation.</p>\r\n\r\n<a href=\"https://energinet.dk/media/pvllntwv/begr%C3%A6nsninger-og-anbefalinger-for-brugen-af-api-l%C3%B8sningen-250123.pdf\">https://energinet.dk/media/pvllntwv/begrænsninger-og-anbefalinger-for-brugen-af-api-løsningen-250123.pdf</a>\r\n",
+    "description": "<p>This API enables you to access your own data.\nThere are two requirements to fulfill in order to get data:\n1) You need to be authorized.\n2) You need to create a relation to the metering points that you will access.\n\nAuthorization is handled by using tokens. At first you will need a refresh token. You can generate a refresh token in the portal.\nHaving a refresh token you can then access the /token endpoint and get a short lived access token. Using the access token all the below endpoints are accessible.\n\nRelations to metering points. In order to access data from a metering point you need to add a relation to the metering point.\nCheck out the description of the different endpoints below on how to manage these relations.\n\nCorrelation id. It is possible to set a correlation id in the request header. Using the 'X-User-Correlation-ID' (with an UUID).\nWhen provided this id will follow the request and finally end in the response header. This id can be used for tracking the request.\nParallel to this id there is another internally id (Also a UUID), which is also returned in the response header as 'X-Correlation-ID'.</p>\n\n<b><p>Please note: Submission of meter readings to DataHub is no longer mandatory since end of 2021. Therefore, data may not be available for all metering points.</p></b>\n\n<h3>Limitations</h3>\n<p>At times, we may experience higher loads than our underlying data provider, DataHub, can handle. Therefore we have enforced some limitations on the usage of this API:</p>\n\n<ul style=\"list-style-type:disc;\">\n    <li>Calls to GetToken are restricted to 1 per minute per IP address.</li>\n    <li>The total number of calls per IP address is restricted to 25 per minute.</li>\n    <li>The total number of calls for <b>all</b> users is restricted to 400 per minute.</li>\n    <li>You can request data for a maximum period of 730 days at a time</li>\n</ul>\n\n<p>If you exceed any one of these limits, you will get an http error 429 - Too many requests.</br>\nIf DataHub is not able to keep up with the demand - even if the above limits are not exceeded - you may get an http error 503 - DataHub unavailable.</p>\n\n<h3>Usage recommendations</h3>\n<ul style=\"list-style-type:disc;\">\n    <li>Bundle requests for 10 metering points at a time.</li>\n    <li>Spread out multiple requests over a longer period.</li>\n    <li>Don't request data for periods of several years repeatedly.</li>\n    <li>If you get an error 429 or 503, wait 1min. before retrying.</li>\n    <li>If you get an error, then try to reduce the amount of metering points or reduce the date period of the request.</li>\n    <li>The Data Access token is active for 24h and should not need to be refreshed more than once a day.</li>\n</ul>\n\n<h3>Possible system error codes</h3>\n<p><i>General</i>: NoError = 10000, WrongNumberOfArguments = 10001, NoCprConsent = 10007</p>\n\n<p><i>MeteringPoint</i>: WrongMeteringPointIdOrWebAccessCode = 20000, MeteringPointBlocked = 20001, MeteringPointRelationAlreadyExist = 20002, MeteringPointIdNot18CharsLong = 20003\nMeteringPointAliasTooLong = 20005, WebAccessCodeNot8CharsLong = 20006, WebAccessCodeContainsIllegalChars = 20007, MeteringPointNotFound = 20008, MeteringPointIsChild = 20009,\nRelationNotFound = 20010, UnknownError = 20011, Unauthorized = 20012, NoValidMeteringPointsInList = 20013</p>\n\n<p><i>MeterData</i>: FromDateIsGreaterThanToday = 30000, FromDateIsGreaterThanToDate = 30001, ToDateCanNotBeEqualToFromDate = 30002, ToDateIsGreaterThanToday = 30003,\nInvalidDateFormat = 30004, RequestedAggregationUnavaliable = 30008, InternalServerError = 30011, MeteringPointIsChild = 20009, NoValidMeteringPointsInList = 20013</p>\n\n<p><i>Token</i>: WrongTokenType = 50000, TokenNotValid = 50001, ErrorCreatingToken = 50002, TokenRegistrationFailed = 50003, TokenAlreadyActive = 50004,\nTokenAlreadyDeactivaed = 50005</p>\n\n<p><i>ThirdParty</i>: ThirdPartyNotFound = 60000</p>\n\n<p>Link to API data description.</p>\n\n<a href=\"https://energinet.dk/media/4beb0pgg/customer-and-third-party-api-for-datahub-eloverblik-data-description_validfrom_20240402.pdf\">https://energinet.dk/media/4beb0pgg/customer-and-third-party-api-for-datahub-eloverblik-data-description_validfrom_20240402.pdf</a>\n\n<p>Link to API technical description.</p>\n\n<a href=\"https://energinet.dk/media/3ykdgxol/customer-and-third-party-api-for-datahub-eloverblik-technical-description.pdf\">https://energinet.dk/media/3ykdgxol/customer-and-third-party-api-for-datahub-eloverblik-technical-description.pdf</a>\n\n<p>Link to usage recommendation.</p>\n\n<a href=\"https://energinet.dk/media/pvllntwv/begr%C3%A6nsninger-og-anbefalinger-for-brugen-af-api-l%C3%B8sningen-250123.pdf\">https://energinet.dk/media/pvllntwv/begrænsninger-og-anbefalinger-for-brugen-af-api-løsningen-250123.pdf</a>",
     "contact": {
       "name": "Datahub support",
       "email": "datahub@energinet.dk"
@@ -52,6 +52,22 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "503": {
+            "description": "Server Error"
+          }
+        }
+      },
+      "head": {
+        "tags": [
+          "IsAlive"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
           },
           "400": {
             "description": "Bad Request"
@@ -113,27 +129,7 @@
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
             },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
             "application/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "text/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+xml": {
               "schema": {
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
@@ -208,27 +204,7 @@
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
             },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
             "application/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "text/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+xml": {
               "schema": {
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
@@ -312,27 +288,7 @@
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
             },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
             "application/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "text/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+xml": {
               "schema": {
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
@@ -341,7 +297,10 @@
         },
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "content": {
+              "text/csv": {}
+            }
           }
         }
       }
@@ -413,27 +372,7 @@
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
             },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
             "application/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "text/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+xml": {
               "schema": {
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
@@ -565,27 +504,7 @@
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
             },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
             "application/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "text/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+xml": {
               "schema": {
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
@@ -641,27 +560,7 @@
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
             },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
             "application/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "text/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+xml": {
               "schema": {
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
@@ -775,27 +674,7 @@
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
             },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
             "application/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "text/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+xml": {
               "schema": {
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
@@ -804,7 +683,10 @@
         },
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "content": {
+              "text/csv": {}
+            }
           }
         }
       }
@@ -824,27 +706,7 @@
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
             },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
             "application/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "text/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/MeteringPointsRequest"
-              }
-            },
-            "application/*+xml": {
               "schema": {
                 "$ref": "#/components/schemas/MeteringPointsRequest"
               }
@@ -853,7 +715,10 @@
         },
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "content": {
+              "text/csv": {}
+            }
           }
         }
       }
@@ -1012,6 +877,18 @@
             "nullable": true
           },
           "contactType": {
+            "type": "string",
+            "nullable": true
+          },
+          "attention": {
+            "type": "string",
+            "nullable": true
+          },
+          "postBox": {
+            "type": "string",
+            "nullable": true
+          },
+          "protectedAddress": {
             "type": "string",
             "nullable": true
           }
@@ -1430,6 +1307,30 @@
             "type": "string",
             "nullable": true
           },
+          "occurrence": {
+            "type": "string",
+            "nullable": true
+          },
+          "meteringPointAlias": {
+            "type": "string",
+            "nullable": true
+          },
+          "gridOperatorID": {
+            "type": "string",
+            "nullable": true
+          },
+          "gridOperatorID_SchemeAgencyIdentifier": {
+            "type": "string",
+            "nullable": true
+          },
+          "assetType": {
+            "type": "string",
+            "nullable": true
+          },
+          "darReference": {
+            "type": "string",
+            "nullable": true
+          },
           "streetCode": {
             "type": "string",
             "nullable": true
@@ -1488,7 +1389,23 @@
             "type": "string",
             "nullable": true
           },
+          "balanceSupplierId": {
+            "type": "string",
+            "nullable": true
+          },
           "balanceSupplierStartDate": {
+            "type": "string",
+            "nullable": true
+          },
+          "balanceSupplierId_SchemeAgencyIdentifier": {
+            "type": "string",
+            "nullable": true
+          },
+          "mpAddressWashInstructions": {
+            "type": "string",
+            "nullable": true
+          },
+          "protectedName": {
             "type": "string",
             "nullable": true
           }
@@ -1833,7 +1750,7 @@
             "nullable": true
           }
         },
-        "additionalProperties": { }
+        "additionalProperties": {}
       },
       "StringApiResponse": {
         "type": "object",
@@ -1932,7 +1849,7 @@
   },
   "security": [
     {
-      "Bearer": [ ]
+      "Bearer": []
     }
   ]
 }
