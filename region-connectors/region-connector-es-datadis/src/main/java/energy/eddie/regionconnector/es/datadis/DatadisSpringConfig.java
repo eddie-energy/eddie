@@ -34,6 +34,7 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.C
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
+import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -225,6 +226,7 @@ public class DatadisSpringConfig {
                 SUPPORTED_DATA_NEEDS,
                 DatadisRegionConnectorMetadata.getInstance(),
                 new DatadisStrategy(),
+                new DefaultEnergyDataTimeframeStrategy(DatadisRegionConnectorMetadata.getInstance()),
                 List.of()
         );
     }

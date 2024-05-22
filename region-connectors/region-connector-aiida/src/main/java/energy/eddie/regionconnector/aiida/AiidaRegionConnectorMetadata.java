@@ -2,6 +2,8 @@ package energy.eddie.regionconnector.aiida;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 
 import javax.annotation.Nullable;
 import java.time.Period;
@@ -14,6 +16,9 @@ public class AiidaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String MQTT_CLIENT_ID = "eddie-region-connector-aiida";
     public static final Period EARLIEST_START = Period.ZERO;
     public static final Period LATEST_END = Period.ofYears(9999);
+    public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(
+            GenericAiidaDataNeed.class
+    );
 
     @Nullable
     private static AiidaRegionConnectorMetadata instance = null;

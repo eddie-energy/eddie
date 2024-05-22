@@ -7,6 +7,7 @@ import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -182,6 +183,7 @@ class DataNeedCalculationServiceImplTest {
                 List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
                 regionConnectorMetadata,
                 new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
+                new DefaultEnergyDataTimeframeStrategy(regionConnectorMetadata),
                 List.of(
                         dataNeed -> true,
                         dataNeed -> false
@@ -211,6 +213,7 @@ class DataNeedCalculationServiceImplTest {
                 List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
                 regionConnectorMetadata,
                 new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
+                new DefaultEnergyDataTimeframeStrategy(regionConnectorMetadata),
                 List.of(
                         dataNeed -> true
                 )

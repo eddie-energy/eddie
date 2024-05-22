@@ -7,16 +7,13 @@ import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.utils.DataNeedWrapper;
-import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
+import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
+import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.EnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionTimeframeStrategy;
 import energy.eddie.regionconnector.shared.validation.GranularityChoice;
-import jakarta.annotation.Nullable;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -26,6 +23,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
     private final GranularityChoice granularityChoice;
     private final PermissionTimeframeStrategy strategy;
     private final List<Predicate<DataNeed>> additionalChecks;
+    private final EnergyDataTimeframeStrategy energyDataTimeframeStrategy;
 
     public DataNeedCalculationServiceImpl(
             List<Class<? extends DataNeed>> supportedDataNeeds,
@@ -35,6 +33,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
                 supportedDataNeeds,
                 regionConnectorMetadata,
                 new PermissionEndIsEnergyDataEndStrategy(regionConnectorMetadata.timeZone()),
+                new DefaultEnergyDataTimeframeStrategy(regionConnectorMetadata),
                 List.of()
         );
     }
@@ -43,6 +42,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
             List<Class<? extends DataNeed>> supportedDataNeeds,
             RegionConnectorMetadata regionConnectorMetadata,
             PermissionTimeframeStrategy strategy,
+            EnergyDataTimeframeStrategy energyDataTimeframeStrategy,
             List<Predicate<DataNeed>> additionalChecks
     ) {
         this.supportedDataNeeds = supportedDataNeeds;
@@ -50,6 +50,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         this.granularityChoice = new GranularityChoice(regionConnectorMetadata.supportedGranularities());
         this.strategy = strategy;
         this.additionalChecks = additionalChecks;
+        this.energyDataTimeframeStrategy = energyDataTimeframeStrategy;
     }
 
     @Override
@@ -60,7 +61,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         var supportedGranularities = supportedGranularities(dataNeed);
         Timeframe energyStartAndEndDate;
         try {
-            energyStartAndEndDate = calculateEnergyDataStartAndEndDateOrThrow(dataNeed);
+            energyStartAndEndDate = energyDataTimeframeStrategy.energyDataTimeframe(dataNeed);
         } catch (UnsupportedDataNeedException e) {
             return new DataNeedCalculation(false);
         }
@@ -101,27 +102,6 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
             return List.of();
         }
         return granularityChoice.findAll(vhdDN.minGranularity(), vhdDN.maxGranularity());
-    }
-
-    /**
-     * Calculates the start and end date of the energy data, if the data need requires energy data. Otherwise, it
-     * returns null.
-     *
-     * @param dataNeed the data need
-     * @return start and end date of the energy data.
-     * @throws UnsupportedDataNeedException if the data need is not meant for energy data
-     */
-    @Nullable
-    private Timeframe calculateEnergyDataStartAndEndDateOrThrow(DataNeed dataNeed) throws UnsupportedDataNeedException {
-        if (!(dataNeed instanceof TimeframedDataNeed timeframedDataNeed)) {
-            return null;
-        }
-        var now = LocalDate.now(regionConnectorMetadata.timeZone());
-        DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(timeframedDataNeed,
-                                                                                       now,
-                                                                                       regionConnectorMetadata.earliestStart(),
-                                                                                       regionConnectorMetadata.latestEnd());
-        return new Timeframe(wrapper.calculatedStart(), wrapper.calculatedEnd());
     }
 
     @Override
