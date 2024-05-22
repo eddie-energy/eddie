@@ -14,7 +14,7 @@
   --table-header-background-color: #017AA0; /* blue EDDIE */
   --table-header-color: #ffffff; /* light grey */
   --table-row-background-color: #ffffff; /* white */
-    --modal-background-color: #f0f0f0; /* white */
+  --modal-background-color: #f0f0f0; /* white */
 }
 
 nav {
@@ -53,16 +53,8 @@ h1, h2, .dataTables_filter input {
 #statusMessageTable_previous:not(.disabled), #statusMessageTable_next:not(.disabled) {
   color: var(--primary-color) !important;
 }
-#popup-modal:not(.hidden) {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-#popup-modal:not(.hidden) .relative.rounded-lg.shadow {
-  background-color: var(--modal-background-color);
-  color: var(--text-color);
-}
-#popup-modal button {
+
+.modal-button {
   background-color: var(--primary-color);
   color: #f3f3f3;
 }
