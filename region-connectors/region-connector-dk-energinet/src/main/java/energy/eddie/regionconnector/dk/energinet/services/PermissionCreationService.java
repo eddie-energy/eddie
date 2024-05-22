@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
@@ -71,8 +72,15 @@ public class PermissionCreationService {
             throw new UnsupportedDataNeedException(EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                    dataNeedId, UNSUPPORTED_GRANULARITIES_MESSAGE);
         }
+
+        var minimalViableGranularity = calculation.granularities().getFirst();
+        Granularity requestGranularity = switch (minimalViableGranularity) {
+            case P1D, P1M, P1Y -> minimalViableGranularity; // these are always available
+            default -> null; // the rest needs to be checked when the permission is accepted
+        };
+
         outbox.commit(new DKValidatedEvent(permissionId,
-                                           calculation.granularities().getFirst(),
+                                           requestGranularity,
                                            timeframe.start(),
                                            timeframe.end()));
         return new CreatedPermissionRequest(permissionId);

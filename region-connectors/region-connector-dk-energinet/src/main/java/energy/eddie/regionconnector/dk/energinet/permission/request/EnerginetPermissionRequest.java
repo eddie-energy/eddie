@@ -42,6 +42,9 @@ public class EnerginetPermissionRequest implements DkEnerginetPermissionRequest 
     @Enumerated(EnumType.STRING)
     private final PermissionProcessStatus status;
     private final ZonedDateTime created;
+    @Column(name = "errors", columnDefinition = "text")
+    @Nullable
+    private String errors;
 
     // just for JPA
     protected EnerginetPermissionRequest() {
@@ -57,6 +60,7 @@ public class EnerginetPermissionRequest implements DkEnerginetPermissionRequest 
         accessToken = null;
         status = null;
         created = null;
+        errors = null;
     }
 
     // Too many arguments for sonar
@@ -86,6 +90,7 @@ public class EnerginetPermissionRequest implements DkEnerginetPermissionRequest 
         this.granularity = granularity;
         this.status = status;
         this.created = created;
+        this.errors = null;
     }
 
     @Override
@@ -107,6 +112,11 @@ public class EnerginetPermissionRequest implements DkEnerginetPermissionRequest 
     @Override
     public String meteringPoint() {
         return meteringPoint;
+    }
+
+    @Override
+    public String errors() {
+        return errors;
     }
 
     @Override

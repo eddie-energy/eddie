@@ -13,25 +13,38 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public record IdentifiableApiResponseFilter(DkEnerginetPermissionRequest permissionRequest,
-                                            LocalDate dateFrom,
-                                            LocalDate dateTo) {
+public record IdentifiableApiResponseFilter() {
     private static final Logger LOGGER = LoggerFactory.getLogger(IdentifiableApiResponseFilter.class);
 
-    public Mono<IdentifiableApiResponse> filter(List<MyEnergyDataMarketDocumentResponse> response) {
+    public Mono<IdentifiableApiResponse> filter(
+            DkEnerginetPermissionRequest permissionRequest,
+            LocalDate dateFrom,
+            LocalDate dateTo,
+            List<MyEnergyDataMarketDocumentResponse> response
+    ) {
         var marketDocumentResponse = response.getFirst();
         if (Boolean.FALSE.equals(marketDocumentResponse.getSuccess())) {
-            return Mono.error(new ApiResponseException(marketDocumentResponse.getErrorCode(), marketDocumentResponse.getErrorText()));
+            return Mono.error(new ApiResponseException(marketDocumentResponse.getErrorCode(),
+                                                       marketDocumentResponse.getErrorText()));
         }
-        var timeInterval = Optional.ofNullable(marketDocumentResponse.getMyEnergyDataMarketDocument()).map(MyEnergyDataMarketDocument::getPeriodTimeInterval);
+        var timeInterval = Optional.ofNullable(marketDocumentResponse.getMyEnergyDataMarketDocument())
+                                   .map(MyEnergyDataMarketDocument::getPeriodTimeInterval);
         var permissionId = permissionRequest.permissionId();
         if (timeInterval.isEmpty()) {
-            LOGGER.warn("No metering data present in request for permissionId {} from {} to {}", permissionId, dateFrom, dateTo);
+            LOGGER.warn("No metering data present in request for permissionId {} from {} to {}",
+                        permissionId,
+                        dateFrom,
+                        dateTo);
             return Mono.empty();
         }
 
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Fetched metering data for permissionId {} from {} to {}, received data from {} to {}", permissionId, dateFrom, dateTo, timeInterval.get().getStart(), timeInterval.get().getEnd());
+            LOGGER.info("Fetched metering data for permissionId {} from {} to {}, received data from {} to {}",
+                        permissionId,
+                        dateFrom,
+                        dateTo,
+                        timeInterval.get().getStart(),
+                        timeInterval.get().getEnd());
         }
 
         return Mono.just(
