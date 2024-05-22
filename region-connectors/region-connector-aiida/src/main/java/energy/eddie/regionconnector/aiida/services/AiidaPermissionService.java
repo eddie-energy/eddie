@@ -1,16 +1,12 @@
 package energy.eddie.regionconnector.aiida.services;
 
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.TimeframedDataNeed;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.dataneeds.utils.DataNeedWrapper;
-import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDetailsDto;
@@ -34,45 +30,40 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriTemplate;
 
-import java.time.Clock;
-import java.time.LocalDate;
-import java.time.Period;
 import java.util.Optional;
 import java.util.UUID;
 
 import static energy.eddie.api.v0.PermissionProcessStatus.*;
-import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.EARLIEST_START;
-import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.LATEST_END;
 
 @Component
 public class AiidaPermissionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaPermissionService.class);
     private final Outbox outbox;
     private final DataNeedsService dataNeedsService;
-    private final Clock clock;
     private final AiidaConfiguration configuration;
     private final MqttService mqttService;
     private final AiidaPermissionRequestViewRepository viewRepository;
     private final JwtUtil jwtUtil;
+    private final DataNeedCalculationService<DataNeed> calculationService;
 
     public AiidaPermissionService(
             Outbox outbox,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")  // defined in core
             DataNeedsService dataNeedsService,
-            Clock clock,
             AiidaConfiguration configuration,
             MqttService mqttService,
             AiidaPermissionRequestViewRepository viewRepository,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // is injected from another Spring context
-            JwtUtil jwtUtil
+            JwtUtil jwtUtil,
+            DataNeedCalculationService<DataNeed> calculationService
     ) {
         this.outbox = outbox;
         this.dataNeedsService = dataNeedsService;
-        this.clock = clock;
         this.configuration = configuration;
         this.mqttService = mqttService;
         this.viewRepository = viewRepository;
         this.jwtUtil = jwtUtil;
+        this.calculationService = calculationService;
     }
 
     public QrCodeDto createValidateAndSendPermissionRequest(
@@ -81,36 +72,21 @@ public class AiidaPermissionService {
         var permissionId = UUID.randomUUID().toString();
         LOGGER.info("Creating new permission request with ID {}", permissionId);
 
-
         var dataNeed = dataNeedsService.findById(forCreation.dataNeedId())
                                        .orElseThrow(() -> new DataNeedNotFoundException(forCreation.dataNeedId()));
 
-        LocalDate today = LocalDate.now(clock);
-        if (!(dataNeed instanceof GenericAiidaDataNeed genericAiidaDataNeed))
+        var calculation = calculationService.calculate(dataNeed);
+        if (!calculation.supportsDataNeed() || calculation.energyDataTimeframe() == null) {
             throw new UnsupportedDataNeedException(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                   forCreation.dataNeedId(),
-                                                   "Only GenericDataNeeds are currently supported.");
-
-
-        DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(
-                genericAiidaDataNeed,
-                today,
-                // in case of open end/start, fixed values are used
-                EARLIEST_START,
-                LATEST_END
-        );
-
-
-        // use nice looking fixed values if data need uses open start/end --> only possible for AIIDA because it has no real limits how long data can be accessed
-        LocalDate startDate = getAppropriateStartDate(wrapper);
-        LocalDate endDate = getAppropriateEndDate(wrapper);
-
-        String terminationTopic = terminationTopicForPermissionId(permissionId);
+                                                   dataNeed.id(),
+                                                   "Unsupported data need");
+        }
+        var terminationTopic = terminationTopicForPermissionId(permissionId);
         var createdEvent = new CreatedEvent(permissionId,
                                             forCreation.connectionId(),
                                             forCreation.dataNeedId(),
-                                            startDate,
-                                            endDate,
+                                            calculation.energyDataTimeframe().start(),
+                                            calculation.energyDataTimeframe().end(),
                                             terminationTopic);
 
         outbox.commit(createdEvent);
@@ -122,39 +98,7 @@ public class AiidaPermissionService {
         var handshakeUrl = new UriTemplate(configuration.handshakeUrl()).expand(permissionId).toString();
         var jwtString = jwtUtil.createAiidaJwt(permissionId);
 
-        return new QrCodeDto(permissionId, genericAiidaDataNeed.name(), handshakeUrl, jwtString);
-    }
-
-    /**
-     * Returns the calculated start date from the wrapper or the fixed start date if the data need is using open start.
-     *
-     * @param wrapper Wrapper as returned from
-     *                {@link TimeframedDataNeedUtils#calculateRelativeStartAndEnd(TimeframedDataNeed, LocalDate, Period,
-     *                Period)}
-     * @return LocalDate to use as start date for the permission request.
-     */
-    private static LocalDate getAppropriateStartDate(DataNeedWrapper wrapper) {
-        if (wrapper.timeframedDataNeed()
-                   .duration() instanceof RelativeDuration relativeDuration && relativeDuration.start().isEmpty())
-            return LocalDate.of(2000, 1, 1);
-
-        return wrapper.calculatedStart();
-    }
-
-    /**
-     * Returns the calculated end date from the wrapper or the fixed end date if the data need is using open start.
-     *
-     * @param wrapper Wrapper as returned from
-     *                {@link TimeframedDataNeedUtils#calculateRelativeStartAndEnd(TimeframedDataNeed, LocalDate, Period,
-     *                Period)} (String, LocalDate, Period, Period)}
-     * @return LocalDate to use as end date for the permission request.
-     */
-    private static LocalDate getAppropriateEndDate(DataNeedWrapper wrapper) {
-        if (wrapper.timeframedDataNeed()
-                   .duration() instanceof RelativeDuration relativeDuration && relativeDuration.end().isEmpty())
-            return LocalDate.of(9999, 12, 31);
-
-        return wrapper.calculatedEnd();
+        return new QrCodeDto(permissionId, dataNeed.name(), handshakeUrl, jwtString);
     }
 
     private String terminationTopicForPermissionId(String permissionId) {

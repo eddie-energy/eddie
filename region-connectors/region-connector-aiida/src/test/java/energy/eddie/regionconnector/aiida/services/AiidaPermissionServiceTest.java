@@ -1,11 +1,14 @@
 package energy.eddie.regionconnector.aiida.services;
 
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.duration.AbsoluteDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -23,23 +26,17 @@ import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
 import org.eclipse.paho.mqttv5.common.MqttException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.REGION_CONNECTOR_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -50,14 +47,22 @@ class AiidaPermissionServiceTest {
     private final String HANDSHAKE_URL = "http://localhost:8080/region-connectors/aiida/permission-request/{permissionId}";
     private final String connectionId = "testConnId";
     private final String dataNeedId = "testDataNeedId";
+    @Spy
+    @SuppressWarnings("unused")
+    private final PlainAiidaConfiguration config = new PlainAiidaConfiguration(
+            "customerId",
+            4,
+            HANDSHAKE_URL,
+            "tcp://localhost:1883",
+            null,
+            null
+    );
     @Mock
     private DataNeedsService mockDataNeedsService;
     @Mock
     private Outbox mockOutbox;
     @Mock
     private GenericAiidaDataNeed mockDataNeed;
-    @Mock
-    private AbsoluteDuration absoluteDuration;
     @Mock
     private ValidatedHistoricalDataDataNeed unsupportedDataNeed;
     @Mock
@@ -70,48 +75,32 @@ class AiidaPermissionServiceTest {
     private MqttDto mockMqttDto;
     @Mock
     private JwtUtil mockJwtUtil;
+    @Mock
+    private DataNeedCalculationService<DataNeed> calculationService;
     @Captor
     private ArgumentCaptor<PermissionEvent> permissionEventCaptor;
+    @InjectMocks
     private AiidaPermissionService service;
-
-    @BeforeEach
-    void setUp() {
-        PlainAiidaConfiguration config = new PlainAiidaConfiguration(
-                "customerId",
-                4,
-                HANDSHAKE_URL,
-                "tcp://localhost:1883",
-                null,
-                null
-        );
-        var fixedClock = Clock.fixed(Instant.parse("2023-10-15T15:00:00Z"),
-                                     REGION_CONNECTOR_ZONE_ID);
-        service = new AiidaPermissionService(mockOutbox,
-                                             mockDataNeedsService,
-                                             fixedClock,
-                                             config,
-                                             mockMqttService,
-                                             mockViewRepository,
-                                             mockJwtUtil);
-    }
 
     @Test
     void givenNonExistingDataNeedId_createValidateAndSendPermissionRequest_throwsException() {
         // Given
-        var dataNeedId = "NonExisting";
+        var nonExisting = "NonExisting";
         when(mockDataNeedsService.findById(anyString())).thenReturn(Optional.empty());
 
         // Then
         assertThrows(DataNeedNotFoundException.class,
                      // When
                      () -> service.createValidateAndSendPermissionRequest(new PermissionRequestForCreation(
-                             "testConnId", dataNeedId)));
+                             "testConnId", nonExisting)));
     }
 
     @Test
     void givenUnsupportedDataNeed_createValidateAndSendPermissionRequest_throwsException() {
         // Given
         when(mockDataNeedsService.findById(anyString())).thenReturn(Optional.of(unsupportedDataNeed));
+        when(calculationService.calculate(unsupportedDataNeed))
+                .thenReturn(new DataNeedCalculation(false));
 
         // When, Then
         assertThrows(UnsupportedDataNeedException.class,
@@ -125,11 +114,15 @@ class AiidaPermissionServiceTest {
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
         when(mockDataNeed.name()).thenReturn("Test Service");
-        when(mockDataNeed.duration()).thenReturn(absoluteDuration);
-        when(absoluteDuration.start()).thenReturn(start);
-        when(absoluteDuration.end()).thenReturn(end);
         when(mockDataNeedsService.findById(anyString())).thenReturn(Optional.of(mockDataNeed));
         when(mockJwtUtil.createAiidaJwt(anyString())).thenReturn("myToken");
+        when(calculationService.calculate(mockDataNeed))
+                .thenReturn(new DataNeedCalculation(
+                        true,
+                        List.of(),
+                        new Timeframe(start, end),
+                        new Timeframe(start, end)
+                ));
 
         // When
         var dto = service.createValidateAndSendPermissionRequest(new PermissionRequestForCreation(connectionId,
@@ -152,10 +145,14 @@ class AiidaPermissionServiceTest {
         var forCreation = new PermissionRequestForCreation(connectionId, dataNeedId);
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
-        when(mockDataNeed.duration()).thenReturn(absoluteDuration);
-        when(absoluteDuration.start()).thenReturn(start);
-        when(absoluteDuration.end()).thenReturn(end);
         when(mockDataNeedsService.findById(anyString())).thenReturn(Optional.of(mockDataNeed));
+        when(calculationService.calculate(mockDataNeed))
+                .thenReturn(new DataNeedCalculation(
+                        true,
+                        List.of(),
+                        new Timeframe(start, end),
+                        new Timeframe(start, end)
+                ));
 
         // When
         service.createValidateAndSendPermissionRequest(forCreation);
@@ -199,7 +196,7 @@ class AiidaPermissionServiceTest {
 
         // Then
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.REJECTED
-                && event.permissionId().equals(permissionId)));
+                                                   && event.permissionId().equals(permissionId)));
     }
 
     @Test
@@ -235,7 +232,7 @@ class AiidaPermissionServiceTest {
 
         // Then
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.UNFULFILLABLE
-                && event.permissionId().equals(permissionId)));
+                                                   && event.permissionId().equals(permissionId)));
     }
 
     @Test
@@ -298,8 +295,8 @@ class AiidaPermissionServiceTest {
 
         // Then
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.FAILED_TO_TERMINATE
-                && event instanceof FailedToTerminateEvent failedEvent
-                && failedEvent.message().equals(expectedMessage)));
+                                                   && event instanceof FailedToTerminateEvent failedEvent
+                                                   && failedEvent.message().equals(expectedMessage)));
     }
 
     @Test
@@ -315,8 +312,8 @@ class AiidaPermissionServiceTest {
 
         // Then
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.FAILED_TO_TERMINATE
-                && event instanceof FailedToTerminateEvent failedEvent
-                && failedEvent.message().contains("1234567")));
+                                                   && event instanceof FailedToTerminateEvent failedEvent
+                                                   && failedEvent.message().contains("1234567")));
     }
 
     @Test

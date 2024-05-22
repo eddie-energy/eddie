@@ -39,6 +39,7 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
+import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -196,6 +197,7 @@ public class NlMijnAansluitingSpringConfig {
                 SUPPORTED_DATA_NEEDS,
                 MijnAansluitingRegionConnectorMetadata.getInstance(),
                 new PermissionEndIsEnergyDataEndStrategy(NL_ZONE_ID),
+                new DefaultEnergyDataTimeframeStrategy(MijnAansluitingRegionConnectorMetadata.getInstance()),
                 List.of(new SupportsEnergyTypePredicate())
         );
     }
