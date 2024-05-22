@@ -1,61 +1,48 @@
-import { html, LitElement } from "lit";
-import { createRef, ref } from "lit/directives/ref.js";
-
-const VARIANT_ICONS = {
-  info: "info-circle",
-  success: "check2-circle",
-  warning: "exclamation-triangle",
-  danger: "exclamation-octagon",
-};
+import { LitElement } from "lit";
 
 class PermissionRequestFormBase extends LitElement {
-  ERROR_TITLE = "An error occurred";
-  MAX_RETRIES = 60; // Retry polling for 5 minutes
-
-  static properties = {
-    alerts: { type: Array },
-  };
-
-  restartPollingButtonRef = createRef();
-
   constructor() {
     super();
-    this.alerts = [];
+
+    /**
+     * Base URL of the current script inferred from the import URL.
+     * @type {string}
+     */
+    this.BASE_URL = new URL(import.meta.url).href
+      .replace("ce.js", "")
+      .slice(0, -1);
+
+    /**
+     * Endpoint for sending permission requests inferred from the base URL.
+     * @type {string}
+     */
+    this.REQUEST_URL = this.BASE_URL + "/permission-request";
   }
 
-  permissionId = null;
-  location = null;
-
-  awaitRetry(delay, maxRetries) {
-    return new Promise((resolve) => setTimeout(resolve, delay)).then(() => {
-      if (maxRetries > 0) {
-        return this.requestPermissionStatus(this.location, maxRetries - 1);
-      }
-
-      // Handle the case when the maximum number of retries is reached
-      const retryButton = html`
-        <sl-button
-          ref=${ref(this.restartPollingButtonRef)}
-          variant="neutral"
-          outline
-          @click="${this.startOrRestartAutomaticPermissionStatusPolling}"
-          >Restart polling
-        </sl-button>
-      `;
-
-      const warningTitle = "Automatic query stopped.";
-      const warningMessage =
-        "Permission status query exceeded maximum allowed attempts.\n" +
-        "Click the button below to restart the automatic polling.";
-      this.notify({
-        title: warningTitle,
-        message: warningMessage,
-        variant: "warning",
-        extraFunctionality: [retryButton],
-      });
+  /**
+   * Dispatch a custom event to render an error notification.
+   * @param {string} message Error details to display.
+   * @param {number} duration Duration in milliseconds to display the notification for.
+   */
+  error(message, duration = Infinity) {
+    this.notify({
+      title: "An error occurred",
+      message,
+      variant: "danger",
+      duration,
     });
   }
 
+  /**
+   * Dispatch a custom event to render a user notification.
+   * @param {Object} notification
+   * @param {string} notification.title Title of the notification.
+   * @param {string} notification.message Notification details to display.
+   * @param {string} notification.reason Optional reason for a notification.
+   * @param {"info"|"success"|"warning"|"danger"} notification.variant Indicates the urgency of the notification.
+   * @param {number} notification.duration Duration in milliseconds for which the notification is displayed.
+   * @param {string[]|Node[]} notification.extraFunctionality Additional content to render at the end of the notification.
+   */
   notify({
     title,
     message,
@@ -64,80 +51,79 @@ class PermissionRequestFormBase extends LitElement {
     duration = Infinity,
     extraFunctionality = [],
   }) {
-    const alert = html`<sl-alert
-        variant="${variant}"
-        duration="${duration}"
-        closable
-        open
-      >
-        <sl-icon name="${VARIANT_ICONS[variant]}" slot="icon"></sl-icon>
-        <p>
-          <strong>${title}</strong><br />
-          ${message}${reason && " Reason: " + reason}
-        </p>
-        ${extraFunctionality.map((element) => element)}
-      </sl-alert>
-      <br />`;
-    this.alerts.push(alert);
-    this.requestUpdate();
+    const event = new CustomEvent("eddie-notification", {
+      detail: {
+        title,
+        message,
+        reason,
+        variant,
+        duration,
+        extraFunctionality,
+      },
+      bubbles: true,
+      composed: true,
+    });
+
+    this.dispatchEvent(event);
   }
 
-  startOrRestartAutomaticPermissionStatusPolling = () => {
-    if (this.restartPollingButtonRef.value) {
-      const parent = this.restartPollingButtonRef.value.parentElement;
-      this.restartPollingButtonRef.value.remove();
-      parent.remove();
+  /**
+   * Dispatch a custom event to handle that a permission request was created.
+   * @param {string} location The location of the created permission request.
+   */
+  handlePermissionRequestCreated(location) {
+    const event = new CustomEvent("eddie-request-created", {
+      detail: {
+        location,
+      },
+      bubbles: true,
+      composed: true,
+    });
+
+    this.dispatchEvent(event);
+  }
+
+  /**
+   * Create a standard permission request with the given payload.
+   * Errors are thrown as an `Error` object with the message as the error message.
+   * This includes status codes outside the 2xx range.
+   * @param {any} payload The request body to send. Will be converted to a JSON string using `JSON.stringify`.
+   * @param {RequestInit} options Additional options to pass to the fetch call.
+   * @returns {Promise<any>} The response body as JSON.
+   * @throws {Error} If the request fails or the response has a status code outside the 2xx range.
+   */
+  async createPermissionRequest(payload, options = {}) {
+    const response = await fetch(this.REQUEST_URL, {
+      body: JSON.stringify(payload),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      ...options,
+    });
+
+    if (response.ok) {
+      if (response.status === 201) {
+        const location = response.headers.get("Location");
+        if (!location) {
+          throw new Error("Header 'Location' is missing");
+        }
+        this.handlePermissionRequestCreated(this.BASE_URL + location);
+      }
+    } else {
+      const { errors } = await response.json();
+
+      if (errors && errors.length > 0) {
+        const message = errors.map((error) => error.message).join(". ");
+        throw new Error(message);
+      }
+
+      throw new Error(
+        "Something went wrong when creating the permission request, please try again later."
+      );
     }
 
-    this.requestPermissionStatus(this.location, this.MAX_RETRIES)
-      .then()
-      .catch((error) => {
-        this.notify({
-          title: this.ERROR_TITLE,
-          message: error,
-          variant: "danger",
-        });
-      });
-  };
-
-  handleStatus(status, reason = "") {
-    const title = "Request completed!";
-
-    if (status === "ACCEPTED") {
-      this.notify({
-        title,
-        message: "Your permission request was accepted.",
-        variant: "success",
-        duration: 5000,
-      });
-    } else if (status === "REJECTED") {
-      this.notify({
-        title,
-        message: "The permission request has been rejected.",
-        reason,
-      });
-    } else if (status === "INVALID") {
-      this.notify({
-        title,
-        message: "The permission request was invalid.",
-        reason,
-        variant: "warning",
-      });
-    } else if (status === "TERMINATED") {
-      this.notify({
-        title,
-        message: "The permission request was terminated.",
-        reason,
-        variant: "warning",
-      });
-    } else if (status === "FULFILLED") {
-      this.notify({
-        title,
-        message: "The permission request was fulfilled.",
-        variant: "success",
-        duration: 5000,
-      });
-    }
+    return response.json();
   }
 }
 

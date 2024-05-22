@@ -5,11 +5,6 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/compone
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/button/button.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/alert/alert.js";
 
-const BASE_URL = new URL(import.meta.url).href
-  .replace("ce.js", "")
-  .slice(0, -1);
-const REQUEST_URL = BASE_URL + "/permission-request";
-
 class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
@@ -18,7 +13,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     companyId: { attribute: "company-id" },
     accountingPointId: { attribute: "accounting-point-id" },
     _requestId: { type: String },
-    _requestStatus: { type: String },
+    _isPermissionRequestCreated: { type: Boolean },
     _isSubmitDisabled: { type: Boolean },
   };
 
@@ -26,7 +21,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     super();
 
     this._requestId = "";
-    this._requestStatus = "";
+    this._isPermissionRequestCreated = false;
     this._isSubmitDisabled = false;
   }
 
@@ -47,122 +42,14 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     this._isSubmitDisabled = true;
 
     this.createPermissionRequest(jsonData)
-      .then()
-      .catch((error) =>
-        this.notify({
-          title: this.ERROR_TITLE,
-          message: error,
-          variant: "danger",
-        })
-      )
-      .finally(() => {
-        // request failed if no request status was set
-        if (!this._requestStatus) {
-          this._isSubmitDisabled = false
-        }
+      .then((result) => {
+        this._requestId = result["cmRequestId"];
+        this._isPermissionRequestCreated = true;
+      })
+      .catch((error) => {
+        this._isSubmitDisabled = false;
+        this.error(error);
       });
-  }
-
-  async createPermissionRequest(formData) {
-    try {
-      const response = await fetch(REQUEST_URL, {
-        body: JSON.stringify(formData),
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-      });
-      const result = await response.json();
-
-      if (response.status === 201) {
-        const locationHeader = "Location";
-        if (response.headers.has(locationHeader)) {
-          this.location = BASE_URL + response.headers.get(locationHeader);
-        } else {
-          throw new Error("Header 'Location' is missing");
-        }
-
-        this.notify({
-          title: "Permission request created!",
-          message: "Your permission request was created successfully.",
-          variant: "success",
-          duration: 5000,
-        });
-      } else if (response.status === 400) {
-        // An error on the client side happened, and it should be displayed as alert in the form
-        let errorMessage;
-
-        if (result["errors"] == null || result["errors"].length === 0) {
-          errorMessage =
-            "Something went wrong when creating the permission request, please try again later.";
-        } else {
-          errorMessage = result["errors"]
-            .map(function (error) {
-              return error.message;
-            })
-            .join("<br>");
-        }
-        this.notify({
-          title: this.ERROR_TITLE,
-          message: errorMessage,
-          variant: "danger",
-        });
-
-        return;
-      } else {
-        const errorMessage =
-          "Something went wrong when creating the permission request, please try again later.";
-        this.notify({
-          title: this.ERROR_TITLE,
-          message: errorMessage,
-          variant: "danger",
-        });
-
-        return;
-      }
-
-      this._requestId = result["cmRequestId"];
-      this.startOrRestartAutomaticPermissionStatusPolling();
-    } catch (e) {
-      this.notify({ title: this.ERROR_TITLE, message: e, variant: "danger" });
-    }
-  }
-
-  async requestPermissionStatus(location, maxRetries) {
-    let response = await fetch(location);
-
-    if (response.status === 404) {
-      // No permission request was created
-      this.notify({
-        title: this.ERROR_TITLE,
-        message: "Your permission request could not be created.",
-        variant: "danger",
-      });
-      return;
-    }
-    if (response.status !== 200) {
-      // An unexpected status code was sent, try again in 10 seconds
-      const millisecondsToWait = 10000;
-      this.notify({
-        title: this.ERROR_TITLE,
-        message: `An unexpected error happened, trying again in ${
-          millisecondsToWait / 1000
-        } seconds`,
-        variant: "danger",
-        duration: millisecondsToWait,
-      });
-      await this.awaitRetry(millisecondsToWait, maxRetries);
-      return;
-    }
-
-    const result = await response.json();
-    const currentStatus = result["status"];
-    this._requestStatus = currentStatus;
-
-    this.handleStatus(currentStatus, result["message"]);
-
-    // Wait for status update
-    await this.awaitRetry(5000, maxRetries);
   }
 
   render() {
@@ -192,23 +79,12 @@ class PermissionRequestForm extends PermissionRequestFormBase {
               type="submit"
               variant="primary"
               ?disabled="${this._isSubmitDisabled}"
-              >Connect</sl-button
-            >
+              >Connect
+            </sl-button>
           </div>
         </form>
-
-        ${this._isSubmitDisabled
-          ? html`<br />
-              <sl-alert open>
-                <sl-icon slot="icon" name="info-circle"></sl-icon>
-                <p>Your permission request is being processed.</p>
-                <p>
-                  Please wait for the request to finish. This process may take
-                  several minutes!
-                </p>
-              </sl-alert>`
-          : ""}
-        ${this._requestStatus &&
+        
+        ${this._isPermissionRequestCreated ?
         html`<br />
           <sl-alert open>
             <sl-icon slot="icon" name="info-circle"></sl-icon>
@@ -216,7 +92,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             <p>
               The Consent Request ID for this connection is: ${this._requestId}
             </p>
-            <p>The request status is: ${this._requestStatus}</p>
 
             <p>
               Further steps are required at the website of the permission
@@ -230,10 +105,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
                   Visit permission administrator website
                 </sl-button>`
               : ""}
-          </sl-alert>`}
+          </sl-alert>` : ""}
       </div>
-
-      ${this.alerts}
     `;
   }
 }

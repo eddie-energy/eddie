@@ -20,17 +20,14 @@ class EsDatadisTest extends E2eTestSetup {
         page.getByLabel("CUPS").fill("bar");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
 
-        assertThat(page.locator("es-datadis-pa-ce")).containsText(
-                "Permission request created! Your permission request was created successfully.");
+        assertThat(page.locator("body")).containsText(
+                "Status: Request Validated The permission request has been validated.");
 
         // Datadis API may take a long time to respond
-        var locator = page.locator("es-datadis-pa-ce",
-                                   new Page.LocatorOptions().setHasText(
-                                           "Request completed! The permission request was invalid. Reason: Given NIF does not exist"));
+        var locator = page.locator("body", new Page.LocatorOptions().setHasText("Status: Invalid Request"));
         locator.waitFor(new Locator.WaitForOptions().setTimeout(120_000));  // 2 min
-        assertThat(locator).containsText("Permission request created! Your permission request was created successfully.");
-        assertThat(page.locator("es-datadis-pa-ce")).containsText(
-                "Request completed! The permission request was invalid. Reason: Given NIF does not exist");
-        assertThat(page.locator("es-datadis-pa-ce")).containsText("The request status is: INVALID");
+
+        assertThat(locator).containsText("Status: Invalid Request");
+        assertThat(locator).containsText("Given NIF does not exist");
     }
 }
