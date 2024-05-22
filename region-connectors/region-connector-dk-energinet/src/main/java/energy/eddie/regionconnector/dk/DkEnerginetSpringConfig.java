@@ -21,10 +21,12 @@ import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionEventRepository;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
+import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableAccountingPointDetails;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.SeriesPeriodBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.TimeSeriesBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
+import energy.eddie.regionconnector.dk.energinet.services.AccountingPointDetailsService;
 import energy.eddie.regionconnector.dk.energinet.services.PollingService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
@@ -35,6 +37,7 @@ import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
+import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -68,6 +71,11 @@ public class DkEnerginetSpringConfig {
     @Bean
     public Flux<IdentifiableApiResponse> identifiableMeterReadingFlux(PollingService pollingService) {
         return pollingService.identifiableMeterReadings();
+    }
+
+    @Bean
+    public Flux<IdentifiableAccountingPointDetails> identifiableAccountingPointDetailsFlux(AccountingPointDetailsService accountingPointDetailsService) {
+        return accountingPointDetailsService.identifiableMeteringPointDetailsFlux();
     }
 
     @Bean
@@ -118,6 +126,7 @@ public class DkEnerginetSpringConfig {
     public ObjectMapper objectMapper() {
         return new ObjectMapper()
                 .registerModule(new JavaTimeModule())
+                .registerModule(new JsonNullableModule())
                 .registerModule(new Jdk8Module());
     }
 

@@ -56,6 +56,8 @@ class PermissionRequestControllerTest {
     private DkPermissionEventRepository eventRepository;
     @MockBean
     private Flux<IdentifiableApiResponse> unused;
+    @MockBean
+    private Flux<IdentifiableMeteringPointDetails> unused2;
     @Autowired
     private ObjectMapper mapper;
 
