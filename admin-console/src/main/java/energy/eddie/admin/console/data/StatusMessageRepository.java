@@ -13,4 +13,6 @@ public interface StatusMessageRepository extends JpaRepository<StatusMessage, Lo
                                 ORDER BY permission_id, start_date DESC, id DESC
             ) subquery ORDER BY start_date DESC;""", nativeQuery = true)
     List<StatusMessage> findLatestStatusMessageForAllPermissions();
+
+    List<StatusMessage> findByPermissionIdOrderByStartDateDesc(String permissionId);
 }

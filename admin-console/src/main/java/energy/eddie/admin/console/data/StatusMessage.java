@@ -2,10 +2,6 @@ package energy.eddie.admin.console.data;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-
 @Entity
 @Table(name = "status_messages", schema = "admin_console")
 public class StatusMessage {
@@ -68,12 +64,4 @@ public class StatusMessage {
     public String getStatus() {
         return status;
     }
-
-    public LocalDate getParsedStartDate() {
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
-        assert this.startDate != null;
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse(this.startDate, formatter);
-        return zonedDateTime.toLocalDate();
-    }
-
 }
