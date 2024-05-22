@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.dk.energinet;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 
@@ -22,7 +23,8 @@ public class EnerginetRegionConnectorMetadata implements RegionConnectorMetadata
                                                                             Granularity.P1M,
                                                                             Granularity.P1Y);
     public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(
-            ValidatedHistoricalDataDataNeed.class
+            ValidatedHistoricalDataDataNeed.class,
+            AccountingPointDataNeed.class
     );
 
     @Nullable

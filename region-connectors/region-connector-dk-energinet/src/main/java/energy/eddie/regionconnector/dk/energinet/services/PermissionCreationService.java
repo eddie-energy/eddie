@@ -1,7 +1,9 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
@@ -17,7 +19,10 @@ import energy.eddie.regionconnector.dk.energinet.permission.events.DkMalformedEv
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.UUID;
+
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 
 @Service
 public class PermissionCreationService {
@@ -60,12 +65,26 @@ public class PermissionCreationService {
         }
         var calculation = dataNeedCalculationService.calculate(dataNeed.get());
         var timeframe = calculation.energyDataTimeframe();
-        if (!calculation.supportsDataNeed() || timeframe == null) {
+        if (!calculation.supportsDataNeed()) {
             outbox.commit(new DkMalformedEvent(permissionId,
                                                new AttributeError(DATA_NEED_ID, UNSUPPORTED_DATA_NEED_MESSAGE)));
             throw new UnsupportedDataNeedException(EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                    dataNeedId, UNSUPPORTED_DATA_NEED_MESSAGE);
         }
+        if (timeframe != null) {
+            createValidatedHistoricalDataEvent(calculation, permissionId, dataNeedId, timeframe);
+        } else {
+            createAccountingPointMasterDataEvent(permissionId);
+        }
+        return new CreatedPermissionRequest(permissionId);
+    }
+
+    private void createValidatedHistoricalDataEvent(
+            DataNeedCalculation calculation,
+            String permissionId,
+            String dataNeedId,
+            Timeframe timeframe
+    ) throws UnsupportedDataNeedException {
         if (calculation.granularities() == null || calculation.granularities().isEmpty()) {
             outbox.commit(new DkMalformedEvent(permissionId,
                                                new AttributeError(DATA_NEED_ID, UNSUPPORTED_GRANULARITIES_MESSAGE)));
@@ -79,10 +98,21 @@ public class PermissionCreationService {
             default -> null; // the rest needs to be checked when the permission is accepted
         };
 
-        outbox.commit(new DKValidatedEvent(permissionId,
-                                           requestGranularity,
-                                           timeframe.start(),
-                                           timeframe.end()));
-        return new CreatedPermissionRequest(permissionId);
+        outbox.commit(new DKValidatedEvent(
+                permissionId,
+                requestGranularity,
+                timeframe.start(),
+                timeframe.end()
+        ));
+    }
+
+    private void createAccountingPointMasterDataEvent(String permissionId) {
+        LocalDate today = LocalDate.now(DK_ZONE_ID);
+        outbox.commit(new DKValidatedEvent(
+                permissionId,
+                null,
+                today,
+                today
+        ));
     }
 }

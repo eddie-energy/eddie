@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetDataSourceInformation;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionEventRepository;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
+import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableAccountingPointDetails;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionCreationService;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
@@ -55,9 +56,9 @@ class PermissionRequestControllerTest {
     @MockBean
     private DkPermissionEventRepository eventRepository;
     @MockBean
-    private Flux<IdentifiableApiResponse> unused;
+    private Flux<IdentifiableApiResponse> unusedIdentifiableApiResponseFlux;
     @MockBean
-    private Flux<IdentifiableMeteringPointDetails> unused2;
+    private Flux<IdentifiableAccountingPointDetails> unusedIdentifiableMeteringPointDetailsFlux;
     @Autowired
     private ObjectMapper mapper;
 

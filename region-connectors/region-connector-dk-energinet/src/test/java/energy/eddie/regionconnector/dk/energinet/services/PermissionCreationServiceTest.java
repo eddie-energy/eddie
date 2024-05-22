@@ -6,6 +6,7 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
@@ -44,6 +45,8 @@ class PermissionCreationServiceTest {
     private AiidaDataNeed aiidaDataNeed;
     @Mock
     private ValidatedHistoricalDataDataNeed vhdDataNeed;
+    @Mock
+    private AccountingPointDataNeed accountingPointDataNeed;
     @Mock
     private DataNeedCalculationService<DataNeed> calculationService;
     @InjectMocks
@@ -161,6 +164,42 @@ class PermissionCreationServiceTest {
         assertAll(
                 () -> assertEquals(now.minusYears(2), validated.start()),
                 () -> assertEquals(now.plusYears(2), validated.end())
+        );
+    }
+
+    @Test
+    void testCreatePermissionRequest_forAccountingPointDataNeed_emitsValidated() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+        // Given
+        var request = new PermissionRequestForCreation("cid",
+                                                       "refreshToken",
+                                                       "meteringPointId",
+                                                       "dnid");
+        var now = LocalDate.now(ZoneOffset.UTC);
+        when(dataNeedsService.findById(any()))
+                .thenReturn(Optional.of(accountingPointDataNeed));
+
+        when(calculationService.calculate(accountingPointDataNeed))
+                .thenReturn(new DataNeedCalculation(true,
+                                                    List.of(Granularity.PT15M),
+                                                    null,
+                                                    null));
+
+        // When
+        service.createPermissionRequest(request);
+        // Then
+        verify(outbox).commit(createdCaptor.capture());
+        verify(outbox).commit(validatedCaptor.capture());
+        var created = createdCaptor.getValue();
+        assertAll(
+                () -> assertEquals("cid", created.connectionId()),
+                () -> assertEquals("refreshToken", created.refreshToken()),
+                () -> assertEquals("meteringPointId", created.meteringPointId()),
+                () -> assertEquals("dnid", created.dataNeedId())
+        );
+        var validated = validatedCaptor.getValue();
+        assertAll(
+                () -> assertEquals(now, validated.start()),
+                () -> assertEquals(now, validated.end())
         );
     }
 }
