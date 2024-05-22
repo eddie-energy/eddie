@@ -45,4 +45,24 @@ public class EnedisRegionConnectorMetadata implements RegionConnectorMetadata {
     public long coveredMeteringPoints() {
         return 36951446;
     }
+
+    @Override
+    public Period earliestStart() {
+        return PERIOD_EARLIEST_START;
+    }
+
+    @Override
+    public Period latestEnd() {
+        return PERIOD_LATEST_END;
+    }
+
+    @Override
+    public List<Granularity> supportedGranularities() {
+        return SUPPORTED_GRANULARITIES;
+    }
+
+    @Override
+    public ZoneId timeZone() {
+        return ZONE_ID_FR;
+    }
 }

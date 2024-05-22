@@ -52,4 +52,24 @@ public class EnerginetRegionConnectorMetadata implements RegionConnectorMetadata
     public long coveredMeteringPoints() {
         return 3300000;
     }
+
+    @Override
+    public Period earliestStart() {
+        return PERIOD_EARLIEST_START;
+    }
+
+    @Override
+    public Period latestEnd() {
+        return PERIOD_LATEST_END;
+    }
+
+    @Override
+    public List<Granularity> supportedGranularities() {
+        return SUPPORTED_GRANULARITIES;
+    }
+
+    @Override
+    public ZoneId timeZone() {
+        return DK_ZONE_ID;
+    }
 }

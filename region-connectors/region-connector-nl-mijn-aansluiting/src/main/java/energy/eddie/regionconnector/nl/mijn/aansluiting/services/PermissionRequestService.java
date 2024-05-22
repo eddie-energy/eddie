@@ -1,16 +1,14 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.services;
 
 import com.nimbusds.oauth2.sdk.ParseException;
-import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.dataneeds.utils.DataNeedWrapper;
-import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.OAuthManager;
@@ -23,7 +21,6 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlVali
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
-import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -33,7 +30,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata.*;
+import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata.NL_ZONE_ID;
+import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
 @Service
 public class PermissionRequestService {
@@ -45,6 +43,7 @@ public class PermissionRequestService {
     private final Outbox outbox;
     private final DataNeedsService dataNeedService;
     private final NlPermissionRequestRepository permissionRequestRepository;
+    private final DataNeedCalculationService<DataNeed> calculationService;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     // The DataNeedsService is autowired from another spring context
@@ -52,12 +51,14 @@ public class PermissionRequestService {
             OAuthManager oAuthManager,
             Outbox outbox,
             DataNeedsService dataNeedService,
-            NlPermissionRequestRepository permissionRequestRepository
+            NlPermissionRequestRepository permissionRequestRepository,
+            DataNeedCalculationService<DataNeed> calculationService
     ) {
         this.oAuthManager = oAuthManager;
         this.outbox = outbox;
         this.dataNeedService = dataNeedService;
         this.permissionRequestRepository = permissionRequestRepository;
+        this.calculationService = calculationService;
     }
 
     public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation permissionRequest) throws DataNeedNotFoundException, UnsupportedDataNeedException {
@@ -76,18 +77,19 @@ public class PermissionRequestService {
             ));
             throw new DataNeedNotFoundException(permissionRequest.dataNeedId());
         }
-        if (!(wrapper.get() instanceof ValidatedHistoricalDataDataNeed dataNeed)
-            || !SUPPORTED_ENERGY_TYPES.contains(dataNeed.energyType())) {
-
+        var dataNeed = wrapper.get();
+        var calculation = calculationService.calculate(dataNeed);
+        if (!calculation.supportsDataNeed()
+            || calculation.energyDataTimeframe() == null
+            || calculation.permissionTimeframe() == null) {
             outbox.commit(new NlMalformedEvent(permissionId,
                                                List.of(new AttributeError(DATA_NEED_ID,
                                                                           UNSUPPORTED_DATA_NEED_MESSAGE))));
             throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID,
-                                                   wrapper.get().id(),
+                                                   dataNeed.id(),
                                                    UNSUPPORTED_DATA_NEED_MESSAGE);
         }
-        Granularity granularity = findGranularity(dataNeed.minGranularity(), dataNeed.maxGranularity());
-        if (granularity == null) {
+        if (calculation.granularities() == null || calculation.granularities().isEmpty()) {
             outbox.commit(new NlMalformedEvent(permissionId,
                                                List.of(new AttributeError(DATA_NEED_ID,
                                                                           UNSUPPORTED_GRANULARITY_MESSAGE))));
@@ -95,40 +97,16 @@ public class PermissionRequestService {
                                                    dataNeed.id(),
                                                    UNSUPPORTED_GRANULARITY_MESSAGE);
         }
-
-        DataNeedWrapper timeframe;
-        try {
-            timeframe = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(dataNeed, now.toLocalDate(),
-                                                                             MAX_PERIOD_IN_PAST,
-                                                                             MAX_PERIOD_IN_FUTURE);
-        } catch (UnsupportedDataNeedException e) {
-            outbox.commit(new NlMalformedEvent(permissionId,
-                                               List.of(new AttributeError(DATA_NEED_ID, e.getMessage()))));
-            throw e;
-        }
         OAuthRequestPayload oauthRequest = oAuthManager.createAuthorizationUrl(
                 permissionRequest.verificationCode());
         outbox.commit(new NlValidatedEvent(permissionId,
                                            oauthRequest.state(),
                                            oauthRequest.codeVerifier(),
-                                           granularity,
-                                           timeframe.calculatedStart(),
-                                           timeframe.calculatedEnd()
+                                           calculation.granularities().getFirst(),
+                                           calculation.permissionTimeframe().start(),
+                                           calculation.permissionTimeframe().end()
         ));
         return new CreatedPermissionRequest(permissionId, oauthRequest.uri());
-    }
-
-    @Nullable
-    private static Granularity findGranularity(
-            Granularity min,
-            Granularity max
-    ) {
-        for (Granularity granularity : SUPPORTED_GRANULARITIES) {
-            if (granularity.minutes() >= min.minutes() && granularity.minutes() <= max.minutes()) {
-                return granularity;
-            }
-        }
-        return null;
     }
 
     public PermissionProcessStatus receiveResponse(

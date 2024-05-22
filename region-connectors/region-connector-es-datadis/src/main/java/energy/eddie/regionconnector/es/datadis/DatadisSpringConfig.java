@@ -44,6 +44,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.netty.http.client.HttpClient;
 
+import java.util.List;
+
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.*;
@@ -220,13 +222,10 @@ public class DatadisSpringConfig {
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService() {
         return new DataNeedCalculationServiceImpl(
-                SUPPORTED_GRANULARITIES,
                 SUPPORTED_DATA_NEEDS,
-                PERIOD_EARLIEST_START,
-                PERIOD_LATEST_END,
                 DatadisRegionConnectorMetadata.getInstance(),
-                ZONE_ID_SPAIN,
-                new DatadisStrategy()
+                new DatadisStrategy(),
+                List.of()
         );
     }
 }

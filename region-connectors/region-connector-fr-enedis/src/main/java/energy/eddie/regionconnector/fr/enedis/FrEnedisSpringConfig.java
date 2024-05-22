@@ -169,12 +169,8 @@ public class FrEnedisSpringConfig {
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService() {
         return new DataNeedCalculationServiceImpl(
-                SUPPORTED_GRANULARITIES,
                 SUPPORTED_DATA_NEEDS,
-                PERIOD_EARLIEST_START,
-                PERIOD_LATEST_END,
-                EnedisRegionConnectorMetadata.getInstance(),
-                ZONE_ID_FR
+                EnedisRegionConnectorMetadata.getInstance()
         );
     }
 }

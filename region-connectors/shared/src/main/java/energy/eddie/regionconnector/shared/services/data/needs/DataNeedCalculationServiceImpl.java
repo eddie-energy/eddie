@@ -17,54 +17,39 @@ import energy.eddie.regionconnector.shared.validation.GranularityChoice;
 import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneId;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class DataNeedCalculationServiceImpl implements DataNeedCalculationService<DataNeed> {
     private final List<Class<? extends DataNeed>> supportedDataNeeds;
-    private final Period earliestStart;
-    private final Period latestEnd;
     private final RegionConnectorMetadata regionConnectorMetadata;
     private final GranularityChoice granularityChoice;
-    private final ZoneId referenceTimezone;
     private final PermissionTimeframeStrategy strategy;
+    private final List<Predicate<DataNeed>> additionalChecks;
 
     public DataNeedCalculationServiceImpl(
-            List<Granularity> granularities,
             List<Class<? extends DataNeed>> supportedDataNeeds,
-            Period earliestStart,
-            Period latestEnd,
-            RegionConnectorMetadata regionConnectorMetadata,
-            ZoneId referenceTimezone
+            RegionConnectorMetadata regionConnectorMetadata
     ) {
         this(
-                granularities,
                 supportedDataNeeds,
-                earliestStart,
-                latestEnd,
                 regionConnectorMetadata,
-                referenceTimezone,
-                new PermissionEndIsEnergyDataEndStrategy(referenceTimezone)
+                new PermissionEndIsEnergyDataEndStrategy(regionConnectorMetadata.timeZone()),
+                List.of()
         );
     }
 
     public DataNeedCalculationServiceImpl(
-            List<Granularity> granularities,
             List<Class<? extends DataNeed>> supportedDataNeeds,
-            Period earliestStart,
-            Period latestEnd,
             RegionConnectorMetadata regionConnectorMetadata,
-            ZoneId referenceTimezone,
-            PermissionTimeframeStrategy strategy
+            PermissionTimeframeStrategy strategy,
+            List<Predicate<DataNeed>> additionalChecks
     ) {
         this.supportedDataNeeds = supportedDataNeeds;
-        this.earliestStart = earliestStart;
-        this.latestEnd = latestEnd;
         this.regionConnectorMetadata = regionConnectorMetadata;
-        this.granularityChoice = new GranularityChoice(granularities);
-        this.referenceTimezone = referenceTimezone;
+        this.granularityChoice = new GranularityChoice(regionConnectorMetadata.supportedGranularities());
         this.strategy = strategy;
+        this.additionalChecks = additionalChecks;
     }
 
     @Override
@@ -81,7 +66,8 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         }
         var permissionStartAndEndDate = strategy.permissionTimeframe(energyStartAndEndDate);
         return new DataNeedCalculation(
-                true,
+                additionalChecks.stream()
+                                .allMatch(check -> check.test(dataNeed)),
                 supportedGranularities,
                 permissionStartAndEndDate,
                 energyStartAndEndDate
@@ -130,10 +116,11 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         if (!(dataNeed instanceof TimeframedDataNeed timeframedDataNeed)) {
             return null;
         }
+        var now = LocalDate.now(regionConnectorMetadata.timeZone());
         DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(timeframedDataNeed,
-                                                                                       LocalDate.now(referenceTimezone),
-                                                                                       earliestStart,
-                                                                                       latestEnd);
+                                                                                       now,
+                                                                                       regionConnectorMetadata.earliestStart(),
+                                                                                       regionConnectorMetadata.latestEnd());
         return new Timeframe(wrapper.calculatedStart(), wrapper.calculatedEnd());
     }
 

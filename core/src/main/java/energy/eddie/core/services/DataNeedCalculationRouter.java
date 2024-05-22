@@ -40,4 +40,14 @@ public class DataNeedCalculationRouter {
                                        .orElseThrow(() -> new DataNeedNotFoundException(dataNeedId));
         return service.calculate(dataNeed);
     }
+
+    public Map<String, DataNeedCalculation> calculate(String dataNeedId) throws DataNeedNotFoundException {
+        var dataNeed = dataNeedsService.findById(dataNeedId)
+                                       .orElseThrow(() -> new DataNeedNotFoundException(dataNeedId));
+        var calculations = new HashMap<String, DataNeedCalculation>();
+        for (var entry : services.entrySet()) {
+            calculations.put(entry.getKey(), entry.getValue().calculate(dataNeed));
+        }
+        return calculations;
+    }
 }

@@ -1,8 +1,13 @@
 package energy.eddie.regionconnector.simulation;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 
 import javax.annotation.Nullable;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.List;
 
 public class SimulationConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "sim";
@@ -33,5 +38,25 @@ public class SimulationConnectorMetadata implements RegionConnectorMetadata {
     @Override
     public long coveredMeteringPoints() {
         return 1;
+    }
+
+    @Override
+    public Period earliestStart() {
+        return Period.ofYears(-1000);
+    }
+
+    @Override
+    public Period latestEnd() {
+        return Period.ofYears(9999);
+    }
+
+    @Override
+    public List<Granularity> supportedGranularities() {
+        return List.of(Granularity.values());
+    }
+
+    @Override
+    public ZoneId timeZone() {
+        return ZoneOffset.UTC;
     }
 }

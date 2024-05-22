@@ -7,14 +7,17 @@ import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +27,16 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DataNeedCalculationServiceImplTest {
+    @Spy
+    private final RegionConnectorMetadata regionConnectorMetadata = new RegionConnectorMetadataImpl(
+            "id",
+            "AT",
+            1,
+            Period.ofDays(-10),
+            Period.ofDays(10),
+            List.of(Granularity.PT15M, Granularity.P1D),
+            ZoneOffset.UTC
+    );
     @Mock
     private ValidatedHistoricalDataDataNeed vhdDataNeed;
     @Mock
@@ -32,19 +45,13 @@ class DataNeedCalculationServiceImplTest {
     private GenericAiidaDataNeed aiidaDataNeed;
     @Mock
     private AccountingPointDataNeed accountingPointDataNeed;
-    @Mock
-    private RegionConnectorMetadata regionConnectorMetadata;
     private DataNeedCalculationServiceImpl service;
 
     @BeforeEach
     void setUp() {
         service = new DataNeedCalculationServiceImpl(
-                List.of(Granularity.PT15M, Granularity.P1D),
                 List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
-                Period.ofDays(-10),
-                Period.ofDays(10),
-                regionConnectorMetadata,
-                ZoneOffset.UTC
+                regionConnectorMetadata
         );
     }
 
@@ -159,6 +166,63 @@ class DataNeedCalculationServiceImplTest {
     }
 
     @Test
+    void testCalculate_returnsUnsupported_withFailingAdditionalCheck() {
+        // Given
+        when(vhdDataNeed.duration())
+                .thenReturn(duration);
+        when(duration.start())
+                .thenReturn(Optional.of(Period.ofDays(-5)));
+        when(duration.end())
+                .thenReturn(Optional.of(Period.ofDays(-1)));
+        when(vhdDataNeed.minGranularity())
+                .thenReturn(Granularity.PT5M);
+        when(vhdDataNeed.maxGranularity())
+                .thenReturn(Granularity.P1Y);
+        service = new DataNeedCalculationServiceImpl(
+                List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
+                regionConnectorMetadata,
+                new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
+                List.of(
+                        dataNeed -> true,
+                        dataNeed -> false
+                )
+        );
+        // When
+        var res = service.calculate(vhdDataNeed);
+
+        // Then
+        assertFalse(res.supportsDataNeed());
+    }
+
+    @Test
+    void testCalculate_returnsSupported_withSuccessfullAdditionalCheck() {
+        // Given
+        when(vhdDataNeed.duration())
+                .thenReturn(duration);
+        when(duration.start())
+                .thenReturn(Optional.of(Period.ofDays(-5)));
+        when(duration.end())
+                .thenReturn(Optional.of(Period.ofDays(-1)));
+        when(vhdDataNeed.minGranularity())
+                .thenReturn(Granularity.PT5M);
+        when(vhdDataNeed.maxGranularity())
+                .thenReturn(Granularity.P1Y);
+        service = new DataNeedCalculationServiceImpl(
+                List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
+                regionConnectorMetadata,
+                new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
+                List.of(
+                        dataNeed -> true
+                )
+        );
+        // When
+        var res = service.calculate(vhdDataNeed);
+
+        // Then
+        assertTrue(res.supportsDataNeed());
+    }
+
+    @Test
     void testCalculate_returnsNotSupported() {
         // Given
         // When
@@ -179,4 +243,12 @@ class DataNeedCalculationServiceImplTest {
         // Then
         assertEquals("id", res);
     }
+
+    private record RegionConnectorMetadataImpl(String id,
+                                               String countryCode,
+                                               long coveredMeteringPoints,
+                                               Period earliestStart,
+                                               Period latestEnd,
+                                               List<Granularity> supportedGranularities,
+                                               ZoneId timeZone) implements RegionConnectorMetadata {}
 }

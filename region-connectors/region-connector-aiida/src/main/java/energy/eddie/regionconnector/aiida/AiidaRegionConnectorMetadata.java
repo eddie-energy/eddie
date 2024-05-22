@@ -1,14 +1,19 @@
 package energy.eddie.regionconnector.aiida;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 
 import javax.annotation.Nullable;
+import java.time.Period;
 import java.time.ZoneId;
+import java.util.List;
 
 public class AiidaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "aiida";
     public static final ZoneId REGION_CONNECTOR_ZONE_ID = ZoneId.of("Etc/UTC");
     public static final String MQTT_CLIENT_ID = "eddie-region-connector-aiida";
+    public static final Period EARLIEST_START = Period.ZERO;
+    public static final Period LATEST_END = Period.ofYears(9999);
 
     @Nullable
     private static AiidaRegionConnectorMetadata instance = null;
@@ -36,5 +41,25 @@ public class AiidaRegionConnectorMetadata implements RegionConnectorMetadata {
     @Override
     public long coveredMeteringPoints() {
         return 1;
+    }
+
+    @Override
+    public Period earliestStart() {
+        return EARLIEST_START;
+    }
+
+    @Override
+    public Period latestEnd() {
+        return LATEST_END;
+    }
+
+    @Override
+    public List<Granularity> supportedGranularities() {
+        return List.of();
+    }
+
+    @Override
+    public ZoneId timeZone() {
+        return REGION_CONNECTOR_ZONE_ID;
     }
 }

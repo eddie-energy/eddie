@@ -65,7 +65,7 @@ class PermissionFacadeControllerTest {
     }
 
     @Test
-    void regionConnectorsCalculateDataNeed_returnsAllRegionConnectorsHealth() throws Exception {
+    void regionConnectorsCalculateDataNeed_returnsDataNeedInformation() throws Exception {
         var now = LocalDate.now(ZoneOffset.UTC);
         when(router.calculateFor("at-eda", "9bd0668f-cc19-40a8-99db-dc2cb2802b17"))
                 .thenReturn(new DataNeedCalculation(
@@ -79,5 +79,23 @@ class PermissionFacadeControllerTest {
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.supportsDataNeed", is(true)))
                .andExpect(jsonPath("$.granularities", hasSize(1)));
+    }
+
+    @Test
+    void regionConnectorsCalculateDataNeedForAll_returnsDataNeedInformation() throws Exception {
+        var now = LocalDate.now(ZoneOffset.UTC);
+        when(router.calculate("9bd0668f-cc19-40a8-99db-dc2cb2802b17"))
+                .thenReturn(Map.of("at-eda",
+                                   new DataNeedCalculation(
+                                           true,
+                                           List.of(Granularity.PT15M),
+                                           new Timeframe(now, now),
+                                           new Timeframe(now, now)
+                                   )
+                ));
+
+        mockMvc.perform(get("/api/region-connectors/data-needs/9bd0668f-cc19-40a8-99db-dc2cb2802b17"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$", hasKey("at-eda")));
     }
 }

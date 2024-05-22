@@ -41,6 +41,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static energy.eddie.api.v0.PermissionProcessStatus.*;
+import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.EARLIEST_START;
+import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.LATEST_END;
 
 @Component
 public class AiidaPermissionService {
@@ -94,8 +96,8 @@ public class AiidaPermissionService {
                 genericAiidaDataNeed,
                 today,
                 // in case of open end/start, fixed values are used
-                Period.ZERO,
-                Period.ofYears(9999)
+                EARLIEST_START,
+                LATEST_END
         );
 
 
@@ -171,18 +173,6 @@ public class AiidaPermissionService {
         return mqttDto;
     }
 
-    public void unableToFulFillPermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException {
-        checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, UNFULFILLABLE);
-
-        outbox.commit(new SimpleEvent(permissionId, UNFULFILLABLE));
-    }
-
-    public void rejectPermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException {
-        checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, REJECTED);
-
-        outbox.commit(new SimpleEvent(permissionId, REJECTED));
-    }
-
     private AiidaPermissionRequest checkIfPermissionHasValidStatus(
             String permissionId,
             PermissionProcessStatus requiredStatus,
@@ -209,6 +199,18 @@ public class AiidaPermissionService {
         }
 
         return request;
+    }
+
+    public void unableToFulFillPermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException {
+        checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, UNFULFILLABLE);
+
+        outbox.commit(new SimpleEvent(permissionId, UNFULFILLABLE));
+    }
+
+    public void rejectPermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException {
+        checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, REJECTED);
+
+        outbox.commit(new SimpleEvent(permissionId, REJECTED));
     }
 
     public void terminatePermission(String permissionId) {

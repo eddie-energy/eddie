@@ -20,6 +20,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -43,7 +44,7 @@ class DataNeedCalculationRouterTest {
     }
 
     @Test
-    void testCalculate_throwsOnUnknownRegionConnector() {
+    void testCalculateFor_throwsOnUnknownRegionConnector() {
         // Given
         // When
         // Then
@@ -51,7 +52,7 @@ class DataNeedCalculationRouterTest {
     }
 
     @Test
-    void testCalculate_throwsOnUnknownDataNeed() {
+    void testCalculateFor_throwsOnUnknownDataNeed() {
         // Given
         when(dataNeedsService.findById(any()))
                 .thenReturn(Optional.empty());
@@ -61,7 +62,7 @@ class DataNeedCalculationRouterTest {
     }
 
     @Test
-    void testCalculate_returnsCalculation() throws UnknownRegionConnectorException, DataNeedNotFoundException {
+    void testCalculateFor_returnsCalculation() throws UnknownRegionConnectorException, DataNeedNotFoundException {
 
         when(dataNeedsService.findById(any()))
                 .thenReturn(Optional.of(dataNeed));
@@ -83,5 +84,35 @@ class DataNeedCalculationRouterTest {
                 () -> assertEquals(timeframe, res.permissionTimeframe()),
                 () -> assertEquals(List.of(Granularity.PT15M), res.granularities())
         );
+    }
+
+    @Test
+    void testCalculate_throwsOnUnknownDataNeed() {
+        // Given
+        when(dataNeedsService.findById(any()))
+                .thenReturn(Optional.empty());
+        // When
+        // Then
+        assertThrows(DataNeedNotFoundException.class, () -> router.calculate("unknown"));
+    }
+
+    @Test
+    void testCalculate_returnsCalculation() throws DataNeedNotFoundException {
+
+        when(dataNeedsService.findById(any()))
+                .thenReturn(Optional.of(dataNeed));
+        var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
+        when(service.calculate(dataNeed))
+                .thenReturn(new DataNeedCalculation(
+                        true,
+                        List.of(Granularity.PT15M),
+                        timeframe,
+                        timeframe
+                ));
+        // When
+        var res = router.calculate("dnid");
+
+        // Then
+        assertThat(res).containsOnlyKeys("at-eda");
     }
 }

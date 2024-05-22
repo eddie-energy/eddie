@@ -2,11 +2,13 @@ package energy.eddie.regionconnector.nl.mijn.aansluiting.services;
 
 import com.nimbusds.oauth2.sdk.ParseException;
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.EnergyType;
-import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -28,6 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -35,10 +38,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
-import java.time.Period;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata.NL_ZONE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,8 +51,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestServiceTest {
-    @Captor
-    ArgumentCaptor<NlSimpleEvent> simpleCaptor;
     @Mock
     private OAuthManager oAuthManager;
     @Mock
@@ -61,7 +64,7 @@ class PermissionRequestServiceTest {
     @Mock
     private NlPermissionRequestRepository permissionRequestRepository;
     @Mock
-    private RelativeDuration dataNeedDuration;
+    private DataNeedCalculationService<DataNeed> calculationService;
     @InjectMocks
     private PermissionRequestService permissionRequestService;
     @Captor
@@ -70,6 +73,8 @@ class PermissionRequestServiceTest {
     private ArgumentCaptor<NlCreatedEvent> createdCaptor;
     @Captor
     private ArgumentCaptor<NlValidatedEvent> validatedCaptor;
+    @Captor
+    private ArgumentCaptor<NlSimpleEvent> simpleCaptor;
 
     public static Stream<Arguments> testReceiveResponse_exceptionCase_returnsUnhappyResponse() {
         return Stream.of(
@@ -85,18 +90,14 @@ class PermissionRequestServiceTest {
         var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
         when(dataNeedsService.findById("dnid"))
                 .thenReturn(Optional.of(vhdDataNeed));
-        when(vhdDataNeed.minGranularity())
-                .thenReturn(Granularity.P1D);
-        when(vhdDataNeed.maxGranularity())
-                .thenReturn(Granularity.P1D);
-        when(vhdDataNeed.energyType())
-                .thenReturn(EnergyType.ELECTRICITY);
-        when(vhdDataNeed.duration())
-                .thenReturn(dataNeedDuration);
-        when(dataNeedDuration.start())
-                .thenReturn(Optional.of(Period.ofDays(-10)));
-        when(dataNeedDuration.end())
-                .thenReturn(Optional.of(Period.ofDays(-1)));
+        var now = LocalDate.now(NL_ZONE_ID);
+        when(calculationService.calculate(vhdDataNeed))
+                .thenReturn(new DataNeedCalculation(
+                        true,
+                        List.of(Granularity.P1D),
+                        new Timeframe(now.minusDays(-10), now.minusDays(-1)),
+                        new Timeframe(now, now)
+                ));
         when(oAuthManager.createAuthorizationUrl(any()))
                 .thenReturn(new OAuthRequestPayload(URI.create(""), "state", "codeVerifier"));
 
@@ -130,65 +131,21 @@ class PermissionRequestServiceTest {
         verify(outbox).commit(isA(NlMalformedEvent.class));
     }
 
-    @Test
-    void testCreatePermissionRequest_withInvalidGranularity_throws() {
+    @ParameterizedTest
+    @NullAndEmptySource
+    void testCreatePermissionRequest_withInvalidGranularity_throws(List<Granularity> granularities) {
         // Given
         var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
         when(dataNeedsService.findById("dnid"))
                 .thenReturn(Optional.of(vhdDataNeed));
-        when(vhdDataNeed.minGranularity())
-                .thenReturn(Granularity.PT5M);
-        when(vhdDataNeed.maxGranularity())
-                .thenReturn(Granularity.PT15M);
-        when(vhdDataNeed.energyType())
-                .thenReturn(EnergyType.ELECTRICITY);
-
-        // When
-        // Then
-        assertThrows(UnsupportedDataNeedException.class,
-                     () -> permissionRequestService.createPermissionRequest(permissionRequest));
-        verify(outbox).commit(isA(NlCreatedEvent.class));
-        verify(outbox).commit(malformedCaptor.capture());
-        var res = malformedCaptor.getValue();
-        assertThat(res.errors()).hasSize(1);
-    }
-
-    @Test
-    void testCreatePermissionRequest_withInvalidStartDate_throws() {
-        // Given
-        var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(vhdDataNeed));
-        when(vhdDataNeed.minGranularity())
-                .thenReturn(Granularity.PT5M);
-        when(vhdDataNeed.maxGranularity())
-                .thenReturn(Granularity.P1D);
-        when(vhdDataNeed.energyType())
-                .thenReturn(EnergyType.ELECTRICITY);
-        when(vhdDataNeed.duration())
-                .thenReturn(dataNeedDuration);
-        when(dataNeedDuration.start())
-                .thenReturn(Optional.of(Period.ofYears(-100)));
-        when(dataNeedDuration.end())
-                .thenReturn(Optional.of(Period.ofDays(-1)));
-        // When
-        // Then
-        assertThrows(UnsupportedDataNeedException.class,
-                     () -> permissionRequestService.createPermissionRequest(permissionRequest));
-        verify(outbox).commit(isA(NlCreatedEvent.class));
-        verify(outbox).commit(malformedCaptor.capture());
-        var res = malformedCaptor.getValue();
-        assertThat(res.errors()).hasSize(1);
-    }
-
-    @Test
-    void testCreatePermissionRequest_withInvalidEnergyType_throws() {
-        // Given
-        var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(vhdDataNeed));
-        when(vhdDataNeed.energyType())
-                .thenReturn(EnergyType.HEAT);
+        var now = LocalDate.now(NL_ZONE_ID);
+        when(calculationService.calculate(vhdDataNeed))
+                .thenReturn(new DataNeedCalculation(
+                        true,
+                        granularities,
+                        new Timeframe(now.minusDays(-10), now.minusDays(-1)),
+                        new Timeframe(now, now)
+                ));
 
         // When
         // Then
@@ -206,6 +163,8 @@ class PermissionRequestServiceTest {
         var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
         when(dataNeedsService.findById("dnid"))
                 .thenReturn(Optional.of(aiidaDataNeed));
+        when(calculationService.calculate(aiidaDataNeed))
+                .thenReturn(new DataNeedCalculation(false));
 
         // When
         // Then
