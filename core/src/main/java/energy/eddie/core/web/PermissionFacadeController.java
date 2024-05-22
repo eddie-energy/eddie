@@ -51,4 +51,11 @@ public class PermissionFacadeController {
     ) throws UnknownRegionConnectorException, DataNeedNotFoundException {
         return dataNeedCalculationRouter.calculateFor(regionConnector, dataNeedId);
     }
+
+    @GetMapping("/region-connectors/data-needs/{data-need-id}")
+    public Map<String, DataNeedCalculation> dataNeedCalculations(
+            @PathVariable("data-need-id") String dataNeedId
+    ) throws DataNeedNotFoundException {
+        return dataNeedCalculationRouter.calculate(dataNeedId);
+    }
 }
