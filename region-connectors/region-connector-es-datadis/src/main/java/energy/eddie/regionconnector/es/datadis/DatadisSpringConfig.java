@@ -40,7 +40,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.netty.http.client.HttpClient;
@@ -52,7 +51,6 @@ import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfigurat
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.*;
 
 
-@EnableWebMvc
 @SpringBootApplication
 @EnableScheduling
 @RegionConnector(name = REGION_CONNECTOR_ID)
@@ -61,9 +59,10 @@ public class DatadisSpringConfig {
     public DatadisConfig datadisConfig(
             @Value("${" + DatadisConfig.USERNAME_KEY + "}") String username,
             @Value("${" + DatadisConfig.PASSWORD_KEY + "}") String password,
-            @Value("${" + DatadisConfig.BASE_PATH_KEY + ":https://datadis.es}") String basePath
+            @Value("${" + DatadisConfig.BASE_PATH_KEY + ":https://datadis.es}") String basePath,
+            @Value("${" + DatadisConfig.TIME_OUT_DURATION_KEY + ":24}") int timeoutDuration
     ) {
-        return new PlainDatadisConfiguration(username, password, basePath);
+        return new PlainDatadisConfiguration(username, password, basePath, timeoutDuration);
     }
 
     @Bean

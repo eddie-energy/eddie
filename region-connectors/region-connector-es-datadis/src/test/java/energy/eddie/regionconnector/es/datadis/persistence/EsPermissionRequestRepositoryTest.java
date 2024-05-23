@@ -1,0 +1,60 @@
+package energy.eddie.regionconnector.es.datadis.persistence;
+
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsCreatedEvent;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Testcontainers
+class EsPermissionRequestRepositoryTest {
+    @SuppressWarnings("unused")
+    @Container
+    @ServiceConnection
+    private static final PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:15-alpine");
+    @Autowired
+    private EsPermissionRequestRepository permissionRequestRepository;
+    @Autowired
+    private EsPermissionEventRepository permissionEventRepository;
+
+
+    @Test
+    void testFindStalePermissionRequests_returnsCorrectPermissionRequests() {
+        // Given
+        var lateClock = Clock.fixed(
+                Instant.now(Clock.systemUTC()).minus(25, ChronoUnit.HOURS),
+                ZoneOffset.UTC
+        );
+        permissionEventRepository.saveAll(List.of(
+                new EsCreatedEvent("pid", "cid", "dnid", "nif", "mid", lateClock),
+                new EsSimpleEvent("pid", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR),
+                new EsCreatedEvent("otherPid", "cid", "dnid", "nif", "mid"),
+                new EsSimpleEvent("otherPid", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
+        ));
+
+        // When
+        var res = permissionRequestRepository.findStalePermissionRequests(24);
+
+        // Then
+        assertEquals(1, res.size());
+        var pr = res.getFirst();
+        assertEquals("pid", pr.permissionId());
+    }
+}

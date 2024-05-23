@@ -4,6 +4,8 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
+import java.time.Clock;
+
 @Entity
 @SuppressWarnings({"NullAway", "unused"})
 public class EsCreatedEvent extends PersistablePermissionEvent {
@@ -24,6 +26,21 @@ public class EsCreatedEvent extends PersistablePermissionEvent {
             String meteringPointId
     ) {
         super(permissionId, PermissionProcessStatus.CREATED);
+        this.connectionId = connectionId;
+        this.dataNeedId = dataNeedId;
+        this.nif = nif;
+        this.meteringPointId = meteringPointId;
+    }
+
+    public EsCreatedEvent(
+            String permissionId,
+            String connectionId,
+            String dataNeedId,
+            String nif,
+            String meteringPointId,
+            Clock clock
+    ) {
+        super(permissionId, PermissionProcessStatus.CREATED, clock);
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
         this.nif = nif;

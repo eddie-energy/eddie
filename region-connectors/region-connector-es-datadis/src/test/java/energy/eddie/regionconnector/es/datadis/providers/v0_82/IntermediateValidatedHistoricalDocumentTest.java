@@ -37,7 +37,10 @@ class IntermediateValidatedHistoricalDocumentTest {
     void eddieValidatedHistoricalDataMarketDocument_withoutProduction() throws IOException {
 
         IdentifiableMeteringData identifiableMeteringData = identifiableMeterReading(false);
-        PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId", "clientSecret", "basepath");
+        PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId",
+                                                                                "clientSecret",
+                                                                                "basepath",
+                                                                                24);
         var intermediateVHD = new IntermediateValidatedHistoricalDocument(
                 identifiableMeteringData,
                 CIM_CONFIG,
@@ -157,7 +160,10 @@ class IntermediateValidatedHistoricalDocumentTest {
     void eddieValidatedHistoricalDataMarketDocument_withProduction() throws IOException {
 
         IdentifiableMeteringData identifiableMeteringData = identifiableMeterReading(true);
-        PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId", "clientSecret", "basepath");
+        PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId",
+                                                                                "clientSecret",
+                                                                                "basepath",
+                                                                                24);
         var intermediateVHD = new IntermediateValidatedHistoricalDocument(
                 identifiableMeteringData,
                 CIM_CONFIG,

@@ -14,7 +14,10 @@ class DatadisEddieValidatedHistoricalDataMarketDocumentProviderTest {
     void testGetEddieValidatedHistoricalDataMarketDocumentStream_publishesDocuments() throws Exception {
         // Given
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
-        PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId", "clientSecret", "basepath");
+        PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId",
+                                                                                "clientSecret",
+                                                                                "basepath",
+                                                                                24);
         IntermediateVHDFactory factory = new IntermediateVHDFactory(
                 datadisConfig,
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.SPAIN_NATIONAL_CODING_SCHEME,
