@@ -19,11 +19,16 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -72,6 +77,12 @@ class SendingEventHandlerTest {
                                                                null,
                                                                null,
                                                                null),
+                             PermissionProcessStatus.INVALID),
+                Arguments.of(new WebClientRequestException(new UnknownHostException(), HttpMethod.GET,
+                                                           URI.create("http://example.com"), HttpHeaders.EMPTY),
+                             PermissionProcessStatus.UNABLE_TO_SEND),
+                Arguments.of(new WebClientRequestException(new RuntimeException(), HttpMethod.GET,
+                                                           URI.create("http://example.com"), HttpHeaders.EMPTY),
                              PermissionProcessStatus.INVALID),
                 Arguments.of(new Throwable(), PermissionProcessStatus.INVALID)
         );
