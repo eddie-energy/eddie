@@ -13,7 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+
+import java.net.UnknownHostException;
 
 @Component
 public class SendingEventHandler implements EventHandler<DKValidatedEvent> {
@@ -62,6 +65,13 @@ public class SendingEventHandler implements EventHandler<DKValidatedEvent> {
             }
             case WebClientResponseException.Unauthorized ignored -> unauthorized(throwable, permissionId);
             case HttpClientErrorException.Unauthorized ignored -> unauthorized(throwable, permissionId);
+            case WebClientRequestException webClientRequestException
+                    when webClientRequestException.contains(UnknownHostException.class) -> {
+                LOGGER.info("Unknown host exception occurred when sending permission request {}",
+                            permissionId,
+                            throwable);
+                outbox.commit(new DkSimpleEvent(permissionId, PermissionProcessStatus.UNABLE_TO_SEND));
+            }
             case Throwable ignored -> {
                 LOGGER.warn("Got unknown error for permission request {}", permissionId, throwable);
                 commitInvalidEvent(permissionId);
