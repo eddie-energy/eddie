@@ -16,8 +16,8 @@ class IntermediateVHDFactoryTest {
         // Given
         PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId",
                                                                                 "clientSecret",
-                                                                                "basepath",
-                                                                                24);
+                                                                                "basepath"
+        );
         IntermediateVHDFactory factory = new IntermediateVHDFactory(
                 datadisConfig,
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,

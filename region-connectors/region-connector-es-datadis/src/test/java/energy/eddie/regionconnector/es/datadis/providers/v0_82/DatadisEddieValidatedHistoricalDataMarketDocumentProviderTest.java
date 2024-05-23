@@ -16,8 +16,8 @@ class DatadisEddieValidatedHistoricalDataMarketDocumentProviderTest {
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
         PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId",
                                                                                 "clientSecret",
-                                                                                "basepath",
-                                                                                24);
+                                                                                "basepath"
+        );
         IntermediateVHDFactory factory = new IntermediateVHDFactory(
                 datadisConfig,
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.SPAIN_NATIONAL_CODING_SCHEME,

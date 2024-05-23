@@ -59,10 +59,9 @@ public class DatadisSpringConfig {
     public DatadisConfig datadisConfig(
             @Value("${" + DatadisConfig.USERNAME_KEY + "}") String username,
             @Value("${" + DatadisConfig.PASSWORD_KEY + "}") String password,
-            @Value("${" + DatadisConfig.BASE_PATH_KEY + ":https://datadis.es}") String basePath,
-            @Value("${" + DatadisConfig.TIME_OUT_DURATION_KEY + ":24}") int timeoutDuration
+            @Value("${" + DatadisConfig.BASE_PATH_KEY + ":https://datadis.es}") String basePath
     ) {
-        return new PlainDatadisConfiguration(username, password, basePath, timeoutDuration);
+        return new PlainDatadisConfiguration(username, password, basePath);
     }
 
     @Bean

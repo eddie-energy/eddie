@@ -2,13 +2,12 @@ package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
-import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -29,7 +28,8 @@ class TimeoutServiceTest {
     @Mock
     private Outbox outbox;
     @Spy
-    private DatadisConfig config = new PlainDatadisConfiguration("name", "password", "bla", 24);
+    @SuppressWarnings("unused")
+    private final TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(24);
     @Mock
     private EsPermissionRequestRepository repository;
     @InjectMocks

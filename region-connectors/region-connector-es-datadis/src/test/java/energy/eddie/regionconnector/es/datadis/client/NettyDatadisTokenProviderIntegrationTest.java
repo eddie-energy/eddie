@@ -126,10 +126,5 @@ class NettyDatadisTokenProviderIntegrationTest {
         public String basePath() {
             return "https://datadis.es";
         }
-
-        @Override
-        public int timeoutDuration() {
-            return 24;
-        }
     }
 }

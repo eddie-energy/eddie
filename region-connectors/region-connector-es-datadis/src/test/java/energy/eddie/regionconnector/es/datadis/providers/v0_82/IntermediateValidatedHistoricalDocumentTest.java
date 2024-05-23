@@ -39,8 +39,8 @@ class IntermediateValidatedHistoricalDocumentTest {
         IdentifiableMeteringData identifiableMeteringData = identifiableMeterReading(false);
         PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId",
                                                                                 "clientSecret",
-                                                                                "basepath",
-                                                                                24);
+                                                                                "basepath"
+        );
         var intermediateVHD = new IntermediateValidatedHistoricalDocument(
                 identifiableMeteringData,
                 CIM_CONFIG,
@@ -162,8 +162,8 @@ class IntermediateValidatedHistoricalDocumentTest {
         IdentifiableMeteringData identifiableMeteringData = identifiableMeterReading(true);
         PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId",
                                                                                 "clientSecret",
-                                                                                "basepath",
-                                                                                24);
+                                                                                "basepath"
+        );
         var intermediateVHD = new IntermediateValidatedHistoricalDocument(
                 identifiableMeteringData,
                 CIM_CONFIG,
