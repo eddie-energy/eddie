@@ -57,22 +57,22 @@ class EddieRequestStatusHandler extends LitElement {
       try {
         const response = await fetch(location);
 
-        if (response.ok) {
-          const { status, message } = await response.json();
-
-          if (this.status !== status) {
-            this.status = status;
-            this.renderStatus(status, message);
-
-            if (!POLL_STATES.includes(status)) {
-              break;
-            }
-          }
-
-          await new Promise((resolve) => setTimeout(resolve, POLL_DELAY));
-        } else {
+        if (!response.ok) {
           throw new Error("Failed to poll request status");
         }
+
+        const { status, message } = await response.json();
+
+        if (this.status !== status) {
+          this.status = status;
+          this.renderStatus(status, message);
+
+          if (!POLL_STATES.includes(status)) {
+            break;
+          }
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, POLL_DELAY));
       } catch (error) {
         console.error(error);
         triesLeft--;
