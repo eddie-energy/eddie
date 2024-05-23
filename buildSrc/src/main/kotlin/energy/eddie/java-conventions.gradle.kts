@@ -12,7 +12,6 @@ plugins {
     java
     jacoco
     id("net.ltgt.errorprone")
-    id("org.sonarqube")
 }
 
 dependencies {

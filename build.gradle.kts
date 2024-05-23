@@ -1,4 +1,3 @@
-
 import com.github.gradle.node.pnpm.task.PnpmTask
 import com.github.jk1.license.filter.DependencyFilter
 import com.github.jk1.license.filter.LicenseBundleNormalizer
@@ -9,6 +8,8 @@ plugins {
     id("java")
     id("com.github.node-gradle.node") version "5.0.0"
     id("com.github.jk1.dependency-license-report") version "2.5"
+    id("org.sonarqube")
+    jacoco
 }
 
 repositories {
@@ -53,4 +54,37 @@ tasks.register("run-db-server", JavaExec::class) {
 tasks.register<PnpmTask>("pnpmBuild") {
     dependsOn("pnpmInstall")
     pnpmCommand.set(listOf("run", "build"))
+}
+
+sonar {
+    properties {
+        property("sonar.projectName", "EDDIE")
+        property("sonar.projectKey", "eddie-energy")
+        property(
+            "sonar.coverage.jacoco.xmlReportPaths",
+            "${project.rootDir}/build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml"
+        )
+    }
+}
+
+// Taken from https://github.com/SonarSource/sonar-scanning-examples/blob/master/sonar-scanner-gradle/gradle-multimodule-coverage/build.gradle
+tasks.register<JacocoReport>("codeCoverageReport") {
+    description = "Generates a jacoco report for all subprojects."
+    group = "verification"
+    // If a subproject applies the 'jacoco' plugin, add the result of it to the report
+    subprojects {
+        val subproject = this
+        subproject.plugins.withType<JacocoPlugin>().configureEach {
+            subproject.tasks.matching { it.extensions.findByType<JacocoTaskExtension>() != null }.configureEach {
+                val testTask = this
+                sourceSets(subproject.sourceSets.main.get())
+                executionData(testTask)
+            }
+        }
+    }
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
 }
