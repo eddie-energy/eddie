@@ -50,7 +50,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           <h1>Connect to Mijn Aansluiting</h1>
         </header>
 
-        <form @submit="${this.handleSubmit}">
+        <form id="request-form">
           <sl-input
             label="House Number"
             type="text"

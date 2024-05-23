@@ -20,6 +20,28 @@ class PermissionRequestFormBase extends LitElement {
   }
 
   /**
+   * Prevents the permission request from skipping validation by waiting for
+   * Shoelace input elements to load before adding the submit event listener.
+   * See GH-899 for details.
+   */
+  firstUpdated(_) {
+    customElements.whenDefined("sl-input").then(() => {
+      this.shadowRoot
+        .getElementById("request-form")
+        ?.addEventListener("submit", this.handleSubmit.bind(this));
+    });
+  }
+
+  /**
+   * Automatically binds to the form with id `request-form`.
+   * @param {SubmitEvent} event
+   * @returns void
+   */
+  handleSubmit(event) {
+    throw new Error("Must be implemented by subclass!");
+  }
+
+  /**
    * Dispatch a custom event to render an error notification.
    * @param {string} message Error details to display.
    * @param {number} duration Duration in milliseconds to display the notification for.

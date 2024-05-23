@@ -49,7 +49,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   render() {
     return html`
       <div>
-        <form @submit="${this.handleSubmit}">
+        <form id="request-form">
           <sl-input
             label="Refresh Token"
             type="text"

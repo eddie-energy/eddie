@@ -51,7 +51,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           </p>
         </header>
 
-        <form @submit="${this.handleSubmit}">
+        <form id="request-form">
           <p>
             By clicking on this button, you will access your personal Enedis
             account where you can authorise Enedis to send us your data.
