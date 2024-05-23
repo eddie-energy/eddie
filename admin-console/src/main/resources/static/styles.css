@@ -1,60 +1,37 @@
 :root {
-  --primary-color: #1CA8E0; /* light blue */
-  --background-color: #303030; /* dark grey */
-  --text-color: #f3f3f3; /* almost white */
-  --table-header-background-color: #080808; /* black */
-  --table-header-color: #1CA8E0; /* light blue */
-  --table-row-background-color: #303030; /* dark grey */
-  --modal-background-color: #080808; /* dark grey */
-}
-.light {
   --primary-color: #017AA0; /* blue EDDIE*/
   --background-color: #f0f0f0; /* light grey */
   --text-color: #2A303C; /* almost black */
-  --table-header-background-color: #017AA0; /* blue EDDIE */
-  --table-header-color: #ffffff; /* light grey */
   --table-row-background-color: #ffffff; /* white */
-  --modal-background-color: #f0f0f0; /* white */
+}
+.dark {
+  --primary-color: #1CA8E0; /* light blue */
+  --background-color: #303030; /* dark grey */
+  --text-color: #f3f3f3; /* almost white */
+  --table-row-background-color: #303030; /* dark grey */
 }
 
-nav {
-  background-color: var(--background-color);
-}
-.theme-controller {
-  border-radius: 16px;
-}
-h1, h2, .dataTables_filter input {
-  color: var(--primary-color);
-}
-
-#statusMessageTable {
-  margin-bottom: 10px;
-  margin-top: 20px;
-}
-#statusMessageTable th {
-  background-color: var(--table-header-background-color);
-  color: var(--table-header-color);
-}
-#statusMessageTable tr, #statusMessageTable_length select {
+div.dt-container select.dt-input{
   background-color: var(--table-row-background-color);
   color: var(--text-color);
 }
-#statusMessageTable_length, #statusMessageTable_filter, #statusMessageTable_info {
+.dt-length, .dt-search, .dt-info {
   color: var(--text-color);
-  margin-bottom: 10px;
+  margin-bottom: 1rem;
+}
+div.dt-container .dt-search input {
+  color: var(--primary-color);
 }
 
-#currentButton {
+div.dt-container .dt-paging .dt-paging-button.current,
+div.dt-container .dt-paging .dt-paging-button.current:hover {
   color: var(--primary-color) !important;
   background-color: var(--background-color);
   background-image: none;
   border: none;
 }
-#statusMessageTable_previous:not(.disabled), #statusMessageTable_next:not(.disabled) {
+div.dt-container .dt-paging .dt-paging-button.disabled,
+div.dt-container .dt-paging .dt-paging-button.disabled:hover,
+div.dt-container .dt-paging .dt-paging-button.disabled:active  {
   color: var(--primary-color) !important;
-}
-
-.modal-button {
-  background-color: var(--primary-color);
-  color: #f3f3f3;
 }

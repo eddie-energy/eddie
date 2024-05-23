@@ -1,17 +1,15 @@
-// you can remove the self-calling if you use a build tool
-// kept it, so it is easier for you to spot my changes
 (function(){
   new DataTable("#statusMessageTable" ,{ "order": [] });
 
-  function styleCurrentButton() {
-    document.querySelector(".paginate_button.current")?.setAttribute("id", "currentButton");
-  }
-  styleCurrentButton();
-
-  document.querySelector("#statusMessageTable").addEventListener("draw.dt", styleCurrentButton);
-
+  const body = document.querySelector('body');
+  document.addEventListener('DOMContentLoaded', body.classList.add('dark'));
   document.querySelector('.theme-controller').addEventListener('change', function() {
-    document.body.classList.toggle('light', this.checked);
+    if (this.checked) {
+        body.classList.remove('dark');
+    }
+    else {
+        body.classList.add('dark');
+    }
   });
 
   const modal = document.getElementById('popup-modal');

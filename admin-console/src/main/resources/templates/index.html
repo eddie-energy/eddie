@@ -18,20 +18,20 @@
 
 <body class="m-8">
 <!-- Navigation -->
-<nav class="flex items-center justify-between flex-wrap p-6">
+<nav class="bg-background-light dark:bg-background-business flex items-center justify-between flex-wrap p-6">
   <div class="flex items-center text-white mr-6">
     <div class="flex items-center w-auto h-24">
       <img alt="local EDDIE logo" class="w-auto h-full" src="/admin-console/EDDIE_logo.png" title="local EDDIE logo">
     </div>
   </div>
   <label class="flex cursor-pointer gap-2">
-    <svg fill="none" height="20" stroke="var(--primary-color)" stroke-linecap="round" stroke-linejoin="round"
+    <svg fill="none" height="20" stroke="#157AA1" stroke-linecap="round" stroke-linejoin="round"
          stroke-width="2"
          viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
       <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
     </svg>
-    <input class="toggle theme-controller" type="checkbox" value="emerald"/>
-    <svg fill="none" height="20" stroke="var(--primary-color)" stroke-linecap="round" stroke-linejoin="round"
+    <input class="toggle theme-controller rounded-16" type="checkbox" value="emerald"/>
+    <svg fill="none" height="20" stroke="#157AA1" stroke-linecap="round" stroke-linejoin="round"
          stroke-width="2"
          viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
       <circle cx="12" cy="12" r="5"/>
@@ -42,13 +42,14 @@
 
 <!-- Main Content -->
 <main>
-  <h1 class="text-5xl font-bold pt-20">Welcome to the Admin Console</h1>
-  <h2 class="text-2xl font-bold pb-12" th:text="${title}">title</h2>
+  <h1 class="text-primary-light dark:text-primary-business text-5xl font-bold pt-20">Welcome to the Admin Console</h1>
+  <h2 class="text-primary-light dark:text-primary-business text-2xl font-bold pb-12" th:text="${title}">title</h2>
 
   <div class="overflow-x-auto">
-    <table class="table w-full mt-8" id="statusMessageTable">
+    <table class="table w-full mt-8 bg-table-row-background-light dark:bg-table-row-background-business"
+           id="statusMessageTable">
       <thead>
-      <tr>
+      <tr class="bg-table-header-background-light dark:bg-table-header-background-business text-table-header-light dark:text-table-header-business">
         <th>Country</th>
         <th>DSO</th>
         <th>PermissionId</th>
@@ -84,26 +85,28 @@
 <dialog id="popup-modal" class="modal">
   <div class="modal-box">
     <form method="dialog">
-      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+      <button class="bg-primary-light dark:bg-primary-business text-text-business btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+        ✕
+      </button>
     </form>
 
     <svg aria-hidden="true" class="mx-auto mb-4 w-12 h-12" fill="none" viewBox="0 0 20 20"
          xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="var(--primary-color)"
+      <path d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="#157AA1"
             stroke-linecap="round" stroke-linejoin="round"
             stroke-width="2" />
     </svg>
-    <h3 class="mb-5 text-lg font-normal" id="modal-question" style="color: var(--text-color);">
+    <h3 class="mb-5 text-lg font-normal" id="modal-question" style="text-text-color-business;">
       Are you sure you want to terminate this permission?
     </h3>
 
     <form method="dialog" class="modal-action">
       <button value="confirm"
-              class="modal-button font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+              class="modal-button font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center bg-primary-light dark:bg-primary-business text-text-business">
         Yes, I'm sure
       </button>
 
-      <button class="modal-button py-2.5 px-5 ms-3 font-medium rounded-lg">
+      <button class="modal-button py-2.5 px-5 ms-3 font-medium rounded-lg bg-primary-light dark:bg-primary-business text-text-business">
         No, cancel
       </button>
     </form>
@@ -118,13 +121,40 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
-    theme: {
-      // TODO: Set EDDIE colors through https://tailwindcss.com/docs/theme.
-    }
-  }
+  darkMode: 'class', // This line enables dark mode
+  theme: {
+    extend: {
+      colors: {
+        'primary-business': '#1CA8E0',
+        'background-business': '#303030',
+        'text-business': '#f3f3f3',
+        'table-header-background-business': '#080808',
+        'table-header-business': '#1CA8E0',
+        'table-row-background-business': '#303030',
+        'modal-background-business': '#080808',
+        'primary-light': '#017AA0',
+        'background-light': '#f0f0f0',
+        'text-light': '#2A303C',
+        'table-header-background-light': '#017AA0',
+        'table-header-light': '#ffffff',
+        'table-row-background-light': '#ffffff',
+        'modal-background-light': '#f0f0f0',
+      },
+      borderRadius: {
+        '16': '16px',
+      },
+      borderWidth: {
+        '0': '0',
+      },
+    },
+  },
+  variants: {},
+  plugins: [],
+}
+
 </script>
 
-<!-- DataTables (slim? https://code.jquery.com/jquery-3.7.1.slim.min.js) -->
+<!-- DataTables -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/2.0.7/js/dataTables.js"></script>
 
