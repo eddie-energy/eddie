@@ -90,7 +90,8 @@ class PollingServiceTest {
                 ),
                 outbox,
                 mapper,
-                dataNeedsService
+                dataNeedsService,
+                new ApiExceptionService(outbox)
         );
     }
 

@@ -11,12 +11,10 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointDet
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPoints;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
-import energy.eddie.regionconnector.dk.energinet.exceptions.ApiResponseException;
 import energy.eddie.regionconnector.dk.energinet.filter.EnerginetResolution;
 import energy.eddie.regionconnector.dk.energinet.filter.IdentifiableApiResponseFilter;
 import energy.eddie.regionconnector.dk.energinet.filter.MeteringDetailsApiResponseFilter;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalGranularityEvent;
-import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkUnfulfillableEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.request.ApiCredentials;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
@@ -60,6 +58,7 @@ public class PollingService implements AutoCloseable {
     private final Outbox outbox;
     private final ObjectMapper objectMapper;
     private final DataNeedsService dataNeedsService;
+    private final ApiExceptionService apiExceptionService;
 
 
     public PollingService(
@@ -69,13 +68,15 @@ public class PollingService implements AutoCloseable {
             Outbox outbox,
             ObjectMapper objectMapper,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-            DataNeedsService dataNeedsService
+            DataNeedsService dataNeedsService,
+            ApiExceptionService apiExceptionService
     ) {
         this.energinetCustomerApi = energinetCustomerApi;
         this.repository = repository;
         this.meterReadingPermissionUpdateAndFulfillmentService = meterReadingPermissionUpdateAndFulfillmentService;
         this.objectMapper = objectMapper;
         this.dataNeedsService = dataNeedsService;
+        this.apiExceptionService = apiExceptionService;
         apiResponseFlux = sink.asFlux()
                               .share();
         this.outbox = outbox;
@@ -148,16 +149,13 @@ public class PollingService implements AutoCloseable {
                  UUID.fromString(permissionId)
          ))
          .retryWhen(RETRY_BACKOFF_SPEC)
-         // If we get an 401 Unauthorized error, the refresh token was revoked and the permission request with that
-         .doOnError(error -> revokePermissionRequest(permissionRequest, error))
-         .onErrorComplete()
          .mapNotNull(MyEnergyDataMarketDocumentResponseListApiResponse::getResult)
          .flatMap(myEnergyDataMarketDocumentResponses -> identifiableApiResponseFilter.filter(
                  permissionRequest,
                  dateFrom,
                  dateTo,
                  myEnergyDataMarketDocumentResponses))
-         .doOnError(error -> handleFilterError(error, permissionId))
+         .doOnError(error -> apiExceptionService.handleError(permissionRequest.permissionId(), error))
          .onErrorComplete()
          .subscribe(identifiableApiResponse -> handleIdentifiableApiResponse(
                  permissionRequest,
@@ -181,36 +179,6 @@ public class PollingService implements AutoCloseable {
             return fetchMeteringPointGranularity(permissionRequest, token, meteringPointsRequest);
         }
         return Mono.just(new TokenGranularityPair(token, permissionRequest.granularity()));
-    }
-
-    private void revokePermissionRequest(
-            DkEnerginetPermissionRequest permissionRequest,
-            Throwable error
-    ) {
-        if (!(error instanceof WebClientResponseException.Unauthorized)) {
-            LOGGER.warn("Got an unexpected error while requesting access token", error);
-            return;
-        }
-        var permissionId = permissionRequest.permissionId();
-        LOGGER.info("Revoking permission request with permission id {}", permissionId);
-        outbox.commit(new DkSimpleEvent(permissionId, PermissionProcessStatus.REVOKED));
-    }
-
-    private void handleFilterError(Throwable error, String permissionId) {
-        // If the aggregation is not available, we can't fulfill the permission request
-        if (error instanceof ApiResponseException apiResponseException && apiResponseException.errorCode() == REQUESTED_AGGREGATION_UNAVAILABLE) {
-            LOGGER.atWarn()
-                  .addArgument(permissionId)
-                  .addArgument(apiResponseException::errorText)
-                  .log("Requested aggregation for permission request {} is not available: {}");
-            outbox.commit(new DkUnfulfillableEvent(permissionId, apiResponseException.errorText()));
-            return;
-        }
-
-        LOGGER.error(
-                "Something went wrong while fetching data for permission request {} from Energinet:",
-                permissionId,
-                error);
     }
 
     private void handleIdentifiableApiResponse(
