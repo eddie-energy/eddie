@@ -3,51 +3,49 @@ package energy.eddie.regionconnector.es.datadis.permission.handlers;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
-import energy.eddie.regionconnector.es.datadis.permission.events.EsAcceptedEvent;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsAcceptedEventForVHD;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsGranularityEvent;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsUnfulfillableEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
+import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.es.datadis.services.HistoricalDataService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Sinks;
 
+import java.time.Duration;
 import java.util.Optional;
 
 @Component
-public class AcceptedHandler implements EventHandler<EsAcceptedEvent> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AcceptedHandler.class);
+public class AcceptedVHDHandler implements EventHandler<EsAcceptedEventForVHD>, AutoCloseable {
     private final Outbox outbox;
     private final HistoricalDataService historicalDataService;
     private final EsPermissionRequestRepository repository;
+    private final Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataSink;
 
-    public AcceptedHandler(
+    public AcceptedVHDHandler(
             EventBus eventBus,
             Outbox outbox,
             HistoricalDataService historicalDataService,
-            EsPermissionRequestRepository repository
+            EsPermissionRequestRepository repository,
+            Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataSink
     ) {
         this.outbox = outbox;
         this.historicalDataService = historicalDataService;
         this.repository = repository;
-        eventBus.filteredFlux(EsAcceptedEvent.class)
+        this.identifiableAccountingPointDataSink = identifiableAccountingPointDataSink;
+        eventBus.filteredFlux(EsAcceptedEventForVHD.class)
                 .subscribe(this::accept);
     }
 
     @Override
-    public void accept(EsAcceptedEvent permissionEvent) {
-        var permissionId = permissionEvent.permissionId();
-        var pr = repository.findByPermissionId(permissionId);
-        if (pr.isEmpty()) {
-            LOGGER.error("Got unknown permission request {}", permissionId);
-            return;
-        }
-        var permissionRequest = pr.get();
+    public void accept(EsAcceptedEventForVHD permissionEvent) {
+        var permissionRequest = repository.getByPermissionId(permissionEvent.permissionId());
 
+        var permissionId = permissionEvent.permissionId();
         var granularity = granularity(permissionRequest.allowedGranularity(), permissionEvent.supplyPointType());
         if (granularity.isEmpty()) {
             outbox.commit(new EsUnfulfillableEvent(permissionId, "Metering point can`t provide requested granularity"));
@@ -84,9 +82,7 @@ public class AcceptedHandler implements EventHandler<EsAcceptedEvent> {
         }
 
         // Only point types 1 and 2 support quarter hourly data
-        if ((pointType == 1 || pointType == 2) &&
-                (allowedGranularity == AllowedGranularity.PT15M
-                        || allowedGranularity == AllowedGranularity.PT15M_OR_PT1H)) {
+        if (supportsQuarterHourly(allowedGranularity, pointType)) {
             return Optional.of(Granularity.PT15M);
         }
 
@@ -97,5 +93,16 @@ public class AcceptedHandler implements EventHandler<EsAcceptedEvent> {
 
         // If quarter hourly measurements are requested, but the point type does not support it
         return Optional.empty();
+    }
+
+    private static boolean supportsQuarterHourly(AllowedGranularity allowedGranularity, Integer pointType) {
+        return (pointType == 1 || pointType == 2) &&
+               (allowedGranularity == AllowedGranularity.PT15M
+                || allowedGranularity == AllowedGranularity.PT15M_OR_PT1H);
+    }
+
+    @Override
+    public void close() {
+        identifiableAccountingPointDataSink.emitComplete(Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
     }
 }

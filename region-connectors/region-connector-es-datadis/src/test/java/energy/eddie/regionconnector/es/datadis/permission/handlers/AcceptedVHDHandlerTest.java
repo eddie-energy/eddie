@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.es.datadis.permission.handlers;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
-import energy.eddie.regionconnector.es.datadis.permission.events.EsAcceptedEvent;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsAcceptedEventForVHD;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.es.datadis.services.HistoricalDataService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AcceptedHandlerTest {
+class AcceptedVHDHandlerTest {
     @Mock
     private Outbox outbox;
     @Mock
@@ -40,9 +41,11 @@ class AcceptedHandlerTest {
     private EsPermissionRequestRepository repository;
     @Spy
     private EventBus eventBus = new EventBusImpl();
+
+
     @InjectMocks
     @SuppressWarnings("unused")
-    private AcceptedHandler acceptedHandler;
+    private AcceptedVHDHandler acceptedVHDHandler;
 
     private static Stream<Arguments> unfulfillableGranularities() {
         return Stream.of(
@@ -69,11 +72,10 @@ class AcceptedHandlerTest {
     @Test
     void testAccept_withUnknownPermissionRequest_doesNothing() {
         // Given
-        when(repository.findByPermissionId("pid"))
-                .thenReturn(Optional.empty());
+        doThrow(EntityNotFoundException.class).when(repository).getByPermissionId("pid");
 
         // When
-        eventBus.emit(new EsAcceptedEvent("pid", null, null, false));
+        eventBus.emit(new EsAcceptedEventForVHD("pid", DistributorCode.VIESGO, 4, true));
 
         // Then
         verifyNoInteractions(outbox);
@@ -105,11 +107,10 @@ class AcceptedHandlerTest {
                 ZonedDateTime.now(ZoneOffset.UTC),
                 allowedGranularity
         );
-        when(repository.findByPermissionId("pid"))
-                .thenReturn(Optional.of(pr));
+        when(repository.getByPermissionId("pid")).thenReturn(pr);
 
         // When
-        eventBus.emit(new EsAcceptedEvent("pid", null, supplyPointType, false));
+        eventBus.emit(new EsAcceptedEventForVHD("pid", DistributorCode.VIESGO, supplyPointType, false));
 
         // Then
         verify(outbox).commit(assertArg(event -> assertAll(
@@ -121,7 +122,7 @@ class AcceptedHandlerTest {
 
     @ParameterizedTest
     @MethodSource("fulfillableGranularities")
-    void testAccept_requestsData(
+    void testAcceptValidatedHistoricalDataNeed_requestsData(
             AllowedGranularity allowedGranularity,
             int supplyPointType,
             Granularity expectedGranularity
@@ -146,11 +147,10 @@ class AcceptedHandlerTest {
                 ZonedDateTime.now(ZoneOffset.UTC),
                 allowedGranularity
         );
-        when(repository.findByPermissionId("pid"))
-                .thenReturn(Optional.of(pr));
+        when(repository.getByPermissionId("pid")).thenReturn(pr);
 
         // When
-        eventBus.emit(new EsAcceptedEvent("pid", DistributorCode.VIESGO, supplyPointType, true));
+        eventBus.emit(new EsAcceptedEventForVHD("pid", DistributorCode.VIESGO, supplyPointType, true));
 
         // Then
         verify(historicalDataService).fetchAvailableHistoricalData(assertArg(permissionRequest -> assertAll(

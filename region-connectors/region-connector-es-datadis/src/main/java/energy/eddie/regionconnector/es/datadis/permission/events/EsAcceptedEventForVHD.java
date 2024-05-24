@@ -7,16 +7,19 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
+/**
+ * Accepted event for ValidatedHistoricalDataNeeds
+ */
 @Entity
 @SuppressWarnings({"NullAway", "unused"})
-public class EsAcceptedEvent extends PersistablePermissionEvent {
+public class EsAcceptedEventForVHD extends PersistablePermissionEvent {
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text")
     private final DistributorCode distributorCode;
     private final Integer supplyPointType;
     private final boolean productionSupport;
 
-    public EsAcceptedEvent(
+    public EsAcceptedEventForVHD(
             String permissionId,
             DistributorCode distributorCode,
             Integer supplyPointType,
@@ -28,7 +31,7 @@ public class EsAcceptedEvent extends PersistablePermissionEvent {
         this.productionSupport = productionSupport;
     }
 
-    protected EsAcceptedEvent() {
+    protected EsAcceptedEventForVHD() {
         super();
         distributorCode = null;
         supplyPointType = null;
