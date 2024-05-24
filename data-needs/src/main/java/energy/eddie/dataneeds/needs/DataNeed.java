@@ -20,6 +20,7 @@ import java.time.Instant;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
+        visible = true,
         property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = AccountingPointDataNeed.class, name = AccountingPointDataNeed.DISCRIMINATOR_VALUE),
@@ -59,6 +60,9 @@ public abstract class DataNeed implements DataNeedInterface {
     @CreationTimestamp
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Instant createdAt;
+    @JsonProperty(required = true)
+    @Transient  // don't save type information in database, but make available as property
+    private String type;
 
     @SuppressWarnings("NullAway.Init")
     protected DataNeed() {
@@ -96,5 +100,9 @@ public abstract class DataNeed implements DataNeedInterface {
      */
     public Instant createdAt() {
         return createdAt;
+    }
+
+    public String type() {
+        return type;
     }
 }

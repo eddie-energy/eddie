@@ -29,6 +29,8 @@ public class AiidaConfiguration {
         Hibernate6Module module = new Hibernate6Module();
         // Jackson should automatically query any lazy loaded fields before serialization
         module.enable(Hibernate6Module.Feature.FORCE_LAZY_LOADING);
+        // needed so that JsonTypeInformation for data need is deserialized
+        module.disable(Hibernate6Module.Feature.USE_TRANSIENT_ANNOTATION);
         objectMapper.registerModule(module);
 
         return objectMapper;
