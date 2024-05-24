@@ -7,7 +7,6 @@ public interface EnedisConfiguration {
     String ENEDIS_CLIENT_ID_KEY = PREFIX + "client.id";
     String ENEDIS_CLIENT_SECRET_KEY = PREFIX + "client.secret";
     String ENEDIS_BASE_PATH_KEY = PREFIX + "basepath";
-    String ENEDIS_TIMEOUT_DURATION = PREFIX + "timeout.duration";
 
     /**
      * Client ID that will be used to authenticate with Enedis. Must be from an Application registered with Enedis.
@@ -23,11 +22,4 @@ public interface EnedisConfiguration {
      * BasePath is optional and can be changed to the sandbox environment of Enedis for testing - default is production
      */
     String basePath();
-
-    /**
-     * The duration after which a created permission request can be thought of as not accepted.
-     *
-     * @return the timeout duration in hours
-     */
-    int timeoutDuration();
 }

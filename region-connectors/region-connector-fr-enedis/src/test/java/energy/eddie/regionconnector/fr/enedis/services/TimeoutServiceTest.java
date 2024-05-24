@@ -2,11 +2,10 @@ package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
-import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,11 +27,11 @@ import static org.mockito.Mockito.*;
 class TimeoutServiceTest {
     @Mock
     private FrPermissionRequestRepository repository;
-    @Spy
-    @SuppressWarnings("unused") // Used via the @InjectMocks annotation
-    private EnedisConfiguration config = new PlainEnedisConfiguration("clientId", "clientSecret", "/path", 24);
     @Mock
     private Outbox outbox;
+    @SuppressWarnings("unused")
+    @Spy
+    private TimeoutConfiguration timeoutConfiguration = new TimeoutConfiguration(24);
     @InjectMocks
     private TimeoutService timeoutService;
 

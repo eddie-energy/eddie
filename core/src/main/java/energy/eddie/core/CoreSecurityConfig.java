@@ -3,6 +3,7 @@ package energy.eddie.core;
 import energy.eddie.regionconnector.shared.security.JwtAuthorizationManager;
 import energy.eddie.regionconnector.shared.security.JwtSource;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
+import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,9 +50,9 @@ public class CoreSecurityConfig {
     @Bean
     public JwtUtil jwtUtil(
             @Value("${eddie.jwt.hmac.secret}") String jwtHmacSecret,
-            @Value("${eddie.permission.request.timeout.duration}") int timoutDuration
+            TimeoutConfiguration timeoutConfiguration
     ) {
-        return new JwtUtil(jwtHmacSecret, timoutDuration);
+        return new JwtUtil(jwtHmacSecret, timeoutConfiguration.duration());
     }
 
     @Bean

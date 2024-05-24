@@ -70,7 +70,7 @@ class EnedisTokenProviderTest {
     @Test
     void getToken_fetchesTokenIfExpired() {
         EnedisTokenProvider uut = new EnedisTokenProvider(
-                new PlainEnedisConfiguration("id", "secret", basePath, 24),
+                new PlainEnedisConfiguration("id", "secret", basePath),
                 webClient
         );
 
@@ -101,7 +101,7 @@ class EnedisTokenProviderTest {
     @Test
     void getToken_doesNotFetchTokenIfItIsStillValid() {
         EnedisTokenProvider uut = new EnedisTokenProvider(
-                new PlainEnedisConfiguration("id", "secret", basePath, 24),
+                new PlainEnedisConfiguration("id", "secret", basePath),
                 webClient
         );
 
@@ -126,7 +126,7 @@ class EnedisTokenProviderTest {
     @MethodSource("invalidCredentialResponses")
     void getToken_withInvalidCredentials_returnsError(String response, String name) {
         EnedisTokenProvider uut = new EnedisTokenProvider(
-                new PlainEnedisConfiguration("x", "x", basePath, 24),
+                new PlainEnedisConfiguration("x", "x", basePath),
                 webClient
         );
 

@@ -5,6 +5,7 @@ import energy.eddie.OpenApiDocs;
 import energy.eddie.admin.console.AdminConsoleSpringConfig;
 import energy.eddie.api.utils.Shared;
 import energy.eddie.dataneeds.DataNeedsSpringConfig;
+import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
 import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;
 import energy.eddie.spring.SharedBeansRegistrar;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
@@ -56,6 +57,15 @@ public class CoreSpringConfig implements WebMvcConfigurer {
         this.allowedCorsOrigins = allowedCorsOrigins;
     }
 
+    /**
+     * Beans returning a {@link org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor} need to
+     * be static for Spring to be able to "enhance @Configuration bean definition".
+     */
+    @Bean
+    static RegionConnectorRegistrationBeanPostProcessor regionConnectorRegistrationBeanPostProcessor(Environment environment) {
+        return new RegionConnectorRegistrationBeanPostProcessor(environment);
+    }
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // add a resource handler that serves all public files of this region connector
@@ -76,15 +86,6 @@ public class CoreSpringConfig implements WebMvcConfigurer {
                 // Location header is not a "simple header", therefore needs to be explicitly exposed, otherwise JS on frontend cannot access it
                 .exposedHeaders("Location")
                 .allowedMethods("GET", "POST", "PATCH", "PUT", "DELETE");
-    }
-
-    /**
-     * Beans returning a {@link org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor} need to
-     * be static for Spring to be able to "enhance @Configuration bean definition".
-     */
-    @Bean
-    static RegionConnectorRegistrationBeanPostProcessor regionConnectorRegistrationBeanPostProcessor(Environment environment) {
-        return new RegionConnectorRegistrationBeanPostProcessor(environment);
     }
 
     /**
@@ -153,5 +154,10 @@ public class CoreSpringConfig implements WebMvcConfigurer {
 
         LOGGER.info("Created ServletRegistrationBean for admin-console, urlMapping is {}", urlMapping);
         return connectorServletBean;
+    }
+
+    @Bean
+    public TimeoutConfiguration timeoutConfiguration(@Value("${eddie.permission.request.timeout.duration:168}") int timeoutDuration) {
+        return new TimeoutConfiguration(timeoutDuration);
     }
 }
