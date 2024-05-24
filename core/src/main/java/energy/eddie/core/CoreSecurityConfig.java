@@ -47,8 +47,11 @@ public class CoreSecurityConfig {
     }
 
     @Bean
-    public JwtUtil jwtUtil(@Value("${eddie.jwt.hmac.secret}") String jwtHmacSecret) {
-        return new JwtUtil(jwtHmacSecret);
+    public JwtUtil jwtUtil(
+            @Value("${eddie.jwt.hmac.secret}") String jwtHmacSecret,
+            @Value("${eddie.permission.request.timeout.duration}") int timoutDuration
+    ) {
+        return new JwtUtil(jwtHmacSecret, timoutDuration);
     }
 
     @Bean

@@ -42,7 +42,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = {PermissionController.class}, properties = "eddie.jwt.hmac.secret=RbNQrp0Dfd+fNoTalQQTd5MRurblhcDtVYaPGoDsg8Q=")
+@WebMvcTest(controllers = {PermissionController.class}, properties = {"eddie.jwt.hmac.secret=RbNQrp0Dfd+fNoTalQQTd5MRurblhcDtVYaPGoDsg8Q=", "eddie.permission.request.timeout.duration=24"})
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 @SuppressWarnings("unused")
 class PermissionControllerTest {
@@ -279,8 +279,11 @@ class PermissionControllerTest {
         }
 
         @Bean
-        public JwtUtil jwtUtil(@Value("${eddie.jwt.hmac.secret}") String jwtHmacSecret) {
-            return new JwtUtil(jwtHmacSecret);
+        public JwtUtil jwtUtil(
+                @Value("${eddie.jwt.hmac.secret}") String jwtHmacSecret,
+                @Value("${eddie.permission.request.timeout.duration}") int timeoutDuration
+        ) {
+            return new JwtUtil(jwtHmacSecret, timeoutDuration);
         }
     }
 }

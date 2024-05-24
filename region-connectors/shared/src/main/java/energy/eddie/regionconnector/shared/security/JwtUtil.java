@@ -19,8 +19,10 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.lang.Nullable;
 import org.springframework.web.util.WebUtils;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class JwtUtil {
@@ -30,12 +32,16 @@ public class JwtUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtUtil.class);
     private final JWSMinter<SecurityContext> minter;
     private final JWTProcessor<SecurityContext> jwtProcessor;
+    private final int timeoutDuration;
 
     /**
      * @param jwtHmacSecret Base64 encoded secret that should be used as secret key for calculating and validating the
      *                      HMAC signatures.
      */
-    public JwtUtil(String jwtHmacSecret) {
+    public JwtUtil(String jwtHmacSecret, int timeoutDuration) {
+        if (timeoutDuration <= 0) {
+            throw new IllegalArgumentException("timeoutDuration must be greater than 0");
+        }
         byte[] secretBytes = Base64.getDecoder().decode(jwtHmacSecret);
 
         if (secretBytes.length != 32)
@@ -52,6 +58,7 @@ public class JwtUtil {
 
         this.minter = defaultJWSMinter;
         this.jwtProcessor = defaultProcessor;
+        this.timeoutDuration = timeoutDuration;
     }
 
     /**
@@ -84,8 +91,10 @@ public class JwtUtil {
                 .type(JOSEObjectType.JWT)
                 .build();
 
+        var expirationTime = Instant.now(Clock.systemUTC()).plus(timeoutDuration, ChronoUnit.HOURS);
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .issueTime(Date.from(Instant.now()))
+                .issueTime(Date.from(Instant.now(Clock.systemUTC())))
+                .expirationTime(Date.from(expirationTime))
                 .claim(JWT_PERMISSIONS_CLAIM, permissions)
                 .build();
 
@@ -165,9 +174,10 @@ public class JwtUtil {
         JWSHeader header = new JWSHeader.Builder(JWS_ALGORITHM)
                 .type(JOSEObjectType.JWT)
                 .build();
-
+        var expirationTime = Instant.now(Clock.systemUTC()).plus(timeoutDuration, ChronoUnit.HOURS);
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .issueTime(Date.from(Instant.now()))
+                .issueTime(Date.from(Instant.now(Clock.systemUTC())))
+                .expirationTime(Date.from(expirationTime))
                 .claim(JWT_PERMISSIONS_CLAIM, permissions)
                 .build();
 
