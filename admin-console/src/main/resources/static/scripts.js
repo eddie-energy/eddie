@@ -1,14 +1,14 @@
 (function(){
   new DataTable("#statusMessageTable" ,{ "order": [] });
 
-  const body = document.querySelector('body');
-  document.addEventListener('DOMContentLoaded', body.classList.add('dark'));
+  const root = document.documentElement;
+  root.classList.add('dark');
   document.querySelector('.theme-controller').addEventListener('change', function() {
     if (this.checked) {
-        body.classList.remove('dark');
+        root.classList.remove('dark');
     }
     else {
-        body.classList.add('dark');
+        root.classList.add('dark');
     }
   });
 

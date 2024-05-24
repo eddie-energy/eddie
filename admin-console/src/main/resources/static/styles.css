@@ -4,6 +4,7 @@
   --text-color: #2A303C; /* almost black */
   --table-row-background-color: #ffffff; /* white */
 }
+
 .dark {
   --primary-color: #1CA8E0; /* light blue */
   --background-color: #303030; /* dark grey */
@@ -15,10 +16,12 @@ div.dt-container select.dt-input{
   background-color: var(--table-row-background-color);
   color: var(--text-color);
 }
+
 .dt-length, .dt-search, .dt-info {
   color: var(--text-color);
   margin-bottom: 1rem;
 }
+
 div.dt-container .dt-search input {
   color: var(--primary-color);
 }
@@ -30,6 +33,7 @@ div.dt-container .dt-paging .dt-paging-button.current:hover {
   background-image: none;
   border: none;
 }
+
 div.dt-container .dt-paging .dt-paging-button.disabled,
 div.dt-container .dt-paging .dt-paging-button.disabled:hover,
 div.dt-container .dt-paging .dt-paging-button.disabled:active  {
