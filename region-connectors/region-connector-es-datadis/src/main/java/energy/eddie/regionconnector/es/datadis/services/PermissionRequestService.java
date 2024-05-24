@@ -1,12 +1,15 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata;
@@ -27,9 +30,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 
 @Service
 public class PermissionRequestService {
@@ -130,18 +136,45 @@ public class PermissionRequestService {
         }
 
         var calculation = calculationService.calculate(dataNeed.get());
-        if (!calculation.supportsDataNeed()
-            || calculation.energyDataTimeframe() == null
-            || calculation.permissionTimeframe() == null) {
-            outbox.commit(new EsMalformedEvent(
-                    permissionId,
-                    List.of(new AttributeError(DATA_NEED_ID,
-                                               "This region connector only supports ValidatedHistoricalData DataNeeds"))
-            ));
-            throw new UnsupportedDataNeedException(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                   dataNeedId,
-                                                   "This region connector only supports ValidatedHistoricalData DataNeeds");
+        if (!calculation.supportsDataNeed()) {
+            throwUnsupportedDataNeed(permissionId, dataNeedId);
         }
+
+        switch (dataNeed.get()) {
+            case AccountingPointDataNeed ignored -> handleAccountingPointDataNeed(permissionId);
+            default -> handleValidatedHistoricalDataNeed(calculation, permissionId, dataNeedId);
+        }
+        return new CreatedPermissionRequest(permissionId);
+    }
+
+    private void throwUnsupportedDataNeed(String permissionId, String dataNeedId) throws UnsupportedDataNeedException {
+        String message = "This region connector only supports ValidatedHistoricalData and AccountingPoint DataNeeds";
+        outbox.commit(new EsMalformedEvent(
+                permissionId,
+                List.of(new AttributeError(DATA_NEED_ID, message))
+        ));
+        throw new UnsupportedDataNeedException(
+                DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                dataNeedId,
+                message
+        );
+    }
+
+    private void handleAccountingPointDataNeed(String permissionId) {
+        LocalDate today = LocalDate.now(ZONE_ID_SPAIN);
+        outbox.commit(new EsValidatedEvent(
+                permissionId,
+                today,
+                today,
+                null
+        ));
+    }
+
+    private void handleValidatedHistoricalDataNeed(
+            DataNeedCalculation calculation,
+            String permissionId,
+            String dataNeedId
+    ) throws UnsupportedDataNeedException {
         if (calculation.granularities() == null || calculation.granularities().isEmpty()) {
             throwUnsupportedGranularity(permissionId, dataNeedId);
         }
@@ -150,14 +183,15 @@ public class PermissionRequestService {
         if (allowedMeasurementType.isEmpty()) {
             throwUnsupportedGranularity(permissionId, dataNeedId);
         }
-        //noinspection OptionalGetWithoutIsPresent
+
+        Timeframe energyDataTimeframe = calculation.energyDataTimeframe();
+        //noinspection OptionalGetWithoutIsPresent,DataFlowIssue
         outbox.commit(new EsValidatedEvent(
                 permissionId,
-                calculation.energyDataTimeframe().start(),
-                calculation.energyDataTimeframe().end(),
+                energyDataTimeframe.start(),
+                energyDataTimeframe.end(),
                 allowedMeasurementType.get()
         ));
-        return new CreatedPermissionRequest(permissionId);
     }
 
     private void throwUnsupportedGranularity(

@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.es.datadis.permission.events;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -24,7 +25,7 @@ public class EsValidatedEvent extends PersistablePermissionEvent {
             String permissionId,
             LocalDate start,
             LocalDate end,
-            AllowedGranularity allowedGranularity
+            @Nullable AllowedGranularity allowedGranularity
     ) {
         super(permissionId, PermissionProcessStatus.VALIDATED);
         this.start = start;
