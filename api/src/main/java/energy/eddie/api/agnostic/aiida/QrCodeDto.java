@@ -1,6 +1,7 @@
 package energy.eddie.api.agnostic.aiida;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * This data transfer object contains all necessary information that should be encoded in a QR code, that is then
@@ -13,11 +14,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public record QrCodeDto(
         @JsonProperty
+        @NotBlank(message = "must not be blank")
         String permissionId,
         @JsonProperty
+        @NotBlank(message = "must not be blank")
         String serviceName,
         @JsonProperty
+        @NotBlank(message = "must not be blank")
         String handshakeUrl,
         @JsonProperty
+        @NotBlank(message = "must not be blank")
         String accessToken) {
 }

@@ -274,7 +274,7 @@ function revokePermission(permissionId) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      operation: "REVOKE_PERMISSION",
+      operation: "REVOKE",
     }),
   }).then(() => renderPermissions());
 }
