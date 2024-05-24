@@ -3,6 +3,7 @@ package energy.eddie.dataneeds.services;
 import energy.eddie.api.utils.Shared;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.persistence.DataNeedsNameAndIdProjection;
+import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,4 +28,15 @@ public interface DataNeedsService {
      * @return The data need or an empty Optional if there is no data need with the given ID.
      */
     Optional<DataNeed> findById(String id);
+
+
+    /**
+     * Gets a data need by its id. If it cannot be found throws {@code EntityNotFoundException}. Should only be used
+     * when sure that the data need exists
+     *
+     * @param id The ID of the data need to get.
+     * @return the data need
+     * @throws EntityNotFoundException if the entity cannot be found
+     */
+    DataNeed getById(String id);
 }
