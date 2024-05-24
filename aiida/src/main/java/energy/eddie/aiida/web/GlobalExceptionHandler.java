@@ -76,14 +76,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
     }
 
-    @ExceptionHandler(value = {InvalidPermissionRevocationException.class})
-    protected ResponseEntity<Map<String, List<EddieApiError>>> handleInvalidPermissionRevocationException(
-            InvalidPermissionRevocationException exception
-    ) {
-        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
-        return ResponseEntity.badRequest().body(errors);
-    }
-
     @ExceptionHandler(value = {InvalidPatchOperationException.class})
     protected ResponseEntity<Map<String, List<EddieApiError>>> handleInvalidPatchOperationException(
             InvalidPatchOperationException exception

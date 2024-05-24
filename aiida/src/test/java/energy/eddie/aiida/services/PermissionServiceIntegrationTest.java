@@ -3,6 +3,7 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
+import org.eclipse.paho.mqttv5.common.MqttException;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -86,7 +87,7 @@ public class PermissionServiceIntegrationTest {
      * their status is set accordingly or streaming is started again otherwise.
      */
     @Test
-    void givenVariousPermissions_statusAsExpected() {
+    void givenVariousPermissions_statusAsExpected() throws MqttException {
         var permission = repository.findById("25ee5365-5d71-4b01-b21f-9c61f76a5cc9").orElseThrow();
         assertEquals(PermissionStatus.STREAMING_DATA, permission.status());
 

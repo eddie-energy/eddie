@@ -7,16 +7,23 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Clock;
+import java.time.ZoneId;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledFuture;
 
 @Configuration
 @EnableScheduling
 public class AiidaConfiguration {
+    public static final ZoneId AIIDA_ZONE_ID = ZoneId.of("Etc/UTC");
+
     /**
-     * Configures and returns an ObjectMapper bean that should be used for (de-)serializing POJOs to JSON.
-     * The ObjectMapperSingleton can also be used by classes that cannot use constructor injection
-     * using the @Autowired annotation and will return the same instance.
+     * Configures and returns an ObjectMapper bean that should be used for (de-)serializing POJOs to JSON. The
+     * ObjectMapperSingleton can also be used by classes that cannot use constructor injection using the @Autowired
+     * annotation and will return the same instance.
      *
      * @return ObjectMapper instance configured to fit the AIIDA project.
      */
@@ -42,5 +49,20 @@ public class AiidaConfiguration {
     @Bean
     public Clock clock() {
         return Clock.systemUTC();
+    }
+
+    /**
+     * {@link WebClient} used for handshake with EDDIE.
+     */
+    @Bean
+    public WebClient webClient() {
+        return WebClient.create();
+    }
+
+    @Bean
+    // Spring's TaskScheduler only returns a ScheduledFuture<?>, so we have to use wildcards
+    @SuppressWarnings("java:S1452")
+    public ConcurrentMap<String, ScheduledFuture<?>> permissionFutures() {
+        return new ConcurrentHashMap<>();
     }
 }

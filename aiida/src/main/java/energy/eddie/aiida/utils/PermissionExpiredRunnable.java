@@ -1,39 +1,69 @@
 package energy.eddie.aiida.utils;
 
+import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.streamers.StreamerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Sinks;
 
+import java.time.Clock;
 import java.time.Instant;
+
+import static java.util.Objects.requireNonNull;
 
 public class PermissionExpiredRunnable implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionExpiredRunnable.class);
-    private final String permissionId;
+    private final Permission permission;
+    private final StreamerManager streamerManager;
+    private final PermissionRepository repository;
     private final Instant expirationTime;
-    private final Sinks.One<String> expirationSink;
+    private final Clock clock;
 
     /**
-     * Create a new runnable that will notify the {@code listener} when it runs.
-     *
-     * @param permissionId   ID that should be passed to the listener on expiration
-     * @param expirationTime UTC timestamp when the permission should expire. Just used to calculate and print the offset,
-     *                       between the target time and when this Runnable is actually run.
-     * @param expirationSink Sink of a {@code Mono<String>} on which the permissionId will be published when the runnable runs
+     * Create a new PermissionExpiredRunnable that when executed, instructs the {@link StreamerManager} to send the
+     * {@link PermissionStatus#FULFILLED} status message to the EDDIE framework, stops streaming for the specified
+     * permission and updates the database.
      */
-    public PermissionExpiredRunnable(String permissionId, Instant expirationTime, Sinks.One<String> expirationSink) {
-        this.permissionId = permissionId;
-        this.expirationTime = expirationTime;
-        this.expirationSink = expirationSink;
+    public PermissionExpiredRunnable(
+            Permission permission,
+            StreamerManager streamerManager,
+            PermissionRepository repository,
+            Clock clock
+    ) {
+        this.permission = permission;
+        this.streamerManager = streamerManager;
+        this.repository = repository;
+        this.clock = clock;
+        this.expirationTime = requireNonNull(permission.expirationTime());
     }
 
     @Override
     public void run() {
-        var offsetMs = Instant.now().toEpochMilli() - expirationTime.toEpochMilli();
-        LOGGER.info("ExpirePermissionRunnable running for permission {} with offset of {} ms to target time (negative number would be too early)", permissionId, offsetMs);
-        Sinks.EmitResult result = expirationSink.tryEmitValue(permissionId);
+        var offsetMs = clock.instant().toEpochMilli() - expirationTime.toEpochMilli();
 
-        if (result.isFailure()) {
-            LOGGER.error("Error while trying to emit expiration signal for permission {}. Error was: {}", permissionId, result);
+        LOGGER.atInfo()
+              .addArgument(permission.permissionId())
+              .addArgument(offsetMs)
+              .log("Will expire permission permission {}, running {} ms too late compared to target time (negative number would be too early)");
+
+        // safeguard if e.g. a revocation operation could not properly cancel this runnable before it runs
+        if (!(permission.status() == PermissionStatus.ACCEPTED ||
+                permission.status() == PermissionStatus.WAITING_FOR_START ||
+                permission.status() == PermissionStatus.STREAMING_DATA)) {
+            LOGGER.warn("Permission {} was modified, its status is {}. Will NOT expire the permission",
+                        permission.permissionId(), permission.status());
+            return;
         }
+
+        if (permission.status() == PermissionStatus.ACCEPTED || permission.status() == PermissionStatus.WAITING_FOR_START) {
+            LOGGER.warn("Permission {} has status {}, meaning it was never started. Will expire it anyway.",
+                        permission.permissionId(), permission.status());
+        }
+
+        streamerManager.permissionExpired(permission);
+
+        permission.setStatus(PermissionStatus.FULFILLED);
+        repository.save(permission);
     }
 }
