@@ -32,6 +32,7 @@ import java.util.List;
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
 import static energy.eddie.aiida.models.permission.PermissionStatus.*;
 import static energy.eddie.api.v0.PermissionProcessStatus.REJECTED;
+import static java.util.Objects.requireNonNull;
 
 @Service
 public class PermissionService implements ApplicationListener<ContextRefreshedEvent> {
@@ -78,7 +79,14 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         permission.setStatus(TERMINATED);
         permission = repository.save(permission);
 
-        streamerManager.terminatePermission(permission);
+        var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
+        var connectionId = requireNonNull(permission.connectionId());
+        var terminatedMessage = new ConnectionStatusMessage(connectionId,
+                                                            dataNeedId,
+                                                            clock.instant(),
+                                                            TERMINATED,
+                                                            permission.permissionId());
+        streamerManager.stopStreamer(terminatedMessage);
     }
 
     /**
@@ -264,7 +272,15 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         permission.setRevokeTime(revocationTime);
         permission = repository.save(permission);
 
-        streamerManager.revokePermission(permission);
+
+        var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
+        var connectionId = requireNonNull(permission.connectionId());
+        var revokedMessage = new ConnectionStatusMessage(connectionId,
+                                                         dataNeedId,
+                                                         clock.instant(),
+                                                         REVOKED,
+                                                         permission.permissionId());
+        streamerManager.stopStreamer(revokedMessage);
 
         return permission;
     }

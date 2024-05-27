@@ -33,26 +33,26 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
      * Creates a new MqttStreamer and initialized the client callback.
      *
      * @param recordFlux             Flux, where records that should be sent are published.
-     * @param statusMessageFlux      Flux, where status messages that should be sent are published.
      * @param terminationRequestSink Sink, to which the {@code permissionId} will be published, when the EP requests a
      *                               termination.
      * @param streamingConfig        Necessary MQTT configuration values.
      * @param client                 {@link MqttAsyncClient} used to send to MQTT broker.
      * @param mapper                 {@link ObjectMapper} used to transform the values to be sent into JSON strings.
+     * @param failedToSendRepository Repository where messages that could not be transmitted are stored.
      */
     protected MqttStreamer(
             Flux<AiidaRecord> recordFlux,
-            Flux<ConnectionStatusMessage> statusMessageFlux,
             Sinks.One<String> terminationRequestSink,
             MqttStreamingConfig streamingConfig,
             MqttAsyncClient client,
             ObjectMapper mapper,
             FailedToSendRepository failedToSendRepository
     ) {
-        super(recordFlux, statusMessageFlux, terminationRequestSink);
+        super(recordFlux, terminationRequestSink);
+
         this.streamingConfig = streamingConfig;
-        this.mapper = mapper;
         this.client = client;
+        this.mapper = mapper;
         this.failedToSendRepository = failedToSendRepository;
 
         client.setCallback(this);
@@ -86,7 +86,6 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         }
 
         recordFlux.publishOn(Schedulers.boundedElastic()).subscribe(this::publishRecord);
-        statusMessageFlux.publishOn(Schedulers.boundedElastic()).subscribe(this::publishStatusMessage);
     }
 
     private void publishRecord(AiidaRecord aiidaRecord) {
@@ -102,23 +101,6 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
                          streamingConfig.permissionId(),
                          aiidaRecord,
                          exception);
-        }
-    }
-
-    private void publishStatusMessage(ConnectionStatusMessage connectionStatusMessage) {
-        LOGGER.trace("MqttStreamer for permission {} publishing connectionStatusMessage {}",
-                     streamingConfig.permissionId(),
-                     connectionStatusMessage);
-
-        try {
-            byte[] jsonBytes = mapper.writeValueAsBytes(connectionStatusMessage);
-            publishMessage(streamingConfig.statusTopic(), jsonBytes);
-        } catch (JsonProcessingException exception) {
-            LOGGER.error(
-                    "MqttStreamer for permission {} cannot convert ConnectionStatusMessage {} to JSON, will ignore it",
-                    streamingConfig.permissionId(),
-                    connectionStatusMessage,
-                    exception);
         }
     }
 
@@ -159,6 +141,43 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         } catch (MqttException e) {
             LOGGER.info("MqttStreamer for permission {} has encountered an error while disconnecting/closing streamer",
                         streamingConfig.permissionId(), e);
+        }
+    }
+
+    @Override
+    public void closeTerminally(ConnectionStatusMessage statusMessage) {
+        LOGGER.atInfo()
+              .addArgument(statusMessage.permissionId())
+              .addArgument(statusMessage.status())
+              .log("MqttStreamer for permission {} is requested to close with status {}");
+
+        publishStatusMessageSynchronously(statusMessage);
+        close();
+
+        failedToSendRepository.deleteAllByPermissionId(streamingConfig.permissionId());
+    }
+
+    private void publishStatusMessageSynchronously(ConnectionStatusMessage statusMessage) {
+        LOGGER.trace("MqttStreamer for permission {} synchronously publishing connectionStatusMessage {}",
+                     streamingConfig.permissionId(),
+                     statusMessage);
+
+        try {
+            byte[] jsonBytes = mapper.writeValueAsBytes(statusMessage);
+            client.publish(streamingConfig.statusTopic(), jsonBytes, 1, true)
+                  .waitForCompletion(Duration.ofMinutes(2).toMillis());
+        } catch (JsonProcessingException exception) {
+            LOGGER.atError()
+                  .addArgument(streamingConfig.permissionId())
+                  .addArgument(statusMessage)
+                  .setCause(exception)
+                  .log("MqttStreamer for permission {} cannot convert ConnectionStatusMessage {} to JSON, will ignore it");
+        } catch (MqttException exception) {
+            LOGGER.atError()
+                  .addArgument(streamingConfig.permissionId())
+                  .addArgument(statusMessage)
+                  .setCause(exception)
+                  .log("MqttStreamer for permission {} failed to send connectionStatusMessage {}, will close streamer without retrying to send");
         }
     }
 

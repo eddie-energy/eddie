@@ -1,5 +1,6 @@
 package energy.eddie.aiida.utils;
 
+import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
@@ -49,8 +50,8 @@ public class PermissionExpiredRunnable implements Runnable {
 
         // safeguard if e.g. a revocation operation could not properly cancel this runnable before it runs
         if (!(permission.status() == PermissionStatus.ACCEPTED ||
-                permission.status() == PermissionStatus.WAITING_FOR_START ||
-                permission.status() == PermissionStatus.STREAMING_DATA)) {
+              permission.status() == PermissionStatus.WAITING_FOR_START ||
+              permission.status() == PermissionStatus.STREAMING_DATA)) {
             LOGGER.warn("Permission {} was modified, its status is {}. Will NOT expire the permission",
                         permission.permissionId(), permission.status());
             return;
@@ -61,9 +62,17 @@ public class PermissionExpiredRunnable implements Runnable {
                         permission.permissionId(), permission.status());
         }
 
-        streamerManager.permissionExpired(permission);
+        var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
+        var connectionId = requireNonNull(permission.connectionId());
+        var fulfilledMessage = new ConnectionStatusMessage(connectionId,
+                                                           dataNeedId,
+                                                           clock.instant(),
+                                                           PermissionStatus.FULFILLED,
+                                                           permission.permissionId());
 
         permission.setStatus(PermissionStatus.FULFILLED);
         repository.save(permission);
+
+        streamerManager.stopStreamer(fulfilledMessage);
     }
 }

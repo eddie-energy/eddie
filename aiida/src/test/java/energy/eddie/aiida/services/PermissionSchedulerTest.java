@@ -72,7 +72,7 @@ class PermissionSchedulerTest {
         assertEquals(PermissionStatus.STREAMING_DATA, permission.status());
         verify(permissionFutures).put(eq(permissionId), any());
         verify(mockTaskScheduler).schedule(any(PermissionExpiredRunnable.class), eq(expirationTime));
-        verify(mockStreamerManager).createNewStreamerForPermission(any());
+        verify(mockStreamerManager).createNewStreamer(any());
         verify(mockRepository).save(any());
     }
 

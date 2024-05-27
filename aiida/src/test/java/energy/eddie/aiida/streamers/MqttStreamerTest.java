@@ -1,10 +1,10 @@
 package energy.eddie.aiida.streamers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
+import energy.eddie.aiida.models.FailedToSendEntity;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordFactory;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
@@ -24,6 +24,7 @@ import reactor.test.publisher.TestPublisher;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -34,22 +35,21 @@ class MqttStreamerTest {
     @Mock
     private MqttAsyncClient mockClient;
     @Mock
-    private IMqttToken mockToken;
+    private IMqttToken mockDisconnectToken;
+    @Mock
+    private IMqttToken mockPublishToken;
     @Mock
     private MqttMessage mockMessage;
     @Mock
     private FailedToSendRepository mockRepository;
-    private final ObjectMapper mapper = new AiidaConfiguration().objectMapper();
+    @Mock
+    private ObjectMapper mockMapper;
+    @Mock
+    private ConnectionStatusMessage mockStatusMessage;
     private final TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
-    private final TestPublisher<ConnectionStatusMessage> statusMessagePublisher = TestPublisher.create();
     private final Sinks.One<String> terminationSink = Sinks.one();
     private final AiidaRecord record1 = AiidaRecordFactory.createRecord("1.8.0", Instant.now(), 444);
     private final AiidaRecord record2 = AiidaRecordFactory.createRecord("2.8.0", Instant.now(), 888);
-    private final ConnectionStatusMessage statusMessage = new ConnectionStatusMessage("foo",
-                                                                                      "bar",
-                                                                                      Instant.now(),
-                                                                                      PermissionStatus.REJECTED,
-                                                                                      "permission-id");
     private MqttStreamingConfig mqttStreamingConfig;
     private static final String expectedDataTopic = "aiida/v1/permission-id/data";
     private static final String expectedStatusTopic = "aiida/v1/permission-id/status";
@@ -58,17 +58,21 @@ class MqttStreamerTest {
 
     @BeforeEach
     void setUp() {
-        mqttStreamingConfig = MqttStreamingConfig.getFixedConfig("permission-id");
+        mqttStreamingConfig = new MqttStreamingConfig("permission-id",
+                                                      "username",
+                                                      "password",
+                                                      "tcp://localhost:1883",
+                                                      expectedDataTopic,
+                                                      expectedStatusTopic,
+                                                      expectedTerminationTopic);
+        when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
 
         streamer = new MqttStreamer(recordPublisher.flux(),
-                                    statusMessagePublisher.flux(),
                                     terminationSink,
                                     mqttStreamingConfig,
                                     mockClient,
-                                    mapper,
+                                    mockMapper,
                                     mockRepository);
-
-        when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
     }
 
 
@@ -76,7 +80,6 @@ class MqttStreamerTest {
     void verify_connect_setsCallback_andSubscribes() {
         // Given
         recordPublisher.assertNoSubscribers();
-        statusMessagePublisher.assertNoSubscribers();
 
         // When
         streamer.connect();
@@ -84,7 +87,6 @@ class MqttStreamerTest {
         // Then
         verify(mockClient).setCallback(any());
         recordPublisher.assertSubscribers(1);
-        statusMessagePublisher.assertSubscribers(1);
     }
 
     @Test
@@ -95,10 +97,10 @@ class MqttStreamerTest {
         // Then
         verify(mockClient).connect(
                 argThat(options -> options.getUserName().equals(mqttStreamingConfig.username())
-                        && !options.isCleanStart()
-                        && options.isAutomaticReconnect()
-                        && new String(options.getPassword(),
-                                      StandardCharsets.UTF_8).equals(mqttStreamingConfig.password())));
+                                   && !options.isCleanStart()
+                                   && options.isAutomaticReconnect()
+                                   && new String(options.getPassword(),
+                                                 StandardCharsets.UTF_8).equals(mqttStreamingConfig.password())));
     }
 
     @Test
@@ -133,27 +135,9 @@ class MqttStreamerTest {
     }
 
     @Test
-    void givenStatusMessage_sendsViaMqtt() throws MqttException, InterruptedException {
-        // Given
-        streamer.connect();
-        // manually call callback
-        streamer.connectComplete(false, "fooTest");
-
-        // When
-        statusMessagePublisher.next(statusMessage);
-        // Need to sleep because messages are handled on different thread and therefore a race condition may occur otherwise
-        Thread.sleep(200);
-
-        // Then
-        verify(mockClient).setCallback(any());
-        verify(mockClient).subscribe(expectedTerminationTopic, 2);
-        verify(mockClient).publish(eq(expectedStatusTopic), any(), eq(1), eq(false));
-    }
-
-    @Test
     void verify_close_emitsEmptyOnTerminationOne_andClosesClient() throws MqttException {
         // Given
-        when(mockClient.disconnect(anyLong())).thenReturn(mockToken);
+        when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
         streamer.connect();
         StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
                                                 .expectComplete()
@@ -172,7 +156,7 @@ class MqttStreamerTest {
     void givenTerminationRequest_publishesOnMono() throws MqttException {
         // Given
         when(mockMessage.getPayload()).thenReturn("permission-id".getBytes(StandardCharsets.UTF_8));
-        when(mockClient.disconnect(anyLong())).thenReturn(mockToken);
+        when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
         StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
                                                 .expectNext("permission-id")
                                                 .then(streamer::close)
@@ -192,7 +176,7 @@ class MqttStreamerTest {
     void givenTerminationRequestWithInvalidPermissionId_doesNotPublishOnMono() throws MqttException {
         // Given
         when(mockMessage.getPayload()).thenReturn("NotTheExpectedPermissionId".getBytes(StandardCharsets.UTF_8));
-        when(mockClient.disconnect(anyLong())).thenReturn(mockToken);
+        when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
         StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
                                                 .then(streamer::close)
                                                 .expectComplete()
@@ -208,7 +192,7 @@ class MqttStreamerTest {
     }
 
     @Test
-    void givenAiidaRecordOrStatusMessageAfterTerminationRequest_doesNotSendViaMqtt() throws MqttException, InterruptedException {
+    void givenAiidaRecordAfterTerminationRequest_doesNotSendViaMqtt() throws MqttException, InterruptedException {
         // Given
         streamer.connect();
         // manually call callback
@@ -217,7 +201,6 @@ class MqttStreamerTest {
 
         // When
         streamer.messageArrived(expectedTerminationTopic, mockMessage);
-        statusMessagePublisher.next(statusMessage);
         recordPublisher.next(record1, record2);
         Thread.sleep(200);
 
@@ -225,5 +208,61 @@ class MqttStreamerTest {
         verify(mockClient, never()).publish(any(), any(), anyInt(), anyBoolean());
     }
 
-    // TODO test persistence when exception thrown
+    @Test
+    void givenExceptionWhileSending_savesToRepository() throws MqttException, InterruptedException, JsonProcessingException {
+        // Given
+        when(mockClient.publish(any(), any(), anyInt(), anyBoolean())).thenThrow(new MqttException(999));
+        var json = "MyJson".getBytes(StandardCharsets.UTF_8);
+        when(mockMapper.writeValueAsBytes(any())).thenReturn(json);
+        streamer.connect();
+
+        // When
+        recordPublisher.next(record1);
+        Thread.sleep(200);
+
+        // Then
+        verify(mockRepository).save(any());
+    }
+
+    @Test
+    void verify_closeTerminally_publishesSynchronously_andDeletesFailedToSendMessages() throws MqttException, JsonProcessingException {
+        // Given
+        StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
+                                                .expectComplete()
+                                                .verifyLater();
+        var json = "MyJson".getBytes(StandardCharsets.UTF_8);
+        when(mockMapper.writeValueAsBytes(any())).thenReturn(json);
+        when(mockClient.publish(anyString(), any(), anyInt(), anyBoolean())).thenReturn(mockPublishToken);
+        when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
+        streamer.connect();
+
+        // When
+        streamer.closeTerminally(mockStatusMessage);
+
+        // Then
+        stepVerifier.verify(Duration.ofSeconds(2));
+        verify(mockClient).publish(expectedStatusTopic, json, 1, true);
+        verify(mockPublishToken).waitForCompletion(anyLong());
+        verify(mockDisconnectToken).waitForCompletion();
+        verify(mockClient).disconnect(anyLong());
+        verify(mockClient).close();
+        verify(mockRepository).deleteAllByPermissionId(any());
+    }
+
+    @Test
+    void verify_connectComplete_retransmitFailedMessages() throws MqttException {
+        // Given
+        when(mockRepository.findAllByPermissionId("permission-id"))
+                .thenReturn(List.of(new FailedToSendEntity("foo",
+                                                           "bar",
+                                                           "json".getBytes(StandardCharsets.UTF_8))));
+        streamer.connect();
+
+        // When
+        streamer.connectComplete(false, "tcp://localhost:1883");
+
+        // Then
+        verify(mockRepository).deleteAllById(any());
+        verify(mockClient, times(1)).publish(anyString(), any(), anyInt(), anyBoolean());
+    }
 }

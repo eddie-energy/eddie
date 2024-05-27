@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface FailedToSendRepository extends JpaRepository<FailedToSendEntity, Integer> {
     List<FailedToSendEntity> findAllByPermissionId(String permissionId);
+
+    void deleteAllByPermissionId(String permissionId);
 }

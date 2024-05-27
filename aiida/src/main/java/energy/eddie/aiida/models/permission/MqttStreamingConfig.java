@@ -84,15 +84,4 @@ public class MqttStreamingConfig {
     public String terminationTopic() {
         return terminationTopic;
     }
-
-    // TODO to be removed in GH-929
-    public static MqttStreamingConfig getFixedConfig(String permissionId) {
-        return new MqttStreamingConfig(permissionId,
-                                       "AIIDA-fixed-client",
-                                       "testAiida",
-                                       "tcp://localhost:1883",
-                                       "aiida/v1/" + permissionId + "/data",
-                                       "aiida/v1/" + permissionId + "/status",
-                                       "aiida/v1/" + permissionId + "/termination");
-    }
 }
