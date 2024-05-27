@@ -29,6 +29,7 @@ dependencies {
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.openapi.webmvc.ui)
 
     implementation(libs.reactor.core)
