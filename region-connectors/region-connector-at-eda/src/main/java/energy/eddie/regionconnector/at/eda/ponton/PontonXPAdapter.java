@@ -11,13 +11,11 @@ import energy.eddie.regionconnector.at.eda.dto.EdaCMRevoke;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
-import energy.eddie.regionconnector.at.eda.models.ResponseCode;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.InboundMessageResult;
-import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationType;
+import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationMessageType;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConnection;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
-import jakarta.validation.constraints.NotNull;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +23,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -58,20 +56,11 @@ public class PontonXPAdapter implements EdaAdapter {
               .addArgument(outboundMessageStatusUpdate::getResult)
               .log("Received status update for ConversationId: '{}' with result: '{}'");
         switch (outboundMessageStatusUpdate.getResult()) {
-            case SUCCESS ->  // success just indicates that the message was received by the other party (dso)
-            {
-                CMRequestStatus status = new CMRequestStatus(
-                        CMRequestStatus.Status.RECEIVED,
-                        outboundMessageStatusUpdate.getDetailText(),
-                        conversationId
-                );
-                requestStatusSink.emitNext(status, Sinks.EmitFailureHandler.busyLooping(Duration.ofSeconds(1)));
-            }
             case CONFIG_ERROR, CONTENT_ERROR, TRANSMISSION_ERROR, FAILED -> {
                 CMRequestStatus status = new CMRequestStatus(
-                        CMRequestStatus.Status.ERROR,
-                        outboundMessageStatusUpdate.getDetailText(),
-                        conversationId
+                        NotificationMessageType.PONTON_ERROR,
+                        conversationId,
+                        outboundMessageStatusUpdate.getDetailText()
                 );
                 requestStatusSink.emitNext(status, Sinks.EmitFailureHandler.busyLooping(Duration.ofSeconds(1)));
             }
@@ -83,7 +72,7 @@ public class PontonXPAdapter implements EdaAdapter {
 
     private InboundMessageResult handleCMNotificationMessage(
             EdaCMNotification notification,
-            NotificationType notificationType
+            NotificationMessageType notificationMessageType
     ) {
         var cmRequestId = notification.cmRequestId();
         var conversationId = notification.conversationId();
@@ -106,26 +95,22 @@ public class PontonXPAdapter implements EdaAdapter {
 
         var responseData = notification.responseData().getFirst();
         var status = new CMRequestStatus(
-                switch (notificationType) {
-                    case ANSWER -> CMRequestStatus.Status.DELIVERED;
-                    case ACCEPT -> CMRequestStatus.Status.ACCEPTED;
-                    case REJECT -> CMRequestStatus.Status.REJECTED;
-                },
-                responseCodesToMessage(responseData.responseCodes()),
-                conversationId
+                notificationMessageType,
+                conversationId,
+                responseData.responseCodes(),
+                cmRequestId,
+                responseData.consentId(),
+                responseData.meteringPoint()
         );
-        status.setCmRequestId(cmRequestId);
-        status.setMeteringPoint(responseData.meteringPoint());
-        status.setCmConsentId(responseData.consentId());
         LOGGER.atInfo()
-              .addArgument(status::getStatus)
-              .addArgument(status::getCMRequestId)
+              .addArgument(status::messageType)
+              .addArgument(status::cmRequestId)
               .addArgument(() -> status.getCMConsentId()
                                        .map(consentId -> " (ConsentId '" + consentId + "')")
                                        .orElse(Strings.EMPTY))
-              .addArgument(status::getConversationId)
-              .addArgument(status::getMessage)
-              .log("Received CMNotification: {} for CMRequestId '{}'{} with ConversationId '{}', reason '{}'");
+              .addArgument(status::conversationId)
+              .addArgument(() -> Arrays.toString(status.statusCodes().toArray()))
+              .log("Received CMNotification: {} for CMRequestId '{}'{} with ConversationId '{}', status code: '{}'");
 
         var result = requestStatusSink.tryEmitNext(status);
         return handleEmitResult(result);
@@ -155,15 +140,6 @@ public class PontonXPAdapter implements EdaAdapter {
               .log("Received CMRevoke for ConsentId '{}' with ConsentEnd '{}'");
         var result = cmRevokeSink.tryEmitNext(cmRevoke);
         return handleEmitResult(result);
-    }
-
-    @NotNull
-    private static String responseCodesToMessage(List<Integer> responseCodes) {
-        return responseCodes.stream()
-                            .map(ResponseCode::new)
-                            .map(ResponseCode::toString)
-                            .reduce((a, b) -> a + ", " + b)
-                            .orElse("No response codes provided.");
     }
 
     private InboundMessageResult handleEmitResult(Sinks.EmitResult emitResult) {
@@ -220,16 +196,6 @@ public class PontonXPAdapter implements EdaAdapter {
         } catch (de.ponton.xp.adapter.api.TransmissionException | ConnectionException e) {
             throw new TransmissionException(e);
         }
-
-        CMRequestStatus status = new CMRequestStatus(
-                CMRequestStatus.Status.SENT,
-                "CCMO request has been sent",
-                request.messageId()
-        );
-        requestStatusSink.emitNext(
-                status,
-                Sinks.EmitFailureHandler.busyLooping(Duration.ofSeconds(1))
-        );
     }
 
     @Override

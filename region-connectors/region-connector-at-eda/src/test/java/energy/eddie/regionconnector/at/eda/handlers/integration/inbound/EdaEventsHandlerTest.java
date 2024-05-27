@@ -4,16 +4,17 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
+import energy.eddie.regionconnector.at.eda.models.ResponseCode;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.EdaAnswerEvent;
+import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationMessageType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -21,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.publisher.TestPublisher;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -50,9 +52,34 @@ class EdaEventsHandlerTest {
 
     public static Stream<Arguments> testCmRequestStatusMessage_emitsCorrectEvent() {
         return Stream.of(
-                Arguments.of(CMRequestStatus.Status.ERROR, PermissionProcessStatus.INVALID),
-                Arguments.of(CMRequestStatus.Status.REJECTED, PermissionProcessStatus.REJECTED),
-                Arguments.of(CMRequestStatus.Status.RECEIVED, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
+                Arguments.of(NotificationMessageType.PONTON_ERROR, PermissionProcessStatus.INVALID, List.of()),
+                Arguments.of(NotificationMessageType.CCMS_REJECT,
+                             PermissionProcessStatus.EXTERNALLY_TERMINATED,
+                             List.of(ResponseCode.CmRevSP.TERMINATION_SUCCESSFUL)),
+                Arguments.of(NotificationMessageType.CCMS_REJECT,
+                             PermissionProcessStatus.EXTERNALLY_TERMINATED,
+                             List.of(ResponseCode.CmRevSP.CONSENT_AND_METERINGPOINT_DO_NOT_MATCH)),
+                Arguments.of(NotificationMessageType.CCMS_REJECT,
+                             PermissionProcessStatus.EXTERNALLY_TERMINATED,
+                             List.of(ResponseCode.CmRevSP.INVALID_PROCESSDATE)),
+                Arguments.of(NotificationMessageType.CCMS_REJECT,
+                             PermissionProcessStatus.EXTERNALLY_TERMINATED,
+                             List.of(ResponseCode.CmRevSP.CONSENT_ID_EXPIRED)),
+                Arguments.of(NotificationMessageType.CCMS_REJECT,
+                             PermissionProcessStatus.EXTERNALLY_TERMINATED,
+                             List.of(ResponseCode.CmRevSP.NO_CONSENT_PRESENT)),
+                Arguments.of(NotificationMessageType.CCMO_REJECT,
+                             PermissionProcessStatus.REJECTED,
+                             List.of(ResponseCode.CmReqOnl.REJECTED)),
+                Arguments.of(NotificationMessageType.CCMO_REJECT,
+                             PermissionProcessStatus.TIMED_OUT,
+                             List.of(ResponseCode.CmReqOnl.TIMEOUT)),
+                Arguments.of(NotificationMessageType.CCMO_REJECT,
+                             PermissionProcessStatus.INVALID,
+                             List.of(ResponseCode.CmReqOnl.INVALID_REQUEST)),
+                Arguments.of(NotificationMessageType.CCMO_ANSWER,
+                             PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
+                             List.of(ResponseCode.CmReqOnl.RECEIVED))
         );
     }
 
@@ -68,10 +95,13 @@ class EdaEventsHandlerTest {
                                                          "", null, null);
         when(repository.findByConversationIdOrCMRequestId("conversationId", "cmRequestId"))
                 .thenReturn(Optional.of(permissionRequest));
-        CMRequestStatus cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "conversationId");
-        cmRequestStatus.setMeteringPoint("mid");
-        cmRequestStatus.setCmConsentId("consentId");
-        cmRequestStatus.setCmRequestId("cmRequestId");
+        CMRequestStatus cmRequestStatus = new CMRequestStatus(
+                NotificationMessageType.CCMO_ACCEPT,
+                "conversationId",
+                List.of(),
+                "cmRequestId",
+                "consentId",
+                "mid");
         new EdaEventsHandler(edaAdapter, outbox, repository);
 
         // When
@@ -98,10 +128,13 @@ class EdaEventsHandlerTest {
                                                          "", null, null);
         when(repository.findByConversationIdOrCMRequestId("conversationId", "cmRequestId"))
                 .thenReturn(Optional.of(permissionRequest));
-        CMRequestStatus cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "conversationId");
-        cmRequestStatus.setMeteringPoint(meteringPoint);
-        cmRequestStatus.setCmConsentId(consentId);
-        cmRequestStatus.setCmRequestId("cmRequestId");
+        CMRequestStatus cmRequestStatus = new CMRequestStatus(
+                NotificationMessageType.CCMO_ACCEPT,
+                "conversationId",
+                List.of(),
+                "cmRequestId",
+                consentId,
+                meteringPoint);
         new EdaEventsHandler(edaAdapter, outbox, repository);
 
         // When
@@ -123,7 +156,9 @@ class EdaEventsHandlerTest {
                                                          "", null, null);
         when(repository.findByConversationIdOrCMRequestId("conversationId", null))
                 .thenReturn(Optional.of(permissionRequest));
-        CMRequestStatus cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ERROR, "", "conversationId");
+        CMRequestStatus cmRequestStatus = new CMRequestStatus(NotificationMessageType.PONTON_ERROR,
+                                                              "conversationId",
+                                                              "");
         new EdaEventsHandler(edaAdapter, outbox, repository);
 
         // When
@@ -140,7 +175,11 @@ class EdaEventsHandlerTest {
 
     @ParameterizedTest
     @MethodSource
-    void testCmRequestStatusMessage_emitsCorrectEvent(CMRequestStatus.Status cmStatus, PermissionProcessStatus status) {
+    void testCmRequestStatusMessage_emitsCorrectEvent(
+            NotificationMessageType notificationMessageType,
+            PermissionProcessStatus status,
+            List<Integer> statusCodes
+    ) {
         // Given
         TestPublisher<CMRequestStatus> publisher = TestPublisher.create();
         when(edaAdapter.getCMRequestStatusStream()).thenReturn(publisher.flux());
@@ -151,7 +190,14 @@ class EdaEventsHandlerTest {
                                                          "", null, null);
         when(repository.findByConversationIdOrCMRequestId("conversationId", null))
                 .thenReturn(Optional.of(permissionRequest));
-        CMRequestStatus cmRequestStatus = new CMRequestStatus(cmStatus, "", "conversationId");
+        CMRequestStatus cmRequestStatus = new CMRequestStatus(
+                notificationMessageType,
+                "conversationId",
+                statusCodes,
+                null,
+                null,
+                null
+        );
         new EdaEventsHandler(edaAdapter, outbox, repository);
 
         // When
@@ -162,29 +208,6 @@ class EdaEventsHandlerTest {
         assertEquals(status, edaAnswerEventCaptor.getValue().status());
     }
 
-    @ParameterizedTest
-    @EnumSource(value = CMRequestStatus.Status.class, names = {"SENT", "DELIVERED"})
-    void testUnmappedCmRequestStatusMessage_doesNotEmitEvent(CMRequestStatus.Status cmStatus) {
-        // Given
-        TestPublisher<CMRequestStatus> publisher = TestPublisher.create();
-        when(edaAdapter.getCMRequestStatusStream()).thenReturn(publisher.flux());
-        var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
-                                                         "conversationId", null, "dsoId", null, null,
-                                                         AllowedGranularity.PT15M,
-                                                         PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
-                                                         "", null, null);
-        when(repository.findByConversationIdOrCMRequestId("conversationId", null))
-                .thenReturn(Optional.of(permissionRequest));
-        CMRequestStatus cmRequestStatus = new CMRequestStatus(cmStatus, "", "conversationId");
-        new EdaEventsHandler(edaAdapter, outbox, repository);
-
-        // When
-        publisher.emit(cmRequestStatus);
-
-        // Then
-        verify(outbox, never()).commit(any());
-    }
-
     @Test
     void testUnknownCmRequestStatus_doesNotEmit() {
         // Given
@@ -192,7 +215,9 @@ class EdaEventsHandlerTest {
         when(edaAdapter.getCMRequestStatusStream()).thenReturn(publisher.flux());
         when(repository.findByConversationIdOrCMRequestId("conversationId", null))
                 .thenReturn(Optional.empty());
-        CMRequestStatus cmRequestStatus = new CMRequestStatus(CMRequestStatus.Status.ACCEPTED, "", "conversationId");
+        CMRequestStatus cmRequestStatus = new CMRequestStatus(NotificationMessageType.CCMO_ACCEPT,
+                                                              "conversationId",
+                                                              "");
         new EdaEventsHandler(edaAdapter, outbox, repository);
 
         // When

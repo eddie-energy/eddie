@@ -9,27 +9,28 @@ package energy.eddie.regionconnector.at.eda.models;
  */
 public record ResponseCode(int responseCode, String message) {
 
+
     public ResponseCode(int responseCode) {
         this(responseCode, getMessage(responseCode));
     }
 
     private static String getMessage(int responseCode) {
         return switch (responseCode) {
-            case 56 -> "Metering point not found";
-            case 57 -> "Metering point not supplied";
-            case 76 -> "Invalid request data";
-            case 82 -> "Invalid dates";
-            case 99 -> "Message received";
-            case 172 -> "Customer rejected the request";
-            case 173 -> "Time-out";
-            case 174 -> "Requested data not deliverable";
-            case 175 -> "Customer accepted the request";
-            case 176 -> "Consent successfully withdrawn";
-            case 177 -> "No data sharing available";
-            case 178 -> "Consent already exists";
-            case 179 -> "ConsentId already exists";
-            case 180 -> "ConsentId expired";
-            case 187 -> "ConsentId and MeteringPointId are not associated";
+            case CmReqOnl.METERING_POINT_NOT_FOUND -> "Metering point not found";
+            case CmReqOnl.METERING_POINT_NOT_SUPPLIED -> "Metering point not supplied";
+            case CmReqOnl.INVALID_REQUEST -> "Invalid request data";
+            case CmRevSP.INVALID_PROCESSDATE -> "Invalid process dates";
+            case CmReqOnl.RECEIVED -> "Message received";
+            case CmReqOnl.REJECTED -> "Customer rejected the request";
+            case CmReqOnl.TIMEOUT -> "Customer did not respond to the request";
+            case CmReqOnl.REQUESTED_DATA_NOT_DELIVERABLE -> "Requested data not deliverable";
+            case CmReqOnl.ACCEPTED -> "Customer accepted the request";
+            case CmRevSP.TERMINATION_SUCCESSFUL -> "Consent successfully withdrawn";
+            case CmRevSP.NO_CONSENT_PRESENT -> "No data sharing available";
+            case CmReqOnl.CONSENT_ALREADY_EXISTS -> "Consent already exists";
+            case CmReqOnl.CONSENT_REQUEST_ID_ALREADY_EXISTS -> "ConsentId already exists";
+            case CmRevSP.CONSENT_ID_EXPIRED -> "ConsentId expired";
+            case CmRevSP.CONSENT_AND_METERINGPOINT_DO_NOT_MATCH -> "ConsentId and MeteringPointId are not associated";
             default -> "Unknown response code";
         };
     }
@@ -37,5 +38,33 @@ public record ResponseCode(int responseCode, String message) {
     @Override
     public String toString() {
         return message + " (response code " + responseCode + ")";
+    }
+
+    public static class CmRevSP {
+        public static final int TERMINATION_SUCCESSFUL = 176;
+        public static final int NO_CONSENT_PRESENT = 177;
+        public static final int CONSENT_ID_EXPIRED = 180;
+        public static final int INVALID_PROCESSDATE = 82;
+        public static final int CONSENT_AND_METERINGPOINT_DO_NOT_MATCH = 187;
+
+        private CmRevSP() {
+        }
+    }
+
+    public static class CmReqOnl {
+        public static final int RECEIVED = 99;
+
+        public static final int ACCEPTED = 175;
+        public static final int TIMEOUT = 173;
+        public static final int REJECTED = 172;
+        public static final int METERING_POINT_NOT_FOUND = 56;
+        public static final int METERING_POINT_NOT_SUPPLIED = 57;
+        public static final int INVALID_REQUEST = 76;
+        public static final int REQUESTED_DATA_NOT_DELIVERABLE = 174;
+        public static final int CONSENT_ALREADY_EXISTS = 178;
+        public static final int CONSENT_REQUEST_ID_ALREADY_EXISTS = 179;
+
+        private CmReqOnl() {
+        }
     }
 }

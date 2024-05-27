@@ -102,9 +102,16 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
 
         try (InputStream inputStream = inboundMessage.createInputStream()) {
             var result = switch (messageType) {
-                case MessageCodes.Notification.ANSWER -> handleNotification(inputStream, NotificationType.ANSWER);
-                case MessageCodes.Notification.ACCEPT -> handleNotification(inputStream, NotificationType.ACCEPT);
-                case MessageCodes.Notification.REJECT -> handleNotification(inputStream, NotificationType.REJECT);
+                case MessageCodes.Notification.ANSWER ->
+                        handleNotification(inputStream, NotificationMessageType.CCMO_ANSWER);
+                case MessageCodes.Notification.ACCEPT ->
+                        handleNotification(inputStream, NotificationMessageType.CCMO_ACCEPT);
+                case MessageCodes.Notification.REJECT ->
+                        handleNotification(inputStream, NotificationMessageType.CCMO_REJECT);
+                case MessageCodes.Revoke.EligibleParty.ANSWER ->
+                        handleNotification(inputStream, NotificationMessageType.CCMS_ANSWER);
+                case MessageCodes.Revoke.EligibleParty.DENIAL ->
+                        handleNotification(inputStream, NotificationMessageType.CCMS_REJECT);
                 case MessageCodes.MASTER_DATA -> handleMasterData(inputStream);
                 case MessageCodes.CONSUMPTION_RECORD -> handleConsumptionRecord(inputStream);
                 case MessageCodes.Revoke.CUSTOMER, MessageCodes.Revoke.IMPLICIT -> handleRevoke(inputStream);
@@ -144,7 +151,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
 
     private InboundMessageResult handleNotification(
             InputStream inputStream,
-            NotificationType notificationType
+            NotificationMessageType notificationMessageType
     ) {
         if (cmNotificationHandler == null) {
             LOGGER.warn("Received notification message, but no handler is available.");
@@ -157,7 +164,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
         var notification = inboundMessageFactoryCollection
                 .activeCMNotificationFactory()
                 .parseInputStream(inputStream);
-        return cmNotificationHandler.handle(notification, notificationType);
+        return cmNotificationHandler.handle(notification, notificationMessageType);
     }
 
     private InboundMessageResult handleMasterData(InputStream inputStream) {
