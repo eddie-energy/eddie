@@ -2,9 +2,26 @@ package energy.eddie.aiida.models.permission;
 
 public enum PermissionStatus {
     /**
+     * The permission has been created on AIIDA.
+     */
+    CREATED,
+    /**
+     * The details, like start and end date, of the permission have been fetched from the EDDIE framework.
+     */
+    FETCHED_DETAILS,
+    /**
+     * This AIIDA instance is unable to fulfill the permission request, e.g. because the requested data is not
+     * available.
+     */
+    UNFULFILLABLE,
+    /**
      * The user accepted the permission request.
      */
     ACCEPTED,
+    /**
+     * The MQTT credentials and topics for the permission have been fetched from the EDDIE framework.
+     */
+    FETCHED_MQTT_CREDENTIALS,
     /**
      * The customer has accepted the permission but the start time for sharing data is still in the future.
      */

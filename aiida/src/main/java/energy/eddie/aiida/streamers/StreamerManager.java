@@ -7,6 +7,8 @@ import energy.eddie.aiida.errors.ConnectionStatusMessageSendFailedException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +18,13 @@ import reactor.core.publisher.Sinks;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+
+import static java.util.Objects.requireNonNull;
 
 /**
- * The StreamerManager manages the lifecycle of {@link AiidaStreamer}.
- * Other components should rely on the StreamerManager for creating or stopping streamers.
+ * The StreamerManager manages the lifecycle of {@link AiidaStreamer}. Other components should rely on the
+ * StreamerManager for creating or stopping streamers.
  */
 @Component
 public class StreamerManager implements AutoCloseable {
@@ -31,8 +36,8 @@ public class StreamerManager implements AutoCloseable {
     private final FailedToSendRepository failedToSendRepository;
 
     /**
-     * The mapper is passed to the {@link AiidaStreamer} instances that which use it to convert POJOs to JSON.
-     * As the mapper is shared, make sure the used implementation is thread-safe and supports sharing.
+     * The mapper is passed to the {@link AiidaStreamer} instances that which use it to convert POJOs to JSON. As the
+     * mapper is shared, make sure the used implementation is thread-safe and supports sharing.
      */
     @Autowired
     public StreamerManager(ObjectMapper mapper, Aggregator aggregator, FailedToSendRepository failedToSendRepository) {
@@ -46,8 +51,8 @@ public class StreamerManager implements AutoCloseable {
 
     /**
      * Creates a new {@link AiidaStreamer} for the specified permission and stores it internally to enable calls to
-     * other methods like {@link #sendConnectionStatusMessageForPermission}.
-     * The created streamer will receive any {@link AiidaRecord} that has a code that is in {@link Permission#requestedCodes()}.
+     * other methods like {@link #sendConnectionStatusMessageForPermission}. The created streamer will receive any
+     * matching {@link AiidaRecord} as requested by the data need of the permission.
      *
      * @param permission Permission for which an AiidaStreamer should be created.
      * @throws IllegalArgumentException If an AiidaStreamer for the passed permission has already been created.
@@ -56,16 +61,29 @@ public class StreamerManager implements AutoCloseable {
         LOGGER.info("Will create a new AiidaStreamer for permission {}", permission.permissionId());
 
         if (streamers.get(permission.permissionId()) != null)
-            throw new IllegalStateException("An AiidaStreamer for permission %s has already been created.".formatted(permission.permissionId()));
+            throw new IllegalStateException("An AiidaStreamer for permission %s has already been created.".formatted(
+                    permission.permissionId()));
+
+        // TODO support other data needs --> GH-782
+        var dataNeed = requireNonNull(permission.dataNeed());
+        if (!dataNeed.type().equals(GenericAiidaDataNeed.DISCRIMINATOR_VALUE)) {
+            // TODO GH-782: this should be guaranteed by the check when the permission is setup, so no checked exception should be necessary
+            throw new RuntimeException(new UnsupportedDataNeedException("AIIDA",
+                                                                        dataNeed.dataNeedId(),
+                                                                        "Data need not supported"));
+        }
+        Set<String> codes = requireNonNull(dataNeed.dataTags());
 
         Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().unicast().onBackpressureBuffer();
-        Flux<AiidaRecord> recordFlux = aggregator.getFilteredFlux(permission.requestedCodes(), permission.expirationTime());
+        Flux<AiidaRecord> recordFlux = aggregator.getFilteredFlux(codes, permission.expirationTime());
         Sinks.One<String> streamerTerminationRequestSink = Sinks.one();
 
         streamerTerminationRequestSink.asMono().subscribe(permissionId -> {
             var result = terminationRequests.tryEmitNext(permissionId);
             if (result.isFailure())
-                LOGGER.error("Error while emitting termination request for permission {}. Error was: {}", permissionId, result);
+                LOGGER.error("Error while emitting termination request for permission {}. Error was: {}",
+                             permissionId,
+                             result);
         });
 
         var streamer = StreamerFactory.getAiidaStreamer(permission, recordFlux, statusMessageSink.asFlux(),
@@ -79,8 +97,7 @@ public class StreamerManager implements AutoCloseable {
 
     /**
      * Returns a Flux on which the ID of a permission is published, when the EP requests a termination for this
-     * permission.
-     * The Flux allows only one subscriber and buffers, ensuring no values get lost.
+     * permission. The Flux allows only one subscriber and buffers, ensuring no values get lost.
      *
      * @return Flux of permissionIDs for which the EP requested termination.
      */
@@ -89,13 +106,14 @@ public class StreamerManager implements AutoCloseable {
     }
 
     /**
-     * Send the specified {@link ConnectionStatusMessage} to the EDDIE framework using the streaming protocol of
-     * the permission identified by {@code permissionId}.
+     * Send the specified {@link ConnectionStatusMessage} to the EDDIE framework using the streaming protocol of the
+     * permission identified by {@code permissionId}.
      *
      * @param message      ConnectionStatusMessage that should be sent
      * @param permissionId ID of the permission to which the message belongs
      * @throws IllegalArgumentException                   If there is no streamer for the specified permissionId.
-     * @throws ConnectionStatusMessageSendFailedException If the AiidaStreamer cannot be notified of the new message to send.
+     * @throws ConnectionStatusMessageSendFailedException If the AiidaStreamer cannot be notified of the new message to
+     *                                                    send.
      */
     public void sendConnectionStatusMessageForPermission(ConnectionStatusMessage message, String permissionId)
             throws IllegalArgumentException, ConnectionStatusMessageSendFailedException {
@@ -104,16 +122,18 @@ public class StreamerManager implements AutoCloseable {
         var result = container.statusMessageSink.tryEmitNext(message);
 
         if (result == Sinks.EmitResult.FAIL_TERMINATED)
-            throw new ConnectionStatusMessageSendFailedException("Cannot emit ConnectionStatusMessage after streamer has been stopped.");
+            throw new ConnectionStatusMessageSendFailedException(
+                    "Cannot emit ConnectionStatusMessage after streamer has been stopped.");
 
         if (result.isFailure())
-            throw new ConnectionStatusMessageSendFailedException("Failed to emit complete signal for ConnectionStatusMessage sink of permission %s. Error was: %s"
-                    .formatted(permissionId, result.toString()));
+            throw new ConnectionStatusMessageSendFailedException(
+                    "Failed to emit complete signal for ConnectionStatusMessage sink of permission %s. Error was: %s"
+                            .formatted(permissionId, result.toString()));
     }
 
     /**
-     * Stops streaming for the specified permission.
-     * Will also complete the sink for the {@link ConnectionStatusMessage}.
+     * Stops streaming for the specified permission. Will also complete the sink for the
+     * {@link ConnectionStatusMessage}.
      *
      * @param permissionId ID of permission for which to stop sharing
      * @throws IllegalArgumentException If there is no streamer for the specified permissionId
@@ -123,13 +143,17 @@ public class StreamerManager implements AutoCloseable {
 
         var result = container.statusMessageSink.tryEmitComplete();
         if (result.isFailure())
-            LOGGER.warn("Failed to emit complete signal for ConnectionStatusMessage sink of permission {}. Error was: {}", permissionId, result);
+            LOGGER.warn(
+                    "Failed to emit complete signal for ConnectionStatusMessage sink of permission {}. Error was: {}",
+                    permissionId,
+                    result);
 
         container.streamer.close();
     }
 
     /**
-     * Helper method that returns the container of the corresponding permissionId from the map or otherwise throws an exception.
+     * Helper method that returns the container of the corresponding permissionId from the map or otherwise throws an
+     * exception.
      *
      * @param permissionId permissionId for which to return the container for
      * @return Container for the specified permissionId
@@ -144,8 +168,8 @@ public class StreamerManager implements AutoCloseable {
     }
 
     /**
-     * Closes all streamer to allow for an orderly shutdown. Note that this blocks until all streamers have
-     * finished closing, which may be indefinitely in the current implementation.
+     * Closes all streamer to allow for an orderly shutdown. Note that this blocks until all streamers have finished
+     * closing, which may be indefinitely in the current implementation.
      */
     @Override
     public void close() {
@@ -156,8 +180,8 @@ public class StreamerManager implements AutoCloseable {
     }
 
     /**
-     * Wrapper class for the {@link AiidaStreamer} instance and its associated {@link Sinks.Many} for {@link ConnectionStatusMessage}.
-     * Should be used with a Map that uses the permissionId as key.
+     * Wrapper class for the {@link AiidaStreamer} instance and its associated {@link Sinks.Many} for
+     * {@link ConnectionStatusMessage}. Should be used with a Map that uses the permissionId as key.
      *
      * @param streamer          AiidaStreamer reference.
      * @param statusMessageSink Sink on which status messages should be sent.

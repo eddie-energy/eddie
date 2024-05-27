@@ -6,13 +6,15 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.IntegerAiidaRecord;
 import energy.eddie.aiida.models.record.StringAiidaRecord;
 
+import static java.util.Objects.requireNonNull;
+
 public class AiidaRecordConverter {
     private AiidaRecordConverter() {
     }
 
     /**
-     * Converts an {@link AiidaRecord} to a {@link AiidaRecordStreamingDto} by adding the required metadata from
-     * the permission.
+     * Converts an {@link AiidaRecord} to a {@link AiidaRecordStreamingDto} by adding the required metadata from the
+     * permission.
      *
      * @param aiidaRecord The record to convert.
      * @param permission  Permission which contains the metadata that should be added to the DTO.
@@ -20,15 +22,16 @@ public class AiidaRecordConverter {
      * @throws IllegalArgumentException If the aiidaRecord is an inheritor which has no implementation in this method.
      */
     public static AiidaRecordStreamingDto recordToStreamingDto(AiidaRecord aiidaRecord, Permission permission) {
-        Object value;
-        if (aiidaRecord instanceof IntegerAiidaRecord intRecord)
-            value = intRecord.value();
-        else if (aiidaRecord instanceof StringAiidaRecord stringRecord)
-            value = stringRecord.value();
-        else
-            throw new IllegalArgumentException("No conversion logic for this type of record is implemented");
+        var connectionId = requireNonNull(permission.connectionId());
+        var dataNeed = requireNonNull(permission.dataNeed());
+
+        Object value = switch (aiidaRecord) {
+            case IntegerAiidaRecord intRecord -> intRecord.value();
+            case StringAiidaRecord stringRecord -> stringRecord.value();
+            default -> throw new IllegalArgumentException("No conversion logic for this type of record is implemented");
+        };
 
         return new AiidaRecordStreamingDto(aiidaRecord.timestamp(), aiidaRecord.code(), value,
-                permission.connectionId(), permission.dataNeedId(), permission.permissionId());
+                                           connectionId, dataNeed.dataNeedId(), permission.permissionId());
     }
 }

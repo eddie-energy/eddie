@@ -1,0 +1,49 @@
+stateDiagram-v2
+    state if_state <<choice>>
+    state if_state2 <<choice>>
+    state if_state3 <<choice>>
+    state if_state4 <<choice>>
+
+    state join_state <<join>>
+
+    [*] --> CREATED
+    CREATED --> FETCHED_DETAILS
+    FETCHED_DETAILS --> if_state: can fulfill permission request?
+
+    if_state --> UNFULFILLABLE: no
+    UNFULFILLABLE --> [*]
+
+    if_state --> waiting: yes
+    note left of waiting
+        This is just a placeholder, not a real state.\nAIIDA is waiting for an API request that either accepts or rejects the permission
+    end note
+
+    waiting --> if_state3: did customer accept request?
+
+    if_state3 --> REJECTED: no
+    REJECTED --> [*]
+
+    if_state3 --> ACCEPTED: yes
+    ACCEPTED --> FETCHED_MQTT_CREDENTIALS: fetch credentials from EDDIE
+
+    FETCHED_MQTT_CREDENTIALS --> if_state2: is start date in future?
+    if_state2 --> WAITING_FOR_START: yes
+
+    if_state2 --> join_state: no
+    WAITING_FOR_START --> join_state: start date reached
+
+    WAITING_FOR_START --> TERMINATED
+    WAITING_FOR_START --> REVOKED
+
+    join_state --> if_state4: any error during start?
+    if_state4 --> FAILED_TO_START: yes
+    FAILED_TO_START --> [*]
+
+    if_state4 --> STREAMING_DATA: no
+    STREAMING_DATA --> TERMINATED
+    STREAMING_DATA --> REVOKED
+    STREAMING_DATA --> FULFILLED
+
+    REVOKED --> [*]
+    TERMINATED --> [*]
+    FULFILLED --> [*]
