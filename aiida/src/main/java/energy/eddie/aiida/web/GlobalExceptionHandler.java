@@ -2,7 +2,9 @@ package energy.eddie.aiida.web;
 
 import api.ValidationErrors;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import energy.eddie.aiida.errors.*;
+import energy.eddie.aiida.errors.InvalidPatchOperationException;
+import energy.eddie.aiida.errors.PermissionAlreadyExistsException;
+import energy.eddie.aiida.errors.PermissionNotFoundException;
 import energy.eddie.api.agnostic.EddieApiError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -82,13 +84,6 @@ public class GlobalExceptionHandler {
     ) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.badRequest().body(errors);
-    }
-
-    @ExceptionHandler(value = {PermissionStartFailedException.class})
-    protected ResponseEntity<Object> handlePermissionStartFailedException(PermissionStartFailedException ignored) {
-        var errors = Map.of(ERRORS_PROPERTY_NAME,
-                            List.of(new EddieApiError("Failed to start permission, please try again later.")));
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
     }
 
     @ExceptionHandler(value = {PermissionAlreadyExistsException.class})

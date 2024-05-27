@@ -40,4 +40,15 @@ public class PermissionStateTransitionException extends Exception {
     ) {
         this(permissionId, desiredState, List.of(allowedCurrentStates), currentStatus);
     }
+
+    public PermissionStateTransitionException(
+            String permissionId,
+            String desiredState,
+            List<String> allowedCurrentStates,
+            String currentStatus
+    ) {
+        super("Cannot transition permission '%s' to state '%s', as it is not in a one of the permitted states '%s' but in state '%s'".formatted(
+                permissionId, desiredState, allowedCurrentStates.toString(), currentStatus)
+        );
+    }
 }

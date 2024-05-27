@@ -1,61 +1,60 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
-import energy.eddie.aiida.dtos.PermissionDto;
-import energy.eddie.aiida.errors.*;
+import energy.eddie.aiida.dtos.PermissionDetailsDto;
+import energy.eddie.aiida.errors.DetailFetchingFailedException;
+import energy.eddie.aiida.errors.PermissionAlreadyExistsException;
+import energy.eddie.aiida.errors.PermissionNotFoundException;
+import energy.eddie.aiida.errors.PermissionUnfulfillableException;
+import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
-import energy.eddie.aiida.utils.PermissionExpiredRunnable;
+import energy.eddie.api.agnostic.aiida.QrCodeDto;
+import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
+import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.lang.NonNull;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Sinks;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledFuture;
 
+import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
 import static energy.eddie.aiida.models.permission.PermissionStatus.*;
+import static energy.eddie.api.v0.PermissionProcessStatus.REJECTED;
 
 @Service
 public class PermissionService implements ApplicationListener<ContextRefreshedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
-    /**
-     * The same map can be used for futures from scheduled permission starts and expirations. There will never be a
-     * runnable for start and expiration scheduled for the same permissionId at the same time.
-     */
-    private final ConcurrentMap<String, ScheduledFuture<?>> permissionFutures;
     private final PermissionRepository repository;
     private final Clock clock;
     private final StreamerManager streamerManager;
-    private final TaskScheduler scheduler;
+    private final HandshakeService handshakeService;
+    private final PermissionScheduler permissionScheduler;
 
     @Autowired
     public PermissionService(
             PermissionRepository repository,
             Clock clock,
             StreamerManager streamerManager,
-            TaskScheduler scheduler,
-            ConcurrentMap<String, ScheduledFuture<?>> permissionFutures
+            HandshakeService handshakeService,
+            PermissionScheduler permissionScheduler
     ) {
         this.repository = repository;
         this.clock = clock;
         this.streamerManager = streamerManager;
-        this.scheduler = scheduler;
-        this.permissionFutures = permissionFutures;
+        this.handshakeService = handshakeService;
+        this.permissionScheduler = permissionScheduler;
 
         streamerManager.terminationRequestsFlux().subscribe(this::terminationRequestReceived);
     }
@@ -63,128 +62,174 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private void terminationRequestReceived(String permissionId) {
         LOGGER.info("Will handle termination request for permission {}", permissionId);
 
-        Permission permission = findById(permissionId);
-
-        var future = permissionFutures.get(permissionId);
-        if (future != null) {
-            LOGGER.info("Cancelling permissionExpiration/permissionStart future for permission {}", permissionId);
-            future.cancel(true);
+        Permission permission;
+        try {
+            permission = findById(permissionId);
+        } catch (PermissionNotFoundException e) {
+            LOGGER.error("Was requested to terminate permission {}, but it cannot be found in the database",
+                         permissionId);
+            return;
         }
 
-        var previousStatus = permission.status();
+        permissionScheduler.removePermission(permissionId);
 
         Instant terminateTime = clock.instant();
-        permission.revokeTime(terminateTime);
-        permission.updateStatus(TERMINATED);
-        repository.save(permission);
+        permission.setRevokeTime(terminateTime);
+        permission.setStatus(TERMINATED);
+        permission = repository.save(permission);
 
-        if (previousStatus == WAITING_FOR_START)
-            // if permission has never sent data, we also don't send the TERMINATED status message
-            return;
-
-        try {
-            var terminated = new ConnectionStatusMessage(permission.connectionId(),
-                                                         permission.dataNeedId(),
-                                                         terminateTime,
-                                                         TERMINATED,
-                                                         permissionId);
-            streamerManager.sendConnectionStatusMessageForPermission(terminated, permissionId);
-        } catch (ConnectionStatusMessageSendFailedException ex) {
-            LOGGER.error("Failed to send TERMINATED status message for permission {}", permissionId, ex);
-        }
-
-        streamerManager.stopStreamer(permissionId);
+        streamerManager.terminatePermission(permission);
     }
 
     /**
-     * Saves a new permission in the database and sends the {@link PermissionStatus#ACCEPTED} status message to the
-     * EDDIE framework. If any error occurs, the permission is not saved in the database. If the permission's startTime
-     * is in the future, it will be scheduled to start then, and the status message will also just be sent when the
-     * permission's start time has been reached.
+     * Saves a new permission in the database and fetches the details of the permission by executing the first part of
+     * the handshake with the associated EDDIE framework. If the permission is not fulfillable by this AIIDA instance,
+     * e.g. because the requested data is missing, an {@code UNFULFILLABLE} status message is sent to EDDIE, before a
+     * {@link PermissionUnfulfillableException} is thrown.
+     * <p>
+     * After this method, the status of the permission will be either {@code FETCHED_DETAILS} or {@code UNFULFILLABLE}.
+     * </p>
      *
-     * @param dto Data transfer object containing the information for the new permission.
-     * @return Permission object as returned by the database.
-     * @throws PermissionStartFailedException   If the permission couldn't be started.
+     * @param qrCodeDto Data transfer object containing the information for the new permission.
+     * @return Permission object with the details as fetched from EDDIE.
      * @throws PermissionAlreadyExistsException If there is already a permission with the ID.
+     * @throws PermissionUnfulfillableException If the permission cannot be fulfilled for whatever reason.
      */
-    public Permission setupNewPermission(PermissionDto dto) throws PermissionStartFailedException, PermissionAlreadyExistsException {
-        if (repository.existsById(dto.permissionId())) {
-            throw new PermissionAlreadyExistsException(dto.permissionId());
+    public Permission setupNewPermission(QrCodeDto qrCodeDto) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException {
+        if (repository.existsById(qrCodeDto.permissionId())) {
+            throw new PermissionAlreadyExistsException(qrCodeDto.permissionId());
         }
 
-        Permission newPermission = new Permission(dto.permissionId(),
-                                                  dto.serviceName(),
-                                                  dto.dataNeedId(),
-                                                  dto.startTime(),
-                                                  dto.expirationTime(),
-                                                  dto.grantTime(),
-                                                  dto.connectionId(),
-                                                  dto.requestedCodes(),
-                                                  MqttStreamingConfig.getFixedConfig(dto.permissionId()));
-        newPermission = repository.save(newPermission);
+        Permission permission = repository.save(new Permission(qrCodeDto));
 
-        var now = Instant.now(clock);
-        if (now.isAfter(newPermission.startTime())) {
-            return startPermission(newPermission);
-        } else {
-            return schedulePermissionStart(newPermission);
-        }
+        PermissionDetailsDto details = handshakeService.fetchDetailsForPermission(permission)
+                                                       .doOnError(error -> LOGGER.atError()
+                                                                                 .addArgument(qrCodeDto.permissionId())
+                                                                                 .setCause(error)
+                                                                                 .log("Error while fetching details for permission {} from the EDDIE framework"))
+                                                       .onErrorComplete()
+                                                       .block();
+
+        if (details == null)
+            throw new DetailFetchingFailedException(permission.permissionId());
+
+        return updatePermissionWithDetails(permission, details);
     }
 
-    private Permission schedulePermissionStart(Permission permission) {
-        LOGGER.info("Scheduling permission start for permission {}", permission.permissionId());
-        permission.updateStatus(WAITING_FOR_START);
-        Permission finalPermission = repository.save(permission);
+    /**
+     * Updates the passed permission with the details from the passed {@link PermissionDetailsDto} object. Also checks
+     * if the permission can be fulfilled by this AIIDA instance. Returns the updated object after it has been saved in
+     * the database.
+     *
+     * @throws PermissionUnfulfillableException If the permission cannot be fulfilled by this AIIDA instance.
+     * @see PermissionService#isPermissionFulfillable(Permission)
+     */
+    private Permission updatePermissionWithDetails(
+            Permission permission,
+            PermissionDetailsDto details
+    ) throws PermissionUnfulfillableException {
+        var startInstant = ZonedDateTime.of(details.start(), LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
+        var endInstant = ZonedDateTime.of(details.end(), LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
 
-        var future = scheduler.schedule(() -> permissionStartRunnable(finalPermission), finalPermission.startTime());
+        permission.setConnectionId(details.connectionId());
+        permission.setStartTime(startInstant);
+        permission.setExpirationTime(endInstant);
+        permission.setDataNeed(new AiidaLocalDataNeed(details));
+        permission.setStatus(FETCHED_DETAILS);
 
-        permissionFutures.put(finalPermission.permissionId(), future);
-
-        return finalPermission;
-    }
-
-    private void permissionStartRunnable(Permission permission) {
-        try {
-            startPermission(permission);
-        } catch (PermissionStartFailedException exception) {
-            // status is already updated, nothing left to process here
-            LOGGER.error("Scheduled start of permission {} failed", permission.permissionId(), exception);
-        }
-    }
-
-    private Permission startPermission(Permission permission) throws PermissionStartFailedException {
-        LOGGER.info("Starting permission {}", permission.permissionId());
-        var acceptedMessage = new ConnectionStatusMessage(permission.connectionId(), permission.dataNeedId(),
-                                                          clock.instant(), ACCEPTED, permission.permissionId());
-
-        try {
-            streamerManager.createNewStreamerForPermission(permission);
-            streamerManager.sendConnectionStatusMessageForPermission(acceptedMessage, permission.permissionId());
-
-            schedulePermissionExpirationRunnable(permission);
-
-            permission.updateStatus(PermissionStatus.STREAMING_DATA);
-            return repository.save(permission);
-        } catch (ConnectionStatusMessageSendFailedException exception) {
-            LOGGER.error("Failed to start permission {}", permission.permissionId(), exception);
-            permission.updateStatus(FAILED_TO_START);
+        if (!isPermissionFulfillable(permission)) {
+            permission.setStatus(UNFULFILLABLE);
+            permission.setRevokeTime(clock.instant());
+            // TODO save reason or at least return to user why it cannot be fulfilled --> GH-1040
             permission = repository.save(permission);
-            throw new PermissionStartFailedException(permission);
+
+            handshakeService.sendUnfulfillableOrRejected(permission, UNFULFILLABLE);
+            throw new PermissionUnfulfillableException(permission.serviceName());
         }
+
+        return repository.save(permission);
     }
 
-    private void schedulePermissionExpirationRunnable(Permission permission) {
-        LOGGER.info("Will schedule a PermissionExpirationRunnable for permission {} to run at  {}",
-                    permission.permissionId(),
-                    permission.expirationTime());
+    /**
+     * Checks whether the data need associated with {@code permission} can be fulfilled.
+     *
+     * @return Always true until GH-1040 is properly implemented.
+     */
+    private boolean isPermissionFulfillable(Permission permission) {
+        var dataNeed = permission.dataNeed();
+        return dataNeed != null && dataNeed.type().equals(GenericAiidaDataNeed.DISCRIMINATOR_VALUE);
+    }
 
-        Sinks.One<String> expirationSink = Sinks.one();
-        expirationSink.asMono().subscribe(this::expirePermission);
-        var expirationRunnable = new PermissionExpiredRunnable(permission.permissionId(),
-                                                               permission.expirationTime(), expirationSink);
-        ScheduledFuture<?> future = scheduler.schedule(expirationRunnable, permission.expirationTime());
+    /**
+     * Reject the specified permission. Updates the database and informs the EDDIE framework of the permission about the
+     * rejection.
+     *
+     * @return The updated permission object.
+     * @throws PermissionStateTransitionException Thrown if the permission is not in the state
+     *                                            {@link PermissionStatus#FETCHED_DETAILS}.
+     */
+    public Permission rejectPermission(String permissionId) throws PermissionStateTransitionException, PermissionNotFoundException {
+        var permission = findById(permissionId);
 
-        permissionFutures.put(permission.permissionId(), future);
+        if (permission.status() != FETCHED_DETAILS) {
+            throw new PermissionStateTransitionException(permissionId,
+                                                         REJECTED.name(),
+                                                         List.of(FETCHED_DETAILS.name()),
+                                                         permission.status().name());
+        }
+
+        permission.setStatus(PermissionStatus.REJECTED);
+        // revokeTime is also used to keep reject timestamp, the status indicates which of the two happened
+        permission.setRevokeTime(Instant.now(clock));
+        permission = repository.save(permission);
+
+        handshakeService.sendUnfulfillableOrRejected(permission, PermissionStatus.REJECTED);
+
+        return permission;
+    }
+
+    /**
+     * Accept the permission with the passed id. Updates the database and informs the EDDIE framework about the
+     * acceptance. Will fetch the MQTT details from the EDDIE framework and either schedules the start (if start date is
+     * in the future) or starts the data sharing right away.
+     *
+     * @return The updated permission object.
+     * @throws PermissionStateTransitionException Thrown if the permission is not in the state
+     *                                            {@link PermissionStatus#FETCHED_DETAILS}.
+     */
+    public Permission acceptPermission(String permissionId) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException {
+        var permission = findById(permissionId);
+
+        if (permission.status() != FETCHED_DETAILS) {
+            throw new PermissionStateTransitionException(permissionId,
+                                                         ACCEPTED.name(),
+                                                         List.of(FETCHED_DETAILS.name()),
+                                                         permission.status().name());
+        }
+
+        permission.setGrantTime(Instant.now(clock));
+        permission.setStatus(ACCEPTED);
+        permission = repository.save(permission);
+
+        var mqttDto = handshakeService.fetchMqttDetails(permission)
+                                      .doOnError(error -> LOGGER.atError()
+                                                                .addArgument(permissionId)
+                                                                .setCause(error)
+                                                                .log("Error while fetching MQTT credentials for permission {} from the EDDIE framework"))
+                                      .onErrorComplete()
+                                      .block();
+
+        if (mqttDto == null) {
+            throw new DetailFetchingFailedException(permissionId);
+        }
+
+        var mqttStreamingConfig = new MqttStreamingConfig(permission.permissionId(), mqttDto);
+
+        permission.setMqttStreamingConfig(mqttStreamingConfig);
+        permission.setStatus(FETCHED_MQTT_CREDENTIALS);
+        permission = repository.save(permission);
+
+        return permissionScheduler.scheduleOrStart(permission);
     }
 
     /**
@@ -194,55 +239,32 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      *
      * @param permissionId ID of the permission that should be revoked.
      * @return Updated permission object that has been persisted.
-     * @throws PermissionNotFoundException          In case no permission with the specified ID can be found.
-     * @throws InvalidPermissionRevocationException In case the permission has a status that makes it not eligible for
-     *                                              revocation.
+     * @throws PermissionNotFoundException        In case no permission with the specified ID can be found.
+     * @throws PermissionStateTransitionException In case the permission has a status that makes it not eligible for
+     *                                            revocation.
      */
-    public Permission revokePermission(String permissionId) throws PermissionNotFoundException, InvalidPermissionRevocationException {
+    public Permission revokePermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException {
         LOGGER.info("Got request to revoke permission with id {}", permissionId);
 
         var permission = findById(permissionId);
 
         if (!isEligibleForRevocation(permission))
-            throw new InvalidPermissionRevocationException(permissionId);
+            throw new PermissionStateTransitionException(permissionId,
+                                                         REVOKED.name(),
+                                                         List.of(ACCEPTED.name(),
+                                                                 STREAMING_DATA.name(),
+                                                                 WAITING_FOR_START.name()),
+                                                         permission.status().name());
 
-        var future = permissionFutures.get(permissionId);
-        if (future != null) {
-            LOGGER.info("Cancelling permissionExpiration/permissionStart future for permission {}", permissionId);
-            future.cancel(true);
-        }
+        permissionScheduler.removePermission(permissionId);
 
-        var previousStatus = permission.status();
 
         Instant revocationTime = clock.instant();
-        permission.updateStatus(REVOKED);
-        permission.revokeTime(revocationTime);
+        permission.setStatus(REVOKED);
+        permission.setRevokeTime(revocationTime);
         permission = repository.save(permission);
 
-        if (previousStatus == WAITING_FOR_START)
-            // if permission has never sent data, we also don't send the REVOKED status messages
-            return permission;
-
-        var revocationReceivedMessage = new ConnectionStatusMessage(permission.connectionId(),
-                                                                    permission.dataNeedId(),
-                                                                    revocationTime,
-                                                                    REVOCATION_RECEIVED,
-                                                                    permissionId);
-        var revokeMessage = new ConnectionStatusMessage(permission.connectionId(),
-                                                        permission.dataNeedId(),
-                                                        revocationTime,
-                                                        REVOKED,
-                                                        permissionId);
-
-        try {
-            streamerManager.sendConnectionStatusMessageForPermission(revocationReceivedMessage, permissionId);
-            streamerManager.sendConnectionStatusMessageForPermission(revokeMessage, permissionId);
-            streamerManager.stopStreamer(permissionId);
-        } catch (ConnectionStatusMessageSendFailedException | IllegalArgumentException ex) {
-            LOGGER.error("Error while sending connection status messages while revoking permission {}",
-                         permissionId,
-                         ex);
-        }
+        streamerManager.revokePermission(permission);
 
         return permission;
     }
@@ -266,55 +288,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      */
     public Permission findById(String permissionId) throws PermissionNotFoundException {
         return repository.findById(permissionId).orElseThrow(() -> new PermissionNotFoundException(permissionId));
-    }
-
-    /**
-     * Sends the {@link PermissionStatus#FULFILLED} status message to the EDDIE framework for the permission with
-     * {@code permissionId} , stops the associated streamer, sets the permission's status to FULFILLED and updates the
-     * database.
-     *
-     * @param permissionId ID of the permission which has reached its expiration time.
-     */
-    private void expirePermission(String permissionId) {
-        LOGGER.info("Will expire permission with id {}", permissionId);
-        Permission permission;
-        try {
-            permission = findById(permissionId);
-        } catch (PermissionNotFoundException ex) {
-            LOGGER.error("No permission with id {} found in database, but was requested to expire it.", permissionId);
-            return;
-        }
-
-        if (!(permission.status() == PermissionStatus.ACCEPTED ||
-                permission.status() == PermissionStatus.WAITING_FOR_START ||
-                permission.status() == PermissionStatus.STREAMING_DATA)) {
-            LOGGER.warn("Permission {} was modified, its status is {}. Will NOT expire the permission",
-                        permissionId,
-                        permission.status());
-            return;
-        }
-
-        if (permission.status() == PermissionStatus.ACCEPTED || permission.status() == PermissionStatus.WAITING_FOR_START) {
-            LOGGER.warn("Permission {} has status {}, meaning it was never started. Will expire it anyway.",
-                        permissionId,
-                        permission.status());
-        }
-
-        var statusMessage = new ConnectionStatusMessage(permission.connectionId(),
-                                                        permission.dataNeedId(),
-                                                        clock.instant(),
-                                                        PermissionStatus.FULFILLED,
-                                                        permissionId);
-
-        try {
-            streamerManager.sendConnectionStatusMessageForPermission(statusMessage, permissionId);
-        } catch (ConnectionStatusMessageSendFailedException ex) {
-            LOGGER.error("Error while sending FULFILLED ConnectionStatusMessage", ex);
-        }
-        streamerManager.stopStreamer(permissionId);
-
-        permission.updateStatus(PermissionStatus.FULFILLED);
-        repository.save(permission);
     }
 
     /**
@@ -344,33 +317,24 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                 "Fetched {} active permissions from database and will resume streaming or update them if they are expired.",
                 allActivePermissions.size());
 
+        var now = clock.instant();
         for (Permission permission : allActivePermissions) {
-            if (permission.expirationTime().isAfter(clock.instant())) {
-                schedulePermissionExpirationRunnable(permission);
-                streamerManager.createNewStreamerForPermission(permission);
+            var expirationTime = permission.expirationTime();
+            if (expirationTime == null) {
+                LOGGER.error("expirationTime of permission {} is null, this is an unexpected error",
+                             permission.permissionId());
+                // don't throw exception so other permissions are not skipped
+                continue;
+            }
 
-                permission.updateStatus(PermissionStatus.STREAMING_DATA);
-                repository.save(permission);
+            if (expirationTime.isAfter(now)) {
+                permissionScheduler.scheduleOrStart(permission);
             } else {
                 LOGGER.info("Permission {} has expired but AIIDA was not running at that time, will expire it now",
                             permission.permissionId());
-                permission.updateStatus(PermissionStatus.FULFILLED);
+                permission.setStatus(PermissionStatus.FULFILLED);
                 repository.save(permission);
             }
-        }
-    }
-
-    /**
-     * Use static nested class to ensure Spring will inject the ConcurrentHashMap only into the PermissionService and it
-     * won't be shared with other classes.
-     */
-    @Configuration
-    public static class ConcurrentHashMapConfig {
-        @Bean
-        // Spring's TaskScheduler only returns a ScheduledFuture<?>, so we have to use wildcards
-        @SuppressWarnings("java:S1452")
-        ConcurrentHashMap<String, ScheduledFuture<?>> expirationFutures() {
-            return new ConcurrentHashMap<>();
         }
     }
 }
