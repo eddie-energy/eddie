@@ -58,10 +58,9 @@ public class FrEnedisSpringConfig {
     public EnedisConfiguration enedisConfiguration(
             @Value("${" + ENEDIS_CLIENT_ID_KEY + "}") String clientId,
             @Value("${" + ENEDIS_CLIENT_SECRET_KEY + "}") String clientSecret,
-            @Value("${" + ENEDIS_BASE_PATH_KEY + "}") String basePath,
-            @Value("${" + ENEDIS_TIMEOUT_DURATION + ":24}") int timeoutDuration
+            @Value("${" + ENEDIS_BASE_PATH_KEY + "}") String basePath
     ) {
-        return new PlainEnedisConfiguration(clientId, clientSecret, basePath, timeoutDuration);
+        return new PlainEnedisConfiguration(clientId, clientSecret, basePath);
     }
 
     @Bean

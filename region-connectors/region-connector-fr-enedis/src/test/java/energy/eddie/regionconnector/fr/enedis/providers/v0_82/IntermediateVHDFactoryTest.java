@@ -18,8 +18,8 @@ class IntermediateVHDFactoryTest {
         PlainEnedisConfiguration enedisConfiguration = new PlainEnedisConfiguration(
                 "clientId",
                 "clientSecret",
-                "/path",
-                24);
+                "/path"
+        );
         IntermediateVHDFactory factory = new IntermediateVHDFactory(
                 enedisConfiguration,
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,

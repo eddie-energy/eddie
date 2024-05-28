@@ -17,11 +17,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.text.ParseException;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +70,7 @@ class JwtUtilTest {
 
     @BeforeEach
     void setUp() {
-        jwtUtil = new JwtUtil(testSecret);
+        jwtUtil = new JwtUtil(testSecret, 24);
 
         var keySelector = new JWSVerificationKeySelector<>(JWS_ALGORITHM,
                                                            new ImmutableSecret<>(Base64.getDecoder()
@@ -79,8 +81,15 @@ class JwtUtilTest {
 
     @Test
     void givenInvalidKeyLength_constructor_throws() {
-        assertThrows(IllegalArgumentException.class, () -> new JwtUtil("tooShort"));
-        assertThrows(IllegalArgumentException.class, () -> new JwtUtil("tooLoooooooooooooooooooooooooooooooooooong"));
+        assertThrows(IllegalArgumentException.class, () -> new JwtUtil("tooShort", 24));
+        assertThrows(IllegalArgumentException.class,
+                     () -> new JwtUtil("tooLoooooooooooooooooooooooooooooooooooong", 24));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {-10, 0})
+    void givenInvalidTimeoutDuration_constructor_throws(int timeoutDuration) {
+        assertThrows(IllegalArgumentException.class, () -> new JwtUtil(testSecret, timeoutDuration));
     }
 
     @Test
@@ -136,6 +145,7 @@ class JwtUtilTest {
 
             assertDoesNotThrow(() -> claimsSet.set(processor.process(jwt, null)));
             assertNotNull(claimsSet.get());
+            //noinspection unchecked
             Map<String, List<String>> permissions = (Map<String, List<String>>) claimsSet.get()
                                                                                          .getClaim(JWT_PERMISSIONS_CLAIM);
 
@@ -143,7 +153,9 @@ class JwtUtilTest {
             assertEquals(3, permissions.get("test-rc").size());
             assertThat(permissions.get("test-rc")).hasSameElementsAs(List.of("foo", "bar", "newPermissionId"));
 
-            assertThat(claimsSet.get().getIssueTime()).isBefore(Instant.now());
+            var issueTime = claimsSet.get().getIssueTime();
+            assertThat(issueTime).isBefore(Instant.now());
+            assertThat(claimsSet.get().getExpirationTime()).isEqualTo(issueTime.toInstant().plus(24, ChronoUnit.HOURS));
 
             return true;
         }));
@@ -159,6 +171,7 @@ class JwtUtilTest {
 
         // Then
         JWTClaimsSet claims = processor.process(jwt, null);
+        //noinspection unchecked
         var permissions = (Map<String, List<String>>) claims.getClaim(JWT_PERMISSIONS_CLAIM);
         assertEquals(1, permissions.size());
         assertEquals(newPermissionId, permissions.get("aiida").getFirst());

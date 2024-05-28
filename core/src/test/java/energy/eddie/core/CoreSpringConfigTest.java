@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@SuppressWarnings("unused")
 class CoreSpringConfigTest {
     // Need to use nested classes to be able to pass different properties, didn't work with WebApplicationContextRunner
     @Nested
@@ -42,7 +43,14 @@ class CoreSpringConfigTest {
     }
 
     @Nested
-    @WebMvcTest(properties = {"eddie.cors.allowed-origins=https://example.com", "eddie.jwt.hmac.secret=mPZzVhT7SJqg9jxuJKdtddswKYt7U1sn49di0eMoFnc="}, controllers = PermissionFacadeController.class)
+    @WebMvcTest(
+            properties = {
+                    "eddie.cors.allowed-origins=https://example.com",
+                    "eddie.jwt.hmac.secret=mPZzVhT7SJqg9jxuJKdtddswKYt7U1sn49di0eMoFnc=",
+                    "eddie.permission.request.timeout.duration=24"
+            },
+            controllers = PermissionFacadeController.class
+    )
     @Import(CoreSecurityConfig.class)
     class GivenCorsPropertyTest {
         @Autowired

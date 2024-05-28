@@ -34,8 +34,6 @@ depends on the way you deploy the region connector.
 | `region-connector.fr.enedis.client.id`        | Public key/id of the application you want to switch to production. Can be found under "_Mes applications_".                                    |
 | `region-connector.fr.enedis.client.secret`    | Secret key of the application you want to switch to production. Can be found under "_Mes applications_".                                       |
 | `region-connector.fr.enedis.polling`          | Configures when future data should be polled. Uses spring Cron syntax. The default is 17 o'clock every day.                                    |
-| `region-connector.fr.enedis.timeout.schedule` | Configures when ignored permission requests should be time outed. Uses spring Cron syntax, The default is every hour.                          |
-| `region-connector.fr.enedis.timeout.duration` | Configures how long a permission request can be ignored until it will be time-outed. Is an integer that represents hours. Default is 24 hours. |
 
 ### .properties file
 

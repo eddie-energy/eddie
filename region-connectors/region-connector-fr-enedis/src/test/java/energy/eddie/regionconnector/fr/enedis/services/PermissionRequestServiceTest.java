@@ -20,12 +20,15 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.Permission
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -67,6 +70,14 @@ class PermissionRequestServiceTest {
     private Outbox outbox;
     @MockBean
     private DataNeedCalculationService<DataNeed> calculationService;
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public TimeoutConfiguration timeoutConfiguration() {
+            return new TimeoutConfiguration(24);
+        }
+    }
 
     @Test
     void testCreatePermissionRequest_createsPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException {
