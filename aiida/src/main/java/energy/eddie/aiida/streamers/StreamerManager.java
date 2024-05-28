@@ -9,6 +9,7 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,7 @@ public class StreamerManager implements AutoCloseable {
      * @param permission Permission for which an AiidaStreamer should be created.
      * @throws IllegalArgumentException If an AiidaStreamer for the passed permission has already been created.
      */
-    public void createNewStreamer(Permission permission) throws IllegalArgumentException {
+    public void createNewStreamer(Permission permission) throws IllegalArgumentException, MqttException {
         LOGGER.info("Will create a new AiidaStreamer for permission {}", permission.permissionId());
 
         if (streamers.get(permission.permissionId()) != null)

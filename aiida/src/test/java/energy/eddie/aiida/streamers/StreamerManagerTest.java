@@ -7,6 +7,7 @@ import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import org.eclipse.paho.mqttv5.common.MqttException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -82,7 +83,7 @@ class StreamerManagerTest {
     }
 
     @Test
-    void givenPermission_createStreamer_callsConnect() {
+    void givenPermission_createStreamer_callsConnect() throws MqttException {
         // Given
         when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
         when(mockPermission.permissionId()).thenReturn(permissionId);
@@ -126,7 +127,7 @@ class StreamerManagerTest {
     }
 
     @Test
-    void verify_close_closesAllStreamers() {
+    void verify_close_closesAllStreamers() throws MqttException {
         when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
