@@ -24,6 +24,7 @@ repositories {
 
 dependencies {
     implementation(project(":api"))
+    implementation(project(":data-needs"))
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)

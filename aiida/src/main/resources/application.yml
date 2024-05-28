@@ -13,3 +13,4 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+    locations: 'classpath:db/aiida/migration'

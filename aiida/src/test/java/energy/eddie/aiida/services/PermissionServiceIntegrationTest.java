@@ -62,6 +62,7 @@ public class PermissionServiceIntegrationTest {
         DriverManagerDataSource dataSource = getDataSource();
 
         Flyway flyway = Flyway.configure()
+                              .locations("classpath:db/aiida/migration")
                 .dataSource(dataSource)
                 .load();
         flyway.migrate();
