@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 importers:
 
   .:
@@ -22,6 +26,9 @@ importers:
       lit:
         specifier: ^2.7.5
         version: 2.7.5
+      tinyduration:
+        specifier: ^3.3.0
+        version: 3.3.0
       vite:
         specifier: ^4.5.2
         version: 4.5.2
@@ -763,6 +770,10 @@ packages:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
 
+  /tinyduration@3.3.0:
+    resolution: {integrity: sha512-sLR0iVUnnnyGEX/a3jhTA0QMK7UvakBqQJFLiibiuEYL6U1L85W+qApTZj6DcL1uoWQntYuL0gExoe9NU5B3PA==}
+    dev: false
+
   /vite@4.5.2:
     resolution: {integrity: sha512-tBCZBNSBbHQkaGyhGCDUGqeo2ph8Fstyp6FMSvTtsXeZSPpSMGlviAOav2hxVTqFcx8Hj/twtWKsMJXNY0xI8w==}
     engines: {node: ^14.18.0 || >=16.0.0}
@@ -831,7 +842,3 @@ packages:
     optionalDependencies:
       fsevents: 2.3.3
     dev: true
-
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
