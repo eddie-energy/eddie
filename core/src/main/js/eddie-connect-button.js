@@ -18,6 +18,14 @@ import buttonIcon from "../resources/logo.svg?raw";
 import headerImage from "../resources/header.svg?raw";
 
 import PERMISSION_ADMINISTRATORS from "../../../../european-masterdata/src/main/resources/permission-administrators.json";
+/**
+ * @typedef {Object} PermissionAdministrator
+ * @property {string} country
+ * @property {string} company
+ * @property {string} companyId
+ * @property {string} jumpOffUrl
+ * @property {string} regionConnector
+ */
 
 setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn");
 
@@ -186,6 +194,11 @@ class EddieConnectButton extends LitElement {
     return notificationHandler;
   }
 
+  /**
+   *
+   * @param {string} companyId The company ID of the permission administrator.
+   * @returns {PermissionAdministrator | undefined} The first permission administrator with the given company ID or undefined if none is found.
+   */
   getPermissionAdministratorByCompanyId(companyId) {
     return this._availablePermissionAdministrators.find(
       (pa) => pa.companyId === companyId
