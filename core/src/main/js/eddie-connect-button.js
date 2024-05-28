@@ -41,23 +41,6 @@ function getDataNeedAttributes(dataNeedId) {
   return fetchJson(`/data-needs/api/${dataNeedId}`);
 }
 
-function shortISOString(date) {
-  return date.toISOString().substring(0, 10);
-}
-
-function dateFromDuration(duration) {
-  const date = new Date();
-  date.setDate(date.getDate() + duration);
-  return shortISOString(date);
-}
-
-function durationFromDateString(dateString) {
-  const now = new Date();
-  const date = new Date(dateString);
-
-  return Math.ceil((date - now) / (1000 * 60 * 60 * 24));
-}
-
 class EddieConnectButton extends LitElement {
   static properties = {
     connectionId: { attribute: "connection-id", type: String },
