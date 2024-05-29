@@ -6,6 +6,7 @@ import energy.eddie.dataneeds.exceptions.DataNeedAlreadyExistsException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.persistence.DataNeedsNameAndIdProjection;
 import energy.eddie.dataneeds.persistence.DataNeedsNameAndIdProjectionRecord;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Path;
 import jakarta.validation.ValidationException;
@@ -110,5 +111,10 @@ public class DataNeedsConfigService implements DataNeedsService {
     @Override
     public Optional<DataNeed> findById(String id) {
         return Optional.ofNullable(dataNeeds.get(id));
+    }
+
+    @Override
+    public DataNeed getById(String id) {
+        return findById(id).orElseThrow(EntityNotFoundException::new);
     }
 }

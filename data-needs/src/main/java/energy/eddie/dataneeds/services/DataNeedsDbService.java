@@ -34,6 +34,11 @@ public class DataNeedsDbService implements DataNeedsService {
         return repository.findById(id);
     }
 
+    @Override
+    public DataNeed getById(String id) {
+        return repository.getReferenceById(id);
+    }
+
     /**
      * Saves the new data need in the database and sets a UUID as {@link DataNeed#id()}.
      *

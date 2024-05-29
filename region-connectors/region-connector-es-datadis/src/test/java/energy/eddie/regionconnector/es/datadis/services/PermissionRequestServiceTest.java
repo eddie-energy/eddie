@@ -9,6 +9,7 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -17,6 +18,7 @@ import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsume
 import energy.eddie.regionconnector.es.datadis.dtos.*;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsCreatedEvent;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsMalformedEvent;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsValidatedEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -55,6 +57,8 @@ class PermissionRequestServiceTest {
     private DataNeedsService dataNeedsService;
     @Mock
     private ValidatedHistoricalDataDataNeed validatedHistoricalDataDataNeed;
+    @Mock
+    private AccountingPointDataNeed accountingPointDataNeed;
     @Mock
     private Outbox outbox;
     @Mock
@@ -243,6 +247,36 @@ class PermissionRequestServiceTest {
         assertEquals(PermissionProcessStatus.VALIDATED, second.status());
     }
 
+    @Test
+    void createAndSendPermissionRequest_emitsCreatedAndValidated_forAccountingPointDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+        // Given
+        ArgumentCaptor<EsCreatedEvent> createdCaptor = ArgumentCaptor.forClass(EsCreatedEvent.class);
+        ArgumentCaptor<EsValidatedEvent> validatedCaptor = ArgumentCaptor.forClass(EsValidatedEvent.class);
+        var creationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
+        when(dataNeedsService.findById(any())).thenReturn(Optional.of(accountingPointDataNeed));
+        var today = LocalDate.now(ZONE_ID_SPAIN);
+        when(calculationService.calculate(accountingPointDataNeed))
+                .thenReturn(new DataNeedCalculation(
+                        true,
+                        List.of(Granularity.PT15M, Granularity.PT1H),
+                        null,
+                        null
+                ));
+
+        // When
+        service.createAndSendPermissionRequest(creationRequest);
+
+        // Then
+        verify(dataNeedsService).findById(any());
+        verify(outbox).commit(createdCaptor.capture());
+        verify(outbox).commit(validatedCaptor.capture());
+
+        assertAll(
+                () -> assertNotNull(createdCaptor.getValue()),
+                () -> assertEquals(today, validatedCaptor.getValue().end())
+        );
+    }
+
     @ParameterizedTest
     @NullAndEmptySource
     void createAndSendPermissionRequest_withInvalidGranularities_throws(List<Granularity> granularities) {
@@ -255,21 +289,6 @@ class PermissionRequestServiceTest {
                                                     granularities,
                                                     new Timeframe(now, now),
                                                     new Timeframe(now, now)));
-        // When
-        // Then
-        assertThrows(UnsupportedDataNeedException.class,
-                     () -> service.createAndSendPermissionRequest(mockCreationRequest));
-        verify(outbox).commit(isA(EsCreatedEvent.class));
-        verify(outbox).commit(isA(EsMalformedEvent.class));
-    }
-
-    @Test
-    void createAndSendPermissionRequest_withInvalidTimeframe_throws() {
-        // Given
-        var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
-        when(dataNeedsService.findById(any())).thenReturn(Optional.of(validatedHistoricalDataDataNeed));
-        when(calculationService.calculate(validatedHistoricalDataDataNeed))
-                .thenReturn(new DataNeedCalculation(true, List.of(Granularity.PT1H), null, null));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,

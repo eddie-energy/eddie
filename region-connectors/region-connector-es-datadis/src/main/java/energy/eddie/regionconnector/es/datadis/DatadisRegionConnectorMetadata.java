@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.es.datadis;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 
@@ -33,7 +34,8 @@ public class DatadisRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final Period PERIOD_EARLIEST_START = Period.ofMonths(-MAXIMUM_MONTHS_IN_THE_PAST);
     public static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(PT15M, PT1H);
     public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(
-            ValidatedHistoricalDataDataNeed.class
+            ValidatedHistoricalDataDataNeed.class,
+            AccountingPointDataNeed.class
     );
     @Nullable
     private static DatadisRegionConnectorMetadata instance = null;

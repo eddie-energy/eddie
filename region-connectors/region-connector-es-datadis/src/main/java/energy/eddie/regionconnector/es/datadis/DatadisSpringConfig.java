@@ -25,6 +25,7 @@ import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionEventRepository;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
+import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
@@ -80,6 +81,16 @@ public class DatadisSpringConfig {
 
     @Bean
     public Flux<IdentifiableMeteringData> identifiableMeteringDataFlux(Sinks.Many<IdentifiableMeteringData> sink) {
+        return sink.asFlux();
+    }
+
+    @Bean
+    public Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataSink() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public Flux<IdentifiableAccountingPointData> identifiableAccountingPointDataFlux(Sinks.Many<IdentifiableAccountingPointData> sink) {
         return sink.asFlux();
     }
 

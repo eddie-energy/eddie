@@ -1,25 +1,33 @@
 package energy.eddie.regionconnector.es.datadis.consumer;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.es.datadis.ContractDetailsProvider;
+import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
+import energy.eddie.regionconnector.es.datadis.SupplyProvider;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
 import energy.eddie.regionconnector.es.datadis.dtos.ContractDetails;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
-import energy.eddie.regionconnector.es.datadis.permission.events.EsAcceptedEvent;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsAcceptedEventForAPD;
+import energy.eddie.regionconnector.es.datadis.permission.events.EsAcceptedEventForVHD;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Sinks;
+import reactor.test.StepVerifier;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -30,16 +38,27 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestConsumerTest {
     private final EsPermissionRequest permissionRequest = new DatadisPermissionRequest(
-            "pid", null, null, null, null, null, null, null, null, null, null, null, null, false, null, null
+            "pid", null, "did", null, null, null, null, null, null, null, null, null, null, false, null, null
     );
     @Mock
     private Outbox outbox;
     @Captor
-    private ArgumentCaptor<EsAcceptedEvent> acceptedCaptor;
+    private ArgumentCaptor<EsAcceptedEventForVHD> acceptedCaptor;
     @Captor
     private ArgumentCaptor<EsSimpleEvent> simpleCaptor;
+    @Captor
+    private ArgumentCaptor<EsAcceptedEventForAPD> acceptedAccountingPointDataCaptor;
     @InjectMocks
     private PermissionRequestConsumer permissionRequestConsumer;
+    @Mock
+    private DataNeedsService dataNeedsService;
+    @Mock
+    private AccountingPointDataNeed accountingPointDataNeed;
+    @Mock
+    private ValidatedHistoricalDataDataNeed validatedHistoricalDataDataNeed;
+    @Spy
+    private Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataSink = new DatadisSpringConfig().identifiableAccountingPointDataSink();
+
 
     @Test
     void acceptPermission_setsDistributorCodeAndPointType_AcceptsRequest_FetchesHistoricalData() {
@@ -47,6 +66,7 @@ class PermissionRequestConsumerTest {
         Supply supply = mock(Supply.class);
         when(supply.pointType()).thenReturn(1);
         when(supply.distributorCode()).thenReturn("1");
+        when(dataNeedsService.getById(permissionRequest.dataNeedId())).thenReturn(validatedHistoricalDataDataNeed);
 
         AccountingPointData accountingPointData = new AccountingPointData(supply, createContractDetails());
 
@@ -125,5 +145,36 @@ class PermissionRequestConsumerTest {
 
         // Then
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.INVALID, event.status())));
+    }
+
+    @Test
+    void acceptPermission_forAccountingPointDataNeed_emitsAccountingPointDataAndFulfill() throws IOException {
+        // Given
+        when(dataNeedsService.getById(permissionRequest.dataNeedId())).thenReturn(accountingPointDataNeed);
+
+        // When
+        AccountingPointData accountingPointData = new AccountingPointData(
+                SupplyProvider.loadSupply().getFirst(),
+                ContractDetailsProvider.loadContractDetails().getFirst()
+        );
+        permissionRequestConsumer.acceptPermission(permissionRequest, accountingPointData);
+
+        // Then
+        StepVerifier.create(identifiableAccountingPointDataSink.asFlux())
+                    .assertNext(acp -> assertAll(
+                            () -> assertEquals(permissionRequest, acp.permissionRequest()),
+                            () -> assertEquals(accountingPointData, acp.accountingPointData())
+                    ))
+                    .then(() -> permissionRequestConsumer.close())
+                    .verifyComplete();
+        verify(outbox).commit(acceptedAccountingPointDataCaptor.capture());
+        verify(outbox).commit(simpleCaptor.capture());
+        assertAll(
+                () -> assertEquals("pid", acceptedAccountingPointDataCaptor.getValue().permissionId()),
+                () -> assertEquals(PermissionProcessStatus.ACCEPTED,
+                                   acceptedAccountingPointDataCaptor.getValue().status()),
+                () -> assertEquals("pid", simpleCaptor.getValue().permissionId()),
+                () -> assertEquals(PermissionProcessStatus.FULFILLED, simpleCaptor.getValue().status())
+        );
     }
 }
