@@ -38,7 +38,6 @@ import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -47,7 +46,6 @@ import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfigurat
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.*;
 import static energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration.*;
 
-@EnableWebMvc
 @SpringBootApplication
 @RegionConnector(name = REGION_CONNECTOR_ID)
 @EnableAsync

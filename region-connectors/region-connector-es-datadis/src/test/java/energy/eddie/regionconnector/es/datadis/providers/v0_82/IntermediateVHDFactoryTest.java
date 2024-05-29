@@ -14,7 +14,10 @@ class IntermediateVHDFactoryTest {
     @Test
     void testCreate_returnsValidatedHistoricalDocument() throws IOException {
         // Given
-        PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId", "clientSecret", "basepath");
+        PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId",
+                                                                                "clientSecret",
+                                                                                "basepath"
+        );
         IntermediateVHDFactory factory = new IntermediateVHDFactory(
                 datadisConfig,
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,

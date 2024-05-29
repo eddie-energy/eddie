@@ -18,7 +18,7 @@ public interface FrPermissionRequestRepository extends PermissionRequestReposito
 
     @Query(
             value = "SELECT permission_id, connection_id, permission_start, permission_end, data_need_id, status, granularity, usage_point_id, latest_meter_reading_end_date, created " +
-                    "FROM fr_enedis.enedis_permission_request WHERE status = 'PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT' AND created <= NOW() - :hours * INTERVAL '1 hour'",
+                    "FROM fr_enedis.enedis_permission_request WHERE status = 'VALIDATED' AND created <= NOW() - :hours * INTERVAL '1 hour'",
             nativeQuery = true
     )
     List<EnedisPermissionRequest> findTimedOutPermissionRequests(@Param("hours") int timeoutDuration);

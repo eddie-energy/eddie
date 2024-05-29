@@ -39,6 +39,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -193,13 +194,13 @@ class PermissionControllerTest {
                                     .put("connectionId", "   ")
                                     .put("meteringPointId", "   ")
                                     .put("dataNeedId", "")
-                                    .put("nif", "")
-                                    .put("granularity", "PT15M");
+                                    .put("nif", "");
 
         mockMvc.perform(post("/permission-request")
                                 .content(mapper.writeValueAsString(jsonNode))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON))
+               .andDo(print())
                // Then
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", allOf(
@@ -222,10 +223,7 @@ class PermissionControllerTest {
                                     .put("connectionId", "ConnId")
                                     .put("meteringPointId", "SomeId")
                                     .put("dataNeedId", "BLA_BLU_BLE")
-                                    .put("nif", "NOICE")
-                                    .put("granularity", "PT15M")
-                                    .put("requestDataFrom", "2023-09-09")
-                                    .put("requestDataTo", "2023-10-10");
+                                    .put("nif", "NOICE");
 
         // When
         MockHttpServletResponse response = mockMvc.perform(post("/permission-request")

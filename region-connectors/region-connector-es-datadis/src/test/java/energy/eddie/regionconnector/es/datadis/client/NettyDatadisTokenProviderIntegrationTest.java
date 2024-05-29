@@ -24,8 +24,8 @@ class NettyDatadisTokenProviderIntegrationTest {
                 new MyDatadisConfig("replace", "replace"), HttpClient.create(), mapper);
 
         StepVerifier.create(uut.getToken())
-                .expectNextMatches(token -> !token.isEmpty())
-                .verifyComplete();
+                    .expectNextMatches(token -> !token.isEmpty())
+                    .verifyComplete();
     }
 
     @Test
@@ -38,8 +38,8 @@ class NettyDatadisTokenProviderIntegrationTest {
         );
 
         StepVerifier.create(uut.getToken())
-                .expectError(TokenProviderException.class)
-                .verify();
+                    .expectError(TokenProviderException.class)
+                    .verify();
     }
 
 
@@ -55,8 +55,8 @@ class NettyDatadisTokenProviderIntegrationTest {
         );
 
         StepVerifier.create(uut.updateTokenAndExpiry("invalid token"))
-                .expectError(TokenProviderException.class)
-                .verify();
+                    .expectError(TokenProviderException.class)
+                    .verify();
     }
 
     @Test
@@ -74,8 +74,8 @@ class NettyDatadisTokenProviderIntegrationTest {
         );
 
         StepVerifier.create(uut.updateTokenAndExpiry(token))
-                .expectNext(token)
-                .verifyComplete();
+                    .expectNext(token)
+                    .verifyComplete();
 
         assertEquals(timestamp, uut.getExpiryTime());
     }

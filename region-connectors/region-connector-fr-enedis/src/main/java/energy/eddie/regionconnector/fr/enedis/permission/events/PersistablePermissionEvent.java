@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import jakarta.persistence.*;
 
+import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -31,6 +32,17 @@ public abstract class PersistablePermissionEvent implements PermissionEvent {
         this.id = null;
         this.permissionId = permissionId;
         this.eventCreated = ZonedDateTime.now(ZoneOffset.UTC);
+        this.status = status;
+    }
+
+    protected PersistablePermissionEvent(
+            String permissionId,
+            PermissionProcessStatus status,
+            Clock clock
+    ) {
+        this.id = null;
+        this.permissionId = permissionId;
+        this.eventCreated = ZonedDateTime.now(clock);
         this.status = status;
     }
 
