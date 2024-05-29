@@ -49,7 +49,6 @@ public class TerminationHandler implements EventHandler<PermissionEvent> {
                                     "Terminated by the Eligible Party");
         try {
             edaAdapter.sendCMRevoke(revoke);
-            outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.EXTERNALLY_TERMINATED));
         } catch (Exception e) {
             LOGGER.warn("Error trying to terminate permission request.", e);
             outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.FAILED_TO_TERMINATE));

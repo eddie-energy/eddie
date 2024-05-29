@@ -23,7 +23,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static energy.eddie.api.v0.PermissionProcessStatus.EXTERNALLY_TERMINATED;
 import static energy.eddie.api.v0.PermissionProcessStatus.FAILED_TO_TERMINATE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -76,7 +75,7 @@ class TerminationHandlerTest {
     }
 
     @Test
-    void terminatePermission_revokeIsSent_emitsExternallyTerminated() {
+    void terminatePermission_revokeIsSent() throws TransmissionException {
         // given
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
@@ -91,8 +90,6 @@ class TerminationHandlerTest {
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
 
         // then
-        verify(outbox).commit(simpleEventCaptor.capture());
-        var res = simpleEventCaptor.getValue();
-        assertEquals(EXTERNALLY_TERMINATED, res.status());
+        verify(edaAdapter).sendCMRevoke(any());
     }
 }

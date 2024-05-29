@@ -21,5 +21,6 @@ public record PermissionRequestForCreation(
                 max = DSO_ID_LENGTH,
                 message = "needs to be exactly " + DSO_ID_LENGTH + " characters long"
         )
+        @NotBlank(message = "must not be blank")
         String dsoId
 ) {}

@@ -13,12 +13,11 @@ import energy.eddie.regionconnector.at.eda.dto.masterdata.*;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.HealthCheck;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.MessengerStatus;
-import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationType;
+import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationMessageType;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConnectionTestImpl;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
 import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
-import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,6 +26,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.testcontainers.shaded.org.checkerframework.checker.nullness.qual.Nullable;
 import reactor.test.StepVerifier;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -35,8 +35,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static energy.eddie.regionconnector.at.eda.models.CMRequestStatus.Status.ERROR;
-import static energy.eddie.regionconnector.at.eda.models.CMRequestStatus.Status.RECEIVED;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -59,28 +57,25 @@ class PontonXPAdapterTest {
                 .setStatusMetaData(metaData)
                 .setTransferId(new TransferId("transferId"));
         return Stream.of(
-                Arguments.of(builder.setResult(OutboundStatusEnum.SUCCESS).build(), RECEIVED),
-                Arguments.of(builder.setResult(OutboundStatusEnum.CONTENT_ERROR).build(), ERROR),
-                Arguments.of(builder.setResult(OutboundStatusEnum.CONFIG_ERROR).build(), ERROR),
-                Arguments.of(builder.setResult(OutboundStatusEnum.CONTENT_ERROR).build(), ERROR),
-                Arguments.of(builder.setResult(OutboundStatusEnum.FAILED).build(), ERROR),
+                Arguments.of(builder.setResult(OutboundStatusEnum.CONTENT_ERROR).build(),
+                             NotificationMessageType.PONTON_ERROR),
+                Arguments.of(builder.setResult(OutboundStatusEnum.CONFIG_ERROR).build(),
+                             NotificationMessageType.PONTON_ERROR),
+                Arguments.of(builder.setResult(OutboundStatusEnum.CONTENT_ERROR).build(),
+                             NotificationMessageType.PONTON_ERROR),
+                Arguments.of(builder.setResult(OutboundStatusEnum.FAILED).build(),
+                             NotificationMessageType.PONTON_ERROR),
                 Arguments.of(builder.setResult(OutboundStatusEnum.INFO).build(), null),
+                Arguments.of(builder.setResult(OutboundStatusEnum.SUCCESS).build(), null),
                 Arguments.of(builder.setResult(OutboundStatusEnum.PROCESSED_AND_QUEUED).build(), null)
         );
     }
 
     @Test
-    void sendCMRequest_callsPontonMessengerConnectionAndEmitsSent() throws TransmissionException, de.ponton.xp.adapter.api.TransmissionException, ConnectionException {
+    void sendCMRequest_callsPontonMessengerConnection() throws TransmissionException, de.ponton.xp.adapter.api.TransmissionException, ConnectionException {
         // Given
         var pontonMessengerConnection = spy(new PontonMessengerConnectionTestImpl());
         PontonXPAdapter pontonXPAdapter = new PontonXPAdapter(pontonMessengerConnection);
-
-        var stepVerifier = StepVerifier
-                .create(pontonXPAdapter.getCMRequestStatusStream())
-                .assertNext(cmRequestStatus -> {
-                    // Then
-                    assertEquals(CMRequestStatus.Status.SENT, cmRequestStatus.getStatus());
-                });
 
         // When
         pontonXPAdapter.sendCMRequest(ccmoRequest);
@@ -88,7 +83,6 @@ class PontonXPAdapterTest {
 
         // Then
         verify(pontonMessengerConnection).sendCMRequest(ccmoRequest);
-        stepVerifier.verifyComplete();
     }
 
     @Test
@@ -163,9 +157,9 @@ class PontonXPAdapterTest {
     }
 
     @ParameterizedTest
-    @EnumSource(NotificationType.class)
+    @EnumSource(NotificationMessageType.class)
     void handleCMNotificationMessage_whenPontonMessengerConnectionCallsCMNotificationHandler_withoutResponseData_emitsSuccess(
-            NotificationType notificationType
+            NotificationMessageType notificationMessageType
     ) {
         // Given
         EdaCMNotification edaCMNotification = createEdaCMNotification(List.of());
@@ -178,7 +172,7 @@ class PontonXPAdapterTest {
                 .expectComplete();
 
         var messageResult = pontonMessengerConnection.cmNotificationHandler
-                .handle(edaCMNotification, notificationType);
+                .handle(edaCMNotification, notificationMessageType);
 
         // Then
         assertAll(
@@ -391,7 +385,7 @@ class PontonXPAdapterTest {
     @MethodSource("outboundMessageStatusUpdateStream")
     void handleCMNotificationMessage_whenPontonMessengerConnectionCallsCMNotificationHandler_withoutResponseData_emitsSuccess(
             OutboundMessageStatusUpdate outboundMessageStatusUpdate,
-            @Nullable CMRequestStatus.Status expectedStatus
+            @Nullable NotificationMessageType expectedMessageType
     ) {
         // Given
         var pontonMessengerConnection = new PontonMessengerConnectionTestImpl();
@@ -402,11 +396,11 @@ class PontonXPAdapterTest {
         StepVerifier.Step<CMRequestStatus> stepVerifier = StepVerifier
                 .create(pontonXPAdapter.getCMRequestStatusStream());
 
-        if (expectedStatus != null) {
+        if (expectedMessageType != null) {
             stepVerifier = stepVerifier
                     .assertNext(cmRequestStatus -> {
                         // Then
-                        assertEquals(expectedStatus, cmRequestStatus.getStatus());
+                        assertEquals(expectedMessageType, cmRequestStatus.messageType());
                     });
         }
 
@@ -421,9 +415,9 @@ class PontonXPAdapterTest {
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     @ParameterizedTest
-    @EnumSource(NotificationType.class)
+    @EnumSource(NotificationMessageType.class)
     void handleCMNotificationMessage_whenPontonMessengerConnectionCallsCMNotificationHandler_EmitsCMRequestStatus(
-            NotificationType notificationType
+            NotificationMessageType notificationMessageType
     ) {
         // Given
         EdaCMNotification edaCMNotification = createEdaCMNotification(List.of(
@@ -432,11 +426,6 @@ class PontonXPAdapterTest {
         ));
         var pontonMessengerConnection = new PontonMessengerConnectionTestImpl();
         PontonXPAdapter pontonXPAdapter = new PontonXPAdapter(pontonMessengerConnection);
-        var expectedRequestStatus = switch (notificationType) {
-            case ACCEPT -> CMRequestStatus.Status.ACCEPTED;
-            case REJECT -> CMRequestStatus.Status.REJECTED;
-            case ANSWER -> CMRequestStatus.Status.DELIVERED;
-        };
 
         // When
         var stepVerifier = StepVerifier
@@ -445,13 +434,13 @@ class PontonXPAdapterTest {
                     // Then
                     assertAll(
                             () -> assertEquals("consentId", cmRequestStatus.getCMConsentId().get()),
-                            () -> assertEquals(expectedRequestStatus, cmRequestStatus.getStatus())
+                            () -> assertEquals(notificationMessageType, cmRequestStatus.messageType())
                     );
                 })
                 .expectComplete();
 
         var messageResult = pontonMessengerConnection.cmNotificationHandler
-                .handle(edaCMNotification, notificationType);
+                .handle(edaCMNotification, notificationMessageType);
 
         // Then
         assertAll(

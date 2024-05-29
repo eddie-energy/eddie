@@ -5,6 +5,6 @@ import energy.eddie.regionconnector.at.eda.dto.EdaCMNotification;
 public interface CMNotificationHandler {
     InboundMessageResult handle(
             EdaCMNotification cmNotification,
-            NotificationType notificationType
+            NotificationMessageType notificationMessageType
     );
 }

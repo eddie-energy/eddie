@@ -56,7 +56,7 @@ class PermissionRequestControllerTest {
                 Arguments.of("", "0".repeat(33), "dnid", "0".repeat(8), "connectionId"),
                 Arguments.of("cid", "", "dnid", "0".repeat(8), "meteringPointId"),
                 Arguments.of("cid", "0".repeat(33), "", "0".repeat(8), "dataNeedId"),
-                Arguments.of("cid", "0".repeat(33), "dnid", "", "dsoId"),
+                Arguments.of("cid", "0".repeat(33), "dnid", "A", "dsoId"),
                 Arguments.of(null, "0".repeat(33), "dnid", "0".repeat(8), "connectionId"),
                 Arguments.of("cid", "0".repeat(33), null, "0".repeat(8), "dataNeedId")
         );
@@ -135,10 +135,11 @@ class PermissionRequestControllerTest {
                )
                // Then
                .andExpect(status().isBadRequest())
-               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(2)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(3)))
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItems(
                        "dataNeedId: must not be blank",
-                       "connectionId: must not be blank")));
+                       "connectionId: must not be blank",
+                       "dsoId: must not be blank")));
     }
 
     @Test
