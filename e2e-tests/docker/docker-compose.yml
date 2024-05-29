@@ -86,15 +86,10 @@ services:
     ports:
       - "1883:1883"
       - "8883:8883"
-      - "18083:18083" # management web interface
     environment:
       EMQX_NAME: example_emqx_node
       EMQX_HOST: 127.0.0.1
     restart: always
-    volumes:
-      - ./emqx/data:/opt/emqx/data
-      - ./emqx/log:/opt/emqx/log
-      - ./emqx/etc:/opt/emqx/etc
 
 networks:
   default:
