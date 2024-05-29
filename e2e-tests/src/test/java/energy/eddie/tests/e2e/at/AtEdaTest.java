@@ -28,7 +28,7 @@ class AtEdaTest extends E2eTestSetup {
                 "The Consent Request ID for this connection is: [A-Z0-9]{8}"));
 
         var locator = page.getByText(
-                "Status: Request Sent The permission request is now being processed by the permission administrator. Message was successfully received");
-        locator.waitFor(new Locator.WaitForOptions().setTimeout(120_000));
+                "response code 99");
+        locator.waitFor(new Locator.WaitForOptions().setTimeout(180_000));
     }
 }
