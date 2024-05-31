@@ -1,0 +1,72 @@
+package energy.eddie.regionconnector.aiida.permission.request.persistence;
+
+import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.aiida.permission.request.events.CreatedEvent;
+import energy.eddie.regionconnector.aiida.permission.request.events.SimpleEvent;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.context.TestPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Testcontainers
+@TestPropertySource(locations = "classpath:application-test.properties")
+class AiidaPermissionRequestViewRepositoryTest {
+    @SuppressWarnings("unused")
+    @Container
+    @ServiceConnection
+    private static final PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:15-alpine");
+
+    @Autowired
+    private AiidaPermissionRequestViewRepository permissionRequestRepository;
+    @Autowired
+    private AiidaPermissionEventRepository permissionEventRepository;
+
+    @Test
+    void testFindTimedOutPermissionRequests_findTimedOutPermissionRequests() {
+        // Given
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var clock = Clock.fixed(Instant.now(Clock.systemUTC()).minus(25, ChronoUnit.HOURS), ZoneOffset.UTC);
+        permissionEventRepository.saveAndFlush((PermissionEvent) new CreatedEvent("pid",
+                                                                                  "cid",
+                                                                                  "dnid",
+                                                                                  now.toLocalDate(),
+                                                                                  now.plusDays(10).toLocalDate(),
+                                                                                  "termination-topic",
+                                                                                  clock));
+        permissionEventRepository.saveAndFlush((PermissionEvent) new SimpleEvent("pid",
+                                                                                 PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
+        permissionEventRepository.saveAndFlush((PermissionEvent) new CreatedEvent("otherPid",
+                                                                                  "cid",
+                                                                                  "dnid",
+                                                                                  now.toLocalDate(),
+                                                                                  now.plusDays(20).toLocalDate(),
+                                                                                  "termination-topic"));
+        permissionEventRepository.saveAndFlush((PermissionEvent) new SimpleEvent("otherPid",
+                                                                                 PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
+
+
+        // When
+        var res = permissionRequestRepository.findStalePermissionRequests(24);
+
+        // Then
+        assertEquals(1, res.size());
+        var pr = res.getFirst();
+        assertEquals("pid", pr.permissionId());
+    }
+}

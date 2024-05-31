@@ -10,7 +10,7 @@ class AiidaSpringConfigTest {
     @Test
     void givenLocalhost_aiidaConfiguration_constructsHandshakeUrlTemplateAsExpected() {
         // When
-        AiidaConfiguration config = new AiidaSpringConfig().aiidaConfiguration("foo",
+        AiidaConfiguration config = new AiidaBeanConfig().aiidaConfiguration("foo",
                                                                                5,
                                                                                "http://localhost:1234",
                                                                                "fooBar",
@@ -27,7 +27,7 @@ class AiidaSpringConfigTest {
     @Test
     void givenEmpty_aiidaConfiguration_usesNull() {
         // When
-        AiidaConfiguration config = new AiidaSpringConfig().aiidaConfiguration("foo",
+        AiidaConfiguration config = new AiidaBeanConfig().aiidaConfiguration("foo",
                                                                                5,
                                                                                "http://localhost:1234",
                                                                                "fooBar",
