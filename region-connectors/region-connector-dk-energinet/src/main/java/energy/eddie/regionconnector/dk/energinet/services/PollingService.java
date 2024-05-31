@@ -102,10 +102,14 @@ public class PollingService implements AutoCloseable {
         }
     }
 
-    private static boolean isActiveAndNeedsToBePolled(
+    private boolean isActiveAndNeedsToBePolled(
             DkEnerginetPermissionRequest permissionRequest,
             LocalDate today
     ) {
+        var dataNeed = dataNeedsService.findById(permissionRequest.dataNeedId());
+        if (dataNeed.isEmpty() || !(dataNeed.get() instanceof ValidatedHistoricalDataDataNeed)) {
+            return false;
+        }
         LocalDate permissionStart = permissionRequest.start();
         return permissionStart.isBefore(today)
                && permissionRequest.latestMeterReadingEndDate()
