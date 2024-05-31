@@ -99,10 +99,12 @@ class AggregatorTest {
         aggregator.addNewAiidaDataSource(mockDataSource2);
 
         StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, expiration))
-                .expectNextMatches(aiidaRecord -> aiidaRecord.code().equals("2.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 60)
-                .expectNextMatches(aiidaRecord -> aiidaRecord.code().equals("1.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 50)
-                .thenCancel()   // Flux of datasource don't terminate except if .close() is called
-                .verifyLater();
+                                                .expectNextMatches(aiidaRecord -> aiidaRecord.code()
+                                                                                             .equals("2.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 60)
+                                                .expectNextMatches(aiidaRecord -> aiidaRecord.code()
+                                                                                             .equals("1.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 50)
+                                                .thenCancel()   // Flux of datasource don't terminate except if .close() is called
+                                                .verifyLater();
 
 
         // must not matter which datasource publishes the data
@@ -130,11 +132,13 @@ class AggregatorTest {
         publisher.next(unwanted2);
 
         StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, expiration))
-                .expectNextMatches(aiidaRecord -> aiidaRecord.code().equals("2.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 60)
-                .expectNextMatches(aiidaRecord -> aiidaRecord.code().equals("1.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 50)
-                .thenCancel()
-                .log()
-                .verifyLater();
+                                                .expectNextMatches(aiidaRecord -> aiidaRecord.code()
+                                                                                             .equals("2.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 60)
+                                                .expectNextMatches(aiidaRecord -> aiidaRecord.code()
+                                                                                             .equals("1.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 50)
+                                                .thenCancel()
+                                                .log()
+                                                .verifyLater();
 
 
         publisher.next(wanted2);
@@ -159,8 +163,11 @@ class AggregatorTest {
 
         publisher1.next(wanted1);
         publisher1.next(wanted2);
-        publisher2.next(wanted2);
+        publisher1.complete();
+
         publisher2.next(wanted1);
+        publisher2.next(wanted2);
+        publisher2.complete();
 
         verify(mockRepository, times(4)).save(any(AiidaRecord.class));
     }
@@ -180,32 +187,34 @@ class AggregatorTest {
         aggregator.addNewAiidaDataSource(mockDataSource);
 
         StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, expiration))
-                .then(() -> {
-                    publisher.next(wanted1);
-                    publisher.next(atExpirationTime);
-                    publisher.next(wanted2);
-                    publisher.next(afterExpirationTime);
-                })
-                .expectNextMatches(aiidaRecord -> aiidaRecord.code().equals("1.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 50)
-                .expectNextMatches(aiidaRecord -> aiidaRecord.code().equals("2.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 60)
-                .then(aggregator::close)
-                .expectComplete()
-                .verify();
+                    .then(() -> {
+                        publisher.next(wanted1);
+                        publisher.next(atExpirationTime);
+                        publisher.next(wanted2);
+                        publisher.next(afterExpirationTime);
+                    })
+                    .expectNextMatches(aiidaRecord -> aiidaRecord.code()
+                                                                 .equals("1.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 50)
+                    .expectNextMatches(aiidaRecord -> aiidaRecord.code()
+                                                                 .equals("2.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 60)
+                    .then(aggregator::close)
+                    .expectComplete()
+                    .verify();
     }
 
     @Test
     void verify_close_emitsCompleteSignalForFilteredFlux() {
         var stepVerifier1 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 1"), expiration))
-                .expectComplete()
-                .verifyLater();
+                                        .expectComplete()
+                                        .verifyLater();
 
         var stepVerifier2 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 2"), expiration))
-                .expectComplete()
-                .verifyLater();
+                                        .expectComplete()
+                                        .verifyLater();
 
         var stepVerifier3 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 1"), expiration))
-                .expectComplete()
-                .verifyLater();
+                                        .expectComplete()
+                                        .verifyLater();
 
 
         var mockDataSource = mock(AiidaDataSource.class);
