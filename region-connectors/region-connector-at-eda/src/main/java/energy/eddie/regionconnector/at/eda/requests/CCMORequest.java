@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.at.eda.requests;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
-import energy.eddie.regionconnector.at.eda.utils.CMRequestId;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -12,6 +11,8 @@ import java.util.Optional;
 public record CCMORequest(
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint,
         CCMOTimeFrame timeframe,
+        String cmRequestId,
+        String messageId,
         RequestDataType requestDataType,
         AllowedGranularity granularity,
         AllowedTransmissionCycle transmissionCycle,
@@ -28,14 +29,6 @@ public record CCMORequest(
 
     public Optional<LocalDate> end() {
         return timeframe.end();
-    }
-
-    public String cmRequestId() {
-        return new CMRequestId(messageId()).toString();
-    }
-
-    public String messageId() {
-        return new MessageId(configuration.eligiblePartyId(), timestamp).toString();
     }
 
     public Optional<String> meteringPointId() {

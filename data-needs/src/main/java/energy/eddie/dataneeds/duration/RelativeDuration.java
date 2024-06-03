@@ -40,6 +40,16 @@ public class RelativeDuration extends DataNeedDuration {
     protected RelativeDuration() {
     }
 
+    public RelativeDuration(
+            @Nullable Period start,
+            @Nullable Period end,
+            @Nullable CalendarUnit stickyStartCalendarUnit
+    ) {
+        this.start = start;
+        this.end = end;
+        this.stickyStartCalendarUnit = stickyStartCalendarUnit;
+    }
+
     /**
      * Returns the period that should be used as offset for the start. If empty, assume the earliest date that the
      * region connector supports.

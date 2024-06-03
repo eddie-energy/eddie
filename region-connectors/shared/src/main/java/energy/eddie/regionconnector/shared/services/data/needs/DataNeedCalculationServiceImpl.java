@@ -56,19 +56,22 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
     @Override
     public DataNeedCalculation calculate(DataNeed dataNeed) {
         if (!supportsDataNeedType(dataNeed)) {
-            return new DataNeedCalculation(false);
+            return new DataNeedCalculation(false, "Data need type not supported");
         }
+
         var supportedGranularities = supportedGranularities(dataNeed);
         Timeframe energyStartAndEndDate;
         try {
             energyStartAndEndDate = energyDataTimeframeStrategy.energyDataTimeframe(dataNeed);
         } catch (UnsupportedDataNeedException e) {
-            return new DataNeedCalculation(false);
+            return new DataNeedCalculation(false, e.errorReason());
         }
+
         var permissionStartAndEndDate = strategy.permissionTimeframe(energyStartAndEndDate);
         return new DataNeedCalculation(
                 additionalChecks.stream()
                                 .allMatch(check -> check.test(dataNeed)),
+                null,
                 supportedGranularities,
                 permissionStartAndEndDate,
                 energyStartAndEndDate

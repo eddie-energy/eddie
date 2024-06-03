@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.at.eda.permission.request.validation;
 
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
-import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
@@ -23,12 +22,8 @@ class MeteringPointMatchesDsoIdValidatorTest {
                 "cid",
                 "dnid",
                 new EdaDataSourceInformation("123"),
-                null,
-                null,
-                meteringPointId,
-                AllowedGranularity.PT15M,
-                "cmId",
-                "concId");
+                meteringPointId
+        );
         // When
         var res = validator.validate(created);
 
@@ -44,12 +39,8 @@ class MeteringPointMatchesDsoIdValidatorTest {
                 "cid",
                 "dnid",
                 new EdaDataSourceInformation("0".repeat(DSO_ID_LENGTH)),
-                null,
-                null,
-                "0".repeat(DSO_ID_LENGTH) + "123456789",
-                AllowedGranularity.PT15M,
-                "cmId",
-                "concId");
+                "0".repeat(DSO_ID_LENGTH) + "123456789"
+        );
         // When
         var res = validator.validate(created);
 
@@ -65,12 +56,8 @@ class MeteringPointMatchesDsoIdValidatorTest {
                 "cid",
                 "dnid",
                 new EdaDataSourceInformation("0".repeat(DSO_ID_LENGTH)),
-                null,
-                null,
-                "1".repeat(DSO_ID_LENGTH) + "123456789",
-                AllowedGranularity.PT15M,
-                "cmId",
-                "concId");
+                "1".repeat(DSO_ID_LENGTH) + "123456789"
+        );
         // When
         var res = validator.validate(created);
 

@@ -5,6 +5,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEvent;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,9 +66,9 @@ class JpaPermissionRequestRepositoryTest {
         var start = LocalDate.of(2024, 1, 1);
         var end = LocalDate.of(2024, 1, 31);
         String conversationId = "convId";
-        PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
-                                                 end, "mid", AllowedGranularity.PT15M, "cmRequestId",
-                                                 conversationId);
+        PermissionEvent event = new ValidatedEvent("pid", start,
+                                                   end, AllowedGranularity.PT15M, "cmRequestId",
+                                                   conversationId);
         permissionEventRepository.saveAndFlush(event);
 
         // When
@@ -83,9 +84,9 @@ class JpaPermissionRequestRepositoryTest {
         var start = LocalDate.of(2024, 1, 1);
         var end = LocalDate.of(2024, 1, 31);
         String conversationId = "convId";
-        PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
-                                                 end, "mid", AllowedGranularity.PT15M, "cmRequestId",
-                                                 conversationId);
+        PermissionEvent event = new ValidatedEvent("pid", start,
+                                                   end, AllowedGranularity.PT15M, "cmRequestId",
+                                                   conversationId);
         permissionEventRepository.saveAndFlush(event);
 
         // When
@@ -101,9 +102,9 @@ class JpaPermissionRequestRepositoryTest {
         var start = LocalDate.of(2024, 1, 1);
         var end = LocalDate.of(2024, 1, 31);
         String conversationId = "convId";
-        PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
-                                                 end, "mid", AllowedGranularity.PT15M, "cmRequestId",
-                                                 "otherId");
+        PermissionEvent event = new ValidatedEvent("pid", start,
+                                                   end, AllowedGranularity.PT15M, "cmRequestId",
+                                                   "otherId");
         permissionEventRepository.saveAndFlush(event);
 
         // When
@@ -119,9 +120,9 @@ class JpaPermissionRequestRepositoryTest {
         var start = LocalDate.of(2024, 1, 1);
         var end = LocalDate.of(2024, 1, 31);
         String conversationId = "convId";
-        PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
-                                                 end, "mid", AllowedGranularity.PT15M, "cmRequestId",
-                                                 conversationId);
+        PermissionEvent event = new ValidatedEvent("pid", start,
+                                                   end, AllowedGranularity.PT15M, "cmRequestId",
+                                                   conversationId);
         permissionEventRepository.saveAndFlush(event);
 
         // When
@@ -137,9 +138,9 @@ class JpaPermissionRequestRepositoryTest {
         var start = LocalDate.of(2024, 1, 1);
         var end = LocalDate.of(2024, 1, 31);
         String cmRequestId = "cmRequestId";
-        PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
-                                                 end, "mid", AllowedGranularity.PT15M, cmRequestId,
-                                                 "convId");
+        PermissionEvent event = new ValidatedEvent("pid", start,
+                                                   end, AllowedGranularity.PT15M, cmRequestId,
+                                                   "convId");
         permissionEventRepository.saveAndFlush(event);
 
         // When
@@ -155,9 +156,9 @@ class JpaPermissionRequestRepositoryTest {
         var start = LocalDate.of(2024, 1, 1);
         var end = LocalDate.of(2024, 1, 31);
         String cmRequestId = "cmRequestId";
-        PermissionEvent event = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
-                                                 end, "mid", AllowedGranularity.PT15M, cmRequestId,
-                                                 "convId");
+        PermissionEvent event = new ValidatedEvent("pid", start,
+                                                   end, AllowedGranularity.PT15M, cmRequestId,
+                                                   "convId");
         permissionEventRepository.saveAndFlush(event);
 
         // When
@@ -173,14 +174,14 @@ class JpaPermissionRequestRepositoryTest {
     void findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate_returnsPermissionRequest_forNonExistingPermissionRequest() {
         // Given
         var start = LocalDate.of(2024, 1, 1);
-        var end = LocalDate.of(2024, 1, 31);
-        String cmRequestId = "cmRequestId";
-        PermissionEvent event1 = new CreatedEvent("pid", "cid", "dnid", new EdaDataSourceInformation("dsoId"), start,
-                                                  end, "mid", AllowedGranularity.PT15M, cmRequestId,
-                                                  "convId");
+        PermissionEvent event1 = new CreatedEvent("pid", "cid", "did", new EdaDataSourceInformation("asd"), "mid");
         permissionEventRepository.saveAndFlush(event1);
-        PermissionEvent event2 = new SimpleEvent("pid", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+        PermissionEvent event2 = new ValidatedEvent("pid", start,
+                                                    null, AllowedGranularity.PT15M, "cmRequestId",
+                                                    "convId");
         permissionEventRepository.saveAndFlush(event2);
+        PermissionEvent event3 = new SimpleEvent("pid", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+        permissionEventRepository.saveAndFlush(event3);
         // When
         var res = permissionRequestRepository.findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate("mid",
                                                                                                           start.plusDays(

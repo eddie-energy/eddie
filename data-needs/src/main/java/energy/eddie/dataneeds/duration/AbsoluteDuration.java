@@ -38,6 +38,14 @@ public class AbsoluteDuration extends DataNeedDuration {
     protected AbsoluteDuration() {
     }
 
+    public AbsoluteDuration(
+            @NotNull LocalDate start,
+            @NotNull LocalDate end
+    ) {
+        this.start = start;
+        this.end = end;
+    }
+
     /**
      * Returns the inclusive start date of the timeframe for which data is required by the associated data need.
      */

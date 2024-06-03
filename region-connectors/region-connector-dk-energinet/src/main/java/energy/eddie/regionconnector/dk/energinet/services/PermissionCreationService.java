@@ -27,7 +27,7 @@ import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector
 @Service
 public class PermissionCreationService {
     private static final String UNSUPPORTED_GRANULARITIES_MESSAGE = "This region connector does not support these granularities";
-    private static final String UNSUPPORTED_DATA_NEED_MESSAGE = "This region connector only supports validated historical data data needs.";
+    private static final String UNSUPPORTED_DATA_NEED_MESSAGE = "This region connector only supports validated historical data or accounting point data needs.";
     private static final String DATA_NEED_ID = "dataNeedId";
     private final Outbox outbox;
     private final DataNeedsService dataNeedsService;

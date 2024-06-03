@@ -1,13 +1,14 @@
 package energy.eddie.regionconnector.at.eda.services;
 
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
@@ -17,13 +18,10 @@ import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEven
 import energy.eddie.regionconnector.at.eda.permission.request.events.MalformedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.validation.MeteringPointMatchesDsoIdValidator;
-import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
-import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
-import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
-import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
+import energy.eddie.regionconnector.at.eda.requests.MessageId;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
+import energy.eddie.regionconnector.at.eda.utils.CMRequestId;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.validation.GranularityChoice;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -32,27 +30,32 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.*;
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 
 @Component
 public class PermissionRequestCreationAndValidationService {
+    private static final String UNSUPPORTED_DATA_NEED_MESSAGE = "This region connector does not support this data need";
+    private static final String UNSUPPORTED_GRANULARITIES_MESSAGE = "This region connector does not support these granularities";
+    private static final String DATA_NEED_ID = "dataNeedId";
     private static final Set<Validator<CreatedEvent>> VALIDATORS = Set.of(
             new MeteringPointMatchesDsoIdValidator()
     );
-    private final GranularityChoice granularityChoice = new GranularityChoice(SUPPORTED_GRANULARITIES);
     private final AtConfiguration configuration;
     private final Outbox outbox;
     private final DataNeedsService dataNeedsService;
+    private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
 
     public PermissionRequestCreationAndValidationService(
             AtConfiguration configuration,
             Outbox outbox,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")  // defined in core
-            DataNeedsService dataNeedsService
+            DataNeedsService dataNeedsService,
+            DataNeedCalculationService<DataNeed> dataNeedCalculationService
     ) {
         this.configuration = configuration;
         this.outbox = outbox;
         this.dataNeedsService = dataNeedsService;
+        this.dataNeedCalculationService = dataNeedCalculationService;
     }
 
     /**
@@ -65,109 +68,110 @@ public class PermissionRequestCreationAndValidationService {
     public CreatedPermissionRequest createAndValidatePermissionRequest(
             PermissionRequestForCreation permissionRequest
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, EdaValidationException {
-        var referenceDate = LocalDate.now(AT_ZONE_ID);
-        var dataNeed = dataNeedsService.findById(permissionRequest.dataNeedId())
-                                       .orElseThrow(() -> new DataNeedNotFoundException(permissionRequest.dataNeedId()));
-
-        CCMORequest ccmoRequest = switch (dataNeed) {
-            case ValidatedHistoricalDataDataNeed vhdDataNeed -> ccmoRequestForVHD(
-                    permissionRequest,
-                    vhdDataNeed,
-                    referenceDate
-            );
-            case AccountingPointDataNeed ignored -> ccmoRequestForAccountingPoint(permissionRequest, referenceDate);
-            default -> throw new UnsupportedDataNeedException(
-                    EdaRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                    dataNeed.id(),
-                    "Unsupported data need type: " + dataNeed.getClass().getSimpleName()
-            );
-        };
-
-        ZonedDateTime created = ZonedDateTime.now(AT_ZONE_ID);
         String permissionId = UUID.randomUUID().toString();
-        CreatedEvent event = new CreatedEvent(
+        var dataNeedId = permissionRequest.dataNeedId();
+        var created = ZonedDateTime.now(AT_ZONE_ID);
+
+        CreatedEvent createdEvent = new CreatedEvent(
                 permissionId,
                 permissionRequest.connectionId(),
-                permissionRequest.dataNeedId(),
-                new EdaDataSourceInformation(permissionRequest.dsoId()),
+                dataNeedId,
                 created,
-                ccmoRequest.start(),
-                ccmoRequest.end().orElse(ccmoRequest.start()),
-                permissionRequest.meteringPointId(),
-                ccmoRequest.granularity(),
-                ccmoRequest.cmRequestId(),
-                ccmoRequest.messageId()
+                new EdaDataSourceInformation(permissionRequest.dsoId()),
+                permissionRequest.meteringPointId()
         );
-        outbox.commit(event);
-        var errors = validateAttributes(event);
-        if (errors.isEmpty()) {
-            outbox.commit(new ValidatedEvent(permissionId, ccmoRequest));
-            return new CreatedPermissionRequest(permissionId, ccmoRequest.cmRequestId());
-        } else {
+        outbox.commit(createdEvent);
+
+        var errors = validateAttributes(createdEvent);
+        if (!errors.isEmpty()) {
             outbox.commit(new MalformedEvent(permissionId, errors));
             throw new EdaValidationException(errors);
         }
-    }
 
-    private CCMORequest ccmoRequestForVHD(
-            PermissionRequestForCreation permissionRequestForCreation,
-            ValidatedHistoricalDataDataNeed vhdDataNeed,
-            LocalDate referenceDate
-    ) throws UnsupportedDataNeedException {
-        var wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(vhdDataNeed,
-                                                                           referenceDate,
-                                                                           PERIOD_EARLIEST_START,
-                                                                           PERIOD_LATEST_END);
+        var optionalDataNeed = dataNeedsService.findById(dataNeedId);
+        if (optionalDataNeed.isEmpty()) {
+            outbox.commit(new MalformedEvent(
+                    permissionId,
+                    new AttributeError(DATA_NEED_ID, "Unknown DataNeed"))
+            );
+            throw new DataNeedNotFoundException(dataNeedId);
+        }
+        var dataNeed = optionalDataNeed.get();
 
-        var granularity = switch (granularityChoice.find(vhdDataNeed.minGranularity(),
-                                                         vhdDataNeed.maxGranularity())) {
-            case PT15M -> AllowedGranularity.PT15M;
-            case P1D -> AllowedGranularity.P1D;
-            case null, default -> throw new UnsupportedDataNeedException(EdaRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                                         vhdDataNeed.id(),
-                                                              "Unsupported granularity: '" + vhdDataNeed.minGranularity() + "'");
+        var calculation = dataNeedCalculationService.calculate(dataNeed);
+        if (!calculation.supportsDataNeed()) {
+            var reason = calculation.unsupportedDataNeedMessage();
+            if (reason == null) {
+                reason = UNSUPPORTED_DATA_NEED_MESSAGE;
+            }
+            outbox.commit(new MalformedEvent(
+                    permissionId,
+                    new AttributeError(DATA_NEED_ID, reason))
+            );
+            throw new UnsupportedDataNeedException(EdaRegionConnectorMetadata.REGION_CONNECTOR_ID, dataNeedId, reason);
+        }
+
+        var messageId = new MessageId(configuration.eligiblePartyId(), created).toString();
+        var cmRequestId = new CMRequestId(messageId).toString();
+
+        ValidatedEvent validatedEvent = switch (dataNeed) {
+            case AccountingPointDataNeed ignored -> accountingPointValidatedEvent(
+                    permissionId, cmRequestId, messageId
+            );
+            default -> validateHistoricalValidatedEvent(
+                    permissionId, cmRequestId, messageId, dataNeedId,
+                    calculation
+            );
         };
-        return new CCMORequest(
-                new DsoIdAndMeteringPoint(
-                        permissionRequestForCreation.dsoId(),
-                        permissionRequestForCreation.meteringPointId()
-                ),
-                new CCMOTimeFrame(
-                        wrapper.calculatedStart(),
-                        wrapper.calculatedEnd()
-                ),
-                RequestDataType.METERING_DATA,
-                granularity,
-                TRANSMISSION_CYCLE,
-                configuration,
-                ZonedDateTime.now(AT_ZONE_ID)
-        );
-    }
 
-    private CCMORequest ccmoRequestForAccountingPoint(
-            PermissionRequestForCreation permissionRequestForCreation,
-            LocalDate referenceDate
-    ) {
-        return new CCMORequest(
-                new DsoIdAndMeteringPoint(
-                        permissionRequestForCreation.dsoId(),
-                        permissionRequestForCreation.meteringPointId()
-                ),
-                new CCMOTimeFrame(
-                        referenceDate,
-                        null
-                ),
-                RequestDataType.MASTER_DATA,
-                AllowedGranularity.P1D,
-                TRANSMISSION_CYCLE,
-                configuration,
-                ZonedDateTime.now(AT_ZONE_ID)
-        );
+        outbox.commit(validatedEvent);
+        return new CreatedPermissionRequest(permissionId, validatedEvent.cmRequestId());
     }
 
     private static List<AttributeError> validateAttributes(CreatedEvent permissionEvent) {
         return VALIDATORS.stream()
                          .flatMap(validator -> validator.validate(permissionEvent).stream())
                          .toList();
+    }
+
+    private ValidatedEvent accountingPointValidatedEvent(
+            String permissionId,
+            String cmRequestId,
+            String messageId
+    ) {
+        return new ValidatedEvent(
+                permissionId,
+                LocalDate.now(AT_ZONE_ID),
+                null,
+                null,
+                cmRequestId,
+                messageId
+        );
+    }
+
+    private ValidatedEvent validateHistoricalValidatedEvent(
+            String permissionId,
+            String cmRequestId,
+            String messageId,
+            String dataNeedId,
+            DataNeedCalculation calculation
+    ) throws UnsupportedDataNeedException {
+        if (calculation.granularities() == null || calculation.granularities().isEmpty()) {
+            outbox.commit(new MalformedEvent(permissionId,
+                                             new AttributeError(DATA_NEED_ID, UNSUPPORTED_GRANULARITIES_MESSAGE)));
+            throw new UnsupportedDataNeedException(EdaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                   dataNeedId, UNSUPPORTED_GRANULARITIES_MESSAGE);
+        }
+
+        var granularity = calculation.granularities().getFirst();
+        //noinspection DataFlowIssue
+        return new ValidatedEvent(
+                permissionId,
+                calculation.energyDataTimeframe().start(),
+                calculation.energyDataTimeframe().end(),
+                AllowedGranularity.valueOf(granularity.name()),
+                cmRequestId,
+                messageId
+        );
     }
 }

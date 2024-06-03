@@ -2,42 +2,32 @@ package energy.eddie.regionconnector.at.eda.permission.request.events;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
-import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
-import jakarta.persistence.*;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
 
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 
 @Entity
-@SuppressWarnings("NullAway") // Needed for JPA
+@SuppressWarnings({"NullAway", "unused"}) // Needed for JPA
 public class CreatedEvent extends PersistablePermissionEvent {
     private final String connectionId;
     private final String dataNeedId;
+    private final ZonedDateTime created;
     @Embedded
     private final EdaDataSourceInformation dataSourceInformation;
-    private final ZonedDateTime created;
-    private final LocalDate permissionStart;
-    private final LocalDate permissionEnd;
+
+    @Nullable
     private final String meteringPointId;
-    @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "text")
-    private final AllowedGranularity granularity;
-    private final String cmRequestId;
-    private final String conversationId;
 
     public CreatedEvent() {
         connectionId = null;
         dataNeedId = null;
-        dataSourceInformation = null;
         created = null;
-        permissionStart = null;
-        permissionEnd = null;
+        dataSourceInformation = null;
         meteringPointId = null;
-        granularity = null;
-        cmRequestId = null;
-        conversationId = null;
     }
 
     public CreatedEvent(
@@ -45,41 +35,30 @@ public class CreatedEvent extends PersistablePermissionEvent {
             String connectionId,
             String dataNeedId,
             EdaDataSourceInformation dataSourceInformation,
-            LocalDate start,
-            LocalDate end,
-            String meteringPointId,
-            AllowedGranularity granularity,
-            String cmRequestId,
-            String conversationId
+            @Nullable String meteringPointId
     ) {
-        this(permissionId, connectionId, dataNeedId, dataSourceInformation, ZonedDateTime.now(AT_ZONE_ID), start, end,
-             meteringPointId, granularity, cmRequestId, conversationId);
+        this(permissionId,
+             connectionId,
+             dataNeedId,
+             ZonedDateTime.now(AT_ZONE_ID),
+             dataSourceInformation,
+             meteringPointId);
     }
 
     public CreatedEvent(
             String permissionId,
             String connectionId,
             String dataNeedId,
-            EdaDataSourceInformation dataSourceInformation,
             ZonedDateTime created,
-            LocalDate start,
-            LocalDate end,
-            String meteringPointId,
-            AllowedGranularity granularity,
-            String cmRequestId,
-            String conversationId
+            EdaDataSourceInformation dataSourceInformation,
+            @Nullable String meteringPointId
     ) {
         super(permissionId, PermissionProcessStatus.CREATED);
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
-        this.dataSourceInformation = dataSourceInformation;
         this.created = created;
-        this.permissionStart = start;
-        this.permissionEnd = end;
+        this.dataSourceInformation = dataSourceInformation;
         this.meteringPointId = meteringPointId;
-        this.granularity = granularity;
-        this.cmRequestId = cmRequestId;
-        this.conversationId = conversationId;
     }
 
     public String connectionId() {
@@ -94,31 +73,9 @@ public class CreatedEvent extends PersistablePermissionEvent {
         return dataSourceInformation;
     }
 
-    public ZonedDateTime created() {
-        return created;
-    }
 
-    public LocalDate start() {
-        return permissionStart;
-    }
-
-    public LocalDate end() {
-        return permissionEnd;
-    }
-
+    @Nullable
     public String meteringPointId() {
         return meteringPointId;
-    }
-
-    public AllowedGranularity granularity() {
-        return granularity;
-    }
-
-    public String cmRequestId() {
-        return cmRequestId;
-    }
-
-    public String conversationId() {
-        return conversationId;
     }
 }
