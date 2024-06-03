@@ -3,12 +3,10 @@ package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.MarshallerConfig;
-import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
-import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
-import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
-import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
+import energy.eddie.regionconnector.at.eda.requests.*;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
+import energy.eddie.regionconnector.at.eda.utils.CMRequestId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +39,13 @@ public abstract class CMRequestOutboundMessageFactoryTest {
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007");
+        ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
+        var mesageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
+        var cmRequestId = new CMRequestId(mesageId).toString();
         var request = new CCMORequest(dsoIdAndMeteringPoint,
                                       timeFrame,
+                                      cmRequestId,
+                                      mesageId,
                                       RequestDataType.METERING_DATA,
                                       AllowedGranularity.P1D,
                                       AllowedTransmissionCycle.D,

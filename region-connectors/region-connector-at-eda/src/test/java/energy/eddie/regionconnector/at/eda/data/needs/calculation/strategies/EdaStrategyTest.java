@@ -17,22 +17,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EdaStrategyTest {
-
     @Mock
     private TimeframedDataNeed timeframedDataNeed;
     @Mock
     private AccountingPointDataNeed accountingPointDataNeed;
-
 
     private static Stream<Arguments> unsupportedDataNeedDurations() {
         LocalDate now = LocalDate.now(AT_ZONE_ID);
@@ -40,33 +36,23 @@ class EdaStrategyTest {
                 Arguments.of(relativeDuration(EdaRegionConnectorMetadata.PERIOD_EARLIEST_START.minusMonths(1),
                                               EdaRegionConnectorMetadata.PERIOD_EARLIEST_START.plusMonths(1)),
                              "Relative exceeds max past"),
-                Arguments.of(absoluteDuration(now.minusYears(5), now.minusMonths(1)),
+                Arguments.of(new AbsoluteDuration(now.minusYears(5), now.minusMonths(1)),
                              "Absolut exceeds max past"),
                 Arguments.of(relativeDuration(EdaRegionConnectorMetadata.PERIOD_LATEST_END,
                                               EdaRegionConnectorMetadata.PERIOD_LATEST_END.plusMonths(1)),
                              "Relative exceeds max future"),
-                Arguments.of(absoluteDuration(now.plusMonths(1), now.plusYears(5)),
+                Arguments.of(new AbsoluteDuration(now.plusMonths(1), now.plusYears(5)),
                              "Absolut exceeds max future"),
                 Arguments.of(relativeDuration(EdaRegionConnectorMetadata.PERIOD_EARLIEST_START.plusMonths(1),
                                               EdaRegionConnectorMetadata.PERIOD_LATEST_END.minusMonths(1)),
                              "Relative from past to future"),
-                Arguments.of(absoluteDuration(now.minusMonths(1), now.plusMonths(1)),
+                Arguments.of(new AbsoluteDuration(now.minusMonths(1), now.plusMonths(1)),
                              "Absolut from past to future")
         );
     }
 
     private static RelativeDuration relativeDuration(Period start, Period end) {
-        var duration = mock(RelativeDuration.class);
-        when(duration.start()).thenReturn(Optional.ofNullable(start));
-        when(duration.end()).thenReturn(Optional.ofNullable(end));
-        return duration;
-    }
-
-    private static AbsoluteDuration absoluteDuration(LocalDate start, LocalDate end) {
-        var duration = mock(AbsoluteDuration.class);
-        when(duration.start()).thenReturn(start);
-        when(duration.end()).thenReturn(end);
-        return duration;
+        return new RelativeDuration(start, end, null);
     }
 
     private static Stream<Arguments> supportedDataNeedDuration() {
@@ -76,13 +62,13 @@ class EdaStrategyTest {
                              "Maximum supported past",
                              now.plusMonths(EdaRegionConnectorMetadata.PERIOD_EARLIEST_START.getMonths()),
                              now.minusDays(1)),
-                Arguments.of(absoluteDuration(now.minusYears(2), now.minusMonths(1)),
+                Arguments.of(new AbsoluteDuration(now.minusYears(2), now.minusMonths(1)),
                              "2 years to last month in the past", now.minusYears(2), now.minusMonths(1)),
                 Arguments.of(relativeDuration(Period.ZERO, EdaRegionConnectorMetadata.PERIOD_LATEST_END),
                              "Maximum supported future",
                              now,
                              now.plusMonths(EdaRegionConnectorMetadata.PERIOD_LATEST_END.getMonths())),
-                Arguments.of(absoluteDuration(now, now.plusYears(2)),
+                Arguments.of(new AbsoluteDuration(now, now.plusYears(2)),
                              "Today to 2 years in the future", now, now.plusYears(2))
         );
     }

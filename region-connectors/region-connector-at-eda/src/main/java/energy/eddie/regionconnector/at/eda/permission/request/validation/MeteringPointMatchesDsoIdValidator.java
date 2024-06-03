@@ -13,9 +13,12 @@ public class MeteringPointMatchesDsoIdValidator implements Validator<CreatedEven
     @Override
     public List<AttributeError> validate(CreatedEvent value) {
 
-        if (value.meteringPointId() == null
-                || value.meteringPointId().isBlank()
-                || meteringPointMatchesDsoId(value)) {
+        var meteringPointId = value.meteringPointId();
+        var dsoId = value.dataSourceInformation().meteredDataAdministratorId();
+
+        if (meteringPointId == null
+            || meteringPointId.isBlank()
+            || meteringPointMatchesDsoId(meteringPointId, dsoId)) {
             return List.of();
         }
         return List.of(
@@ -23,10 +26,7 @@ public class MeteringPointMatchesDsoIdValidator implements Validator<CreatedEven
         );
     }
 
-    private boolean meteringPointMatchesDsoId(CreatedEvent value) {
-        return Objects.equals(
-                value.dataSourceInformation().meteredDataAdministratorId(),
-                value.meteringPointId().substring(0, DSO_ID_LENGTH)
-        );
+    private boolean meteringPointMatchesDsoId(String meteringPointId, String dsoId) {
+        return Objects.equals(dsoId, meteringPointId.substring(0, DSO_ID_LENGTH));
     }
 }

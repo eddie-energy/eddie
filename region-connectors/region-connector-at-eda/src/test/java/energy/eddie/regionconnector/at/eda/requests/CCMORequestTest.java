@@ -4,6 +4,7 @@ import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
+import energy.eddie.regionconnector.at.eda.utils.CMRequestId;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -25,9 +26,13 @@ class CCMORequestTest {
                                                                                 "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007");
         ZonedDateTime dt = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var mesageId = new MessageId(atConfiguration.eligiblePartyId(), dt).toString();
+        var cmRequestId = new CMRequestId(mesageId).toString();
         CCMORequest ccmoRequest = new CCMORequest(
                 dsoIdAndMeteringPoint,
                 timeFrame,
+                cmRequestId,
+                mesageId,
                 RequestDataType.METERING_DATA,
                 AllowedGranularity.P1D,
                 AllowedTransmissionCycle.D,
@@ -52,9 +57,13 @@ class CCMORequestTest {
                                                                                 "AT9999990699900000000000206868100");
         AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007");
         ZonedDateTime dt = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var mesageId = new MessageId(atConfiguration.eligiblePartyId(), dt).toString();
+        var requestId = new CMRequestId(mesageId).toString();
         CCMORequest ccmoRequest = new CCMORequest(
                 dsoIdAndMeteringPoint,
                 timeFrame,
+                requestId,
+                mesageId,
                 RequestDataType.METERING_DATA,
                 AllowedGranularity.P1D,
                 AllowedTransmissionCycle.D,

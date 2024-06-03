@@ -10,6 +10,7 @@ import jakarta.persistence.Entity;
 import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings("unused")
 @Entity
 public class MalformedEvent extends PersistablePermissionEvent {
     @Convert(converter = AttributeErrorListConverter.class)
@@ -21,12 +22,13 @@ public class MalformedEvent extends PersistablePermissionEvent {
         this.errors = errors;
     }
 
+    public MalformedEvent(String permissionId, AttributeError error) {
+        super(permissionId, PermissionProcessStatus.MALFORMED);
+        this.errors = List.of(error);
+    }
+
     public MalformedEvent() {
         super();
         errors = Collections.emptyList();
-    }
-
-    public List<AttributeError> errors() {
-        return errors;
     }
 }
