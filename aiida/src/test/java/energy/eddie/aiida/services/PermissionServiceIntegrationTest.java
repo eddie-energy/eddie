@@ -3,6 +3,7 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
+import org.eclipse.paho.mqttv5.common.MqttException;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,7 @@ public class PermissionServiceIntegrationTest {
     @ServiceConnection
     static final PostgreSQLContainer<?> timescale = new PostgreSQLContainer<>(
             DockerImageName.parse("timescale/timescaledb:2.11.2-pg15")
-                    .asCompatibleSubstituteFor("postgres")
+                           .asCompatibleSubstituteFor("postgres")
     );
     @Autowired
     Clock clock;
@@ -53,17 +54,18 @@ public class PermissionServiceIntegrationTest {
     StreamerManager streamerManager;
 
     /**
-     * Create the DB tables with flyway and populate data needed for this testcase.
-     * This has to be done in @BeforeAll, to make sure that the DB is populated before the onApplicationEvent method
-     * runs, which wouldn't be possible with the @Sql annotation.
+     * Create the DB tables with flyway and populate data needed for this testcase. This has to be done in @BeforeAll,
+     * to make sure that the DB is populated before the onApplicationEvent method runs, which wouldn't be possible with
+     * the @Sql annotation.
      */
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         DriverManagerDataSource dataSource = getDataSource();
 
         Flyway flyway = Flyway.configure()
-                .dataSource(dataSource)
-                .load();
+                              .locations("classpath:db/aiida/migration")
+                              .dataSource(dataSource)
+                              .load();
         flyway.migrate();
 
         Connection conn = dataSource.getConnection();
@@ -81,11 +83,11 @@ public class PermissionServiceIntegrationTest {
     }
 
     /**
-     * Tests that permissions are queried from the DB on startup and if their expiration time has passed,
-     * their status is set accordingly or streaming is started again otherwise.
+     * Tests that permissions are queried from the DB on startup and if their expiration time has passed, their status
+     * is set accordingly or streaming is started again otherwise.
      */
     @Test
-    void givenVariousPermissions_statusAsExpected() {
+    void givenVariousPermissions_statusAsExpected() throws MqttException {
         var permission = repository.findById("25ee5365-5d71-4b01-b21f-9c61f76a5cc9").orElseThrow();
         assertEquals(PermissionStatus.STREAMING_DATA, permission.status());
 
@@ -95,13 +97,13 @@ public class PermissionServiceIntegrationTest {
         permission = repository.findById("0b3b6f6d-d878-49dd-9dfd-62156b5cdc37").orElseThrow();
         assertEquals(PermissionStatus.FULFILLED, permission.status());
 
-        verify(streamerManager).createNewStreamerForPermission(argThat(arg ->
-                arg.permissionId().equals("25ee5365-5d71-4b01-b21f-9c61f76a5cc9")));
+        verify(streamerManager).createNewStreamer(argThat(arg -> arg.permissionId()
+                                                                    .equals("25ee5365-5d71-4b01-b21f-9c61f76a5cc9")));
     }
 
     /**
-     * Use a TestConfiguration instead of a Mock to override the Bean and its methods on Spring startup
-     * and not just when a testcase runs.
+     * Use a TestConfiguration instead of a Mock to override the Bean and its methods on Spring startup and not just
+     * when a testcase runs.
      */
     @TestConfiguration
     static class TestConfig {

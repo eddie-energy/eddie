@@ -3,23 +3,27 @@ package energy.eddie.aiida.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import energy.eddie.aiida.streamers.AiidaStreamer;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Clock;
-import java.time.Duration;
+import java.time.ZoneId;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledFuture;
 
 @Configuration
 @EnableScheduling
 public class AiidaConfiguration {
+    public static final ZoneId AIIDA_ZONE_ID = ZoneId.of("Etc/UTC");
+
     /**
-     * Configures and returns an ObjectMapper bean that should be used for (de-)serializing POJOs to JSON.
-     * The ObjectMapperSingleton can also be used by classes that cannot use constructor injection
-     * using the @Autowired annotation and will return the same instance.
+     * Configures and returns an ObjectMapper bean that should be used for (de-)serializing POJOs to JSON. The
+     * ObjectMapperSingleton can also be used by classes that cannot use constructor injection using the @Autowired
+     * annotation and will return the same instance.
      *
      * @return ObjectMapper instance configured to fit the AIIDA project.
      */
@@ -32,6 +36,8 @@ public class AiidaConfiguration {
         Hibernate6Module module = new Hibernate6Module();
         // Jackson should automatically query any lazy loaded fields before serialization
         module.enable(Hibernate6Module.Feature.FORCE_LAZY_LOADING);
+        // needed so that JsonTypeInformation for data need is deserialized
+        module.disable(Hibernate6Module.Feature.USE_TRANSIENT_ANNOTATION);
         objectMapper.registerModule(module);
 
         return objectMapper;
@@ -45,19 +51,18 @@ public class AiidaConfiguration {
         return Clock.systemUTC();
     }
 
-
-    @SuppressWarnings("NullAway.Init")
-    @Value("${aiida.streamer.poll_interval}")
-    private Integer pollIntervalSeconds;
-
     /**
-     * Specifies how frequent a {@link AiidaStreamer} should poll the EP framework if they have issued
-     * a termination request.
-     * Note that the actual polling interval may be higher, as the KafkaConsumer blocks for some time.
-     * The specified interval is the delay between the completion of one full poll execution and the start of the next.
+     * {@link WebClient} used for handshake with EDDIE.
      */
     @Bean
-    public Duration terminationRequestPollInterval() {
-        return Duration.ofSeconds(pollIntervalSeconds);
+    public WebClient webClient() {
+        return WebClient.create();
+    }
+
+    @Bean
+    // Spring's TaskScheduler only returns a ScheduledFuture<?>, so we have to use wildcards
+    @SuppressWarnings("java:S1452")
+    public ConcurrentMap<String, ScheduledFuture<?>> permissionFutures() {
+        return new ConcurrentHashMap<>();
     }
 }

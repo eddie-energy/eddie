@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.aiida.mqtt;
 
+import energy.eddie.api.agnostic.aiida.MqttDto;
+import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
@@ -28,13 +30,15 @@ public class MqttService {
     private final PasswordGenerator passwordGenerator;
     private final BCryptPasswordEncoder encoder;
     private final MqttAsyncClient mqttClient;
+    private final AiidaConfiguration aiidaConfiguration;
 
     public MqttService(
             MqttUserRepository userRepository,
             MqttAclRepository aclRepository,
             PasswordGenerator passwordGenerator,
             BCryptPasswordEncoder encoder,
-            MqttAsyncClient mqttClient
+            MqttAsyncClient mqttClient,
+            AiidaConfiguration aiidaConfiguration
     ) {
         this.userRepository = userRepository;
         this.aclRepository = aclRepository;
@@ -42,6 +46,7 @@ public class MqttService {
         this.encoder = encoder;
         this.mqttClient = mqttClient;
         this.mqttClient.setCallback(new LoggingMqttCallback());
+        this.aiidaConfiguration = aiidaConfiguration;
     }
 
     /**
@@ -65,7 +70,8 @@ public class MqttService {
         var wrapper = createAndSaveMqttUser(permissionId);
         var topics = createAclsForUser(wrapper.user);
 
-        return new MqttDto(wrapper.user().username(),
+        return new MqttDto(aiidaConfiguration.mqttServerUri(),
+                           wrapper.user().username(),
                            wrapper.rawPassword(),
                            topics.publishTopic(),
                            topics.statusMessageTopic(),

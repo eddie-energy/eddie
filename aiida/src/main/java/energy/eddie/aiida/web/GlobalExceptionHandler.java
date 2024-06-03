@@ -4,6 +4,7 @@ import api.ValidationErrors;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.aiida.errors.*;
 import energy.eddie.api.agnostic.EddieApiError;
+import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -15,11 +16,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
-
-    public static final String ERRORS_PROPERTY_NAME = "errors";
-    public static final String ERRORS_JSON_PATH = "$." + ERRORS_PROPERTY_NAME;
 
     /**
      * If the HttpMessageNotReadableException was caused by an invalid enum value, a detailed error message including
@@ -59,7 +59,7 @@ public class GlobalExceptionHandler {
      */
     private boolean isEnumCauseOfException(HttpMessageNotReadableException exception) {
         return exception.getCause() instanceof InvalidFormatException invalidFormatEx
-                && (invalidFormatEx.getTargetType() != null && invalidFormatEx.getTargetType().isEnum());
+               && (invalidFormatEx.getTargetType() != null && invalidFormatEx.getTargetType().isEnum());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -76,14 +76,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
     }
 
-    @ExceptionHandler(value = {InvalidPermissionRevocationException.class})
-    protected ResponseEntity<Map<String, List<EddieApiError>>> handleInvalidPermissionRevocationException(
-            InvalidPermissionRevocationException exception
-    ) {
-        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
-        return ResponseEntity.badRequest().body(errors);
-    }
-
     @ExceptionHandler(value = {InvalidPatchOperationException.class})
     protected ResponseEntity<Map<String, List<EddieApiError>>> handleInvalidPatchOperationException(
             InvalidPatchOperationException exception
@@ -92,18 +84,37 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errors);
     }
 
-    @ExceptionHandler(value = {PermissionStartFailedException.class})
-    protected ResponseEntity<Object> handlePermissionStartFailedException(PermissionStartFailedException ignored) {
-        var errors = Map.of(ERRORS_PROPERTY_NAME,
-                            List.of(new EddieApiError("Failed to start permission, please try again later.")));
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
-    }
-
     @ExceptionHandler(value = {PermissionAlreadyExistsException.class})
     protected ResponseEntity<Map<String, List<EddieApiError>>> handlePermissionAlreadyExistsException(
             PermissionAlreadyExistsException exception
     ) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(value = {PermissionUnfulfillableException.class})
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handlePermissionUnfulfillableException(
+            PermissionUnfulfillableException exception
+    ) {
+        // TODO GH-1040 proper error message
+        var message = "Permission for service '%s' cannot be fulfilled by your AIIDA, because...".formatted(exception.serviceName());
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(message)));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errors);
+    }
+
+    @ExceptionHandler(value = {PermissionStateTransitionException.class})
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handlePermissionStateTransitionException(
+            PermissionStateTransitionException exception
+    ) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errors);
+    }
+
+    @ExceptionHandler(value = {DetailFetchingFailedException.class})
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleDetailFetchingFailedException(
+            DetailFetchingFailedException exception
+    ) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errors);
     }
 }

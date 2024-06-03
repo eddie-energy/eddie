@@ -3,12 +3,12 @@ package energy.eddie.aiida.web;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.aiida.dtos.PatchOperation;
-import energy.eddie.aiida.dtos.PatchPermissionDto;
-import energy.eddie.aiida.errors.InvalidPatchOperationException;
-import energy.eddie.aiida.errors.PermissionAlreadyExistsException;
-import energy.eddie.aiida.errors.PermissionNotFoundException;
+import energy.eddie.aiida.errors.*;
 import energy.eddie.api.agnostic.EddieApiError;
+import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpStatus;
@@ -23,12 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static energy.eddie.aiida.web.GlobalExceptionHandler.ERRORS_PROPERTY_NAME;
+import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerTest {
     private final GlobalExceptionHandler advice = new GlobalExceptionHandler();
 
@@ -45,7 +46,8 @@ class GlobalExceptionHandlerTest {
         var exception = new HttpMessageNotReadableException("", mock(HttpInputMessage.class));
 
         // When
-        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleHttpMessageNotReadableException(exception);
+        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleHttpMessageNotReadableException(
+                exception);
 
         // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -63,7 +65,6 @@ class GlobalExceptionHandlerTest {
         InvalidFormatException mockInvalidFormatEx = mock(InvalidFormatException.class);
         doReturn(PatchOperation.class).when(mockInvalidFormatEx).getTargetType();
         doReturn(List.of(mockJsonReference)).when(mockInvalidFormatEx).getPath();
-        doReturn(PatchPermissionDto.class).when(mockJsonReference).getFrom();
         doReturn("operation").when(mockJsonReference).getFieldName();
         doReturn("FooBar").when(mockInvalidFormatEx).getValue();
 
@@ -71,7 +72,8 @@ class GlobalExceptionHandlerTest {
         var exception = new HttpMessageNotReadableException("", mockInvalidFormatEx, mock(HttpInputMessage.class));
 
         // When
-        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleHttpMessageNotReadableException(exception);
+        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleHttpMessageNotReadableException(
+                exception);
 
         // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -80,7 +82,8 @@ class GlobalExceptionHandlerTest {
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
         // Only the annotated values are included in the valid values array
-        assertEquals("operation: Invalid enum value: 'FooBar'. Valid values: [REVOKE_PERMISSION].", responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+        assertEquals("operation: Invalid enum value: 'FooBar'. Valid values: [REVOKE, ACCEPT, REJECT].",
+                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 
     @Test
@@ -95,7 +98,8 @@ class GlobalExceptionHandlerTest {
         var exception = new MethodArgumentNotValidException(mock(MethodParameter.class), bindingResult);
 
         // When
-        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleMethodArgumentNotValidException(exception);
+        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleMethodArgumentNotValidException(
+                exception);
 
         // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -120,7 +124,8 @@ class GlobalExceptionHandlerTest {
         assertNotNull(responseBody);
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertEquals("No permission with ID 'some-non-existing-id' found.", responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+        assertEquals("No permission with ID 'some-non-existing-id' found.",
+                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 
     @Test
@@ -137,7 +142,8 @@ class GlobalExceptionHandlerTest {
         assertNotNull(responseBody);
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertEquals("Invalid PatchOperation, permitted values are: [REVOKE_PERMISSION].", responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+        assertEquals("Invalid PatchOperation, permitted values are: [REVOKE, ACCEPT, REJECT].",
+                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 
     @Test
@@ -156,5 +162,59 @@ class GlobalExceptionHandlerTest {
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
         assertEquals("Permission with ID 'testId' already exists.",
                      responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+    }
+
+    @Test
+    void givenPermissionUnfulfillableException_returnsBadRequest() {
+        // Given
+        var exception = new PermissionUnfulfillableException("My Service");
+
+        // When
+        var response = advice.handlePermissionUnfulfillableException(exception);
+
+        // Then
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        var responseBody = response.getBody();
+        assertNotNull(responseBody);
+        assertEquals(1, responseBody.size());
+        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
+        assertThat(responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message()).startsWith(
+                "Permission for service 'My Service' cannot be fulfilled");
+    }
+
+    @Test
+    void givenPermissionStateTransitionException_returnsBadRequest() {
+        // Given
+        var exception = new PermissionStateTransitionException("fooBar", "desired", List.of("allowed"), "current");
+
+        // When
+        var response = advice.handlePermissionStateTransitionException(exception);
+
+        // Then
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        var responseBody = response.getBody();
+        assertNotNull(responseBody);
+        assertEquals(1, responseBody.size());
+        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
+        assertThat(responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message()).isEqualTo(
+                "Cannot transition permission 'fooBar' to state 'desired', as it is not in a one of the permitted states '[allowed]' but in state 'current'");
+    }
+
+    @Test
+    void givenDetailFetchingFailedException_returnsServiceUnavailable() {
+        // Given
+        var exception = new DetailFetchingFailedException("SomeId");
+
+        // When
+        var response = advice.handleDetailFetchingFailedException(exception);
+
+        // Then
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());
+        var responseBody = response.getBody();
+        assertNotNull(responseBody);
+        assertEquals(1, responseBody.size());
+        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
+        assertThat(responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message()).isEqualTo(
+                "Failed to fetch permission details or MQTT credentials for permission 'SomeId' from EDDIE framework");
     }
 }

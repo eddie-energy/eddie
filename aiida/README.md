@@ -31,7 +31,6 @@ When using Docker, most of these properties should be configured in the [.env](d
 | SPRING_DATASOURCE_URL        | jdbc URL to connect to the TimescaleDB                                                                           |
 | SPRING_DATASOURCE_USERNAME   | Username to authenticate to the TimescaleDB                                                                      |
 | SPRING_DATASOURCE_PASSWORD   | Password to authenticate to the TimescaleDB                                                                      |
-| AIIDA_STREAMER_POLL_INTERVAL | Delay in seconds between the end and the start of a new polling whether the EP has issued a termination request. | 
 
 ## API documentation
 

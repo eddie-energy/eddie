@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.aiida.mqtt;
 
+import energy.eddie.api.agnostic.aiida.MqttDto;
+import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
@@ -37,6 +39,8 @@ class MqttServiceTest {
     private MqttAsyncClient mockAsyncClient;
     @Mock
     private AiidaPermissionRequest mockRequest;
+    @Mock
+    private AiidaConfiguration mockConfiguration;
     @Captor
     private ArgumentCaptor<MqttUser> mqttUserCaptor;
     @Captor
@@ -49,7 +53,8 @@ class MqttServiceTest {
                                       mockAclRepository,
                                       mockPasswordGenerator,
                                       mockEncoder,
-                                      mockAsyncClient);
+                                      mockAsyncClient,
+                                      mockConfiguration);
     }
 
     @Test
@@ -68,9 +73,11 @@ class MqttServiceTest {
         String permissionId = "testId";
         String password = "MySuperSafePassword";
         String hash = "myHash";
+        String serverUri = "tcp://localhost:1883";
         when(mockUserRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(mockPasswordGenerator.generatePassword(anyInt())).thenReturn(password);
         when(mockEncoder.encode(anyString())).thenReturn(hash);
+        when(mockConfiguration.mqttServerUri()).thenReturn(serverUri);
 
         // When
         MqttDto dto = mqttService.createCredentialsAndAclForPermission(permissionId);
@@ -104,6 +111,7 @@ class MqttServiceTest {
         assertEquals(permissionId, acls.get(2).username());
 
 
+        assertEquals(serverUri, dto.serverUri());
         assertEquals(permissionId, dto.username());
         assertEquals(password, dto.password());
         assertEquals("aiida/v1/testId/data", dto.dataTopic());

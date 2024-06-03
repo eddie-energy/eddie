@@ -1,3 +1,3 @@
-package energy.eddie.regionconnector.aiida.dtos;
+package energy.eddie.api.agnostic.aiida;
 
 public record PermissionUpdateDto(PermissionUpdateOperation operation) {}

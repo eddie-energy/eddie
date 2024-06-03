@@ -1,15 +1,15 @@
 package energy.eddie.regionconnector.aiida.web;
 
 import energy.eddie.api.agnostic.EddieApiError;
+import energy.eddie.api.agnostic.aiida.MqttDto;
+import energy.eddie.api.agnostic.aiida.PermissionUpdateDto;
+import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.aiida.dtos.PermissionUpdateDto;
-import energy.eddie.regionconnector.aiida.dtos.QrCodeDto;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
-import energy.eddie.regionconnector.aiida.mqtt.MqttDto;
 import energy.eddie.regionconnector.aiida.services.AiidaPermissionService;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;

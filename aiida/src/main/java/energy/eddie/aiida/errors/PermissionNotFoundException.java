@@ -3,7 +3,7 @@ package energy.eddie.aiida.errors;
 /**
  * Thrown to indicate that no permission with the specified ID is saved in this AIIDA instance.
  */
-public class PermissionNotFoundException extends RuntimeException {
+public class PermissionNotFoundException extends Exception {
     /**
      * Constructs an PermissionNotFoundException with the default message, that includes the permissionId.
      *

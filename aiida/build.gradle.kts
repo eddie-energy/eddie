@@ -24,16 +24,17 @@ repositories {
 
 dependencies {
     implementation(project(":api"))
+    implementation(project(":data-needs"))
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.spring.openapi.webmvc.ui)
 
     implementation(libs.reactor.core)
     implementation(libs.flyway.core)
     implementation(libs.flyway.postgresql)
-    implementation(libs.spring.openapi.webmvc.ui)
-    implementation(libs.kafka.clients)
     implementation(libs.eclipse.paho.mqttv5.client)
     // enable Jackson support to fetch Hibernate lazy loaded properties when serializing
     implementation(libs.jackson.hibernate6)
@@ -45,18 +46,10 @@ dependencies {
     testImplementation(libs.apache.http.client)
     testImplementation(libs.hakky.logcaptor)
     testImplementation(libs.testcontainers.postgresql)
-    testImplementation(libs.testcontainers.kafka)
     testImplementation(libs.testcontainers.toxiproxy)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.boot.testcontainers)
-}
-
-configurations {
-    testImplementation {
-        // disable logging modules of spring for tests, so that we can use slf4j2-mock to test loggers
-        exclude("org.springframework.boot", "spring-boot-starter-logging")
-    }
 }
 
 tasks.withType<Test> {

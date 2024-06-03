@@ -1,62 +1,74 @@
 package energy.eddie.aiida.utils;
 
-import nl.altindag.log.LogCaptor;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
+import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.streamers.StreamerManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.core.publisher.Sinks;
-import reactor.test.StepVerifier;
 
-import java.time.Duration;
+import java.time.Clock;
 import java.time.Instant;
 
-import static energy.eddie.aiida.TestUtils.verifyErrorLogStartsWith;
-import static org.mockito.Mockito.doReturn;
+import static energy.eddie.aiida.models.permission.PermissionStatus.STREAMING_DATA;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionExpiredRunnableTest {
-    private static final LogCaptor logCaptor = LogCaptor.forClass(PermissionExpiredRunnable.class);
     @Mock
-    Sinks.One<String> mockSink;
+    private Permission mockPermission;
+    @Mock
+    private StreamerManager streamerManager;
+    @Mock
+    private PermissionRepository repository;
+    @Mock
+    private AiidaLocalDataNeed mockAiidaDataNeed;
+    private final Instant fixedInstant = Instant.parse("2024-05-01T23:59:59.00Z");
+    private final Clock clock = Clock.fixed(fixedInstant, AiidaConfiguration.AIIDA_ZONE_ID);
 
-    @AfterAll
-    public static void afterAll() {
-        logCaptor.close();
-    }
-
-    @AfterEach
-    void tearDown() {
-        logCaptor.clearLogs();
-    }
-
-    @Test
-    void verify_runPublishesOnMono() {
-        String permissionId = "SomeStringThatIsAnId";
-
-        Sinks.One<String> sink = Sinks.one();
-        var runnable = new PermissionExpiredRunnable(permissionId, Instant.now(), sink);
-
-        runnable.run();
-
-        StepVerifier.create(sink.asMono())
-                .expectNext(permissionId)
-                .expectComplete()
-                .verify(Duration.ofSeconds(1));
+    @BeforeEach
+    void setUp() {
     }
 
     @Test
-    void givenErrorFromSink_permissionExpiredRunnable_logsError() {
-        String permissionId = "SomeStringThatIsAnId";
+    void verify_run_changesState_stopsStreamer_andUpdatesDb() {
+        // Given
+        when(mockPermission.expirationTime()).thenReturn(fixedInstant);
+        when(mockPermission.status()).thenReturn(PermissionStatus.STREAMING_DATA);
+        when(mockPermission.connectionId()).thenReturn("connectionId");
+        when(mockPermission.dataNeed()).thenReturn(mockAiidaDataNeed);
+        when(mockAiidaDataNeed.dataNeedId()).thenReturn("dataNeedId");
+        when(mockPermission.status()).thenReturn(STREAMING_DATA);
+        var runnable = new PermissionExpiredRunnable(mockPermission, streamerManager, repository, clock);
 
-        doReturn(Sinks.EmitResult.FAIL_ZERO_SUBSCRIBER).when(mockSink).tryEmitValue(permissionId);
-
-        var runnable = new PermissionExpiredRunnable(permissionId, Instant.now(), mockSink);
-
+        // When
         runnable.run();
 
-        verifyErrorLogStartsWith("Error while trying to emit expiration signal for permission ", logCaptor);
+        // Then
+        verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == PermissionStatus.FULFILLED));
+        verify(mockPermission).setStatus(PermissionStatus.FULFILLED);
+        verify(repository).save(any());
+    }
+
+    @Test
+    void givenPermissionInInvalidState_run_doesNotExpirePermission() {
+        // Given
+        when(mockPermission.expirationTime()).thenReturn(fixedInstant.minusSeconds(1));
+        when(mockPermission.status()).thenReturn(PermissionStatus.REVOKED);
+        var runnable = new PermissionExpiredRunnable(mockPermission, streamerManager, repository, clock);
+
+        // When
+        runnable.run();
+
+        // Then
+        verifyNoInteractions(streamerManager);
+        verifyNoInteractions(repository);
+        verify(mockPermission, never()).setStatus(any());
     }
 }

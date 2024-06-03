@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.aiida.web;
 
+import energy.eddie.api.agnostic.aiida.MqttDto;
+import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
@@ -7,8 +9,6 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.dataneeds.web.DataNeedsAdvice;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDetailsDto;
-import energy.eddie.regionconnector.aiida.dtos.QrCodeDto;
-import energy.eddie.regionconnector.aiida.mqtt.MqttDto;
 import energy.eddie.regionconnector.aiida.mqtt.MqttService;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
@@ -230,7 +230,8 @@ class PermissionRequestControllerTest {
         // Given
         var permissionId = "someTestId";
         var json = "{\"operation\":\"ACCEPT\"}";
-        when(mockService.acceptPermission(permissionId)).thenReturn(new MqttDto(permissionId,
+        when(mockService.acceptPermission(permissionId)).thenReturn(new MqttDto("tcp://localhost:1883",
+                                                                                permissionId,
                                                                                 "MySuperSafePassword",
                                                                                 "data",
                                                                                 "status",
