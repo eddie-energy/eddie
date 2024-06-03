@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
@@ -63,6 +64,10 @@ class PollingServiceTest {
     private Outbox outbox;
     @Mock
     private DataNeedsService dataNeedsService;
+    @Mock
+    private ValidatedHistoricalDataDataNeed dataNeed;
+    @Mock
+    private AccountingPointDataNeed accountingPointDataNeed;
     @Captor
     private ArgumentCaptor<DkInternalPollingEvent> pollingEventCaptor;
     private PollingService pollingService;
@@ -168,7 +173,6 @@ class PollingServiceTest {
         when(customerApi.getMeteringPointDetails(any(), eq("token")))
                 .thenReturn(Mono.just(document));
 
-        ValidatedHistoricalDataDataNeed dataNeed = mock(ValidatedHistoricalDataDataNeed.class);
         when(dataNeed.minGranularity()).thenReturn(Granularity.PT15M);
         when(dataNeed.maxGranularity()).thenReturn(Granularity.PT15M);
         when(dataNeedsService.findById(dataNeedId))
@@ -232,7 +236,6 @@ class PollingServiceTest {
                                        any()))
                 .thenReturn(Mono.empty());
 
-        ValidatedHistoricalDataDataNeed dataNeed = mock(ValidatedHistoricalDataDataNeed.class);
         when(dataNeed.minGranularity()).thenReturn(min);
         when(dataNeed.maxGranularity()).thenReturn(max);
         when(dataNeedsService.findById(dataNeedId))
@@ -283,11 +286,9 @@ class PollingServiceTest {
         );
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
-        MyEnergyDataMarketDocumentResponse response = mock(MyEnergyDataMarketDocumentResponse.class);
-        when(response.getSuccess()).thenReturn(false);
-        when(response.getErrorCode()).thenReturn(REQUESTED_AGGREGATION_UNAVAILABLE);
-        when(response.getErrorText()).thenReturn("error text");
-
+        var response = new MyEnergyDataMarketDocumentResponse(REQUESTED_AGGREGATION_UNAVAILABLE)
+                .success(false)
+                .errorText("error text");
         var document = new MyEnergyDataMarketDocumentResponseListApiResponse()
                 .addResultItem(response);
 
@@ -501,6 +502,8 @@ class PollingServiceTest {
 
         when(repository.findAllByStatus(PermissionProcessStatus.ACCEPTED))
                 .thenReturn(List.of(permissionRequest1, permissionRequest2));
+        when(dataNeedsService.findById(dataNeedId))
+                .thenReturn(Optional.of(dataNeed));
 
         // Then
         StepVerifier.create(pollingService.identifiableMeterReadings())
@@ -518,5 +521,37 @@ class PollingServiceTest {
         verify(outbox).commit(pollingEventCaptor.capture());
         var res = pollingEventCaptor.getValue();
         assertEquals(end1, res.latestMeterReadingEndDate());
+    }
+
+    @Test
+    void fetchPermissionRequest_withAccountingPointDataNeed_emitsNothing() {
+        // Given
+        var start = LocalDate.now(DK_ZONE_ID).minusDays(1);
+        var end = start.plusDays(5);
+        var dataNeedId = "dataNeedId";
+        var permissionRequest = new EnerginetPermissionRequest(
+                UUID.randomUUID().toString(),
+                "connId",
+                dataNeedId,
+                "meteringPoint",
+                "token",
+                start,
+                end,
+                Granularity.PT1H,
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
+        when(repository.findAllByStatus(PermissionProcessStatus.ACCEPTED))
+                .thenReturn(List.of(permissionRequest));
+        when(dataNeedsService.findById(dataNeedId))
+                .thenReturn(Optional.of(accountingPointDataNeed));
+
+        // Then
+        StepVerifier.create(pollingService.identifiableMeterReadings())
+                    .then(() -> pollingService.fetchFutureMeterReadings())
+                    .then(pollingService::close)
+                    .verifyComplete();
+        verify(outbox, never()).commit(any());
     }
 }
