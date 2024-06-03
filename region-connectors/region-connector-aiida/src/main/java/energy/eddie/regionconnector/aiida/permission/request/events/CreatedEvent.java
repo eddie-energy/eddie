@@ -4,6 +4,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
+import java.time.Clock;
 import java.time.LocalDate;
 
 @Entity(name = "AiidaCreatedEvent")
@@ -26,6 +27,23 @@ public class CreatedEvent extends PersistablePermissionEvent {
         this.permissionStart = null;
         this.permissionEnd = null;
         this.terminationTopic = null;
+    }
+
+    public CreatedEvent(
+            String permissionId,
+            String connectionId,
+            String dataNeedId,
+            LocalDate permissionStart,
+            LocalDate permissionEnd,
+            String terminationTopic,
+            Clock clock
+    ) {
+        super(permissionId, PermissionProcessStatus.CREATED, clock);
+        this.connectionId = connectionId;
+        this.dataNeedId = dataNeedId;
+        this.permissionStart = permissionStart;
+        this.permissionEnd = permissionEnd;
+        this.terminationTopic = terminationTopic;
     }
 
     public CreatedEvent(

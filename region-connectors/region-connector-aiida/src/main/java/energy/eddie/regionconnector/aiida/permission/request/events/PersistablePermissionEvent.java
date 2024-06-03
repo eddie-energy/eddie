@@ -5,6 +5,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 import jakarta.persistence.*;
 
+import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -33,6 +34,11 @@ public abstract class PersistablePermissionEvent implements PermissionEvent {
         this.status = status;
     }
 
+    protected PersistablePermissionEvent(String permissionId, PermissionProcessStatus status, Clock clock) {
+        this.permissionId = permissionId;
+        this.eventCreated = ZonedDateTime.now(clock);
+        this.status = status;
+    }
     @Override
     public String permissionId() {
         return permissionId;

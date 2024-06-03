@@ -65,6 +65,30 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
         this.created = null;
     }
 
+    public AiidaPermissionRequest(
+            String permissionId,
+            String connectionId,
+            String dataNeedId,
+            LocalDate start,
+            LocalDate end,
+            PermissionProcessStatus status,
+            @Nullable String terminationTopic,
+            @Nullable String mqttUsername,
+            @Nullable String message,
+            Instant created
+    ) {
+        this.permissionId = permissionId;
+        this.connectionId = connectionId;
+        this.dataNeedId = dataNeedId;
+        this.start = start;
+        this.end = end;
+        this.status = status;
+        this.terminationTopic = terminationTopic;
+        this.mqttUsername = mqttUsername;
+        this.message = message;
+        this.created = created;
+    }
+
     @Override
     public String permissionId() {
         return permissionId;
