@@ -19,7 +19,6 @@ class StatusMessageServiceTest {
     private StatusMessageRepository statusMessageRepository;
     @Mock
     private ConsentMarketDocumentServiceInterface consentMarketDocumentService;
-
     private TestPublisher<ConsentMarketDocument> testPublisher;
 
     @BeforeEach
@@ -27,8 +26,7 @@ class StatusMessageServiceTest {
         testPublisher = TestPublisher.create();
         when(consentMarketDocumentService.getConsentMarketDocumentStream())
                 .thenReturn(testPublisher.flux());
-        StatusMessageService statusMessageService = new StatusMessageService(statusMessageRepository,
-                consentMarketDocumentService);
+        new StatusMessageService(statusMessageRepository, consentMarketDocumentService);
     }
 
     @Test
@@ -37,21 +35,25 @@ class StatusMessageServiceTest {
         ConsentMarketDocument cmd = new ConsentMarketDocument()
                 .withMRID("mrid")
                 .withReceiverMarketParticipantMRID(new PartyIDStringComplexType()
-                        .withCodingScheme(CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME)
-                        .withValue("Enedis"))
+                                                           .withCodingScheme(CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME)
+                                                           .withValue("Enedis"))
                 .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
                 .withPermissionList(new ConsentMarketDocument.PermissionList()
-                        .withPermissions(new PermissionComplexType()
-                                .withMktActivityRecordList(new PermissionComplexType.MktActivityRecordList()
-                                        .withMktActivityRecords(new MktActivityRecordComplexType()
-                                                .withCreatedDateTime("2021-01-01T00:00:00Z")
-                                                .withStatus(StatusTypeList.A05)
-                                        )
-                                )
-                        )
+                                            .withPermissions(new PermissionComplexType()
+                                                                     .withMktActivityRecordList(new PermissionComplexType.MktActivityRecordList()
+                                                                                                        .withMktActivityRecords(
+                                                                                                                new MktActivityRecordComplexType()
+                                                                                                                        .withCreatedDateTime(
+                                                                                                                                "2021-01-01T00:00:00Z")
+                                                                                                                        .withStatus(
+                                                                                                                                StatusTypeList.A05)
+                                                                                                        )
+                                                                     )
+                                            )
                 );
         // When
         testPublisher.emit(cmd);
+        testPublisher.complete();
 
         // Then
         verify(statusMessageRepository)
@@ -70,18 +72,21 @@ class StatusMessageServiceTest {
         ConsentMarketDocument cmd = new ConsentMarketDocument()
                 .withMRID("mrid")
                 .withReceiverMarketParticipantMRID(new PartyIDStringComplexType()
-                        .withCodingScheme(null)
-                        .withValue("Aiida"))
+                                                           .withCodingScheme(null)
+                                                           .withValue("Aiida"))
                 .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
                 .withPermissionList(new ConsentMarketDocument.PermissionList()
-                        .withPermissions(new PermissionComplexType()
-                                .withMktActivityRecordList(new PermissionComplexType.MktActivityRecordList()
-                                        .withMktActivityRecords(new MktActivityRecordComplexType()
-                                                .withCreatedDateTime("2021-01-01T00:00:00Z")
-                                                .withStatus(StatusTypeList.A05)
-                                        )
-                                )
-                        )
+                                            .withPermissions(new PermissionComplexType()
+                                                                     .withMktActivityRecordList(new PermissionComplexType.MktActivityRecordList()
+                                                                                                        .withMktActivityRecords(
+                                                                                                                new MktActivityRecordComplexType()
+                                                                                                                        .withCreatedDateTime(
+                                                                                                                                "2021-01-01T00:00:00Z")
+                                                                                                                        .withStatus(
+                                                                                                                                StatusTypeList.A05)
+                                                                                                        )
+                                                                     )
+                                            )
                 );
         // When
         testPublisher.emit(cmd);
