@@ -26,16 +26,24 @@ div.dt-container .dt-search input {
   color: var(--primary-color);
 }
 
-div.dt-container .dt-paging .dt-paging-button.current,
-div.dt-container .dt-paging .dt-paging-button.current:hover {
+/* DataTables are using !important attribute when the html.dark is activated */
+div.dt-container .dt-paging .dt-paging-button.current {
   color: var(--primary-color) !important;
   background-color: var(--background-color);
   background-image: none;
-  border: none;
+  border: none !important;
 }
 
-div.dt-container .dt-paging .dt-paging-button.disabled,
-div.dt-container .dt-paging .dt-paging-button.disabled:hover,
-div.dt-container .dt-paging .dt-paging-button.disabled:active  {
+div.dt-container .dt-paging .dt-paging-button {
   color: var(--primary-color) !important;
+}
+
+div.dt-container .dt-paging .dt-paging-button:hover {
+  color: var(--primary-color) !important;
+  border: none;
+  background: var(--background-color) none;
+}
+
+table.dataTable td.dt-control:before {
+    content: none; /* Hide default DataTables arrow */
 }
