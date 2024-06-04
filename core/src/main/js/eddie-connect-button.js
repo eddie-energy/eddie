@@ -20,6 +20,7 @@ import headerImage from "../resources/header.svg?raw";
 
 import PERMISSION_ADMINISTRATORS from "../../../../european-masterdata/src/main/resources/permission-administrators.json";
 import { DATA_NEED_TOOLTIPS } from "./constants/data-need-tooltips.js";
+import { ENERGY_TYPES } from "./constants/energy-types.js";
 import { GRANULARITIES } from "./constants/granularities.js";
 
 import { relativeDateFromDuration } from "./duration.js";
@@ -442,7 +443,7 @@ class EddieConnectButton extends LitElement {
           ${energyType
             ? html`
                 <dt>Energy Type</dt>
-                <dd>${energyType}</dd>
+                <dd>${ENERGY_TYPES[energyType] ?? energyType}</dd>
               `
             : ""}
 
