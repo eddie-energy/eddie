@@ -98,9 +98,7 @@ services:
       EMQX_HOST: 127.0.0.1
     restart: always
     volumes:
-      - ./emqx/data:/opt/emqx/data
-      - ./emqx/log:/opt/emqx/log
-      - ./emqx/etc:/opt/emqx/etc
+      - emqx_data:/opt/emqx/data
 
   caddy:
     image: caddy:alpine
@@ -115,3 +113,4 @@ services:
 volumes:
   caddy_data:
   postgres_data:
+  emqx_data:
