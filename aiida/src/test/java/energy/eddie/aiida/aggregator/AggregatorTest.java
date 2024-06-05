@@ -148,7 +148,7 @@ class AggregatorTest {
     }
 
     @Test
-    void givenAiidaRecordFromDatasource_isSavedInDatabase() {
+    void givenAiidaRecordFromDatasource_isSavedInDatabase() throws InterruptedException {
         TestPublisher<AiidaRecord> publisher1 = TestPublisher.create();
         var mockDataSource1 = mock(AiidaDataSource.class);
         when(mockDataSource1.start()).thenReturn(publisher1.flux());
@@ -168,6 +168,8 @@ class AggregatorTest {
         publisher2.next(wanted1);
         publisher2.next(wanted2);
         publisher2.complete();
+
+        Thread.sleep(200);
 
         verify(mockRepository, times(4)).save(any(AiidaRecord.class));
     }
