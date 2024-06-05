@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
-public class MqttService {
+public class MqttService implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(MqttService.class);
     private static final int PASSWORD_LENGTH = 24;
     private static final String AIIDA_TOPIC_NAME_PREFIX = "aiida/v1";
@@ -126,6 +126,12 @@ public class MqttService {
 
     private static String getTopicForPermission(String permissionId, TopicType topicType) {
         return AIIDA_TOPIC_NAME_PREFIX + "/" + permissionId + "/" + topicType.topicName();
+    }
+
+    @Override
+    public void close() throws MqttException {
+        mqttClient.disconnect(3000);
+        mqttClient.close(true);
     }
 
     private enum TopicType {

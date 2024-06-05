@@ -132,4 +132,14 @@ class MqttServiceTest {
         // Then
         verify(mockAsyncClient).publish("MyTopic", permissionId.getBytes(StandardCharsets.UTF_8), 1, true);
     }
+
+    @Test
+    void verify_close_disconnectsAndCloses() throws MqttException {
+        // When
+        mqttService.close();
+
+        // Then
+        verify(mockAsyncClient).disconnect(3000);
+        verify(mockAsyncClient).close(true);
+    }
 }
