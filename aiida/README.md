@@ -17,9 +17,10 @@ The permissions REST API will be exposed on the [default Spring Boot port (local
 
 AIIDA is also available as a docker image at
 the [GitHub registry](https://github.com/eddie-energy/eddie/pkgs/container/aiida).
-The necessary configuration should be specified via environment variables, and
+The necessary configuration should be specified via [environment variables](docker/.env), and
 an [example docker compose file](docker/compose.yml)
 includes a TimescaleDB.
+Once started, you can access the AIIDA Web-UI at the default location: http://localhost:8080
 
 ## AIIDA configuration
 

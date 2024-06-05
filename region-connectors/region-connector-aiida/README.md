@@ -6,14 +6,14 @@ data receiving.
 ## How does this region connector work?
 
 AIIDA instances are run by customers in their homes, and they can share their in-house data, e.g. near real-time data
-(1-15s)
-directly from the smart meter, with an eligible party (EP).
+(1-15s) directly from the smart meter, with an eligible party (EP).
 
 The customer visits the EP's website and clicks on the EDDIE connect button.
 If the EP service requires near real-time data, the connect button sends a request to this region connector, requesting
-a new permission. The region connector sends a response with all the necessary information that AIIDA requires to start
-the data sharing. This information is displayed to the customer, and they will enter it in AIIDA.
-When the customer grants the permission, their AIIDA instance will send data and status messages to separate topics
+a new permission. The region connector sends a response with the handshake information for AIIDA. See
+the [E2E flow diagram](./../../aiida/docs/diagrams/aiida_permission_e2e.plantuml) for more information in the handshake
+and E2E flow. When the customer grants the permission, their AIIDA instance will send data and status messages to
+separate topics
 on the MQTT broker.
 
 All messages are sent directly from AIIDA to the MQTT broker, nothing is routed through this

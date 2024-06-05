@@ -2,36 +2,36 @@ const STATUS = {
   ACCEPTED: {
     title: "Accepted",
     description:
-      "The permission request was accepted by the user and is being processed.",
+      "You accepted the permission request and it is being processed.",
     isActive: true,
     isRevocable: true,
   },
   WAITING_FOR_START: {
     title: "Waiting for Start",
     description:
-      "The permission request was accepted and is scheduled to start at the specified start time.",
+      "You accepted the permission request and it is scheduled to start at the specified start time.",
     isActive: true,
     isRevocable: true,
   },
   STREAMING_DATA: {
     title: "Streaming Data",
     description:
-      "The permission request was accepted and data is now actively streamed to the eligible party.",
+      "You accepted the permission request and it is now actively streaming data to the eligible party.",
     isActive: true,
     isRevocable: true,
   },
   REJECTED: {
     title: "Rejected",
-    description: "The user rejected the permission request.",
+    description: "You rejected the permission request.",
   },
   REVOCATION_RECEIVED: {
     title: "Revocation Received",
-    description: "The user requested revocation of the permission.",
+    description: "You requested revocation of the permission.",
     isActive: true,
   },
   REVOKED: {
     title: "Revoked",
-    description: "The user revoked the permission.",
+    description: "You revoked the permission.",
   },
   TERMINATED: {
     title: "Terminated",
@@ -45,6 +45,28 @@ const STATUS = {
     title: "Failed to Start",
     description: "An error occurred and the permission could not be started.",
   },
+  CREATED: {
+    title: "Created",
+    description:
+      "The permission has been created, but the details have not yet been fetched from the EDDIE framework.",
+    isActive: true,
+  },
+  FETCHED_DETAILS: {
+    title: "Fetched details",
+    description: "This permission waits for you to accept or reject it.",
+    isActive: true,
+  },
+  UNFULFILLABLE: {
+    title: "Unable to fulfill",
+    description:
+      "Your AIIDA instance is unable to fulfill the permission request, e.g. because the requested data is not available on your AIIDA instance.",
+  },
+  FETCHED_MQTT_CREDENTIALS: {
+    title: "Fetched MQTT details",
+    description:
+      "This is an internal state only, the permission should be transitioned into another state automatically.",
+    isActive: true,
+  },
 };
 
 const { VITE_API_BASE_URL: BASE_URL } = import.meta.env;
@@ -54,6 +76,10 @@ const permissionDialogContent = document.getElementById(
   "permission-dialog-content",
 );
 
+const acceptButton = document.getElementById("permission-dialog-accept");
+const rejectButton = document.getElementById("permission-dialog-reject");
+const closeButton = document.getElementById("permission-dialog-close");
+
 const revokeDialog = document.getElementById("revoke-permission-dialog");
 const revokeButton = document.getElementById("revoke-permission-button");
 
@@ -61,6 +87,11 @@ const aiidaCodeInput = document.getElementById("aiida-code");
 
 const activePermissionsList = document.getElementById("active-permissions");
 const expiredPermissionsList = document.getElementById("expired-permissions");
+
+// user has to either accept or reject a new permission, don't allow closing of dialog
+permissionDialog.addEventListener("sl-request-close", (event) => {
+  event.preventDefault();
+});
 
 function permissions() {
   return fetch(BASE_URL).then((response) => response.json());
@@ -71,52 +102,23 @@ function handlePermissionFormSubmit(event) {
 
   const permission = JSON.parse(atob(aiidaCodeInput.value));
 
-  console.log(permission);
-
-  const {
-    serviceName,
-    connectionId,
-    permissionId,
-    startTime,
-    expirationTime,
-    requestedCodes,
-  } = permission;
+  const { serviceName } = permission;
 
   permissionDialogContent.innerHTML = /* HTML */ `
-    <span>Permission request from</span>
-
+    <h3>Loading details for service</h3>
     <h3>
       <strong>${serviceName}</strong>
     </h3>
-
-    <dl class="permission-details">
-      <dt>Service</dt>
-      <dd>${serviceName}</dd>
-
-      <dt>Connection ID</dt>
-      <dd>${connectionId}</dd>
-
-      <dt>Permission ID</dt>
-      <dd>${permissionId}</dd>
-
-      <dt>Start</dt>
-      <dd>${new Date(startTime).toLocaleDateString()}</dd>
-
-      <dt>End</dt>
-      <dd>${new Date(expirationTime).toLocaleDateString()}</dd>
-
-      <dt>OBIS-Codes</dt>
-      <dd>
-        ${requestedCodes.map((code) => `<span>${code}</span>`).join("<br>")}
-      </dd>
-    </dl>
-
-    <p class="text">
-      <em>${serviceName}</em> requests permission to retrieve the near-realtime
-      data for the given time frame and OBIS-codes. Please confirm the request
-      is correct before granting permission.
-    </p>
   `;
+
+  addPermission();
+  acceptButton.loading = true;
+  rejectButton.loading = true;
+  closeButton.loading = true;
+  acceptButton.disabled = true;
+  rejectButton.disabled = true;
+  closeButton.disabled = true;
+
   permissionDialog.show();
 }
 
@@ -124,14 +126,9 @@ aiidaCodeInput.addEventListener("sl-input", () => {
   try {
     // check if input can be parsed into correct format
     // noinspection JSUnusedLocalSymbols
-    const {
-      permissionId,
-      serviceName,
-      startTime,
-      expirationTime,
-      connectionId,
-      requestedCodes,
-    } = JSON.parse(atob(aiidaCodeInput.value));
+    const { permissionId, serviceName, handshakeUrl, accessToken } = JSON.parse(
+      atob(aiidaCodeInput.value),
+    );
   } catch (error) {
     console.debug(error);
     aiidaCodeInput.setCustomValidity(
@@ -140,22 +137,27 @@ aiidaCodeInput.addEventListener("sl-input", () => {
   }
 });
 
+function toLocalDateString(time) {
+  return new Date(time * 1000).toLocaleDateString();
+}
+
 function permissionElement(permission) {
-  const {
-    permissionId,
-    status,
-    serviceName,
-    startTime,
-    expirationTime,
-    connectionId,
-    requestedCodes,
-  } = permission;
+  const { permissionId, status, serviceName } = permission;
+  const dataTags = permission.hasOwnProperty("dataNeed")
+    ? permission.dataNeed.dataTags
+    : ["Not available yet."];
+  const startTime = permission.hasOwnProperty("startTime")
+    ? toLocalDateString(permission.startTime)
+    : "Not available yet.";
+  const expirationTime = permission.hasOwnProperty("expirationTime")
+    ? toLocalDateString(permission.expirationTime)
+    : "Not available yet.";
 
   return /* HTML */ `
     <sl-details>
       <span slot="summary">
         <strong>${serviceName}</strong><br />
-        <small class="label">${permissionId} / ${connectionId}</small>
+        <small class="label">${permissionId}</small>
       </span>
 
       <dl class="permission-details">
@@ -172,22 +174,17 @@ function permissionElement(permission) {
           </sl-tooltip>
         </dd>
 
-        <dt>Connection ID</dt>
-        <dd>${connectionId}</dd>
-
         <dt>Permission ID</dt>
         <dd>${permissionId}</dd>
 
         <dt>Start</dt>
-        <dd>${new Date(startTime * 1000).toLocaleDateString()}</dd>
+        <dd>${startTime}</dd>
 
         <dt>End</dt>
-        <dd>${new Date(expirationTime * 1000).toLocaleDateString()}</dd>
+        <dd>${expirationTime}</dd>
 
         <dt>OBIS-Codes</dt>
-        <dd>
-          ${requestedCodes.map((code) => `<span>${code}</span>`).join("<br>")}
-        </dd>
+        <dd>${dataTags.map((code) => `<span>${code}</span>`).join("<br>")}</dd>
       </dl>
       ${STATUS[status].isRevocable
         ? /* HTML */ `
@@ -222,7 +219,6 @@ function renderPermissions() {
 
 function addPermission() {
   const body = JSON.parse(atob(aiidaCodeInput.value));
-  body.grantTime = new Date().toISOString();
 
   fetch(BASE_URL, {
     method: "POST",
@@ -233,14 +229,16 @@ function addPermission() {
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error("Failed to add permission");
+        return response.json().then((json) => {
+          throw new Error(
+            `Failed to add permission: ${json.errors[0].message}`,
+          );
+        });
       }
       return response.json();
     })
-    .then(() => {
-      permissionDialog.hide();
-      aiidaCodeInput.value = "";
-      renderPermissions();
+    .then((permission) => {
+      updatePermissionDialogWithDetails(permission);
     })
     .catch((error) => {
       console.debug(error);
@@ -256,7 +254,76 @@ function addPermission() {
             </p>
           </sl-alert>`,
       );
+
+      acceptButton.loading = rejectButton.loading = closeButton.loading = false;
+      closeButton.disabled = false;
     });
+}
+
+function updatePermission(operation) {
+  console.debug(operation + " permission");
+
+  const { permissionId } = JSON.parse(atob(aiidaCodeInput.value));
+
+  fetch(`${BASE_URL}/${permissionId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      operation: operation,
+    }),
+  }).then((res) => {
+    permissionDialog.hide();
+    aiidaCodeInput.value = "";
+    renderPermissions();
+  });
+}
+
+function updatePermissionDialogWithDetails(permission) {
+  console.debug("Updating dialog with details", permission);
+
+  const {
+    permissionId,
+    serviceName,
+    startTime,
+    expirationTime,
+    dataNeed: { dataTags },
+  } = permission;
+
+  permissionDialogContent.innerHTML = /* HTML */ `
+    <span>Permission request from</span>
+
+    <h3>
+      <strong>${serviceName}</strong>
+    </h3>
+
+    <dl class="permission-details">
+      <dt>Service</dt>
+      <dd>${serviceName}</dd>
+
+      <dt>Permission ID</dt>
+      <dd>${permissionId}</dd>
+
+      <dt>Start</dt>
+      <dd>${toLocalDateString(startTime)}</dd>
+
+      <dt>End</dt>
+      <dd>${toLocalDateString(expirationTime)}</dd>
+
+      <dt>OBIS-Codes</dt>
+      <dd>${dataTags.map((code) => `<span>${code}</span>`).join("<br>")}</dd>
+    </dl>
+
+    <p class="text">
+      <em>${serviceName}</em> requests permission to retrieve the near-realtime
+      data for the given time frame and OBIS-codes. Please confirm the request
+      is correct before granting permission.
+    </p>
+  `;
+
+  acceptButton.loading = rejectButton.loading = closeButton.loading = false;
+  acceptButton.disabled = rejectButton.disabled = closeButton.disabled = false;
 }
 
 function openRevokePermissionDialog(permissionId) {
@@ -293,5 +360,6 @@ renderPermissions();
 
 window.openRevokePermissionDialog = openRevokePermissionDialog;
 window.addPermission = addPermission;
+window.updatePermission = updatePermission;
 window.hidePermissionDialog = () => permissionDialog.hide();
 window.hideRevokeDialog = () => revokeDialog.hide();

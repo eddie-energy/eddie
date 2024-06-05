@@ -33,13 +33,19 @@
     </form>
 
     <sl-dialog id="permission-dialog" label="Add permission">
-      <sl-button slot="footer" variant="primary" onclick="window.addPermission()">
+      <div id="permission-dialog-content"></div>
+
+      <sl-button id="permission-dialog-accept" slot="footer" variant="primary"
+                 onclick="window.updatePermission('ACCEPT')" loading>
         Confirm
       </sl-button>
 
-      <div id="permission-dialog-content"></div>
+      <sl-button id="permission-dialog-reject" slot="footer" variant="danger"
+                 onclick="window.updatePermission('REJECT')" loading>
+        Reject
+      </sl-button>
 
-      <sl-button slot="footer" outline onclick="window.hidePermissionDialog()">
+      <sl-button id="permission-dialog-close" slot="footer" outline onclick="window.hidePermissionDialog()" loading>
         Close
       </sl-button>
     </sl-dialog>
