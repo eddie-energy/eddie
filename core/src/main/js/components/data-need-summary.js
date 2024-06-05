@@ -58,7 +58,11 @@ export function dataNeedSummary({
               <dd>
                 ${minGranularity === maxGranularity
                   ? GRANULARITIES[minGranularity]
-                  : `${GRANULARITIES[minGranularity]} - ${GRANULARITIES[maxGranularity]}`}
+                  : `${
+                      GRANULARITIES[minGranularity]
+                    } if possible. At least ${GRANULARITIES[
+                      maxGranularity
+                    ].toLocaleLowerCase()}.`}
               </dd>
             `
           : ""}
