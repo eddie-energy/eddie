@@ -14,6 +14,7 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.data.needs.AiidaEnergyDataTimeframeStrategy;
+import energy.eddie.regionconnector.aiida.mqtt.MqttConnectCallback;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionEventRepository;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
@@ -27,17 +28,14 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.C
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
 import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
-import org.eclipse.paho.mqttv5.client.IMqttToken;
-import org.eclipse.paho.mqttv5.client.MqttActionListener;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import reactor.core.publisher.Sinks;
 
@@ -55,8 +53,6 @@ import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_C
 
 @Configuration
 public class AiidaBeanConfig {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AiidaBeanConfig.class);
-
     @Bean
     public AiidaConfiguration aiidaConfiguration(
             @Value("${" + CUSTOMER_ID + "}") String customerId,
@@ -168,17 +164,8 @@ public class AiidaBeanConfig {
         return new BCryptPasswordEncoder(configuration.bCryptStrength());
     }
 
-    /**
-     * Creates a new {@link MqttAsyncClient} and initiates the connection to
-     * {@link AiidaConfiguration#mqttServerUri()}.
-     */
     @Bean
-    public MqttAsyncClient mqttClient(AiidaConfiguration configuration) throws MqttException {
-        MqttAsyncClient client = new MqttAsyncClient(configuration.mqttServerUri(),
-                                                     MQTT_CLIENT_ID,
-                                                     new MqttDefaultFilePersistence(
-                                                             "./region-connector-aiida/mqtt-persistence"));
-
+    public MqttConnectionOptions connectionOptions(AiidaConfiguration configuration) {
         MqttConnectionOptions connectionOptions = new MqttConnectionOptions();
         connectionOptions.setCleanStart(false);
         connectionOptions.setAutomaticReconnect(true);
@@ -191,17 +178,27 @@ public class AiidaBeanConfig {
         if (password != null)
             connectionOptions.setPassword(password.getBytes(StandardCharsets.UTF_8));
 
-        client.connect(connectionOptions, null, new MqttActionListener() {
-            @Override
-            public void onSuccess(IMqttToken asyncActionToken) {
-                LOGGER.info("Successfully connected to MQTT broker {}", configuration.mqttServerUri());
-            }
+        return connectionOptions;
+    }
 
-            @Override
-            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                LOGGER.error("Failed to connect to MQTT broker {}", configuration.mqttServerUri(), exception);
-            }
-        });
+    /**
+     * Creates a new {@link MqttAsyncClient} and initiates the connection to
+     * {@link AiidaConfiguration#mqttServerUri()}.
+     */
+    @Bean
+    public MqttAsyncClient mqttClient(
+            MqttConnectionOptions connectionOptions,
+            ThreadPoolTaskScheduler scheduler,
+            AiidaConfiguration configuration
+    ) throws MqttException {
+        var client = new MqttAsyncClient(configuration.mqttServerUri(), // overridden by connectionOptions
+                                         MQTT_CLIENT_ID,
+                                         new MqttDefaultFilePersistence("./region-connector-aiida/mqtt-persistence"));
+
+        // need to create manually because of circular dependency
+        var connectCallback = new MqttConnectCallback(client, connectionOptions, scheduler);
+
+        client.connect(connectionOptions, null, connectCallback);
 
         return client;
     }
