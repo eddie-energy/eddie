@@ -111,7 +111,7 @@ function handlePermissionFormSubmit(event) {
     </h3>
   `;
 
-  setTimeout(() => addPermission(), 2000);
+  addPermission();
   acceptButton.loading = true;
   rejectButton.loading = true;
   closeButton.loading = true;
