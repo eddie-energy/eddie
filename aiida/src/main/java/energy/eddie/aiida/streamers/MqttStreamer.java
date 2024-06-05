@@ -7,12 +7,14 @@ import energy.eddie.aiida.models.FailedToSendEntity;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
+import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.*;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
@@ -28,6 +30,8 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     private final ObjectMapper mapper;
     private final FailedToSendRepository failedToSendRepository;
     private boolean isBeingTerminated = false;
+    @Nullable
+    private Disposable subscription;
 
     /**
      * Creates a new MqttStreamer and initialized the client callback.
@@ -85,7 +89,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
             return;
         }
 
-        recordFlux.publishOn(Schedulers.boundedElastic()).subscribe(this::publishRecord);
+        subscription = recordFlux.publishOn(Schedulers.boundedElastic()).subscribe(this::publishRecord);
     }
 
     private void publishRecord(AiidaRecord aiidaRecord) {
@@ -132,6 +136,9 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
 
     @Override
     public void close() {
+        isBeingTerminated = true;
+        if (subscription != null)
+            subscription.dispose();
         terminationRequestSink.tryEmitEmpty();
 
         LOGGER.info("Closing MqttStreamer for permission {}", streamingConfig.permissionId());
@@ -146,6 +153,9 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
 
     @Override
     public void closeTerminally(ConnectionStatusMessage statusMessage) {
+        isBeingTerminated = true;
+        if (subscription != null)
+            subscription.dispose();
         LOGGER.atInfo()
               .addArgument(statusMessage.permissionId())
               .addArgument(statusMessage.status())
