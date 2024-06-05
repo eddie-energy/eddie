@@ -19,11 +19,7 @@ import buttonIcon from "../resources/logo.svg?raw";
 import headerImage from "../resources/header.svg?raw";
 
 import PERMISSION_ADMINISTRATORS from "../../../../european-masterdata/src/main/resources/permission-administrators.json";
-import { DATA_NEED_TOOLTIPS } from "./constants/data-need-tooltips.js";
-import { ENERGY_TYPES } from "./constants/energy-types.js";
-import { GRANULARITIES } from "./constants/granularities.js";
-
-import { relativeDateFromDuration } from "./duration.js";
+import { dataNeedSummary } from "./components/data-need-summary.js";
 
 setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn");
 
@@ -367,117 +363,6 @@ class EddieConnectButton extends LitElement {
     this._selectedPermissionAdministrator = { regionConnector: "aiida" };
   }
 
-  renderDataNeedSummary() {
-    const {
-      type,
-      purpose,
-      policyLink,
-      duration,
-      minGranularity,
-      maxGranularity,
-      energyType,
-      transmissionInterval,
-      dataTags,
-    } = this._dataNeedAttributes;
-    const [title, details] = DATA_NEED_TOOLTIPS[type];
-
-    return html`
-      <sl-alert open>
-        <style>
-          dl {
-            display: grid;
-            grid-template-columns: auto 1fr;
-          }
-
-          dt {
-            font-weight: bold;
-          }
-        </style>
-        <h2>Request for Permission</h2>
-        <dl>
-          <dt>Type of data</dt>
-          <dd>
-            ${title}
-
-            <sl-tooltip content="${details}">
-              <sl-icon
-                name="info-circle"
-                style="transform: translateY(1px)"
-              ></sl-icon>
-            </sl-tooltip>
-          </dd>
-
-          <!-- For timeframed data needs -->
-          ${duration
-            ? html`
-                <dt>Duration</dt>
-                <dd>
-                  ${duration.type === "absolute"
-                    ? `From ${new Date(
-                        duration.start
-                      ).toLocaleDateString()} to ${new Date(
-                        duration.start
-                      ).toLocaleDateString()}`
-                    : `From ${relativeDateFromDuration(
-                        duration.start,
-                        duration.stickyStartCalendarUnit
-                      ).toLocaleDateString()} to ${relativeDateFromDuration(
-                        duration.end,
-                        duration.stickyStartCalendarUnit
-                      ).toLocaleDateString()}`}
-                </dd>
-              `
-            : ""}
-
-          <!-- For validated historical data data needs -->
-          ${minGranularity
-            ? html`
-                <dt>Granularity</dt>
-                <dd>
-                  ${minGranularity === maxGranularity
-                    ? GRANULARITIES[minGranularity]
-                    : `${GRANULARITIES[minGranularity]} - ${GRANULARITIES[maxGranularity]}`}
-                </dd>
-              `
-            : ""}
-          ${energyType
-            ? html`
-                <dt>Energy Type</dt>
-                <dd>${ENERGY_TYPES[energyType] ?? energyType}</dd>
-              `
-            : ""}
-
-          <!-- For AIIDA data needs -->
-          ${transmissionInterval
-            ? html`
-                <dt>Transmission Interval</dt>
-                <dd>${transmissionInterval} seconds</dd>
-              `
-            : ""}
-
-          <!-- For AIIDA smart meter data needs -->
-          ${dataTags
-            ? html`
-                <dt>OBIS Points</dt>
-                <dd>${dataTags.join(", ")}</dd>
-              `
-            : ""}
-
-          <dt>Purpose</dt>
-          <dd>${purpose}</dd>
-        </dl>
-
-        <p>
-          By confirming the permission request created from this interaction you
-          agree to the
-          <a href="${policyLink}" target="_blank">Data Usage Policy</a>
-          of the service provider.
-        </p>
-      </sl-alert>
-      <br />
-    `;
-  }
-
   render() {
     return html`
       <link
@@ -531,7 +416,9 @@ class EddieConnectButton extends LitElement {
               <br />
             `
           : ""}
-        ${this._dataNeedAttributes ? this.renderDataNeedSummary() : ""}
+        
+        <!-- Render data need summary -->
+        ${this._dataNeedAttributes ? dataNeedSummary(this._dataNeedAttributes) : ""}
 
         <!-- Render country selection -->
         ${!this.isAiida()
