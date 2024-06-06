@@ -90,7 +90,7 @@ public class KafkaListener implements Runnable {
     }
 
     private Topology createConsentMarketDocumentTopology() {
-        var inputTopic = "consent-market-document";
+        var inputTopic = "permission-market-documents";
         Serde<String> stringSerde = Serdes.String();
         Serde<ConsentMarketDocument> statusSerde = new ConsentMarketDocumentSerde(mapper);
 

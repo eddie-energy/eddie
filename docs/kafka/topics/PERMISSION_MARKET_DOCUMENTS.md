@@ -1,6 +1,6 @@
-# Topic: Consent Market Document
+# Topic: Permission Market Document
 
-The topic **consent-market-document**  provides data of the permission request in a CIM-compliant format.
+The topic **permission-market-documents**  provides data of the permission request in a CIM-compliant format.
 
 ```json
 {
