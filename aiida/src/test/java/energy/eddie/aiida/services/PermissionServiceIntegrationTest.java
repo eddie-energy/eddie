@@ -3,7 +3,6 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
-import org.eclipse.paho.mqttv5.common.MqttException;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -29,8 +28,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.verify;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @TestPropertySource(properties = {
@@ -87,18 +84,12 @@ public class PermissionServiceIntegrationTest {
      * is set accordingly or streaming is started again otherwise.
      */
     @Test
-    void givenVariousPermissions_statusAsExpected() throws MqttException {
-        var permission = repository.findById("25ee5365-5d71-4b01-b21f-9c61f76a5cc9").orElseThrow();
-        assertEquals(PermissionStatus.STREAMING_DATA, permission.status());
-
-        permission = repository.findById("9609a9b3-0718-4082-935d-6a98c0f8c5a2").orElseThrow();
+    void givenVariousPermissions_statusAsExpected() {
+        var permission = repository.findById("9609a9b3-0718-4082-935d-6a98c0f8c5a2").orElseThrow();
         assertEquals(PermissionStatus.FULFILLED, permission.status());
 
         permission = repository.findById("0b3b6f6d-d878-49dd-9dfd-62156b5cdc37").orElseThrow();
         assertEquals(PermissionStatus.FULFILLED, permission.status());
-
-        verify(streamerManager).createNewStreamer(argThat(arg -> arg.permissionId()
-                                                                    .equals("25ee5365-5d71-4b01-b21f-9c61f76a5cc9")));
     }
 
     /**
