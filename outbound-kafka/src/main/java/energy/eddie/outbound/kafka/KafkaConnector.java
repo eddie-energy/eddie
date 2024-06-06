@@ -64,7 +64,7 @@ public class KafkaConnector implements
 
     private void produceConsentMarketDocument(ConsentMarketDocument consentMarketDocument) {
         ProducerRecord<String, Object> toSend = new ProducerRecord<>(
-                "consent-market-document",
+                "permission-market-documents",
                 consentMarketDocument.getPermissionList().getPermissions().getFirst()
                                      .getMarketEvaluationPointMRID().getValue(),
                 consentMarketDocument

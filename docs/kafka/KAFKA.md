@@ -4,7 +4,7 @@ This Documentation describes all topics currently available in the context of th
 Infrastructure for Energy (EDDIE). It also describes the used schema in JSON format and their data types.
 As of the 20th of February 2024, there are 5 different kind of topics available in EDDIE:
 
-1. [consent-market-document](topics/CONSENT_MARKET_DOCUMENT.md)
+1. [permission-market-documents](topics/PERMISSION_MARKET_DOCUMENTS)
 2. [consumption-records](topics/CONSUMPTION_RECORDS.md)
 3. [raw-data-in-proprietary-format](topics/RAW_DATA_IN_PROPRIETARY_FORMAT.md)
 4. [status-messages](topics/STATUS_MESSAGES.md)

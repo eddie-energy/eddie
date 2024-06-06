@@ -79,7 +79,7 @@ services:
       kafka-topics.sh --bootstrap-server kafka:9092 --list
 
       echo -e 'Creating kafka topics'
-      kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic consent-market-document --replication-factor 1 --partitions 1
+      kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic permission-market-documents --replication-factor 1 --partitions 1
       kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic validated-historical-data --replication-factor 1 --partitions 1
 
       echo -e 'Successfully created topics, all topics:'
