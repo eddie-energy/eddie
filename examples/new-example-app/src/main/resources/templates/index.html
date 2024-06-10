@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>New-Example-App</title>
+</head>
+
+<body>
+<!-- Main Content -->
+<main>
+    <img
+            alt="EDDIE logo"
+            height="200"
+            src="EDDIE_logo.png"
+            th:src="@{EDDIE_logo.png}"
+            class="w-auto h-full"
+            title="EDDIE logo"
+    />
+
+    <h1>Welcome to the new Example app</h1>
+    <h2 th:text="${title}">title</h2>
+</main>
+</body>
+</html>
