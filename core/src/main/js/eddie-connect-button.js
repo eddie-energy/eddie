@@ -12,12 +12,14 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/compone
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/option/option.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/divider/divider.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/spinner/spinner.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/tooltip/tooltip.js";
 
 import { setBasePath } from "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/utilities/base-path.js";
 import buttonIcon from "../resources/logo.svg?raw";
 import headerImage from "../resources/header.svg?raw";
 
 import PERMISSION_ADMINISTRATORS from "../../../../european-masterdata/src/main/resources/permission-administrators.json";
+import { dataNeedSummary } from "./components/data-need-summary.js";
 
 setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn");
 
@@ -37,25 +39,13 @@ function getRegionConnectors() {
   );
 }
 
+/**
+ *
+ * @param {string} dataNeedId - The ID of the data need to fetch attributes for.
+ * @returns {Promise<DataNeedAttributes | void>}
+ */
 function getDataNeedAttributes(dataNeedId) {
   return fetchJson(`/data-needs/api/${dataNeedId}`);
-}
-
-function shortISOString(date) {
-  return date.toISOString().substring(0, 10);
-}
-
-function dateFromDuration(duration) {
-  const date = new Date();
-  date.setDate(date.getDate() + duration);
-  return shortISOString(date);
-}
-
-function durationFromDateString(dateString) {
-  const now = new Date();
-  const date = new Date(dateString);
-
-  return Math.ceil((date - now) / (1000 * 60 * 60 * 24));
 }
 
 class EddieConnectButton extends LitElement {
@@ -84,8 +74,6 @@ class EddieConnectButton extends LitElement {
     _availableConnectors: { type: Object },
     _availableCountries: { type: Array },
     _dataNeedAttributes: { type: Object },
-    _dataNeedTypes: { type: Array },
-    _dataNeedGranularities: { type: Array },
     _isValidConfiguration: { type: Boolean, state: true },
   };
   static styles = css`
@@ -130,8 +118,14 @@ class EddieConnectButton extends LitElement {
     this._availablePermissionAdministrators = [];
     this._availableCountries = [];
     this._filteredPermissionAdministrators = [];
-    this._dataNeedAttributes = {};
     this._dataNeedIdsAndNames = [];
+
+    /**
+     * Attributes of the chosen data need.
+     * @type {DataNeedAttributes}
+     * @private
+     */
+    this._dataNeedAttributes = null;
   }
 
   connectedCallback() {
@@ -182,10 +176,7 @@ class EddieConnectButton extends LitElement {
 
     const element = document.createElement(customElementName);
     element.setAttribute("connection-id", this.connectionId);
-    element.setAttribute(
-      "data-need-attributes",
-      JSON.stringify(this._dataNeedAttributes)
-    );
+    element.setAttribute("data-need-id", this.dataNeedId);
     element.setAttribute(
       "jump-off-url",
       this._selectedPermissionAdministrator.jumpOffUrl
@@ -199,8 +190,12 @@ class EddieConnectButton extends LitElement {
       element.setAttribute("accounting-point-id", this.accountingPointId);
     }
 
-    const notificationHandler = document.createElement("eddie-notification-handler");
-    const requestStatusHandler = document.createElement("eddie-request-status-handler");
+    const notificationHandler = document.createElement(
+      "eddie-notification-handler"
+    );
+    const requestStatusHandler = document.createElement(
+      "eddie-request-status-handler"
+    );
 
     requestStatusHandler.appendChild(element);
     notificationHandler.appendChild(requestStatusHandler);
@@ -208,6 +203,11 @@ class EddieConnectButton extends LitElement {
     return notificationHandler;
   }
 
+  /**
+   *
+   * @param {string} companyId The company ID of the permission administrator.
+   * @returns {PermissionAdministrator | undefined} The first permission administrator with the given company ID or undefined if none is found.
+   */
   getPermissionAdministratorByCompanyId(companyId) {
     return this._availablePermissionAdministrators.find(
       (pa) => pa.companyId === companyId
@@ -416,18 +416,9 @@ class EddieConnectButton extends LitElement {
               <br />
             `
           : ""}
-
-        <!-- Render a data need description if available -->
-        ${this._dataNeedAttributes.description
-          ? html`
-              <sl-alert open>
-                <sl-icon slot="icon" name="info-circle"></sl-icon>
-                This service is requesting:
-                ${this._dataNeedAttributes.description}
-              </sl-alert>
-              <br />
-            `
-          : ""}
+        
+        <!-- Render data need summary -->
+        ${this._dataNeedAttributes ? dataNeedSummary(this._dataNeedAttributes) : ""}
 
         <!-- Render country selection -->
         ${!this.isAiida()

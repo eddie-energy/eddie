@@ -11,7 +11,7 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/compone
 class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
-    dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
+    dataNeedId: { attribute: "data-need-id" },
     accountingPointId: { attribute: "accounting-point-id" },
     _isPermissionRequestCreated: { type: Boolean },
     _isSubmitDisabled: { type: Boolean },
@@ -37,7 +37,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       connectionId: this.connectionId,
       meteringPointId: formData.get("meteringPointId"),
       nif: formData.get("nif"),
-      dataNeedId: this.dataNeedAttributes.id,
+      dataNeedId: this.dataNeedId,
     };
 
     this._isSubmitDisabled = true;

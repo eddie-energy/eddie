@@ -8,7 +8,7 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/compone
 class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
-    dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
+    dataNeedId: { attribute: "data-need-id" },
     jumpOffUrl: { attribute: "jump-off-url" },
     companyId: { attribute: "company-id" },
     accountingPointId: { attribute: "accounting-point-id" },
@@ -36,7 +36,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
         : null,
       dsoId: this.companyId,
       connectionId: this.connectionId,
-      dataNeedId: this.dataNeedAttributes.id,
+      dataNeedId: this.dataNeedId,
     };
 
     this._isSubmitDisabled = true;

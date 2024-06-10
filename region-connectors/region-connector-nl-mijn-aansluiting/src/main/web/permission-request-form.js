@@ -13,7 +13,7 @@ const REQUEST_URL = BASE_URL + "/permission-request";
 class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
-    dataNeedAttributes: { type: Object, attribute: "data-need-attributes" },
+    dataNeedId: { attribute: "data-need-id" },
     _isPermissionRequestCreated: { type: Boolean },
   };
 
@@ -29,7 +29,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
     const payload = {
       connectionId: this.connectionId,
-      dataNeedId: this.dataNeedAttributes.id,
+      dataNeedId: this.dataNeedId,
       verificationCode: formData.get("verificationCode"),
     };
 
