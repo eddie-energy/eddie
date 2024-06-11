@@ -149,10 +149,6 @@ class EddieConnectButton extends LitElement {
     }
   }
 
-  closePopup() {
-    this.dialogRef.value.hide();
-  }
-
   async getRegionConnectorElement() {
     const regionConnectorId =
       this._selectedPermissionAdministrator.regionConnector;
