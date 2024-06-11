@@ -46,3 +46,5 @@ include("aiida")
 include("european-masterdata")
 
 include("admin-console")
+
+include("examples:new-example-app")
