@@ -13,6 +13,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./create-example-app-db.sql:/docker-entrypoint-initdb.d/create_database.sql
+      - ./create-new-example-app-db.sql:/docker-entrypoint-initdb.d/create_new_example_app_db.sql
 
   eddie:
     image: ghcr.io/eddie-energy/eddie:latest
