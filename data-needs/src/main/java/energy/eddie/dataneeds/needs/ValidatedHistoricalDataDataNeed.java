@@ -3,6 +3,7 @@ package energy.eddie.dataneeds.needs;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.dataneeds.EnergyType;
+import energy.eddie.dataneeds.duration.DataNeedDuration;
 import energy.eddie.dataneeds.validation.BasicValidationsGroup;
 import energy.eddie.dataneeds.validation.CustomValidationsGroup;
 import energy.eddie.dataneeds.validation.IsValidValidatedHistoricalDataDataNeed;
@@ -41,6 +42,18 @@ public class ValidatedHistoricalDataDataNeed extends TimeframedDataNeed {
 
     @SuppressWarnings("NullAway.Init")
     protected ValidatedHistoricalDataDataNeed() {
+    }
+
+    public ValidatedHistoricalDataDataNeed(
+            DataNeedDuration duration,
+            EnergyType energyType,
+            Granularity minGranularity,
+            Granularity maxGranularity
+    ) {
+        super(duration);
+        this.energyType = energyType;
+        this.minGranularity = minGranularity;
+        this.maxGranularity = maxGranularity;
     }
 
     /**

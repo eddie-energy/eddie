@@ -1,6 +1,14 @@
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
 
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.EnergyType;
+import energy.eddie.dataneeds.duration.RelativeDuration;
+import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
@@ -8,6 +16,7 @@ import energy.eddie.regionconnector.at.eda.models.ResponseCode;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.EdaAnswerEvent;
+import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEvent;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationMessageType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -22,6 +31,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.publisher.TestPublisher;
 
+import java.time.Period;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -40,8 +50,14 @@ class EdaEventsHandlerTest {
     private EdaAdapter edaAdapter;
     @Mock
     private Outbox outbox;
+    @Mock
+    private DataNeedsService dataNeedsService;
+    @Mock
+    private DataNeedCalculationService<DataNeed> dataNeedCalculationService;
     @Captor
     private ArgumentCaptor<EdaAnswerEvent> edaAnswerEventCaptor;
+    @Captor
+    private ArgumentCaptor<ValidatedEvent> validatedEventCaptor;
 
     public static Stream<Arguments> testAcceptedMessage_doesNotEmitOnMissingPayload() {
         return Stream.of(
@@ -102,7 +118,7 @@ class EdaEventsHandlerTest {
                 "cmRequestId",
                 "consentId",
                 "mid");
-        new EdaEventsHandler(edaAdapter, outbox, repository);
+        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
 
         // When
         publisher.emit(cmRequestStatus);
@@ -135,7 +151,7 @@ class EdaEventsHandlerTest {
                 "cmRequestId",
                 consentId,
                 meteringPoint);
-        new EdaEventsHandler(edaAdapter, outbox, repository);
+        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
 
         // When
         publisher.emit(cmRequestStatus);
@@ -159,7 +175,7 @@ class EdaEventsHandlerTest {
         CMRequestStatus cmRequestStatus = new CMRequestStatus(NotificationMessageType.PONTON_ERROR,
                                                               "conversationId",
                                                               "");
-        new EdaEventsHandler(edaAdapter, outbox, repository);
+        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
 
         // When
         publisher.emit(cmRequestStatus);
@@ -198,7 +214,7 @@ class EdaEventsHandlerTest {
                 null,
                 null
         );
-        new EdaEventsHandler(edaAdapter, outbox, repository);
+        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
 
         // When
         publisher.emit(cmRequestStatus);
@@ -218,12 +234,120 @@ class EdaEventsHandlerTest {
         CMRequestStatus cmRequestStatus = new CMRequestStatus(NotificationMessageType.CCMO_ACCEPT,
                                                               "conversationId",
                                                               "");
-        new EdaEventsHandler(edaAdapter, outbox, repository);
+        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
 
         // When
         publisher.emit(cmRequestStatus);
 
         // Then
         verify(outbox, never()).commit(any());
+    }
+
+    @Test
+    void testCmRequestStatusMessage_retriesWithHigherGranularity() {
+        // Given
+        TestPublisher<CMRequestStatus> publisher = TestPublisher.create();
+        when(edaAdapter.getCMRequestStatusStream()).thenReturn(publisher.flux());
+        var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
+                                                         "conversationId", null, "dsoId", null, null,
+                                                         AllowedGranularity.PT15M,
+                                                         PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
+                                                         "", null, null);
+        when(repository.findByConversationIdOrCMRequestId("conversationId", null))
+                .thenReturn(Optional.of(permissionRequest));
+        CMRequestStatus cmRequestStatus = new CMRequestStatus(
+                NotificationMessageType.CCMO_REJECT,
+                "conversationId",
+                List.of(ResponseCode.CmReqOnl.REQUESTED_DATA_NOT_DELIVERABLE),
+                null,
+                null,
+                null
+        );
+        when(dataNeedsService.getById("dnid"))
+                .thenReturn(new ValidatedHistoricalDataDataNeed(
+                        new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
+                        EnergyType.ELECTRICITY,
+                        Granularity.PT15M,
+                        Granularity.P1Y
+                ));
+        when(dataNeedCalculationService.calculate(any()))
+                .thenReturn(new DataNeedCalculation(true, List.of(Granularity.PT15M, Granularity.P1D), null, null));
+        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
+
+        // When
+        publisher.emit(cmRequestStatus);
+
+        // Then
+        verify(outbox).commit(validatedEventCaptor.capture());
+        assertEquals(AllowedGranularity.P1D, validatedEventCaptor.getValue().granularity());
+    }
+
+    @Test
+    void testCmRequestStatusMessage_doesNotRetryOnUnsupportedGranularity() {
+        // Given
+        TestPublisher<CMRequestStatus> publisher = TestPublisher.create();
+        when(edaAdapter.getCMRequestStatusStream()).thenReturn(publisher.flux());
+        var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
+                                                         "conversationId", null, "dsoId", null, null,
+                                                         AllowedGranularity.PT15M,
+                                                         PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
+                                                         "", null, null);
+        when(repository.findByConversationIdOrCMRequestId("conversationId", null))
+                .thenReturn(Optional.of(permissionRequest));
+        CMRequestStatus cmRequestStatus = new CMRequestStatus(
+                NotificationMessageType.CCMO_REJECT,
+                "conversationId",
+                List.of(ResponseCode.CmReqOnl.REQUESTED_DATA_NOT_DELIVERABLE),
+                null,
+                null,
+                null
+        );
+        when(dataNeedsService.getById("dnid"))
+                .thenReturn(new ValidatedHistoricalDataDataNeed(
+                        new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
+                        EnergyType.ELECTRICITY,
+                        Granularity.PT15M,
+                        Granularity.PT1H
+                ));
+        when(dataNeedCalculationService.calculate(any()))
+                .thenReturn(new DataNeedCalculation(true, List.of(Granularity.PT15M), null, null));
+        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
+
+        // When
+        publisher.emit(cmRequestStatus);
+
+        // Then
+        verify(outbox).commit(edaAnswerEventCaptor.capture());
+        assertEquals(PermissionProcessStatus.INVALID, edaAnswerEventCaptor.getValue().status());
+    }
+
+    @Test
+    void testCmRequestStatusMessage_doesNotRetryOnHighestGranularity() {
+        // Given
+        TestPublisher<CMRequestStatus> publisher = TestPublisher.create();
+        when(edaAdapter.getCMRequestStatusStream()).thenReturn(publisher.flux());
+        var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
+                                                         "conversationId", null, "dsoId", null, null,
+                                                         AllowedGranularity.P1D,
+                                                         PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
+                                                         "", null, null);
+        when(repository.findByConversationIdOrCMRequestId("conversationId", null))
+                .thenReturn(Optional.of(permissionRequest));
+        CMRequestStatus cmRequestStatus = new CMRequestStatus(
+                NotificationMessageType.CCMO_REJECT,
+                "conversationId",
+                List.of(ResponseCode.CmReqOnl.REQUESTED_DATA_NOT_DELIVERABLE),
+                null,
+                null,
+                null
+        );
+        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
+
+        // When
+        publisher.emit(cmRequestStatus);
+
+        // Then
+        verify(outbox).commit(edaAnswerEventCaptor.capture());
+        assertEquals(PermissionProcessStatus.INVALID, edaAnswerEventCaptor.getValue().status());
     }
 }

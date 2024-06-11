@@ -26,6 +26,10 @@ public abstract class TimeframedDataNeed extends DataNeed {
     protected TimeframedDataNeed() {
     }
 
+    protected TimeframedDataNeed(DataNeedDuration duration) {
+        this.duration = duration;
+    }
+
     public DataNeedDuration duration() {
         return duration;
     }
