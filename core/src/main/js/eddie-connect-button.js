@@ -32,13 +32,20 @@ const dialogCloseEvent = new Event("eddie-dialog-close", {bubbles: true, compose
 
 function fetchJson(path) {
   return fetch(BASE_URL + path)
-    .then((response) => response.ok && response.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Fetch to ${path} returned invalid status code ${response.status}`
+        );
+      }
+      return response.json();
+    })
     .catch((error) => console.error(error));
 }
 
-function getRegionConnectors() {
-  return fetchJson("/api/region-connectors-metadata").then((json) =>
-    Object.fromEntries(json.map((it) => [it.id, it]))
+function getSupportedRegionConnectors(dataNeedId) {
+  return fetchJson(`/api/region-connectors/data-needs/${dataNeedId}`).then(
+    (json) => Object.keys(json).filter((key) => json[key].supportsDataNeed)
   );
 }
 
@@ -76,7 +83,7 @@ class EddieConnectButton extends LitElement {
     _selectedPermissionAdministrator: { type: Object },
     _availablePermissionAdministrators: { type: Array },
     _filteredPermissionAdministrators: { type: Array },
-    _availableConnectors: { type: Object },
+    _supportedConnectors: { type: Array },
     _availableCountries: { type: Array },
     _dataNeedAttributes: { type: Object },
     _isValidConfiguration: { type: Boolean, state: true },
@@ -119,10 +126,30 @@ class EddieConnectButton extends LitElement {
 
   constructor() {
     super();
-    this._availableConnectors = {};
+
+    /**
+     * Region connectors that support the selected data need.
+     * @type {string[]}
+     * @private
+     */
+    this._supportedConnectors = [];
+
     this._availablePermissionAdministrators = [];
     this._availableCountries = [];
+
+    /**
+     * Permission Administrators that match the selected country.
+     * @type {string[]}
+     * @private
+     */
     this._filteredPermissionAdministrators = [];
+
+
+    /**
+     * Data needs that are available for selection.
+     * @type {{id: string, name: string}[]}
+     * @private
+     */
     this._dataNeedIdsAndNames = [];
 
     /**
@@ -135,7 +162,12 @@ class EddieConnectButton extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this._isValidConfiguration = this.configure();
+    this._isValidConfiguration = this.configure()
+      .then(() => true)
+      .catch((error) => {
+        console.error(error);
+        return false;
+      });
   }
 
   async connect() {
@@ -152,7 +184,6 @@ class EddieConnectButton extends LitElement {
   async getRegionConnectorElement() {
     const regionConnectorId =
       this._selectedPermissionAdministrator.regionConnector;
-    const regionConnector = this._availableConnectors[regionConnectorId];
 
     const customElementName = regionConnectorId + "-pa-ce";
 
@@ -160,7 +191,7 @@ class EddieConnectButton extends LitElement {
       // loaded module needs to have the custom element class as its default export
       try {
         const module = await import(
-          `${BASE_URL}/region-connectors/${regionConnector.id}/ce.js`
+          `${BASE_URL}/region-connectors/${regionConnectorId}/ce.js`
         );
         customElements.define(customElementName, module.default);
       } catch (error) {
@@ -242,15 +273,53 @@ class EddieConnectButton extends LitElement {
     }
   }
 
-  async handleDataNeedSelect(event) {
-    this.dataNeedId = event.target.value;
-    this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
+  async selectDataNeed(dataNeedId) {
+    this.dataNeedId = dataNeedId;
+    this._dataNeedAttributes = await getDataNeedAttributes(dataNeedId);
+
+    if (!this._dataNeedAttributes) {
+      throw new Error(`Invalid Data Need ${this.dataNeedId}`);
+    }
+
+    this._supportedConnectors = await getSupportedRegionConnectors(dataNeedId);
+
+    this._availablePermissionAdministrators = PERMISSION_ADMINISTRATORS.filter(
+      (pa) => this._supportedConnectors.includes(pa.regionConnector)
+    );
+    this._availableCountries = [
+      ...new Set(
+        this._availablePermissionAdministrators.map((pa) => pa.country)
+      ),
+    ];
+
+    if (this.permissionAdministratorId) {
+      const pa = this.getPermissionAdministratorByCompanyId(
+        this.permissionAdministratorId
+      );
+
+      if (!pa) {
+        throw new Error(
+          `Permission Administrator ${this.permissionAdministratorId} is not supported.`
+        );
+      }
+
+      this._presetPermissionAdministrator = pa;
+      this.selectPermissionAdministrator(pa);
+    }
 
     if (this.isAiida()) {
+      if (!this._supportedConnectors.includes("aiida")) {
+        throw new Error("AIIDA is not supported for this data need.");
+      }
+
       this.selectAiida();
     } else {
       this.selectPermissionAdministrator(this._presetPermissionAdministrator);
     }
+  }
+
+  async handleDataNeedSelect(event) {
+    await this.selectDataNeed(event.target.value);
   }
 
   handleCountrySelect(event) {
@@ -267,13 +336,13 @@ class EddieConnectButton extends LitElement {
   selectCountry(country) {
     this._selectedCountry = country;
 
+    // only show permission administrators that match the selected country
     this._filteredPermissionAdministrators =
       this._availablePermissionAdministrators.filter(
-        (pa) =>
-          pa.country === this._selectedCountry &&
-          this._availableConnectors[pa.regionConnector]
+        (pa) => pa.country === this._selectedCountry
       );
 
+    // automatically select the only available permission administrator
     if (this._filteredPermissionAdministrators.length === 1) {
       this._selectedPermissionAdministrator =
         this._filteredPermissionAdministrators[0];
@@ -282,17 +351,15 @@ class EddieConnectButton extends LitElement {
 
   async configure() {
     if (!this.dataNeedId && !this.allowDataNeedSelection) {
-      console.error(
+      throw new Error(
         "EDDIE button loaded without data-need-id or allow-data-need-selection."
       );
-      return false;
     }
 
     if (this.accountingPointId && !this.permissionAdministratorId) {
-      console.error(
+      throw new Error(
         "Accounting point specified without permission administrator."
       );
-      return false;
     }
 
     if (this.allowDataNeedSelection) {
@@ -300,52 +367,8 @@ class EddieConnectButton extends LitElement {
     }
 
     if (this.dataNeedId) {
-      this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
-
-      if (!this._dataNeedAttributes) {
-        console.error(`Invalid Data Need ${this.dataNeedId}`);
-        return false;
-      }
+      await this.selectDataNeed(this.dataNeedId);
     }
-
-    this._availableConnectors = await getRegionConnectors();
-    this._availablePermissionAdministrators = PERMISSION_ADMINISTRATORS.filter(
-      (pa) => this._availableConnectors[pa.regionConnector]
-    );
-    this._availableCountries = [
-      ...new Set(
-        this._availablePermissionAdministrators.map((pa) => pa.country)
-      ),
-    ];
-
-    if (this.permissionAdministratorId) {
-      const pa = this.getPermissionAdministratorByCompanyId(
-        this.permissionAdministratorId
-      );
-
-      if (!pa) {
-        console.error(
-          `Permission Administrator ${this.permissionAdministratorId} is unavailable.`
-        );
-        return false;
-      }
-
-      this._presetPermissionAdministrator = pa;
-      this.selectPermissionAdministrator(pa);
-    }
-
-    if (this.isAiida()) {
-      if (this.isAiidaEnabled()) {
-        this.selectAiida();
-      } else {
-        console.error(
-          "Cannot create an EDDIE connect button for near real-time date because the AIIDA region connector is disabled"
-        );
-        return false;
-      }
-    }
-
-    return true;
   }
 
   isAiida() {
@@ -353,10 +376,6 @@ class EddieConnectButton extends LitElement {
       this._dataNeedAttributes?.type === "genericAiida" ||
       this._dataNeedAttributes?.type === "smartMeterAiida"
     );
-  }
-
-  isAiidaEnabled() {
-    return this._availableConnectors.hasOwnProperty("aiida");
   }
 
   selectAiida() {
