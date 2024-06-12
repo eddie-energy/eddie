@@ -9,7 +9,7 @@ As of the 20th of February 2024, there are 5 different kind of topics available 
 3. [raw-data-in-proprietary-format](topics/RAW_DATA_IN_PROPRIETARY_FORMAT.md)
 4. [status-messages](topics/STATUS_MESSAGES.md)
 5. [validated-historical-data](topics/VALIDATED_HISTORICAL_DATA.md)
-
+6. [accounting-point-market-documents](topics/ACCOUNTING_POINT_MARKET_DOCUMENTS.MD)
 ### Terminology
 
 Abbreviations used in the Kafka Documentation as well as in the kafka topics documentation.

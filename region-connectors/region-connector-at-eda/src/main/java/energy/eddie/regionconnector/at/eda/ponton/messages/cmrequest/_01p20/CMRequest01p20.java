@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
+import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -81,10 +82,12 @@ public record CMRequest01p20(
                 );
     }
 
+    @Nullable
     private MeteringIntervallType meteringIntervall(CCMORequest ccmoRequest) {
         return switch (ccmoRequest.granularity()) {
             case PT15M -> MeteringIntervallType.QH;
             case P1D -> MeteringIntervallType.D;
+            case null -> null;
         };
     }
 
