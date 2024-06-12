@@ -15,7 +15,6 @@ content = @`
         <eddie-connect-button
                 class="uk-display-block"
                 connection-id="${nextConnectionId}"
-                allow-data-need-selection="true"
         ></eddie-connect-button>
     </div>
     <div class="uk-flex uk-margin uk-flex-middle">

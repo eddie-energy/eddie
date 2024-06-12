@@ -62,10 +62,6 @@ class EddieConnectButton extends LitElement {
   static properties = {
     connectionId: { attribute: "connection-id", type: String },
     dataNeedId: { attribute: "data-need-id", type: String },
-    allowDataNeedSelection: {
-      attribute: "allow-data-need-selection",
-      type: Object,
-    },
     permissionAdministratorId: {
       attribute: "permission-administrator",
       type: String,
@@ -78,7 +74,6 @@ class EddieConnectButton extends LitElement {
     onOpen: { type: String },
     onClose: { type: String },
 
-    _dataNeedIdsAndNames: { type: Array },
     _selectedCountry: { type: String },
     _selectedPermissionAdministrator: { type: Object },
     _availablePermissionAdministrators: { type: Array },
@@ -143,14 +138,6 @@ class EddieConnectButton extends LitElement {
      * @private
      */
     this._filteredPermissionAdministrators = [];
-
-
-    /**
-     * Data needs that are available for selection.
-     * @type {{id: string, name: string}[]}
-     * @private
-     */
-    this._dataNeedIdsAndNames = [];
 
     /**
      * Attributes of the chosen data need.
@@ -273,55 +260,6 @@ class EddieConnectButton extends LitElement {
     }
   }
 
-  async selectDataNeed(dataNeedId) {
-    this.dataNeedId = dataNeedId;
-    this._dataNeedAttributes = await getDataNeedAttributes(dataNeedId);
-
-    if (!this._dataNeedAttributes) {
-      throw new Error(`Invalid Data Need ${this.dataNeedId}`);
-    }
-
-    this._supportedConnectors = await getSupportedRegionConnectors(dataNeedId);
-
-    this._availablePermissionAdministrators = PERMISSION_ADMINISTRATORS.filter(
-      (pa) => this._supportedConnectors.includes(pa.regionConnector)
-    );
-    this._availableCountries = [
-      ...new Set(
-        this._availablePermissionAdministrators.map((pa) => pa.country)
-      ),
-    ];
-
-    if (this.permissionAdministratorId) {
-      const pa = this.getPermissionAdministratorByCompanyId(
-        this.permissionAdministratorId
-      );
-
-      if (!pa) {
-        throw new Error(
-          `Permission Administrator ${this.permissionAdministratorId} is not supported.`
-        );
-      }
-
-      this._presetPermissionAdministrator = pa;
-      this.selectPermissionAdministrator(pa);
-    }
-
-    if (this.isAiida()) {
-      if (!this._supportedConnectors.includes("aiida")) {
-        throw new Error("AIIDA is not supported for this data need.");
-      }
-
-      this.selectAiida();
-    } else {
-      this.selectPermissionAdministrator(this._presetPermissionAdministrator);
-    }
-  }
-
-  async handleDataNeedSelect(event) {
-    await this.selectDataNeed(event.target.value);
-  }
-
   handleCountrySelect(event) {
     this._selectedPermissionAdministrator = null;
 
@@ -350,10 +288,8 @@ class EddieConnectButton extends LitElement {
   }
 
   async configure() {
-    if (!this.dataNeedId && !this.allowDataNeedSelection) {
-      throw new Error(
-        "EDDIE button loaded without data-need-id or allow-data-need-selection."
-      );
+    if (!this.dataNeedId) {
+      throw new Error("EDDIE button loaded without data-need-id.");
     }
 
     if (this.accountingPointId && !this.permissionAdministratorId) {
@@ -362,12 +298,51 @@ class EddieConnectButton extends LitElement {
       );
     }
 
-    if (this.allowDataNeedSelection) {
-      this._dataNeedIdsAndNames = await fetchJson("/data-needs/api");
+    this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
+
+    if (!this._dataNeedAttributes) {
+      throw new Error(`Invalid Data Need ${this.dataNeedId}`);
     }
 
-    if (this.dataNeedId) {
-      await this.selectDataNeed(this.dataNeedId);
+    this._supportedConnectors = await getSupportedRegionConnectors(
+      this.dataNeedId
+    );
+
+    this._availablePermissionAdministrators = PERMISSION_ADMINISTRATORS.filter(
+      (pa) => this._supportedConnectors.includes(pa.regionConnector)
+    );
+
+    this._availableCountries = [
+      ...new Set(
+        this._availablePermissionAdministrators.map((pa) => pa.country)
+      ),
+    ];
+
+    if (this.permissionAdministratorId) {
+      const pa = this.getPermissionAdministratorByCompanyId(
+        this.permissionAdministratorId
+      );
+
+      if (!pa) {
+        throw new Error(
+          `Permission Administrator ${this.permissionAdministratorId} does not support the data need with id ${this.dataNeedId}.`
+        );
+      }
+
+      this._presetPermissionAdministrator = pa;
+      this.selectPermissionAdministrator(pa);
+    }
+
+    if (this.isAiida()) {
+      if (!this._supportedConnectors.includes("aiida")) {
+        throw new Error(
+          `AIIDA does not support the data need with id ${this.dataNeedId}.`
+        );
+      }
+
+      this.selectAiida();
+    } else {
+      this.selectPermissionAdministrator(this._presetPermissionAdministrator);
     }
   }
 
@@ -428,29 +403,10 @@ class EddieConnectButton extends LitElement {
       >
         <div slot="label">${unsafeSVG(headerImage)}</div>
 
-        <!-- Render the data need selection form if the feature is enabled -->
-        ${this.allowDataNeedSelection
-          ? html`
-              <sl-select
-                label="Data need specification"
-                placeholder="Select a data need"
-                @sl-change="${this.handleDataNeedSelect}"
-                help-text="The service allows the selection of a data need. This feature is meant for development purposes only."
-              >
-                ${this._dataNeedIdsAndNames.map(
-                  (dataNeed) => html`
-                    <sl-option value="${dataNeed.id}"
-                      >${dataNeed.name}
-                    </sl-option>
-                  `
-                )}
-              </sl-select>
-              <br />
-            `
-          : ""}
-        
         <!-- Render data need summary -->
-        ${this._dataNeedAttributes ? dataNeedSummary(this._dataNeedAttributes) : ""}
+        ${this._dataNeedAttributes
+          ? dataNeedSummary(this._dataNeedAttributes)
+          : ""}
 
         <!-- Render country selection -->
         ${!this.isAiida()
