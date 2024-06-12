@@ -70,7 +70,7 @@ public enum PermissionProcessStatus {
      */
     FAILED_TO_TERMINATE,
     /**
-     * The external termination process was successful
+     * The external termination process was successful.
      */
     EXTERNALLY_TERMINATED
 }
