@@ -453,6 +453,7 @@ class EddieConnectButton extends LitElement {
               <sl-select
                 label="Permission Administrator"
                 placeholder="Select your Permission Administrator"
+                help-text="Typically your Distribution System Operator (DSO) or Metering Point Administrator (MDA), depending on your national regulation."
                 @sl-change="${this.handlePermissionAdministratorSelect}"
                 value="${ifDefined(
                   this._selectedPermissionAdministrator?.companyId
