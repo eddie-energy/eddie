@@ -139,7 +139,7 @@ public class KafkaConnector implements
     private void produceEddieAccountingPointMarketDocument(
             EddieAccountingPointMarketDocument marketDocument
     ) {
-        ProducerRecord<String, Object> toSend = new ProducerRecord<>("accounting-point-market-document",
+        ProducerRecord<String, Object> toSend = new ProducerRecord<>("accounting-point-market-documents",
                                                                      marketDocument.connectionId(),
                                                                      marketDocument);
         kafkaProducer.send(toSend,
