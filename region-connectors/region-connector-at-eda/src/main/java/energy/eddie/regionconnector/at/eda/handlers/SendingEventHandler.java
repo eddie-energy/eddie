@@ -51,7 +51,7 @@ public class SendingEventHandler implements EventHandler<ValidatedEvent> {
         String permissionId = permissionEvent.permissionId();
         AtPermissionRequest permissionRequest = repository.getByPermissionId(permissionId);
 
-        CCMORequest ccmoRequest = ccmoRequest(permissionRequest);
+        CCMORequest ccmoRequest = ccmoRequest(permissionRequest, permissionEvent);
         try {
             edaAdapter.sendCMRequest(ccmoRequest);
         } catch (TransmissionException e) {
@@ -59,7 +59,7 @@ public class SendingEventHandler implements EventHandler<ValidatedEvent> {
         }
     }
 
-    private CCMORequest ccmoRequest(AtPermissionRequest permissionRequest) {
+    private CCMORequest ccmoRequest(AtPermissionRequest permissionRequest, ValidatedEvent event) {
         return new CCMORequest(
                 new DsoIdAndMeteringPoint(
                         permissionRequest.dataSourceInformation().permissionAdministratorId(),
@@ -69,7 +69,7 @@ public class SendingEventHandler implements EventHandler<ValidatedEvent> {
                 permissionRequest.cmRequestId(),
                 permissionRequest.conversationId(),
                 requestDataType(permissionRequest.granularity()),
-                permissionRequest.granularity(),
+                event.granularity() == null ? permissionRequest.granularity() : event.granularity(),
                 AllowedTransmissionCycle.D,
                 configuration,
                 permissionRequest.created()

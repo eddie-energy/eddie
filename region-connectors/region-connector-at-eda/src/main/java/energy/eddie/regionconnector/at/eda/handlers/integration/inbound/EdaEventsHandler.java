@@ -1,6 +1,10 @@
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
 
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
@@ -9,7 +13,9 @@ import energy.eddie.regionconnector.at.eda.models.ResponseCode;
 import energy.eddie.regionconnector.at.eda.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.EdaAnswerEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEvent;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +28,23 @@ public class EdaEventsHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaEventsHandler.class);
     private final Outbox outbox;
     private final AtPermissionRequestRepository repository;
+    private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
+    private final DataNeedsService dataNeedsService;
 
-    public EdaEventsHandler(EdaAdapter edaAdapter, Outbox outbox, AtPermissionRequestRepository repository) {
+    public EdaEventsHandler(
+            EdaAdapter edaAdapter,
+            Outbox outbox,
+            AtPermissionRequestRepository repository,
+            DataNeedCalculationService<DataNeed> dataNeedCalculationService,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+            DataNeedsService dataNeedsService
+    ) {
         this.outbox = outbox;
         this.repository = repository;
+        this.dataNeedsService = dataNeedsService;
         edaAdapter.getCMRequestStatusStream()
                   .subscribe(this::processIncomingCmStatusMessages);
+        this.dataNeedCalculationService = dataNeedCalculationService;
     }
 
     /**
@@ -55,7 +72,7 @@ public class EdaEventsHandler {
         switch (cmRequestStatus.messageType()) {
             case CCMO_ACCEPT -> handleCCMOAccept(cmRequestStatus, permissionId);
             case PONTON_ERROR -> handlePontonError(cmRequestStatus, request, permissionId);
-            case CCMO_REJECT -> handleCCMOReject(cmRequestStatus, permissionId);
+            case CCMO_REJECT -> handleCCMOReject(cmRequestStatus, request, permissionId);
             case CCMO_ANSWER -> outbox.commit(
                     new EdaAnswerEvent(permissionId,
                                        PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
@@ -104,7 +121,11 @@ public class EdaEventsHandler {
         );
     }
 
-    private void handleCCMOReject(CMRequestStatus cmRequestStatus, String permissionId) {
+    private void handleCCMOReject(
+            CMRequestStatus cmRequestStatus,
+            AtPermissionRequest permissionRequest,
+            String permissionId
+    ) {
         var message = cmRequestStatus.message();
         for (Integer statusCode : cmRequestStatus.statusCodes()) {
             if (statusCode == ResponseCode.CmReqOnl.REJECTED) {
@@ -115,6 +136,10 @@ public class EdaEventsHandler {
             if (statusCode == ResponseCode.CmReqOnl.TIMEOUT) {
                 outbox.commit(new EdaAnswerEvent(permissionId, PermissionProcessStatus.TIMED_OUT, message));
                 return;
+            }
+            if (statusCode == ResponseCode.CmReqOnl.REQUESTED_DATA_NOT_DELIVERABLE) {
+                var wasRetried = retryWithHigherGranularity(permissionRequest);
+                if (wasRetried) return;
             }
         }
 
@@ -152,5 +177,23 @@ public class EdaEventsHandler {
         outbox.commit(new EdaAnswerEvent(permissionId,
                                          PermissionProcessStatus.EXTERNALLY_TERMINATED,
                                          cmRequestStatus.message()));
+    }
+
+    private boolean retryWithHigherGranularity(AtPermissionRequest permissionRequest) {
+        if (permissionRequest.granularity() != AllowedGranularity.PT15M) {
+            return false;
+        }
+        var dataNeed = dataNeedsService.getById(permissionRequest.dataNeedId());
+        var calc = dataNeedCalculationService.calculate(dataNeed);
+        if (calc.granularities() == null || !calc.granularities().contains(Granularity.P1D)) {
+            return false;
+        }
+        outbox.commit(new ValidatedEvent(permissionRequest.permissionId(),
+                                         permissionRequest.start(),
+                                         permissionRequest.end(),
+                                         AllowedGranularity.P1D,
+                                         permissionRequest.cmRequestId(),
+                                         permissionRequest.conversationId()));
+        return true;
     }
 }
