@@ -26,7 +26,12 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
     private final DatadisTokenProvider tokenProvider;
     private final URI authorizationEndpoint;
 
-    public NettyAuthorizationApiClient(HttpClient httpClient, ObjectMapper mapper, DatadisTokenProvider tokenProvider, String basePath) {
+    public NettyAuthorizationApiClient(
+            HttpClient httpClient,
+            ObjectMapper mapper,
+            DatadisTokenProvider tokenProvider,
+            String basePath
+    ) {
         requireNonNull(httpClient);
         requireNonNull(mapper);
         requireNonNull(tokenProvider);
@@ -51,21 +56,30 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
         return tokenProvider.getToken().flatMap(token -> httpClient
                 .headers(headers -> headers.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON))
                 .headers(headers -> headers.add(HttpHeaderNames.AUTHORIZATION, "Bearer " + token))
+                .headers(headers -> headers.add(HttpHeaderNames.USER_AGENT,
+                                                "PostmanRuntime/7.36.3")) // TODO: fix with #1102
                 .post()
                 .uri(authorizationEndpoint)
                 .send(ByteBufMono.fromString(Mono.just(body)))
-                .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono.asString()
+                .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono
+                        .asString()
                         .defaultIfEmpty(Strings.EMPTY)
                         .flatMap(bodyString -> {
                             if (httpClientResponse.status().code() == HttpResponseStatus.OK.code()) {
                                 try {
                                     JsonNode jsonNode = mapper.readTree(bodyString);
-                                    return Mono.just(AuthorizationRequestResponse.fromResponse(jsonNode.get("response").asText()));
+                                    return Mono.just(AuthorizationRequestResponse.fromResponse(
+                                            jsonNode.get("response").asText()
+                                    ));
                                 } catch (JsonProcessingException e) {
                                     return Mono.error(e);
                                 }
                             } else {
-                                return Mono.error(new DatadisApiException("Failed to post authorization request", httpClientResponse.status(), bodyString));
+                                return Mono.error(new DatadisApiException(
+                                        "Failed to post authorization request",
+                                        httpClientResponse.status(),
+                                        bodyString
+                                ));
                             }
                         }))
         );
