@@ -1748,5 +1748,446 @@
     "companyId": "8716871000002",
     "websiteUrl": "https://www.liander.nl/",
     "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Atlantic City Electric",
+    "companyId": "ACE",
+    "websiteUrl": "https://www.atlanticcityelectric.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "American Electric Power Ohio",
+    "companyId": "AEPOHIO",
+    "websiteUrl": "https://www.aepohio.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Alabama Power",
+    "companyId": "ALPower",
+    "websiteUrl": "https://www.alabamapower.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Ameren",
+    "companyId": "Ameren",
+    "websiteUrl": "https://www.ameren.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Appalachian Power",
+    "companyId": "AppalachianPower",
+    "websiteUrl": "https://www.appalachianpower.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Arizona Public Service Company",
+    "companyId": "APS",
+    "websiteUrl": "https://www.aps.com/en/residential/Pages/home.aspx",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Austin Energy",
+    "companyId": "AustinEnergy",
+    "websiteUrl": "https://austinenergy.com/ae",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Baltimore Gas & Electric",
+    "companyId": "BGE",
+    "websiteUrl": "https://www.bge.com",
+    "officialContact": ""
+  },
+  {
+    "country": "ca",
+    "company": "Bluewater Power Distribution Corporation",
+    "companyId": "BLUEWATER",
+    "websiteUrl": "https://greenbutton.bluewaterpower.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Cleveland Electric Illuminating Company",
+    "companyId": "CEIC",
+    "websiteUrl": "https://www.firstenergycorp.com/content/customer/illuminating_company.html",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Commonwealth Edison",
+    "companyId": "ComEd",
+    "websiteUrl": "https://www.comed.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Consolidated Edison New York",
+    "companyId": "ConEd",
+    "websiteUrl": "https://www.coned.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Consumers Energy",
+    "companyId": "CONSUMERSENERGY",
+    "websiteUrl": "https://greenbutton.consumersenergy.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Demonstration Utility",
+    "companyId": "DEMO",
+    "websiteUrl": "",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Demo Utility",
+    "companyId": "DEMOUTILITY",
+    "websiteUrl": "https://greenbutton.demoutility.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Dominion Energy",
+    "companyId": "DOMINION",
+    "websiteUrl": "",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Duke Energy",
+    "companyId": "Duke",
+    "websiteUrl": "https://www.duke-energy.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "El Paso Electric Company",
+    "companyId": "EPE",
+    "websiteUrl": "https://greenbutton.epelectric.com",
+    "officialContact": ""
+  },
+  {
+    "country": "ca",
+    "company": "Essex Powerlines",
+    "companyId": "ESSEX",
+    "websiteUrl": "https://greenbutton.essexpowerlines.ca",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Eversource Energy",
+    "companyId": "EVRSRC",
+    "websiteUrl": "https://www.eversource.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Fort Collins Utilities",
+    "companyId": "FCU",
+    "websiteUrl": "https://data.fcgov.utilityapi.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Florida Power and Light Company",
+    "companyId": "FPL",
+    "websiteUrl": "",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Georgia Power",
+    "companyId": "GAPower",
+    "websiteUrl": "https://www.georgiapower.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Hawaii Electric",
+    "companyId": "HECO",
+    "websiteUrl": "https://www.hawaiianelectric.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Integrated Energy Data Resource Program",
+    "companyId": "IEDR",
+    "websiteUrl": "http://greenbutton.iedr.nyserda.ny.gov",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Jersey Central Power and Light",
+    "companyId": "JCPL",
+    "websiteUrl": "https://www.firstenergycorp.com/content/customer/jersey_central_power_light.html",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Los Angeles Department of Water & Power",
+    "companyId": "LADWP",
+    "websiteUrl": "https://www.ladwp.com",
+    "officialContact": ""
+  },
+  {
+    "country": "ca",
+    "company": "Lakefront Utilities Inc.",
+    "companyId": "LAKEFRONT",
+    "websiteUrl": "https://greenbutton.lakefrontutilities.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Mon Power",
+    "companyId": "MonPower",
+    "websiteUrl": "https://www.firstenergycorp.com/content/customer/mon_power.html",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "National Grid",
+    "companyId": "NATGD",
+    "websiteUrl": "https://www.nationalgridus.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "National Grid New York",
+    "companyId": "NGNY",
+    "websiteUrl": "https://greenbutton.nationalgrid.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Nevada Energy",
+    "companyId": "NVE",
+    "websiteUrl": "https://www.nvenergy.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "New York State Electric and Gas Corporation",
+    "companyId": "NYSEG",
+    "websiteUrl": "https://www.nyseg.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Ohio Edison",
+    "companyId": "OhioEd",
+    "websiteUrl": "https://www.firstenergycorp.com/content/customer/ohio_edison.html",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Orange and Rockland Utilities",
+    "companyId": "ORU",
+    "websiteUrl": "https://www.oru.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Pacific Power Utilities",
+    "companyId": "PacPower",
+    "websiteUrl": "https://www.pacificpower.net",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Peninsula Clean Energy",
+    "companyId": "PCE",
+    "websiteUrl": "https://www.peninsulacleanenergy.com/data-connect",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "PECO Energy",
+    "companyId": "PECO",
+    "websiteUrl": "https://www.peco.com/Pages/default.aspx",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Penelec",
+    "companyId": "Penelec",
+    "websiteUrl": "https://www.firstenergycorp.com/content/customer/penelec.html",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Potomac Electric Power Company",
+    "companyId": "PEPCO",
+    "websiteUrl": "https://www.pepco.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Pacific Gas and Electric",
+    "companyId": "PG&E",
+    "websiteUrl": "https://www.pge.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Portland General Electric",
+    "companyId": "PORTGE",
+    "websiteUrl": "https://www.portlandgeneral.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Potomac Edison",
+    "companyId": "PotomacEd",
+    "websiteUrl": "https://www.firstenergycorp.com/content/customer/potomac_edison.html",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Pennsylvania Power and Light",
+    "companyId": "PPL",
+    "websiteUrl": "https://www.pplelectric.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Public Services Electric and Gas",
+    "companyId": "PSEG",
+    "websiteUrl": "https://www.pseg.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Public Services Electric and Gas - Long Island",
+    "companyId": "PSEGLI",
+    "websiteUrl": "https://www.psegliny.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Public Service Company of Oklahoma",
+    "companyId": "PSO",
+    "websiteUrl": "https://www.psoklahoma.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Rocky Mountain Power",
+    "companyId": "RMP",
+    "websiteUrl": "https://www.rockymountainpower.net",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Southern California Edison",
+    "companyId": "SCE",
+    "websiteUrl": "https://www.sce.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "San Diego Gas and Electric",
+    "companyId": "SDG&E",
+    "websiteUrl": "https://www.sdge.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "San Francisco Public Utilities Commission",
+    "companyId": "SFPUC",
+    "websiteUrl": "https://sfwater.org",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Smart Meter Texas",
+    "companyId": "SMT",
+    "websiteUrl": "https://www.smartmetertexas.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Sacramento Municipal Utility District",
+    "companyId": "SMUD",
+    "websiteUrl": "https://www.smud.org",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Southern California Gas Company",
+    "companyId": "SoCalGas",
+    "websiteUrl": "https://www.socalgas.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Salt River Project",
+    "companyId": "SRP",
+    "websiteUrl": "https://www.srpnet.com",
+    "officialContact": ""
+  },
+  {
+    "country": "ca",
+    "company": "PUC Distribution Inc.",
+    "companyId": "SSMPUC",
+    "websiteUrl": "https://greenbutton.ssmpuc.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Silicon Valley Clean Energy",
+    "companyId": "SVCE",
+    "websiteUrl": "https://data.svcleanenergy.org",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Tucson Electric Power",
+    "companyId": "TEP",
+    "websiteUrl": "https://www.tep.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Texas Gas Service",
+    "companyId": "TEXGAS",
+    "websiteUrl": "https://www.texasgasservice.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Washington Gas",
+    "companyId": "WashingtonGas",
+    "websiteUrl": "https://my.washingtongas.com/portal/Dashboard.aspx",
+    "officialContact": ""
+  },
+  {
+    "country": "ca",
+    "company": "Welland Hydro-Electric System Corp",
+    "companyId": "WELLAND",
+    "websiteUrl": "https://greenbutton.wellandhydro.com",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "West Penn Power",
+    "companyId": "WestPennPower",
+    "websiteUrl": "https://www.firstenergycorp.com/content/customer/west_penn_power.html",
+    "officialContact": ""
+  },
+  {
+    "country": "us",
+    "company": "Xcel Energy",
+    "companyId": "XCEL",
+    "websiteUrl": "https://www.xcelenergy.com",
+    "officialContact": ""
   }
 ]

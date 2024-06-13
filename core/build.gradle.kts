@@ -30,7 +30,7 @@ dependencies {
     implementation(project(":region-connectors:region-connector-nl-mijn-aansluiting"))
     implementation(project(":region-connectors:region-connector-fi-fingrid"))
     implementation(project(":region-connectors:region-connector-simulation"))
-
+    implementation(project(":region-connectors:region-connector-us-green-button"))
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.websocket)
     implementation(libs.spring.openapi.webmvc.ui)

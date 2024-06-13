@@ -230,6 +230,10 @@ class EddieConnectButton extends LitElement {
     element.setAttribute("connection-id", this.connectionId);
     element.setAttribute("data-need-id", this.dataNeedId);
     element.setAttribute(
+      "country-code",
+      this._selectedPermissionAdministrator.country
+    );
+    element.setAttribute(
       "jump-off-url",
       this._selectedPermissionAdministrator.jumpOffUrl
     );
