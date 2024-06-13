@@ -27,6 +27,9 @@ const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
 const BASE_URL = import.meta.url.replace("/lib/eddie-components.js", "");
 
+const dialogOpenEvent = new Event("eddie-dialog-open", {bubbles: true, composed: true});
+const dialogCloseEvent = new Event("eddie-dialog-close", {bubbles: true, composed: true});
+
 function fetchJson(path) {
   return fetch(BASE_URL + path)
     .then((response) => response.ok && response.json())
@@ -65,6 +68,8 @@ class EddieConnectButton extends LitElement {
       attribute: "remember-permission-administrator",
       type: Object,
     },
+    onOpen: { type: String },
+    onClose: { type: String },
 
     _dataNeedIdsAndNames: { type: Array },
     _selectedCountry: { type: String },
@@ -363,6 +368,16 @@ class EddieConnectButton extends LitElement {
     this._selectedPermissionAdministrator = { regionConnector: "aiida" };
   }
 
+  handleDialogShow() {
+    this.dispatchEvent(dialogOpenEvent);
+    Function(`"use strict";${this.onOpen}`)();
+  }
+
+  handleDialogHide() {
+    this.dispatchEvent(dialogCloseEvent);
+    Function(`"use strict";${this.onClose}`)();
+  }
+
   render() {
     return html`
       <link
@@ -393,6 +408,8 @@ class EddieConnectButton extends LitElement {
       <sl-dialog
         ${ref(this.dialogRef)}
         style="--width: clamp(30rem, 100%, 45rem)"
+        @sl-show="${this.handleDialogShow}"
+        @sl-hide="${this.handleDialogHide}"
       >
         <div slot="label">${unsafeSVG(headerImage)}</div>
 
