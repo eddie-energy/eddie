@@ -49,14 +49,19 @@ public class NettyDatadisTokenProvider implements DatadisTokenProvider {
                 .post()
                 .uri(tokenEndpoint)
                 .sendForm((req, form) -> form.multipart(false)
-                        .attr("username", config.username())
-                        .attr("password", config.password())
+                                             .attr("username", config.username())
+                                             .attr("password", config.password())
+                                             .attr("origin", "WEB")
                 )
-                .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono.asString()
+                .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono
+                        .asString()
                         .defaultIfEmpty(Strings.EMPTY)
                         .flatMap(bodyString -> {
                             if (httpClientResponse.status().code() != 200 || bodyString.isEmpty()) {
-                                return Mono.error(new TokenProviderException("Failed to fetch token:" + httpClientResponse.status().code() + " - " + bodyString));
+                                return Mono.error(new TokenProviderException(
+                                        "Failed to fetch token:" + httpClientResponse.status()
+                                                                                     .code() + " - " + bodyString
+                                ));
                             }
                             return Mono.just(bodyString);
                         }));
