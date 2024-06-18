@@ -61,11 +61,21 @@ class EddieRequestStatusHandler extends LitElement {
           throw new Error("Failed to poll request status");
         }
 
-        const { status, message } = await response.json();
+        const { status, message, additionalInformation } =
+          await response.json();
 
         if (this.status !== status) {
           this.status = status;
           this.renderStatus(status, message);
+          this.dispatchEvent(
+            new CustomEvent("eddie-request-status", {
+              detail: {
+                status: status,
+                message: message,
+                additionalInformation: additionalInformation,
+              },
+            })
+          );
 
           if (!POLL_STATES.includes(status)) {
             break;
