@@ -13,7 +13,7 @@ import energy.eddie.regionconnector.at.eda.models.ResponseCode;
 import energy.eddie.regionconnector.at.eda.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.EdaAnswerEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
-import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEvent;
+import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEventFactory;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -30,6 +30,7 @@ public class EdaEventsHandler {
     private final AtPermissionRequestRepository repository;
     private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
     private final DataNeedsService dataNeedsService;
+    private final ValidatedEventFactory validatedEventFactory;
 
     public EdaEventsHandler(
             EdaAdapter edaAdapter,
@@ -37,11 +38,13 @@ public class EdaEventsHandler {
             AtPermissionRequestRepository repository,
             DataNeedCalculationService<DataNeed> dataNeedCalculationService,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-            DataNeedsService dataNeedsService
+            DataNeedsService dataNeedsService,
+            ValidatedEventFactory validatedEventFactory
     ) {
         this.outbox = outbox;
         this.repository = repository;
         this.dataNeedsService = dataNeedsService;
+        this.validatedEventFactory = validatedEventFactory;
         edaAdapter.getCMRequestStatusStream()
                   .subscribe(this::processIncomingCmStatusMessages);
         this.dataNeedCalculationService = dataNeedCalculationService;
@@ -188,12 +191,13 @@ public class EdaEventsHandler {
         if (calc.granularities() == null || !calc.granularities().contains(Granularity.P1D)) {
             return false;
         }
-        outbox.commit(new ValidatedEvent(permissionRequest.permissionId(),
-                                         permissionRequest.start(),
-                                         permissionRequest.end(),
-                                         AllowedGranularity.P1D,
-                                         permissionRequest.cmRequestId(),
-                                         permissionRequest.conversationId()));
+
+        outbox.commit(validatedEventFactory.createValidatedEvent(
+                permissionRequest.permissionId(),
+                permissionRequest.start(),
+                permissionRequest.end(),
+                AllowedGranularity.P1D
+        ));
         return true;
     }
 }

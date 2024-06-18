@@ -13,6 +13,7 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.eda.AtEdaBeanConfig;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEventFactory;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +52,8 @@ class PermissionRequestCreationAndValidationServiceTest {
     @SuppressWarnings("unused")
     @Spy
     private AtConfiguration configuration = new AtEdaBeanConfig().atConfiguration("epId");
+    @Spy
+    private ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(configuration);
 
     @Test
     void createValidPermissionRequest_forHVDDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException, EdaValidationException {

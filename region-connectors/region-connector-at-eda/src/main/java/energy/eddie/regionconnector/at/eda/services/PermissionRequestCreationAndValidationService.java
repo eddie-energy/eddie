@@ -10,17 +10,15 @@ import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
-import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.MalformedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEvent;
+import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEventFactory;
 import energy.eddie.regionconnector.at.eda.permission.request.validation.MeteringPointMatchesDsoIdValidator;
-import energy.eddie.regionconnector.at.eda.requests.MessageId;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
-import energy.eddie.regionconnector.at.eda.utils.CMRequestId;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.springframework.stereotype.Component;
 
@@ -40,22 +38,22 @@ public class PermissionRequestCreationAndValidationService {
     private static final Set<Validator<CreatedEvent>> VALIDATORS = Set.of(
             new MeteringPointMatchesDsoIdValidator()
     );
-    private final AtConfiguration configuration;
     private final Outbox outbox;
     private final DataNeedsService dataNeedsService;
     private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
+    private final ValidatedEventFactory validatedEventFactory;
 
     public PermissionRequestCreationAndValidationService(
-            AtConfiguration configuration,
             Outbox outbox,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")  // defined in core
             DataNeedsService dataNeedsService,
-            DataNeedCalculationService<DataNeed> dataNeedCalculationService
+            DataNeedCalculationService<DataNeed> dataNeedCalculationService,
+            ValidatedEventFactory validatedEventFactory
     ) {
-        this.configuration = configuration;
         this.outbox = outbox;
         this.dataNeedsService = dataNeedsService;
         this.dataNeedCalculationService = dataNeedCalculationService;
+        this.validatedEventFactory = validatedEventFactory;
     }
 
     /**
@@ -111,16 +109,12 @@ public class PermissionRequestCreationAndValidationService {
             throw new UnsupportedDataNeedException(EdaRegionConnectorMetadata.REGION_CONNECTOR_ID, dataNeedId, reason);
         }
 
-        var messageId = new MessageId(configuration.eligiblePartyId(), created).toString();
-        var cmRequestId = new CMRequestId(messageId).toString();
-
         ValidatedEvent validatedEvent = switch (dataNeed) {
-            case AccountingPointDataNeed ignored -> accountingPointValidatedEvent(
-                    permissionId, cmRequestId, messageId
+            case AccountingPointDataNeed ignored -> validatedEventFactory.createValidatedEvent(
+                    permissionId, LocalDate.now(AT_ZONE_ID), null, null
             );
             default -> validateHistoricalValidatedEvent(
-                    permissionId, cmRequestId, messageId, dataNeedId,
-                    calculation
+                    permissionId, dataNeedId, calculation
             );
         };
 
@@ -134,25 +128,8 @@ public class PermissionRequestCreationAndValidationService {
                          .toList();
     }
 
-    private ValidatedEvent accountingPointValidatedEvent(
-            String permissionId,
-            String cmRequestId,
-            String messageId
-    ) {
-        return new ValidatedEvent(
-                permissionId,
-                LocalDate.now(AT_ZONE_ID),
-                null,
-                null,
-                cmRequestId,
-                messageId
-        );
-    }
-
     private ValidatedEvent validateHistoricalValidatedEvent(
             String permissionId,
-            String cmRequestId,
-            String messageId,
             String dataNeedId,
             DataNeedCalculation calculation
     ) throws UnsupportedDataNeedException {
@@ -165,13 +142,11 @@ public class PermissionRequestCreationAndValidationService {
 
         var granularity = calculation.granularities().getFirst();
         //noinspection DataFlowIssue
-        return new ValidatedEvent(
+        return validatedEventFactory.createValidatedEvent(
                 permissionId,
                 calculation.energyDataTimeframe().start(),
                 calculation.energyDataTimeframe().end(),
-                AllowedGranularity.valueOf(granularity.name()),
-                cmRequestId,
-                messageId
+                AllowedGranularity.valueOf(granularity.name())
         );
     }
 }
