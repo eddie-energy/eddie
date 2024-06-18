@@ -136,10 +136,21 @@ public class EdaEventsHandler {
                 return;
             }
 
+            if (statusCode == ResponseCode.CmReqOnl.CONSENT_REQUEST_ID_ALREADY_EXISTS) {
+                outbox.commit(validatedEventFactory.createValidatedEvent(
+                        permissionRequest.permissionId(),
+                        permissionRequest.start(),
+                        permissionRequest.end(),
+                        permissionRequest.granularity()
+                ));
+                return;
+            }
+
             if (statusCode == ResponseCode.CmReqOnl.TIMEOUT) {
                 outbox.commit(new EdaAnswerEvent(permissionId, PermissionProcessStatus.TIMED_OUT, message));
                 return;
             }
+
             if (statusCode == ResponseCode.CmReqOnl.REQUESTED_DATA_NOT_DELIVERABLE) {
                 var wasRetried = retryWithHigherGranularity(permissionRequest);
                 if (wasRetried) return;

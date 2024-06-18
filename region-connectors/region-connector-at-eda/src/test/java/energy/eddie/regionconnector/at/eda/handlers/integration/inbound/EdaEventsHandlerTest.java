@@ -33,11 +33,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.publisher.TestPublisher;
 
+import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -393,5 +395,45 @@ class EdaEventsHandlerTest {
         // Then
         verify(outbox).commit(edaAnswerEventCaptor.capture());
         assertEquals(PermissionProcessStatus.INVALID, edaAnswerEventCaptor.getValue().status());
+    }
+
+    @Test
+    void testCmRequestStatusMessage_retriesOnConsentRequestIdAlreadyExists() {
+        // Given
+        TestPublisher<CMRequestStatus> publisher = TestPublisher.create();
+        when(edaAdapter.getCMRequestStatusStream()).thenReturn(publisher.flux());
+        LocalDate today = LocalDate.now(AT_ZONE_ID);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
+                                                         "conversationId", null, "dsoId", today, today.plusDays(1),
+                                                         AllowedGranularity.PT15M,
+                                                         PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
+                                                         "", null, null);
+        when(repository.findByConversationIdOrCMRequestId("conversationId", null))
+                .thenReturn(Optional.of(permissionRequest));
+        CMRequestStatus cmRequestStatus = new CMRequestStatus(
+                NotificationMessageType.CCMO_REJECT,
+                "conversationId",
+                List.of(ResponseCode.CmReqOnl.CONSENT_REQUEST_ID_ALREADY_EXISTS),
+                null,
+                null,
+                null
+        );
+        new EdaEventsHandler(edaAdapter,
+                             outbox,
+                             repository,
+                             dataNeedCalculationService,
+                             dataNeedsService,
+                             validatedEventFactory);
+
+        // When
+        publisher.emit(cmRequestStatus);
+
+        // Then
+        verify(outbox).commit(validatedEventCaptor.capture());
+        assertAll(
+                () -> assertEquals(permissionRequest.start(), validatedEventCaptor.getValue().start()),
+                () -> assertEquals(permissionRequest.end(), validatedEventCaptor.getValue().end()),
+                () -> assertEquals(permissionRequest.granularity(), validatedEventCaptor.getValue().granularity())
+        );
     }
 }
