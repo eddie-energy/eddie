@@ -119,7 +119,7 @@ public class PermissionRequestCreationAndValidationService {
         };
 
         outbox.commit(validatedEvent);
-        return new CreatedPermissionRequest(permissionId, validatedEvent.cmRequestId());
+        return new CreatedPermissionRequest(permissionId);
     }
 
     private static List<AttributeError> validateAttributes(CreatedEvent permissionEvent) {

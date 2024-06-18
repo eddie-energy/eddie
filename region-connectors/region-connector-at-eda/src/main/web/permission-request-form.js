@@ -42,8 +42,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     this._isSubmitDisabled = true;
 
     this.createPermissionRequest(jsonData)
-      .then((result) => {
-        this._requestId = result["cmRequestId"];
+      .then(() => {
         this._isPermissionRequestCreated = true;
       })
       .catch((error) => {
