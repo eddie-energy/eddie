@@ -49,9 +49,9 @@ class PermissionRequestCreationAndValidationServiceTest {
     @SuppressWarnings("unused")
     @Spy
     private DataNeedCalculationService<DataNeed> dataNeedCalculationService = new AtEdaBeanConfig().dataNeedCalculationService();
-    @SuppressWarnings("unused")
     @Spy
     private AtConfiguration configuration = new AtEdaBeanConfig().atConfiguration("epId");
+    @SuppressWarnings("unused")
     @Spy
     private ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(configuration);
 
