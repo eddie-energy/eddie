@@ -87,7 +87,8 @@ class PkceClientControllerTest {
                                                         new MijnAansluitingDataSourceInformation(),
                                                         timestamp,
                                                         PermissionProcessStatus.ACCEPTED,
-                                                        ""));
+                                                        "",
+                                                        null));
 
         // When
         mockMvc.perform(get("/permission-status/pid"))
