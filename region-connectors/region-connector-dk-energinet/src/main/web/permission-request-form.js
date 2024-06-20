@@ -51,15 +51,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       <div>
         <form id="request-form">
           <sl-input
-            label="Refresh Token"
-            type="text"
-            id="refreshToken"
-            name="refreshToken"
-            help-text="Eloverblik needs a refresh token in order to access your data. A refresh token can be generated in the DataHub."
-            required
-          ></sl-input>
-          <br />
-          <sl-input
             label="Metering Point"
             type="text"
             id="meteringPoint"
@@ -73,7 +64,31 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             .disabled="${!!this.accountingPointId}"
             required
           ></sl-input>
+
           <br />
+
+          <sl-input
+            label="Refresh Token"
+            type="text"
+            id="refreshToken"
+            name="refreshToken"
+            required
+          >
+            <span slot="help-text">
+              Eloverblik needs a refresh token in order to access your data. A
+              refresh token can be generated in the DataHub. For more
+              information see:
+              <a
+                target="_blank"
+                href="https://energinet.dk/media/cxoho0xr/deling-af-egne-data-via-token.pdf"
+              >
+                https://energinet.dk/media/cxoho0xr/deling-af-egne-data-via-token.pdf
+              </a>
+            </span>
+          </sl-input>
+
+          <br />
+
           <sl-button
             ?disabled="${this._isSubmitDisabled}"
             type="submit"

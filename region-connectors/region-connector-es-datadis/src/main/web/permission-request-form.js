@@ -82,16 +82,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       <div>
         <form id="request-form">
           <sl-input
-            label="DNI/Nif"
-            type="text"
-            id="nif"
-            name="nif"
-            required
-          ></sl-input>
-
-          <br />
-
-          <sl-input
             label="CUPS"
             id="meteringPointId"
             type="text"
@@ -103,6 +93,18 @@ class PermissionRequestForm extends PermissionRequestFormBase {
               ? this.accountingPointId
               : nothing}"
             .disabled="${!!this.accountingPointId}"
+            required
+          ></sl-input>
+
+          <br />
+          
+          <sl-input
+            label="DNI/NIF"
+            type="text"
+            id="nif"
+            name="nif"
+            placeholder="25744101M"
+            help-text="We require the identification number you use to log into the Datadis web portal to request permission."
             required
           ></sl-input>
 
