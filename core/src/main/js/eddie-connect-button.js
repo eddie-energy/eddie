@@ -365,12 +365,22 @@ class EddieConnectButton extends LitElement {
     this._selectedPermissionAdministrator = { regionConnector: "aiida" };
   }
 
-  handleDialogShow() {
+  handleDialogShow(event) {
+    // Only fire for the dialog itself, not for its children
+    if (event.currentTarget !== event.target) {
+      return;
+    }
+
     this.dispatchEvent(dialogOpenEvent);
     Function(`"use strict";${this.onOpen}`)();
   }
 
-  handleDialogHide() {
+  handleDialogHide(event) {
+    // Only fire for the dialog itself, not for its children
+    if (event.currentTarget !== event.target) {
+      return;
+    }
+
     this.dispatchEvent(dialogCloseEvent);
     Function(`"use strict";${this.onClose}`)();
   }
