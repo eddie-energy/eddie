@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -51,7 +52,7 @@ class EnergyToPowerCalculationTest {
         // Given
         var energy = BigDecimal.valueOf(energyInt);
         var calculation = new EnergyToPowerCalculation();
-        var expected = BigDecimal.valueOf(5);
+        var expected = BigDecimal.valueOf(5).setScale(1, RoundingMode.HALF_UP);
 
         // When
         var res = calculation.convert(energy, hours, BigDecimal.ONE);
@@ -104,5 +105,29 @@ class EnergyToPowerCalculationTest {
 
         // Then
         assertEquals(expected, res);
+    }
+
+    @Test
+    void testConvertUnit_withZeroValues() {
+        // Given
+        var calculation = new EnergyToPowerCalculation();
+
+        // When
+        var res = calculation.convert(BigDecimal.ZERO, "PT1H", BigDecimal.ONE);
+
+        // Then
+        assertEquals(BigDecimal.ZERO.setScale(1, RoundingMode.HALF_UP), res);
+    }
+
+    @Test
+    void testConvertUnit_with15MinuteGranularity() {
+        // Given
+        var calculation = new EnergyToPowerCalculation();
+
+        // When
+        var res = calculation.convert(BigDecimal.ONE, "PT15M", BigDecimal.ONE);
+
+        // Then
+        assertNotEquals(BigDecimal.ZERO.setScale(1, RoundingMode.HALF_UP), res);
     }
 }
