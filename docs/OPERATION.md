@@ -81,7 +81,14 @@ responsible for storing previous connection IDs and linking them to the users of
 
 The EDDIE button fires events to inform the EP application about the status of the user interaction, and the status of the permission request. These events can be listened to by the EP application to update the UI or to trigger further actions.
 
+Permission request states are described in [PERMISSION_STATES.md](PERMISSION_STATES.md). To match the naming of event and attribute names common in HTML and JavaScript, the status names are converted to lowercase and hyphens are used as separators. Event handler attributes also have the hyphens removed. For example, the status `UNABLE_TO_SEND` is converted to `unable-to-send` for events and `onunabletosend` for the event handler attribute.
+
+> [!IMPORTANT]
+> Please note that status events on the client side are not a reliable source of information about the status of the permission request!
+
 ### Events
+
+Permission state events work as standard HTML events and can be listened to using the `addEventListener` method.
 
 ```js
 const button = document.querySelector("eddie-connect-button");
@@ -95,6 +102,7 @@ button.addEventListener("eddie-dialog-open", () => {
 | `eddie-dialog-open`      | Dispatched when the dialog is opened.                                                                                                    |
 | `eddie-dialog-close`     | Dispatched when the dialog is closed.                                                                                                    |
 | `eddie-request-status`   | Dispatched when the status of the permission request changes. The event detail contains the new status.                                  |
+| `eddie-request-created`  | Dispatched when the permission request has been created. The event detail contains an endpoint to query the current status from.         |
 | `eddie-request-{status}` | In addition to `eddie-request-status`, an event with the name of the request status is dispatched. For example, `eddie-request-created`. |
 
 ### Callback functions
@@ -102,14 +110,16 @@ button.addEventListener("eddie-dialog-open", () => {
 The button can also be passed callback functions to react to user interaction and status change events.
 The callback function has to be defined in the global scope and is passed as a string attribute to the button.
 
-| Attribute        | Called when ...                                                                                  |
-| ---------------- | ------------------------------------------------------------------------------------------------ |
-| `onopen`         | The dialog is opened (the button is pressed).                                                    |
-| `onclose`        | The dialog is closed.                                                                            |
-| `onstatuschange` | The status of the permission request has changed. `event.detail.status` contains the new status. |
-| `oncreated`      | A permission request has been created.                                                           |
-| `onaccepted`     | A permission request has been accepted.                                                          |
-| `onrejected`     | A permission request has been rejected.                                                          |
+| Attribute        | Called when ...                                                                                                                                   |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `onopen`         | The dialog is opened (the button is pressed).                                                                                                     |
+| `onclose`        | The dialog is closed.                                                                                                                             |
+| `onstatuschange` | The status of the permission request has changed. `event.detail.status` contains the new status.                                                  |
+| `oncreated`      | The permission request has been created. `event.detail.location` contains an endpoint to query the current status from.                           |
+| `on{status}`     | The status of the permission request has changed to `{status}`. Where `{status}` is in lowercase letters. For example, `onaccepted`, `onrejected` |
+
+> [!TIP]
+> The name of the attribute is case-insensitive, so they can be cased for better readability.
 
 ```html
 <eddie-connect-button

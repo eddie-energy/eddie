@@ -84,9 +84,6 @@ class EddieConnectButton extends LitElement {
     onOpen: { type: String },
     onClose: { type: String },
     onStatusChange: { type: String },
-    onCreated: { type: String },
-    onAccepted: { type: String },
-    onRejected: { type: String },
 
     // Private properties
     _selectedCountry: { type: String },
@@ -160,17 +157,6 @@ class EddieConnectButton extends LitElement {
      * @private
      */
     this._dataNeedAttributes = null;
-
-    /**
-     * Keeps track of permission request status event handlers.
-     * @type {Array<[string, string]>}
-     * @private
-     */
-    this._requestStatusHandlers = [
-      ["created", this.onCreated],
-      ["accepted", this.onAccepted],
-      ["rejected", this.onRejected],
-    ];
   }
 
   connectedCallback() {
@@ -407,28 +393,32 @@ class EddieConnectButton extends LitElement {
   }
 
   addRequestStatusHandlers() {
-    this._requestStatusHandlers.forEach(([status, handler]) => {
-      this.addEventListener(`eddie-request-${status}`, () => {
-        Function(`"use strict";${handler}`)();
-      });
-    });
-
     this.addEventListener("eddie-request-status", (event) => {
       const status = event.detail.status;
 
       // Execute the onStatusChange handler with the status as an argument
       Function(`"use strict";${this.onStatusChange}`)(status);
 
+      // Execute the specific status handler if it exists
+      const statusHandlerString = status.toLowerCase().replaceAll("_", "");
+      const statusHandler = this.getAttribute(`on${statusHandlerString}`);
+      if (statusHandler) {
+        Function(`"use strict";${statusHandler}`)();
+      }
+
       // Dispatch a specific event for the current status
+      const statusEventString = status.toLowerCase().replaceAll("_", "-");
       this.dispatchEvent(
-        new Event(
-          `eddie-request-${status.toLowerCase().replaceAll("_", "-")}`,
-          {
-            bubbles: true,
-            composed: true,
-          }
-        )
+        new Event(statusEventString, {
+          bubbles: true,
+          composed: true,
+        })
       );
+    });
+
+    // Handle creation event separately, as it is not passed as a status change
+    this.addEventListener("eddie-request-created", (event) => {
+      Function(`"use strict";${this.getAttribute("onCreated")}`)(event);
     });
   }
 
