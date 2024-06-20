@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.time.Duration;
+import java.math.RoundingMode;
 
 @ConditionalOnProperty(prefix = "eddie.converters", name = "energy", havingValue = "true")
 @Component
@@ -29,14 +29,13 @@ public class PowerToEnergyCalculation implements MeasurementCalculation {
      */
     @Override
     public BigDecimal convert(BigDecimal value, String resolution, BigDecimal scale) {
-        var hours = BigDecimal.valueOf(
-                Duration.ofMinutes(
-                                Granularity.valueOf(resolution)
-                                           .minutes()
-                        )
-                        .toHours()
-        );
-        return value.multiply(scale).multiply(hours);
+        var granularity = BigDecimal.valueOf(Granularity.valueOf(resolution).minutes())
+                                    .setScale(1, RoundingMode.HALF_UP)
+                                    .divide(UnitConstants.MINUTES_IN_HOUR, RoundingMode.HALF_UP);
+        return value
+                .setScale(1, RoundingMode.HALF_UP)
+                .multiply(scale)
+                .multiply(granularity);
     }
 
     @Override

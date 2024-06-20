@@ -10,12 +10,11 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 
 @ConditionalOnProperty(prefix = "eddie.converters", name = "power", havingValue = "true")
 @Component
 public class EnergyToPowerCalculation implements MeasurementCalculation {
+
     /**
      * Converts energy and hours to power. For more information see <a
      * href="https://www.rapidtables.com/convert/electric/wh-to-watt.html">this</a>
@@ -27,13 +26,12 @@ public class EnergyToPowerCalculation implements MeasurementCalculation {
      */
     @Override
     public BigDecimal convert(BigDecimal value, String resolution, BigDecimal scale) {
-        var granularity = BigDecimal.valueOf(
-                Duration.of(
-                        Granularity.valueOf(resolution).minutes(),
-                        ChronoUnit.MINUTES
-                ).toHours()
-        );
-        return value.divide(granularity, RoundingMode.HALF_UP);
+        var granularity = BigDecimal.valueOf(Granularity.valueOf(resolution).minutes())
+                                    .setScale(1, RoundingMode.HALF_UP)
+                                    .divide(UnitConstants.MINUTES_IN_HOUR, RoundingMode.HALF_UP);
+        return value
+                .setScale(1, RoundingMode.HALF_UP)
+                .divide(granularity, RoundingMode.HALF_UP);
     }
 
     @Override

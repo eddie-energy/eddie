@@ -2,6 +2,7 @@ package energy.eddie.core.converters;
 
 import energy.eddie.cim.v0_82.vhd.UnitOfMeasureTypeList;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -32,6 +33,7 @@ public class UnitConstants {
             UnitOfMeasureTypeList.MEGAVOLT_AMPERE_REACTIVE_HOURS,
             UnitOfMeasureTypeList.MEGAWATT_HOURS
     );
+    public static final BigDecimal MINUTES_IN_HOUR = BigDecimal.valueOf(60);
 
     private UnitConstants() {
         throw new IllegalStateException("Utility class");
