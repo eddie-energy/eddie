@@ -7,6 +7,7 @@ import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
+import energy.eddie.regionconnector.es.datadis.dtos.Address;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
@@ -46,7 +47,6 @@ public final class IntermediateAccountingPointMarketDocument {
         );
     }
 
-    // TODO update with correct mapping assertions GH-1047
     private AccountingPointMarketDocument accountingPointMarketDocument() {
         return new AccountingPointMarketDocument()
                 .withMRID(UUID.randomUUID().toString())
@@ -84,7 +84,6 @@ public final class IntermediateAccountingPointMarketDocument {
                 .withMRID(new MeasurementPointIDStringComplexType()
                                   .withValue(accountingPointData.contractDetails().cups())
                                   .withCodingScheme(CodingSchemeTypeList.SPAIN_NATIONAL_CODING_SCHEME))
-                .withResolution(resolution())
                 .withCommodity(CommodityKind.ELECTRICITYPRIMARYMETERED)
                 .withMeterReadingResolution(resolution())
                 .withTariffClassDSO(accountingPointData.contractDetails().codeFare())
@@ -123,10 +122,22 @@ public final class IntermediateAccountingPointMarketDocument {
     }
 
     private AddressComplexType installationAddress() {
-        return new AddressComplexType()
-                .withAddressRole(AddressRoleType.DELIVERY)
-                .withStreetName(accountingPointData.supply().address())
-                .withPostalCode(accountingPointData.supply().postalCode())
-                .withAddressSuffix(accountingPointData.supply().municipality());
+        var addressLine = accountingPointData.supply().address();
+        var addressComplexType = new AddressComplexType().withAddressRole(AddressRoleType.DELIVERY);
+
+        var optionalParsedAddress = Address.parse(accountingPointData.supply().address());
+        if (optionalParsedAddress.isPresent()) {
+            var parsedAddress = optionalParsedAddress.get();
+            addressComplexType.withStreetName(parsedAddress.street())
+                              .withBuildingNumber(parsedAddress.buildingNumber())
+                              .withDoorNumber(parsedAddress.door())
+                              .withFloorNumber(parsedAddress.floor())
+                              .withCityName(parsedAddress.city())
+                              .withPostalCode(parsedAddress.postalCode())
+                              .withAddressSuffix(parsedAddress.province());
+        } else {
+            addressComplexType.withAddressSuffix(addressLine);
+        }
+        return addressComplexType;
     }
 }
