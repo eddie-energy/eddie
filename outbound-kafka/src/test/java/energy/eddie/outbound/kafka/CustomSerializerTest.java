@@ -50,8 +50,10 @@ class CustomSerializerTest {
                                                                                                  "mda"),
                                                                    now,
                                                                    PermissionProcessStatus.ACCEPTED,
-                                                                   "Granted");
-        byte[] expected = "{\"connectionId\":\"connectionId\",\"permissionId\":\"permissionId\",\"dataNeedId\":\"dataNeedId\",\"dataSourceInformation\":{\"countryCode\":\"cc\",\"meteredDataAdministratorId\":\"mda\",\"permissionAdministratorId\":\"pa\",\"regionConnectorId\":\"rc\"},\"timestamp\":1672531200.000000000,\"status\":\"ACCEPTED\",\"message\":\"Granted\"}"
+                                                                   "Granted",
+                                                                   new ObjectMapper().createObjectNode()
+                                                                                     .put("test", "value"));
+        byte[] expected = "{\"connectionId\":\"connectionId\",\"permissionId\":\"permissionId\",\"dataNeedId\":\"dataNeedId\",\"dataSourceInformation\":{\"countryCode\":\"cc\",\"meteredDataAdministratorId\":\"mda\",\"permissionAdministratorId\":\"pa\",\"regionConnectorId\":\"rc\"},\"timestamp\":1672531200.000000000,\"status\":\"ACCEPTED\",\"message\":\"Granted\",\"additionalInformation\":{\"test\":\"value\"}}"
                 .getBytes(StandardCharsets.UTF_8);
 
         byte[] result = customSerializer.serialize(topic, data);

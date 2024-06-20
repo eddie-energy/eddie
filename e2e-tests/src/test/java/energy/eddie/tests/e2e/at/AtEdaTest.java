@@ -25,10 +25,10 @@ class AtEdaTest extends E2eTestSetup {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
 
         assertThat(page.locator("at-eda-pa-ce")).containsText(Pattern.compile(
-                "The Consent Request ID for this connection is: [A-Z0-9]{8}"));
+                "Please wait"));
 
         var locator = page.getByText(
                 "response code 99");
-        locator.waitFor(new Locator.WaitForOptions().setTimeout(180_000));
+        locator.waitFor(new Locator.WaitForOptions().setTimeout(360_000));
     }
 }

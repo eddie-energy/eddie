@@ -11,12 +11,14 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
+import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.models.ResponseCode;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.EdaAnswerEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEvent;
+import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEventFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationMessageType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -31,17 +33,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.publisher.TestPublisher;
 
+import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EdaEventsHandlerTest {
+    private final ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(new PlainAtConfiguration(
+            "test"));
     @Captor
     ArgumentCaptor<AcceptedEvent> acceptedEventCaptor;
     @Mock
@@ -118,7 +124,12 @@ class EdaEventsHandlerTest {
                 "cmRequestId",
                 "consentId",
                 "mid");
-        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
+        new EdaEventsHandler(edaAdapter,
+                             outbox,
+                             repository,
+                             dataNeedCalculationService,
+                             dataNeedsService,
+                             validatedEventFactory);
 
         // When
         publisher.emit(cmRequestStatus);
@@ -151,7 +162,12 @@ class EdaEventsHandlerTest {
                 "cmRequestId",
                 consentId,
                 meteringPoint);
-        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
+        new EdaEventsHandler(edaAdapter,
+                             outbox,
+                             repository,
+                             dataNeedCalculationService,
+                             dataNeedsService,
+                             validatedEventFactory);
 
         // When
         publisher.emit(cmRequestStatus);
@@ -175,7 +191,12 @@ class EdaEventsHandlerTest {
         CMRequestStatus cmRequestStatus = new CMRequestStatus(NotificationMessageType.PONTON_ERROR,
                                                               "conversationId",
                                                               "");
-        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
+        new EdaEventsHandler(edaAdapter,
+                             outbox,
+                             repository,
+                             dataNeedCalculationService,
+                             dataNeedsService,
+                             validatedEventFactory);
 
         // When
         publisher.emit(cmRequestStatus);
@@ -214,7 +235,12 @@ class EdaEventsHandlerTest {
                 null,
                 null
         );
-        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
+        new EdaEventsHandler(edaAdapter,
+                             outbox,
+                             repository,
+                             dataNeedCalculationService,
+                             dataNeedsService,
+                             validatedEventFactory);
 
         // When
         publisher.emit(cmRequestStatus);
@@ -234,7 +260,12 @@ class EdaEventsHandlerTest {
         CMRequestStatus cmRequestStatus = new CMRequestStatus(NotificationMessageType.CCMO_ACCEPT,
                                                               "conversationId",
                                                               "");
-        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
+        new EdaEventsHandler(edaAdapter,
+                             outbox,
+                             repository,
+                             dataNeedCalculationService,
+                             dataNeedsService,
+                             validatedEventFactory);
 
         // When
         publisher.emit(cmRequestStatus);
@@ -272,7 +303,12 @@ class EdaEventsHandlerTest {
                 ));
         when(dataNeedCalculationService.calculate(any()))
                 .thenReturn(new DataNeedCalculation(true, List.of(Granularity.PT15M, Granularity.P1D), null, null));
-        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
+        new EdaEventsHandler(edaAdapter,
+                             outbox,
+                             repository,
+                             dataNeedCalculationService,
+                             dataNeedsService,
+                             validatedEventFactory);
 
         // When
         publisher.emit(cmRequestStatus);
@@ -311,7 +347,12 @@ class EdaEventsHandlerTest {
                 ));
         when(dataNeedCalculationService.calculate(any()))
                 .thenReturn(new DataNeedCalculation(true, List.of(Granularity.PT15M), null, null));
-        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
+        new EdaEventsHandler(edaAdapter,
+                             outbox,
+                             repository,
+                             dataNeedCalculationService,
+                             dataNeedsService,
+                             validatedEventFactory);
 
         // When
         publisher.emit(cmRequestStatus);
@@ -341,7 +382,12 @@ class EdaEventsHandlerTest {
                 null,
                 null
         );
-        new EdaEventsHandler(edaAdapter, outbox, repository, dataNeedCalculationService, dataNeedsService);
+        new EdaEventsHandler(edaAdapter,
+                             outbox,
+                             repository,
+                             dataNeedCalculationService,
+                             dataNeedsService,
+                             validatedEventFactory);
 
         // When
         publisher.emit(cmRequestStatus);
@@ -349,5 +395,45 @@ class EdaEventsHandlerTest {
         // Then
         verify(outbox).commit(edaAnswerEventCaptor.capture());
         assertEquals(PermissionProcessStatus.INVALID, edaAnswerEventCaptor.getValue().status());
+    }
+
+    @Test
+    void testCmRequestStatusMessage_retriesOnConsentRequestIdAlreadyExists() {
+        // Given
+        TestPublisher<CMRequestStatus> publisher = TestPublisher.create();
+        when(edaAdapter.getCMRequestStatusStream()).thenReturn(publisher.flux());
+        LocalDate today = LocalDate.now(AT_ZONE_ID);
+        var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
+                                                         "conversationId", null, "dsoId", today, today.plusDays(1),
+                                                         AllowedGranularity.PT15M,
+                                                         PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
+                                                         "", null, null);
+        when(repository.findByConversationIdOrCMRequestId("conversationId", null))
+                .thenReturn(Optional.of(permissionRequest));
+        CMRequestStatus cmRequestStatus = new CMRequestStatus(
+                NotificationMessageType.CCMO_REJECT,
+                "conversationId",
+                List.of(ResponseCode.CmReqOnl.CONSENT_REQUEST_ID_ALREADY_EXISTS),
+                null,
+                null,
+                null
+        );
+        new EdaEventsHandler(edaAdapter,
+                             outbox,
+                             repository,
+                             dataNeedCalculationService,
+                             dataNeedsService,
+                             validatedEventFactory);
+
+        // When
+        publisher.emit(cmRequestStatus);
+
+        // Then
+        verify(outbox).commit(validatedEventCaptor.capture());
+        assertAll(
+                () -> assertEquals(permissionRequest.start(), validatedEventCaptor.getValue().start()),
+                () -> assertEquals(permissionRequest.end(), validatedEventCaptor.getValue().end()),
+                () -> assertEquals(permissionRequest.granularity(), validatedEventCaptor.getValue().granularity())
+        );
     }
 }

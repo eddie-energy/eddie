@@ -14,6 +14,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     accountingPointId: { attribute: "accounting-point-id" },
     _requestId: { type: String },
     _isPermissionRequestCreated: { type: Boolean },
+    _isPermissionRequestSent: { type: Boolean },
     _isSubmitDisabled: { type: Boolean },
   };
 
@@ -22,7 +23,31 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
     this._requestId = "";
     this._isPermissionRequestCreated = false;
+    this._isPermissionRequestSent = false;
     this._isSubmitDisabled = false;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.closest("eddie-request-status-handler").addEventListener(
+      "eddie-request-status",
+      (event) => {
+        const cmRequestId = event.detail.additionalInformation.cmRequestId;
+        this._requestId = cmRequestId ? cmRequestId : "";
+        if (event.detail.status === "SENT_TO_PERMISSION_ADMINISTRATOR") {
+          this._isPermissionRequestSent = true;
+          this._isPermissionRequestCreated = false;
+        } else if (event.detail.status === "CREATED") {
+          this._isPermissionRequestSent = false;
+          this._isPermissionRequestCreated = true;
+        } else if (
+          event.detail.status === "ACCEPTED" ||
+          event.detail.status === "REJECTED"
+        ) {
+          this._isPermissionRequestSent = false;
+        }
+      }
+    );
   }
 
   handleSubmit(event) {
@@ -42,12 +67,13 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     this._isSubmitDisabled = true;
 
     this.createPermissionRequest(jsonData)
-      .then((result) => {
-        this._requestId = result["cmRequestId"];
+      .then(() => {
         this._isPermissionRequestCreated = true;
       })
       .catch((error) => {
         this._isSubmitDisabled = false;
+        this._isPermissionRequestCreated = false;
+        this._isPermissionRequestSent = false;
         this.error(error);
       });
   }
@@ -83,29 +109,42 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             </sl-button>
           </div>
         </form>
-        
-        ${this._isPermissionRequestCreated ?
-        html`<br />
-          <sl-alert open>
-            <sl-icon slot="icon" name="info-circle"></sl-icon>
 
-            <p>
-              The Consent Request ID for this connection is: ${this._requestId}
-            </p>
+        ${this._isPermissionRequestCreated && !this._isPermissionRequestSent
+          ? html`<br />
+              <sl-alert open>
+                <sl-icon slot="icon" name="info-circle"></sl-icon>
 
-            <p>
-              Further steps are required at the website of the permission
-              administrator. Visit the website using the button below and look
-              for your provided Zählpunktnummer or the Consent Request with ID
-              ${this._requestId}.
-            </p>
+                <p>
+                  Please wait while we are sending the permission request to the
+                  permission administrator.
+                </p>
+              </sl-alert>`
+          : ""}
+        ${this._isPermissionRequestSent
+          ? html`<br />
+              <sl-alert open>
+                <sl-icon slot="icon" name="info-circle"></sl-icon>
 
-            ${this.jumpOffUrl
-              ? html` <sl-button href="${this.jumpOffUrl}" target="_blank">
-                  Visit permission administrator website
-                </sl-button>`
-              : ""}
-          </sl-alert>` : ""}
+                <p>
+                  The Consent Request ID for this connection is:
+                  ${this._requestId}
+                </p>
+
+                <p>
+                  Further steps are required at the website of the permission
+                  administrator. Visit the website using the button below and
+                  look for your provided Zählpunktnummer or the Consent Request
+                  with ID ${this._requestId}.
+                </p>
+
+                ${this.jumpOffUrl
+                  ? html` <sl-button href="${this.jumpOffUrl}" target="_blank">
+                      Visit permission administrator website
+                    </sl-button>`
+                  : ""}
+              </sl-alert>`
+          : ""}
       </div>
     `;
   }

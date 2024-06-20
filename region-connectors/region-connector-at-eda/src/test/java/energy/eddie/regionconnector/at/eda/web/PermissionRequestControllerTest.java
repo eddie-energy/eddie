@@ -168,7 +168,7 @@ class PermissionRequestControllerTest {
     void createPermissionRequest_returnsPermissionRequest_andSetsLocationHeader() throws Exception {
         // Given
         var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand("pid").toString();
-        CreatedPermissionRequest expected = new CreatedPermissionRequest("pid", "cmRequestId");
+        CreatedPermissionRequest expected = new CreatedPermissionRequest("pid");
         when(permissionRequestCreationAndValidationService.createAndValidatePermissionRequest(any()))
                 .thenReturn(expected);
 
