@@ -6,6 +6,7 @@ import reactor.core.publisher.Sinks;
 
 public abstract class AiidaDataSource implements AutoCloseable {
     protected final Sinks.Many<AiidaRecord> recordSink;
+    private final String id;
     private final String name;
 
     /**
@@ -13,7 +14,8 @@ public abstract class AiidaDataSource implements AutoCloseable {
      *
      * @param name Display name of this new datasource.
      */
-    protected AiidaDataSource(String name) {
+    protected AiidaDataSource(String id, String name) {
+        this.id = id;
         this.name = name;
         recordSink = Sinks.many().unicast().onBackpressureBuffer();
     }
@@ -39,5 +41,14 @@ public abstract class AiidaDataSource implements AutoCloseable {
      */
     public String name() {
         return name;
+    }
+
+    /**
+     * Returns the internal ID of the datasource
+     *
+     * @return Internal ID of the datasource
+     */
+    public String id() {
+        return id;
     }
 }

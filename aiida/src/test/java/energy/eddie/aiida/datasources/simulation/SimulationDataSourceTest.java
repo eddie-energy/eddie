@@ -28,7 +28,7 @@ class SimulationDataSourceTest {
     void verify_bundleOfFourValuesIsGeneratedPerPeriod_andCloseEmitsCompleteOnFlux() {
         Duration period = Duration.ofSeconds(1);
 
-        simulator = new SimulationDataSource("Test Simulator", fixedClock, period);
+        simulator = new SimulationDataSource("1", "Test Simulator", fixedClock, period);
 
         StepVerifier.withVirtualTime(() -> simulator.start())
                 .expectSubscription()
@@ -50,7 +50,7 @@ class SimulationDataSourceTest {
      */
     @Test
     void verify_close_immediatelyEmitsCompleteOnFlux() {
-        simulator = new SimulationDataSource("Test Simulator", fixedClock, Duration.ofSeconds(200));
+        simulator = new SimulationDataSource("1", "Test Simulator", fixedClock, Duration.ofSeconds(200));
 
         var stepVerifier = StepVerifier.create(simulator.start())
                 .expectComplete()

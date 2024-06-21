@@ -27,6 +27,10 @@ public class SimulationDataSource extends AiidaDataSource {
     @Nullable
     private Disposable periodicFlux;
 
+    public SimulationDataSource(String id, Clock clock, Duration simulationPeriod) {
+        this(id, "SimulationDataSource", clock, simulationPeriod);
+    }
+
     /**
      * Creates a new SimulationDataSource with the given name.
      * It will publish an {@link AiidaRecord} with a random value in {@code simulationPeriod} time gaps
@@ -40,8 +44,8 @@ public class SimulationDataSource extends AiidaDataSource {
      * @param clock            The timestamps of the generated messages will be taken from this clock.
      * @param simulationPeriod Duration to wait until new random records should be created.
      */
-    public SimulationDataSource(String name, Clock clock, Duration simulationPeriod) {
-        super(name);
+    public SimulationDataSource(String id, String name, Clock clock, Duration simulationPeriod) {
+        super(id, name);
         this.clock = clock;
         this.simulationPeriod = simulationPeriod;
 

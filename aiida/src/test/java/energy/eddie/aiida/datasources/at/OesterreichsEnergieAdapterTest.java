@@ -41,7 +41,7 @@ class OesterreichsEnergieAdapterTest {
 
         config = new MqttConfigBuilder("tcp://localhost:1883", "MyTestTopic").build();
         mapper = new AiidaConfiguration().objectMapper();
-        adapter = new OesterreichsEnergieAdapter(config, mapper);
+        adapter = new OesterreichsEnergieAdapter("1", config, mapper);
     }
 
     @AfterEach
@@ -121,7 +121,7 @@ class OesterreichsEnergieAdapterTest {
                 .setPassword("Pass")
                 .build();
         config = spy(config);
-        adapter = new OesterreichsEnergieAdapter(config, mapper);
+        adapter = new OesterreichsEnergieAdapter("1", config, mapper);
 
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);

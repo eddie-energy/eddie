@@ -42,8 +42,8 @@ public class OesterreichsEnergieAdapter extends AiidaDataSource implements MqttC
      * @param mapper     {@link ObjectMapper} that is used to deserialize the JSON messages.
      *                   A {@link OesterreichsEnergieAdapterValueDeserializer} will be registered to this mapper.
      */
-    public OesterreichsEnergieAdapter(MqttConfig mqttConfig, ObjectMapper mapper) {
-        super("Oesterreichs Energie Adapter (SMA)");
+    public OesterreichsEnergieAdapter(String dataSourceId, MqttConfig mqttConfig, ObjectMapper mapper) {
+        super(dataSourceId, "Oesterreichs Energie Adapter (SMA)");
         this.mqttConfig = mqttConfig;
         this.mapper = mapper;
 

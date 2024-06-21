@@ -50,7 +50,7 @@ public class Aggregator implements AutoCloseable {
      * @param dataSource The new datasource to add. No check is made if this is a duplicate.
      */
     public void addNewAiidaDataSource(AiidaDataSource dataSource) {
-        LOGGER.info("Will add datasource {} to aggregator", dataSource.name());
+        LOGGER.info("Will add datasource {} with ID {} to aggregator", dataSource.name(), dataSource.id());
 
         sources.add(dataSource);
         dataSource.start().subscribe(this::publishRecordToCombinedFlux, throwable -> handleError(throwable, dataSource));
