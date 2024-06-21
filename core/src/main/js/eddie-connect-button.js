@@ -27,8 +27,15 @@ const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
 const BASE_URL = import.meta.url.replace("/lib/eddie-components.js", "");
 
-const dialogOpenEvent = new Event("eddie-dialog-open", {bubbles: true, composed: true});
-const dialogCloseEvent = new Event("eddie-dialog-close", {bubbles: true, composed: true});
+const dialogOpenEvent = new Event("eddie-dialog-open", {
+  bubbles: true,
+  composed: true,
+});
+
+const dialogCloseEvent = new Event("eddie-dialog-close", {
+  bubbles: true,
+  composed: true,
+});
 
 function fetchJson(path) {
   return fetch(BASE_URL + path)
@@ -402,6 +409,11 @@ class EddieConnectButton extends LitElement {
         @sl-hide="${this.handleDialogHide}"
       >
         <div slot="label">${unsafeSVG(headerImage)}</div>
+
+        <!-- Render data need summary -->
+        ${this._dataNeedAttributes
+          ? dataNeedSummary(this._dataNeedAttributes)
+          : ""}
 
         <!-- Render data need summary -->
         ${this._dataNeedAttributes
