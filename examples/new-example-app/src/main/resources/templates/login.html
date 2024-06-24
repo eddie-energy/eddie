@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>New-Example-App</title>
+    <link rel="stylesheet" th:href="@{/new-example-app-styles.css}" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/themes/light.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="left-column">
+        <h1>WELCOME TO EDDIE DEMO SERVICE</h1>
+
+        <!-- Login Buttons -->
+        <div>
+          <h4>Click to sign in as one of these users</h4>
+
+          <form method="post" th:action="@{/login}">
+            <input name="username" type="hidden" value="user1" />
+            <input name="password" type="hidden" value="password1" />
+            <input
+              class="login-button user-button"
+              type="submit"
+              value="Testuser1: Some name"
+            />
+          </form>
+          <form method="post" th:action="@{/login}">
+            <input name="username" type="hidden" value="user2" />
+            <input name="password" type="hidden" value="password2" />
+            <input
+              class="login-button user-button"
+              type="submit"
+              value="Testuser2: Dynamic data needs"
+            />
+          </form>
+          <form method="post" th:action="@{/login}">
+            <input name="username" type="hidden" value="user3" />
+            <input name="password" type="hidden" value="password3" />
+            <input
+              class="login-button user-button"
+              type="submit"
+              value="Testuser3: A third name"
+            />
+          </form>
+
+          <!-- Clean Login Checkbox -->
+          <div class="checkbox-login">
+            <label>
+              <input
+                name="clean-login"
+                style="margin-right: 2rem"
+                type="checkbox"
+              />
+              Clean Login
+            </label>
+
+            <!-- Information Icon with Tooltip -->
+            <div class="information-icon">
+              <sl-tooltip
+                content="If the clean login checkbox is selected, the user should be
+                presented with a cleaned landing page showing the connect button
+                but no previously fetched data. If it's not checked and data has
+                already been fetched for the user, the visualization would be
+                shown instead of the connect button (separate ticket to be
+                implemented later)."
+                placement="bottom"
+              >
+                <sl-button variant="text">&#9432;</sl-button>
+              </sl-tooltip>
+            </div>
+          </div>
+
+          <h4>
+            Or sign in as administrator and manage services and data needs
+          </h4>
+
+          <form method="post" th:action="@{/login}">
+            <input name="username" type="hidden" value="admin" />
+            <input name="password" type="hidden" value="adminpassword" />
+            <input
+              class="login-button admin-button"
+              type="submit"
+              value="Sign in as Admin"
+            />
+          </form>
+        </div>
+      </div>
+
+      <img alt="EDDIE logo" class="logo" th:src="@{/EDDIE_logo_V.svg}" />
+    </main>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/shoelace-autoloader.js"
+      type="module"
+    ></script>
+  </body>
+</html>

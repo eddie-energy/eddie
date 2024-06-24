@@ -1,0 +1,74 @@
+body {
+  font-family: "Poppins", sans-serif;
+  margin: 0 4rem;
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: center;
+  justify-items: center;
+  height: 100vh;
+}
+
+.left-column {
+  text-align: center;
+}
+
+h4 {
+  margin-top: 2rem;
+  color: gray;
+}
+
+.login-button {
+  border: none;
+  color: white;
+  width: 20rem;
+  padding: 1rem 0;
+  border-radius: 1rem;
+  margin: 1rem 0;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.user-button {
+  background-color: #ea5297;
+}
+
+.admin-button {
+  background-color: #92c143;
+}
+
+.logout-button {
+  background-color: #92c143;
+  border: none;
+  color: white;
+  padding: 1rem;
+  border-radius: 1rem;
+  font-weight: bold;
+}
+
+.logout-position {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+}
+
+.checkbox-login {
+  margin: 1rem 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.information-icon {
+  margin-left: 0.5rem;
+  position: relative;
+}
+
+.logo {
+  max-width: 42rem;
+  max-height: 42rem;
+  object-fit: contain;
+}

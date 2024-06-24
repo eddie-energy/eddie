@@ -1,25 +1,32 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>New-Example-App</title>
-</head>
-
-<body>
-<!-- Main Content -->
-<main>
-    <img
-            alt="EDDIE logo"
-            height="200"
-            src="EDDIE_logo.png"
-            th:src="@{EDDIE_logo.png}"
-            class="w-auto h-full"
-            title="EDDIE logo"
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins&display=swap"
+      rel="stylesheet"
     />
+    <link rel="stylesheet" th:href="@{/new-example-app-styles.css}" />
+  </head>
 
-    <h1>Welcome to the new Example app</h1>
-    <h2 th:text="${title}">title</h2>
-</main>
-</body>
+  <body>
+    <!-- Logout Button -->
+    <div class="logout-position">
+      <form method="post" th:action="@{/logout}">
+        <input class="logout-button" type="submit" value="Logout" />
+      </form>
+    </div>
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="left-column">
+        <h1>WELCOME TO EDDIE DEMO SERVICE</h1>
+        <h2 th:text="${title}">title</h2>
+        <h3>This is a very useful line to test the prettier configuration</h3>
+      </div>
+
+      <img alt="EDDIE logo" class="logo" th:src="@{/EDDIE_logo_V.svg}" />
+    </main>
+  </body>
 </html>

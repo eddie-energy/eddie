@@ -11,4 +11,10 @@ public class HomeController {
         model.addAttribute("title", "Hello Thymeleaf");
         return "index";
     }
+
+    @GetMapping("/login")
+    public String login() {
+        return "login";
+    }
 }
+
