@@ -14,6 +14,9 @@
     <JetCodeStyleSettings>
       <option name="CODE_STYLE_DEFAULTS" value="KOTLIN_OFFICIAL" />
     </JetCodeStyleSettings>
+    <Markdown>
+      <option name="WRAP_TEXT_IF_LONG" value="false" />
+    </Markdown>
     <Mermaid>
       <option name="KEEP_LINES_BETWEEN_OTHER_STATEMENTS" value="1" />
       <option name="KEEP_LINES_WITHIN_STRUCTURES" value="1" />

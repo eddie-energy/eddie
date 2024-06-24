@@ -28,6 +28,40 @@ either.
 If any testcase fails, screenshots of the pages when the failure occurs (i.e. when an assertion failed), as well as the
 whole test report as HTML file are uploaded as artifacts and attached to the workflow run to allow easy debugging.
 
+## Run locally
+
+To run the e2e tests locally, playwright needs to be installed.
+For Windows, macOS, and Debian derivates, it should work out of the box, but for other Linux distributions the dependencies have to be installed manually.
+For Arch Linux, the following dependencies are required:
+
+```
+core/nss
+core/nspr
+extra/intel-oneapi-basekit
+core/dbus
+extra/at-spi2-core
+extra/libcups
+extra/libdrm
+extra/at-spi2-core
+core/expat
+extra/libx11
+extra/libxcomposite
+extra/libxdamage
+extra/libxext
+extra/libxfixes
+extra/libxrandr
+extra/mesa
+extra/mesa-amber
+extra/libxcb
+extra/intel-oneapi-basekit
+extra/libxkbcommon
+extra/pango
+extra/cairo
+extra/alsa-lib
+```
+
+The tests are executed via the `test` task with the `run-e2e-tests` property present, and the example app needs to be running locally on port `8081`.
+
 ## GitHub self-hosted runner
 
 A self-hosted runner that is on the FH network is used so that the Ponton XP messenger can be accessed.

@@ -21,6 +21,7 @@ dependencies {
 }
 
 tasks.register("record-test", JavaExec::class) {
+    description = "Record new playwright test"
     group = "playwright"
     mainClass.set("com.microsoft.playwright.CLI")
     classpath = sourceSets["main"].runtimeClasspath
@@ -28,6 +29,11 @@ tasks.register("record-test", JavaExec::class) {
 }
 
 tasks.test {
+    if (environment["CI"] == "true") {
+        environment("EXAMPLE_APP", "http://eddie-example-app:8081/prototype/main")
+    } else {
+        environment("EXAMPLE_APP", "http://localhost:8081")
+    }
     useJUnitPlatform()
     testLogging {
         events("passed", "skipped", "failed")
@@ -35,6 +41,7 @@ tasks.test {
 }
 
 tasks.register<JavaExec>("install-playwright-deps") {
+    description = "Install playwright deps"
     group = "playwright"
     mainClass.set("com.microsoft.playwright.CLI")
     classpath = sourceSets["main"].runtimeClasspath
