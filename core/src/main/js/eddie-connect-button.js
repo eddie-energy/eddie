@@ -67,6 +67,7 @@ function getDataNeedAttributes(dataNeedId) {
 
 class EddieConnectButton extends LitElement {
   static properties = {
+    // Public properties
     connectionId: { attribute: "connection-id", type: String },
     dataNeedId: { attribute: "data-need-id", type: String },
     permissionAdministratorId: {
@@ -78,9 +79,13 @@ class EddieConnectButton extends LitElement {
       attribute: "remember-permission-administrator",
       type: Object,
     },
+
+    // Event handlers
     onOpen: { type: String },
     onClose: { type: String },
+    onStatusChange: { type: String },
 
+    // Private properties
     _selectedCountry: { type: String },
     _selectedPermissionAdministrator: { type: Object },
     _availablePermissionAdministrators: { type: Array },
@@ -162,6 +167,8 @@ class EddieConnectButton extends LitElement {
         console.error(error);
         return false;
       });
+
+    this.addRequestStatusHandlers();
   }
 
   async connect() {
@@ -365,14 +372,54 @@ class EddieConnectButton extends LitElement {
     this._selectedPermissionAdministrator = { regionConnector: "aiida" };
   }
 
-  handleDialogShow() {
+  handleDialogShow(event) {
+    // Only fire for the dialog itself, not for its children
+    if (event.currentTarget !== event.target) {
+      return;
+    }
+
     this.dispatchEvent(dialogOpenEvent);
     Function(`"use strict";${this.onOpen}`)();
   }
 
-  handleDialogHide() {
+  handleDialogHide(event) {
+    // Only fire for the dialog itself, not for its children
+    if (event.currentTarget !== event.target) {
+      return;
+    }
+
     this.dispatchEvent(dialogCloseEvent);
     Function(`"use strict";${this.onClose}`)();
+  }
+
+  addRequestStatusHandlers() {
+    this.addEventListener("eddie-request-status", (event) => {
+      const status = event.detail.status;
+
+      // Execute the onStatusChange handler with the status as an argument
+      Function(`"use strict";${this.onStatusChange}`)(status);
+
+      // Execute the specific status handler if it exists
+      const statusHandlerString = status.toLowerCase().replaceAll("_", "");
+      const statusHandler = this.getAttribute(`on${statusHandlerString}`);
+      if (statusHandler) {
+        Function(`"use strict";${statusHandler}`)();
+      }
+
+      // Dispatch a specific event for the current status
+      const statusEventString = status.toLowerCase().replaceAll("_", "-");
+      this.dispatchEvent(
+        new Event(statusEventString, {
+          bubbles: true,
+          composed: true,
+        })
+      );
+    });
+
+    // Handle creation event separately, as it is not passed as a status change
+    this.addEventListener("eddie-request-created", (event) => {
+      Function(`"use strict";${this.getAttribute("onCreated")}`)(event);
+    });
   }
 
   render() {

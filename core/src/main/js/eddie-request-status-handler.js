@@ -47,6 +47,7 @@ class EddieRequestStatusHandler extends LitElement {
       })
     );
 
+    this.status = "CREATED";
     this.pollRequestStatus(event.detail.location);
   }
 
@@ -74,6 +75,8 @@ class EddieRequestStatusHandler extends LitElement {
                 message: message,
                 additionalInformation: additionalInformation,
               },
+              bubbles: true,
+              composed: true,
             })
           );
 
