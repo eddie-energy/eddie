@@ -462,11 +462,6 @@ class EddieConnectButton extends LitElement {
           ? dataNeedSummary(this._dataNeedAttributes)
           : ""}
 
-        <!-- Render data need summary -->
-        ${this._dataNeedAttributes
-          ? dataNeedSummary(this._dataNeedAttributes)
-          : ""}
-
         <!-- Render country selection -->
         ${!this.isAiida()
           ? html`
