@@ -45,7 +45,7 @@ public class WebSecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login")
-                        .deleteCookies("JSESSIONID")
+                        .deleteCookies("JSESSIONID", "connectionIDHistorical", "connectionIDAiida")
                 );
         return http.build();
     }
