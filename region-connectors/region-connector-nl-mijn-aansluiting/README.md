@@ -49,28 +49,33 @@ aansluiting.
 The region connector needs a set of configuration values to be able to function correctly, how you provide these values
 depends on the way you deploy the region connector.
 
-| Configuration values                                      | Description                                                                                                                                                              |
-|-----------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `region-connector.nl.mijn.aansluiting.key-store-location` | Path to the keystore, which contains the private key needed to create OAuth Requests.                                                                                    |
-| `region-connector.nl.mijn.aansluiting.key-store-password` | Password to access the keystore.                                                                                                                                         |
-| `region-connector.nl.mijn.aansluiting.key-alias`          | The alias under which the key is saved in the keystore.                                                                                                                  |
-| `region-connector.nl.mijn.aansluiting.key-password`       | Password to access the key in the keystore                                                                                                                               |
-| `region-connector.nl.mijn.aansluiting.key-id`             | The ID of the key in the keystore.                                                                                                                                       |
-| `region-connector.nl.mijn.aansluiting.issuer-url`         | The Issuer Url of the authorization server. You can get this information from the portal where you registered the user.                                                  |
-| `region-connector.nl.mijn.aansluiting.client-id`          | The Client-ID needed to facilitate the OAuth flow.                                                                                                                       |
-| `region-connector.nl.mijn.aansluiting.scope`              | The scope of the energy data that is requested, `24_maanden_dagstanden` allows to access up to two year old energy data.                                                 |
-| `region-connector.nl.mijn.aansluiting.redirect-url`       | The redirect URL that will be used by the authorization server to redirect the final customer to. Should be `domain + /nl-mijn-aansluiting/oauth2/code/mijn-aansluiting` |
-| `region-connector.nl.mijn-aansluting.polling`             | Used to configure when future data should be polled, uses Spring cron syntax. The default is 17 o'clock every day.                                                       |
+| Configuration values                                | Description                                                                                                                                                                     |
+|-----------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `region-connector.nl.mijn.aansluiting.issuer-url`   | The Issuer Url of the authorization server. You can get this information from the portal where you registered the user.                                                         |
+| `region-connector.nl.mijn.aansluiting.client-id`    | The Client-ID needed to facilitate the OAuth flow.                                                                                                                              |
+| `region-connector.nl.mijn.aansluiting.scope`        | The scope of the energy data that is requested, `24_maanden_dagstanden` allows to access up to two year old energy data.                                                        |
+| `region-connector.nl.mijn.aansluiting.redirect-url` | The redirect URL that will be used by the authorization server to redirect the final customer to. Should be `domain + /nl-mijn-aansluiting/oauth2/code/mijn-aansluiting`        |
+| `region-connector.nl.mijn-aansluting.polling`       | Used to configure when future data should be polled, uses Spring cron syntax. The default is 17 o'clock every day.                                                              |
+| `region-connector.nl.mijn.aansluiting.key-id`       | The ID of the key for Mijn Aansluiting.                                                                                                                                         |
+| `spring.ssl.bundle.jks.nl.keystore.location`        | Path to the keystore, which contains the private key needed to create OAuth Requests. It is recommended to create a keystore for each key to simplify key rotation and updates. |
+| `spring.ssl.bundle.jks.nl.keystore.password`        | Password to access the keystore.                                                                                                                                                |
+| `spring.ssl.bundle.jks.nl.key.alias`                | The alias under which the key is saved in the keystore.                                                                                                                         |
+| `spring.ssl.bundle.jks.nl.key.password`             | Password to access the key in the keystore                                                                                                                                      |
+| `spring.ssl.bundle.jks.nl.keystore.type`            | The keystore type. Should always be set to `JKS`                                                                                                                                |
 
 ### .properties file
 
 Example configuration for an `application.properties` file:
 
 ```properties
-region-connector.nl.mijn.aansluiting.key-store-location=file:/key/store/location.jks
-region-connector.nl.mijn.aansluiting.key-store-password=password
-region-connector.nl.mijn.aansluiting.key-alias=key-alias
-region-connector.nl.mijn.aansluiting.key-password=password
+# Key Store Config
+spring.ssl.bundle.jks.nl.keystore.location=./mijn-aansluiting.jks
+spring.ssl.bundle.jks.nl.keystore.password=password
+spring.ssl.bundle.jks.nl.keystore.type=JKS
+spring.ssl.bundle.jks.nl.key.alias=mijn-aansluiting
+spring.ssl.bundle.jks.nl.key.password=password
+
+# Other configuration
 region-connector.nl.mijn.aansluiting.key-id=id
 region-connector.nl.mijn.aansluiting.issuer-url=https://example.com
 region-connector.nl.mijn.aansluiting.client-id=client-id
@@ -88,10 +93,14 @@ When using environment variables, the configuration values need to be converted 
 Example configuration for dotenv file:
 
 ```dotenv
-REGION_CONNECTOR_NL_MIJN_AANSLUITING_KEY_STORE_LOCATION=file:/key/store/location.jks
-REGION_CONNECTOR_NL_MIJN_AANSLUITING_KEY_STORE_PASSWORD=password
-REGION_CONNECTOR_NL_MIJN_AANSLUITING_KEY_ALIAS=key-alias
-REGION_CONNECTOR_NL_MIJN_AANSLUITING_KEY_PASSWORD=password
+# Key Store Config
+SPRING_SSL_BUNDLE_JKS_NL_KEYSTORE_LOCATION=./mijn-aansluiting_jks
+SPRING_SSL_BUNDLE_JKS_NL_KEYSTORE_PASSWORD=password
+SPRING_SSL_BUNDLE_JKS_NL_KEYSTORE_TYPE=JKS
+SPRING_SSL_BUNDLE_JKS_NL_KEY_ALIAS=mijn-aansluiting
+SPRING_SSL_BUNDLE_JKS_NL_KEY_PASSWORD=password
+
+# Other configuration
 REGION_CONNECTOR_NL_MIJN_AANSLUITING_KEY_ID=id
 REGION_CONNECTOR_NL_MIJN_AANSLUITING_ISSUER_URL=https://example.com
 REGION_CONNECTOR_NL_MIJN_AANSLUITING_CLIENT_ID=client-id

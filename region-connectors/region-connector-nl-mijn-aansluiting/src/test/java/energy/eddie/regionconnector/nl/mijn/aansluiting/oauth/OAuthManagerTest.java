@@ -109,10 +109,6 @@ class OAuthManagerTest {
     private final MijnAansluitingConfiguration config = new MijnAansluitingConfiguration(
             "",
             "",
-            "",
-            "",
-            "",
-            "",
             new ClientID("client-id"),
             new Scope("scope"),
             URI.create("https://localhost/callback")
@@ -277,7 +273,7 @@ class OAuthManagerTest {
     }
 
     @Test
-    void testProcessCallback_withAuthorizationCodeWhileServerDown() throws IOException, BadJOSEException, JOSEException {
+    void testProcessCallback_withAuthorizationCodeWhileServerDown() {
         // Given
         var callbackUri = URI.create("https://localhost/callback?state=asdf&code=authcode");
         when(permissionRequestRepository.findByStateAndPermissionId("asdf", "pid"))
