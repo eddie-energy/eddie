@@ -103,8 +103,8 @@ public class PermissionRequestService {
                                            oauthRequest.state(),
                                            oauthRequest.codeVerifier(),
                                            calculation.granularities().getFirst(),
-                                           calculation.permissionTimeframe().start(),
-                                           calculation.permissionTimeframe().end()
+                                           calculation.energyDataTimeframe().start(),
+                                           calculation.energyDataTimeframe().end()
         ));
         return new CreatedPermissionRequest(permissionId, oauthRequest.uri());
     }
