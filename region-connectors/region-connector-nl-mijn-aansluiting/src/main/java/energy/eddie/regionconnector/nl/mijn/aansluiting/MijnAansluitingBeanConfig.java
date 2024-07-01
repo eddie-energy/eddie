@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting;
 
-import ch.qos.logback.core.net.ssl.KeyStoreFactoryBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -41,15 +40,15 @@ import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculati
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import reactor.core.publisher.Sinks;
 
-import java.io.FileInputStream;
+import javax.net.ssl.X509KeyManager;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.security.*;
-import java.security.cert.CertificateException;
+import java.security.PrivateKey;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -62,21 +61,12 @@ import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRe
 
 @Configuration
 public class MijnAansluitingBeanConfig {
-    @Bean
-    public KeyStoreFactoryBean keyStore(MijnAansluitingConfiguration configuration) {
-        KeyStoreFactoryBean keyStoreFactoryBean = new KeyStoreFactoryBean();
-        keyStoreFactoryBean.setLocation(configuration.keyStoreLocation());
-        keyStoreFactoryBean.setPassword(configuration.keyStorePassword());
-        keyStoreFactoryBean.setType("JKS");
-        return keyStoreFactoryBean;
-    }
 
     @Bean
-    public PrivateKey privateKey(MijnAansluitingConfiguration configuration)
-            throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, IOException, CertificateException {
-        KeyStore ks = KeyStore.getInstance("JKS");
-        ks.load(new FileInputStream(configuration.keyStoreLocation()), configuration.keyStorePassword().toCharArray());
-        return (PrivateKey) ks.getKey(configuration.keyAlias(), configuration.keyPassword().toCharArray());
+    public PrivateKey privateKey(SslBundles sslBundles) {
+        var bundle = sslBundles.getBundle("nl");
+        var manager = (X509KeyManager) bundle.getManagers().getKeyManagers()[0];
+        return manager.getPrivateKey(bundle.getKey().getAlias());
     }
 
     @Bean

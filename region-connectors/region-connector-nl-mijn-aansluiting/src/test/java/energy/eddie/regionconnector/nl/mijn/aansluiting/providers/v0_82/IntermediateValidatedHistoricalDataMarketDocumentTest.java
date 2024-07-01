@@ -28,11 +28,8 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
             "fallback"
     );
     private final JsonResourceObjectMapper<List<MijnAansluitingResponse>> mapper = new JsonResourceObjectMapper<>(new TypeReference<>() {});
-    private final MijnAansluitingConfiguration config = new MijnAansluitingConfiguration("",
-                                                                                         "",
-                                                                                         "",
-                                                                                         "",
-                                                                                         "",
+    private final MijnAansluitingConfiguration config = new MijnAansluitingConfiguration(
+            "",
                                                                                          "",
                                                                                          new ClientID("client-id"),
                                                                                          new Scope(),
