@@ -64,7 +64,9 @@ public class JwtUtil {
     /**
      * Returns a {@link ResponseCookie} containing a JWT that includes the ID of the newly created permission, as well
      * as any other permissions that were already present in the supplied JWT. The returned cookie has the
-     * <i>HttpOnly</i> attribute set and <i>SameSite</i> is set to <i>strict</i>.
+     * <i>HttpOnly</i> attribute set and <i>SameSite</i> is set to <i>None</i> to support scenarios where the
+     * requesting
+     * instance runs on a different domain than the EDDIE framework.
      *
      * @param jwtCookie         Cookie which contains the existing JWT. May be null if no JWT was included in a
      *                          request.
@@ -108,14 +110,16 @@ public class JwtUtil {
         return ResponseCookie.from(JWT_COOKIE_NAME, jwsObject.serialize())
                              .httpOnly(true)
                              .maxAge(Duration.ofDays(7))
-                             .sameSite("Strict")
+                             .sameSite("None")
+                             .secure(true)
                              .build();
     }
 
     /**
      * Sets a cookie containing a JWT that includes the ID of the newly created permission, as well as any other
      * permissions that were already present in the supplied JWT. The returned cookie has the
-     * <i>HttpOnly</i> attribute set and <i>SameSite</i> is set to <i>strict</i>.
+     * <i>HttpOnly</i> attribute set. <i>SameSite</i> is set to <i>None</i> to support scenarios where the requesting
+     * instance runs on a different domain than the EDDIE framework.
      *
      * @param request           {@link HttpServletRequest} for the create permission request.
      * @param response          {@link HttpServletRequest} for the create permission request.
