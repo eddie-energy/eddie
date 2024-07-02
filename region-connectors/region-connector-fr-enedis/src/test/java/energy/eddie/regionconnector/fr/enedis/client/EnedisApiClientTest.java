@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -39,12 +40,12 @@ class EnedisApiClientTest {
         mockBackEnd.start();
         String basePath = "http://localhost:" + mockBackEnd.getPort();
         webClient = WebClient.builder()
-                .baseUrl(basePath)
-                .codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs()
-                        .jackson2JsonDecoder(new Jackson2JsonDecoder(
-                                objectMapper,
-                                MediaType.APPLICATION_JSON)))
-                .build();
+                             .baseUrl(basePath)
+                             .codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs()
+                                                                                   .jackson2JsonDecoder(new Jackson2JsonDecoder(
+                                                                                           objectMapper,
+                                                                                           MediaType.APPLICATION_JSON)))
+                             .build();
     }
 
     @Test
@@ -61,17 +62,18 @@ class EnedisApiClientTest {
 
         // Act & Assert
         enedisApi.getConsumptionMeterReading(usagePointId, start, end, Granularity.PT30M)
-                .as(StepVerifier::create)
-                .assertNext(consumption -> {
-                    // The API for some reason returns 47 readings instead of 48
-                    assertEquals(47, consumption.intervalReadings().size());
-                    assertEquals(usagePointId, consumption.usagePointId());
-                    assertEquals(start, consumption.start());
-                    assertEquals(end, consumption.end());
-                    assertEquals(Granularity.PT30M.toString(), consumption.intervalReadings().getFirst().intervalLength().get());
-                })
-                .expectComplete()
-                .verify(Duration.ofSeconds(5));
+                 .as(StepVerifier::create)
+                 .assertNext(consumption -> {
+                     // The API for some reason returns 47 readings instead of 48
+                     assertEquals(47, consumption.intervalReadings().size());
+                     assertEquals(usagePointId, consumption.usagePointId());
+                     assertEquals(start, consumption.start());
+                     assertEquals(end, consumption.end());
+                     assertEquals(Granularity.PT30M.toString(),
+                                  consumption.intervalReadings().getFirst().intervalLength().get());
+                 })
+                 .expectComplete()
+                 .verify(Duration.ofSeconds(5));
     }
 
     @Test
@@ -87,16 +89,16 @@ class EnedisApiClientTest {
         LocalDate end = LocalDate.of(2024, 2, 8);
         // Act & Assert
         enedisApi.getConsumptionMeterReading(usagePointId, start, end, Granularity.P1D)
-                .as(StepVerifier::create)
-                .assertNext(consumption -> {
-                    assertEquals(7, consumption.intervalReadings().size());
-                    assertEquals(usagePointId, consumption.usagePointId());
-                    assertEquals(start, consumption.start());
-                    assertEquals(end, consumption.end());
-                    assertEquals(Granularity.P1D.toString(), consumption.readingType().measuringPeriod().get());
-                })
-                .expectComplete()
-                .verify(Duration.ofSeconds(5));
+                 .as(StepVerifier::create)
+                 .assertNext(consumption -> {
+                     assertEquals(7, consumption.intervalReadings().size());
+                     assertEquals(usagePointId, consumption.usagePointId());
+                     assertEquals(start, consumption.start());
+                     assertEquals(end, consumption.end());
+                     assertEquals(Granularity.P1D.toString(), consumption.readingType().measuringPeriod().get());
+                 })
+                 .expectComplete()
+                 .verify(Duration.ofSeconds(5));
     }
 
     @Test
@@ -109,9 +111,52 @@ class EnedisApiClientTest {
         // Act & Assert
         enedisApi.getConsumptionMeterReading("usagePointId", LocalDate.now(ZoneOffset.UTC),
                                              LocalDate.now(ZoneOffset.UTC), Granularity.PT15M)
-                .as(StepVerifier::create)
-                .expectError(IllegalArgumentException.class)
-                .verify(Duration.ofSeconds(5));
+                 .as(StepVerifier::create)
+                 .expectError(IllegalArgumentException.class)
+                 .verify(Duration.ofSeconds(5));
+    }
+
+    @Test
+    void getContract_returnsContract() throws IOException {
+        // Arrange
+        EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
+        doReturn(Mono.just("token")).when(tokenProvider).getToken();
+        EnedisApi enedisApi = new EnedisApiClient(tokenProvider, webClient);
+
+        mockBackEnd.enqueue(TestResourceProvider.readMockResponseFromFile(TestResourceProvider.CONTRACT));
+        String usagePointId = "24115050XXXXXX";
+
+        // Act & Assert
+        enedisApi.getContract(usagePointId)
+                 .as(StepVerifier::create)
+                 .assertNext(customer -> assertAll(
+                         () -> assertEquals("XXXX", customer.customerId()),
+                         () -> assertEquals(1, customer.usagePointContracts().size()),
+                         () -> assertEquals("24115050XXXXXX",
+                                            customer.usagePointContracts().getFirst().usagePoint().id()),
+                         () -> assertEquals("com", customer.usagePointContracts().getFirst().usagePoint().status()),
+                         () -> assertEquals("AMM", customer.usagePointContracts().getFirst().usagePoint().meterType()),
+                         () -> assertEquals("C5", customer.usagePointContracts().getFirst().contract().segment()),
+                         () -> assertEquals("6 kVA",
+                                            customer.usagePointContracts().getFirst().contract().subscribedPower()),
+                         () -> assertEquals("2017-07-15+02:00",
+                                            customer.usagePointContracts().getFirst().contract().lastActivationDate()),
+                         () -> assertEquals("BTINFMU4",
+                                            customer.usagePointContracts().getFirst().contract().distributionTariff()),
+                         () -> assertEquals("HC (22H50-6H50)",
+                                            customer.usagePointContracts().getFirst().contract().offPeakHours()),
+                         () -> assertEquals("Contrat GRD-F",
+                                            customer.usagePointContracts().getFirst().contract().contractType()),
+                         () -> assertEquals("SERVC",
+                                            customer.usagePointContracts().getFirst().contract().contractStatus()),
+                         () -> assertEquals("2024-05-11+02:00",
+                                            customer.usagePointContracts()
+                                                    .getFirst()
+                                                    .contract()
+                                                    .lastDistributionTariffChangeDate())
+                 ))
+                 .expectComplete()
+                 .verify(Duration.ofSeconds(5));
     }
 
     @Test
@@ -123,21 +168,26 @@ class EnedisApiClientTest {
         // Assert
         assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API));
         assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.METERING_POINT_API));
+        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.CONTRACT_API));
     }
 
     @Test
     void health_returnsAUTHENTICATION_API_down_whenTokenFetchingFails() {
         // Arrange
         EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
-        doReturn(Mono.error(WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(), "xxx", null, null, null))).when(tokenProvider).getToken();
+        doReturn(Mono.error(WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(),
+                                                              "xxx",
+                                                              null,
+                                                              null,
+                                                              null))).when(tokenProvider).getToken();
         EnedisApi enedisApi = new EnedisApiClient(tokenProvider, webClient);
 
         // Act
         enedisApi.getConsumptionMeterReading("usagePointId", LocalDate.now(ZoneOffset.UTC),
                                              LocalDate.now(ZoneOffset.UTC), Granularity.PT30M)
-                .as(StepVerifier::create)
-                .expectError()
-                .verify(Duration.ofSeconds(5));
+                 .as(StepVerifier::create)
+                 .expectError()
+                 .verify(Duration.ofSeconds(5));
 
         // Assert
         assertEquals(HealthState.DOWN, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API));
@@ -156,12 +206,32 @@ class EnedisApiClientTest {
         // Act
         enedisApi.getConsumptionMeterReading("usagePointId", LocalDate.now(ZoneOffset.UTC),
                                              LocalDate.now(ZoneOffset.UTC), Granularity.PT30M)
-                .as(StepVerifier::create)
-                .expectError()
-                .verify(Duration.ofSeconds(5));
+                 .as(StepVerifier::create)
+                 .expectError()
+                 .verify(Duration.ofSeconds(5));
 
         // Assert
         assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API));
         assertEquals(HealthState.DOWN, enedisApi.health().get(EnedisApiClient.METERING_POINT_API));
+    }
+
+    @Test
+    void health_returnsCONTRACT_API_down_whenDataFetchingFails() {
+        // Arrange
+        EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
+        doReturn(Mono.just("token")).when(tokenProvider).getToken();
+        EnedisApi enedisApi = new EnedisApiClient(tokenProvider, webClient);
+
+        mockBackEnd.enqueue(new MockResponse().setResponseCode(500));
+
+        // Act
+        enedisApi.getContract("usagePointId")
+                 .as(StepVerifier::create)
+                 .expectError()
+                 .verify(Duration.ofSeconds(5));
+
+        // Assert
+        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API));
+        assertEquals(HealthState.DOWN, enedisApi.health().get(EnedisApiClient.CONTRACT_API));
     }
 }
