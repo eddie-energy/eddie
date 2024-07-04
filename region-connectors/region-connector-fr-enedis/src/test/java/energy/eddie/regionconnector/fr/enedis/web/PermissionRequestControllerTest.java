@@ -105,7 +105,7 @@ class PermissionRequestControllerTest {
     @Test
     void callback_returnsOk() throws Exception {
         // Given
-        doNothing().when(permissionRequestService).authorizePermissionRequest(anyString(), anyString());
+        doNothing().when(permissionRequestService).authorizePermissionRequest(anyString(), any());
 
         // When
         mockMvc.perform(
@@ -114,7 +114,38 @@ class PermissionRequestControllerTest {
                                              .param("usage_point_id", "upid")
                )
                // Then
-               .andExpect(status().isOk());
+               .andExpect(status().isOk())
+               .andExpect(content().string("Access Granted to upid. You can close this tab now."));
+    }
+
+    @Test
+    void callback_withMultipleUsagePointIds_returnsOk() throws Exception {
+        // Given
+        doNothing().when(permissionRequestService).authorizePermissionRequest(anyString(), any());
+
+        // When
+        mockMvc.perform(
+                       MockMvcRequestBuilders.get("/authorization-callback")
+                                             .param("state", "state")
+                                             .param("usage_point_id", "upid;upid2;upid3")
+               )
+               // Then
+               .andExpect(status().isOk())
+               .andExpect(content().string("Access Granted to upid, upid2, upid3. You can close this tab now."));
+    }
+
+    @Test
+    void callback_noParameters_returnsOk() throws Exception {
+        // Given
+        doNothing().when(permissionRequestService).authorizePermissionRequest(anyString(), any());
+
+        // When
+        mockMvc.perform(
+                       MockMvcRequestBuilders.get("/authorization-callback")
+               )
+               // Then
+               .andExpect(status().isOk())
+               .andExpect(content().string("Access Denied. You can close this tab now."));
     }
 
     @Test

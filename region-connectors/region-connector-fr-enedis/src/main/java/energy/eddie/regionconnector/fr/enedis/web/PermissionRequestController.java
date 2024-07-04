@@ -7,10 +7,13 @@ import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPer
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriTemplate;
@@ -50,7 +53,8 @@ public class PermissionRequestController {
             @Valid
             PermissionRequestForCreation permissionRequest
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException {
-        CreatedPermissionRequest createdPermissionRequest = permissionRequestService.createPermissionRequest(permissionRequest);
+        CreatedPermissionRequest createdPermissionRequest = permissionRequestService.createPermissionRequest(
+                permissionRequest);
         URI location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
                 .expand(createdPermissionRequest.permissionId());
         return ResponseEntity
@@ -60,9 +64,20 @@ public class PermissionRequestController {
 
     @GetMapping(value = "/authorization-callback")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> callback(@RequestParam("state") String stateString, @RequestParam("usage_point_id") String usagePointId)
+    @SuppressWarnings("NullAway") // NullAway doesnt understand the isBlank checks
+    public ResponseEntity<String> callback(
+            @RequestParam("state") @Nullable String stateString,
+            @RequestParam("usage_point_id") @Nullable String usagePointId
+    )
             throws PermissionNotFoundException {
-        permissionRequestService.authorizePermissionRequest(stateString, usagePointId);
-        return ResponseEntity.ok("Access Granted. You can close this tab now.");
+        if (Strings.isBlank(usagePointId) || Strings.isBlank(stateString)) {
+            return ResponseEntity.ok("Access Denied. You can close this tab now.");
+        }
+
+        var usagePointIds = StringUtils.delimitedListToStringArray(usagePointId, ";");
+
+        permissionRequestService.authorizePermissionRequest(stateString, usagePointIds);
+        return ResponseEntity.ok("Access Granted to %s. You can close this tab now.".formatted(
+                StringUtils.arrayToDelimitedString(usagePointIds, ", ")));
     }
 }
