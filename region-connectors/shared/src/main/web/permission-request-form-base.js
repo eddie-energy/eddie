@@ -1,8 +1,16 @@
 import { LitElement } from "lit";
 
+const TERMINAL_STATES = ["TIMED_OUT", "INVALID", "REJECTED", "ACCEPTED"];
+
 class PermissionRequestFormBase extends LitElement {
   constructor() {
     super();
+
+    /**
+     * URL of the core service inferred from the import URL.
+     * @type {string}
+     */
+    this.CORE_URL = new URL(import.meta.url).origin;
 
     /**
      * Base URL of the current script inferred from the import URL.
@@ -17,6 +25,12 @@ class PermissionRequestFormBase extends LitElement {
      * @type {string}
      */
     this.REQUEST_URL = this.BASE_URL + "/permission-request";
+
+    /**
+     * Endpoint for subscribing to the status of a permission request.
+     * @type {string}
+     */
+    this.REQUEST_STATUS_URL = this.CORE_URL + "/api/connection-status-messages";
   }
 
   /**
@@ -103,6 +117,15 @@ class PermissionRequestFormBase extends LitElement {
     });
 
     this.dispatchEvent(event);
+
+    this.notify({
+      title: "Permission request created!",
+      message: "Your permission request was created successfully.",
+      variant: "success",
+      duration: 10000,
+    });
+
+    this.pollRequestStatus(location);
   }
 
   /**
@@ -124,19 +147,25 @@ class PermissionRequestFormBase extends LitElement {
       ...options,
     });
 
+    const data = await response.json();
+
     if (response.ok) {
       if (response.status === 201) {
         const location = response.headers.get("Location");
         if (!location) {
           throw new Error("Header 'Location' is missing");
         }
-        this.handlePermissionRequestCreated(this.BASE_URL + location);
+
+        const { permissionId } = data;
+        this.handlePermissionRequestCreated(
+          `${this.REQUEST_STATUS_URL}/${permissionId}`
+        );
       }
 
-      return response.json();
+      return data;
     }
 
-    const { errors } = await response.json();
+    const { errors } = data;
 
     if (errors && errors.length > 0) {
       const message = errors.map((error) => error.message).join(". ");
@@ -146,6 +175,30 @@ class PermissionRequestFormBase extends LitElement {
     throw new Error(
       "Something went wrong when creating the permission request, please try again later."
     );
+  }
+
+  pollRequestStatus(location) {
+    const eventSource = new EventSource(location);
+
+    eventSource.onmessage = (event) => {
+      const { status, message, additionalInformation } = JSON.parse(event.data);
+
+      this.dispatchEvent(
+        new CustomEvent("eddie-request-status", {
+          detail: {
+            status,
+            message,
+            additionalInformation,
+          },
+          bubbles: true,
+          composed: true,
+        })
+      );
+
+      if (TERMINAL_STATES.includes(status)) {
+        eventSource.close();
+      }
+    };
   }
 }
 

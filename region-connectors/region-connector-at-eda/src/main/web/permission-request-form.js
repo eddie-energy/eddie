@@ -29,7 +29,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
   connectedCallback() {
     super.connectedCallback();
-    this.closest("eddie-request-status-handler").addEventListener(
+    this.addEventListener(
       "eddie-request-status",
       (event) => {
         const cmRequestId = event.detail.additionalInformation.cmRequestId;
