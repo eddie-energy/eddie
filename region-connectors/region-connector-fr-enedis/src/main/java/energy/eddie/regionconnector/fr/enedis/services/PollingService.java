@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.util.retry.Retry;
 import reactor.util.retry.RetryBackoffSpec;
@@ -103,25 +102,49 @@ public class PollingService implements AutoCloseable {
                                Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
     }
 
-    private Mono<IdentifiableMeterReading> fetchData(
+    private Flux<IdentifiableMeterReading> fetchData(
             FrEnedisPermissionRequest permissionRequest,
             LocalDate start,
             LocalDate end
     ) {
         String permissionId = permissionRequest.permissionId();
         LOGGER.info("Fetching data from ENEDIS for permissionId '{}' from '{}' to '{}'", permissionId, start, end);
-        // Make the API call for this batch
-        return Mono.defer(() -> enedisApi.getConsumptionMeterReading(permissionRequest.usagePointId(),
-                                                                     start,
-                                                                     end,
-                                                                     permissionRequest.granularity()))
-                   .retryWhen(RETRY_BACKOFF_SPEC)
-                   .doOnError(e -> handleError(permissionId, start, end, e))
-                   .map(meterReading -> new IdentifiableMeterReading(
-                           permissionRequest,
-                           meterReading,
-                           MeterReadingType.CONSUMPTION
-                   ));
+
+        Flux<IdentifiableMeterReading> consumptionFlux = Flux
+                .defer(() -> enedisApi.getConsumptionMeterReading(
+                        permissionRequest.usagePointId(),
+                        start,
+                        end,
+                        permissionRequest.granularity()
+                ))
+                .retryWhen(RETRY_BACKOFF_SPEC)
+                .doOnError(e -> handleError(permissionId, start, end, e))
+                .map(meterReading -> new IdentifiableMeterReading(
+                        permissionRequest,
+                        meterReading,
+                        MeterReadingType.CONSUMPTION
+                ));
+
+        Flux<IdentifiableMeterReading> productionFlux = Flux
+                .defer(() -> enedisApi.getProductionMeterReading(
+                        permissionRequest.usagePointId(),
+                        start,
+                        end,
+                        permissionRequest.granularity()
+                ))
+                .retryWhen(RETRY_BACKOFF_SPEC)
+                .doOnError(e -> handleError(permissionId, start, end, e))
+                .map(meterReading -> new IdentifiableMeterReading(
+                        permissionRequest,
+                        meterReading,
+                        MeterReadingType.PRODUCTION
+                ));
+
+        return switch (permissionRequest.usagePointType()) {
+            case CONSUMPTION -> consumptionFlux;
+            case PRODUCTION -> productionFlux;
+            case CONSUMPTION_AND_PRODUCTION -> Flux.merge(consumptionFlux, productionFlux);
+        };
     }
 
     private void handleError(String permissionId, LocalDate start, LocalDate end, Throwable e) {

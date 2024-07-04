@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.fr.enedis.services;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
@@ -56,16 +57,19 @@ class FutureDataServiceTest {
             LocalDate end,
             Optional<LocalDate> latestMeterReading
     ) {
-        return new EnedisPermissionRequest("pi",
-                                           "cId",
-                                           "dId",
-                                           start,
-                                           end,
-                                           Granularity.P1D,
-                                           PermissionProcessStatus.ACCEPTED,
-                                           "usagePointId",
-                                           latestMeterReading.orElse(null),
-                                           ZonedDateTime.now(ZoneOffset.UTC));
+        return new EnedisPermissionRequest(
+                "pi",
+                "cId",
+                "dId",
+                start,
+                end,
+                Granularity.P1D,
+                PermissionProcessStatus.ACCEPTED,
+                "usagePointId",
+                latestMeterReading.orElse(null),
+                ZonedDateTime.now(ZoneOffset.UTC),
+                UsagePointType.CONSUMPTION
+        );
     }
 
     static Stream<Arguments> permissionThatAreInactiveOrDoNotNeedToBeFetched() {
