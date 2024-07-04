@@ -1,19 +1,59 @@
+/*Structure*/
 body {
   font-family: "Poppins", sans-serif;
   margin: 0 4rem;
+}
+
+.body-logged-in {
+  background-color: #d9d9d9;
 }
 
 .main-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  align-items: center;
   justify-items: center;
   height: 100vh;
 }
 
-.left-column {
+.centered-content {
   text-align: center;
+}
+
+.left-column {
+  align-self: center;
+}
+
+.half-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding-right: 1rem;
+  align-self: start;
+  margin-top: 3rem;
+  height: 90vh;
+}
+
+.separator {
+  border-right: 1px solid #626262;
+}
+
+.logo {
+  max-width: 42rem;
+  max-height: 42rem;
+  object-fit: contain;
+  align-self: center;
+}
+
+/*Text*/
+.column-title {
+  margin: 6rem 0;
+}
+
+.paragraph {
+  color: #626262;
+  margin-bottom: 8rem;
 }
 
 h4 {
@@ -21,6 +61,7 @@ h4 {
   color: gray;
 }
 
+/*Buttons*/
 .login-button {
   border: none;
   color: white;
@@ -65,10 +106,4 @@ h4 {
 .information-icon {
   margin-left: 0.5rem;
   position: relative;
-}
-
-.logo {
-  max-width: 42rem;
-  max-height: 42rem;
-  object-fit: contain;
 }

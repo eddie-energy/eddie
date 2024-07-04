@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
@@ -11,7 +11,7 @@
     <link rel="stylesheet" th:href="@{/new-example-app-styles.css}" />
   </head>
 
-  <body>
+  <body class="body-logged-in">
     <!-- Logout Button -->
     <div class="logout-position">
       <form method="post" th:action="@{/logout}">
@@ -20,13 +20,58 @@
     </div>
     <!-- Main Content -->
     <main class="main-content">
-      <div class="left-column">
-        <h1>WELCOME TO EDDIE DEMO SERVICE</h1>
-        <h2 th:text="${title}">title</h2>
-        <h3>This is a very useful line to test the prettier configuration</h3>
+      <div class="half-column separator">
+        <h1 class="column-title centered-content">
+          SUPER AWESOME VISUALIZATION SERVICE
+        </h1>
+        <div class="paragraph centered-content">
+          <p>
+            This service can visualize your energy consumption of the past year
+            and can help you find cheaper variable tariffs aligned to your
+            individual energy consumption profile.
+          </p>
+          <br />
+          <p>
+            To provide this service, we need your historical energy consumption.
+          </p>
+          <p>
+            Click on the connect button below and follow the instructions in the
+            popup.
+          </p>
+        </div>
+        <div>
+          <eddie-connect-button
+            th:attr="data-need-id=${dataNeedID}, connection-id=${connectionIDHistorical}"
+          ></eddie-connect-button>
+        </div>
       </div>
 
-      <img alt="EDDIE logo" class="logo" th:src="@{/EDDIE_logo_V.svg}" />
+      <div class="half-column">
+        <h1 class="column-title centered-content">NEAR REAL-TIME DATA</h1>
+        <div class="paragraph centered-content">
+          <p>Do you have an AIIDA instance in your home?</p>
+          <br />
+          <p>
+            Share your data with us so we can do some awesome machine learning
+            and stuff with it!
+          </p>
+          <br />
+          <p>
+            Click on the connect button below and follow the instructions in the
+            popup.
+          </p>
+        </div>
+        <div>
+          <eddie-connect-button
+            th:attr="data-need-id=${aiidaID}, connection-id=${connectionIDAiida}"
+          ></eddie-connect-button>
+        </div>
+      </div>
     </main>
+
+    <script
+      src="http://localhost:8080/lib/eddie-components.js"
+      type="module"
+    ></script>
   </body>
 </html>
