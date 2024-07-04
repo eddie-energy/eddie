@@ -15,7 +15,9 @@ plugins {
 }
 
 dependencies {
+    // Shared between region-connectors
     implementation(libs.jakarta.xml.bind.api)
+    implementation(libs.swagger.annotations)
 }
 
 plugins.withId(libs.plugins.errorprone.get().pluginId) {
