@@ -34,6 +34,6 @@ public class AcceptedHandler implements EventHandler<FrAcceptedEvent> {
             LOGGER.error("Got unknown permission request {}", permissionId);
             return;
         }
-        historicalDataService.fetchHistoricalMeterReadings(pr.get(), permissionEvent.usagePointId());
+        historicalDataService.fetchHistoricalMeterReadings(pr.get());
     }
 }

@@ -78,7 +78,7 @@ class HistoricalDataServiceTest {
                                                        null,
                                                        List.of())));
         // When
-        historicalDataService.fetchHistoricalMeterReadings(request, "usagePointId");
+        historicalDataService.fetchHistoricalMeterReadings(request);
 
         // Then
         StepVerifier.create(sink.asFlux())
@@ -132,7 +132,7 @@ class HistoricalDataServiceTest {
                                                                          null,
                                                                          null)));
         // When
-        historicalDataService.fetchHistoricalMeterReadings(request, "usagePointId");
+        historicalDataService.fetchHistoricalMeterReadings(request);
 
         // Then
         StepVerifier.create(sink.asFlux())
@@ -173,7 +173,7 @@ class HistoricalDataServiceTest {
                                                                         null,
                                                                         ZonedDateTime.now(ZoneOffset.UTC));
         // When
-        historicalDataService.fetchHistoricalMeterReadings(request, "usagePointId");
+        historicalDataService.fetchHistoricalMeterReadings(request);
 
         // Then
         StepVerifier.create(sink.asFlux())

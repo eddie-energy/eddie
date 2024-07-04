@@ -107,8 +107,8 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
     }
 
     @Override
-    public Optional<String> usagePointId() {
-        return Optional.ofNullable(usagePointId);
+    public String usagePointId() {
+        return usagePointId;
     }
 
 

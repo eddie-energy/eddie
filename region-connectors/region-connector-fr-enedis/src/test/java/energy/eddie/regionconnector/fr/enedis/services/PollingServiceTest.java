@@ -66,7 +66,7 @@ class PollingServiceTest {
                                                                         ZonedDateTime.now(ZoneOffset.UTC));
 
         // When
-        pollingService.fetchMeterReadings(request, start, end, "usagePointId");
+        pollingService.fetchMeterReadings(request, start, end);
 
         // Then
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
@@ -104,7 +104,7 @@ class PollingServiceTest {
                                                                         ZonedDateTime.now(ZoneOffset.UTC));
 
         // When
-        pollingService.fetchMeterReadings(request, start, end, "usagePointId");
+        pollingService.fetchMeterReadings(request, start, end);
 
         // Then
         verify(outbox, never()).commit(any());
@@ -154,7 +154,7 @@ class PollingServiceTest {
         VirtualTimeScheduler.getOrSet(); // yes, this is necessary
 
         // When
-        pollingService.fetchMeterReadings(request, start, end, "usagePointId");
+        pollingService.fetchMeterReadings(request, start, end);
 
         // Then
         StepVerifier.withVirtualTime(sink::asFlux)
@@ -194,7 +194,7 @@ class PollingServiceTest {
 
         // When
         assertThrows(IllegalStateException.class,
-                     () -> pollingService.fetchMeterReadings(request, start, end, "usagePointId"));
+                     () -> pollingService.fetchMeterReadings(request, start, end));
         verifyNoInteractions(enedisApi);
 
         // Clean-Up

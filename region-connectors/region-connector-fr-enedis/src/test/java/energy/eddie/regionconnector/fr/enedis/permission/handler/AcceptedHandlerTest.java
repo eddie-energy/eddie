@@ -49,7 +49,7 @@ class AcceptedHandlerTest {
         eventBus.emit(new FrAcceptedEvent("pid", "usagePointId"));
 
         // Then
-        verify(historicalDataService).fetchHistoricalMeterReadings(pr, "usagePointId");
+        verify(historicalDataService).fetchHistoricalMeterReadings(pr);
     }
 
     @Test
@@ -62,6 +62,6 @@ class AcceptedHandlerTest {
         eventBus.emit(new FrAcceptedEvent("pid", "usagePointId"));
 
         // Then
-        verify(historicalDataService, never()).fetchHistoricalMeterReadings(any(), any());
+        verify(historicalDataService, never()).fetchHistoricalMeterReadings(any());
     }
 }

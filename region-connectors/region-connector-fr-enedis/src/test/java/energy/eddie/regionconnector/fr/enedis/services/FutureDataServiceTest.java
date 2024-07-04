@@ -113,8 +113,8 @@ class FutureDataServiceTest {
         LocalDate startFetchDate = permissionRequest.latestMeterReadingEndDate().orElse(permissionRequest.start());
         verify(pollingService).fetchMeterReadings(permissionRequest,
                                                   startFetchDate,
-                                                  LocalDate.now(ZONE_ID_FR),
-                                                  "usagePointId");
+                                                  LocalDate.now(ZONE_ID_FR)
+        );
     }
 
     @ParameterizedTest(name = "{1}")

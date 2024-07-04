@@ -56,8 +56,7 @@ public class PollingService implements AutoCloseable {
     public void fetchMeterReadings(
             FrEnedisPermissionRequest permissionRequest,
             LocalDate start,
-            LocalDate end,
-            String usagePointId
+            LocalDate end
     ) {
         String permissionId = permissionRequest.permissionId();
         LOGGER.info("Preparing to fetch data from ENEDIS for permission request '{}' from '{}' to '{}' (inclusive)",
@@ -65,7 +64,7 @@ public class PollingService implements AutoCloseable {
 
         // If the granularity is PT30M, we need to fetch the data in batches
         switch (permissionRequest.granularity()) {
-            case PT30M -> fetchDataInBatches(permissionRequest, start, end, usagePointId)
+            case PT30M -> fetchDataInBatches(permissionRequest, start, end)
                     .doOnComplete(() -> LOGGER.info(
                             "Finished fetching half hourly data from ENEDIS for permission request '{}'",
                             permissionId))
@@ -75,7 +74,7 @@ public class PollingService implements AutoCloseable {
                                        identifiableMeterReading
                                )
                     );
-            case P1D -> fetchData(permissionRequest, start, end, usagePointId)
+            case P1D -> fetchData(permissionRequest, start, end)
                     .subscribe(identifiableMeterReading -> handleIdentifiableMeterReading(
                                        Granularity.P1D,
                                        permissionRequest,
@@ -107,14 +106,12 @@ public class PollingService implements AutoCloseable {
     private Mono<IdentifiableMeterReading> fetchData(
             FrEnedisPermissionRequest permissionRequest,
             LocalDate start,
-            LocalDate end,
-            String usagePointId
+            LocalDate end
     ) {
         String permissionId = permissionRequest.permissionId();
         LOGGER.info("Fetching data from ENEDIS for permissionId '{}' from '{}' to '{}'", permissionId, start, end);
         // Make the API call for this batch
-        return Mono.defer(() -> enedisApi.getConsumptionMeterReading(permissionRequest.usagePointId()
-                                                                                      .orElse(usagePointId),
+        return Mono.defer(() -> enedisApi.getConsumptionMeterReading(permissionRequest.usagePointId(),
                                                                      start,
                                                                      end,
                                                                      permissionRequest.granularity()))
@@ -140,15 +137,14 @@ public class PollingService implements AutoCloseable {
     private Flux<IdentifiableMeterReading> fetchDataInBatches(
             FrEnedisPermissionRequest permissionRequest,
             LocalDate start,
-            LocalDate end,
-            String usagePointId
+            LocalDate end
     ) {
         return calculateBatchDates(start, end)
                 .flatMap(batchStart -> {
                     // Calculate the end date for this batch, ensuring it's within the overall end date and not in the future
                     LocalDate batchEnd = batchStart.plusWeeks(1);
                     batchEnd = batchEnd.isAfter(end) ? end : batchEnd; // Ensure not to exceed the end date
-                    return fetchData(permissionRequest, batchStart, batchEnd, usagePointId);
+                    return fetchData(permissionRequest, batchStart, batchEnd);
                 })
                 .onErrorComplete(); // stop the stream if an error occurs
     }
