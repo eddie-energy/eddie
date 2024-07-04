@@ -6,6 +6,8 @@ import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -77,11 +79,7 @@ class RegionConnectorsCommonControllerAdviceTest {
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
         // Only the annotated values are included in the valid values array
         assertEquals("granularity: Invalid enum value: 'P1Y'. Valid values: " + Arrays.toString(Granularity.values()) + ".",
-                responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
-    }
-
-    record TestClassWithGranularity(String ignored,
-                                    Granularity granularity) {
+                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 
     @Test
@@ -197,5 +195,47 @@ class RegionConnectorsCommonControllerAdviceTest {
         assertEquals(
                 "Cannot transition permission 'myId' to state 'ACCEPTED', as it is not in a one of the permitted states '[SENT_TO_PERMISSION_ADMINISTRATOR]' but in state 'FULFILLED'",
                 responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+    }
+
+    @Test
+    void givenDataNeedNotFoundException_returnsBadRequest() {
+        // Given
+        var exception = new DataNeedNotFoundException("myId");
+
+        // When
+        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleDataNeedNotFoundException(exception);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        var responseBody = response.getBody();
+        assertNotNull(responseBody);
+        assertEquals(1, responseBody.size());
+        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
+        assertEquals(
+                "No data need with ID 'myId' found.",
+                responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+    }
+
+    @Test
+    void givenUnsupportedDataNeedException_returnsBadRequest() {
+        // Given
+        var exception = new UnsupportedDataNeedException("fi-fingrid", "myId", "reason");
+
+        // When
+        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleUnsupportedDataNeedException(exception);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        var responseBody = response.getBody();
+        assertNotNull(responseBody);
+        assertEquals(1, responseBody.size());
+        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
+        assertEquals(
+                "Region connector 'fi-fingrid' does not support data need with ID 'myId': reason",
+                responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+    }
+
+    record TestClassWithGranularity(String ignored,
+                                    Granularity granularity) {
     }
 }

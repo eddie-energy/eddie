@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.es.datadis;
+package energy.eddie.regionconnector.fi.fingrid;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.RegionConnectorSecurityConfig;
@@ -17,25 +17,26 @@ import static energy.eddie.spring.regionconnector.extensions.SecurityUtils.mvcRe
 import static energy.eddie.spring.regionconnector.extensions.SecurityUtils.securityFilterChain;
 
 @RegionConnectorSecurityConfig
-public class DatadisSecurityConfig {
-    private static final String DATADIS_ENABLED_PROPERTY = "region-connector.es.datadis.enabled";
+public class FingridSecurityConfig {
+    private static final String FINGRID_ENABLED_PROPERTY = "region-connector.fi.fingrid.enabled";
 
     @Bean
-    @ConditionalOnProperty(value = DATADIS_ENABLED_PROPERTY, havingValue = "true")
-    public MvcRequestMatcher.Builder datadisMvcRequestMatcher(HandlerMappingIntrospector introspector) {
-        return mvcRequestMatcher(introspector, DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID);
+    @ConditionalOnProperty(value = FINGRID_ENABLED_PROPERTY, havingValue = "true")
+    public MvcRequestMatcher.Builder fingridMvcRequestMatcher(HandlerMappingIntrospector introspector) {
+        return mvcRequestMatcher(introspector, FingridRegionConnectorMetadata.REGION_CONNECTOR_ID);
     }
 
     @Bean
-    @ConditionalOnProperty(value = DATADIS_ENABLED_PROPERTY, havingValue = "true")
-    public SecurityFilterChain datadisSecurityFilterChain(
-            MvcRequestMatcher.Builder datadisMvcRequestMatcher,
+    @ConditionalOnProperty(value = FINGRID_ENABLED_PROPERTY, havingValue = "true")
+    @SuppressWarnings("java:S4502")
+    public SecurityFilterChain fingridSecurityFilterChain(
+            MvcRequestMatcher.Builder mvcRequestMatcher,
             HttpSecurity http,
             JwtAuthorizationManager jwtCookieAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper
     ) throws Exception {
-        return securityFilterChain(datadisMvcRequestMatcher,
+        return securityFilterChain(mvcRequestMatcher,
                                    http,
                                    jwtCookieAuthorizationManager,
                                    corsConfigurationSource,

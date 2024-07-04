@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.shared.web.ValidationErrors;
@@ -110,6 +112,22 @@ public class RegionConnectorsCommonControllerAdvice {
     @ExceptionHandler(PermissionStateTransitionException.class)
     public ResponseEntity<Map<String, List<EddieApiError>>> handlePermissionStateTransitionException(
             PermissionStateTransitionException ex
+    ) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(ex.getMessage())));
+        return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(DataNeedNotFoundException.class)
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleDataNeedNotFoundException(
+            DataNeedNotFoundException ex
+    ) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(ex.getMessage())));
+        return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(UnsupportedDataNeedException.class)
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleUnsupportedDataNeedException(
+            UnsupportedDataNeedException ex
     ) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(ex.getMessage())));
         return ResponseEntity.badRequest().body(errors);
