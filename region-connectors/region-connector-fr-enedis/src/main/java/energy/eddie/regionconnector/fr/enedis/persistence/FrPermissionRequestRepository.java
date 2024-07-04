@@ -17,7 +17,7 @@ public interface FrPermissionRequestRepository extends PermissionRequestReposito
     List<FrEnedisPermissionRequest> findAllByStatus(PermissionProcessStatus status);
 
     @Query(
-            value = "SELECT permission_id, connection_id, permission_start, permission_end, data_need_id, status, granularity, usage_point_id, latest_meter_reading_end_date, created " +
+            value = "SELECT permission_id, connection_id, permission_start, permission_end, data_need_id, status, granularity, usage_point_id, latest_meter_reading_end_date, created, usage_point_type " +
                     "FROM fr_enedis.enedis_permission_request WHERE status = 'VALIDATED' AND created <= NOW() - :hours * INTERVAL '1 hour'",
             nativeQuery = true
     )

@@ -7,4 +7,6 @@ public interface FrEnedisPermissionRequest extends MeterReadingPermissionRequest
     String usagePointId();
 
     Granularity granularity();
+
+    UsagePointType usagePointType();
 }

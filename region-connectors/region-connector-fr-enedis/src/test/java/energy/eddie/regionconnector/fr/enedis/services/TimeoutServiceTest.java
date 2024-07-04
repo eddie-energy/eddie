@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -40,16 +41,19 @@ class TimeoutServiceTest {
         // Given
         var start = LocalDate.now(ZONE_ID_FR);
         var end = LocalDate.now(ZONE_ID_FR).plusDays(10);
-        EnedisPermissionRequest request = new EnedisPermissionRequest("pid",
-                                                                      "cid",
-                                                                      "dnid",
-                                                                      start,
-                                                                      end,
-                                                                      Granularity.P1D,
-                                                                      PermissionProcessStatus.VALIDATED,
-                                                                      null,
-                                                                      null,
-                                                                      ZonedDateTime.now(ZoneOffset.UTC));
+        EnedisPermissionRequest request = new EnedisPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                start,
+                end,
+                Granularity.P1D,
+                PermissionProcessStatus.VALIDATED,
+                null,
+                null,
+                ZonedDateTime.now(ZoneOffset.UTC),
+                UsagePointType.CONSUMPTION
+        );
 
         when(repository.findTimedOutPermissionRequests(24))
                 .thenReturn(List.of(request));
@@ -65,16 +69,19 @@ class TimeoutServiceTest {
         // Given
         var start = LocalDate.now(ZONE_ID_FR);
         var end = LocalDate.now(ZONE_ID_FR).plusDays(10);
-        EnedisPermissionRequest request = new EnedisPermissionRequest("pid",
-                                                                      "cid",
-                                                                      "dnid",
-                                                                      start,
-                                                                      end,
-                                                                      Granularity.P1D,
-                                                                      PermissionProcessStatus.VALIDATED,
-                                                                      null,
-                                                                      null,
-                                                                      ZonedDateTime.now(ZoneOffset.UTC));
+        EnedisPermissionRequest request = new EnedisPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                start,
+                end,
+                Granularity.P1D,
+                PermissionProcessStatus.VALIDATED,
+                null,
+                null,
+                ZonedDateTime.now(ZoneOffset.UTC),
+                UsagePointType.CONSUMPTION
+        );
         when(repository.findTimedOutPermissionRequests(24))
                 .thenReturn(List.of(request));
 
