@@ -132,20 +132,20 @@ class PermissionRequestFormBase extends LitElement {
         }
         this.handlePermissionRequestCreated(this.BASE_URL + location);
       }
-    } else {
-      const { errors } = await response.json();
 
-      if (errors && errors.length > 0) {
-        const message = errors.map((error) => error.message).join(". ");
-        throw new Error(message);
-      }
-
-      throw new Error(
-        "Something went wrong when creating the permission request, please try again later."
-      );
+      return response.json();
     }
 
-    return response.json();
+    const { errors } = await response.json();
+
+    if (errors && errors.length > 0) {
+      const message = errors.map((error) => error.message).join(". ");
+      throw new Error(message);
+    }
+
+    throw new Error(
+      "Something went wrong when creating the permission request, please try again later."
+    );
   }
 }
 
