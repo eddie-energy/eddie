@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -26,7 +27,8 @@ class IntermediateVHDFactoryTest {
                                                              "fallbackId")
         );
         IdentifiableMeterReading meterReading = new IdentifiableMeterReading(mock(FrEnedisPermissionRequest.class),
-                                                                             mock(MeterReading.class));
+                                                                             mock(MeterReading.class),
+                                                                             MeterReadingType.CONSUMPTION);
 
         // When
         var res = factory.create(meterReading);

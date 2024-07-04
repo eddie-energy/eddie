@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.slf4j.Logger;
@@ -119,7 +120,11 @@ public class PollingService implements AutoCloseable {
                                                                      permissionRequest.granularity()))
                    .retryWhen(RETRY_BACKOFF_SPEC)
                    .doOnError(e -> handleError(permissionId, start, end, e))
-                   .map(meterReading -> new IdentifiableMeterReading(permissionRequest, meterReading));
+                   .map(meterReading -> new IdentifiableMeterReading(
+                           permissionRequest,
+                           meterReading,
+                           MeterReadingType.CONSUMPTION
+                   ));
     }
 
     private void handleError(String permissionId, LocalDate start, LocalDate end, Throwable e) {

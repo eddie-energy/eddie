@@ -8,7 +8,9 @@ import java.time.LocalDate;
 
 public record IdentifiableMeterReading(
         FrEnedisPermissionRequest permissionRequest,
-        MeterReading meterReading
+        MeterReading meterReading,
+        MeterReadingType meterReadingType
+
 ) implements MeterReadingEndDate {
     @Override
     public LocalDate meterReadingEndDate() {
