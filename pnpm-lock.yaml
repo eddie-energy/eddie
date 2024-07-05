@@ -23,9 +23,6 @@ importers:
 
   core:
     dependencies:
-      '@lit/task':
-        specifier: ^1.0.1
-        version: 1.0.1
       lit:
         specifier: ^2.7.5
         version: 2.7.5
@@ -490,12 +487,6 @@ packages:
     resolution: {integrity: sha512-rDfl+QnCYjuIGf5xI2sVJWdYIi56CTCwWa+nidKYX6oIuBYwUbT/vX4qbUDlHiZKJ/3FRNQ/tWJui44p6/stSA==}
     dependencies:
       '@lit-labs/ssr-dom-shim': 1.1.1
-    dev: false
-
-  /@lit/task@1.0.1:
-    resolution: {integrity: sha512-fVLDtmwCau8NywnFIXaJxsCZjzaIxnVq+cFRKYC1Y4tA4/0rMTvF6DLZZ2JE51BwzOluaKtgJX8x1QDsQtAaIw==}
-    dependencies:
-      '@lit/reactive-element': 1.6.2
     dev: false
 
   /@rollup/rollup-android-arm-eabi@4.14.0:

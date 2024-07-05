@@ -3,7 +3,6 @@ import { createRef, ref } from "lit/directives/ref.js";
 import { until } from "lit/directives/until.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { ifDefined } from "lit/directives/if-defined.js";
-import { Task } from "@lit/task";
 
 // Shoelace
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/dialog/dialog.js";
@@ -87,6 +86,7 @@ class EddieConnectButton extends LitElement {
     onStatusChange: { type: String },
 
     // Private properties
+    _isValidConfiguration: { type: Boolean },
     _selectedCountry: { type: String },
     _selectedPermissionAdministrator: { type: Object },
     _filteredPermissionAdministrators: { type: Array },
@@ -137,12 +137,17 @@ class EddieConnectButton extends LitElement {
 
   dialogRef = createRef();
 
-  _configurationTask = new Task(this, {
-    task: this.configure.bind(this),
-  });
-
   constructor() {
     super();
+
+    /**
+     * Undefined until the configuration has been validated.
+     * If the configuration is valid, this will be set to true.
+     * If the configuration is invalid, this will be set to false.
+     * @type {boolean}
+     * @private
+     */
+    this._isValidConfiguration = undefined;
 
     /**
      * Region connectors that support the selected data need.
@@ -172,7 +177,9 @@ class EddieConnectButton extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
-    this._configurationTask.run();
+    this.configure()
+      .then(() => (this._isValidConfiguration = true))
+      .catch(() => (this._isValidConfiguration = false));
 
     this.addRequestStatusHandlers();
   }
@@ -438,115 +445,120 @@ class EddieConnectButton extends LitElement {
   }
 
   render() {
-    return this._configurationTask.render({
-      complete: () => html`
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/themes/light.css"
-        />
-        <button class="eddie-connect-button" @click="${this.connect}">
-          ${unsafeSVG(buttonIcon)}
-          <span>Connect with EDDIE</span>
-        </button>
-
-        <sl-dialog
-          ${ref(this.dialogRef)}
-          style="--width: clamp(30rem, 100%, 45rem)"
-          @sl-show="${this.handleDialogShow}"
-          @sl-hide="${this.handleDialogHide}"
-        >
-          <div slot="label">${unsafeSVG(headerImage)}</div>
-
-          <!-- Render data need summary -->
-          ${dataNeedSummary(this._dataNeedAttributes)}
-
-          <!-- Render country selection -->
-          ${!this.isAiida()
-            ? html`
-                <sl-select
-                  label="Country"
-                  placeholder="Select your country"
-                  @sl-change="${this.handleCountrySelect}"
-                  value="${this._selectedPermissionAdministrator?.country ??
-                  this._selectedCountry ??
-                  ""}"
-                  ?disabled="${!!this._presetPermissionAdministrator}"
-                >
-                  ${this._availableCountries.map(
-                    (country) => html`
-                      <sl-option value="${country}">
-                        ${COUNTRY_NAMES.of(country.toUpperCase())}
-                      </sl-option>
-                    `
-                  )}
-                  <sl-divider></sl-divider>
-                  <small>Development</small>
-                  <sl-option value="sim">Simulation</sl-option>
-                </sl-select>
-                <br />
-              `
-            : ""}
-
-          <!-- Render permission administrator selection -->
-          ${this._selectedCountry
-            ? html`
-                <sl-select
-                  label="Permission Administrator"
-                  placeholder="Select your Permission Administrator"
-                  help-text="Typically your Distribution System Operator (DSO) or Metering Point Administrator (MDA), depending on your national regulation."
-                  @sl-change="${this.handlePermissionAdministratorSelect}"
-                  value="${ifDefined(
-                    this._selectedPermissionAdministrator?.companyId
-                  )}"
-                  ?disabled="${!!this._presetPermissionAdministrator ||
-                  this._filteredPermissionAdministrators.length === 1}"
-                >
-                  ${this._filteredPermissionAdministrators.map(
-                    (pa) => html`
-                      <sl-option value="${pa.companyId}">
-                        ${pa.company}
-                      </sl-option>
-                    `
-                  )}
-                </sl-select>
-                <br />
-              `
-            : ""}
-
-          <div>
-            ${this._selectedPermissionAdministrator
-              ? html`
-                  ${until(
-                    this.getRegionConnectorElement(),
-                    html` <sl-spinner></sl-spinner>`
-                  )}
-                `
-              : html`
-                  <sl-alert variant="warning" open>
-                    <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
-                    Please select your country and permission administrator to
-                    continue.
-                  </sl-alert>
-                `}
-          </div>
-
-          <div slot="footer">
-            <div class="version-indicator">
-              <i>EDDIE Version: __EDDIE_VERSION__</i>
-            </div>
-          </div>
-        </sl-dialog>
-      `,
-      error: () => html`
+    if (!this._isValidConfiguration) {
+      return html`
         <button
           class="eddie-connect-button eddie-connect-button--disabled"
           disabled
         >
           ${unsafeSVG(buttonIcon)}
-          <span>Invalid configuration</span>
+          <span>
+            ${this._isValidConfiguration === undefined
+              ? "Loading"
+              : "Invalid configuration"}
+          </span>
         </button>
-      `,
-    });
+      `;
+    }
+
+    return html`
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/themes/light.css"
+      />
+      <button class="eddie-connect-button" @click="${this.connect}">
+        ${unsafeSVG(buttonIcon)}
+        <span>Connect with EDDIE</span>
+      </button>
+
+      <sl-dialog
+        ${ref(this.dialogRef)}
+        style="--width: clamp(30rem, 100%, 45rem)"
+        @sl-show="${this.handleDialogShow}"
+        @sl-hide="${this.handleDialogHide}"
+      >
+        <div slot="label">${unsafeSVG(headerImage)}</div>
+
+        <!-- Render data need summary -->
+        ${dataNeedSummary(this._dataNeedAttributes)}
+
+        <!-- Render country selection -->
+        ${!this.isAiida()
+          ? html`
+              <sl-select
+                label="Country"
+                placeholder="Select your country"
+                @sl-change="${this.handleCountrySelect}"
+                value="${this._selectedPermissionAdministrator?.country ??
+                this._selectedCountry ??
+                ""}"
+                ?disabled="${!!this._presetPermissionAdministrator}"
+              >
+                ${this._availableCountries.map(
+                  (country) => html`
+                    <sl-option value="${country}">
+                      ${COUNTRY_NAMES.of(country.toUpperCase())}
+                    </sl-option>
+                  `
+                )}
+                <sl-divider></sl-divider>
+                <small>Development</small>
+                <sl-option value="sim">Simulation</sl-option>
+              </sl-select>
+              <br />
+            `
+          : ""}
+
+        <!-- Render permission administrator selection -->
+        ${this._selectedCountry
+          ? html`
+              <sl-select
+                label="Permission Administrator"
+                placeholder="Select your Permission Administrator"
+                help-text="Typically your Distribution System Operator (DSO) or Metering Point Administrator (MDA), depending on your national regulation."
+                @sl-change="${this.handlePermissionAdministratorSelect}"
+                value="${ifDefined(
+                  this._selectedPermissionAdministrator?.companyId
+                )}"
+                ?disabled="${!!this._presetPermissionAdministrator ||
+                this._filteredPermissionAdministrators.length === 1}"
+              >
+                ${this._filteredPermissionAdministrators.map(
+                  (pa) => html`
+                    <sl-option value="${pa.companyId}">
+                      ${pa.company}
+                    </sl-option>
+                  `
+                )}
+              </sl-select>
+              <br />
+            `
+          : ""}
+
+        <div>
+          ${this._selectedPermissionAdministrator
+            ? html`
+                ${until(
+                  this.getRegionConnectorElement(),
+                  html`<sl-spinner></sl-spinner>`
+                )}
+              `
+            : html`
+                <sl-alert variant="warning" open>
+                  <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+                  Please select your country and permission administrator to
+                  continue.
+                </sl-alert>
+              `}
+        </div>
+
+        <div slot="footer">
+          <div class="version-indicator">
+            <i>EDDIE Version: __EDDIE_VERSION__</i>
+          </div>
+        </div>
+      </sl-dialog>
+    `;
   }
 }
 

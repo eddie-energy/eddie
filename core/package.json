@@ -8,7 +8,6 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@lit/task": "^1.0.1",
     "lit": "^2.7.5",
     "tinyduration": "^3.3.0",
     "vite": "^4.5.2"
