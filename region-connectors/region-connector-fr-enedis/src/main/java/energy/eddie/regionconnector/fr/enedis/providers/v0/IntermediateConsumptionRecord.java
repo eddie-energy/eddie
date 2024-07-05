@@ -5,14 +5,15 @@ import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.dto.IntervalReading;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
-import energy.eddie.regionconnector.fr.enedis.utils.DateTimeConverter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static energy.eddie.regionconnector.fr.enedis.providers.v0_82.IntermediateValidatedHistoricalDocument.ENEDIS_DATE_FORMAT;
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
+
 
 class IntermediateConsumptionRecord {
+
     private final IdentifiableMeterReading meterReading;
 
     public IntermediateConsumptionRecord(IdentifiableMeterReading meterReading) {
@@ -27,7 +28,7 @@ class IntermediateConsumptionRecord {
         ConsumptionRecord consumptionRecord = new ConsumptionRecord();
 
         consumptionRecord.setMeteringPoint(clcMeterReading.usagePointId());
-        consumptionRecord.setStartDateTime(DateTimeConverter.isoDateToZonedDateTime(clcMeterReading.start().format(ENEDIS_DATE_FORMAT)));
+        consumptionRecord.setStartDateTime(clcMeterReading.start().atStartOfDay(ZONE_ID_FR));
         consumptionRecord.setMeteringInterval(meterReading.permissionRequest().granularity().name());
 
 
@@ -37,9 +38,9 @@ class IntermediateConsumptionRecord {
             consumptionPoint.setConsumption(Double.valueOf(clcInterval.value()));
             consumptionPoint.setMeteringType(
                     clcInterval.measureType()
-                            .filter(measureType -> measureType.equals("B"))
-                            .map(measureType -> ConsumptionPoint.MeteringType.MEASURED_VALUE)
-                            .orElse(ConsumptionPoint.MeteringType.EXTRAPOLATED_VALUE)
+                               .filter(measureType -> measureType.equals("B"))
+                               .map(measureType -> ConsumptionPoint.MeteringType.MEASURED_VALUE)
+                               .orElse(ConsumptionPoint.MeteringType.EXTRAPOLATED_VALUE)
             );
 
             consumptionPoints.add(consumptionPoint);
