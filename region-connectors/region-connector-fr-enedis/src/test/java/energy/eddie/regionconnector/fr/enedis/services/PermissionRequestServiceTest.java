@@ -141,7 +141,8 @@ class PermissionRequestServiceTest {
                 PermissionProcessStatus.VALIDATED,
                 null,
                 null,
-                ZonedDateTime.now(ZoneOffset.UTC)
+                ZonedDateTime.now(ZoneOffset.UTC),
+                UsagePointType.CONSUMPTION
         );
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(permissionRequest));
@@ -172,7 +173,8 @@ class PermissionRequestServiceTest {
                 PermissionProcessStatus.VALIDATED,
                 null,
                 null,
-                ZonedDateTime.now(ZoneOffset.UTC)
+                ZonedDateTime.now(ZoneOffset.UTC),
+                UsagePointType.CONSUMPTION
         );
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(permissionRequest));
