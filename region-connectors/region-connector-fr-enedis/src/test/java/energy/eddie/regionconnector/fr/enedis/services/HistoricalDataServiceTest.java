@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
@@ -61,7 +62,8 @@ class HistoricalDataServiceTest {
                                                                         PermissionProcessStatus.ACCEPTED,
                                                                         "usagePointId",
                                                                         null,
-                                                                        ZonedDateTime.now(ZoneOffset.UTC));
+                                                                        ZonedDateTime.now(ZoneOffset.UTC),
+                                                                        UsagePointType.CONSUMPTION);
 
         when(enedisApi.getConsumptionMeterReading(anyString(), eq(start), eq(start.plusWeeks(1)), any()))
                 .thenReturn(Mono.just(new MeterReading("usagePointId",
@@ -78,7 +80,7 @@ class HistoricalDataServiceTest {
                                                        null,
                                                        List.of())));
         // When
-        historicalDataService.fetchHistoricalMeterReadings(request, "usagePointId");
+        historicalDataService.fetchHistoricalMeterReadings(request);
 
         // Then
         StepVerifier.create(sink.asFlux())
@@ -115,7 +117,8 @@ class HistoricalDataServiceTest {
                                                                         PermissionProcessStatus.ACCEPTED,
                                                                         "usagePointId",
                                                                         null,
-                                                                        ZonedDateTime.now(ZoneOffset.UTC));
+                                                                        ZonedDateTime.now(ZoneOffset.UTC),
+                                                                        UsagePointType.CONSUMPTION);
 
         when(enedisApi.getConsumptionMeterReading(anyString(), eq(start), eq(start.plusWeeks(1)), any()))
                 .thenReturn(Mono.just(new MeterReading("usagePointId",
@@ -132,7 +135,7 @@ class HistoricalDataServiceTest {
                                                                          null,
                                                                          null)));
         // When
-        historicalDataService.fetchHistoricalMeterReadings(request, "usagePointId");
+        historicalDataService.fetchHistoricalMeterReadings(request);
 
         // Then
         StepVerifier.create(sink.asFlux())
@@ -171,9 +174,10 @@ class HistoricalDataServiceTest {
                                                                         PermissionProcessStatus.CREATED,
                                                                         "usagePointId",
                                                                         null,
-                                                                        ZonedDateTime.now(ZoneOffset.UTC));
+                                                                        ZonedDateTime.now(ZoneOffset.UTC),
+                                                                        UsagePointType.CONSUMPTION);
         // When
-        historicalDataService.fetchHistoricalMeterReadings(request, "usagePointId");
+        historicalDataService.fetchHistoricalMeterReadings(request);
 
         // Then
         StepVerifier.create(sink.asFlux())

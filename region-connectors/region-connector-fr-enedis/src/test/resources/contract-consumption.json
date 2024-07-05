@@ -1,0 +1,24 @@
+{
+  "customer": {
+    "customer_id": "XXXX",
+    "usage_points": [
+      {
+        "usage_point": {
+          "usage_point_id": "24115050XXXXXX",
+          "usage_point_status": "com",
+          "meter_type": "AMM"
+        },
+        "contracts": {
+          "segment": "C5",
+          "subscribed_power": "6 kVA",
+          "last_activation_date": "2017-07-15+02:00",
+          "distribution_tariff": "BTINFMU4",
+          "offpeak_hours": "HC (22H50-6H50)",
+          "contract_type": "Contrat GRD-F",
+          "contract_status": "SERVC",
+          "last_distribution_tariff_change_date": "2024-05-11+02:00"
+        }
+      }
+    ]
+  }
+}

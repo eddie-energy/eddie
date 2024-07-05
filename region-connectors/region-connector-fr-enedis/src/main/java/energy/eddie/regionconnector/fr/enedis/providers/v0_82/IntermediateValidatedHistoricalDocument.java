@@ -16,7 +16,10 @@ import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 public final class IntermediateValidatedHistoricalDocument {
     public static final DateTimeFormatter ENEDIS_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -88,10 +91,10 @@ public final class IntermediateValidatedHistoricalDocument {
     private ValidatedHistoricalDataMarketDocument.TimeSeriesList timeSeriesList() {
         TimeSeriesComplexType reading = new TimeSeriesComplexType()
                 .withMRID(UUID.randomUUID().toString())
-                .withBusinessType(BusinessTypeList.CONSUMPTION)
+                .withBusinessType(businessType())
                 .withProduct(energyProductTypeList())
                 .withVersion(EnedisApiVersion.V5.name())
-                .withFlowDirectionDirection(DirectionTypeList.DOWN)
+                .withFlowDirectionDirection(direction())
                 .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation(aggregateKind())
                 .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(CommodityKind.ELECTRICITYPRIMARYMETERED)
                 .withMarketEvaluationPointMRID(
@@ -113,6 +116,13 @@ public final class IntermediateValidatedHistoricalDocument {
                 .withTimeSeries(List.of(reading));
     }
 
+    private BusinessTypeList businessType() {
+        return switch (identifiableMeterReading.meterReadingType()) {
+            case CONSUMPTION -> BusinessTypeList.CONSUMPTION;
+            case PRODUCTION -> BusinessTypeList.PRODUCTION;
+        };
+    }
+
     private EnergyProductTypeList energyProductTypeList() {
         return switch (meterReading().readingType().measurementKind()) {
             case "power" -> EnergyProductTypeList.ACTIVE_POWER;
@@ -120,6 +130,13 @@ public final class IntermediateValidatedHistoricalDocument {
             default -> throw new IllegalStateException("Unknown measurement kind '%s'".formatted(
                     meterReading().readingType().measurementKind())
             );
+        };
+    }
+
+    private DirectionTypeList direction() {
+        return switch (identifiableMeterReading.meterReadingType()) {
+            case CONSUMPTION -> DirectionTypeList.DOWN;
+            case PRODUCTION -> DirectionTypeList.UP;
         };
     }
 

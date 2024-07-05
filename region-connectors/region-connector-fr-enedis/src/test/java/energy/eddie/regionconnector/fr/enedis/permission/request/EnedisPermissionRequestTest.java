@@ -8,7 +8,6 @@ import java.time.LocalDate;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EnedisPermissionRequestTest {
     @Test
@@ -99,19 +98,5 @@ class EnedisPermissionRequestTest {
 
         // Then
         assertEquals("testConnectionId", request.connectionId());
-    }
-
-    @Test
-    void usagePointIdIsNotSet_returnsEmpty() {
-        // Given
-        String permissionId = "testPermissionId";
-        String connectionId = "testConnectionId";
-        LocalDate start = LocalDate.now(ZONE_ID_FR);
-        LocalDate end = start.plusDays(1);
-        EnedisPermissionRequest request = new EnedisPermissionRequest(permissionId, connectionId, "dnid", start, end,
-                                                                      Granularity.P1D, PermissionProcessStatus.CREATED);
-
-        // Then
-        assertTrue(request.usagePointId().isEmpty());
     }
 }

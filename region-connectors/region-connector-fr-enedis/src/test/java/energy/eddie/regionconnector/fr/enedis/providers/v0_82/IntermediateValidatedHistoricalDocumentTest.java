@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +40,9 @@ class IntermediateValidatedHistoricalDocumentTest {
         when(permissionRequest.dataNeedId()).thenReturn("dnid");
         when(permissionRequest.granularity()).thenReturn(Granularity.P1D);
 
-        var identifiableMeterReading = new IdentifiableMeterReading(permissionRequest, meterReading);
+        var identifiableMeterReading = new IdentifiableMeterReading(permissionRequest,
+                                                                    meterReading,
+                                                                    MeterReadingType.CONSUMPTION);
         var intermediateVHD = new IntermediateValidatedHistoricalDocument(
                 identifiableMeterReading,
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
@@ -100,7 +103,9 @@ class IntermediateValidatedHistoricalDocumentTest {
         when(permissionRequest.dataNeedId()).thenReturn("dnid");
         when(permissionRequest.granularity()).thenReturn(Granularity.PT30M);
 
-        var identifiableMeterReading = new IdentifiableMeterReading(permissionRequest, meterReading);
+        var identifiableMeterReading = new IdentifiableMeterReading(permissionRequest,
+                                                                    meterReading,
+                                                                    MeterReadingType.CONSUMPTION);
         var intermediateVHD = new IntermediateValidatedHistoricalDocument(
                 identifiableMeterReading,
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,

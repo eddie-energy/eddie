@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.slf4j.Logger;
@@ -13,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.util.retry.Retry;
 import reactor.util.retry.RetryBackoffSpec;
@@ -55,8 +55,7 @@ public class PollingService implements AutoCloseable {
     public void fetchMeterReadings(
             FrEnedisPermissionRequest permissionRequest,
             LocalDate start,
-            LocalDate end,
-            String usagePointId
+            LocalDate end
     ) {
         String permissionId = permissionRequest.permissionId();
         LOGGER.info("Preparing to fetch data from ENEDIS for permission request '{}' from '{}' to '{}' (inclusive)",
@@ -64,7 +63,7 @@ public class PollingService implements AutoCloseable {
 
         // If the granularity is PT30M, we need to fetch the data in batches
         switch (permissionRequest.granularity()) {
-            case PT30M -> fetchDataInBatches(permissionRequest, start, end, usagePointId)
+            case PT30M -> fetchDataInBatches(permissionRequest, start, end)
                     .doOnComplete(() -> LOGGER.info(
                             "Finished fetching half hourly data from ENEDIS for permission request '{}'",
                             permissionId))
@@ -74,7 +73,7 @@ public class PollingService implements AutoCloseable {
                                        identifiableMeterReading
                                )
                     );
-            case P1D -> fetchData(permissionRequest, start, end, usagePointId)
+            case P1D -> fetchData(permissionRequest, start, end)
                     .subscribe(identifiableMeterReading -> handleIdentifiableMeterReading(
                                        Granularity.P1D,
                                        permissionRequest,
@@ -103,23 +102,49 @@ public class PollingService implements AutoCloseable {
                                Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
     }
 
-    private Mono<IdentifiableMeterReading> fetchData(
+    private Flux<IdentifiableMeterReading> fetchData(
             FrEnedisPermissionRequest permissionRequest,
             LocalDate start,
-            LocalDate end,
-            String usagePointId
+            LocalDate end
     ) {
         String permissionId = permissionRequest.permissionId();
         LOGGER.info("Fetching data from ENEDIS for permissionId '{}' from '{}' to '{}'", permissionId, start, end);
-        // Make the API call for this batch
-        return Mono.defer(() -> enedisApi.getConsumptionMeterReading(permissionRequest.usagePointId()
-                                                                                      .orElse(usagePointId),
-                                                                     start,
-                                                                     end,
-                                                                     permissionRequest.granularity()))
-                   .retryWhen(RETRY_BACKOFF_SPEC)
-                   .doOnError(e -> handleError(permissionId, start, end, e))
-                   .map(meterReading -> new IdentifiableMeterReading(permissionRequest, meterReading));
+
+        Flux<IdentifiableMeterReading> consumptionFlux = Flux
+                .defer(() -> enedisApi.getConsumptionMeterReading(
+                        permissionRequest.usagePointId(),
+                        start,
+                        end,
+                        permissionRequest.granularity()
+                ))
+                .retryWhen(RETRY_BACKOFF_SPEC)
+                .doOnError(e -> handleError(permissionId, start, end, e))
+                .map(meterReading -> new IdentifiableMeterReading(
+                        permissionRequest,
+                        meterReading,
+                        MeterReadingType.CONSUMPTION
+                ));
+
+        Flux<IdentifiableMeterReading> productionFlux = Flux
+                .defer(() -> enedisApi.getProductionMeterReading(
+                        permissionRequest.usagePointId(),
+                        start,
+                        end,
+                        permissionRequest.granularity()
+                ))
+                .retryWhen(RETRY_BACKOFF_SPEC)
+                .doOnError(e -> handleError(permissionId, start, end, e))
+                .map(meterReading -> new IdentifiableMeterReading(
+                        permissionRequest,
+                        meterReading,
+                        MeterReadingType.PRODUCTION
+                ));
+
+        return switch (permissionRequest.usagePointType()) {
+            case CONSUMPTION -> consumptionFlux;
+            case PRODUCTION -> productionFlux;
+            case CONSUMPTION_AND_PRODUCTION -> Flux.merge(consumptionFlux, productionFlux);
+        };
     }
 
     private void handleError(String permissionId, LocalDate start, LocalDate end, Throwable e) {
@@ -135,15 +160,14 @@ public class PollingService implements AutoCloseable {
     private Flux<IdentifiableMeterReading> fetchDataInBatches(
             FrEnedisPermissionRequest permissionRequest,
             LocalDate start,
-            LocalDate end,
-            String usagePointId
+            LocalDate end
     ) {
         return calculateBatchDates(start, end)
                 .flatMap(batchStart -> {
                     // Calculate the end date for this batch, ensuring it's within the overall end date and not in the future
                     LocalDate batchEnd = batchStart.plusWeeks(1);
                     batchEnd = batchEnd.isAfter(end) ? end : batchEnd; // Ensure not to exceed the end date
-                    return fetchData(permissionRequest, batchStart, batchEnd, usagePointId);
+                    return fetchData(permissionRequest, batchStart, batchEnd);
                 })
                 .onErrorComplete(); // stop the stream if an error occurs
     }

@@ -11,6 +11,7 @@ import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrAcceptedEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrCreatedEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrMalformedEvent;
@@ -70,14 +71,6 @@ class PermissionRequestServiceTest {
     private Outbox outbox;
     @MockBean
     private DataNeedCalculationService<DataNeed> calculationService;
-
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        public TimeoutConfiguration timeoutConfiguration() {
-            return new TimeoutConfiguration(24);
-        }
-    }
 
     @Test
     void testCreatePermissionRequest_createsPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException {
@@ -183,7 +176,8 @@ class PermissionRequestServiceTest {
                                                   PermissionProcessStatus.VALIDATED,
                                                   null,
                                                   null,
-                                                  ZonedDateTime.now(ZoneOffset.UTC));
+                                                  ZonedDateTime.now(ZoneOffset.UTC),
+                                                  UsagePointType.CONSUMPTION);
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(request));
 
@@ -210,7 +204,8 @@ class PermissionRequestServiceTest {
                                                   PermissionProcessStatus.VALIDATED,
                                                   null,
                                                   null,
-                                                  ZonedDateTime.now(ZoneOffset.UTC));
+                                                  ZonedDateTime.now(ZoneOffset.UTC),
+                                                  UsagePointType.CONSUMPTION);
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(request));
 
@@ -238,5 +233,13 @@ class PermissionRequestServiceTest {
                      () -> permissionRequestService.createPermissionRequest(create));
         verify(outbox).commit(isA(FrCreatedEvent.class));
         verify(outbox).commit(isA(FrMalformedEvent.class));
+    }
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public TimeoutConfiguration timeoutConfiguration() {
+            return new TimeoutConfiguration(24);
+        }
     }
 }

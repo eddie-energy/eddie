@@ -7,6 +7,7 @@ import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
@@ -26,7 +27,9 @@ class EnedisEddieValidatedHistoricalDataMarketDocumentProviderTest {
         when(permissionRequest.dataNeedId()).thenReturn("dnid");
         when(permissionRequest.granularity()).thenReturn(Granularity.PT30M);
 
-        var identifiableMeterReading = new IdentifiableMeterReading(permissionRequest, meterReading);
+        var identifiableMeterReading = new IdentifiableMeterReading(permissionRequest,
+                                                                    meterReading,
+                                                                    MeterReadingType.CONSUMPTION);
         TestPublisher<IdentifiableMeterReading> testPublisher = TestPublisher.create();
         PlainEnedisConfiguration enedisConfiguration = new PlainEnedisConfiguration(
                 "clientId",

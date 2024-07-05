@@ -5,6 +5,7 @@ import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.dto.IntervalReading;
 import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -25,15 +26,25 @@ class IntermediateConsumptionRecordTest {
     @EnumSource(Granularity.class)
     void testConsumptionRecord_withIntervalsAndMeasurementTypes(Granularity intervalLength) {
         // Given
-        var intervalReading = new IntervalReading("100", "2024-02-26 00:30:00", Optional.of("B"), Optional.of(intervalLength.name()));
-        var clcMeterReading = new MeterReading("uid", LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC), "BRUT", null, List.of(intervalReading));
+        var intervalReading = new IntervalReading("100",
+                                                  "2024-02-26 00:30:00",
+                                                  Optional.of("B"),
+                                                  Optional.of(intervalLength.name()));
+        var clcMeterReading = new MeterReading("uid",
+                                               LocalDate.now(ZoneOffset.UTC),
+                                               LocalDate.now(ZoneOffset.UTC),
+                                               "BRUT",
+                                               null,
+                                               List.of(intervalReading));
         var permissionRequest = mock(FrEnedisPermissionRequest.class);
         when(permissionRequest.connectionId()).thenReturn("cid");
         when(permissionRequest.permissionId()).thenReturn("pid");
         when(permissionRequest.dataNeedId()).thenReturn("dnid");
         when(permissionRequest.granularity()).thenReturn(intervalLength);
 
-        var meterReading = new IdentifiableMeterReading(permissionRequest, clcMeterReading);
+        var meterReading = new IdentifiableMeterReading(permissionRequest,
+                                                        clcMeterReading,
+                                                        MeterReadingType.CONSUMPTION);
         var intermediateRecord = new IntermediateConsumptionRecord(meterReading);
 
         // When
@@ -54,13 +65,20 @@ class IntermediateConsumptionRecordTest {
     @Test
     void testConsumptionRecord_withEmptyIntervalReading() {
         // Given
-        var clcMeterReading = new MeterReading("uid", LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC), "BRUT", null, List.of());
+        var clcMeterReading = new MeterReading("uid",
+                                               LocalDate.now(ZoneOffset.UTC),
+                                               LocalDate.now(ZoneOffset.UTC),
+                                               "BRUT",
+                                               null,
+                                               List.of());
         var permissionRequest = mock(FrEnedisPermissionRequest.class);
         when(permissionRequest.connectionId()).thenReturn("cid");
         when(permissionRequest.permissionId()).thenReturn("pid");
         when(permissionRequest.dataNeedId()).thenReturn("dnid");
 
-        var meterReading = new IdentifiableMeterReading(permissionRequest, clcMeterReading);
+        var meterReading = new IdentifiableMeterReading(permissionRequest,
+                                                        clcMeterReading,
+                                                        MeterReadingType.CONSUMPTION);
         var intermediateRecord = new IntermediateConsumptionRecord(meterReading);
 
         // When, Then

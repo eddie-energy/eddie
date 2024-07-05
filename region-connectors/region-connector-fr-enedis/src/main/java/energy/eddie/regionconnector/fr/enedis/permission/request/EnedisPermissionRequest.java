@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
@@ -44,6 +45,9 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
 
     @Column(name = "created")
     private final ZonedDateTime created;
+    @Column(name = "usage_point_type")
+    @Enumerated(EnumType.STRING)
+    private final UsagePointType usagePointType;
 
     // just for JPA
     @SuppressWarnings("NullAway.Init")
@@ -58,6 +62,7 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
         usagePointId = null;
         latestMeterReadingEndDate = null;
         created = null;
+        usagePointType = null;
     }
 
     public EnedisPermissionRequest(
@@ -78,7 +83,8 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
              status,
              null,
              null,
-             ZonedDateTime.now(ZONE_ID_FR));
+             ZonedDateTime.now(ZONE_ID_FR),
+             UsagePointType.CONSUMPTION);
     }
 
     @SuppressWarnings("java:S107")
@@ -92,7 +98,8 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
             PermissionProcessStatus status,
             @Nullable String usagePointId,
             @Nullable LocalDate latestMeterReadingEndDate,
-            ZonedDateTime created
+            ZonedDateTime created,
+            UsagePointType usagePointType
     ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
@@ -104,17 +111,23 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
         this.usagePointId = usagePointId;
         this.latestMeterReadingEndDate = latestMeterReadingEndDate;
         this.created = created;
+        this.usagePointType = usagePointType;
     }
 
     @Override
-    public Optional<String> usagePointId() {
-        return Optional.ofNullable(usagePointId);
+    public String usagePointId() {
+        return usagePointId;
     }
 
 
     @Override
     public Granularity granularity() {
         return granularity;
+    }
+
+    @Override
+    public UsagePointType usagePointType() {
+        return usagePointType;
     }
 
     @Override

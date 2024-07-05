@@ -2,12 +2,15 @@ package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
@@ -63,10 +66,11 @@ class PollingServiceTest {
                                                                         PermissionProcessStatus.ACCEPTED,
                                                                         "usagePointId",
                                                                         null,
-                                                                        ZonedDateTime.now(ZoneOffset.UTC));
+                                                                        ZonedDateTime.now(ZoneOffset.UTC),
+                                                                        UsagePointType.CONSUMPTION);
 
         // When
-        pollingService.fetchMeterReadings(request, start, end, "usagePointId");
+        pollingService.fetchMeterReadings(request, start, end);
 
         // Then
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
@@ -101,10 +105,11 @@ class PollingServiceTest {
                                                                         PermissionProcessStatus.ACCEPTED,
                                                                         "usagePointId",
                                                                         null,
-                                                                        ZonedDateTime.now(ZoneOffset.UTC));
+                                                                        ZonedDateTime.now(ZoneOffset.UTC),
+                                                                        UsagePointType.CONSUMPTION);
 
         // When
-        pollingService.fetchMeterReadings(request, start, end, "usagePointId");
+        pollingService.fetchMeterReadings(request, start, end);
 
         // Then
         verify(outbox, never()).commit(any());
@@ -149,12 +154,13 @@ class PollingServiceTest {
                                                                         PermissionProcessStatus.ACCEPTED,
                                                                         "usagePointId",
                                                                         null,
-                                                                        ZonedDateTime.now(ZoneOffset.UTC));
+                                                                        ZonedDateTime.now(ZoneOffset.UTC),
+                                                                        UsagePointType.CONSUMPTION);
 
         VirtualTimeScheduler.getOrSet(); // yes, this is necessary
 
         // When
-        pollingService.fetchMeterReadings(request, start, end, "usagePointId");
+        pollingService.fetchMeterReadings(request, start, end);
 
         // Then
         StepVerifier.withVirtualTime(sink::asFlux)
@@ -168,7 +174,6 @@ class PollingServiceTest {
         // Clean-Up
         pollingService.close();
     }
-
 
     @Test
     void fetchHistoricalMeterReadingsThrowsIllegalStateException_givenUnsupportedGranularity() throws Exception {
@@ -190,14 +195,141 @@ class PollingServiceTest {
                                                                         PermissionProcessStatus.ACCEPTED,
                                                                         "usagePointId",
                                                                         null,
-                                                                        ZonedDateTime.now(ZoneOffset.UTC));
+                                                                        ZonedDateTime.now(ZoneOffset.UTC),
+                                                                        UsagePointType.CONSUMPTION);
 
         // When
         assertThrows(IllegalStateException.class,
-                     () -> pollingService.fetchMeterReadings(request, start, end, "usagePointId"));
+                     () -> pollingService.fetchMeterReadings(request, start, end));
         verifyNoInteractions(enedisApi);
 
         // Clean-Up
+        pollingService.close();
+    }
+
+    @Test
+    void fetchHistoricalMeterReadings_forConsumption() throws Exception {
+        // Given
+        MeterReadingPermissionUpdateAndFulfillmentService service = new MeterReadingPermissionUpdateAndFulfillmentService(
+                new FulfillmentService(outbox, FrSimpleEvent::new),
+                (pr, end) -> {}
+        );
+        Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
+        PollingService pollingService = new PollingService(enedisApi, service, sink, outbox);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
+        LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                start,
+                end,
+                Granularity.P1D,
+                PermissionProcessStatus.ACCEPTED,
+                "usagePointId",
+                null,
+                ZonedDateTime.now(ZoneOffset.UTC),
+                UsagePointType.CONSUMPTION
+        );
+
+        when(enedisApi.getConsumptionMeterReading(anyString(), any(), any(), any()))
+                .thenReturn(Mono.just(TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK)));
+
+        // When
+        pollingService.fetchMeterReadings(request, start, end);
+
+        // Then
+        StepVerifier.create(sink.asFlux())
+                    .assertNext(reading -> assertEquals(MeterReadingType.CONSUMPTION, reading.meterReadingType()))
+                    .then(sink::tryEmitComplete)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(5));
+
+        pollingService.close();
+    }
+
+    @Test
+    void fetchHistoricalMeterReadings_forProduction() throws Exception {
+        // Given
+        MeterReadingPermissionUpdateAndFulfillmentService service = new MeterReadingPermissionUpdateAndFulfillmentService(
+                new FulfillmentService(outbox, FrSimpleEvent::new),
+                (pr, end) -> {}
+        );
+        Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
+        PollingService pollingService = new PollingService(enedisApi, service, sink, outbox);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
+        LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                start,
+                end,
+                Granularity.P1D,
+                PermissionProcessStatus.ACCEPTED,
+                "usagePointId",
+                null,
+                ZonedDateTime.now(ZoneOffset.UTC),
+                UsagePointType.PRODUCTION
+        );
+
+        when(enedisApi.getProductionMeterReading(anyString(), any(), any(), any()))
+                .thenReturn(Mono.just(TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK)));
+
+        // When
+        pollingService.fetchMeterReadings(request, start, end);
+
+        // Then
+        StepVerifier.create(sink.asFlux())
+                    .assertNext(reading -> assertEquals(MeterReadingType.PRODUCTION, reading.meterReadingType()))
+                    .then(sink::tryEmitComplete)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(5));
+
+        pollingService.close();
+    }
+
+    @Test
+    void fetchHistoricalMeterReadings_forConsumptionAndProduction() throws Exception {
+        // Given
+        MeterReadingPermissionUpdateAndFulfillmentService service = new MeterReadingPermissionUpdateAndFulfillmentService(
+                new FulfillmentService(outbox, FrSimpleEvent::new),
+                (pr, end) -> {}
+        );
+        Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
+        PollingService pollingService = new PollingService(enedisApi, service, sink, outbox);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
+        LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                start,
+                end,
+                Granularity.P1D,
+                PermissionProcessStatus.ACCEPTED,
+                "usagePointId",
+                null,
+                ZonedDateTime.now(ZoneOffset.UTC),
+                UsagePointType.CONSUMPTION_AND_PRODUCTION
+        );
+
+        when(enedisApi.getConsumptionMeterReading(anyString(), any(), any(), any()))
+                .thenReturn(Mono.just(TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK)));
+        when(enedisApi.getProductionMeterReading(anyString(), any(), any(), any()))
+                .thenReturn(Mono.just(TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK)));
+
+        // When
+        pollingService.fetchMeterReadings(request, start, end);
+
+        // Then
+        StepVerifier.create(sink.asFlux())
+                    .assertNext(reading -> assertEquals(MeterReadingType.CONSUMPTION, reading.meterReadingType()))
+                    .assertNext(reading -> assertEquals(MeterReadingType.PRODUCTION, reading.meterReadingType()))
+                    .then(sink::tryEmitComplete)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(5));
+
         pollingService.close();
     }
 }

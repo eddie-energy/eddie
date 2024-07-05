@@ -20,7 +20,7 @@ public class HistoricalDataService {
     }
 
     @Async
-    public void fetchHistoricalMeterReadings(FrEnedisPermissionRequest permissionRequest, String usagePointId) {
+    public void fetchHistoricalMeterReadings(FrEnedisPermissionRequest permissionRequest) {
         LocalDate permissionStart = permissionRequest.start();
         LocalDate permissionEnd = permissionRequest.end();
 
@@ -32,6 +32,6 @@ public class HistoricalDataService {
         }
 
         var end = now.isAfter(permissionEnd) ? permissionEnd.plusDays(1) : now;
-        pollingService.fetchMeterReadings(permissionRequest, permissionStart, end, usagePointId);
+        pollingService.fetchMeterReadings(permissionRequest, permissionStart, end);
     }
 }
