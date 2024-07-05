@@ -89,11 +89,7 @@ class EddieConnectButton extends LitElement {
     // Private properties
     _selectedCountry: { type: String },
     _selectedPermissionAdministrator: { type: Object },
-    _availablePermissionAdministrators: { type: Array },
     _filteredPermissionAdministrators: { type: Array },
-    _supportedConnectors: { type: Array },
-    _availableCountries: { type: Array },
-    _dataNeedAttributes: { type: Object },
   };
 
   static styles = css`
@@ -170,7 +166,7 @@ class EddieConnectButton extends LitElement {
      * @type {DataNeedAttributes}
      * @private
      */
-    this._dataNeedAttributes = null;
+    this._dataNeedAttributes = undefined;
   }
 
   connectedCallback() {
