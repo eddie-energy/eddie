@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
@@ -23,6 +24,7 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -129,11 +131,23 @@ class PermissionRequestServiceTest {
     @Test
     void testAuthorizePermissionRequest_acceptsPermissionRequest() throws PermissionNotFoundException {
         // Given
-        when(repository.existsById("pid"))
-                .thenReturn(true);
+        EnedisPermissionRequest permissionRequest = new EnedisPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                LocalDate.now(ZoneOffset.UTC).minusDays(3),
+                LocalDate.now(ZoneOffset.UTC),
+                Granularity.P1D,
+                PermissionProcessStatus.VALIDATED,
+                null,
+                null,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(permissionRequest));
 
         // When
-        permissionRequestService.authorizePermissionRequest("pid", "upid");
+        permissionRequestService.authorizePermissionRequest("pid", new String[]{"upid"});
 
         // Then
         verify(outbox).commit(argThat(event -> event.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
@@ -141,24 +155,80 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void testAuthorizePermissionRequestWithNullUsageId_rejectsPermissionRequest() throws PermissionNotFoundException {
+    void testAuthorizePermissionRequest_withMultipleUsagePointIds_acceptsFirstAndCreatesNewOnes() throws PermissionNotFoundException {
         // Given
-        when(repository.existsById("pid"))
-                .thenReturn(true);
+        ArgumentCaptor<PermissionEvent> eventCaptor = ArgumentCaptor.forClass(PermissionEvent.class);
+        ArgumentCaptor<FrCreatedEvent> createdCaptor = ArgumentCaptor.forClass(FrCreatedEvent.class);
+        ArgumentCaptor<FrValidatedEvent> validatedCaptor = ArgumentCaptor.forClass(FrValidatedEvent.class);
+        ArgumentCaptor<FrAcceptedEvent> acceptedCaptor = ArgumentCaptor.forClass(FrAcceptedEvent.class);
+
+        EnedisPermissionRequest permissionRequest = new EnedisPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                LocalDate.now(ZoneOffset.UTC).minusDays(3),
+                LocalDate.now(ZoneOffset.UTC),
+                Granularity.P1D,
+                PermissionProcessStatus.VALIDATED,
+                null,
+                null,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(permissionRequest));
 
         // When
-        permissionRequestService.authorizePermissionRequest("pid", null);
+        permissionRequestService.authorizePermissionRequest("pid", new String[]{"upid", "upid2", "upid3"});
 
         // Then
-        verify(outbox).commit(argThat(event -> event.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
-        verify(outbox).commit(argThat(event -> event.status() == PermissionProcessStatus.REJECTED));
+        verify(outbox, times(10)).commit(eventCaptor.capture());
+        verify(outbox,
+               times(3)).commit(argThat(event -> event.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
+        verify(outbox, times(3)).commit(acceptedCaptor.capture());
+        verify(outbox, times(2)).commit(createdCaptor.capture());
+        verify(outbox, times(2)).commit(validatedCaptor.capture());
+
+        assertAll(
+                // verify that the events are emitted in the correct order
+                () -> assertEquals(10, eventCaptor.getAllValues().size()),
+                () -> assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
+                                   eventCaptor.getAllValues().getFirst().status()),
+                () -> assertEquals(PermissionProcessStatus.ACCEPTED, eventCaptor.getAllValues().get(1).status()),
+                () -> assertEquals(PermissionProcessStatus.CREATED, eventCaptor.getAllValues().get(2).status()),
+                () -> assertEquals(PermissionProcessStatus.VALIDATED, eventCaptor.getAllValues().get(3).status()),
+                () -> assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
+                                   eventCaptor.getAllValues().get(4).status()),
+                () -> assertEquals(PermissionProcessStatus.ACCEPTED, eventCaptor.getAllValues().get(5).status()),
+                () -> assertEquals(PermissionProcessStatus.CREATED, eventCaptor.getAllValues().get(6).status()),
+                () -> assertEquals(PermissionProcessStatus.VALIDATED, eventCaptor.getAllValues().get(7).status()),
+                () -> assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
+                                   eventCaptor.getAllValues().get(8).status()),
+                () -> assertEquals(PermissionProcessStatus.ACCEPTED, eventCaptor.getAllValues().get(9).status()),
+                // verify that the correct usage point ids are used
+                () -> assertEquals("upid", acceptedCaptor.getAllValues().getFirst().usagePointId()),
+                () -> assertEquals("upid2", acceptedCaptor.getAllValues().get(1).usagePointId()),
+                () -> assertEquals("upid3", acceptedCaptor.getAllValues().getLast().usagePointId()),
+                // verify that the correct permission ids are used
+                () -> assertNotEquals("pid", createdCaptor.getAllValues().getFirst().permissionId()),
+                () -> assertNotEquals(createdCaptor.getAllValues().getFirst().permissionId(),
+                                      createdCaptor.getAllValues().getLast().permissionId()),
+                () -> assertEquals(createdCaptor.getAllValues().getFirst().permissionId(),
+                                   validatedCaptor.getAllValues().getFirst().permissionId()),
+                () -> assertEquals(createdCaptor.getAllValues().getFirst().permissionId(),
+                                   acceptedCaptor.getAllValues().get(1).permissionId()),
+                () -> assertEquals(createdCaptor.getAllValues().getLast().permissionId(),
+                                   validatedCaptor.getAllValues().getLast().permissionId()),
+                () -> assertEquals(createdCaptor.getAllValues().getLast().permissionId(),
+                                   acceptedCaptor.getAllValues().get(2).permissionId())
+
+        );
     }
 
     @Test
     void testAuthorizePermissionRequest_withNonExistingPermissionRequest_throws() {
         // Given, When, Then
         assertThrows(PermissionNotFoundException.class,
-                     () -> permissionRequestService.authorizePermissionRequest("NonExistingPid", "upid"));
+                     () -> permissionRequestService.authorizePermissionRequest("NonExistingPid", new String[]{"upid"}));
     }
 
     @Test

@@ -102,18 +102,31 @@ public class PermissionRequestService {
 
     public void authorizePermissionRequest(
             String permissionId,
-            String usagePointId
+            String[] usagePointIds
     ) throws PermissionNotFoundException {
-        var exists = repository.existsById(permissionId);
-        if (!exists) {
-            // unknown state / permissionId => not coming / initiated by our frontend
-            throw new PermissionNotFoundException(permissionId);
-        }
+        var permissionRequest = repository
+                .findByPermissionId(permissionId)
+                .orElseThrow(() -> new PermissionNotFoundException(permissionId));
+
+        var usagePointId = usagePointIds[0];
         outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
-        if (usagePointId == null) { // probably when request was denied
-            outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.REJECTED));
-        } else {
-            outbox.commit(new FrAcceptedEvent(permissionId, usagePointId));
+        outbox.commit(new FrAcceptedEvent(permissionId, usagePointId));
+
+        for (int i = 1; i < usagePointIds.length; i++) {
+            var newPermissionId = UUID.randomUUID().toString();
+            outbox.commit(new FrCreatedEvent(
+                    newPermissionId,
+                    permissionRequest.connectionId(),
+                    permissionRequest.dataNeedId()
+            ));
+            outbox.commit(new FrValidatedEvent(
+                    newPermissionId,
+                    permissionRequest.start(),
+                    permissionRequest.end(),
+                    permissionRequest.granularity()
+            ));
+            outbox.commit(new FrSimpleEvent(newPermissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
+            outbox.commit(new FrAcceptedEvent(newPermissionId, usagePointIds[i]));
         }
     }
 
