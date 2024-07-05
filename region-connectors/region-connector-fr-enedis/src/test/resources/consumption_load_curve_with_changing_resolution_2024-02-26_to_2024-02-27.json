@@ -1,0 +1,183 @@
+{
+  "meter_reading": {
+    "usage_point_id": "24115050XXXXXX",
+    "start": "2024-02-26",
+    "end": "2024-02-27",
+    "quality": "BRUT",
+    "reading_type": {
+      "unit": "W",
+      "measurement_kind": "power",
+      "aggregate": "average"
+    },
+    "interval_reading": [
+      {
+        "value": "0",
+        "date": "2024-02-26 00:30:00",
+        "interval_length": "PT30M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 01:00:00",
+        "interval_length": "PT30M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 01:10:00",
+        "interval_length": "PT10M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 01:20:00",
+        "interval_length": "PT10M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 01:30:00",
+        "interval_length": "PT10M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 01:45:00",
+        "interval_length": "PT15M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 02:00:00",
+        "interval_length": "PT15M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 03:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 04:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 05:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 06:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 07:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 08:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 09:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 10:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 11:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 12:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 13:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 14:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 15:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 16:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 17:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 18:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 19:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 20:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 21:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 22:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      },
+      {
+        "value": "0",
+        "date": "2024-02-26 23:00:00",
+        "interval_length": "PT60M",
+        "measure_type": "B"
+      }
+    ]
+  }
+}
