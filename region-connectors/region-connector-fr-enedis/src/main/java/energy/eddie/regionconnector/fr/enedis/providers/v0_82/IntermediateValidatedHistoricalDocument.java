@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
 import energy.eddie.api.CommonInformationModelVersions;
-import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.utils.Pair;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
@@ -23,7 +23,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 
@@ -158,54 +161,20 @@ public final class IntermediateValidatedHistoricalDocument {
     }
 
     private TimeSeriesComplexType.SeriesPeriodList seriesPeriods(boolean convertToKiloWatt) {
-        var meterReading = meterReading();
-        String currentResolution = meterReading.intervalReadings().getFirst().intervalLength().orElse("P1D");
-        List<PointsWithResolution> pointsWithResolutions = new ArrayList<>();
-        pointsWithResolutions.add(new PointsWithResolution(new ArrayList<>(),
-                                                           currentResolution,
-                                                           meterReading.intervalReadings().getFirst().date()));
-        int position = 0;
-        int pointsWithResolutionIndex = 0;
-        for (IntervalReading intervalReading
-                : meterReading.intervalReadings()) {
-            // if resolution changed we need to create a new list of points
-            if (intervalReading.intervalLength().isPresent() &&
-                !Objects.equals(intervalReading.intervalLength().get(), currentResolution)) {
-                position = 0;
-                pointsWithResolutionIndex++;
-                currentResolution = intervalReading.intervalLength().get();
-                pointsWithResolutions.add(new PointsWithResolution(
-                        new ArrayList<>(),
-                        currentResolution,
-                        intervalReading.date()
-                ));
-            }
-
-            var quantity = Double.parseDouble(intervalReading.value());
-            if (convertToKiloWatt) {
-                quantity = quantity / 1000.0;
-            }
-            PointComplexType point = new PointComplexType()
-                    .withPosition("%d".formatted(position))
-                    .withEnergyQuantityQuantity(BigDecimal.valueOf(quantity))
-                    .withEnergyQuantityQuality(QualityTypeList.AS_PROVIDED);
-            pointsWithResolutions.get(pointsWithResolutionIndex).points().add(point);
-            pointsWithResolutions.get(pointsWithResolutionIndex).setEnd(intervalReading.date());
-            position++;
-        }
+        var pointsWithResolutions = batchIntoChunks(convertToKiloWatt);
 
         List<SeriesPeriodComplexType> seriesPeriods = new ArrayList<>();
         for (PointsWithResolution pointsWithResolution : pointsWithResolutions) {
             EnedisResolution duration = EnedisResolution.valueOf(pointsWithResolution.resolution());
             ZonedDateTime start = convertEnedisDateToZonedDateTime(pointsWithResolution.start());
             // We need to subtract the resolution from the start date for load curves (date represents the end of the measurement)
-            if (start != null && duration.granularity.minutes() <= 60) {
-                start = start.minusMinutes(duration.granularity.minutes());
+            if (start != null && duration.granularity().minutes() <= 60) {
+                start = start.minusMinutes(duration.granularity().minutes());
             }
             ZonedDateTime end = convertEnedisDateToZonedDateTime(pointsWithResolution.end());
-            // for daily resolution we need to adjust the end date (date represents the whole day)
+            // for daily resolution, we need to adjust the end date (date represents the whole day)
             if (end != null && duration == EnedisResolution.P1D) {
-                end = end.plusMinutes(duration.granularity.minutes());
+                end = end.plusMinutes(duration.granularity().minutes());
             }
             var interval = new EsmpTimeInterval(start, end);
             var seriesPeriod = new SeriesPeriodComplexType()
@@ -225,6 +194,31 @@ public final class IntermediateValidatedHistoricalDocument {
                 .withSeriesPeriods(seriesPeriods);
     }
 
+    private List<PointsWithResolution> batchIntoChunks(boolean convertToKiloWatt) {
+        if (meterReading().intervalReadings().isEmpty()) {
+            return List.of();
+        }
+        var cur = meterReading().intervalReadings().getFirst();
+        var prevResolution = cur.intervalLength().orElse("P1D");
+        var currentChunk = new ArrayList<>(List.of(new Pair<>(0, cur)));
+        var chunks = new ArrayList<PointsWithResolution>();
+        var position = 1;
+        for (int i = 1; i < meterReading().intervalReadings().size(); i++) {
+            cur = meterReading().intervalReadings().get(i);
+            // Different interval length
+            // Start new chunk
+            if (!cur.intervalLength().map(prevResolution::equals).orElse(true)) {
+                addChunk(convertToKiloWatt, chunks, currentChunk, prevResolution);
+                currentChunk = new ArrayList<>();
+                position = 0;
+                prevResolution = cur.intervalLength().orElse("P1D");
+            }
+            currentChunk.add(new Pair<>(position++, cur));
+        }
+        addChunk(convertToKiloWatt, chunks, currentChunk, prevResolution);
+        return chunks;
+    }
+
     private @Nullable ZonedDateTime convertEnedisDateToZonedDateTime(@Nullable String date) {
         if (date == null) {
             return null;
@@ -238,52 +232,28 @@ public final class IntermediateValidatedHistoricalDocument {
         }
     }
 
-    private enum EnedisResolution {
-        PT10M(Granularity.PT10M),
-        PT15M(Granularity.PT15M),
-        PT30M(Granularity.PT30M),
-        PT60M(Granularity.PT1H),
-        P1D(Granularity.P1D);
-
-        private final Granularity granularity;
-
-        EnedisResolution(Granularity iso8601) {
-            this.granularity = iso8601;
-        }
-
-        public Granularity granularity() {
-            return granularity;
-        }
+    private void addChunk(
+            boolean convertToKiloWatt,
+            ArrayList<PointsWithResolution> chunks,
+            ArrayList<Pair<Integer, IntervalReading>> currentChunk,
+            String prevResolution
+    ) {
+        chunks.add(new PointsWithResolution(currentChunk.stream()
+                                                        .map(p -> map(p, convertToKiloWatt))
+                                                        .toList(),
+                                            prevResolution,
+                                            currentChunk.getFirst().value().date(),
+                                            currentChunk.getLast().value().date()));
     }
 
-    private static final class PointsWithResolution {
-        private final List<PointComplexType> points;
-        private final String resolution;
-        private final String start;
-        private @Nullable String end;
-
-        private PointsWithResolution(
-                List<PointComplexType> points,
-                String resolution,
-                String start
-        ) {
-            this.points = points;
-            this.resolution = resolution;
-            this.start = start;
+    private PointComplexType map(Pair<Integer, IntervalReading> intervalReading, boolean convertToKiloWatt) {
+        var quantity = Double.parseDouble(intervalReading.value().value());
+        if (convertToKiloWatt) {
+            quantity = quantity / 1000.0;
         }
-
-        public List<PointComplexType> points() {return points;}
-
-        public String resolution() {return resolution;}
-
-        public String start() {return start;}
-
-        public @Nullable String end() {
-            return end;
-        }
-
-        public void setEnd(String end) {
-            this.end = end;
-        }
+        return new PointComplexType()
+                .withPosition(Integer.toString(intervalReading.key()))
+                .withEnergyQuantityQuantity(BigDecimal.valueOf(quantity))
+                .withEnergyQuantityQuality(QualityTypeList.AS_PROVIDED);
     }
 }
