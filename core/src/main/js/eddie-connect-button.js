@@ -196,14 +196,19 @@ class EddieConnectButton extends LitElement {
         );
         customElements.define(customElementName, module.default);
       } catch (error) {
-        console.error(error);
+        // If multiple EDDIE button are preconfigured with the same region
+        // connector, they may define its custom element at the same time.
+        // This will cause an error, but it can be safely ignored.
+        if (!customElements.get(customElementName)) {
+          console.error(error);
 
-        return html`<sl-alert variant="danger" open>
-          <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
-          Could not load region connector for
-          ${this._selectedPermissionAdministrator.company}. Please contact the
-          service provider.
-        </sl-alert>`;
+          return html`<sl-alert variant="danger" open>
+            <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+            Could not load region connector for
+            ${this._selectedPermissionAdministrator.company}. Please contact the
+            service provider.
+          </sl-alert>`;
+        }
       }
     }
 
