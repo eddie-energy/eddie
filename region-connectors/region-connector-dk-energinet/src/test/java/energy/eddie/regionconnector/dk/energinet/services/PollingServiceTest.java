@@ -13,7 +13,6 @@ import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalGra
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalPollingEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -468,7 +467,7 @@ class PollingServiceTest {
                 ZonedDateTime.now(ZoneOffset.UTC)
         );
 
-        MyEnergyDataMarketDocumentResponse resultItem = new MyEnergyDataMarketDocumentResponse();
+        var resultItem = new MyEnergyDataMarketDocumentResponse();
         resultItem.setMyEnergyDataMarketDocument(new MyEnergyDataMarketDocument()
                                                          .addTimeSeriesItem(new TimeSeries().addPeriodItem(new Period().resolution(
                                                                  Granularity.PT1H.name())))
@@ -480,11 +479,11 @@ class PollingServiceTest {
                                                                                               .format(DateTimeFormatter.ISO_DATE_TIME)))
         );
 
-        MyEnergyDataMarketDocumentResponseListApiResponse data = new MyEnergyDataMarketDocumentResponseListApiResponse()
+        var data = new MyEnergyDataMarketDocumentResponseListApiResponse()
                 .addResultItem(resultItem);
         when(customerApi.getTimeSeries(eq(start1), any(), any(), any(), eq("token"), any()))
                 .thenReturn(Mono.just(data));
-        DkEnerginetPermissionRequest permissionRequest2 = new EnerginetPermissionRequest(
+        var permissionRequest2 = new EnerginetPermissionRequest(
                 UUID.randomUUID().toString(),
                 connectionId,
                 dataNeedId,
@@ -521,6 +520,43 @@ class PollingServiceTest {
         verify(outbox).commit(pollingEventCaptor.capture());
         var res = pollingEventCaptor.getValue();
         assertEquals(end1, res.latestMeterReadingEndDate());
+    }
+
+    @Test
+    void fetchFutureMeterReadings_whereEndDateIsEarlierThanToday_fetchesOnlyUntilEnd() {
+        // Given
+        var start = LocalDate.now(DK_ZONE_ID).minusDays(1);
+        var end = start.minusDays(5);
+        var refreshToken = "token";
+        var pr = new EnerginetPermissionRequest(
+                UUID.randomUUID().toString(),
+                "connId",
+                "dataNeedId",
+                "meteringPoint",
+                refreshToken,
+                start,
+                end,
+                Granularity.PT1H,
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                ZonedDateTime.now(ZoneOffset.UTC)
+        );
+        var data = new MyEnergyDataMarketDocumentResponseListApiResponse();
+        when(customerApi.getTimeSeries(eq(start), any(), any(), any(), eq("token"), any()))
+                .thenReturn(Mono.just(data));
+        doReturn(Mono.just("token"))
+                .when(customerApi).accessToken(anyString());
+
+        when(repository.findAllByStatus(PermissionProcessStatus.ACCEPTED))
+                .thenReturn(List.of(pr));
+        when(dataNeedsService.findById("dataNeedId"))
+                .thenReturn(Optional.of(dataNeed));
+
+        // When
+        pollingService.fetchFutureMeterReadings();
+
+        // Then
+        verify(customerApi).getTimeSeries(eq(start), eq(end.plusDays(1)), any(), any(), eq("token"), any());
     }
 
     @Test

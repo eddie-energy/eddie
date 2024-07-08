@@ -90,9 +90,9 @@ public class PollingService implements AutoCloseable {
     public void fetchFutureMeterReadings() {
         var acceptedPermissionRequests = repository.findAllByStatus(PermissionProcessStatus.ACCEPTED);
         LOGGER.info("Trying to fetch meter readings for {} permission requests", acceptedPermissionRequests.size());
-        LocalDate today = LocalDate.now(DK_ZONE_ID);
+        var today = LocalDate.now(DK_ZONE_ID);
 
-        for (DkEnerginetPermissionRequest acceptedPermissionRequest : acceptedPermissionRequests) {
+        for (var acceptedPermissionRequest : acceptedPermissionRequests) {
             if (isActiveAndNeedsToBePolled(acceptedPermissionRequest, today)) {
                 fetch(acceptedPermissionRequest, today);
             } else {
@@ -110,7 +110,7 @@ public class PollingService implements AutoCloseable {
         if (dataNeed.isEmpty() || !(dataNeed.get() instanceof ValidatedHistoricalDataDataNeed)) {
             return false;
         }
-        LocalDate permissionStart = permissionRequest.start();
+        var permissionStart = permissionRequest.start();
         return permissionStart.isBefore(today)
                && permissionRequest.latestMeterReadingEndDate()
                                    .map(lastPolled -> lastPolled.isBefore(today) || lastPolled.isEqual(today))
@@ -119,19 +119,19 @@ public class PollingService implements AutoCloseable {
 
     private void fetch(DkEnerginetPermissionRequest permissionRequest, LocalDate today) {
 
-        MeteringPoints meteringPoints = new MeteringPoints();
+        var meteringPoints = new MeteringPoints();
         meteringPoints.addMeteringPointItem(permissionRequest.meteringPoint());
-        MeteringPointsRequest meteringPointsRequest = new MeteringPointsRequest().meteringPoints(meteringPoints);
+        var meteringPointsRequest = new MeteringPointsRequest().meteringPoints(meteringPoints);
 
 
-        LocalDate dateFrom = permissionRequest.latestMeterReadingEndDate().orElse(permissionRequest.start());
-        LocalDate dateTo = Optional.of(permissionRequest.end())
-                                   .filter(d -> d.isBefore(today))
-                                   // The Energinet API is inclusive on the start date and exclusive on the end date,
-                                   // so we need to add one day if the end date is before today
-                                   .map(d -> d.plusDays(1))
-                                   .orElse(today);
-        String permissionId = permissionRequest.permissionId();
+        var dateFrom = permissionRequest.latestMeterReadingEndDate().orElse(permissionRequest.start());
+        var dateTo = Optional.of(permissionRequest.end())
+                             .filter(d -> d.isBefore(today))
+                             // The Energinet API is inclusive on the start date and exclusive on the end date,
+                             // so we need to add one day if the end date is before today
+                             .map(d -> d.plusDays(1))
+                             .orElse(today);
+        var permissionId = permissionRequest.permissionId();
 
         LOGGER.info("Fetching metering data from Energinet for permission request {} from {} to {}",
                     permissionId,
@@ -248,7 +248,6 @@ public class PollingService implements AutoCloseable {
     ) {
         var iso8601Duration = new EnerginetResolution(resolution).toISO8601Duration();
         Granularity granularity;
-
         try {
             granularity = Granularity.valueOf(iso8601Duration);
         } catch (IllegalArgumentException e) {
