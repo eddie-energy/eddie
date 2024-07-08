@@ -6,5 +6,4 @@ import reactor.core.publisher.Flux;
 
 public interface TerminationConnector {
     Flux<Pair<String, ConsentMarketDocument>> getTerminationMessages();
-
 }

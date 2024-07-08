@@ -17,5 +17,6 @@ class StatusMessageTest {
         assertNull(statusMessage.getDso());
         assertNull(statusMessage.getStartDate());
         assertNull(statusMessage.getStatus());
+        assertNull(statusMessage.getRegionConnectorId());
     }
 }

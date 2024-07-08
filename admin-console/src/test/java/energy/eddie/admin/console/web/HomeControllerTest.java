@@ -3,6 +3,7 @@ package energy.eddie.admin.console.web;
 import energy.eddie.admin.console.data.StatusMessage;
 import energy.eddie.admin.console.data.StatusMessageDTO;
 import energy.eddie.admin.console.data.StatusMessageRepository;
+import energy.eddie.api.v0_82.outbound.ManualTermination;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +28,8 @@ class HomeControllerTest {
 
     @Mock
     private StatusMessageRepository statusMessageRepository;
-
+    @Mock
+    private ManualTermination terminationConnector;
     @Mock
     private Model model;
 
@@ -35,12 +37,12 @@ class HomeControllerTest {
 
     @BeforeEach
     public void setup() {
-        homeController = new HomeController(statusMessageRepository);
+        homeController = new HomeController(statusMessageRepository, terminationConnector);
     }
 
     @Test
     void testHome() {
-        StatusMessage statusMessage = new StatusMessage("testPermissionId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05");
+        StatusMessage statusMessage = new StatusMessage("testPermissionId", "testRegionConnectorId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05");
 
         when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(statusMessage));
 
@@ -57,7 +59,7 @@ class HomeControllerTest {
     @Test
     void testStatusDisplays() {
         // Given
-        StatusMessage unknownStatusMessage = new StatusMessage("testPermissionId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "ABCDEF");
+        StatusMessage unknownStatusMessage = new StatusMessage("testPermissionId", "testRegionConnectorId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "ABCDEF");
         when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(unknownStatusMessage));
 
         // When
@@ -74,17 +76,17 @@ class HomeControllerTest {
     @Test
     void testGetStatusMessages() {
         // Given
-        StatusMessage statusMessage1 = new StatusMessage("testPermissionId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A06");
-        StatusMessage statusMessage2 = new StatusMessage("testPermissionId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05");
+        StatusMessage statusMessage1 = new StatusMessage("testPermissionId", "testRegionConnectorId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A06");
+        StatusMessage statusMessage2 = new StatusMessage("testPermissionId", "testRegionConnectorId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05");
         List<StatusMessage> statusMessages = Arrays.asList(statusMessage1, statusMessage2);
 
-        when(statusMessageRepository.findByPermissionIdOrderByStartDateDesc("testPermissionId")).thenReturn(statusMessages);
+        when(statusMessageRepository.findByPermissionIdOrderByStartDateDescIdDesc("testPermissionId")).thenReturn(statusMessages);
 
         // When
         ResponseEntity<List<StatusMessageDTO>> response = homeController.getStatusMessages("testPermissionId");
 
         // Then
-        verify(statusMessageRepository, times(1)).findByPermissionIdOrderByStartDateDesc("testPermissionId");
+        verify(statusMessageRepository, times(1)).findByPermissionIdOrderByStartDateDescIdDesc("testPermissionId");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(2, Objects.requireNonNull(response.getBody()).size());
         assertEquals("Available", response.getBody().get(0).getStatus());
@@ -94,7 +96,7 @@ class HomeControllerTest {
     @Test
     void testCountryCodePrefixRemoval() {
         // Given
-        StatusMessage statusMessageWithPrefix = new StatusMessage("testPermissionId", "NCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05");
+        StatusMessage statusMessageWithPrefix = new StatusMessage("testPermissionId", "testRegionConnectorId", "NCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05");
         when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(statusMessageWithPrefix));
 
         // When
@@ -106,5 +108,22 @@ class HomeControllerTest {
         // Then
         assertEquals(1, statusMessages.size());
         assertEquals("Country", statusMessages.getFirst().getCountry());
+    }
+
+    @Test
+    void testTerminatePermission() {
+        // Given
+        String permissionId = "testPermissionId";
+        StatusMessage testStatusMessage = new StatusMessage(permissionId, "testCountry", "testRegionConnectorId", "testDso", "2024-05-22T08:20:03+02:00", "A05");
+        when(statusMessageRepository.findByPermissionIdOrderByStartDateDescIdDesc(permissionId)).thenReturn(Collections.singletonList(testStatusMessage));
+
+        // When
+        ResponseEntity<Void> response = homeController.terminatePermission(permissionId);
+
+        // Then
+        ArgumentCaptor<String> permissionIdCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> regionConnectorIdCaptor = ArgumentCaptor.forClass(String.class);
+        verify(terminationConnector, times(1)).terminate(permissionIdCaptor.capture(), regionConnectorIdCaptor.capture());
+        assertEquals(ResponseEntity.ok().build(), response);
     }
 }

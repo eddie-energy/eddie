@@ -12,9 +12,9 @@ import reactor.core.scheduler.Schedulers;
 @Service
 public class StatusMessageService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(StatusMessageService.class);
     private final StatusMessageRepository statusMessageRepository;
     private final ConsentMarketDocumentServiceInterface consentMarketDocumentService;
-    private static final Logger LOGGER = LoggerFactory.getLogger(StatusMessageService.class);
 
     public StatusMessageService(StatusMessageRepository statusMessageRepository,
                                 ConsentMarketDocumentServiceInterface consentMarketDocumentService) {
@@ -50,6 +50,8 @@ public class StatusMessageService {
         }
         return new StatusMessage(
                 message.getMRID(),
+                message.getPermissionList().getPermissions().getFirst()
+                        .getMktActivityRecordList().getMktActivityRecords().getFirst().getType(),
                 country,
                 message.getReceiverMarketParticipantMRID().getValue(),
                 message.getPermissionList().getPermissions().getFirst()

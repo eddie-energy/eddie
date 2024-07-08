@@ -11,7 +11,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.publisher.TestPublisher;
 
-import java.util.Optional;
+import java.util.Collections;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
@@ -33,8 +34,7 @@ class TerminationRouterTest {
     void testTerminationConnector_withEmptyCtor() {
         // Give
         // When
-        var router = new TerminationRouter(Optional.empty());
-        // Then
+        var router = new TerminationRouter(Collections.emptySet());        // Then
         assertNotNull(router);
     }
 
@@ -43,7 +43,7 @@ class TerminationRouterTest {
         // Given
         TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
-        var router = new TerminationRouter(Optional.of(connector));
+        var router = new TerminationRouter(Set.of(connector));
 
         when(metadata1.id()).thenReturn("id");
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
@@ -81,7 +81,7 @@ class TerminationRouterTest {
         // Given
         TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
-        var router = new TerminationRouter(Optional.of(connector));
+        var router = new TerminationRouter(Set.of(connector));
 
         when(metadata1.id()).thenReturn("id");
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
@@ -125,7 +125,7 @@ class TerminationRouterTest {
         // Given
         TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
-        var router = new TerminationRouter(Optional.of(connector));
+        var router = new TerminationRouter(Set.of(connector));
 
         when(metadata1.id()).thenReturn("id");
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
@@ -171,7 +171,7 @@ class TerminationRouterTest {
         // Given
         TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
-        var router = new TerminationRouter(Optional.of(connector));
+        var router = new TerminationRouter(Set.of(connector));
 
         when(metadata1.id()).thenReturn("id");
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
@@ -206,7 +206,7 @@ class TerminationRouterTest {
         // Given
         TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
-        var router = new TerminationRouter(Optional.of(connector));
+        var router = new TerminationRouter(Set.of(connector));
 
         when(metadata1.id()).thenReturn("id");
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
@@ -239,7 +239,7 @@ class TerminationRouterTest {
         // Given
         TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
-        var router = new TerminationRouter(Optional.of(connector));
+        var router = new TerminationRouter(Set.of(connector));
 
         when(metadata1.id()).thenReturn("id");
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
