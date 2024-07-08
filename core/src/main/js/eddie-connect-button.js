@@ -86,20 +86,25 @@ class EddieConnectButton extends LitElement {
     onStatusChange: { type: String },
 
     // Private properties
+    _isValidConfiguration: { type: Boolean },
     _selectedCountry: { type: String },
     _selectedPermissionAdministrator: { type: Object },
-    _availablePermissionAdministrators: { type: Array },
     _filteredPermissionAdministrators: { type: Array },
-    _supportedConnectors: { type: Array },
-    _availableCountries: { type: Array },
-    _dataNeedAttributes: { type: Object },
-    _isValidConfiguration: { type: Boolean, state: true },
   };
+
   static styles = css`
     :host {
       color: black;
-      font-family: -apple-system, BlinkMacSystemFont, ‘Segoe UI’, Roboto,
-        Helvetica, Arial, sans-serif, ‘Apple Color Emoji’, ‘Segoe UI Emoji’,
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        ‘Segoe UI’,
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif,
+        ‘Apple Color Emoji’,
+        ‘Segoe UI Emoji’,
         ‘Segoe UI Symbol’;
       font-size: 16px;
       font-weight: normal;
@@ -129,10 +134,20 @@ class EddieConnectButton extends LitElement {
       padding: var(--sl-spacing-2x-small);
     }
   `;
+
   dialogRef = createRef();
 
   constructor() {
     super();
+
+    /**
+     * Undefined until the configuration has been validated.
+     * If the configuration is valid, this will be set to true.
+     * If the configuration is invalid, this will be set to false.
+     * @type {boolean}
+     * @private
+     */
+    this._isValidConfiguration = undefined;
 
     /**
      * Region connectors that support the selected data need.
@@ -156,17 +171,15 @@ class EddieConnectButton extends LitElement {
      * @type {DataNeedAttributes}
      * @private
      */
-    this._dataNeedAttributes = null;
+    this._dataNeedAttributes = undefined;
   }
 
   connectedCallback() {
     super.connectedCallback();
-    this._isValidConfiguration = this.configure()
-      .then(() => true)
-      .catch((error) => {
-        console.error(error);
-        return false;
-      });
+
+    this.configure()
+      .then(() => (this._isValidConfiguration = true))
+      .catch(() => (this._isValidConfiguration = false));
 
     this.addRequestStatusHandlers();
   }
@@ -196,14 +209,19 @@ class EddieConnectButton extends LitElement {
         );
         customElements.define(customElementName, module.default);
       } catch (error) {
-        console.error(error);
+        // If multiple EDDIE button are preconfigured with the same region
+        // connector, they may define its custom element at the same time.
+        // This will cause an error, but it can be safely ignored.
+        if (!customElements.get(customElementName)) {
+          console.error(error);
 
-        return html`<sl-alert variant="danger" open>
-          <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
-          Could not load region connector for
-          ${this._selectedPermissionAdministrator.company}. Please contact the
-          service provider.
-        </sl-alert>`;
+          return html`<sl-alert variant="danger" open>
+            <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+            Could not load region connector for
+            ${this._selectedPermissionAdministrator.company}. Please contact the
+            service provider.
+          </sl-alert>`;
+        }
       }
     }
 
@@ -288,6 +306,11 @@ class EddieConnectButton extends LitElement {
   selectCountry(country) {
     this._selectedCountry = country;
 
+    if (!country) {
+      this._filteredPermissionAdministrators = [];
+      return;
+    }
+
     // only show permission administrators that match the selected country
     this._filteredPermissionAdministrators =
       this._availablePermissionAdministrators.filter(
@@ -344,7 +367,6 @@ class EddieConnectButton extends LitElement {
       }
 
       this._presetPermissionAdministrator = pa;
-      this.selectPermissionAdministrator(pa);
     }
 
     if (this.isAiida()) {
@@ -354,8 +376,13 @@ class EddieConnectButton extends LitElement {
         );
       }
 
-      this.selectAiida();
-    } else {
+      this._presetPermissionAdministrator = {
+        company: "AIIDA",
+        regionConnector: "aiida",
+      };
+    }
+
+    if (this._presetPermissionAdministrator) {
       this.selectPermissionAdministrator(this._presetPermissionAdministrator);
     }
   }
@@ -365,11 +392,6 @@ class EddieConnectButton extends LitElement {
       this._dataNeedAttributes?.type === "genericAiida" ||
       this._dataNeedAttributes?.type === "smartMeterAiida"
     );
-  }
-
-  selectAiida() {
-    this._selectedCountry = null;
-    this._selectedPermissionAdministrator = { regionConnector: "aiida" };
   }
 
   handleDialogShow(event) {
@@ -423,31 +445,31 @@ class EddieConnectButton extends LitElement {
   }
 
   render() {
+    if (!this._isValidConfiguration) {
+      return html`
+        <button
+          class="eddie-connect-button eddie-connect-button--disabled"
+          disabled
+        >
+          ${unsafeSVG(buttonIcon)}
+          <span>
+            ${this._isValidConfiguration === undefined
+              ? "Loading"
+              : "Invalid configuration"}
+          </span>
+        </button>
+      `;
+    }
+
     return html`
       <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/themes/light.css"
       />
-      ${until(
-        this._isValidConfiguration.then((isValid) =>
-          isValid
-            ? html`
-                <button class="eddie-connect-button" @click="${this.connect}">
-                  ${unsafeSVG(buttonIcon)}
-                  <span>Connect with EDDIE</span>
-                </button>
-              `
-            : html`
-                <button
-                  class="eddie-connect-button eddie-connect-button--disabled"
-                  disabled
-                >
-                  ${unsafeSVG(buttonIcon)}
-                  <span>Invalid configuration</span>
-                </button>
-              `
-        )
-      )}
+      <button class="eddie-connect-button" @click="${this.connect}">
+        ${unsafeSVG(buttonIcon)}
+        <span>Connect with EDDIE</span>
+      </button>
 
       <sl-dialog
         ${ref(this.dialogRef)}
@@ -458,9 +480,7 @@ class EddieConnectButton extends LitElement {
         <div slot="label">${unsafeSVG(headerImage)}</div>
 
         <!-- Render data need summary -->
-        ${this._dataNeedAttributes
-          ? dataNeedSummary(this._dataNeedAttributes)
-          : ""}
+        ${dataNeedSummary(this._dataNeedAttributes)}
 
         <!-- Render country selection -->
         ${!this.isAiida()
