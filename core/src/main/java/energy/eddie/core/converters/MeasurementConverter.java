@@ -105,6 +105,7 @@ public class MeasurementConverter {
                 .withMarketEvaluationPointMeterReadingsReadingsMRID(source.getMarketEvaluationPointMeterReadingsReadingsMRID())
                 .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAccumulate(source.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAccumulate())
                 .withInDomainMRID(source.getInDomainMRID())
+                .withMarketEvaluationPointMRID(source.getMarketEvaluationPointMRID())
                 .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation(source.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation())
                 .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(source.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity())
                 .withRegisteredResource(source.getRegisteredResource())

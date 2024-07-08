@@ -22,6 +22,11 @@ class MeasurementConverterTest {
                         new ValidatedHistoricalDataMarketDocument.TimeSeriesList()
                                 .withTimeSeries(
                                         new TimeSeriesComplexType()
+                                                .withMarketEvaluationPointMRID(
+                                                        new MeasurementPointIDStringComplexType()
+                                                                .withValue("MRID")
+                                                                .withCodingScheme(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
+                                                )
                                                 .withEnergyMeasurementUnitName(UnitOfMeasureTypeList.KILOWATT_HOUR)
                                                 .withSeriesPeriodList(
                                                         new TimeSeriesComplexType.SeriesPeriodList()
@@ -35,6 +40,11 @@ class MeasurementConverterTest {
                                                                 )
                                                 ),
                                         new TimeSeriesComplexType()
+                                                .withMarketEvaluationPointMRID(
+                                                        new MeasurementPointIDStringComplexType()
+                                                                .withValue("MRID")
+                                                                .withCodingScheme(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
+                                                )
                                                 .withEnergyMeasurementUnitName(UnitOfMeasureTypeList.KILOWATT_HOUR)
                                                 .withSeriesPeriodList(
                                                         new TimeSeriesComplexType.SeriesPeriodList()
@@ -80,7 +90,10 @@ class MeasurementConverterTest {
                                            .getFirst()
                                            .getPointList()
                                            .getPoints()
-                                           .size())
+                                           .size()),
+                () -> assertEquals("MRID", timeSeries.getMarketEvaluationPointMRID().getValue()),
+                () -> assertEquals(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                                   timeSeries.getMarketEvaluationPointMRID().getCodingScheme())
         );
     }
 
