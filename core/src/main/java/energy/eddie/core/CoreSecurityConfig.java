@@ -65,11 +65,11 @@ public class CoreSecurityConfig {
         LOGGER.info("Will allow CORS requests from origin patterns '{}'", allowedCorsOrigins);
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setExposedHeaders(List.of("Location"));
+        configuration.setExposedHeaders(List.of("Location", "Authorization"));
         configuration.setAllowedOriginPatterns(List.of(allowedCorsOrigins));
         configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE"));
         configuration.setAllowCredentials(true);
-        configuration.setAllowedHeaders(List.of("content-type"));
+        configuration.setAllowedHeaders(List.of("content-type", "Authorization"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

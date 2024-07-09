@@ -31,13 +31,13 @@ public class DatadisSecurityConfig {
     public SecurityFilterChain datadisSecurityFilterChain(
             MvcRequestMatcher.Builder datadisMvcRequestMatcher,
             HttpSecurity http,
-            JwtAuthorizationManager jwtCookieAuthorizationManager,
+            JwtAuthorizationManager jwtHeaderAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper
     ) throws Exception {
         return securityFilterChain(datadisMvcRequestMatcher,
                                    http,
-                                   jwtCookieAuthorizationManager,
+                                   jwtHeaderAuthorizationManager,
                                    corsConfigurationSource,
                                    mapper,
                                    PATH_PERMISSION_ACCEPTED,

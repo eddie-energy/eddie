@@ -10,17 +10,11 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.jwt.proc.JWTProcessor;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseCookie;
 import org.springframework.lang.Nullable;
-import org.springframework.web.util.WebUtils;
 
 import java.time.Clock;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -62,84 +56,6 @@ public class JwtUtil {
     }
 
     /**
-     * Returns a {@link ResponseCookie} containing a JWT that includes the ID of the newly created permission, as well
-     * as any other permissions that were already present in the supplied JWT. The returned cookie has the
-     * <i>HttpOnly</i> attribute set and <i>SameSite</i> is set to <i>None</i> to support scenarios where the
-     * requesting
-     * instance runs on a different domain than the EDDIE framework.
-     *
-     * @param jwtCookie         Cookie which contains the existing JWT. May be null if no JWT was included in a
-     *                          request.
-     * @param regionConnectorId ID of the region connector that created the new permission.
-     * @param permissionId      ID of the newly created permission.
-     * @return Cookie that should be sent to the client.
-     * @throws JwtCreationFailedException If for any reason the creation of the JWT failed.
-     */
-    private ResponseCookie getJwtCookie(
-            @Nullable Cookie jwtCookie,
-            String regionConnectorId,
-            String permissionId
-    ) throws JwtCreationFailedException {
-        Map<String, List<String>> permissions = new HashMap<>();
-
-        if (jwtCookie != null)
-            permissions.putAll(getPermissions(jwtCookie.getValue()));
-
-        List<String> permissionsForConnector = permissions.getOrDefault(regionConnectorId, new ArrayList<>());
-        permissionsForConnector.add(permissionId);
-        permissions.put(regionConnectorId, permissionsForConnector);
-
-        JWSHeader header = new JWSHeader.Builder(JWS_ALGORITHM)
-                .type(JOSEObjectType.JWT)
-                .build();
-
-        var expirationTime = Instant.now(Clock.systemUTC()).plus(timeoutDuration, ChronoUnit.HOURS);
-        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .issueTime(Date.from(Instant.now(Clock.systemUTC())))
-                .expirationTime(Date.from(expirationTime))
-                .claim(JWT_PERMISSIONS_CLAIM, permissions)
-                .build();
-
-        JWSObject jwsObject;
-        try {
-            jwsObject = minter.mint(header, claimsSet.toPayload(), null);
-        } catch (JOSEException e) {
-            throw new JwtCreationFailedException(e);
-        }
-
-        return ResponseCookie.from(JWT_COOKIE_NAME, jwsObject.serialize())
-                             .httpOnly(true)
-                             .maxAge(Duration.ofDays(7))
-                             .sameSite("None")
-                             .secure(true)
-                             .build();
-    }
-
-    /**
-     * Sets a cookie containing a JWT that includes the ID of the newly created permission, as well as any other
-     * permissions that were already present in the supplied JWT. The returned cookie has the
-     * <i>HttpOnly</i> attribute set. <i>SameSite</i> is set to <i>None</i> to support scenarios where the requesting
-     * instance runs on a different domain than the EDDIE framework.
-     *
-     * @param request           {@link HttpServletRequest} for the create permission request.
-     * @param response          {@link HttpServletRequest} for the create permission request.
-     * @param regionConnectorId ID of the region connector that created the new permission.
-     * @param permissionId      ID of the newly created permission that should be included in the JWT.
-     * @throws JwtCreationFailedException If for any reason the creation of the JWT failed.
-     */
-    public void setJwtCookie(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            String regionConnectorId,
-            String permissionId
-    ) throws JwtCreationFailedException {
-        ResponseCookie jwtCookie = getJwtCookie(WebUtils.getCookie(request, JwtUtil.JWT_COOKIE_NAME),
-                                                regionConnectorId,
-                                                permissionId);
-        response.setHeader("Set-Cookie", jwtCookie.toString());
-    }
-
-    /**
      * Returns a map of the permissions contained in the supplied JWT grouped by region connector ID.
      *
      * @return Map of the permissions grouped by region connector ID. It is never null, but may be empty.
@@ -161,23 +77,20 @@ public class JwtUtil {
 
     /**
      * Creates a new signed JWT and adds the supplied {@code permissionId} to the map of permitted permissions. The
-     * returned JWT is intended to be included by the AIIDA instance when it makes the handshake requests. To allow the
-     * reusing of {@link JwtAuthorizationManager}, the map has a similar layout as the cookie JWT, but the map of
-     * permitted permissions will always only consist of the "aiida" region-connector ID and the supplied
-     * {@code permissionId}.
+     * returned JWT is to be included by the region connector element to make requests that update the permission.
      *
-     * @param permissionId ID of the newly created permission.
+     * @param regionConnectorId ID of the region connector that created the new permission.
+     * @param permissionId      ID of the newly created permission.
      * @return Serialized JWT.
      * @throws JwtCreationFailedException If for any reason the creation of the JWT failed.
      */
-    public String createAiidaJwt(String permissionId) throws JwtCreationFailedException {
-        Map<String, List<String>> permissions = new HashMap<>();
-
-        permissions.put("aiida", List.of(permissionId));
+    public String createJwt(String regionConnectorId, String permissionId) throws JwtCreationFailedException {
+        var permissions = Map.of(regionConnectorId, List.of(permissionId));
 
         JWSHeader header = new JWSHeader.Builder(JWS_ALGORITHM)
                 .type(JOSEObjectType.JWT)
                 .build();
+
         var expirationTime = Instant.now(Clock.systemUTC()).plus(timeoutDuration, ChronoUnit.HOURS);
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .issueTime(Date.from(Instant.now(Clock.systemUTC())))

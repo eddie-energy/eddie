@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
@@ -68,28 +69,28 @@ public class PermissionController {
     }
 
     /**
-     * Creates a new permission request and sets/updates the JWT token as cookie to include this new permissionId, so
-     * that the {@link energy.eddie.regionconnector.shared.security.JwtAuthorizationManager} will grant allow further
-     * state changing requests if they include the JWT cookie.
+     * Creates a new permission request. The included JWT token can be passed in the Authorization header, so that the
+     * {@link energy.eddie.regionconnector.shared.security.JwtAuthorizationManager} will allow further state changing
+     * requests if they include the token.
      */
     @PostMapping(value = PATH_PERMISSION_REQUEST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedPermissionRequest> requestPermission(
-            @Valid @RequestBody PermissionRequestForCreation requestForCreation,
-            HttpServletRequest request,
-            HttpServletResponse response
+            @Valid @RequestBody PermissionRequestForCreation requestForCreation
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         var permissionRequest = service.createAndSendPermissionRequest(requestForCreation);
 
         var permissionId = permissionRequest.permissionId();
         LOGGER.info("New Permission Request created with PermissionId {}", permissionId);
 
-        jwtUtil.setJwtCookie(request, response, DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
+        var jwt = jwtUtil.createJwt(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
 
         var location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
                 .expand(permissionId);
-        return ResponseEntity.created(location).body(permissionRequest);
+        return ResponseEntity.created(location)
+                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                             .body(permissionRequest);
     }
 
     @PatchMapping(value = PATH_PERMISSION_ACCEPTED)

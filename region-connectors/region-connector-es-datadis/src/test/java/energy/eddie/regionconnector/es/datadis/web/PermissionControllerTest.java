@@ -244,11 +244,7 @@ class PermissionControllerTest {
         // Given
         var testPermissionId = "MyTestId";
         when(mockService.createAndSendPermissionRequest(any())).thenReturn(new CreatedPermissionRequest(testPermissionId));
-        doThrow(mock(JwtCreationFailedException.class)).when(spyJwtUtil).setJwtCookie(any(),
-                                                                                      any(),
-                                                                                      anyString(),
-                                                                                      anyString());
-
+        doThrow(mock(JwtCreationFailedException.class)).when(spyJwtUtil).createJwt(anyString(), anyString());
 
         ObjectNode jsonNode = mapper.createObjectNode()
                                     .put("connectionId", "ConnId")
