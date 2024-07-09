@@ -6,30 +6,49 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.cim.v0_82.cmd.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.publisher.TestPublisher;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class TerminationRouterTest {
+    @Mock
+    private RegionConnector regionConnector1;
+    @Mock
+    private RegionConnector regionConnector2;
+    @Mock
+    private RegionConnectorMetadata metadata1;
+    @Mock
+    private RegionConnectorMetadata metadata2;
+    @Mock
+    private TerminationConnector connector;
+
+    @Test
+    void testTerminationConnector_withEmptyCtor() {
+        // Give
+        // When
+        var router = new TerminationRouter(Optional.empty());
+        // Then
+        assertNotNull(router);
+    }
 
     @Test
     void testTerminationMessage_withRegionConnectorId() {
         // Given
         TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
-        var connector = mock(TerminationConnector.class);
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
         var router = new TerminationRouter(Optional.of(connector));
 
-        var metadata1 = mock(RegionConnectorMetadata.class);
         when(metadata1.id()).thenReturn("id");
-        var regionConnector1 = mock(RegionConnector.class);
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
 
-        var metadata2 = mock(RegionConnectorMetadata.class);
         when(metadata2.id()).thenReturn("other-id");
-        var regionConnector2 = mock(RegionConnector.class);
         when(regionConnector2.getMetadata()).thenReturn(metadata2);
 
         router.registerRegionConnector(regionConnector1);
@@ -38,13 +57,14 @@ class TerminationRouterTest {
                 .withMRID("pid")
                 .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
                 .withPermissionList(new ConsentMarketDocument.PermissionList()
-                        .withPermissions(new PermissionComplexType()
-                                .withReasonList(new PermissionComplexType.ReasonList()
-                                        .withReasons(new ReasonComplexType()
-                                                .withCode(ReasonCodeTypeList.CANCELLED_EP)
-                                        )
-                                )
-                        )
+                                            .withPermissions(new PermissionComplexType()
+                                                                     .withReasonList(new PermissionComplexType.ReasonList()
+                                                                                             .withReasons(new ReasonComplexType()
+                                                                                                                  .withCode(
+                                                                                                                          ReasonCodeTypeList.CANCELLED_EP)
+                                                                                             )
+                                                                     )
+                                            )
                 );
         var pair = new Pair<>("id", cmd);
 
@@ -60,20 +80,13 @@ class TerminationRouterTest {
     void testTerminationMessage_withMktActivityRecord() {
         // Given
         TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
-        var connector = mock(TerminationConnector.class);
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
         var router = new TerminationRouter(Optional.of(connector));
 
-        var metadata1 = mock(RegionConnectorMetadata.class);
         when(metadata1.id()).thenReturn("id");
-        when(metadata1.countryCode()).thenReturn("AT");
-        var regionConnector1 = mock(RegionConnector.class);
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
 
-        var metadata2 = mock(RegionConnectorMetadata.class);
         when(metadata2.id()).thenReturn("other-id");
-        when(metadata2.countryCode()).thenReturn("DK");
-        var regionConnector2 = mock(RegionConnector.class);
         when(regionConnector2.getMetadata()).thenReturn(metadata2);
 
         router.registerRegionConnector(regionConnector1);
@@ -82,16 +95,20 @@ class TerminationRouterTest {
                 .withMRID("pid")
                 .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
                 .withPermissionList(new ConsentMarketDocument.PermissionList()
-                        .withPermissions(new PermissionComplexType()
-                                .withReasonList(new PermissionComplexType.ReasonList()
-                                        .withReasons(new ReasonComplexType()
-                                                .withCode(ReasonCodeTypeList.CANCELLED_EP)
-                                        )
-                                ).withMktActivityRecordList(new PermissionComplexType.MktActivityRecordList()
-                                        .withMktActivityRecords(new MktActivityRecordComplexType()
-                                                .withType("id"))
-                                )
-                        )
+                                            .withPermissions(new PermissionComplexType()
+                                                                     .withReasonList(new PermissionComplexType.ReasonList()
+                                                                                             .withReasons(new ReasonComplexType()
+                                                                                                                  .withCode(
+                                                                                                                          ReasonCodeTypeList.CANCELLED_EP)
+                                                                                             )
+                                                                     )
+                                                                     .withMktActivityRecordList(new PermissionComplexType.MktActivityRecordList()
+                                                                                                        .withMktActivityRecords(
+                                                                                                                new MktActivityRecordComplexType()
+                                                                                                                        .withType(
+                                                                                                                                "id"))
+                                                                     )
+                                            )
                 );
         var pair = new Pair<String, ConsentMarketDocument>(null, cmd);
 
@@ -107,20 +124,13 @@ class TerminationRouterTest {
     void testTerminationMessage_withoutMatchingRegionConnectorIdOrMktActivityRecord() {
         // Given
         TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
-        var connector = mock(TerminationConnector.class);
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
         var router = new TerminationRouter(Optional.of(connector));
 
-        var metadata1 = mock(RegionConnectorMetadata.class);
         when(metadata1.id()).thenReturn("id");
-        when(metadata1.countryCode()).thenReturn("FR");
-        var regionConnector1 = mock(RegionConnector.class);
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
 
-        var metadata2 = mock(RegionConnectorMetadata.class);
         when(metadata2.id()).thenReturn("other-id");
-        when(metadata2.countryCode()).thenReturn("DK");
-        var regionConnector2 = mock(RegionConnector.class);
         when(regionConnector2.getMetadata()).thenReturn(metadata2);
 
         router.registerRegionConnector(regionConnector1);
@@ -129,16 +139,137 @@ class TerminationRouterTest {
                 .withMRID("pid")
                 .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
                 .withSenderMarketParticipantMRID(new PartyIDStringComplexType()
-                        .withCodingScheme(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
+                                                         .withCodingScheme(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
                 )
                 .withPermissionList(new ConsentMarketDocument.PermissionList()
-                        .withPermissions(new PermissionComplexType()
-                                .withReasonList(new PermissionComplexType.ReasonList()
-                                        .withReasons(new ReasonComplexType()
-                                                .withCode(ReasonCodeTypeList.CANCELLED_EP)
-                                        )
-                                )
-                        )
+                                            .withPermissions(new PermissionComplexType()
+                                                                     .withReasonList(new PermissionComplexType.ReasonList()
+                                                                                             .withReasons(new ReasonComplexType()
+                                                                                                                  .withCode(
+                                                                                                                          ReasonCodeTypeList.CANCELLED_EP)
+                                                                                             )
+                                                                     )
+                                                                     .withMktActivityRecordList(new PermissionComplexType.MktActivityRecordList()
+                                                                                                        .withMktActivityRecords(
+                                                                                                                new MktActivityRecordComplexType()
+                                                                                                        )
+                                                                     )
+                                            )
+                );
+        var pair = new Pair<String, ConsentMarketDocument>(null, cmd);
+
+        // When
+        publisher.emit(pair);
+
+        // Then
+        verify(regionConnector1, never()).terminatePermission(anyString());
+        verify(regionConnector2, never()).terminatePermission(anyString());
+    }
+
+    @Test
+    void testTerminationMessage_withMissingTypeAttribute() {
+        // Given
+        TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
+        when(connector.getTerminationMessages()).thenReturn(publisher.flux());
+        var router = new TerminationRouter(Optional.of(connector));
+
+        when(metadata1.id()).thenReturn("id");
+        when(regionConnector1.getMetadata()).thenReturn(metadata1);
+
+        router.registerRegionConnector(regionConnector1);
+        ConsentMarketDocument cmd = new ConsentMarketDocument()
+                .withMRID("pid")
+                .withSenderMarketParticipantMRID(new PartyIDStringComplexType()
+                                                         .withCodingScheme(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
+                )
+                .withPermissionList(new ConsentMarketDocument.PermissionList()
+                                            .withPermissions(new PermissionComplexType()
+                                                                     .withReasonList(new PermissionComplexType.ReasonList()
+                                                                                             .withReasons(new ReasonComplexType()
+                                                                                                                  .withCode(
+                                                                                                                          ReasonCodeTypeList.CANCELLED_EP)
+                                                                                             )
+                                                                     )
+                                            )
+                );
+        var pair = new Pair<String, ConsentMarketDocument>(null, cmd);
+
+        // When
+        publisher.emit(pair);
+
+        // Then
+        verify(regionConnector1, never()).terminatePermission(anyString());
+    }
+
+    @Test
+    void testTerminationMessage_withMissingReason() {
+        // Given
+        TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
+        when(connector.getTerminationMessages()).thenReturn(publisher.flux());
+        var router = new TerminationRouter(Optional.of(connector));
+
+        when(metadata1.id()).thenReturn("id");
+        when(regionConnector1.getMetadata()).thenReturn(metadata1);
+
+        router.registerRegionConnector(regionConnector1);
+        ConsentMarketDocument cmd = new ConsentMarketDocument()
+                .withMRID("pid")
+                .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
+                .withSenderMarketParticipantMRID(new PartyIDStringComplexType()
+                                                         .withCodingScheme(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
+                )
+                .withPermissionList(new ConsentMarketDocument.PermissionList()
+                                            .withPermissions(new PermissionComplexType()
+                                                                     .withReasonList(new PermissionComplexType.ReasonList()
+                                                                                             .withReasons(new ReasonComplexType())
+                                                                     )
+                                            )
+                );
+        var pair = new Pair<String, ConsentMarketDocument>(null, cmd);
+
+        // When
+        publisher.emit(pair);
+
+        // Then
+        verify(regionConnector1, never()).terminatePermission(anyString());
+    }
+
+    @Test
+    void testTerminationMessage_withoutMatchingRegionConnector() {
+        // Given
+        TestPublisher<Pair<String, ConsentMarketDocument>> publisher = TestPublisher.create();
+        when(connector.getTerminationMessages()).thenReturn(publisher.flux());
+        var router = new TerminationRouter(Optional.of(connector));
+
+        when(metadata1.id()).thenReturn("id");
+        when(regionConnector1.getMetadata()).thenReturn(metadata1);
+
+        when(metadata2.id()).thenReturn("other-id");
+        when(regionConnector2.getMetadata()).thenReturn(metadata2);
+
+        router.registerRegionConnector(regionConnector1);
+        router.registerRegionConnector(regionConnector2);
+        ConsentMarketDocument cmd = new ConsentMarketDocument()
+                .withMRID("pid")
+                .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
+                .withSenderMarketParticipantMRID(new PartyIDStringComplexType()
+                                                         .withCodingScheme(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
+                )
+                .withPermissionList(new ConsentMarketDocument.PermissionList()
+                                            .withPermissions(new PermissionComplexType()
+                                                                     .withReasonList(new PermissionComplexType.ReasonList()
+                                                                                             .withReasons(new ReasonComplexType()
+                                                                                                                  .withCode(
+                                                                                                                          ReasonCodeTypeList.CANCELLED_EP)
+                                                                                             )
+                                                                     )
+                                                                     .withMktActivityRecordList(new PermissionComplexType.MktActivityRecordList()
+                                                                                                        .withMktActivityRecords(
+                                                                                                                new MktActivityRecordComplexType()
+                                                                                                                        .withType(
+                                                                                                                                "unknown-id"))
+                                                                     )
+                                            )
                 );
         var pair = new Pair<String, ConsentMarketDocument>(null, cmd);
 
