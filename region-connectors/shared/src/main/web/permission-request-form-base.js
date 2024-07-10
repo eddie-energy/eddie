@@ -168,9 +168,7 @@ class PermissionRequestFormBase extends LitElement {
         );
       }
 
-      const accessToken = response.headers.get("Authorization");
-
-      return { ...data, accessToken };
+      return data;
     }
 
     const { errors } = data;

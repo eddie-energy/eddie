@@ -3,20 +3,15 @@ package energy.eddie.regionconnector.es.datadis.web;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata;
 import energy.eddie.regionconnector.es.datadis.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
-import energy.eddie.regionconnector.shared.security.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
@@ -29,21 +24,19 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.*;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 
 @RestController
 public class PermissionController {
+    public static final String PATH_PERMISSION_ACCEPTED = PATH_PERMISSION_REQUEST + "/{permissionId}/accepted";
+    public static final String PATH_PERMISSION_REJECTED = PATH_PERMISSION_REQUEST + "/{permissionId}/rejected";
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionController.class);
     private final PermissionRequestService service;
-    private final JwtUtil jwtUtil;
 
     @Autowired
-    public PermissionController(
-            PermissionRequestService service,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") JwtUtil jwtUtil
-    ) {
+    public PermissionController(PermissionRequestService service) {
         this.service = service;
-        this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -84,13 +77,9 @@ public class PermissionController {
         var permissionId = permissionRequest.permissionId();
         LOGGER.info("New Permission Request created with PermissionId {}", permissionId);
 
-        var jwt = jwtUtil.createJwt(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
-
         var location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
                 .expand(permissionId);
-        return ResponseEntity.created(location)
-                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-                             .body(permissionRequest);
+        return ResponseEntity.created(location).body(permissionRequest);
     }
 
     @PatchMapping(value = PATH_PERMISSION_ACCEPTED)

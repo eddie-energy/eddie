@@ -65,7 +65,7 @@ public class CoreSecurityConfig {
         LOGGER.info("Will allow CORS requests from origin patterns '{}'", allowedCorsOrigins);
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setExposedHeaders(List.of("Location", "Authorization"));
+        configuration.setExposedHeaders(List.of("Location"));
         configuration.setAllowedOriginPatterns(List.of(allowedCorsOrigins));
         configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE"));
         configuration.setAllowCredentials(true);

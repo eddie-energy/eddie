@@ -82,7 +82,7 @@ class CoreSpringConfigTest {
             mockMvc.perform(get("/api/region-connectors-metadata")
                                     .header("Origin", "https://example.com"))
                    .andExpect(status().isOk())
-                   .andExpect(header().string("Access-Control-Expose-Headers", "Location, Authorization"));
+                   .andExpect(header().string("Access-Control-Expose-Headers", "Location"));
         }
     }
 }
