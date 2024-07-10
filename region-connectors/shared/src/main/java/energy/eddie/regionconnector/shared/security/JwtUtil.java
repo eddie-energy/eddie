@@ -20,7 +20,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class JwtUtil {
-    public static final String JWT_COOKIE_NAME = "jwt";
     public static final String JWT_PERMISSIONS_CLAIM = "permissions";
     public static final JWSAlgorithm JWS_ALGORITHM = JWSAlgorithm.HS256;
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtUtil.class);

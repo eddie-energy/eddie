@@ -118,7 +118,7 @@ class JwtUtilTest {
     }
 
     @Test
-    void createAiidaJwt_returnsJwtWithOnlyNewPermissionId() throws JwtCreationFailedException, BadJOSEException, ParseException, JOSEException {
+    void createJwt_returnsJwtWithOnlyNewPermissionId() throws JwtCreationFailedException, BadJOSEException, ParseException, JOSEException {
         // Given
         String newPermissionId = "myTestId";
 

@@ -1,7 +1,6 @@
 package energy.eddie.core;
 
 import energy.eddie.regionconnector.shared.security.JwtAuthorizationManager;
-import energy.eddie.regionconnector.shared.security.JwtSource;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
 import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
 import org.slf4j.Logger;
@@ -76,13 +75,8 @@ public class CoreSecurityConfig {
     }
 
     @Bean
-    public JwtAuthorizationManager jwtCookieAuthorizationManager(JwtUtil jwtUtil) {
-        return new JwtAuthorizationManager(jwtUtil, JwtSource.COOKIE);
-    }
-
-    @Bean
     public JwtAuthorizationManager jwtHeaderAuthorizationManager(JwtUtil jwtUtil) {
-        return new JwtAuthorizationManager(jwtUtil, JwtSource.HEADER);
+        return new JwtAuthorizationManager(jwtUtil);
     }
 
 }
