@@ -1,6 +1,12 @@
 import { LitElement } from "lit";
 
-const TERMINAL_STATES = ["TIMED_OUT", "INVALID", "REJECTED", "ACCEPTED"];
+const TERMINAL_STATES = [
+  "TERMINATED",
+  "REVOKED",
+  "FULFILLED",
+  "INVALID",
+  "MALFORMED",
+];
 
 class PermissionRequestFormBase extends LitElement {
   constructor() {
