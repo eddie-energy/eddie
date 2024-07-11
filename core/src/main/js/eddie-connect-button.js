@@ -184,15 +184,16 @@ class EddieConnectButton extends LitElement {
     this.addRequestStatusHandlers();
   }
 
-  async connect() {
+  openDialog() {
     this.dialogRef.value.show();
+  }
 
-    if (
-      !this.permissionAdministratorId &&
-      this.rememberPermissionAdministrator
-    ) {
-      this.loadPermissionAdministratorFromLocalStorage();
-    }
+  closeDialog() {
+    this.dialogRef.value.hide();
+  }
+
+  reset() {
+    this.selectPermissionAdministrator(this._presetPermissionAdministrator)
   }
 
   async getRegionConnectorElement() {
@@ -385,6 +386,13 @@ class EddieConnectButton extends LitElement {
     if (this._presetPermissionAdministrator) {
       this.selectPermissionAdministrator(this._presetPermissionAdministrator);
     }
+
+    if (
+      !this.permissionAdministratorId &&
+      this.rememberPermissionAdministrator
+    ) {
+      this.loadPermissionAdministratorFromLocalStorage();
+    }
   }
 
   isAiida() {
@@ -466,7 +474,7 @@ class EddieConnectButton extends LitElement {
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/themes/light.css"
       />
-      <button class="eddie-connect-button" @click="${this.connect}">
+      <button class="eddie-connect-button" @click="${this.openDialog}">
         ${unsafeSVG(buttonIcon)}
         <span>Connect with EDDIE</span>
       </button>

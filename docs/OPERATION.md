@@ -133,6 +133,23 @@ The callback function has to be defined in the global scope and is passed as a s
 ></eddie-connect-button>
 ```
 
+## Controlling the EDDIE button programmatically
+
+The EDDIE button exposes methods to control its behavior programmatically.
+
+- `openDialog()`: Opens the dialog. Similar to clicking the button.
+- `closeDialog()`: Closes the dialog, keeping the button in its current state.
+- `reset()`: Resets the button to its initial state. Does not close the dialog if it is already open.
+
+```js
+const button = document.querySelector("eddie-connect-button");
+button.openDialog();
+button.reset();
+button.closeDialog();
+```
+
+Please use with care! Closing or resetting the button programmatically can lead to unexpected behavior or break the user experience if the user is still interacting with the button. Similarly, opening the dialog programmatically can be seen as intrusive and should be used with caution.
+
 # Configuration
 
 It is recommended to configure EDDIE core and the region connectors via the `.env` file in combination with
