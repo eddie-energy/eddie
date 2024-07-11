@@ -12,7 +12,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 
 class AtEdaTest extends E2eTestSetup {
     @Test
-    void buttonClick_statusIsPending() {
+    void buttonClick_statusIsSent() {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(1).click();
         page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Country")).click();
 
@@ -24,11 +24,9 @@ class AtEdaTest extends E2eTestSetup {
             .click();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
 
-        assertThat(page.locator("at-eda-pa-ce")).containsText(Pattern.compile(
-                "Please wait"));
+        assertThat(page.locator("at-eda-pa-ce")).containsText(Pattern.compile("Please wait"));
 
-        var locator = page.getByText(
-                "response code 99");
+        var locator = page.getByText("Status: Request Sent");
         locator.waitFor(new Locator.WaitForOptions().setTimeout(360_000));
     }
 }

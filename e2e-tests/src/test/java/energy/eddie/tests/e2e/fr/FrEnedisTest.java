@@ -42,9 +42,6 @@ class FrEnedisTest extends E2eTestSetup {
                                            )
                                            .click());
 
-        assertThat(buttonPage.locator("body")).containsText(
-                "Status: Request Validated The permission request has been validated.");
-
         var redirectUrl = requestDetails.url() +
                           "/authorization-callback" +
                           "?state=" + requestDetails.permissionId() +

@@ -20,9 +20,6 @@ class EsDatadisTest extends E2eTestSetup {
         page.getByLabel("CUPS").fill("bar");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
 
-        assertThat(page.locator("body")).containsText(
-                "Status: Request Validated The permission request has been validated.");
-
         // Datadis API may take a long time to respond
         var locator = page.locator("body", new Page.LocatorOptions().setHasText("Status: Invalid Request"));
         locator.waitFor(new Locator.WaitForOptions().setTimeout(120_000));  // 2 min

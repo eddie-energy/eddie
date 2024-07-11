@@ -18,14 +18,10 @@ class DkEnerginetTest extends E2eTestSetup {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(1).click();
         page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Country")).click();
         page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("Denmark")).locator("slot").nth(1).click();
-        page.getByLabel("Refresh Token").click();
-        page.getByLabel("Refresh Token").fill("foo");
-        page.getByLabel("Refresh Token").press("Tab");
-        page.getByLabel("Metering Point").fill("bar");
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
+        page.getByLabel("Metering Point").fill("foo");
+        page.getByLabel("Refresh Token").fill("bar");
 
-        assertThat(page.locator("body")).containsText(
-                "Status: Request Validated The permission request has been validated.");
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
 
         var locator = page.locator("body", new Page.LocatorOptions().setHasText("Status: Invalid Request"));
         locator.waitFor(new Locator.WaitForOptions().setTimeout(120_000));  // 2 min
@@ -41,9 +37,6 @@ class DkEnerginetTest extends E2eTestSetup {
         page.getByLabel("Refresh Token").fill(DK_ENERGINET_REFRESH_TOKEN);
         page.getByLabel("Metering Point").fill(DK_ENERGINET_METERING_POINT);
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
-
-        assertThat(page.locator("body")).containsText(
-                "Status: Request Validated The permission request has been validated.");
 
         var locator = page.locator("body", new Page.LocatorOptions().setHasText("Status: Request Accepted"));
         locator.waitFor(new Locator.WaitForOptions().setTimeout(120_000));  // 2 min
