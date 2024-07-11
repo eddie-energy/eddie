@@ -34,7 +34,7 @@ services:
 ```
 
 | Variable                       | Description                             |
-| ------------------------------ | --------------------------------------- |
+|--------------------------------|-----------------------------------------|
 | `EDDIE_DATA_NEEDS_CONFIG_FILE` | File containing data needs definitions. |
 
 As the configuration of region connectors is quite complex and there are many properties, the environment is
@@ -145,7 +145,7 @@ You can also modify the [application.properties](../core/src/main/resources/appl
 the recommendation is to use the `.env` which accompanies the [docker-compose.yml](../env/docker-compose.yml) file.
 
 | Parameter                                                            | Description                                                                                                                                                                                                                                                                                                    |
-| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+|----------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | CORE_PORT                                                            | Port on which the server should listen. 8080 by default.                                                                                                                                                                                                                                                       |
 | JDBC_URL                                                             | JDB URL to PostgreSQL database where EDDIE will store permission requests and data needs.                                                                                                                                                                                                                      |
 | JDBC_USER                                                            | Username to authenticate with the PostgreSQL server.                                                                                                                                                                                                                                                           |
@@ -154,7 +154,7 @@ the recommendation is to use the `.env` which accompanies the [docker-compose.ym
 | EDDIE_JWT_HMAC_SECRET                                                | Secret used to sign JWTs issued by EDDIE. Supply 32 random (!) bytes encoded as Base64 string.                                                                                                                                                                                                                 |
 | EDDIE_PUBLIC_URL                                                     | Public URL where external clients can reach EDDIE core.                                                                                                                                                                                                                                                        |
 | KAFKA_ENABLED                                                        | Set to `true` to enable publishing of status & data messages to the specified Kafka cluster.                                                                                                                                                                                                                   |
-| KAFKA_BOOTSTRAP_SERVERS                                              | Comma separated list of Kafka server IPs/hostnames.                                                                                                                                                                                                                                                            |     |
+| KAFKA_BOOTSTRAP_SERVERS                                              | Comma separated list of Kafka server IPs/hostnames.                                                                                                                                                                                                                                                            |
 | EDDIE_RAW_DATA_OUTPUT_ENABLED                                        | If set to `true`, supporting region connectors will publish the raw message as they receive it from the MDA to a dedicated Kafka topic.                                                                                                                                                                        |
 | EDDIE_PERMISSION_REQUEST_TIMEOUT_DURATION                            | Sets the duration after which a permission request, which was neither accepted nor rejected, is considered stale. Default is 168 hours (7 days).                                                                                                                                                               |
 | EDDIE_PERMISSION_REQUEST_TIMEOUT_SCHEDULE                            | Sets the schedule when stale permission requests should be timed out. Uses Spring Cron syntax. Default is hourly.                                                                                                                                                                                              |
@@ -191,7 +191,7 @@ For the mapping of region specific data to the common information model (CIM) th
 need to be set:
 
 | Parameter                                 | Type                               | Description                                                                                         |
-| ----------------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------- |
+|-------------------------------------------|------------------------------------|-----------------------------------------------------------------------------------------------------|
 | cim.eligible-party.national-coding-scheme | A valid CodingSchemeTypeList value | Most of the time just 'N' + your country code e.g NAT if you are located in Austria                 |
 | cim.eligible-party.fallback.id            | String                             | Fallback ID for the eligible party in case the region does not provide an ID for the eligible party |
 
@@ -211,7 +211,7 @@ Data needs can be configured in two ways: via a JSON file that is read on startu
 API which stores the data needs in the core's database.
 
 | Parameter                                | Type              | Description                                            |
-| ---------------------------------------- | ----------------- | ------------------------------------------------------ |
+|------------------------------------------|-------------------|--------------------------------------------------------|
 | eddie.data-needs-config.data-need-source | CONFIG / DATABASE | Specifies the location where data needs are read from. |
 
 If this is set to `CONFIG`, the property `EDDIE_DATA_NEEDS_CONFIG_FILE` needs to be set, otherwise the file is ignored.
@@ -245,7 +245,7 @@ the ID is a mandatory field.
 All data needs have these common fields:
 
 | Attribute   | Type   | Description                                                                                                                                         |
-| ----------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+|-------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
 | type        | String | Type of the data need, e.g. `validated` for historical validated consumption data. Please check the OpenAPI documentation for all supported values. |
 | id          | String | Unique id that can be used to reference this data need.                                                                                             |
 | name        | String | Short memorable name of the data need that may be presented to the customer.                                                                        |
@@ -256,7 +256,7 @@ All data needs have these common fields:
 Depending on the `type`, a data need may require more fields, e.g. for validated historical consumption data:
 
 | Attribute      | Type   | Description                                                                                                                                                                                                                                                                                                                                |
-| -------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|----------------|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | duration       | Object | Describes the timeframe for this data need.                                                                                                                                                                                                                                                                                                |
 | energyType     | String | Type of energy to be requested. See OpenAPI documentation for all possible values.                                                                                                                                                                                                                                                         |
 | minGranularity | String | Desired granularity of the data that should be requested.                                                                                                                                                                                                                                                                                  |
@@ -281,7 +281,7 @@ prefix `kafka.` has to be used.
 The following parameters are of special interest:
 
 | Parameter               | Type                                           | Description                                                                                                       |
-| ----------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+|-------------------------|------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
 | kafka.bootstrap.servers | comma-separated _host:port_ tuples (mandatory) | A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.                    |
 | kafka.enable            | true/false                                     | Enables or disables the kafka connector.                                                                          |
 | kafka.termination.topic | valid kafka topic name                         | The topic on which the kafka connector listens for termination requests. Optional, the default is `terminations`. |

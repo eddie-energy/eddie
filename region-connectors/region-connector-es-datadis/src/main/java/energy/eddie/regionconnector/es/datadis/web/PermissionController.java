@@ -28,19 +28,19 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.*;
 
 @RestController
 public class PermissionController {
-    public static final String PATH_PERMISSION_ACCEPTED = PATH_PERMISSION_REQUEST + "/{permissionId}/accepted";
-    public static final String PATH_PERMISSION_REJECTED = PATH_PERMISSION_REQUEST + "/{permissionId}/rejected";
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionController.class);
     private final PermissionRequestService service;
     private final JwtUtil jwtUtil;
 
     @Autowired
-    public PermissionController(PermissionRequestService service, JwtUtil jwtUtil) {
+    public PermissionController(
+            PermissionRequestService service,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") JwtUtil jwtUtil
+    ) {
         this.service = service;
         this.jwtUtil = jwtUtil;
     }

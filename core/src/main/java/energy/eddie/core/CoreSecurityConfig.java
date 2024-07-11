@@ -84,4 +84,5 @@ public class CoreSecurityConfig {
     public JwtAuthorizationManager jwtHeaderAuthorizationManager(JwtUtil jwtUtil) {
         return new JwtAuthorizationManager(jwtUtil, JwtSource.HEADER);
     }
+
 }

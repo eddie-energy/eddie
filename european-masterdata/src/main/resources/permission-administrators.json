@@ -844,7 +844,7 @@
     "company": "Fingrid Datahub",
     "companyId": "fingrid-datahub",
     "jumpOffUrl": "https://oma.datahub.fi/#/login",
-    "regionConnector": "fi"
+    "regionConnector": "fi-fingrid"
   },
   {
     "country": "fr",

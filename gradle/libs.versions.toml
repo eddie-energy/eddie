@@ -47,6 +47,7 @@ nimbus = "11.10.1"
 bouncycastle = "1.78"
 
 swagger-codegen-version = "3.0.45"
+swagger-annotations = "2.2.22"
 openapi-generator = "7.3.0"
 openapi-webmvc-ui = "2.3.0"
 apache-httpcomponents-version = "4.5.14"
@@ -77,6 +78,7 @@ jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", ver
 testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 testcontainers-toxiproxy = { module = "org.testcontainers:toxiproxy", version.ref = "testcontainers" }
 testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+swagger-annotations = { module = "io.swagger.core.v3:swagger-annotations", version.ref = "swagger-annotations" }
 
 
 # dependencies required by region-connector-at

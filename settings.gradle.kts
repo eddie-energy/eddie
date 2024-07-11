@@ -25,6 +25,9 @@ findProject(":region-connectors:region-connector-es-datadis")?.name = "region-co
 include("region-connectors:region-connector-nl-mijn-aansluiting")
 findProject(":region-connectors:region-connector-nl-mijn-aansluiting")?.name = "region-connector-nl-mijn-aansluiting"
 
+include("region-connectors:region-connector-fi-fingrid")
+findProject(":region-connectors:region-connector-fi-fingrid")?.name = "region-connector-fi-fingrid"
+
 include("region-connectors:region-connector-simulation")
 findProject(":region-connectors:region-connector-simulation")?.name = "region-connector-simulation"
 

@@ -1,9 +1,5 @@
 lockfileVersion: '6.0'
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
-
 importers:
 
   .:
@@ -62,6 +58,15 @@ importers:
         version: 4.5.2
 
   region-connectors/region-connector-es-datadis:
+    dependencies:
+      lit:
+        specifier: ^2.7.5
+        version: 2.7.5
+      vite:
+        specifier: ^4.5.2
+        version: 4.5.2
+
+  region-connectors/region-connector-fi-fingrid:
     dependencies:
       lit:
         specifier: ^2.7.5
@@ -842,3 +847,7 @@ packages:
     optionalDependencies:
       fsevents: 2.3.3
     dev: true
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
