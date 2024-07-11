@@ -26,7 +26,7 @@ public class SecurityUtils {
     public static SecurityFilterChain securityFilterChain(
             MvcRequestMatcher.Builder mvcRequestMatcher,
             HttpSecurity http,
-            JwtAuthorizationManager jwtCookieAuthorizationManager,
+            JwtAuthorizationManager jwtHeaderAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper,
             String... authorizationPaths
@@ -35,7 +35,7 @@ public class SecurityUtils {
                 .securityMatcher(mvcRequestMatcher.pattern("/**"))    // apply following rules only to requests of this DispatcherServlet
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> configureAuthorization(mvcRequestMatcher,
-                                                                      jwtCookieAuthorizationManager,
+                                                                      jwtHeaderAuthorizationManager,
                                                                       auth,
                                                                       authorizationPaths)
                 )
@@ -47,7 +47,7 @@ public class SecurityUtils {
 
     private static void configureAuthorization(
             MvcRequestMatcher.Builder mvcRequestMatcher,
-            JwtAuthorizationManager jwtCookieAuthorizationManager,
+            JwtAuthorizationManager jwtHeaderAuthorizationManager,
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth,
             String... paths
     ) {
@@ -55,7 +55,7 @@ public class SecurityUtils {
                 .requestMatchers(mvcRequestMatcher.pattern(PATH_PERMISSION_REQUEST)).permitAll()
                 .requestMatchers(mvcRequestMatcher.pattern(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)).permitAll();
         for (String path : paths) {
-            auth.requestMatchers(mvcRequestMatcher.pattern(path)).access(jwtCookieAuthorizationManager);
+            auth.requestMatchers(mvcRequestMatcher.pattern(path)).access(jwtHeaderAuthorizationManager);
         }
         auth
                 .requestMatchers(mvcRequestMatcher.pattern("/" + CE_FILE_NAME)).permitAll()

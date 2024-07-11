@@ -11,8 +11,7 @@ import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_ACCEPTED;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REJECTED;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.*;
 import static energy.eddie.spring.regionconnector.extensions.SecurityUtils.mvcRequestMatcher;
 import static energy.eddie.spring.regionconnector.extensions.SecurityUtils.securityFilterChain;
 
@@ -32,16 +31,18 @@ public class FingridSecurityConfig {
     public SecurityFilterChain fingridSecurityFilterChain(
             MvcRequestMatcher.Builder fingridMvcRequestMatcher,
             HttpSecurity http,
-            JwtAuthorizationManager jwtCookieAuthorizationManager,
+            JwtAuthorizationManager jwtHeaderAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper
     ) throws Exception {
         return securityFilterChain(fingridMvcRequestMatcher,
                                    http,
-                                   jwtCookieAuthorizationManager,
+                                   jwtHeaderAuthorizationManager,
                                    corsConfigurationSource,
                                    mapper,
                                    PATH_PERMISSION_ACCEPTED,
-                                   PATH_PERMISSION_REJECTED);
+                                   PATH_PERMISSION_REJECTED,
+                                   "/organisation-information"
+        );
     }
 }

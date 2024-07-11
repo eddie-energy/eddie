@@ -102,16 +102,16 @@ class PermissionRequestControllerTest {
                                                                  "0".repeat(36),
                                                                  "identifier");
         when(creationService.createAndValidatePermissionRequest(permissionRequest))
-                .thenReturn(new CreatedPermissionRequest("pid"));
+                .thenReturn(new CreatedPermissionRequest("pid", ""));
 
         // When
         mockMvc.perform(MockMvcRequestBuilders.post("/permission-request")
                                               .contentType(MediaType.APPLICATION_JSON)
                                               .content(objectMapper.writeValueAsString(permissionRequest)))
                .andExpect(status().isCreated())
-               .andExpect(cookie().exists("jwt"))
+               .andExpect(jsonPath("$.permissionId", is("pid")))
+               .andExpect(jsonPath("$.accessToken").isString())
                .andExpect(header().string("location", "/permission-status/pid"));
-        verify(spyJwtUtil).setJwtCookie(any(), any(), eq("fi-fingrid"), eq("pid"));
     }
 
     @Test

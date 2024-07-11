@@ -13,6 +13,7 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.fi.fingrid.FingridRegionConnectorMetadata;
 import energy.eddie.regionconnector.fi.fingrid.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.CreatedEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.SimpleEvent;
@@ -20,7 +21,9 @@ import energy.eddie.regionconnector.fi.fingrid.permission.events.ValidatedEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import energy.eddie.regionconnector.shared.security.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -54,6 +57,8 @@ class PermissionCreationServiceTest {
     private DataNeedCalculationService<DataNeed> dataNeedCalculationService;
     @Mock
     private FiPermissionRequestRepository permissionRequestRepository;
+    @Mock
+    private JwtUtil jwtUtil;
     @InjectMocks
     private PermissionCreationService permissionCreationService;
     @Captor
@@ -76,7 +81,7 @@ class PermissionCreationServiceTest {
     }
 
     @Test
-    void createAndValidatePermissionRequest_createsPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    void createAndValidatePermissionRequest_createsPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         // Given
         var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier");
         var dataNeed = new ValidatedHistoricalDataDataNeed(
@@ -95,6 +100,7 @@ class PermissionCreationServiceTest {
                         new Timeframe(today, today),
                         new Timeframe(today.minusDays(10), today.minusDays(1))
                 ));
+        when(jwtUtil.createJwt(eq(FingridRegionConnectorMetadata.REGION_CONNECTOR_ID), anyString())).thenReturn("");
 
         // When
         var res = permissionCreationService.createAndValidatePermissionRequest(forCreation);

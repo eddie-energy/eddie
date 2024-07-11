@@ -5,7 +5,6 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.regionconnector.fi.fingrid.FingridRegionConnectorMetadata;
 import energy.eddie.regionconnector.fi.fingrid.config.FingridConfiguration;
 import energy.eddie.regionconnector.fi.fingrid.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.dtos.OrganisationInformation;
@@ -14,9 +13,6 @@ import energy.eddie.regionconnector.fi.fingrid.services.PermissionCreationServic
 import energy.eddie.regionconnector.fi.fingrid.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
-import energy.eddie.regionconnector.shared.security.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,19 +28,15 @@ public class PermissionRequestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final PermissionCreationService creationService;
     private final FingridConfiguration fingridConfiguration;
-    private final JwtUtil jwtUtil;
     private final PermissionRequestService permissionRequestService;
 
     public PermissionRequestController(
             PermissionCreationService creationService,
             FingridConfiguration fingridConfiguration,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-            JwtUtil jwtUtil,
             PermissionRequestService permissionRequestService
     ) {
         this.creationService = creationService;
         this.fingridConfiguration = fingridConfiguration;
-        this.jwtUtil = jwtUtil;
         this.permissionRequestService = permissionRequestService;
     }
 
@@ -63,9 +55,7 @@ public class PermissionRequestController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedPermissionRequest> createPermissionRequest(
-            @RequestBody @Valid PermissionRequestForCreation permissionRequestForCreation,
-            HttpServletRequest request,
-            HttpServletResponse response
+            @RequestBody @Valid PermissionRequestForCreation permissionRequestForCreation
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         LOGGER.info("Creating new permission request");
         var createdRequest = creationService.createAndValidatePermissionRequest(permissionRequestForCreation);
@@ -73,7 +63,6 @@ public class PermissionRequestController {
         var location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
                 .expand(permissionId);
 
-        jwtUtil.setJwtCookie(request, response, FingridRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
         return ResponseEntity.created(location).body(createdRequest);
     }
 
