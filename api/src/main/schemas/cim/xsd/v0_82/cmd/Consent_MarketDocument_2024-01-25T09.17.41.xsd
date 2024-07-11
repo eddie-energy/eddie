@@ -2885,6 +2885,26 @@ PURPOSE
                     <xs:documentation>A113</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="REQUIRES_EXTERNAL_TERMINATION">
+                <xs:annotation>
+                    <xs:documentation>A114</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="EXTERNALLY_TERMINATED">
+                <xs:annotation>
+                    <xs:documentation>A115</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="FAILED_TO_TERMINATE">
+                <xs:annotation>
+                    <xs:documentation>A116</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="REJECTED">
+                <xs:annotation>
+                    <xs:documentation>A117</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="YMDHM_DateTime">
