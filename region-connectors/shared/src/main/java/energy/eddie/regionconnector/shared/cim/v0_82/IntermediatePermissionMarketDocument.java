@@ -2,24 +2,26 @@ package energy.eddie.regionconnector.shared.cim.v0_82;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.cim.v0_82.cmd.*;
+import energy.eddie.cim.v0_82.pmd.*;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.datatype.DatatypeFactory;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.UUID;
 
 import static energy.eddie.api.CommonInformationModelVersions.V0_82;
 
-public class IntermediateConsentMarketDocument<T extends PermissionRequest> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(IntermediateConsentMarketDocument.class);
+public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(IntermediatePermissionMarketDocument.class);
     private final T permissionRequest;
     private final String customerIdentifier;
     private final TransmissionScheduleProvider<T> transmissionScheduleProvider;
@@ -27,7 +29,7 @@ public class IntermediateConsentMarketDocument<T extends PermissionRequest> {
     private final ZoneId zoneId;
     private final PermissionProcessStatus status;
 
-    public IntermediateConsentMarketDocument(
+    public IntermediatePermissionMarketDocument(
             T permissionRequest,
             String customerIdentifier,
             TransmissionScheduleProvider<T> transmissionScheduleProvider,
@@ -37,7 +39,7 @@ public class IntermediateConsentMarketDocument<T extends PermissionRequest> {
              countryCode, zoneId);
     }
 
-    public IntermediateConsentMarketDocument(
+    public IntermediatePermissionMarketDocument(
             T permissionRequest,
             PermissionProcessStatus status,
             String customerIdentifier,
@@ -52,16 +54,16 @@ public class IntermediateConsentMarketDocument<T extends PermissionRequest> {
         this.zoneId = zoneId;
     }
 
-    public ConsentMarketDocument toConsentMarketDocument() {
-        return toConsentMarketDocument(Clock.systemUTC());
+    public PermissionEnveloppe toPermissionMarketDocument() {
+        return toPermissionMarketDocument(Clock.systemUTC());
     }
 
-    ConsentMarketDocument toConsentMarketDocument(Clock clock) {
+    PermissionEnveloppe toPermissionMarketDocument(Clock clock) {
         EsmpDateTime now = EsmpDateTime.now(clock);
         EsmpDateTime created = new EsmpDateTime(permissionRequest.created());
         EsmpTimeInterval interval = new EsmpTimeInterval(permissionRequest.start(), permissionRequest.end(), zoneId);
 
-        return new ConsentMarketDocument()
+        var pmd = new PermissionMarketDocumentComplexType()
                 .withMRID(permissionRequest.permissionId())
                 .withRevisionNumber(V0_82.version())
                 .withType(MessageTypeList.PERMISSION_ADMINISTRATION_DOCUMENT)
@@ -90,7 +92,7 @@ public class IntermediateConsentMarketDocument<T extends PermissionRequest> {
                                 .withEnd(interval.end())
                 )
                 .withPermissionList(
-                        new ConsentMarketDocument.PermissionList()
+                        new PermissionMarketDocumentComplexType.PermissionList()
                                 .withPermissions(
                                         new PermissionComplexType()
                                                 .withPermissionMRID(permissionRequest.permissionId())
@@ -116,16 +118,20 @@ public class IntermediateConsentMarketDocument<T extends PermissionRequest> {
                                                 )
                                 )
                 );
+        return new PermissionEnveloppe()
+                .withMessageDocumentHeader(metainformation())
+                .withPermissionMarketDocument(pmd);
     }
 
     @Nullable
     private CodingSchemeTypeList getCodingScheme() {
+        var cc = permissionRequest.dataSourceInformation().countryCode();
         try {
-            return CodingSchemeTypeList.fromValue("N" + permissionRequest.dataSourceInformation().countryCode());
+            return CodingSchemeTypeList.fromValue("N" + cc);
         } catch (IllegalArgumentException e) {
             // prevent exception spamming until GH-638 is implemented
-            if (!permissionRequest.dataSourceInformation().countryCode().equalsIgnoreCase("aiida"))
-                LOGGER.warn("Unknown country code.", e);
+            if (!cc.equalsIgnoreCase("aiida"))
+                LOGGER.info("Unknown country code.", e);
             return null;
         }
     }
@@ -148,5 +154,25 @@ public class IntermediateConsentMarketDocument<T extends PermissionRequest> {
             }
         }
         throw new IllegalArgumentException("Unknown enum value for StatusTypeList " + permissionRequestStatus);
+    }
+
+    private MessageDocumentHeaderComplexType metainformation() {
+        var calendar = DatatypeFactory
+                .newDefaultInstance()
+                .newXMLGregorianCalendar(LocalDate.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE));
+        return new MessageDocumentHeaderComplexType()
+                .withCreationDateTime(calendar)
+                .withMessageDocumentHeaderMetaInformation(
+                        new MessageDocumentHeaderMetaInformationComplexType()
+                                .withConnectionid(permissionRequest.connectionId())
+                                .withDataNeedid(permissionRequest.dataNeedId())
+                                .withDataType("permission-market-document")
+                                .withMessageDocumentHeaderRegion(
+                                        new MessageDocumentHeaderRegionComplexType()
+                                                .withConnector(permissionRequest.dataSourceInformation()
+                                                                                .regionConnectorId())
+                                                .withCountry(getCodingScheme())
+                                )
+                );
     }
 }

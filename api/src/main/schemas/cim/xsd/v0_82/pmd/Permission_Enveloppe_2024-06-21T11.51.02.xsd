@@ -1,13 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- ****************************************************************** -->
-<!-- ***** Consent_MarketDocument XML Schema File ***** -->
+<?xml version="1.0"?>
+<!-- ****************************************************************** -->
+<!-- ***** Permission_Enveloppe XML Schema File ***** -->
 <!-- ****************************************************************** -->
 <!--
 Schema agency: Gasunie 
 Schema version: 1p0
-Schema date: donderdag 25 januari 2024 09:17:41
+Schema date: Friday, 21 June 2024 11:50:59
  
 Generator name: EA_Toolkit by E. van Slooten
-Generator builddate: 15-7-2019 09:08:22
+Generator builddate: 04/04/2024 10:16:37
  
 Copyright (C) Gasunie (2024). All Rights Reserved.
  
@@ -21,22 +22,52 @@ PURPOSE
            xmlns:ns1="http://www.eddie.energy/Consent/EDD02/20240125"
            targetNamespace="http://www.eddie.energy/Consent/EDD02/20240125" attributeFormDefault="unqualified"
            elementFormDefault="qualified" version="1p0">
-    <xs:element name="Consent_MarketDocument" type="ns1:Consent_MarketDocumentComplexType">
-        <xs:annotation>
-            <xs:documentation>An electronic document containing the information necessary to satisfy the requirements of
-                a given business process.
-            </xs:documentation>
-        </xs:annotation>
-    </xs:element>
-    <xs:complexType name="Consent_MarketDocumentComplexType">
+    <xs:element name="Permission_Enveloppe" type="ns1:Permission_EnveloppeComplexType"/>
+    <xs:complexType name="Permission_EnveloppeComplexType">
+        <xs:sequence>
+            <xs:element name="MessageDocumentHeader" type="ns1:MessageDocumentHeaderComplexType"/>
+            <xs:element name="Permission_MarketDocument" type="ns1:Permission_MarketDocumentComplexType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        An electronic document containing the information necessary to satisfy the
+                        requirements of a given business process.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MessageDocumentHeaderComplexType">
+        <xs:sequence>
+            <xs:element name="creationDateTime" type="xs:dateTime"/>
+            <xs:element name="MessageDocumentHeader_MetaInformation"
+                        type="ns1:MessageDocumentHeader_MetaInformationComplexType"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MessageDocumentHeader_MetaInformationComplexType">
+        <xs:sequence>
+            <xs:element name="connectionid" type="xs:string"/>
+            <xs:element name="permissionid" type="xs:string"/>
+            <xs:element name="dataNeedid" type="xs:string"/>
+            <xs:element name="dataType" type="xs:string"/>
+            <xs:element name="MessageDocumentHeader_Region" type="ns1:MessageDocumentHeader_RegionComplexType"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MessageDocumentHeader_RegionComplexType">
+        <xs:sequence>
+            <xs:element name="connector" type="xs:string"/>
+            <xs:element name="country" type="ns1:CodingSchemeTypeList"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Permission_MarketDocumentComplexType">
         <xs:sequence>
             <xs:element name="mRID" type="ns1:ID_String">
                 <xs:annotation>
-                    <xs:documentation>The unique identification of the document being exchanged within a business
+                    <xs:documentation>
+                        The unique identification of the document being exchanged within a business
                         process flow.
 
-                        In the ESMP context, the &quot;model authority&quot; is defined as a party (originator of the
-                        exchange) that provides an identification in the context of a business exchange such as document
+                        In the ESMP context, the "model authority" is defined as a party (originator of the exchange)
+                        that provides an identification in the context of a business exchange such as document
                         identification, ...
 
                         Master resource identifier issued by a model authority. The mRID is globally unique within an
@@ -50,14 +81,16 @@ PURPOSE
             </xs:element>
             <xs:element name="revisionNumber" type="ns1:ESMPVersion_String">
                 <xs:annotation>
-                    <xs:documentation>The identification of the version that distinguishes one evolution of a document
+                    <xs:documentation>
+                        The identification of the version that distinguishes one evolution of a document
                         from another.
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="type" type="ns1:MessageTypeList">
                 <xs:annotation>
-                    <xs:documentation>The coded type of a document. The document type describes the principal
+                    <xs:documentation>
+                        The coded type of a document. The document type describes the principal
                         characteristic of the document.
                     </xs:documentation>
                 </xs:annotation>
@@ -69,17 +102,19 @@ PURPOSE
             </xs:element>
             <xs:element name="description" type="xs:string" minOccurs="0">
                 <xs:annotation>
-                    <xs:documentation>The description is a free human readable text describing or naming the object. It
+                    <xs:documentation>
+                        The description is a free human readable text describing or naming the object. It
                         may be non unique and may not correlate to a naming hierarchy.
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="sender_MarketParticipant.mRID" type="ns1:PartyID_StringComplexType">
                 <xs:annotation>
-                    <xs:documentation>The identification of a party in the energy market.
+                    <xs:documentation>
+                        The identification of a party in the energy market.
 
-                        In the ESMP context, the &quot;model authority&quot; is defined as an authorized issuing office
-                        that provides an agreed identification coding scheme for market participant, domain, measurement
+                        In the ESMP context, the "model authority" is defined as an authorized issuing office that
+                        provides an agreed identification coding scheme for market participant, domain, measurement
                         point, resources (generator, lines, substations, etc.) identification.
 
                         Master resource identifier issued by a model authority. The mRID is globally unique within an
@@ -96,7 +131,8 @@ PURPOSE
             </xs:element>
             <xs:element name="sender_MarketParticipant.marketRole.type" type="ns1:RoleTypeList">
                 <xs:annotation>
-                    <xs:documentation>The identification of the role played by a market player.
+                    <xs:documentation>
+                        The identification of the role played by a market player.
 
 
                         --- The MarketParticipant associated with an electronic document header.
@@ -108,10 +144,11 @@ PURPOSE
             </xs:element>
             <xs:element name="receiver_MarketParticipant.mRID" type="ns1:PartyID_StringComplexType">
                 <xs:annotation>
-                    <xs:documentation>The identification of a party in the energy market.
+                    <xs:documentation>
+                        The identification of a party in the energy market.
 
-                        In the ESMP context, the &quot;model authority&quot; is defined as an authorized issuing office
-                        that provides an agreed identification coding scheme for market participant, domain, measurement
+                        In the ESMP context, the "model authority" is defined as an authorized issuing office that
+                        provides an agreed identification coding scheme for market participant, domain, measurement
                         point, resources (generator, lines, substations, etc.) identification.
 
                         Master resource identifier issued by a model authority. The mRID is globally unique within an
@@ -128,7 +165,8 @@ PURPOSE
             </xs:element>
             <xs:element name="receiver_MarketParticipant.marketRole.type" type="ns1:RoleTypeList">
                 <xs:annotation>
-                    <xs:documentation>The identification of the role played by a market player.
+                    <xs:documentation>
+                        The identification of the role played by a market player.
 
 
                         --- The MarketParticipant associated with an electronic document header.
@@ -141,7 +179,8 @@ PURPOSE
             <xs:element name="process.processType" type="ns1:ProcessTypeList"/>
             <xs:element name="period.timeInterval" type="ns1:ESMP_DateTimeIntervalComplexType">
                 <xs:annotation>
-                    <xs:documentation>The start and end date and time for a given interval.
+                    <xs:documentation>
+                        The start and end date and time for a given interval.
 
 
                         --- The time interval that is associated with an electronic document and which is valid for the
@@ -176,12 +215,17 @@ PURPOSE
             </xs:element>
             <xs:element name="transmissionSchedule" type="ns1:Duration" minOccurs="0"/>
             <xs:element name="marketEvaluationPoint.mRID" type="ns1:MeasurementPointID_StringComplexType"/>
-            <xs:element name="ReasonList">
+            <xs:element name="TimeSeriesList">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="Reason" type="ns1:ReasonComplexType" minOccurs="0" maxOccurs="unbounded">
+                        <xs:element name="TimeSeries" type="ns1:TimeSeriesComplexType" minOccurs="0"
+                                    maxOccurs="unbounded">
                             <xs:annotation>
-                                <xs:documentation>The motivation of an act.</xs:documentation>
+                                <xs:documentation>A set of time-ordered quantities being exchanged in relation to a
+                                    product.
+                                    In the ESMP profile, the TimeSeries provides not only time-ordered quantities but
+                                    also time-ordered information.
+                                </xs:documentation>
                             </xs:annotation>
                         </xs:element>
                     </xs:sequence>
@@ -199,17 +243,12 @@ PURPOSE
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="TimeSeriesList">
+            <xs:element name="ReasonList">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="TimeSeries" type="ns1:TimeSeriesComplexType" minOccurs="0"
-                                    maxOccurs="unbounded">
+                        <xs:element name="Reason" type="ns1:ReasonComplexType" minOccurs="0" maxOccurs="unbounded">
                             <xs:annotation>
-                                <xs:documentation>A set of time-ordered quantities being exchanged in relation to a
-                                    product.
-                                    In the ESMP profile, the TimeSeries provides not only time-ordered quantities but
-                                    also time-ordered information.
-                                </xs:documentation>
+                                <xs:documentation>The motivation of an act.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
                     </xs:sequence>
@@ -217,15 +256,25 @@ PURPOSE
             </xs:element>
         </xs:sequence>
     </xs:complexType>
-    <xs:complexType name="ReasonComplexType">
+    <xs:complexType name="TimeSeriesComplexType">
         <xs:sequence>
-            <xs:element name="text" type="ns1:ReasonText_String" minOccurs="0">
+            <xs:element name="mRID" type="ns1:ID_String">
                 <xs:annotation>
-                    <xs:documentation>The textual explanation corresponding to the reason code.
+                    <xs:documentation>A unique identification of the time series.
+
+                        In the ESMP context, the "model authority" is defined as a party (originator of the exchange)
+                        that provides a unique identification in the context of a business exchange such as time series
+                        identification, bid identification, ...
+
+                        Master resource identifier issued by a model authority. The mRID is globally unique within an
+                        exchange context.
+                        Global uniqueness is easily achieved by using a UUID for the mRID. It is strongly recommended to
+                        do this.
+                        For CIMXML data files in RDF syntax, the mRID is mapped to rdf:ID or rdf:about attributes that
+                        identify CIM object elements.
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="code" type="ns1:ReasonCodeTypeList"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="MktActivityRecordComplexType">
@@ -242,8 +291,9 @@ PURPOSE
             </xs:element>
             <xs:element name="createdDateTime" type="ns1:ESMP_DateTime" minOccurs="0">
                 <xs:annotation>
-                    <xs:documentation>Date and time this activity record has been created (different from the &#39;status.dateTime&#39;,
-                        which is the time of a status change of the associated object, if applicable).
+                    <xs:documentation>Date and time this activity record has been created (different from the
+                        'status.dateTime', which is the time of a status change of the associated object, if
+                        applicable).
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
@@ -282,25 +332,15 @@ PURPOSE
             </xs:element>
         </xs:sequence>
     </xs:complexType>
-    <xs:complexType name="TimeSeriesComplexType">
+    <xs:complexType name="ReasonComplexType">
         <xs:sequence>
-            <xs:element name="mRID" type="ns1:ID_String">
+            <xs:element name="text" type="ns1:ReasonText_String" minOccurs="0">
                 <xs:annotation>
-                    <xs:documentation>A unique identification of the time series.
-
-                        In the ESMP context, the &quot;model authority&quot; is defined as a party (originator of the
-                        exchange) that provides a unique identification in the context of a business exchange such as
-                        time series identification, bid identification, ...
-
-                        Master resource identifier issued by a model authority. The mRID is globally unique within an
-                        exchange context.
-                        Global uniqueness is easily achieved by using a UUID for the mRID. It is strongly recommended to
-                        do this.
-                        For CIMXML data files in RDF syntax, the mRID is mapped to rdf:ID or rdf:about attributes that
-                        identify CIM object elements.
+                    <xs:documentation>The textual explanation corresponding to the reason code.
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="code" type="ns1:ReasonCodeTypeList"/>
         </xs:sequence>
     </xs:complexType>
     <xs:simpleType name="CodingSchemeTypeList">
@@ -559,11 +599,11 @@ PURPOSE
     </xs:simpleType>
     <xs:simpleType name="Duration">
         <xs:annotation>
-            <xs:documentation>Duration as &quot;PnYnMnDTnHnMnS&quot; which conforms to ISO 8601, where nY expresses a
-                number of years, nM a number of months, nD a number of days. The letter T separates the date expression
-                from the time expression and, after it, nH identifies a number of hours, nM a number of minutes and nS a
-                number of seconds. The number of seconds could be expressed as a decimal number, but all other numbers
-                are integers.
+            <xs:documentation>Duration as "PnYnMnDTnHnMnS" which conforms to ISO 8601, where nY expresses a number of
+                years, nM a number of months, nD a number of days. The letter T separates the date expression from the
+                time expression and, after it, nH identifies a number of hours, nM a number of minutes and nS a number
+                of seconds. The number of seconds could be expressed as a decimal number, but all other numbers are
+                integers.
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string"></xs:restriction>
@@ -1307,6 +1347,11 @@ PURPOSE
                     <xs:documentation>Permission termination document</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="Z05">
+                <xs:annotation>
+                    <xs:documentation>Accounting point document</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
     <xs:complexType name="PartyID_StringComplexType">
@@ -1603,6 +1648,11 @@ PURPOSE
                     <xs:documentation>Access to metered data</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="Axx">
+                <xs:annotation>
+                    <xs:documentation>Accountingpoint data</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="ReasonCodeTypeList">
@@ -1717,8 +1767,8 @@ PURPOSE
             </xs:enumeration>
             <xs:enumeration value="A30">
                 <xs:annotation>
-                    <xs:documentation>Imposed Time series from nominated party&#39;s time series (party identified in
-                        reason text)
+                    <xs:documentation>Imposed Time series from nominated party's time series (party identified in reason
+                        text)
                     </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
@@ -2909,8 +2959,8 @@ PURPOSE
     </xs:simpleType>
     <xs:simpleType name="YMDHM_DateTime">
         <xs:annotation>
-            <xs:documentation>In ESMP, the date and time is expressed as &quot;YYYY-MM-DDThh:mmZ&quot;, which conforms
-                with ISO 8601 UTC time zone. This date and time is without the seconds.
+            <xs:documentation>In ESMP, the date and time is expressed as "YYYY-MM-DDThh:mmZ", which conforms with ISO
+                8601 UTC time zone. This date and time is without the seconds.
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string"></xs:restriction>

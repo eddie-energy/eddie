@@ -3,9 +3,9 @@ package energy.eddie.core.services;
 import energy.eddie.api.utils.Pair;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
-import energy.eddie.cim.v0_82.cmd.MessageTypeList;
-import energy.eddie.cim.v0_82.cmd.ReasonCodeTypeList;
+import energy.eddie.cim.v0_82.pmd.MessageTypeList;
+import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.ReasonCodeTypeList;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,15 +39,15 @@ public class TerminationRouter {
         }
     }
 
-    private void route(Pair<String, ConsentMarketDocument> cmd) {
-        if (!isTerminationMessage(cmd)) {
+    private void route(Pair<String, PermissionEnveloppe> pmd) {
+        if (!isTerminationMessage(pmd)) {
             LOGGER.warn("Received invalid termination message");
             // TODO: Propagate error, related to GH-410
             return;
         }
-        String rcId = getRegionConnectorId(cmd);
-        String permissionId = cmd.value().getMRID();
-        LOGGER.info("Will route ConsentMarketDocument for permissionId {} and region connector ID {}",
+        String rcId = getRegionConnectorId(pmd);
+        String permissionId = pmd.value().getPermissionMarketDocument().getMRID();
+        LOGGER.info("Will route PermissionMarketDocument for permissionId {} and region connector ID {}",
                     permissionId,
                     rcId);
 
@@ -57,17 +57,26 @@ public class TerminationRouter {
         }
     }
 
-    private static boolean isTerminationMessage(Pair<String, ConsentMarketDocument> pair) {
-        var cmd = pair.value();
-        return cmd.getPermissionList().getPermissions().getFirst().getReasonList().getReasons().getFirst()
-                  .getCode() == ReasonCodeTypeList.CANCELLED_EP
-               && cmd.getType() == MessageTypeList.PERMISSION_TERMINATION_DOCUMENT;
+    private static boolean isTerminationMessage(Pair<String, PermissionEnveloppe> pair) {
+        return pair.value()
+                   .getPermissionMarketDocument()
+                   .getPermissionList()
+                   .getPermissions()
+                   .getFirst()
+                   .getReasonList()
+                   .getReasons()
+                   .getFirst()
+                   .getCode() == ReasonCodeTypeList.CANCELLED_EP
+               && pair.value()
+                      .getPermissionMarketDocument()
+                      .getType() == MessageTypeList.PERMISSION_TERMINATION_DOCUMENT;
     }
 
-    private static String getRegionConnectorId(Pair<String, ConsentMarketDocument> cmd) {
-        return Optional.ofNullable(cmd.key())
+    private static String getRegionConnectorId(Pair<String, PermissionEnveloppe> pmd) {
+        return Optional.ofNullable(pmd.key())
                        .orElseGet(() ->
-                                          cmd.value()
+                                          pmd.value()
+                                             .getPermissionMarketDocument()
                                              .getPermissionList()
                                              .getPermissions()
                                              .getFirst()

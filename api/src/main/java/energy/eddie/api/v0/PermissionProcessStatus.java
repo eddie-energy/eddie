@@ -1,7 +1,7 @@
 package energy.eddie.api.v0;
 
 /**
- * Implements the status of the <a href="https://github.com/eddie-energy/eddie/wiki/EDDIE-Consent-Process-Model">Consent Process Model</a>.
+ * Implements the status of the <a href="https://github.com/eddie-energy/eddie/wiki/EDDIE-Permission-Process-Model">Permission Process Model</a>.
  */
 public enum PermissionProcessStatus {
     /**

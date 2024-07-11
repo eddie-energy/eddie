@@ -1,7 +1,7 @@
 package energy.eddie.admin.console.data;
 
-import energy.eddie.api.v0_82.ConsentMarketDocumentServiceInterface;
-import energy.eddie.cim.v0_82.cmd.*;
+import energy.eddie.api.v0_82.PermissionMarketDocumentServiceInterface;
+import energy.eddie.cim.v0_82.pmd.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,41 +18,44 @@ class StatusMessageServiceTest {
     @Mock
     private StatusMessageRepository statusMessageRepository;
     @Mock
-    private ConsentMarketDocumentServiceInterface consentMarketDocumentService;
-    private TestPublisher<ConsentMarketDocument> testPublisher;
+    private PermissionMarketDocumentServiceInterface permissionMarketDocumentService;
+    private TestPublisher<PermissionEnveloppe> testPublisher;
 
     @BeforeEach
     void setUp() {
         testPublisher = TestPublisher.create();
-        when(consentMarketDocumentService.getConsentMarketDocumentStream())
+        when(permissionMarketDocumentService.getPermissionMarketDocumentStream())
                 .thenReturn(testPublisher.flux());
-        new StatusMessageService(statusMessageRepository, consentMarketDocumentService);
+        new StatusMessageService(statusMessageRepository, permissionMarketDocumentService);
     }
 
     @Test
-    void testReceivesValidConsentMarketDocument_saves() {
+    void testReceivesValidPermissionMarketDocument_saves() {
         // Given
-        ConsentMarketDocument cmd = new ConsentMarketDocument()
-                .withMRID("mrid")
-                .withReceiverMarketParticipantMRID(new PartyIDStringComplexType()
-                                                           .withCodingScheme(CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME)
-                                                           .withValue("Enedis"))
-                .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
-                .withPermissionList(new ConsentMarketDocument.PermissionList()
-                                            .withPermissions(new PermissionComplexType()
-                                                                     .withMktActivityRecordList(new PermissionComplexType.MktActivityRecordList()
-                                                                                                        .withMktActivityRecords(
-                                                                                                                new MktActivityRecordComplexType()
-                                                                                                                        .withCreatedDateTime(
-                                                                                                                                "2021-01-01T00:00:00Z")
-                                                                                                                        .withStatus(
-                                                                                                                                StatusTypeList.A05)
-                                                                                                        )
-                                                                     )
-                                            )
+        var pmd = new PermissionEnveloppe()
+                .withPermissionMarketDocument(
+                        new PermissionMarketDocumentComplexType()
+                                .withMRID("mrid")
+                                .withReceiverMarketParticipantMRID(new PartyIDStringComplexType()
+                                                                           .withCodingScheme(CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME)
+                                                                           .withValue("Enedis"))
+                                .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
+                                .withPermissionList(new PermissionMarketDocumentComplexType.PermissionList()
+                                                            .withPermissions(new PermissionComplexType()
+                                                                                     .withMktActivityRecordList(new PermissionComplexType.MktActivityRecordList()
+                                                                                                                        .withMktActivityRecords(
+                                                                                                                                new MktActivityRecordComplexType()
+                                                                                                                                        .withCreatedDateTime(
+                                                                                                                                                "2021-01-01T00:00:00Z")
+                                                                                                                                        .withStatus(
+                                                                                                                                                StatusTypeList.A05)
+                                                                                                                        )
+                                                                                     )
+                                                            )
+                                )
                 );
         // When
-        testPublisher.emit(cmd);
+        testPublisher.emit(pmd);
         testPublisher.complete();
 
         // Then
@@ -67,29 +70,32 @@ class StatusMessageServiceTest {
     }
 
     @Test
-    void testReceivesAiidaConsentMarketDocument() {
+    void testReceivesAiidaPermissionMarketDocument() {
         // Given
-        ConsentMarketDocument cmd = new ConsentMarketDocument()
-                .withMRID("mrid")
-                .withReceiverMarketParticipantMRID(new PartyIDStringComplexType()
-                                                           .withCodingScheme(null)
-                                                           .withValue("Aiida"))
-                .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
-                .withPermissionList(new ConsentMarketDocument.PermissionList()
-                                            .withPermissions(new PermissionComplexType()
-                                                                     .withMktActivityRecordList(new PermissionComplexType.MktActivityRecordList()
-                                                                                                        .withMktActivityRecords(
-                                                                                                                new MktActivityRecordComplexType()
-                                                                                                                        .withCreatedDateTime(
-                                                                                                                                "2021-01-01T00:00:00Z")
-                                                                                                                        .withStatus(
-                                                                                                                                StatusTypeList.A05)
-                                                                                                        )
-                                                                     )
-                                            )
+        var pmd = new PermissionEnveloppe()
+                .withPermissionMarketDocument(
+                        new PermissionMarketDocumentComplexType()
+                                .withMRID("mrid")
+                                .withReceiverMarketParticipantMRID(new PartyIDStringComplexType()
+                                                                           .withCodingScheme(null)
+                                                                           .withValue("Aiida"))
+                                .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
+                                .withPermissionList(new PermissionMarketDocumentComplexType.PermissionList()
+                                                            .withPermissions(new PermissionComplexType()
+                                                                                     .withMktActivityRecordList(new PermissionComplexType.MktActivityRecordList()
+                                                                                                                        .withMktActivityRecords(
+                                                                                                                                new MktActivityRecordComplexType()
+                                                                                                                                        .withCreatedDateTime(
+                                                                                                                                                "2021-01-01T00:00:00Z")
+                                                                                                                                        .withStatus(
+                                                                                                                                                StatusTypeList.A05)
+                                                                                                                        )
+                                                                                     )
+                                                            )
+                                )
                 );
         // When
-        testPublisher.emit(cmd);
+        testPublisher.emit(pmd);
         testPublisher.complete();
 
         // Then

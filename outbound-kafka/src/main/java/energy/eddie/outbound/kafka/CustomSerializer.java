@@ -10,7 +10,7 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0_82.cim.EddieAccountingPointMarketDocument;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
@@ -30,7 +30,7 @@ class CustomSerializer implements Serializer<Object> {
             case ConnectionStatusMessage ignored -> serializeJson(data);
             case EddieValidatedHistoricalDataMarketDocument vhd ->
                     serializeEddieValidatedHistoricalDataMarketDocument(vhd);
-            case ConsentMarketDocument cmd -> serializeConsentMarketDocument(cmd);
+            case PermissionEnveloppe pmd -> serializePermissionMarketDocument(pmd);
             case RawDataMessage rawDataMessage -> serializeRawDataMessage(rawDataMessage);
             case EddieAccountingPointMarketDocument accountingPointMarketDocument ->
                     serializeEddieAccountingPointMarketDocument(accountingPointMarketDocument);
@@ -55,11 +55,11 @@ class CustomSerializer implements Serializer<Object> {
         }
     }
 
-    private byte[] serializeConsentMarketDocument(ConsentMarketDocument cmd) {
+    private byte[] serializePermissionMarketDocument(PermissionEnveloppe pmd) {
         try {
-            return vhdObjectMapper.writeValueAsBytes(cmd);
+            return vhdObjectMapper.writeValueAsBytes(pmd);
         } catch (JsonProcessingException e) {
-            throw new ConsentMarketDocumentSerializationException(e);
+            throw new PermissionMarketDocumentSerializationException(e);
         }
     }
 
@@ -104,8 +104,8 @@ class CustomSerializer implements Serializer<Object> {
         }
     }
 
-    public static class ConsentMarketDocumentSerializationException extends RuntimeException {
-        public ConsentMarketDocumentSerializationException(Throwable cause) {
+    public static class PermissionMarketDocumentSerializationException extends RuntimeException {
+        public PermissionMarketDocumentSerializationException(Throwable cause) {
             super(cause);
         }
     }

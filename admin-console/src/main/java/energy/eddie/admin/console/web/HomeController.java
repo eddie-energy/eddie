@@ -4,7 +4,7 @@ import energy.eddie.admin.console.data.StatusMessage;
 import energy.eddie.admin.console.data.StatusMessageDTO;
 import energy.eddie.admin.console.data.StatusMessageRepository;
 import energy.eddie.api.v0_82.outbound.ManualTermination;
-import energy.eddie.cim.v0_82.cmd.StatusTypeList;
+import energy.eddie.cim.v0_82.pmd.StatusTypeList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

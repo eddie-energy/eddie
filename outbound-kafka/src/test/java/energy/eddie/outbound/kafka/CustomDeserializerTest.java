@@ -1,6 +1,6 @@
 package energy.eddie.outbound.kafka;
 
-import energy.eddie.cim.v0_82.cmd.*;
+import energy.eddie.cim.v0_82.pmd.*;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -32,110 +32,116 @@ class CustomDeserializerTest {
     @Test
     @SuppressWarnings("java:S5961")
         // Mapping logic is sometimes this long
-    void testDeserialize_withValidConsentMarketDocument() {
+    void testDeserialize_withValidPermissionMarketDocument() {
         // Given
+        // language=JSON
         var json = """
-                {
-                  "mrid": "permissionId",
-                  "revisionNumber": "0.82",
-                  "type": "Z04",
-                  "createdDateTime": "2024-01-25T09:09Z",
-                  "description": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
-                  "senderMarketParticipantMRID": {
-                    "codingScheme": "NDK",
-                    "value": "epId"
-                  },
-                  "senderMarketParticipantMarketRoleType": "A20",
-                  "receiverMarketParticipantMRID": {
-                    "codingScheme": "NDK",
-                    "value": "Energinet"
-                  },
-                  "receiverMarketParticipantMarketRoleType": "A50",
-                  "processProcessType": "A55",
-                  "periodTimeInterval": {
-                    "start": "2023-10-27T00:00Z",
-                    "end": "2024-01-24T00:00Z"
-                  },
-                  "permissionList": {
-                    "permissions": [
-                      {
-                        "permissionMRID": "permissionId",
-                        "createdDateTime": "2024-01-25T10:09Z",
-                        "transmissionSchedule": null,
-                        "marketEvaluationPointMRID": {
-                          "codingScheme": "NDK",
-                          "value": "cid"
-                        },
-                        "reasonList": null,
-                        "mktActivityRecordList": {
-                          "mktActivityRecords": [
-                            {
-                              "mrid": "uniqueId",
-                              "createdDateTime": "2024-01-25T09:09Z",
-                              "description": "",
-                              "type": "dk-energinet",
-                              "reason": null,
-                              "name": null,
-                              "status": "CREATED"
-                            }
-                          ]
-                        },
-                        "timeSeriesList": null
-                      }
-                    ]
+                   {
+                     "messageDocumentHeader": null,
+                     "permissionMarketDocument": {
+                       "mrid": "permissionId",
+                       "revisionNumber": "0.82",
+                       "type": "Z04",
+                       "createdDateTime": "2024-01-25T09:09Z",
+                       "description": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                       "senderMarketParticipantMRID": {
+                         "codingScheme": "NDK",
+                         "value": "epId"
+                       },
+                       "senderMarketParticipantMarketRoleType": "A20",
+                       "receiverMarketParticipantMRID": {
+                         "codingScheme": "NDK",
+                         "value": "Energinet"
+                       },
+                       "receiverMarketParticipantMarketRoleType": "A50",
+                       "processProcessType": "A55",
+                       "periodTimeInterval": {
+                         "start": "2023-10-27T00:00Z",
+                         "end": "2024-01-24T00:00Z"
+                       },
+                       "permissionList": {
+                         "permissions": [
+                           {
+                             "permissionMRID": "permissionId",
+                             "createdDateTime": "2024-01-25T10:09Z",
+                             "transmissionSchedule": null,
+                             "marketEvaluationPointMRID": {
+                               "codingScheme": "NDK",
+                               "value": "cid"
+                             },
+                             "reasonList": null,
+                             "mktActivityRecordList": {
+                               "mktActivityRecords": [
+                                 {
+                                   "mrid": "uniqueId",
+                                   "createdDateTime": "2024-01-25T09:09Z",
+                                   "description": "",
+                                   "type": "dk-energinet",
+                                   "reason": null,
+                                   "name": null,
+                                   "status": "CREATED"
+                                 }
+                               ]
+                             },
+                             "timeSeriesList": null
+                           }
+                         ]
+                       }
+                    }
                   }
-                }
                 """;
         var deserializer = new CustomDeserializer();
 
         // When
-        ConsentMarketDocument res = deserializer.deserialize("anyTopic", json.getBytes(StandardCharsets.UTF_8));
+        PermissionEnveloppe res = deserializer.deserialize("anyTopic", json.getBytes(StandardCharsets.UTF_8));
 
         // Then
+        assertNotNull(res);
+        var pmd = res.getPermissionMarketDocument();
         assertAll(
-                () -> assertEquals("permissionId", res.getMRID()),
-                () -> assertEquals("0.82", res.getRevisionNumber()),
-                () -> assertEquals(MessageTypeList.PERMISSION_ADMINISTRATION_DOCUMENT, res.getType()),
-                () -> assertEquals("2024-01-25T09:09Z", res.getCreatedDateTime()),
-                () -> assertEquals("9bd0668f-cc19-40a8-99db-dc2cb2802b17", res.getDescription()),
+                () -> assertEquals("permissionId", pmd.getMRID()),
+                () -> assertEquals("0.82", pmd.getRevisionNumber()),
+                () -> assertEquals(MessageTypeList.PERMISSION_ADMINISTRATION_DOCUMENT, pmd.getType()),
+                () -> assertEquals("2024-01-25T09:09Z", pmd.getCreatedDateTime()),
+                () -> assertEquals("9bd0668f-cc19-40a8-99db-dc2cb2802b17", pmd.getDescription()),
                 () -> assertEquals(RoleTypeList.PARTY_CONNECTED_TO_GRID,
-                                   res.getSenderMarketParticipantMarketRoleType()),
+                                   pmd.getSenderMarketParticipantMarketRoleType()),
                 () -> assertEquals(RoleTypeList.PERMISSION_ADMINISTRATOR,
-                                   res.getReceiverMarketParticipantMarketRoleType()),
-                () -> assertEquals(ProcessTypeList.ACCESS_TO_METERED_DATA, res.getProcessProcessType()),
+                                   pmd.getReceiverMarketParticipantMarketRoleType()),
+                () -> assertEquals(ProcessTypeList.ACCESS_TO_METERED_DATA, pmd.getProcessProcessType()),
                 () -> assertEquals(CodingSchemeTypeList.DENMARK_NATIONAL_CODING_SCHEME,
-                                   res.getSenderMarketParticipantMRID().getCodingScheme()),
-                () -> assertEquals("epId", res.getSenderMarketParticipantMRID().getValue()),
+                                   pmd.getSenderMarketParticipantMRID().getCodingScheme()),
+                () -> assertEquals("epId", pmd.getSenderMarketParticipantMRID().getValue()),
                 () -> assertEquals(CodingSchemeTypeList.DENMARK_NATIONAL_CODING_SCHEME,
-                                   res.getReceiverMarketParticipantMRID().getCodingScheme()),
-                () -> assertEquals("Energinet", res.getReceiverMarketParticipantMRID().getValue()),
-                () -> assertEquals("2023-10-27T00:00Z", res.getPeriodTimeInterval().getStart()),
-                () -> assertEquals("2024-01-24T00:00Z", res.getPeriodTimeInterval().getEnd()),
+                                   pmd.getReceiverMarketParticipantMRID().getCodingScheme()),
+                () -> assertEquals("Energinet", pmd.getReceiverMarketParticipantMRID().getValue()),
+                () -> assertEquals("2023-10-27T00:00Z", pmd.getPeriodTimeInterval().getStart()),
+                () -> assertEquals("2024-01-24T00:00Z", pmd.getPeriodTimeInterval().getEnd()),
                 () -> assertEquals("permissionId",
-                                   res.getPermissionList().getPermissions().getFirst().getPermissionMRID()),
+                                   pmd.getPermissionList().getPermissions().getFirst().getPermissionMRID()),
                 () -> assertEquals("2024-01-25T10:09Z",
-                                   res.getPermissionList().getPermissions().getFirst().getCreatedDateTime()),
-                () -> assertNull(res.getPermissionList().getPermissions().getFirst().getTransmissionSchedule()),
+                                   pmd.getPermissionList().getPermissions().getFirst().getCreatedDateTime()),
+                () -> assertNull(pmd.getPermissionList().getPermissions().getFirst().getTransmissionSchedule()),
                 () -> assertEquals(CodingSchemeTypeList.DENMARK_NATIONAL_CODING_SCHEME,
-                                   res.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID()
-                                           .getCodingScheme()),
+                                   pmd.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID()
+                                      .getCodingScheme()),
                 () -> assertEquals("cid",
-                                   res.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID()
-                                           .getValue()),
-                () -> assertNull(res.getPermissionList().getPermissions().getFirst().getReasonList()),
-                () -> assertNull(res.getPermissionList().getPermissions().getFirst().getTransmissionSchedule()),
-                () -> assertNotNull(res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
-                                            .getMktActivityRecords().getFirst().getMRID()),
-                () -> assertNotNull(res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
-                                            .getMktActivityRecords().getFirst().getCreatedDateTime()),
-                () -> assertEquals("", res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
-                        .getMktActivityRecords().getFirst().getDescription()),
+                                   pmd.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID()
+                                      .getValue()),
+                () -> assertNull(pmd.getPermissionList().getPermissions().getFirst().getReasonList()),
+                () -> assertNull(pmd.getPermissionList().getPermissions().getFirst().getTransmissionSchedule()),
+                () -> assertNotNull(pmd.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
+                                       .getMktActivityRecords().getFirst().getMRID()),
+                () -> assertNotNull(pmd.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
+                                       .getMktActivityRecords().getFirst().getCreatedDateTime()),
+                () -> assertEquals("", pmd.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
+                                          .getMktActivityRecords().getFirst().getDescription()),
                 () -> assertEquals("dk-energinet",
-                                   res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
-                                           .getMktActivityRecords().getFirst().getType()),
+                                   pmd.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
+                                      .getMktActivityRecords().getFirst().getType()),
                 () -> assertEquals(StatusTypeList.A112,
-                                   res.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
-                                           .getMktActivityRecords().getFirst().getStatus())
+                                   pmd.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
+                                      .getMktActivityRecords().getFirst().getStatus())
         );
 
 

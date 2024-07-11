@@ -1,7 +1,8 @@
 package energy.eddie.regionconnector.aiida;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.api.v0.HealthState;
+import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
 import energy.eddie.regionconnector.aiida.services.AiidaPermissionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +24,7 @@ class AiidaRegionConnectorTest {
     private AiidaPermissionService mockService;
     private AiidaRegionConnector connector;
     private final Sinks.Many<ConnectionStatusMessage> statusSink = Sinks.many().multicast().onBackpressureBuffer();
-    private final Sinks.Many<ConsentMarketDocument> documentSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<PermissionEnveloppe> documentSink = Sinks.many().multicast().onBackpressureBuffer();
 
     @BeforeEach
     void setUp() {
@@ -56,8 +57,8 @@ class AiidaRegionConnectorTest {
     }
 
     @Test
-    void close_emitsCompleteOnConsentDocumentFlux() {
-        StepVerifier.create(connector.getConsentMarketDocumentStream())
+    void close_emitsCompleteOnPermissionDocumentFlux() {
+        StepVerifier.create(connector.getPermissionMarketDocumentStream())
                     .then(() -> connector.close())
                     .expectComplete()
                     .verify(Duration.ofSeconds(2));

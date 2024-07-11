@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.fi.fingrid;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
+import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
@@ -15,9 +15,9 @@ import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRe
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
-import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
+import energy.eddie.spring.regionconnector.extensions.cim.v0_82.pmd.CommonPermissionMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientSsl;
 import org.springframework.boot.ssl.SslBundles;
@@ -70,19 +70,19 @@ public class FingridBeanConfiguration {
     }
 
     @Bean
-    public ConsentMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<ConsentMarketDocument> cmdSink) {
-        return new CommonConsentMarketDocumentProvider(cmdSink);
+    public PermissionMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<PermissionEnveloppe> cmdSink) {
+        return new CommonPermissionMarketDocumentProvider(cmdSink);
     }
 
     @Bean
-    public ConsentMarketDocumentMessageHandler<FingridPermissionRequest> cmdMessageHandler(
+    public PermissionMarketDocumentMessageHandler<FingridPermissionRequest> cmdMessageHandler(
             EventBus eventBus,
             FiPermissionRequestRepository fiPermissionRequestRepository,
-            Sinks.Many<ConsentMarketDocument> cmdSink,
+            Sinks.Many<PermissionEnveloppe> cmdSink,
             FingridConfiguration fingridConfiguration,
             CommonInformationModelConfiguration cimConfig
     ) {
-        return new ConsentMarketDocumentMessageHandler<>(
+        return new PermissionMarketDocumentMessageHandler<>(
                 eventBus,
                 fiPermissionRequestRepository,
                 cmdSink,
@@ -94,7 +94,7 @@ public class FingridBeanConfiguration {
     }
 
     @Bean
-    public Sinks.Many<ConsentMarketDocument> cmdSink() {
+    public Sinks.Many<PermissionEnveloppe> cmdSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
 }

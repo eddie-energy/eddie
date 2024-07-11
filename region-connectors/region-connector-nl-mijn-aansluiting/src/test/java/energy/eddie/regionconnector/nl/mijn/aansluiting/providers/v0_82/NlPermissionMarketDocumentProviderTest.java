@@ -4,19 +4,19 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
-class NlConsentMarketDocumentProviderTest {
+class NlPermissionMarketDocumentProviderTest {
 
     @SuppressWarnings("resource")
     @Test
-    void testGetConsentMarketDocumentStream() {
+    void testGetPermissionMarketDocumentStream() {
         // Given
-        var cmdProvider = new NlConsentMarketDocumentProvider(Sinks.many().multicast().onBackpressureBuffer());
+        var pmdProvider = new NlPermissionMarketDocumentProvider(Sinks.many().multicast().onBackpressureBuffer());
 
         // When
-        var res = cmdProvider.getConsentMarketDocumentStream();
+        var res = pmdProvider.getPermissionMarketDocumentStream();
         // Then
         StepVerifier.create(res)
-                    .then(cmdProvider::close)
+                    .then(pmdProvider::close)
                     .verifyComplete();
     }
 }

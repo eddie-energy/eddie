@@ -25,7 +25,7 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
@@ -39,7 +39,7 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
-import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
@@ -137,7 +137,7 @@ public class MijnAansluitingBeanConfig {
     }
 
     @Bean
-    public Sinks.Many<ConsentMarketDocument> consentMarketDocumentSink() {
+    public Sinks.Many<PermissionEnveloppe> permissionMarketDocumentSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
 
@@ -155,19 +155,19 @@ public class MijnAansluitingBeanConfig {
             EventBus eventBus,
             NlPermissionRequestRepository repository,
             Sinks.Many<ConnectionStatusMessage> messages,
-            Sinks.Many<ConsentMarketDocument> consentMarketDocuments,
+            Sinks.Many<PermissionEnveloppe> permissionMarketDocuments,
             MijnAansluitingConfiguration config,
             CommonInformationModelConfiguration cimConfig
     ) {
         return Set.of(
                 new ConnectionStatusMessageHandler<>(eventBus, messages, repository, pr -> ""),
-                new ConsentMarketDocumentMessageHandler<>(eventBus,
-                                                          repository,
-                                                          consentMarketDocuments,
-                                                          config.clientId().getValue(),
-                                                          cimConfig,
+                new PermissionMarketDocumentMessageHandler<>(eventBus,
+                                                             repository,
+                                                             permissionMarketDocuments,
+                                                             config.clientId().getValue(),
+                                                             cimConfig,
                                                           pr -> null,
-                                                          NL_ZONE_ID)
+                                                             NL_ZONE_ID)
         );
     }
 

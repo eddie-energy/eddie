@@ -11,7 +11,7 @@ import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
-import energy.eddie.cim.v0_82.cmd.*;
+import energy.eddie.cim.v0_82.pmd.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -132,110 +132,120 @@ class CustomSerializerTest {
     }
 
     @Test
-    void givenConsentMarketDocument_serializes_asExpected() {
+    void givenPermissionMarketDocument_serializes_asExpected() {
         // Given
+        // language=JSON
         var json = """
                 {
-                  "mrid": "permissionId",
-                  "revisionNumber": "0.82",
-                  "type": "Z04",
-                  "createdDateTime": "2024-01-25T09:09Z",
-                  "description": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
-                  "senderMarketParticipantMRID": {
-                    "codingScheme": "NDK",
-                    "value": "epId"
-                  },
-                  "senderMarketParticipantMarketRoleType": "A20",
-                  "receiverMarketParticipantMRID": {
-                    "codingScheme": "NDK",
-                    "value": "Energinet"
-                  },
-                  "receiverMarketParticipantMarketRoleType": "A50",
-                  "processProcessType": "A55",
-                  "periodTimeInterval": {
-                    "start": "2023-10-27T00:00Z",
-                    "end": "2024-01-24T00:00Z"
-                  },
-                  "permissionList": {
-                    "permissions": [
-                      {
-                        "permissionMRID": "permissionId",
-                        "createdDateTime": "2024-01-25T10:09Z",
-                        "transmissionSchedule": null,
-                        "marketEvaluationPointMRID": {
-                          "codingScheme": "NDK",
-                          "value": "cid"
-                        },
-                        "reasonList": null,
-                        "mktActivityRecordList": {
-                          "mktActivityRecords": [
-                            {
-                              "mrid": "uniqueId",
-                              "createdDateTime": "2024-01-25T09:09Z",
-                              "description": "",
-                              "type": "dk-energinet",
-                              "reason": null,
-                              "name": null,
-                              "status": "CREATED"
-                            }
-                          ]
-                        },
-                        "timeSeriesList": null
+                    "messageDocumentHeader": null,
+                    "permissionMarketDocument":
+                    {
+                      "mrid": "permissionId",
+                      "revisionNumber": "0.82",
+                      "type": "Z04",
+                      "createdDateTime": "2024-01-25T09:09Z",
+                      "description": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                      "senderMarketParticipantMRID": {
+                        "codingScheme": "NDK",
+                        "value": "epId"
+                      },
+                      "senderMarketParticipantMarketRoleType": "A20",
+                      "receiverMarketParticipantMRID": {
+                        "codingScheme": "NDK",
+                        "value": "Energinet"
+                      },
+                      "receiverMarketParticipantMarketRoleType": "A50",
+                      "processProcessType": "A55",
+                      "periodTimeInterval": {
+                        "start": "2023-10-27T00:00Z",
+                        "end": "2024-01-24T00:00Z"
+                      },
+                      "permissionList": {
+                        "permissions": [
+                          {
+                            "permissionMRID": "permissionId",
+                            "createdDateTime": "2024-01-25T10:09Z",
+                            "transmissionSchedule": null,
+                            "marketEvaluationPointMRID": {
+                              "codingScheme": "NDK",
+                              "value": "cid"
+                            },
+                            "timeSeriesList": null,
+                            "mktActivityRecordList": {
+                              "mktActivityRecords": [
+                                {
+                                  "mrid": "uniqueId",
+                                  "createdDateTime": "2024-01-25T09:09Z",
+                                  "description": "",
+                                  "type": "dk-energinet",
+                                  "reason": null,
+                                  "name": null,
+                                  "status": "CREATED"
+                                }
+                              ]
+                            },
+                            "reasonList": null
+                          }
+                        ]
                       }
-                    ]
-                  }
+                    }
                 }
                 """.replace("\n", "")
                    .replace(" ", "");
-        var cmd = new ConsentMarketDocument()
-                .withMRID("permissionId")
-                .withRevisionNumber(V0_82.version())
-                .withType(MessageTypeList.PERMISSION_ADMINISTRATION_DOCUMENT)
-                .withCreatedDateTime("2024-01-25T09:09Z")
-                .withDescription("9bd0668f-cc19-40a8-99db-dc2cb2802b17")
-                .withSenderMarketParticipantMarketRoleType(RoleTypeList.PARTY_CONNECTED_TO_GRID)
-                .withReceiverMarketParticipantMarketRoleType(RoleTypeList.PERMISSION_ADMINISTRATOR)
-                .withProcessProcessType(ProcessTypeList.ACCESS_TO_METERED_DATA)
-                .withSenderMarketParticipantMRID(
-                        new PartyIDStringComplexType()
-                                .withCodingScheme(
-                                        CodingSchemeTypeList.fromValue("NDK")
-                                )
-                                .withValue("epId")
-                )
-                .withReceiverMarketParticipantMRID(
-                        new PartyIDStringComplexType()
-                                .withCodingScheme(
-                                        CodingSchemeTypeList.fromValue("NDK")
-                                )
-                                .withValue("Energinet")
-                )
-                .withPeriodTimeInterval(
-                        new ESMPDateTimeIntervalComplexType()
-                                .withStart("2023-10-27T00:00Z")
-                                .withEnd("2024-01-24T00:00Z")
-                )
-                .withPermissionList(
-                        new ConsentMarketDocument.PermissionList()
-                                .withPermissions(
-                                        new PermissionComplexType()
-                                                .withPermissionMRID("permissionId")
-                                                .withCreatedDateTime("2024-01-25T10:09Z")
-                                                .withTransmissionSchedule(null)
-                                                .withMarketEvaluationPointMRID(
-                                                        new MeasurementPointIDStringComplexType()
-                                                                .withCodingScheme(CodingSchemeTypeList.DENMARK_NATIONAL_CODING_SCHEME)
-                                                                .withValue("cid")
+        var pmd = new PermissionEnveloppe()
+                .withPermissionMarketDocument(
+                        new PermissionMarketDocumentComplexType()
+                                .withMRID("permissionId")
+                                .withRevisionNumber(V0_82.version())
+                                .withType(MessageTypeList.PERMISSION_ADMINISTRATION_DOCUMENT)
+                                .withCreatedDateTime("2024-01-25T09:09Z")
+                                .withDescription("9bd0668f-cc19-40a8-99db-dc2cb2802b17")
+                                .withSenderMarketParticipantMarketRoleType(RoleTypeList.PARTY_CONNECTED_TO_GRID)
+                                .withReceiverMarketParticipantMarketRoleType(RoleTypeList.PERMISSION_ADMINISTRATOR)
+                                .withProcessProcessType(ProcessTypeList.ACCESS_TO_METERED_DATA)
+                                .withSenderMarketParticipantMRID(
+                                        new PartyIDStringComplexType()
+                                                .withCodingScheme(
+                                                        CodingSchemeTypeList.fromValue("NDK")
                                                 )
-                                                .withMktActivityRecordList(
-                                                        new PermissionComplexType.MktActivityRecordList()
-                                                                .withMktActivityRecords(
-                                                                        new MktActivityRecordComplexType()
-                                                                                .withMRID("uniqueId")
-                                                                                .withCreatedDateTime("2024-01-25T09:09Z")
-                                                                                .withDescription("")
-                                                                                .withType("dk-energinet")
-                                                                                .withStatus(StatusTypeList.A112)
+                                                .withValue("epId")
+                                )
+                                .withReceiverMarketParticipantMRID(
+                                        new PartyIDStringComplexType()
+                                                .withCodingScheme(
+                                                        CodingSchemeTypeList.fromValue("NDK")
+                                                )
+                                                .withValue("Energinet")
+                                )
+                                .withPeriodTimeInterval(
+                                        new ESMPDateTimeIntervalComplexType()
+                                                .withStart("2023-10-27T00:00Z")
+                                                .withEnd("2024-01-24T00:00Z")
+                                )
+                                .withPermissionList(
+                                        new PermissionMarketDocumentComplexType.PermissionList()
+                                                .withPermissions(
+                                                        new PermissionComplexType()
+                                                                .withPermissionMRID("permissionId")
+                                                                .withCreatedDateTime("2024-01-25T10:09Z")
+                                                                .withTransmissionSchedule(null)
+                                                                .withMarketEvaluationPointMRID(
+                                                                        new MeasurementPointIDStringComplexType()
+                                                                                .withCodingScheme(CodingSchemeTypeList.DENMARK_NATIONAL_CODING_SCHEME)
+                                                                                .withValue("cid")
+                                                                )
+                                                                .withMktActivityRecordList(
+                                                                        new PermissionComplexType.MktActivityRecordList()
+                                                                                .withMktActivityRecords(
+                                                                                        new MktActivityRecordComplexType()
+                                                                                                .withMRID("uniqueId")
+                                                                                                .withCreatedDateTime(
+                                                                                                        "2024-01-25T09:09Z")
+                                                                                                .withDescription("")
+                                                                                                .withType("dk-energinet")
+                                                                                                .withStatus(
+                                                                                                        StatusTypeList.A112)
+                                                                                )
                                                                 )
                                                 )
                                 )
@@ -243,7 +253,7 @@ class CustomSerializerTest {
         var serializer = new CustomSerializer();
 
         // When
-        var res = serializer.serialize("anyTopic", cmd);
+        var res = serializer.serialize("anyTopic", pmd);
 
         // Then
         assertEquals(json, new String(res, StandardCharsets.UTF_8));

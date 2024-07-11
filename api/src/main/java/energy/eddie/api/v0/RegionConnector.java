@@ -8,7 +8,7 @@ import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentProvider
  * If offers:
  * <ul>
  *     <li>metadata describing the region connector and the supported MDAs</li>
- *     <li>a web-UI component for the consent process</li>
+ *     <li>a web-UI component for the permission process</li>
  *     <li>methods for managing permissions</li>
  * </ul>
  * <p>

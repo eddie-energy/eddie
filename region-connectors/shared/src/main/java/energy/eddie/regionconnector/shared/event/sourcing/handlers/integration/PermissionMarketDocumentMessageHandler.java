@@ -5,8 +5,8 @@ import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.events.InternalPermissionEvent;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
-import energy.eddie.regionconnector.shared.cim.v0_82.IntermediateConsentMarketDocument;
+import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.regionconnector.shared.cim.v0_82.IntermediatePermissionMarketDocument;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
@@ -17,25 +17,26 @@ import reactor.core.publisher.Sinks;
 
 import java.time.ZoneId;
 
-public class ConsentMarketDocumentMessageHandler<T extends PermissionRequest> implements EventHandler<PermissionEvent> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConsentMarketDocumentMessageHandler.class);
+public class PermissionMarketDocumentMessageHandler<T extends PermissionRequest> implements EventHandler<PermissionEvent> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionMarketDocumentMessageHandler.class);
     private final PermissionRequestRepository<T> repository;
-    private final Sinks.Many<ConsentMarketDocument> cmdSink;
+    private final Sinks.Many<PermissionEnveloppe> pmdSink;
     private final TransmissionScheduleProvider<T> transmissionScheduleProvider;
     private final String customerIdentifier;
     private final String countryCode;
     private final ZoneId zoneId;
 
-    public ConsentMarketDocumentMessageHandler(EventBus eventBus,
-                                               PermissionRequestRepository<T> repository,
-                                               Sinks.Many<ConsentMarketDocument> cmdSink,
-                                               String eligiblePartyId,
-                                               CommonInformationModelConfiguration cimConfig,
-                                               TransmissionScheduleProvider<T> transmissionScheduleProvider,
-                                               ZoneId zoneId
+    public PermissionMarketDocumentMessageHandler(
+            EventBus eventBus,
+            PermissionRequestRepository<T> repository,
+            Sinks.Many<PermissionEnveloppe> pmdSink,
+            String eligiblePartyId,
+            CommonInformationModelConfiguration cimConfig,
+            TransmissionScheduleProvider<T> transmissionScheduleProvider,
+            ZoneId zoneId
     ) {
         this.repository = repository;
-        this.cmdSink = cmdSink;
+        this.pmdSink = pmdSink;
         this.customerIdentifier = eligiblePartyId;
         this.countryCode = cimConfig.eligiblePartyNationalCodingScheme().value();
         this.transmissionScheduleProvider = transmissionScheduleProvider;
@@ -53,24 +54,24 @@ public class ConsentMarketDocumentMessageHandler<T extends PermissionRequest> im
         var optionalRequest = repository.findByPermissionId(permissionId);
         if (optionalRequest.isEmpty()) {
             LOGGER.warn("Got event without permission request for permission id {}", permissionId);
-            cmdSink.tryEmitError(new PermissionNotFoundException(permissionId));
+            pmdSink.tryEmitError(new PermissionNotFoundException(permissionId));
             return;
         }
         var permissionRequest = optionalRequest.get();
         try {
-            cmdSink.tryEmitNext(
-                    new IntermediateConsentMarketDocument<>(
+            pmdSink.tryEmitNext(
+                    new IntermediatePermissionMarketDocument<>(
                             permissionRequest,
                             permissionEvent.status(),
                             customerIdentifier,
                             transmissionScheduleProvider,
                             countryCode,
                             zoneId
-                    ).toConsentMarketDocument()
+                    ).toPermissionMarketDocument()
             );
         } catch (RuntimeException exception) {
-            LOGGER.warn("Error while trying to emit ConsentMarketDocument.", exception);
-            cmdSink.tryEmitError(exception);
+            LOGGER.warn("Error while trying to emit PermissionMarketDocument.", exception);
+            pmdSink.tryEmitError(exception);
         }
     }
 }

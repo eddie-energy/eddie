@@ -85,7 +85,7 @@ class OutboundKafkaConfigTest {
                         () -> assertThat(context).hasBean("mvp1ConsumptionRecordOutboundConnector"),
                         () -> assertThat(context).hasBean("mvp1ConnectionStatusMessageOutboundConnector"),
                         () -> assertThat(context).hasBean("eddieValidatedHistoricalDataMarketDocumentOutboundConnector"),
-                        () -> assertThat(context).hasBean("consentMarketDocumentService")
+                        () -> assertThat(context).hasBean("permissionMarketDocumentService")
                 ));
     }
 
@@ -113,9 +113,9 @@ class OutboundKafkaConfigTest {
         }
 
         @Bean
-        public ConsentMarketDocumentService consentMarketDocumentService() {
-            ConsentMarketDocumentService mock = Mockito.mock(ConsentMarketDocumentService.class);
-            when(mock.getConsentMarketDocumentStream()).thenReturn(Flux.empty());
+        public PermissionMarketDocumentService permissionMarketDocumentService() {
+            PermissionMarketDocumentService mock = Mockito.mock(PermissionMarketDocumentService.class);
+            when(mock.getPermissionMarketDocumentStream()).thenReturn(Flux.empty());
             return mock;
         }
 

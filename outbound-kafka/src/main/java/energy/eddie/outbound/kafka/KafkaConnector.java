@@ -6,12 +6,12 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordOutboundConnector;
-import energy.eddie.api.v0_82.ConsentMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.EddieAccountingPointMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentOutboundConnector;
+import energy.eddie.api.v0_82.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.cim.EddieAccountingPointMarketDocument;
 import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -29,7 +29,7 @@ public class KafkaConnector implements
         Mvp1ConnectionStatusMessageOutboundConnector,
         Mvp1ConsumptionRecordOutboundConnector,
         EddieValidatedHistoricalDataMarketDocumentOutboundConnector,
-        ConsentMarketDocumentOutboundConnector,
+        PermissionMarketDocumentOutboundConnector,
         RawDataOutboundConnector,
         EddieAccountingPointMarketDocumentOutboundConnector,
         Closeable {
@@ -56,20 +56,20 @@ public class KafkaConnector implements
     }
 
     @Override
-    public void setConsentMarketDocumentStream(Flux<ConsentMarketDocument> consentMarketDocumentStream) {
-        consentMarketDocumentStream
+    public void setPermissionMarketDocumentStream(Flux<PermissionEnveloppe> permissionMarketDocumentStream) {
+        permissionMarketDocumentStream
                 .publishOn(Schedulers.boundedElastic())
-                .subscribe(this::produceConsentMarketDocument);
+                .subscribe(this::producePermissionMarketDocument);
     }
 
-    private void produceConsentMarketDocument(ConsentMarketDocument consentMarketDocument) {
+    private void producePermissionMarketDocument(PermissionEnveloppe permissionMarketDocument) {
         ProducerRecord<String, Object> toSend = new ProducerRecord<>(
                 "permission-market-documents",
-                consentMarketDocument.getPermissionList().getPermissions().getFirst()
+                permissionMarketDocument.getPermissionMarketDocument().getPermissionList().getPermissions().getFirst()
                                      .getMarketEvaluationPointMRID().getValue(),
-                consentMarketDocument
+                permissionMarketDocument
         );
-        kafkaProducer.send(toSend, new KafkaCallback("Could not produce consent market document"));
+        kafkaProducer.send(toSend, new KafkaCallback("Could not produce permission market document"));
     }
 
     @Override
