@@ -11,6 +11,8 @@ import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
+import java.util.List;
+
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.*;
 import static energy.eddie.spring.regionconnector.extensions.SecurityUtils.mvcRequestMatcher;
 import static energy.eddie.spring.regionconnector.extensions.SecurityUtils.securityFilterChain;
@@ -40,9 +42,8 @@ public class FingridSecurityConfig {
                                    jwtHeaderAuthorizationManager,
                                    corsConfigurationSource,
                                    mapper,
-                                   PATH_PERMISSION_ACCEPTED,
-                                   PATH_PERMISSION_REJECTED,
-                                   "/organisation-information"
+                                   List.of(PATH_PERMISSION_ACCEPTED, PATH_PERMISSION_REJECTED),
+                                   List.of("/organisation-information")
         );
     }
 }
