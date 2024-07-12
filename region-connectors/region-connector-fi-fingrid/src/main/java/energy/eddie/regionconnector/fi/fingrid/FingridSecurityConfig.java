@@ -30,13 +30,13 @@ public class FingridSecurityConfig {
     @ConditionalOnProperty(value = FINGRID_ENABLED_PROPERTY, havingValue = "true")
     @SuppressWarnings("java:S4502")
     public SecurityFilterChain fingridSecurityFilterChain(
-            MvcRequestMatcher.Builder mvcRequestMatcher,
+            MvcRequestMatcher.Builder fingridMvcRequestMatcher,
             HttpSecurity http,
             JwtAuthorizationManager jwtCookieAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper
     ) throws Exception {
-        return securityFilterChain(mvcRequestMatcher,
+        return securityFilterChain(fingridMvcRequestMatcher,
                                    http,
                                    jwtCookieAuthorizationManager,
                                    corsConfigurationSource,
