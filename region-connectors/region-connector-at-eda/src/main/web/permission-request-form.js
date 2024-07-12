@@ -13,8 +13,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     companyId: { attribute: "company-id" },
     accountingPointId: { attribute: "accounting-point-id" },
     _requestId: { type: String },
-    _isPermissionRequestCreated: { type: Boolean },
-    _isPermissionRequestSent: { type: Boolean },
+    _requestStatus: { type: String },
     _isSubmitDisabled: { type: Boolean },
   };
 
@@ -22,32 +21,20 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     super();
 
     this._requestId = "";
-    this._isPermissionRequestCreated = false;
-    this._isPermissionRequestSent = false;
     this._isSubmitDisabled = false;
   }
 
   connectedCallback() {
     super.connectedCallback();
-    this.closest("eddie-request-status-handler").addEventListener(
-      "eddie-request-status",
-      (event) => {
-        const cmRequestId = event.detail.additionalInformation.cmRequestId;
-        this._requestId = cmRequestId ? cmRequestId : "";
-        if (event.detail.status === "SENT_TO_PERMISSION_ADMINISTRATOR") {
-          this._isPermissionRequestSent = true;
-          this._isPermissionRequestCreated = false;
-        } else if (event.detail.status === "CREATED") {
-          this._isPermissionRequestSent = false;
-          this._isPermissionRequestCreated = true;
-        } else if (
-          event.detail.status === "ACCEPTED" ||
-          event.detail.status === "REJECTED"
-        ) {
-          this._isPermissionRequestSent = false;
-        }
-      }
-    );
+    this.addEventListener("eddie-request-status", (event) => {
+      const {
+        additionalInformation: { cmRequestId },
+        status,
+      } = event.detail;
+
+      this._requestId = cmRequestId ?? "";
+      this._requestStatus = status;
+    });
   }
 
   handleSubmit(event) {
@@ -68,12 +55,10 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
     this.createPermissionRequest(jsonData)
       .then(() => {
-        this._isPermissionRequestCreated = true;
+        this._requestStatus = "CREATED";
       })
       .catch((error) => {
         this._isSubmitDisabled = false;
-        this._isPermissionRequestCreated = false;
-        this._isPermissionRequestSent = false;
         this.error(error);
       });
   }
@@ -110,7 +95,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           </div>
         </form>
 
-        ${this._isPermissionRequestCreated && !this._isPermissionRequestSent
+        ${this._requestStatus === "CREATED"
           ? html`<br />
               <sl-alert open>
                 <sl-icon slot="icon" name="info-circle"></sl-icon>
@@ -121,7 +106,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
                 </p>
               </sl-alert>`
           : ""}
-        ${this._isPermissionRequestSent
+        ${this._requestStatus === "SENT_TO_PERMISSION_ADMINISTRATOR"
           ? html`<br />
               <sl-alert open>
                 <sl-icon slot="icon" name="info-circle"></sl-icon>
