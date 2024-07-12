@@ -5,6 +5,7 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.dk.energinet.services.InvalidRefreshTokenException;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionCreationService;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -65,7 +66,7 @@ public class PermissionRequestController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedPermissionRequest> permissionRequest(@Valid @RequestBody PermissionRequestForCreation requestForCreation)
-            throws DataNeedNotFoundException, UnsupportedDataNeedException {
+            throws DataNeedNotFoundException, UnsupportedDataNeedException, InvalidRefreshTokenException {
         var permissionId = permissionCreationService.createPermissionRequest(requestForCreation).permissionId();
         LOGGER.info("New Permission Request with PermissionId: {}", permissionId);
 

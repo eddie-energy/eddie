@@ -9,6 +9,7 @@ import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
 import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
@@ -23,6 +24,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
+import static energy.eddie.regionconnector.dk.energinet.utils.JwtValidations.isValidUntil;
 
 @Service
 public class PermissionCreationService {
@@ -50,7 +52,7 @@ public class PermissionCreationService {
      * @param requestForCreation Dto that contains the necessary information for this permission request.
      * @return The created PermissionRequest
      */
-    public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation requestForCreation) throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation requestForCreation) throws DataNeedNotFoundException, UnsupportedDataNeedException, InvalidRefreshTokenException {
         var permissionId = UUID.randomUUID().toString();
         var dataNeedId = requestForCreation.dataNeedId();
         outbox.commit(new DkCreatedEvent(permissionId,
@@ -71,7 +73,18 @@ public class PermissionCreationService {
             throw new UnsupportedDataNeedException(EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                    dataNeedId, UNSUPPORTED_DATA_NEED_MESSAGE);
         }
-        if (timeframe != null) {
+        if (calculation.permissionTimeframe() != null
+            && !isValidUntil(requestForCreation.refreshToken(), calculation.permissionTimeframe().end())) {
+            outbox.commit(
+                    new DkMalformedEvent(
+                            permissionId,
+                            new AttributeError("refreshToken",
+                                               "Refresh Token is either malformed or is not valid until the end of the requested permission")
+                    )
+            );
+            throw new InvalidRefreshTokenException();
+        }
+        if (dataNeed.get() instanceof ValidatedHistoricalDataDataNeed) {
             createValidatedHistoricalDataEvent(calculation, permissionId, dataNeedId, timeframe);
         } else {
             createAccountingPointMasterDataEvent(permissionId);

@@ -23,10 +23,11 @@ class DkEnerginetTest extends E2eTestSetup {
 
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
 
-        var locator = page.locator("body", new Page.LocatorOptions().setHasText("Status: Invalid Request"));
+        var locator = page.locator("body", new Page.LocatorOptions().setHasText("An error occurred"));
         locator.waitFor(new Locator.WaitForOptions().setTimeout(120_000));  // 2 min
         assertThat(locator).containsText(
-                "Status: Invalid Request The permission request is not formatted correctly or contains semantic errors and is invalid.");
+                "An error occurred Error: Refresh Token is either malformed or is not valid until the end of the requested permission"
+        );
     }
 
     @Test
