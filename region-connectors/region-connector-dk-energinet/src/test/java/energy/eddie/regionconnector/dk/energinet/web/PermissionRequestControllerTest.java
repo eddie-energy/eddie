@@ -13,6 +13,7 @@ import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionEventRe
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableAccountingPointDetails;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
+import energy.eddie.regionconnector.dk.energinet.services.InvalidRefreshTokenException;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionCreationService;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
@@ -23,6 +24,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -44,6 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = {PermissionRequestController.class})
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
+@Import(PermissionRequestControllerAdvice.class)
 class PermissionRequestControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -52,12 +55,16 @@ class PermissionRequestControllerTest {
     @MockBean
     private PermissionCreationService creationService;
     @MockBean
+    @SuppressWarnings("unused")
     private DkPermissionRequestRepository repository;
     @MockBean
+    @SuppressWarnings("unused")
     private DkPermissionEventRepository eventRepository;
     @MockBean
+    @SuppressWarnings("unused")
     private Flux<IdentifiableApiResponse> unusedIdentifiableApiResponseFlux;
     @MockBean
+    @SuppressWarnings("unused")
     private Flux<IdentifiableAccountingPointDetails> unusedIdentifiableMeteringPointDetailsFlux;
     @Autowired
     private ObjectMapper mapper;
@@ -229,6 +236,22 @@ class PermissionRequestControllerTest {
                .andExpect(header().string("Location", is(expectedLocationHeader)));
     }
 
+    @Test
+    void givenInvalidRefreshToken_returnsBadRequest() throws Exception {
+        when(creationService.createPermissionRequest(any()))
+                .thenThrow(new InvalidRefreshTokenException());
+
+        ObjectNode jsonNode = mapper.createObjectNode()
+                                    .put("connectionId", "23")
+                                    .put("meteringPoint", "23")
+                                    .put("dataNeedId", "23")
+                                    .put("refreshToken", "23");
+
+        mockMvc.perform(post("/permission-request")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(mapper.writeValueAsString(jsonNode)))
+               .andExpect(status().isBadRequest());
+    }
     /**
      * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
      * whole core is started. To be able to properly test the controller's error responses, manually add the advice to

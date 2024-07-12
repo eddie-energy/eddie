@@ -37,6 +37,8 @@ dependencies {
 
     implementation(libs.reactor.core)
 
+    implementation(libs.nimbus.oidc)
+
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.reactor.test)

@@ -37,6 +37,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionCreationServiceTest {
+    private static final String VALID_REFRESH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0Ijo1NTE2MjM5MDIyLCJleHAiOjU1MTYyMzkwMjJ9.Gce4NCqCL64_1GvTP7gVzHkyC4kXEG0RAgAfxfNdVno";
+    private static final String INVALID_REFRESH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0Ijo1MTYyMzkwMjIsImV4cCI6NTE2MjM5MDIyfQ.1JANCZUSNrVsGYTN7hcHE3EI3RpycwRwsQvdkv4EV3A";
     @Mock
     private Outbox outbox;
     @Mock
@@ -132,10 +134,33 @@ class PermissionCreationServiceTest {
     }
 
     @Test
-    void testCreatePermissionRequest_emitsValidated() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    void testCreatePermissionRequest_emitsMalformedOnInvalidRefreshToken() {
         // Given
         var request = new PermissionRequestForCreation("cid",
-                                                       "refreshToken",
+                                                       INVALID_REFRESH_TOKEN,
+                                                       "meteringPointId",
+                                                       "dnid");
+        when(dataNeedsService.findById(any()))
+                .thenReturn(Optional.of(vhdDataNeed));
+
+        var now = LocalDate.now(ZoneOffset.UTC);
+        when(calculationService.calculate(vhdDataNeed))
+                .thenReturn(new DataNeedCalculation(true,
+                                                    List.of(Granularity.PT15M),
+                                                    new Timeframe(now, now.plusYears(2)),
+                                                    new Timeframe(now.minusYears(2), now.plusYears(2))));
+        // When
+        // Then
+        assertThrows(InvalidRefreshTokenException.class, () -> service.createPermissionRequest(request));
+        verify(outbox).commit(isA(DkCreatedEvent.class));
+        verify(outbox).commit(isA(DkMalformedEvent.class));
+    }
+
+    @Test
+    void testCreatePermissionRequest_emitsValidated() throws DataNeedNotFoundException, UnsupportedDataNeedException, InvalidRefreshTokenException {
+        // Given
+        var request = new PermissionRequestForCreation("cid",
+                                                       VALID_REFRESH_TOKEN,
                                                        "meteringPointId",
                                                        "dnid");
         var now = LocalDate.now(ZoneOffset.UTC);
@@ -156,7 +181,7 @@ class PermissionCreationServiceTest {
         var created = createdCaptor.getValue();
         assertAll(
                 () -> assertEquals("cid", created.connectionId()),
-                () -> assertEquals("refreshToken", created.refreshToken()),
+                () -> assertEquals(VALID_REFRESH_TOKEN, created.refreshToken()),
                 () -> assertEquals("meteringPointId", created.meteringPointId()),
                 () -> assertEquals("dnid", created.dataNeedId())
         );
@@ -168,10 +193,10 @@ class PermissionCreationServiceTest {
     }
 
     @Test
-    void testCreatePermissionRequest_forAccountingPointDataNeed_emitsValidated() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    void testCreatePermissionRequest_forAccountingPointDataNeed_emitsValidated() throws DataNeedNotFoundException, UnsupportedDataNeedException, InvalidRefreshTokenException {
         // Given
         var request = new PermissionRequestForCreation("cid",
-                                                       "refreshToken",
+                                                       VALID_REFRESH_TOKEN,
                                                        "meteringPointId",
                                                        "dnid");
         var now = LocalDate.now(ZoneOffset.UTC);
@@ -192,7 +217,7 @@ class PermissionCreationServiceTest {
         var created = createdCaptor.getValue();
         assertAll(
                 () -> assertEquals("cid", created.connectionId()),
-                () -> assertEquals("refreshToken", created.refreshToken()),
+                () -> assertEquals(VALID_REFRESH_TOKEN, created.refreshToken()),
                 () -> assertEquals("meteringPointId", created.meteringPointId()),
                 () -> assertEquals("dnid", created.dataNeedId())
         );
