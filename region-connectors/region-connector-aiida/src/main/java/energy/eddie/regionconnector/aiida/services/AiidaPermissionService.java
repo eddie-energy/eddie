@@ -96,7 +96,7 @@ public class AiidaPermissionService {
         outbox.commit(new SimpleEvent(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR));
 
         var handshakeUrl = new UriTemplate(configuration.handshakeUrl()).expand(permissionId).toString();
-        var jwtString = jwtUtil.createAiidaJwt(permissionId);
+        var jwtString = jwtUtil.createJwt(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
 
         return new QrCodeDto(permissionId, dataNeed.name(), handshakeUrl, jwtString);
     }

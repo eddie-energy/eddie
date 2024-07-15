@@ -26,18 +26,20 @@ public class SecurityUtils {
     public static SecurityFilterChain securityFilterChain(
             MvcRequestMatcher.Builder mvcRequestMatcher,
             HttpSecurity http,
-            JwtAuthorizationManager jwtCookieAuthorizationManager,
+            JwtAuthorizationManager jwtHeaderAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper,
-            String... authorizationPaths
+            Iterable<String> authorizationPaths,
+            Iterable<String> publicPaths
     ) throws Exception {
         return http
                 .securityMatcher(mvcRequestMatcher.pattern("/**"))    // apply following rules only to requests of this DispatcherServlet
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> configureAuthorization(mvcRequestMatcher,
-                                                                      jwtCookieAuthorizationManager,
+                                                                      jwtHeaderAuthorizationManager,
                                                                       auth,
-                                                                      authorizationPaths)
+                                                                      authorizationPaths,
+                                                                      publicPaths)
                 )
                 .exceptionHandling(new SecurityExceptionHandler(mapper))
                 .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -47,16 +49,23 @@ public class SecurityUtils {
 
     private static void configureAuthorization(
             MvcRequestMatcher.Builder mvcRequestMatcher,
-            JwtAuthorizationManager jwtCookieAuthorizationManager,
+            JwtAuthorizationManager jwtHeaderAuthorizationManager,
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth,
-            String... paths
+            Iterable<String> authorizationPaths,
+            Iterable<String> publicPaths
     ) {
         auth
                 .requestMatchers(mvcRequestMatcher.pattern(PATH_PERMISSION_REQUEST)).permitAll()
                 .requestMatchers(mvcRequestMatcher.pattern(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)).permitAll();
-        for (String path : paths) {
-            auth.requestMatchers(mvcRequestMatcher.pattern(path)).access(jwtCookieAuthorizationManager);
+
+        for (String path : authorizationPaths) {
+            auth.requestMatchers(mvcRequestMatcher.pattern(path)).access(jwtHeaderAuthorizationManager);
         }
+
+        for (String path : publicPaths) {
+            auth.requestMatchers(mvcRequestMatcher.pattern(path)).permitAll();
+        }
+
         auth
                 .requestMatchers(mvcRequestMatcher.pattern("/" + CE_FILE_NAME)).permitAll()
                 .requestMatchers(mvcRequestMatcher.pattern("/" + SWAGGER_DOC_PATH)).permitAll()

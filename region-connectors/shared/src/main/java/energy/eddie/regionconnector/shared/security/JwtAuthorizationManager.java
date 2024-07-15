@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.shared.security;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,17 +10,13 @@ import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 public class JwtAuthorizationManager implements AuthorizationManager<RequestAuthorizationContext> {
     public static final String BEARER_PREFIX = "Bearer ";
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtAuthorizationManager.class);
     private final JwtUtil jwtUtil;
-    private final JwtSource jwtSource;
 
     /**
      * Creates a new {@link AuthorizationManager} that enforces authorization by checking the JWT that is supplied with
@@ -35,20 +30,15 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
      * The JWT's signature is validated to prevent the acceptance of tampered tokens.
      *
      * @param jwtUtil   {@link JwtUtil} used to parse and validate the JWTs.
-     * @param jwtSource Where to read the JWT from.
      */
-    public JwtAuthorizationManager(JwtUtil jwtUtil, JwtSource jwtSource) {
+    public JwtAuthorizationManager(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
-        this.jwtSource = jwtSource;
     }
 
     @Override
     public AuthorizationDecision check(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
         String requestURI = context.getRequest().getRequestURI();
-        String jwt = switch (jwtSource) {
-            case COOKIE -> getJwtFromCookie(context.getRequest());
-            case HEADER -> getJwtFromHeader(context.getRequest());
-        };
+        String jwt = getJwtFromHeader(context.getRequest());
 
         var permissions = jwtUtil.getPermissions(jwt);
 
@@ -75,28 +65,6 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
         }
 
         return new AuthorizationDecision(true);
-    }
-
-    /**
-     * Reads and returns the JWT stored in the cookie named {@value JwtUtil#JWT_COOKIE_NAME}.
-     *
-     * @throws AccessDeniedException Thrown if the cookie is not present.
-     */
-    private String getJwtFromCookie(HttpServletRequest request) throws AccessDeniedException {
-        Optional<Cookie> jwtCookie = Optional.ofNullable(request.getCookies())
-                                             .map(Arrays::asList)
-                                             .orElse(Collections.emptyList())
-                                             .stream()
-                                             .filter(cookie -> cookie.getName().equals(JwtUtil.JWT_COOKIE_NAME))
-                                             .findFirst();
-
-        if (jwtCookie.isEmpty()) {
-            LOGGER.trace("Denying authorization for request URI {} because no JWT cookie was included in the request",
-                         request.getRequestURI());
-            throw new AccessDeniedException("No JWT cookie provided");
-        }
-
-        return jwtCookie.get().getValue();
     }
 
     /**

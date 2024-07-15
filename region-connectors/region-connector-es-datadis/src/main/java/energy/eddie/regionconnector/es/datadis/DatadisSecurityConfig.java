@@ -11,6 +11,8 @@ import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
+import java.util.List;
+
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_ACCEPTED;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REJECTED;
 import static energy.eddie.spring.regionconnector.extensions.SecurityUtils.mvcRequestMatcher;
@@ -31,16 +33,16 @@ public class DatadisSecurityConfig {
     public SecurityFilterChain datadisSecurityFilterChain(
             MvcRequestMatcher.Builder datadisMvcRequestMatcher,
             HttpSecurity http,
-            JwtAuthorizationManager jwtCookieAuthorizationManager,
+            JwtAuthorizationManager jwtHeaderAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper
     ) throws Exception {
         return securityFilterChain(datadisMvcRequestMatcher,
                                    http,
-                                   jwtCookieAuthorizationManager,
+                                   jwtHeaderAuthorizationManager,
                                    corsConfigurationSource,
                                    mapper,
-                                   PATH_PERMISSION_ACCEPTED,
-                                   PATH_PERMISSION_REJECTED);
+                                   List.of(PATH_PERMISSION_ACCEPTED, PATH_PERMISSION_REJECTED),
+                                   List.of());
     }
 }

@@ -56,8 +56,6 @@ class PermissionControllerTest {
     private EsPermissionRequestRepository unusedMockRepository;
     @MockBean
     private EsPermissionEventRepository unusedPermissionEventRepository;
-    @SpyBean
-    private JwtUtil spyJwtUtil;
 
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {
@@ -216,7 +214,7 @@ class PermissionControllerTest {
     void requestPermission_validInput_returnsCreatedAndSetsHeader() throws Exception {
         // Given
         var testPermissionId = "MyTestId";
-        when(mockService.createAndSendPermissionRequest(any())).thenReturn(new CreatedPermissionRequest(testPermissionId));
+        when(mockService.createAndSendPermissionRequest(any())).thenReturn(new CreatedPermissionRequest(testPermissionId, ""));
 
 
         ObjectNode jsonNode = mapper.createObjectNode()
@@ -243,12 +241,7 @@ class PermissionControllerTest {
     void givenJwtCreationFailedException_returnsInternalServerError() throws Exception {
         // Given
         var testPermissionId = "MyTestId";
-        when(mockService.createAndSendPermissionRequest(any())).thenReturn(new CreatedPermissionRequest(testPermissionId));
-        doThrow(mock(JwtCreationFailedException.class)).when(spyJwtUtil).setJwtCookie(any(),
-                                                                                      any(),
-                                                                                      anyString(),
-                                                                                      anyString());
-
+        when(mockService.createAndSendPermissionRequest(any())).thenThrow(mock(JwtCreationFailedException.class));
 
         ObjectNode jsonNode = mapper.createObjectNode()
                                     .put("connectionId", "ConnId")
@@ -256,8 +249,7 @@ class PermissionControllerTest {
                                     .put("dataNeedId", "BLA_BLU_BLE")
                                     .put("nif", "NOICE");
 
-        mockMvc.perform(post("/permission-request").content(mapper.writeValueAsString(
-                                                           jsonNode))
+        mockMvc.perform(post("/permission-request").content(mapper.writeValueAsString(jsonNode))
                                                    .contentType(MediaType.APPLICATION_JSON)
                                                    .accept(MediaType.APPLICATION_JSON))
                // Then

@@ -40,12 +40,14 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
     this._isSubmitDisabled = true;
 
-    this.createPermissionRequest(payload, {
-      credentials: "include",
-    })
+    this.createPermissionRequest(payload)
       .then((result) => {
-        this._isPermissionRequestCreated = true;
+        this.organisationData();
+
         this.permissionId = result["permissionId"];
+        this.accessToken = result["accessToken"];
+
+        this._isPermissionRequestCreated = true;
       })
       .catch((error) => {
         this._isSubmitDisabled = false;
@@ -55,13 +57,14 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
   connectedCallback() {
     super.connectedCallback();
-    this.organisationData();
   }
 
   accepted() {
-    fetch(this.REQUEST_URL + `/${this.permissionId}/accepted`, {
+    fetch(`${this.REQUEST_URL}/${this.permissionId}/accepted`, {
       method: "PATCH",
-      credentials: "include",
+      headers: {
+        Authorization: "Bearer " + this.accessToken,
+      },
     })
       .then(() => {
         this._areResponseButtonsDisabled = true;
@@ -70,9 +73,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   }
 
   rejected() {
-    fetch(this.REQUEST_URL + `/${this.permissionId}/rejected`, {
+    fetch(`${this.REQUEST_URL}/${this.permissionId}/rejected`, {
       method: "PATCH",
-      credentials: "include",
+      headers: {
+        Authorization: "Bearer " + this.accessToken,
+      },
     })
       .then(() => {
         this._areResponseButtonsDisabled = true;
@@ -81,7 +86,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   }
 
   organisationData() {
-    fetch(this.BASE_URL + `/organisation-information`)
+    fetch(`${this.BASE_URL}/organisation-information`)
       .then((response) => response.json())
       .then((body) => {
         this._organisationUser = body.organisationUser;

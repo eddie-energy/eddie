@@ -115,7 +115,7 @@ class AiidaPermissionServiceTest {
         var end = start.plusDays(24);
         when(mockDataNeed.name()).thenReturn("Test Service");
         when(mockDataNeedsService.findById(anyString())).thenReturn(Optional.of(mockDataNeed));
-        when(mockJwtUtil.createAiidaJwt(anyString())).thenReturn("myToken");
+        when(mockJwtUtil.createJwt(eq("aiida"), anyString())).thenReturn("myToken");
         when(calculationService.calculate(mockDataNeed))
                 .thenReturn(new DataNeedCalculation(
                         true,

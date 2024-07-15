@@ -8,7 +8,6 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,22 +21,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.text.ParseException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.shared.security.JwtUtil.JWS_ALGORITHM;
 import static energy.eddie.regionconnector.shared.security.JwtUtil.JWT_PERMISSIONS_CLAIM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class JwtUtilTest {
@@ -47,8 +39,6 @@ class JwtUtilTest {
     private HttpServletRequest mockRequest;
     @Mock
     private HttpServletResponse mockResponse;
-    @Mock
-    private Cookie mockCookie;
     private DefaultJWTProcessor<SecurityContext> processor;
 
     public static Stream<Arguments> invalidJwtSource() {
@@ -128,46 +118,12 @@ class JwtUtilTest {
     }
 
     @Test
-    void setJwtCookie_addsExistingAndNewPermissionIds() throws JwtCreationFailedException {
-        // Given
-        String existingJwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTI1NjAyMTIsInBlcm1pc3Npb25zIjp7InRlc3QtcmMiOlsiZm9vIiwiYmFyIl19fQ.pb9lkYbzK2JTY9HkRlgb8LBZg35baS_F54kAOE4DD_Y";
-        when(mockCookie.getValue()).thenReturn(existingJwt);
-        when(mockCookie.getName()).thenReturn(JwtUtil.JWT_COOKIE_NAME);
-        when(mockRequest.getCookies()).thenReturn(new Cookie[]{mockCookie});
-
-        // When
-        jwtUtil.setJwtCookie(mockRequest, mockResponse, "test-rc", "newPermissionId");
-
-        // Then existing and new permissionId are contained
-        verify(mockResponse).setHeader(eq("Set-Cookie"), argThat(setCookieString -> {
-            var jwt = setCookieString.substring(JwtUtil.JWT_COOKIE_NAME.length() + 1, setCookieString.indexOf(';'));
-            AtomicReference<JWTClaimsSet> claimsSet = new AtomicReference<>();
-
-            assertDoesNotThrow(() -> claimsSet.set(processor.process(jwt, null)));
-            assertNotNull(claimsSet.get());
-            //noinspection unchecked
-            Map<String, List<String>> permissions = (Map<String, List<String>>) claimsSet.get()
-                                                                                         .getClaim(JWT_PERMISSIONS_CLAIM);
-
-            assertEquals(1, permissions.size());
-            assertEquals(3, permissions.get("test-rc").size());
-            assertThat(permissions.get("test-rc")).hasSameElementsAs(List.of("foo", "bar", "newPermissionId"));
-
-            var issueTime = claimsSet.get().getIssueTime();
-            assertThat(issueTime).isBefore(Instant.now());
-            assertThat(claimsSet.get().getExpirationTime()).isEqualTo(issueTime.toInstant().plus(24, ChronoUnit.HOURS));
-
-            return true;
-        }));
-    }
-
-    @Test
-    void createAiidaJwt_returnsJwtWithOnlyNewPermissionId() throws JwtCreationFailedException, BadJOSEException, ParseException, JOSEException {
+    void createJwt_returnsJwtWithOnlyNewPermissionId() throws JwtCreationFailedException, BadJOSEException, ParseException, JOSEException {
         // Given
         String newPermissionId = "myTestId";
 
         // When
-        String jwt = jwtUtil.createAiidaJwt(newPermissionId);
+        var jwt = jwtUtil.createJwt("aiida", newPermissionId);
 
         // Then
         JWTClaimsSet claims = processor.process(jwt, null);

@@ -8,6 +8,7 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.fi.fingrid.FingridRegionConnectorMetadata;
 import energy.eddie.regionconnector.fi.fingrid.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.CreatedEvent;
@@ -16,7 +17,9 @@ import energy.eddie.regionconnector.fi.fingrid.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.ValidatedEvent;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import energy.eddie.regionconnector.shared.security.JwtUtil;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,20 +40,23 @@ public class PermissionCreationService {
     private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
     private final DataNeedsService dataNeedsService;
     private final FiPermissionRequestRepository permissionRequestRepository;
+    private final JwtUtil jwtUtil;
 
     public PermissionCreationService(
             Outbox outbox,
             DataNeedCalculationService<DataNeed> dataNeedCalculationService,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
-            FiPermissionRequestRepository permissionRequestRepository
+            FiPermissionRequestRepository permissionRequestRepository,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") JwtUtil jwtUtil
     ) {
         this.outbox = outbox;
         this.dataNeedCalculationService = dataNeedCalculationService;
         this.dataNeedsService = dataNeedsService;
         this.permissionRequestRepository = permissionRequestRepository;
+        this.jwtUtil = jwtUtil;
     }
 
-    public CreatedPermissionRequest createAndValidatePermissionRequest(PermissionRequestForCreation permissionRequest) throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    public CreatedPermissionRequest createAndValidatePermissionRequest(PermissionRequestForCreation permissionRequest) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         String permissionId = UUID.randomUUID().toString();
         LOGGER.info("Creating permission request with id {}", permissionId);
         outbox.commit(new CreatedEvent(permissionId,
@@ -92,7 +98,10 @@ public class PermissionCreationService {
                                          calculation.energyDataTimeframe().start(),
                                          calculation.energyDataTimeframe().end()
         ));
-        return new CreatedPermissionRequest(permissionId);
+
+        var accessToken = jwtUtil.createJwt(FingridRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
+
+        return new CreatedPermissionRequest(permissionId, accessToken);
     }
 
     @Transactional(value = Transactional.TxType.REQUIRES_NEW)

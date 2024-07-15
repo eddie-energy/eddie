@@ -22,7 +22,9 @@ import energy.eddie.regionconnector.es.datadis.permission.events.EsValidatedEven
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import energy.eddie.regionconnector.shared.security.JwtUtil;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +43,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID;
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -63,6 +66,8 @@ class PermissionRequestServiceTest {
     private Outbox outbox;
     @Mock
     private DataNeedCalculationService<DataNeed> calculationService;
+    @Mock
+    private JwtUtil jwtUtil;
     @InjectMocks
     private PermissionRequestService service;
     @Captor
@@ -221,7 +226,7 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void createAndSendPermissionRequest_emitsCreatedAndValidated() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    void createAndSendPermissionRequest_emitsCreatedAndValidated() throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         // Given
         var creationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
         when(dataNeedsService.findById(any())).thenReturn(Optional.of(validatedHistoricalDataDataNeed));
@@ -233,6 +238,7 @@ class PermissionRequestServiceTest {
                         new Timeframe(now, now),
                         new Timeframe(now, now)
                 ));
+        when(jwtUtil.createJwt(eq(REGION_CONNECTOR_ID), anyString())).thenReturn("");
 
         // When
         service.createAndSendPermissionRequest(creationRequest);
@@ -248,7 +254,7 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void createAndSendPermissionRequest_emitsCreatedAndValidated_forAccountingPointDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    void createAndSendPermissionRequest_emitsCreatedAndValidated_forAccountingPointDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         // Given
         ArgumentCaptor<EsCreatedEvent> createdCaptor = ArgumentCaptor.forClass(EsCreatedEvent.class);
         ArgumentCaptor<EsValidatedEvent> validatedCaptor = ArgumentCaptor.forClass(EsValidatedEvent.class);
