@@ -9,14 +9,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class GreenButtonClient implements GreenButtonApi {
     private static final String SERVICE_STATUS = "ServiceStatusApi";
     private final WebClient webClient;
     private final GreenButtonConfiguration configuration;
-    private final Map<String, HealthState> healthChecks = new HashMap<>();
 
     public GreenButtonClient(WebClient webClient, GreenButtonConfiguration configuration) {
         this.webClient = webClient;
@@ -36,11 +34,9 @@ public class GreenButtonClient implements GreenButtonApi {
     public Mono<Map<String, HealthState>> health() {
         return readServiceStatus().map(serviceStatus -> {
             if (Status.fromValue(serviceStatus.getCurrentStatus()).equals(Status.UNAVAILABLE)) {
-                healthChecks.put(SERVICE_STATUS, HealthState.DOWN);
-            } else {
-                healthChecks.put(SERVICE_STATUS, HealthState.UP);
+                return Map.of(SERVICE_STATUS, HealthState.DOWN);
             }
-            return healthChecks;
+            return Map.of(SERVICE_STATUS, HealthState.UP);
         });
     }
 }

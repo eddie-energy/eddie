@@ -59,6 +59,7 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
         created = null;
     }
 
+    @SuppressWarnings("unused")
     public GreenButtonPermissionRequest(
             String permissionId,
             String connectionId,

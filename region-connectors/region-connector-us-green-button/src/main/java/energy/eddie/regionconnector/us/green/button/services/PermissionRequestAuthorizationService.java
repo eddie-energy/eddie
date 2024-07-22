@@ -95,17 +95,18 @@ public class PermissionRequestAuthorizationService {
                                                     clientSecret);
         var accessTokenRequest = new AccessTokenWithCodeRequest(code, greenButtonConfiguration.redirectUrl());
 
-        LOGGER.info("Requesting access token access token {}", accessTokenRequest);
-
         oauthTokenClient.accessToken(accessTokenRequest)
-                        .subscribe(o -> handleAccessTokenResponse(o,
-                                                                  permissionId,
-                                                                  permissionRequest.scope().orElseThrow()));
+                        .subscribe(accessTokenResponse -> handleAccessTokenResponse(accessTokenResponse,
+                                                                                    permissionId,
+                                                                                    permissionRequest.scope()
+                                                                                                     .orElseThrow()));
     }
 
     private void handleAccessTokenResponse(AccessTokenResponse accessToken, String permissionId, String originalScope) {
-        LOGGER.info("Received access token {}", accessToken);
-        if (accessToken.getScope().equals(originalScope)) {
+        if (!accessToken.getScope().equals(originalScope)) {
+            // Scope was changed by the client
+            outbox.commit(new UsInvalidEvent(permissionId, OAuthErrorResponse.INVALID_SCOPE));
+        } else {
             // Scope is the same as requested
             outbox.commit(new UsSimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
 
@@ -116,9 +117,6 @@ public class PermissionRequestAuthorizationService {
                                                      tokenIssued.plusSeconds(accessToken.getExpiresIn()),
                                                      accessToken.getRefreshToken());
             oAuthTokenRepository.save(tokenDetails);
-        } else {
-            // Scope was changed by the client
-            outbox.commit(new UsInvalidEvent(permissionId, OAuthErrorResponse.INVALID_SCOPE));
         }
     }
 }
