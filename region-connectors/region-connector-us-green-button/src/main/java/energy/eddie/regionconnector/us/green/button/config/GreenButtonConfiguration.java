@@ -10,7 +10,7 @@ public class GreenButtonConfiguration {
     private final String basePath;
     private final Map<String, String> clientIds;
     private final Map<String, String> clientSecrets;
-    private final String redirectUrl;
+    private final String redirectUri;
 
     @SuppressWarnings("java:S107")
     // Config class is only instantiated by spring
@@ -19,13 +19,13 @@ public class GreenButtonConfiguration {
             String basePath,
             Map<String, String> clientIds,
             Map<String, String> clientSecrets,
-            String redirectUrl
+            String redirectUri
     ) {
         this.apiToken = apiToken;
         this.basePath = basePath;
         this.clientIds = clientIds;
         this.clientSecrets = clientSecrets;
-        this.redirectUrl = redirectUrl;
+        this.redirectUri = redirectUri;
     }
 
     public String apiToken() {return apiToken;}
@@ -36,5 +36,5 @@ public class GreenButtonConfiguration {
 
     public Map<String, String> clientSecrets() {return clientSecrets;}
 
-    public String redirectUrl() {return redirectUrl;}
+    public String redirectUri() {return redirectUri;}
 }

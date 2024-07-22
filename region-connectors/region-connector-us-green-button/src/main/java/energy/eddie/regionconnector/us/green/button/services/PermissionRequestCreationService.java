@@ -158,7 +158,7 @@ public class PermissionRequestCreationService {
                                    .queryParam("client_id", UriUtils.encode(clientId, StandardCharsets.UTF_8))
                                    .queryParam("state", UriUtils.encode(permissionId, StandardCharsets.UTF_8))
                                    .queryParam("redirect_uri",
-                                               UriUtils.encode(configuration.redirectUrl(), StandardCharsets.UTF_8))
+                                               UriUtils.encode(configuration.redirectUri(), StandardCharsets.UTF_8))
                                    .queryParam("scope", UriUtils.encode(scope, StandardCharsets.UTF_8))
                                    .build(true)
                                    .toUri();
