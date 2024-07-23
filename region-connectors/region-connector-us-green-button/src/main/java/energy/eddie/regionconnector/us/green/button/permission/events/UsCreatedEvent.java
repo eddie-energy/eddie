@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.us.green.button.permission.events;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonDataSourceInformation;
+import energy.eddie.regionconnector.us.green.button.permission.GreenButtonDataSourceInformation;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;

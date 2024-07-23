@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.us.green.button.permission.request;
+package energy.eddie.regionconnector.us.green.button.permission;
 
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.regionconnector.us.green.button.GreenButtonRegionConnectorMetadata;
@@ -39,5 +39,15 @@ public class GreenButtonDataSourceInformation implements DataSourceInformation {
     @Override
     public String permissionAdministratorId() {
         return dsoId;
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public final boolean equals(Object obj) {
+        return obj instanceof GreenButtonDataSourceInformation;
     }
 }

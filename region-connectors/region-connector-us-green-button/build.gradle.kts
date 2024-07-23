@@ -36,8 +36,16 @@ dependencies {
     jaxb(libs.jaxb.runtime)
     jaxb(libs.jaxb.plugins)
 
-
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.reactor.test)
+    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.testcontainers.junit)
+    testImplementation(libs.spring.boot.testcontainers)
+    testImplementation(libs.flyway.core)
+    testImplementation(libs.flyway.postgresql)
+    testImplementation(libs.okhttp3.mockwebserver)
+
+    testRuntimeOnly(libs.postgresql)
 }
 
 // Directory for generated java files

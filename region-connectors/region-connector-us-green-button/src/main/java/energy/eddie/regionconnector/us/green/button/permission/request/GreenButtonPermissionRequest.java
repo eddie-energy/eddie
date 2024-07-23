@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.us.green.button.permission.request;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.us.green.button.permission.GreenButtonDataSourceInformation;
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
