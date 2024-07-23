@@ -5,12 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-public record StatusMessageDTO(
-        @JsonProperty String country,
-        @JsonProperty String dso,
-        @JsonProperty String permissionId,
-        @JsonProperty String startDate,
-        @JsonProperty String status) {
+public record StatusMessageDTO(@JsonProperty String permissionId,
+                               @JsonProperty String regionConnectorId,
+                               @JsonProperty String country,
+                               @JsonProperty String dso,
+                               @JsonProperty String startDate,
+                               @JsonProperty String status) {
 
     public ZonedDateTime getParsedStartDate() {
         DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;

@@ -3,6 +3,7 @@ package energy.eddie.admin.console.web;
 import energy.eddie.admin.console.data.StatusMessage;
 import energy.eddie.admin.console.data.StatusMessageDTO;
 import energy.eddie.admin.console.data.StatusMessageRepository;
+import energy.eddie.api.v0_82.outbound.ManualTermination;
 import energy.eddie.cim.v0_82.cmd.StatusTypeList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.List;
 public class HomeController {
 
     private final StatusMessageRepository statusMessageRepository;
+    private final ManualTermination terminationConnector;
     private static final List<String> NON_TERMINATABLE_STATUSES = Arrays.asList(
             "Cancelled",
             "Deactivated",
@@ -38,8 +41,9 @@ public class HomeController {
     );
 
     @Autowired
-    public HomeController(StatusMessageRepository statusMessageRepository) {
+    public HomeController(StatusMessageRepository statusMessageRepository, ManualTermination terminationConnector) {
         this.statusMessageRepository = statusMessageRepository;
+        this.terminationConnector = terminationConnector;
     }
 
     @GetMapping("/")
@@ -61,9 +65,10 @@ public class HomeController {
                     }
 
                     return new StatusMessageDTO(
+                            statusMessage.getPermissionId(),
+                            statusMessage.getRegionConnectorId(),
                             country,
                             statusMessage.getDso(),
-                            statusMessage.getPermissionId(),
                             statusMessage.getStartDate(),
                             status);
                 })
@@ -78,9 +83,8 @@ public class HomeController {
 
     @GetMapping("/statusMessages/{permissionId}")
     public ResponseEntity<List<StatusMessageDTO>> getStatusMessages(@PathVariable String permissionId) {
-        List<StatusMessage> statusMessages = statusMessageRepository.findByPermissionIdOrderByStartDateDesc(permissionId);
+        List<StatusMessage> statusMessages = statusMessageRepository.findByPermissionIdOrderByStartDateDescIdDesc(permissionId);
 
-        // Convert the status codes to their display values and map to DTO
         List<StatusMessageDTO> statusMessageDTOs = statusMessages.stream()
                 .map(statusMessage -> {
                     String status;
@@ -91,9 +95,10 @@ public class HomeController {
                     }
 
                     return new StatusMessageDTO(
+                            statusMessage.getPermissionId(),
+                            statusMessage.getRegionConnectorId(),
                             statusMessage.getCountry(),
                             statusMessage.getDso(),
-                            statusMessage.getPermissionId(),
                             statusMessage.getStartDate(),
                             status
                     );
@@ -101,5 +106,13 @@ public class HomeController {
                 .toList();
 
         return ResponseEntity.ok(statusMessageDTOs);
+    }
+
+    @PostMapping("/terminate/{permissionId}")
+    public ResponseEntity<Void> terminatePermission(@PathVariable String permissionId) {
+        List<StatusMessage> statusMessages = statusMessageRepository.findByPermissionIdOrderByStartDateDescIdDesc(permissionId);
+        String regionConnectorId = statusMessages.getFirst().getRegionConnectorId();
+        terminationConnector.terminate(permissionId, regionConnectorId);
+        return ResponseEntity.ok().build();
     }
 }

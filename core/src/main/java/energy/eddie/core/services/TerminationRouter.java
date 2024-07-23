@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * This service routes termination messages between the region connectors. It does that by either using a
@@ -25,17 +26,17 @@ public class TerminationRouter {
     private static final Logger LOGGER = LoggerFactory.getLogger(TerminationRouter.class);
     private final Map<String, RegionConnector> regionConnectors = new HashMap<>();
 
-    public TerminationRouter(Optional<TerminationConnector> terminationConnectorOptional) {
-        if (terminationConnectorOptional.isEmpty()) {
-            LOGGER.warn(
-                    "No instance of TerminationConnector found in context, therefore no way that terminations can be received by the core.");
+    public TerminationRouter(Set<TerminationConnector> terminationConnectorSet) {
+        if (terminationConnectorSet.isEmpty()) {
+            LOGGER.warn("No instance of TerminationConnector found in context, therefore no way that terminations can be received by the core.");
             return;
         }
 
-        var terminationConnector = terminationConnectorOptional.get();
-        terminationConnector.getTerminationMessages()
-                            .doOnError(e -> LOGGER.error("Error in TerminationRouter", e))
-                            .subscribe(this::route);
+        for (var terminationConnector : terminationConnectorSet) {
+            terminationConnector.getTerminationMessages()
+                    .doOnError(e -> LOGGER.error("Error in TerminationRouter", e))
+                    .subscribe(this::route);
+        }
     }
 
     private void route(Pair<String, ConsentMarketDocument> cmd) {
