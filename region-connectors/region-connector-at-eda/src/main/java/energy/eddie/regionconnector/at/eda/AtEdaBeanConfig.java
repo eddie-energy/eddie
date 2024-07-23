@@ -233,7 +233,13 @@ public class AtEdaBeanConfig {
             Sinks.Many<ConnectionStatusMessage> messages,
             AtPermissionRequestRepository repository
     ) {
-        return new ConnectionStatusMessageHandler<>(eventBus, messages, repository, AtPermissionRequest::message);
+        return new ConnectionStatusMessageHandler<>(
+                eventBus,
+                messages,
+                repository,
+                AtPermissionRequest::message,
+                pr -> objectMapper().createObjectNode().put("cmRequestId", pr.cmRequestId())
+        );
     }
 
     @Bean
