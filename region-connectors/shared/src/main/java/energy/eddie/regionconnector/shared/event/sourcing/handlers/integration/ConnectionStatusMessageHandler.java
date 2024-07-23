@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.shared.event.sourcing.handlers.integration;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.events.InternalPermissionEvent;
@@ -18,17 +19,30 @@ public class ConnectionStatusMessageHandler<T extends PermissionRequest> impleme
     private final Sinks.Many<ConnectionStatusMessage> messages;
     private final PermissionRequestRepository<T> repository;
     private final Function<T, String> messageFunc;
+    private final Function<T, JsonNode> additionalDataFunc;
 
-    public ConnectionStatusMessageHandler(EventBus eventBus,
-                                          Sinks.Many<ConnectionStatusMessage> messages,
-                                          PermissionRequestRepository<T> repository,
-                                          Function<T, String> messageFunc
+    public ConnectionStatusMessageHandler(
+            EventBus eventBus,
+            Sinks.Many<ConnectionStatusMessage> messages,
+            PermissionRequestRepository<T> repository,
+            Function<T, String> messageFunc,
+            Function<T, JsonNode> additionalDataFunc
     ) {
         this.messages = messages;
         this.repository = repository;
         this.messageFunc = messageFunc;
+        this.additionalDataFunc = additionalDataFunc;
         eventBus.filteredFlux(PermissionEvent.class)
                 .subscribe(this::accept);
+    }
+
+    public ConnectionStatusMessageHandler(
+            EventBus eventBus,
+            Sinks.Many<ConnectionStatusMessage> messages,
+            PermissionRequestRepository<T> repository,
+            Function<T, String> messageFunc
+    ) {
+        this(eventBus, messages, repository, messageFunc, permissionRequest -> null);
     }
 
     @Override
@@ -50,7 +64,8 @@ public class ConnectionStatusMessageHandler<T extends PermissionRequest> impleme
                         permissionRequest.dataNeedId(),
                         permissionRequest.dataSourceInformation(),
                         permissionEvent.status(),
-                        messageFunc.apply(permissionRequest)
+                        messageFunc.apply(permissionRequest),
+                        additionalDataFunc.apply(permissionRequest)
                 )
         );
     }

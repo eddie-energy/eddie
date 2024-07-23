@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.shared.event.sourcing.handlers.integration;
 
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.v0.ConnectionStatusMessage;
@@ -15,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -40,15 +42,15 @@ class ConnectionStatusMessageHandlerTest {
 
         // Then
         StepVerifier.create(messages.asFlux())
-                .then(messages::tryEmitComplete)
-                .assertNext(csm -> assertAll(
-                        () -> assertEquals(permissionRequest.connectionId(), csm.connectionId()),
-                        () -> assertEquals(permissionRequest.permissionId(), csm.permissionId()),
-                        () -> assertEquals(permissionRequest.dataNeedId(), csm.dataNeedId()),
-                        () -> assertEquals(PermissionProcessStatus.VALIDATED, csm.status()),
-                        () -> assertEquals("", csm.message())
-                ))
-                .verifyComplete();
+                    .then(messages::tryEmitComplete)
+                    .assertNext(csm -> assertAll(
+                            () -> assertEquals(permissionRequest.connectionId(), csm.connectionId()),
+                            () -> assertEquals(permissionRequest.permissionId(), csm.permissionId()),
+                            () -> assertEquals(permissionRequest.dataNeedId(), csm.dataNeedId()),
+                            () -> assertEquals(PermissionProcessStatus.VALIDATED, csm.status()),
+                            () -> assertEquals("", csm.message())
+                    ))
+                    .verifyComplete();
     }
 
     @Test
@@ -64,8 +66,8 @@ class ConnectionStatusMessageHandlerTest {
 
         // Then
         StepVerifier.create(messages.asFlux())
-                .then(messages::tryEmitComplete)
-                .verifyComplete();
+                    .then(messages::tryEmitComplete)
+                    .verifyComplete();
     }
 
     @Test
@@ -81,6 +83,32 @@ class ConnectionStatusMessageHandlerTest {
         // Then
         StepVerifier.create(messages.asFlux())
                     .then(messages::tryEmitComplete)
+                    .verifyComplete();
+    }
+
+    @Test
+    void testAccept_emitsAdditionalInformation() {
+        // Given
+        Sinks.Many<ConnectionStatusMessage> messages = Sinks.many().multicast().onBackpressureBuffer();
+        var permissionRequest = new SimplePermissionRequest("pid", "cid", "dnid", PermissionProcessStatus.VALIDATED);
+        when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));
+        EventBus eventBus = new EventBusImpl();
+        new ConnectionStatusMessageHandler<>(eventBus,
+                                             messages,
+                                             repository,
+                                             pr -> "",
+                                             pr -> JsonNodeFactory.instance.objectNode().put("key", "value"));
+
+        // When
+        eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.VALIDATED));
+
+        // Then
+        StepVerifier.create(messages.asFlux())
+                    .then(messages::tryEmitComplete)
+                    .assertNext(csm -> assertEquals("value",
+                                                    Objects.requireNonNull(csm.additionalInformation())
+                                                           .get("key")
+                                                           .asText()))
                     .verifyComplete();
     }
 }
