@@ -6,6 +6,8 @@ public record PlainPontonXPAdapterConfiguration(
         String hostname,
         int port,
         String apiEndpoint,
-        String workFolder
+        String workFolder,
+        String username,
+        String password
 ) implements PontonXPAdapterConfiguration {
 }

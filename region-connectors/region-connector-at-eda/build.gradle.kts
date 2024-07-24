@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.oxm)
     implementation(libs.hibernate.validator)
+    implementation(libs.nimbus.oidc)
 
     // dependency for PontonXP Messenger
     implementation(files("libs/adapterapi2.jar"))

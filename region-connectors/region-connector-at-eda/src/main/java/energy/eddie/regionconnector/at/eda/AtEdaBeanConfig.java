@@ -77,14 +77,20 @@ public class AtEdaBeanConfig {
             @Value("${" + HOSTNAME_KEY + "}") String hostname,
             @Value("${" + PORT_KEY + "}") int port,
             @Value("${" + API_ENDPOINT_KEY + "}") String apiEndpoint,
-            @Value("${" + WORK_FOLDER_KEY + "}") String workFolder
+            @Value("${" + WORK_FOLDER_KEY + "}") String workFolder,
+            @Value("${" + USERNAME_KEY + "}") String username,
+            @Value("${" + PASSWORD_KEY + "}") String password
     ) {
-        return new PlainPontonXPAdapterConfiguration(adapterId,
-                                                     adapterVersion,
-                                                     hostname,
-                                                     port,
-                                                     apiEndpoint,
-                                                     workFolder);
+        return new PlainPontonXPAdapterConfiguration(
+                adapterId,
+                adapterVersion,
+                hostname,
+                port,
+                apiEndpoint,
+                workFolder,
+                username,
+                password
+        );
     }
 
     @Bean

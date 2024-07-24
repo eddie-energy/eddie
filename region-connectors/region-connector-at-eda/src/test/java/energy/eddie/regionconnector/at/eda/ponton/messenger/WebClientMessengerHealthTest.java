@@ -33,7 +33,9 @@ class WebClientMessengerHealthTest {
                 "hostname",
                 1234,
                 "http://localhost:" + mockBackEnd.getPort(),
-                "folder"
+                "folder",
+                "username",
+                "password"
         );
     }
 
