@@ -3,9 +3,10 @@ package energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p32;
 import at.ebutilities.schemata.customerprocesses.masterdata._01p32.MasterData;
 import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.dto.masterdata.*;
+import energy.eddie.regionconnector.at.eda.processing.utils.XmlGregorianCalenderUtils;
 import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
 
-import javax.xml.datatype.XMLGregorianCalendar;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 public record EdaMasterData01p32(
@@ -26,8 +27,10 @@ public record EdaMasterData01p32(
     }
 
     @Override
-    public XMLGregorianCalendar documentCreationDateTime() {
-        return masterData.getMarketParticipantDirectory().getRoutingHeader().getDocumentCreationDateTime();
+    public ZonedDateTime documentCreationDateTime() {
+        return XmlGregorianCalenderUtils.toUtcZonedDateTime(masterData.getMarketParticipantDirectory()
+                                                                      .getRoutingHeader()
+                                                                      .getDocumentCreationDateTime());
     }
 
     @Override

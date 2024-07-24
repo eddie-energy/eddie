@@ -8,7 +8,6 @@ import energy.eddie.regionconnector.at.eda.EdaResourceLoader;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
-import energy.eddie.regionconnector.at.eda.processing.utils.XmlGregorianCalenderUtils;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import org.junit.jupiter.api.Test;
 
@@ -28,9 +27,7 @@ class IntermediateAccountingPointMarketDocumentFactoryTest {
         );
 
         EdaMasterData edaMasterData = EdaResourceLoader.loadEdaMasterData();
-        var created = new EsmpDateTime(
-                XmlGregorianCalenderUtils.toUtcZonedDateTime(edaMasterData.documentCreationDateTime())
-        ).toString();
+        var created = new EsmpDateTime(edaMasterData.documentCreationDateTime()).toString();
 
         SimplePermissionRequest permissionRequest = new SimplePermissionRequest(
                 "pid",
@@ -131,9 +128,7 @@ class IntermediateAccountingPointMarketDocumentFactoryTest {
         );
 
         EdaMasterData edaMasterData = EdaResourceLoader.loadEdaMasterDataForCompany();
-        var created = new EsmpDateTime(
-                XmlGregorianCalenderUtils.toUtcZonedDateTime(edaMasterData.documentCreationDateTime())
-        ).toString();
+        var created = new EsmpDateTime(edaMasterData.documentCreationDateTime()).toString();
 
         SimplePermissionRequest permissionRequest = new SimplePermissionRequest(
                 "pid",

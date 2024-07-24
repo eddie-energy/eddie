@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.at.eda.dto;
 import energy.eddie.regionconnector.at.eda.dto.masterdata.*;
 import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
 
-import javax.xml.datatype.XMLGregorianCalendar;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 public interface EdaMasterData {
@@ -14,7 +14,7 @@ public interface EdaMasterData {
 
     Sector sector();
 
-    XMLGregorianCalendar documentCreationDateTime();
+    ZonedDateTime documentCreationDateTime();
 
     String senderMessageAddress();
 
