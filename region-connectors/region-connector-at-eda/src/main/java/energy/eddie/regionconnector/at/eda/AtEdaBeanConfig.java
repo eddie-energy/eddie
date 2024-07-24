@@ -30,9 +30,8 @@ import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactoryCollection;
-import energy.eddie.regionconnector.at.eda.ponton.messenger.MessengerHealth;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConnection;
-import energy.eddie.regionconnector.at.eda.ponton.messenger.RestClientMessengerHealth;
+import energy.eddie.regionconnector.at.eda.ponton.messenger.WebClientMessengerHealth;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
 import energy.eddie.regionconnector.at.eda.provider.v0_82.EdaEddieValidatedHistoricalDataMarketDocumentProvider;
@@ -55,7 +54,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -130,14 +129,14 @@ public class AtEdaBeanConfig {
             PontonXPAdapterConfiguration configuration,
             InboundMessageFactoryCollection inboundMessageFactoryCollection,
             OutboundMessageFactoryCollection outboundMessageFactoryCollection,
-            MessengerHealth healthApi
+            WebClient webClient
     ) throws ConnectionException, IOException {
         return PontonMessengerConnection
                 .newBuilder()
                 .withConfig(configuration)
                 .withInboundMessageFactoryCollection(inboundMessageFactoryCollection)
                 .withOutboundMessageFactoryCollection(outboundMessageFactoryCollection)
-                .withHealthApi(healthApi)
+                .withHealthApi(new WebClientMessengerHealth(webClient, configuration))
                 .build();
     }
 
@@ -213,13 +212,8 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public RestClient restClient() {
-        return RestClient.create();
-    }
-
-    @Bean
-    public MessengerHealth messengerHealth(RestClient restClient, PontonXPAdapterConfiguration config) {
-        return new RestClientMessengerHealth(restClient, config);
+    public WebClient webClient() {
+        return WebClient.create();
     }
 
     @Bean
@@ -243,6 +237,13 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .registerModule(new Jdk8Module());
+    }
+
+    @Bean
     public ConsentMarketDocumentMessageHandler<AtPermissionRequest> consentMarketDocumentMessageHandler(
             EventBus eventBus,
             AtPermissionRequestRepository repository,
@@ -257,13 +258,6 @@ public class AtEdaBeanConfig {
                                                          cimConfig,
                                                          pr -> TRANSMISSION_CYCLE.name(),
                                                          AT_ZONE_ID);
-    }
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .registerModule(new Jdk8Module());
     }
 
     @Bean

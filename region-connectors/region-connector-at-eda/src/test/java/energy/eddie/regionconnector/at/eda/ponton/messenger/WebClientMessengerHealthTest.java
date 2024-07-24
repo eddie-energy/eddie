@@ -10,18 +10,18 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class RestClientMessengerHealthTest {
+class WebClientMessengerHealthTest {
 
     static MockWebServer mockBackEnd;
 
     private static PontonXPAdapterConfiguration config;
-    private final RestClient restClient = RestClient.create();
+    private final WebClient webClient = WebClient.create();
 
     @BeforeAll
     static void setUp() throws IOException {
@@ -40,7 +40,7 @@ class RestClientMessengerHealthTest {
     @Test
     void messengerStatus_whenMessengerUp_returnsUp() {
         // Arrange
-        var messengerHealth = new RestClientMessengerHealth(restClient, config);
+        var messengerHealth = new WebClientMessengerHealth(webClient, config);
 
         var body = """
                 {
@@ -83,7 +83,7 @@ class RestClientMessengerHealthTest {
     @Test
     void messengerStatus_whenMessengerDown_returnsDown() {
         // Arrange
-        var messengerHealth = new RestClientMessengerHealth(restClient, config);
+        var messengerHealth = new WebClientMessengerHealth(webClient, config);
 
         var body = """
                 {
@@ -126,7 +126,7 @@ class RestClientMessengerHealthTest {
     @Test
     void messengerStatus_whenServerReturnsNull_returnsDown() {
         // Arrange
-        var messengerHealth = new RestClientMessengerHealth(restClient, config);
+        var messengerHealth = new WebClientMessengerHealth(webClient, config);
 
         mockBackEnd.enqueue(new MockResponse());
 
@@ -150,7 +150,7 @@ class RestClientMessengerHealthTest {
     })
     void messengerStatus_whenServerReturnsError_returnsDown(int errorCode, String errorMessage) {
         // Arrange
-        var messengerHealth = new RestClientMessengerHealth(restClient, config);
+        var messengerHealth = new WebClientMessengerHealth(webClient, config);
 
         mockBackEnd.enqueue(new MockResponse()
                                     .setStatus("HTTP/1.1 " + errorCode + " " + errorMessage)
