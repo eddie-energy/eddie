@@ -34,7 +34,8 @@ public class ValidatedEventFactory {
                 end,
                 granularity,
                 cmRequestId,
-                messageId
+                messageId,
+                ValidatedEvent.NeedsToBeSent.YES
         );
     }
 }

@@ -29,20 +29,22 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SendingEventHandlerTest {
-    private final EdaPermissionRequest permissionRequest = new EdaPermissionRequest("connId",
-                                                                                    "pid",
-                                                                                    "did",
-                                                                                    "cmRequesId",
-                                                                                    "convId",
-                                                                                    null,
-                                                                                    "dsoId",
-                                                                                    LocalDate.now(AT_ZONE_ID),
-                                                                                    null,
-                                                                                    null,
-                                                                                    PermissionProcessStatus.VALIDATED,
-                                                                                    "",
-                                                                                    null,
-                                                                                    ZonedDateTime.now(AT_ZONE_ID));
+    private final EdaPermissionRequest permissionRequest = new EdaPermissionRequest(
+            "connId",
+            "pid",
+            "did",
+            "cmRequesId",
+            "convId",
+            null,
+            "dsoId",
+            LocalDate.now(AT_ZONE_ID),
+            null,
+            null,
+            PermissionProcessStatus.VALIDATED,
+            "",
+            null,
+            ZonedDateTime.now(AT_ZONE_ID)
+    );
     @Mock
     private EdaAdapter edaAdapter;
     @Mock
@@ -66,8 +68,8 @@ class SendingEventHandlerTest {
                                        permissionRequest.end(),
                                        permissionRequest.granularity(),
                                        permissionRequest.cmRequestId(),
-                                       permissionRequest.conversationId()
-        );
+                                       permissionRequest.conversationId(),
+                                       ValidatedEvent.NeedsToBeSent.YES);
 
         // When
         handler.accept(event);
@@ -100,8 +102,8 @@ class SendingEventHandlerTest {
                                        permissionRequest.end(),
                                        permissionRequest.granularity(),
                                        permissionRequest.cmRequestId(),
-                                       permissionRequest.conversationId()
-        );
+                                       permissionRequest.conversationId(),
+                                       ValidatedEvent.NeedsToBeSent.YES);
 
         // When
         handler.accept(event);

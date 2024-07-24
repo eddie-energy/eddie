@@ -68,14 +68,14 @@ class JpaPermissionRequestRepositoryTest {
         String conversationId = "convId";
         PermissionEvent event = new ValidatedEvent("pid", start,
                                                    end, AllowedGranularity.PT15M, "cmRequestId",
-                                                   conversationId);
+                                                   conversationId, ValidatedEvent.NeedsToBeSent.YES);
         permissionEventRepository.saveAndFlush(event);
 
         // When
         var res = permissionRequestRepository.findByConversationIdOrCMRequestId(conversationId, null);
 
         // Then
-        assertThat(res).isPresent();
+        assertThat(res).isNotEmpty();
     }
 
     @Test
@@ -86,14 +86,14 @@ class JpaPermissionRequestRepositoryTest {
         String conversationId = "convId";
         PermissionEvent event = new ValidatedEvent("pid", start,
                                                    end, AllowedGranularity.PT15M, "cmRequestId",
-                                                   conversationId);
+                                                   conversationId, ValidatedEvent.NeedsToBeSent.YES);
         permissionEventRepository.saveAndFlush(event);
 
         // When
         var res = permissionRequestRepository.findByConversationIdOrCMRequestId(conversationId, "otherId");
 
         // Then
-        assertThat(res).isPresent();
+        assertThat(res).isNotEmpty();
     }
 
     @Test
@@ -104,7 +104,7 @@ class JpaPermissionRequestRepositoryTest {
         String conversationId = "convId";
         PermissionEvent event = new ValidatedEvent("pid", start,
                                                    end, AllowedGranularity.PT15M, "cmRequestId",
-                                                   "otherId");
+                                                   "otherId", ValidatedEvent.NeedsToBeSent.YES);
         permissionEventRepository.saveAndFlush(event);
 
         // When
@@ -122,7 +122,7 @@ class JpaPermissionRequestRepositoryTest {
         String conversationId = "convId";
         PermissionEvent event = new ValidatedEvent("pid", start,
                                                    end, AllowedGranularity.PT15M, "cmRequestId",
-                                                   conversationId);
+                                                   conversationId, ValidatedEvent.NeedsToBeSent.YES);
         permissionEventRepository.saveAndFlush(event);
 
         // When
@@ -140,14 +140,14 @@ class JpaPermissionRequestRepositoryTest {
         String cmRequestId = "cmRequestId";
         PermissionEvent event = new ValidatedEvent("pid", start,
                                                    end, AllowedGranularity.PT15M, cmRequestId,
-                                                   "convId");
+                                                   "convId", ValidatedEvent.NeedsToBeSent.YES);
         permissionEventRepository.saveAndFlush(event);
 
         // When
         var res = permissionRequestRepository.findByConversationIdOrCMRequestId("otherId", cmRequestId);
 
         // Then
-        assertThat(res).isPresent();
+        assertThat(res).isNotEmpty();
     }
 
     @Test
@@ -158,7 +158,7 @@ class JpaPermissionRequestRepositoryTest {
         String cmRequestId = "cmRequestId";
         PermissionEvent event = new ValidatedEvent("pid", start,
                                                    end, AllowedGranularity.PT15M, cmRequestId,
-                                                   "convId");
+                                                   "convId", ValidatedEvent.NeedsToBeSent.YES);
         permissionEventRepository.saveAndFlush(event);
 
         // When
@@ -178,7 +178,7 @@ class JpaPermissionRequestRepositoryTest {
         permissionEventRepository.saveAndFlush(event1);
         PermissionEvent event2 = new ValidatedEvent("pid", start,
                                                     null, AllowedGranularity.PT15M, "cmRequestId",
-                                                    "convId");
+                                                    "convId", ValidatedEvent.NeedsToBeSent.YES);
         permissionEventRepository.saveAndFlush(event2);
         PermissionEvent event3 = new SimpleEvent("pid", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
         permissionEventRepository.saveAndFlush(event3);
