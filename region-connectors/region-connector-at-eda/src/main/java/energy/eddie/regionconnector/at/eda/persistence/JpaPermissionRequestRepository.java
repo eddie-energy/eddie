@@ -25,9 +25,16 @@ public interface JpaPermissionRequestRepository extends PagingAndSortingReposito
 
     @Override
     @Query("SELECT pr FROM EdaPermissionRequest pr WHERE pr.conversationId = :conversationId OR pr.cmRequestId = :cmRequestId")
-    Optional<AtPermissionRequest> findByConversationIdOrCMRequestId(
+    List<AtPermissionRequest> findByConversationIdOrCMRequestId(
             @Param("conversationId") String conversationId,
             @Param("cmRequestId") @Nullable String cmRequestId
+    );
+
+    @Override
+    @Query("SELECT pr FROM EdaPermissionRequest pr WHERE pr.conversationId = :conversationId AND pr.meteringPointId = :meteringPointId")
+    Optional<AtPermissionRequest> findByConversationIdAndMeteringPointId(
+            @Param("conversationId") String conversationId,
+            @Param("meteringPointId") @Nullable String meteringPointId
     );
 
     @Override

@@ -15,16 +15,31 @@ import java.util.Set;
 public interface AtPermissionRequestRepository extends PermissionRequestRepository<AtPermissionRequest> {
 
     /**
-     * Finds a permission request by either its conversation id or its CMRequest id.
+     * Finds permission requests by either conversation id or CMRequest id. Might return multiple as receiving
+     * permission for multiple metering points create new permission request that share the conversation and CMRequest
+     * id.
      *
      * @param conversationId the conversation id of the request.
      * @param cmRequestId    the request id of the original CM Request.
-     * @return an optional, which is empty if there is no matching permission request.
+     * @return a List, which is empty if there is no matching permission request.
      */
-    Optional<AtPermissionRequest> findByConversationIdOrCMRequestId(
+    List<AtPermissionRequest> findByConversationIdOrCMRequestId(
             String conversationId,
             @Nullable String cmRequestId
     );
+
+    /**
+     * Finds a permission request by its conversation id and metering point id.
+     *
+     * @param conversationId  the conversation id of the request.
+     * @param meteringPointId the metering point id of the request.
+     * @return an optional, which is empty if there is no matching permission request.
+     */
+    Optional<AtPermissionRequest> findByConversationIdAndMeteringPointId(
+            String conversationId,
+            String meteringPointId
+    );
+
 
     /**
      * This method returns all {@link energy.eddie.api.v0.PermissionProcessStatus#ACCEPTED},
