@@ -30,6 +30,7 @@ import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactoryCollection;
+import energy.eddie.regionconnector.at.eda.ponton.messenger.MessengerMonitor;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConnection;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.WebClientMessengerHealth;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
@@ -135,7 +136,8 @@ public class AtEdaBeanConfig {
             PontonXPAdapterConfiguration configuration,
             InboundMessageFactoryCollection inboundMessageFactoryCollection,
             OutboundMessageFactoryCollection outboundMessageFactoryCollection,
-            WebClient webClient
+            WebClient webClient,
+            MessengerMonitor messengerMonitor
     ) throws ConnectionException, IOException {
         return PontonMessengerConnection
                 .newBuilder()
@@ -143,6 +145,7 @@ public class AtEdaBeanConfig {
                 .withInboundMessageFactoryCollection(inboundMessageFactoryCollection)
                 .withOutboundMessageFactoryCollection(outboundMessageFactoryCollection)
                 .withHealthApi(new WebClientMessengerHealth(webClient, configuration))
+                .withMessengerMonitor(messengerMonitor)
                 .build();
     }
 

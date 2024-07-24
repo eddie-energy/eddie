@@ -27,6 +27,7 @@ import org.springframework.oxm.XmlMappingException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.ZonedDateTime;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMessengerConnection {
@@ -35,6 +36,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
     private final OutboundMessageFactoryCollection outboundMessageFactoryCollection;
     private final MessengerConnection.MessengerConnectionBuilder messengerConnectionBuilder;
     private final MessengerHealth healthApi;
+    private final MessengerMonitor messengerMonitor;
     private final ReentrantLock lock = new ReentrantLock();
     @Nullable
     private OutboundMessageStatusUpdateHandler outboundMessageStatusUpdateHandler;
@@ -53,11 +55,13 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
             File workFolder,
             InboundMessageFactoryCollection inboundMessageFactoryCollection,
             OutboundMessageFactoryCollection outboundMessageFactoryCollection,
-            MessengerHealth healthApi
+            MessengerHealth healthApi,
+            MessengerMonitor messengerMonitor
     ) throws ConnectionException {
         this.inboundMessageFactoryCollection = inboundMessageFactoryCollection;
         this.outboundMessageFactoryCollection = outboundMessageFactoryCollection;
         this.healthApi = healthApi;
+        this.messengerMonitor = messengerMonitor;
         final AdapterInfo adapterInfo = createAdapterInfo(config);
         this.messengerConnectionBuilder = createMessengerConnectionBuilder(config, workFolder, adapterInfo);
         this.messengerConnection = this.messengerConnectionBuilder.build();
@@ -290,5 +294,10 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
     @Override
     public MessengerStatus messengerStatus() {
         return healthApi.messengerStatus();
+    }
+
+    @Override
+    public void resendFailedMessages(ZonedDateTime date) {
+        messengerMonitor.resendFailedMessages(date);
     }
 }

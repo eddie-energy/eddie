@@ -21,6 +21,8 @@ public class PontonMessengerConnectionBuilder {
     private OutboundMessageFactoryCollection outboundMessageFactoryCollection;
     @Nullable
     private MessengerHealth healthApi;
+    @Nullable
+    private MessengerMonitor messengerMonitor;
 
     public PontonMessengerConnectionBuilder withConfig(PontonXPAdapterConfiguration config) {
         this.config = config;
@@ -46,11 +48,17 @@ public class PontonMessengerConnectionBuilder {
         return this;
     }
 
+    public PontonMessengerConnectionBuilder withMessengerMonitor(MessengerMonitor messengerMonitor) {
+        this.messengerMonitor = messengerMonitor;
+        return this;
+    }
+
     public PontonMessengerConnection build() throws ConnectionException, IOException {
         requireNonNull(config, "config must be set");
         requireNonNull(inboundMessageFactoryCollection, "inboundMessageFactoryCollection must be set");
         requireNonNull(outboundMessageFactoryCollection, "outboundMessageFactoryCollection must be set");
         requireNonNull(healthApi, "healthApi must be set");
+        requireNonNull(messengerMonitor, "messengerMonitor must be set");
 
         final File workFolder = new File(config.workFolder());
 
@@ -63,7 +71,8 @@ public class PontonMessengerConnectionBuilder {
                 workFolder,
                 inboundMessageFactoryCollection,
                 outboundMessageFactoryCollection,
-                healthApi
+                healthApi,
+                messengerMonitor
         );
     }
 }
