@@ -216,7 +216,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
 
     @Override
     public void start() throws TransmissionException {
-        messengerConnection.start();
+        messengerConnection.startReception();
     }
 
     @Override
@@ -239,7 +239,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
             try {
                 messengerConnection.close();
                 messengerConnection = messengerConnectionBuilder.build();
-                messengerConnection.start();
+                messengerConnection.startReception();
                 LOGGER.info("Ponton XP adapter messengerConnection restarted.");
                 messengerConnection.sendMessage(outboundMessage);
             } finally {
