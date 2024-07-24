@@ -48,7 +48,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = DataNeedsManagementController.class, properties = {"management.server.urlprefix=management", "eddie.data-needs-config.data-need-source=database"})
+@WebMvcTest(controllers = DataNeedsManagementController.class, properties = {"eddie.management.server.urlprefix=management", "eddie.data-needs-config.data-need-source=database"})
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 class DataNeedsManagementControllerTest {
     @Autowired

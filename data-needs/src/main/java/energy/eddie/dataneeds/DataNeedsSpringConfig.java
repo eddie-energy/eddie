@@ -54,7 +54,7 @@ public class DataNeedsSpringConfig {
     @SuppressWarnings({"java:S3740", "rawtypes"})
     @Bean
     @ConditionalOnBean(value = DataNeedsDbService.class)
-    public GroupedOpenApi dataNeedsManagementApi(@Value("${management.server.port}") int managementPort) {
+    public GroupedOpenApi dataNeedsManagementApi(@Value("${eddie.management.server.port}") int managementPort) {
         return GroupedOpenApi
                 .builder()
                 .group("data-needs-management")
