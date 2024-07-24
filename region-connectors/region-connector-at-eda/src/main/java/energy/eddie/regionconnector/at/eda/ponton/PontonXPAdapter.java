@@ -6,11 +6,9 @@ import de.ponton.xp.adapter.api.messages.OutboundMessageStatusUpdate;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
-import energy.eddie.regionconnector.at.eda.dto.EdaCMNotification;
-import energy.eddie.regionconnector.at.eda.dto.EdaCMRevoke;
-import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
-import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
+import energy.eddie.regionconnector.at.eda.dto.*;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
+import energy.eddie.regionconnector.at.eda.models.ConsentData;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.InboundMessageResult;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationMessageType;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConnection;
@@ -86,31 +84,24 @@ public class PontonXPAdapter implements EdaAdapter {
                     "EdaCMNotification with empty response data received."
             );
         }
-        if (notification.responseData().size() > 1) {
-            LOGGER.atWarn()
-                  .addArgument(cmRequestId)
-                  .addArgument(conversationId)
-                  .log("Received CMNotification with multiple response data for CMRequestId '{}' with ConversationId '{}', processing only the first one.");
-        }
 
-        var responseData = notification.responseData().getFirst();
         var status = new CMRequestStatus(
                 notificationMessageType,
                 conversationId,
-                responseData.responseCodes(),
                 cmRequestId,
-                responseData.consentId(),
-                responseData.meteringPoint()
+                notification.responseData().stream().map(ConsentData::fromResponseData).toList()
         );
-        LOGGER.atInfo()
-              .addArgument(status::messageType)
-              .addArgument(status::cmRequestId)
-              .addArgument(() -> status.getCMConsentId()
-                                       .map(consentId -> " (ConsentId '" + consentId + "')")
-                                       .orElse(Strings.EMPTY))
-              .addArgument(status::conversationId)
-              .addArgument(() -> Arrays.toString(status.statusCodes().toArray()))
-              .log("Received CMNotification: {} for CMRequestId '{}'{} with ConversationId '{}', status code: '{}'");
+        status.consentData().forEach(consentData -> LOGGER
+                .atInfo()
+                .addArgument(status::messageType)
+                .addArgument(status::cmRequestId)
+                .addArgument(() -> consentData.cmConsentId()
+                                              .map(consentId -> " (ConsentId '" + consentId + "')")
+                                              .orElse(Strings.EMPTY))
+                .addArgument(status::conversationId)
+                .addArgument(() -> Arrays.toString(consentData.responseCodes().toArray()))
+                .log("Received CMNotification: {} for CMRequestId '{}'{} with ConversationId '{}', response code: '{}'")
+        );
 
         var result = requestStatusSink.tryEmitNext(status);
         return handleEmitResult(result);

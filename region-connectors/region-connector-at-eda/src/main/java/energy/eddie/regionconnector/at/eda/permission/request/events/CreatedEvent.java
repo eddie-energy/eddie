@@ -78,4 +78,8 @@ public class CreatedEvent extends PersistablePermissionEvent {
     public String meteringPointId() {
         return meteringPointId;
     }
+
+    public ZonedDateTime created() {
+        return created;
+    }
 }

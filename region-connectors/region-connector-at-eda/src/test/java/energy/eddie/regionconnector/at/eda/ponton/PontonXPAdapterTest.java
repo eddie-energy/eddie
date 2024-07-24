@@ -433,8 +433,12 @@ class PontonXPAdapterTest {
                 .assertNext(cmRequestStatus -> {
                     // Then
                     assertAll(
-                            () -> assertEquals("consentId", cmRequestStatus.getCMConsentId().get()),
-                            () -> assertEquals(notificationMessageType, cmRequestStatus.messageType())
+                            () -> assertEquals(notificationMessageType, cmRequestStatus.messageType()),
+                            () -> assertThat(cmRequestStatus.consentData()
+                                                            .stream()
+                                                            .map(ConsentData::cmConsentId)
+                                                            .map(Optional::get)
+                                                            .toList(), containsInAnyOrder("consentId", "consentId2"))
                     );
                 })
                 .expectComplete();
