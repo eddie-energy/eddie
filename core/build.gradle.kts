@@ -36,6 +36,7 @@ dependencies {
     implementation(libs.spring.openapi.webmvc.ui)
     implementation(libs.spring.boot.security)
     implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.actuator)
     implementation(libs.reactor.core)
     implementation(libs.flyway.core)
 
