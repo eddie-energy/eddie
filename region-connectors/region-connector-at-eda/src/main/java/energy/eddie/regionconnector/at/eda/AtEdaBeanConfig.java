@@ -19,8 +19,6 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.data.needs.calculation.strategies.EdaStrategy;
-import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
-import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
@@ -55,6 +53,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
@@ -102,33 +101,27 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordStream(
-            IdentifiableConsumptionRecordService identifiableConsumptionRecordService
-    ) {
-        return identifiableConsumptionRecordService.getIdentifiableConsumptionRecordStream();
-    }
-
-    @Bean
-    public Flux<IdentifiableMasterData> identifiableMasterDataFlux(
-            IdentifiableMasterDataService identifiableMasterDataService
-    ) {
-        return identifiableMasterDataService.getIdentifiableMasterDataStream();
-    }
-
-    @Bean
-    public Flux<EdaConsumptionRecord> consumptionRecordStream(EdaAdapter edaAdapter) {
+    public Flux<IdentifiableConsumptionRecord> consumptionRecordStream(EdaAdapter edaAdapter) {
         return edaAdapter.getConsumptionRecordStream();
     }
 
     @Bean
-    public Flux<EdaMasterData> masterDataStream(EdaAdapter edaAdapter) {
+    public Flux<IdentifiableMasterData> masterDataStream(EdaAdapter edaAdapter) {
         return edaAdapter.getMasterDataStream();
     }
 
     @Bean
     @Profile("!no-ponton")
-    public EdaAdapter edaAdapter(PontonMessengerConnection pontonMessengerConnection) {
-        return new PontonXPAdapter(pontonMessengerConnection);
+    public EdaAdapter edaAdapter(
+            PontonMessengerConnection pontonMessengerConnection,
+            IdentifiableConsumptionRecordService identifiableConsumptionRecordService,
+            IdentifiableMasterDataService identifiableMasterDataService,
+            TaskScheduler taskScheduler
+    ) {
+        return new PontonXPAdapter(pontonMessengerConnection,
+                                   identifiableConsumptionRecordService,
+                                   identifiableMasterDataService,
+                                   taskScheduler);
     }
 
     @Bean

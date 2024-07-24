@@ -3,8 +3,8 @@ package energy.eddie.regionconnector.at.eda.ponton;
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.dto.EdaCMRevoke;
-import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
-import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
+import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
@@ -19,7 +19,7 @@ public class NoOpEdaAdapter implements EdaAdapter {
     }
 
     @Override
-    public Flux<EdaConsumptionRecord> getConsumptionRecordStream() {
+    public Flux<IdentifiableConsumptionRecord> getConsumptionRecordStream() {
         return Flux.empty();
     }
 
@@ -29,7 +29,7 @@ public class NoOpEdaAdapter implements EdaAdapter {
     }
 
     @Override
-    public Flux<EdaMasterData> getMasterDataStream() {
+    public Flux<IdentifiableMasterData> getMasterDataStream() {
         return Flux.empty();
     }
 

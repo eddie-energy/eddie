@@ -14,12 +14,16 @@ class AtEdaBeanConfigTest {
         AtEdaBeanConfig springConfig = new AtEdaBeanConfig();
 
         // When
-        PontonXPAdapterConfiguration xpAdapterConfiguration = springConfig.pontonXPAdapterConfiguration("adapterId",
-                                                                                                        "0.0.0",
-                                                                                                        "localhost",
-                                                                                                        9200,
-                                                                                                        "localhost/api",
-                                                                                                        "/ponton");
+        PontonXPAdapterConfiguration xpAdapterConfiguration = springConfig.pontonXPAdapterConfiguration(
+                "adapterId",
+                "0.0.0",
+                "localhost",
+                9200,
+                "localhost/api",
+                "/ponton",
+                "username",
+                "password"
+        );
 
         // Then
         assertNotNull(xpAdapterConfiguration);

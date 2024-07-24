@@ -14,13 +14,18 @@ import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationMessageT
 import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConnection;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
+import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecordService;
+import energy.eddie.regionconnector.at.eda.services.IdentifiableMasterDataService;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.TaskScheduler;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,20 +35,31 @@ public class PontonXPAdapter implements EdaAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(PontonXPAdapter.class);
     private static final String PONTON_HOST = "pontonHost";
     private final Sinks.Many<CMRequestStatus> requestStatusSink = Sinks.many().multicast().onBackpressureBuffer();
-    private final Sinks.Many<EdaConsumptionRecord> consumptionRecordSink = Sinks.many()
-                                                                                .unicast()
-                                                                                .onBackpressureBuffer();
+    private final Sinks.Many<IdentifiableConsumptionRecord> consumptionRecordSink = Sinks.many()
+                                                                                         .multicast()
+                                                                                         .onBackpressureBuffer();
     private final Sinks.Many<EdaCMRevoke> cmRevokeSink = Sinks.many().multicast().onBackpressureBuffer();
-    private final Sinks.Many<EdaMasterData> masterDataSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<IdentifiableMasterData> masterDataSink = Sinks.many().multicast().onBackpressureBuffer();
     private final PontonMessengerConnection pontonMessengerConnection;
+    private final IdentifiableConsumptionRecordService identifiableConsumptionRecordService;
+    private final IdentifiableMasterDataService identifiableMasterDataService;
+    private final TaskScheduler scheduler;
 
-    public PontonXPAdapter(PontonMessengerConnection pontonMessengerConnection) {
+    public PontonXPAdapter(
+            PontonMessengerConnection pontonMessengerConnection,
+            IdentifiableConsumptionRecordService identifiableConsumptionRecordService,
+            IdentifiableMasterDataService identifiableMasterDataService,
+            TaskScheduler scheduler
+    ) {
         this.pontonMessengerConnection = pontonMessengerConnection
                 .withOutboundMessageStatusUpdateHandler(this::outboundMessageStatusUpdateHandler)
                 .withCMNotificationHandler(this::handleCMNotificationMessage)
                 .withMasterDataHandler(this::handleMasterDataMessage)
                 .withConsumptionRecordHandler(this::handleConsumptionRecordMessage)
                 .withCMRevokeHandler(this::handleRevokeMessage);
+        this.identifiableConsumptionRecordService = identifiableConsumptionRecordService;
+        this.identifiableMasterDataService = identifiableMasterDataService;
+        this.scheduler = scheduler;
     }
 
     private void outboundMessageStatusUpdateHandler(OutboundMessageStatusUpdate outboundMessageStatusUpdate) {
@@ -108,19 +124,37 @@ public class PontonXPAdapter implements EdaAdapter {
     }
 
     private InboundMessageResult handleMasterDataMessage(EdaMasterData masterData) {
-        LOGGER.atInfo()
-              .addArgument(masterData::conversationId)
-              .log("Received master data with ConversationId '{}'");
-        var result = masterDataSink.tryEmitNext(masterData);
+        var identifiableMasterData = identifiableMasterDataService.mapToIdentifiableMasterData(masterData);
+        if (identifiableMasterData.isEmpty()) {
+            var date = masterData.documentCreationDateTime();
+            scheduleMessageResent(date);
+            LOGGER.atWarn()
+                  .addArgument(masterData::conversationId)
+                  .log("Received master data for conversationId '{}' before ZUSTIMMUNG_CCMO");
+            return new InboundMessageResult(
+                    InboundStatusEnum.REJECTED,
+                    "Received master data before ZUSTIMMUNG_CCMO, trying again later."
+            );
+        }
+
+        var result = masterDataSink.tryEmitNext(identifiableMasterData.get());
         return handleEmitResult(result);
     }
 
     private InboundMessageResult handleConsumptionRecordMessage(EdaConsumptionRecord consumptionRecord) {
+        var identifiableConsumptionRecord = identifiableConsumptionRecordService.mapToIdentifiableConsumptionRecord(
+                consumptionRecord);
+        if (identifiableConsumptionRecord.isEmpty()) {
+            var date = consumptionRecord.documentCreationDateTime();
+            scheduleMessageResent(date);
+            return new InboundMessageResult(
+                    InboundStatusEnum.REJECTED,
+                    "No permission requests found for consumption record, trying again later."
+            );
+        }
+
         // the process is documented here https://www.ebutilities.at/prozesse/230#
-        LOGGER.atInfo()
-              .addArgument(consumptionRecord::conversationId)
-              .log("ConsumptionRecord successfully delivered to backend with ConversationId '{}'");
-        var result = consumptionRecordSink.tryEmitNext(consumptionRecord);
+        var result = consumptionRecordSink.tryEmitNext(identifiableConsumptionRecord.get());
         return handleEmitResult(result);
     }
 
@@ -147,6 +181,17 @@ public class PontonXPAdapter implements EdaAdapter {
         };
     }
 
+    @SuppressWarnings("FutureReturnValueIgnored") // we do not care about the result of the scheduled task
+    private void scheduleMessageResent(ZonedDateTime date) {
+        LOGGER.atInfo()
+              .addArgument(date::toString)
+              .log("Scheduling resend for failed messages that arrived after '{}'");
+        scheduler.schedule(
+                () -> pontonMessengerConnection.resendFailedMessages(date),
+                Instant.now().plusSeconds(30)
+        );
+    }
+
     @Override
     public void close() {
         requestStatusSink.tryEmitComplete();
@@ -162,7 +207,7 @@ public class PontonXPAdapter implements EdaAdapter {
     }
 
     @Override
-    public Flux<EdaConsumptionRecord> getConsumptionRecordStream() {
+    public Flux<IdentifiableConsumptionRecord> getConsumptionRecordStream() {
         return consumptionRecordSink.asFlux();
     }
 
@@ -172,7 +217,7 @@ public class PontonXPAdapter implements EdaAdapter {
     }
 
     @Override
-    public Flux<EdaMasterData> getMasterDataStream() {
+    public Flux<IdentifiableMasterData> getMasterDataStream() {
         return masterDataSink.asFlux();
     }
 

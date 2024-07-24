@@ -2,8 +2,8 @@ package energy.eddie.regionconnector.at.eda;
 
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.dto.EdaCMRevoke;
-import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
-import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
+import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
@@ -28,7 +28,7 @@ public interface EdaAdapter extends AutoCloseable {
      * Returns a stream of EdaConsumptionRecord objects tha contain information regarding energy consumption for a
      * specific metering point.
      */
-    Flux<EdaConsumptionRecord> getConsumptionRecordStream();
+    Flux<IdentifiableConsumptionRecord> getConsumptionRecordStream();
 
     /**
      * Returns a stream of EdaCMRevoke objects that contain information regarding revoked permissions/consents.
@@ -39,7 +39,7 @@ public interface EdaAdapter extends AutoCloseable {
     /**
      * Returns a stream of EdaMasterData objects that contain information regarding metering points and their owners.
      */
-    Flux<EdaMasterData> getMasterDataStream();
+    Flux<IdentifiableMasterData> getMasterDataStream();
 
 
     /**
