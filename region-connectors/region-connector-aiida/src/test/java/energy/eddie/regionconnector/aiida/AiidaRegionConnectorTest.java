@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.aiida;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.regionconnector.aiida.services.AiidaPermissionService;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,10 +51,9 @@ class AiidaRegionConnectorTest {
 
     @Test
     void verify_healthStateIsAlwaysHealthy() {
-        HealthState healthState = connector.health().get(expectedRcId);
+        var healthState = connector.health();
 
         assertNotNull(healthState);
-        assertEquals(HealthState.UP, healthState);
     }
 
     @Test

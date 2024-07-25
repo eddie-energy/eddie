@@ -38,8 +38,7 @@ public class AiidaRegionConnector implements RegionConnector, Mvp1ConnectionStat
 
     @Override
     public Map<String, HealthState> health() {
-        // TODO could check if MQTT broker is reachable --> GH-964
-        return Map.of(getMetadata().id(), HealthState.UP);
+        return Map.of();
     }
 
     @Override
