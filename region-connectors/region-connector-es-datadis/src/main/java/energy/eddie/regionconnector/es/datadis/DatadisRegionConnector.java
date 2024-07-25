@@ -39,6 +39,6 @@ public class DatadisRegionConnector implements RegionConnector {
 
     @Override
     public Map<String, HealthState> health() {
-        return Map.of("permissionRequestRepository", HealthState.UP);
+        return Map.of();
     }
 }
