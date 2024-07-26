@@ -225,7 +225,7 @@ public class DatadisSpringConfig {
                 eventBus,
                 csm,
                 repository,
-                pr -> ""
+                EsPermissionRequest::errorMessage
         );
     }
 
