@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.es.datadis;
 
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -8,8 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -55,13 +52,5 @@ class DatadisRegionConnectorTest {
 
         // then
         assertEquals(DatadisRegionConnectorMetadata.getInstance(), result);
-    }
-
-    @Test
-    void health_returnsHealthChecks() {
-        // Given
-        var res = connector.health();
-
-        assertEquals(Map.of("permissionRequestRepository", HealthState.UP), res);
     }
 }

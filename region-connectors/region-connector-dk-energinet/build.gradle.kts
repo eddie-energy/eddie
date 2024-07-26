@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.spring.boot.starter.actuator)
 
     // Required for openapi generator
     implementation(libs.jackson.databind)

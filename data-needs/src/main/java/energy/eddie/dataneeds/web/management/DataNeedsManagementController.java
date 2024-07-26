@@ -35,7 +35,7 @@ import java.util.List;
 @ConditionalOnProperty(value = "eddie.data-needs-config.data-need-source", havingValue = "DATABASE")
 @Tag(name = "Data needs management controller", description = "Only available when data needs are loaded from the database!")
 public class DataNeedsManagementController {
-    public static final String BASE_PATH_KEY = "${management.server.urlprefix}";
+    public static final String BASE_PATH_KEY = "${eddie.management.server.urlprefix}";
     private final DataNeedsDbService service;
     public final String basePath;
 

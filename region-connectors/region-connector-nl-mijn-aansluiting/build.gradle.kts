@@ -26,6 +26,7 @@ dependencies {
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.actuator)
     implementation(libs.hibernate.validator)
     implementation(libs.spring.boot.starter.webflux)
 

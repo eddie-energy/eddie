@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.at.eda;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
@@ -18,7 +17,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -101,21 +99,6 @@ class EdaRegionConnectorTest {
         regionConnector.close();
 
         verify(edaAdapter).close();
-    }
-
-    @Test
-    void health_returnsHealthChecks() throws TransmissionException {
-        // Given
-        when(edaAdapter.health()).thenReturn(Map.of("service", HealthState.UP));
-        Sinks.Many<ConnectionStatusMessage> sink = Sinks.many().multicast().onBackpressureBuffer();
-
-        var regionConnector = new EdaRegionConnector(edaAdapter, repository, sink, outbox);
-
-        // When
-        var res = regionConnector.health();
-
-        // Then
-        assertEquals(Map.of("service", HealthState.UP), res);
     }
 
     @Test

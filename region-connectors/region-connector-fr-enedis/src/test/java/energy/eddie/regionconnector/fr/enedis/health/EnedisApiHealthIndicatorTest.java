@@ -1,0 +1,35 @@
+package energy.eddie.regionconnector.fr.enedis.health;
+
+import energy.eddie.api.v0.HealthState;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.actuate.health.Status;
+
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class EnedisApiHealthIndicatorTest {
+
+    @Mock
+    private EnedisApi api;
+
+    @Test
+    void healthReturnsCorrectApiHealth() {
+        // Given
+        var healthIndicator = new EnedisApiHealthIndicator(api, "contractApi");
+        when(api.health())
+                .thenReturn(Map.of("contractApi", HealthState.UP, "authApi", HealthState.DOWN));
+
+        // When
+        var res = healthIndicator.health();
+
+        // Then
+        assertEquals(Status.UP, res.getStatus());
+    }
+}

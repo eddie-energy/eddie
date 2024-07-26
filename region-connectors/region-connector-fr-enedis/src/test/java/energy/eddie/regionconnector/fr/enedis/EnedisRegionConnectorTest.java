@@ -1,9 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -16,7 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -31,23 +28,9 @@ class EnedisRegionConnectorTest {
     @Mock
     private FrPermissionRequestRepository repository;
     @Mock
-    private EnedisApi enedisApi;
-    @Mock
     private Outbox outbox;
     @InjectMocks
     private EnedisRegionConnector rc;
-
-    @Test
-    void health_returnsHealthChecks() {
-        // Given
-        when(enedisApi.health()).thenReturn(Map.of("service", HealthState.UP));
-
-        // When
-        var res = rc.health();
-
-        // Then
-        assertEquals(Map.of("service", HealthState.UP), res);
-    }
 
     @Test
     void getMetadata_returnsExpected() {

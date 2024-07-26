@@ -27,9 +27,9 @@ import java.io.IOException;
  * <p>
  * The following configuration properties are used:
  * <ul>
- *      <li>management.server.port=9090</li>
- *      <li>management.server.urlprefix=management</li>
- *      <li>spring.data.rest.basepath=${management.server.urlprefix}</li>
+ *      <li>eddie.management.server.port=9090</li>
+ *      <li>eddie.management.server.urlprefix=management</li>
+ *      <li>spring.data.rest.basepath=${eddie.management.server.urlprefix}</li>
  * </ul>
  *
  * @see <a
@@ -43,8 +43,8 @@ public class ManagementApiConfig {
     private final String managementUrlPrefix;
 
     public ManagementApiConfig(
-            @Value("${management.server.port}") int managementPort,
-            @Value("${management.server.urlprefix}") String managementUrlPrefix
+            @Value("${eddie.management.server.port}") int managementPort,
+            @Value("${eddie.management.server.urlprefix}") String managementUrlPrefix
     ) {
         this.managementPort = managementPort;
         this.managementUrlPrefix = managementUrlPrefix.startsWith("/") ? managementUrlPrefix : "/" + managementUrlPrefix;

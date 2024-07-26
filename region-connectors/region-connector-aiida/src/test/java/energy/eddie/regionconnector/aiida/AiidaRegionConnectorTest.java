@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.aiida;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.regionconnector.aiida.services.AiidaPermissionService;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,14 +15,12 @@ import java.time.Duration;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class AiidaRegionConnectorTest {
     @Mock
     private AiidaPermissionService mockService;
-    private final String expectedRcId = "aiida";
     private AiidaRegionConnector connector;
     private final Sinks.Many<ConnectionStatusMessage> statusSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<ConsentMarketDocument> documentSink = Sinks.many().multicast().onBackpressureBuffer();
@@ -35,7 +32,7 @@ class AiidaRegionConnectorTest {
 
     @Test
     void getMetadata_MdaCodeIsAiida() {
-        assertEquals(expectedRcId, connector.getMetadata().id());
+        assertEquals("aiida", connector.getMetadata().id());
     }
 
     @Test
@@ -48,14 +45,6 @@ class AiidaRegionConnectorTest {
 
         // Then
         verify(mockService).terminatePermission(permissionId);
-    }
-
-    @Test
-    void verify_healthStateIsAlwaysHealthy() {
-        HealthState healthState = connector.health().get(expectedRcId);
-
-        assertNotNull(healthState);
-        assertEquals(HealthState.UP, healthState);
     }
 
     @Test

@@ -25,10 +25,10 @@ public class EnedisApiClient implements EnedisApi {
     public static final String METERING_DATA_DC_V_5_DAILY_CONSUMPTION = "metering_data_dc/v5/daily_consumption";
     public static final String METERING_DATA_PLC_V_5_PRODUCTION_LOAD_CURVE = "metering_data_plc/v5/production_load_curve";
     public static final String METERING_DATA_DP_V_5_DAILY_PRODUCTION = "metering_data_dp/v5/daily_production";
-    static final String AUTHENTICATION_API = "AuthenticationAPI";
-    static final String METERING_POINT_API = "MeteringPointAPI";
-    static final String CONTRACT_API = "ContractAPI";
-    static final String CONTRACT_ENDPOINT = "customers_upc/v5/usage_points/contracts";
+    public static final String AUTHENTICATION_API = "AuthenticationAPI";
+    public static final String METERING_POINT_API = "MeteringPointAPI";
+    public static final String CONTRACT_API = "ContractAPI";
+    private static final String CONTRACT_ENDPOINT = "customers_upc/v5/usage_points/contracts";
     private final EnedisTokenProvider tokenProvider;
     private final Map<String, HealthState> healthChecks = new HashMap<>();
     private final WebClient webClient;

@@ -1,28 +1,21 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.client;
 
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MijnAansluitingResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.actuate.health.Health;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class ApiClient {
-    private static final String MIJN_AANSLUITING = "MIJN_AANSLUITING";
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiClient.class);
     private final WebClient client = WebClient.create();
-    private final Map<String, HealthState> health = new HashMap<>();
-
-    public ApiClient() {
-        health.put(MIJN_AANSLUITING, HealthState.UP);
-    }
+    private Health health = Health.unknown().build();
 
     public Mono<List<MijnAansluitingResponse>> fetchConsumptionData(String singleSyncUri, String accessToken) {
         return client.get()
@@ -30,14 +23,14 @@ public class ApiClient {
                      .headers(h -> h.setBearerAuth(accessToken))
                      .retrieve()
                      .bodyToMono(new ParameterizedTypeReference<List<MijnAansluitingResponse>>() {})
-                     .doOnError(exception -> {
+                     .doOnError(Exception.class, exception -> {
                          LOGGER.warn("Data fetching failed", exception);
-                         health.put(MIJN_AANSLUITING, HealthState.DOWN);
+                         health = Health.down(exception).build();
                      })
-                     .doOnNext(ignored -> health.put(MIJN_AANSLUITING, HealthState.UP));
+                     .doOnNext(ignored -> health = Health.up().build());
     }
 
-    public Map<String, HealthState> health() {
+    public Health health() {
         return health;
     }
 }

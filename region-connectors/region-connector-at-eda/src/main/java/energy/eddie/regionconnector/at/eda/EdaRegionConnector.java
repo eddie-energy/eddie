@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-import java.util.Map;
-
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
 @Component
@@ -67,10 +65,5 @@ public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatus
         }
         outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.TERMINATED));
         outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
-    }
-
-    @Override
-    public Map<String, HealthState> health() {
-        return edaAdapter.health();
     }
 }

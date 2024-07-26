@@ -1,7 +1,6 @@
 package energy.eddie.core;
 
 import energy.eddie.core.services.DataNeedCalculationRouter;
-import energy.eddie.core.services.HealthService;
 import energy.eddie.core.services.MetadataService;
 import energy.eddie.core.web.PermissionFacadeController;
 import org.junit.jupiter.api.Nested;
@@ -29,8 +28,6 @@ class CoreSpringConfigTest {
         @MockBean
         private MetadataService unusedMetadataService;
         @MockBean
-        private HealthService unusedHealthService;
-        @MockBean
         private DataNeedCalculationRouter dataNeedCalculationRouter;
 
         @Test
@@ -57,8 +54,6 @@ class CoreSpringConfigTest {
         private MockMvc mockMvc;
         @MockBean
         private MetadataService unusedMetadataService;
-        @MockBean
-        private HealthService unusedHealthService;
         @MockBean
         private DataNeedCalculationRouter dataNeedCalculationRouter;
 

@@ -1,17 +1,16 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.client;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MijnAansluitingResponse;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.JsonResourceObjectMapper;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.actuate.health.Status;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -56,7 +55,7 @@ class ApiClientTest {
         StepVerifier.create(res)
                     .expectError()
                     .verify();
-        assertEquals(Map.of("MIJN_AANSLUITING", HealthState.DOWN), apiClient.health());
+        assertEquals(Status.DOWN, apiClient.health().getStatus());
     }
 
     @Test
@@ -80,7 +79,7 @@ class ApiClientTest {
         StepVerifier.create(res)
                     .expectNextCount(1)
                     .verifyComplete();
-        assertEquals(Map.of("MIJN_AANSLUITING", HealthState.UP), apiClient.health());
+        assertEquals(Status.UP, apiClient.health().getStatus());
 
         // Clean-Up
         server.close();
