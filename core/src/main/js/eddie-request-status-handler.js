@@ -1,4 +1,4 @@
-import { html, LitElement, render } from "lit";
+import { html, LitElement } from "lit";
 
 import STATUS_MESSAGES from "./permission-process-status-messages.json";
 
@@ -14,7 +14,7 @@ const VARIANT_ICONS = {
 class EddieRequestStatusHandler extends LitElement {
   static properties = {
     status: { type: String },
-    reason: { type: String },
+    detailMessage: { type: String },
   };
 
   constructor() {
@@ -27,7 +27,7 @@ class EddieRequestStatusHandler extends LitElement {
 
     this.addEventListener("eddie-request-status", (event) => {
       this.status = event.detail.status;
-      this.reason = event.detail.reason;
+      this.detailMessage = event.detail.message;
     });
   }
 
@@ -43,7 +43,7 @@ class EddieRequestStatusHandler extends LitElement {
         <sl-icon name="${VARIANT_ICONS[variant]}" slot="icon"></sl-icon>
         <p>
           <strong>Status: ${title}</strong><br />
-          ${message} ${this.reason ?? ""}
+          ${message} ${this.detailMessage ?? ""}
         </p>
       </sl-alert>
     `;
