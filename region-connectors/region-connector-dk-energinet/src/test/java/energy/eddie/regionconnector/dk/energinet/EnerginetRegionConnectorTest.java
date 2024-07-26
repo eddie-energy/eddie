@@ -1,9 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -12,12 +10,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -33,20 +29,8 @@ class EnerginetRegionConnectorTest {
     private Outbox outbox;
     @Mock
     private DkPermissionRequestRepository repository;
-    @Mock
-    private EnerginetCustomerApi energinetCustomerApi;
     @InjectMocks
     private EnerginetRegionConnector rc;
-
-    @Test
-    void health_returnsHealthChecks() {
-        // Given
-        when(energinetCustomerApi.health()).thenReturn(Mono.just(Map.of("service", HealthState.UP)));
-
-        // When
-        var res = rc.health();
-        assertEquals(Map.of("service", HealthState.UP), res);
-    }
 
     @Test
     void getMetadata_returnsExpected() {

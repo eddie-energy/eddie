@@ -3,10 +3,8 @@ package energy.eddie.core.web;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.core.services.DataNeedCalculationRouter;
-import energy.eddie.core.services.HealthService;
 import energy.eddie.core.services.MetadataService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +33,6 @@ class PermissionFacadeControllerTest {
     @MockBean
     private MetadataService metadataService;
     @MockBean
-    private HealthService healthService;
-    @MockBean
     private DataNeedCalculationRouter router;
 
     @Test
@@ -49,19 +45,6 @@ class PermissionFacadeControllerTest {
         mockMvc.perform(get("/api/region-connectors-metadata"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$", hasSize(2)));
-    }
-
-    @Test
-    void regionConnectorsHealth_returnsAllRegionConnectorsHealth() throws Exception {
-        var first = Map.of("first_one", HealthState.UP, "first_two", HealthState.DOWN);
-        var second = Map.of("second_one", HealthState.UP);
-
-        when(healthService.getRegionConnectorHealth()).thenReturn(Map.of("first", first, "second", second));
-
-        mockMvc.perform(get("/api/region-connectors-health"))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.first", aMapWithSize(2)))
-               .andExpect(jsonPath("$.second", aMapWithSize(1)));
     }
 
     @Test

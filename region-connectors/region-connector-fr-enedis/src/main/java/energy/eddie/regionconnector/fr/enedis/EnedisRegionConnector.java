@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis;
 
 import energy.eddie.api.v0.*;
-import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -11,25 +10,20 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-import java.util.Map;
-
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
 @Component
 public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
-    private final EnedisApi enedisApi;
     private final FrPermissionRequestRepository repository;
     private final Outbox outbox;
 
     public EnedisRegionConnector(
-            EnedisApi enedisApi,
             Sinks.Many<ConnectionStatusMessage> connectionStatusSink,
             FrPermissionRequestRepository repository,
             Outbox outbox
     ) {
-        this.enedisApi = enedisApi;
         this.connectionStatusSink = connectionStatusSink;
         this.repository = repository;
         this.outbox = outbox;
@@ -53,11 +47,6 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
             return;
         }
         outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.TERMINATED));
-    }
-
-    @Override
-    public Map<String, HealthState> health() {
-        return enedisApi.health();
     }
 
     @Override

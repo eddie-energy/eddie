@@ -15,14 +15,12 @@ import java.time.Duration;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class AiidaRegionConnectorTest {
     @Mock
     private AiidaPermissionService mockService;
-    private final String expectedRcId = "aiida";
     private AiidaRegionConnector connector;
     private final Sinks.Many<ConnectionStatusMessage> statusSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<ConsentMarketDocument> documentSink = Sinks.many().multicast().onBackpressureBuffer();
@@ -34,7 +32,7 @@ class AiidaRegionConnectorTest {
 
     @Test
     void getMetadata_MdaCodeIsAiida() {
-        assertEquals(expectedRcId, connector.getMetadata().id());
+        assertEquals("aiida", connector.getMetadata().id());
     }
 
     @Test
@@ -47,13 +45,6 @@ class AiidaRegionConnectorTest {
 
         // Then
         verify(mockService).terminatePermission(permissionId);
-    }
-
-    @Test
-    void verify_healthStateIsAlwaysHealthy() {
-        var healthState = connector.health();
-
-        assertNotNull(healthState);
     }
 
     @Test

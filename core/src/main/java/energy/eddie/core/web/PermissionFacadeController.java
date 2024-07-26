@@ -1,10 +1,8 @@
 package energy.eddie.core.web;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.core.services.DataNeedCalculationRouter;
-import energy.eddie.core.services.HealthService;
 import energy.eddie.core.services.MetadataService;
 import energy.eddie.core.services.UnknownRegionConnectorException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
@@ -21,27 +19,19 @@ import java.util.Map;
 @RequestMapping("/api")
 public class PermissionFacadeController {
     private final MetadataService metadataService;
-    private final HealthService healthService;
     private final DataNeedCalculationRouter dataNeedCalculationRouter;
 
     public PermissionFacadeController(
             MetadataService metadataService,
-            HealthService healthService,
             DataNeedCalculationRouter dataNeedCalculationRouter
     ) {
         this.metadataService = metadataService;
-        this.healthService = healthService;
         this.dataNeedCalculationRouter = dataNeedCalculationRouter;
     }
 
     @GetMapping("/region-connectors-metadata")
     public ResponseEntity<Collection<RegionConnectorMetadata>> regionConnectorsMetadata() {
         return ResponseEntity.ok(metadataService.getRegionConnectorMetadata());
-    }
-
-    @GetMapping("/region-connectors-health")
-    public ResponseEntity<Map<String, Map<String, HealthState>>> regionConnectorsHealth() {
-        return ResponseEntity.ok(healthService.getRegionConnectorHealth());
     }
 
     @GetMapping("/region-connectors/{region-connector}/data-needs/{data-need-id}")

@@ -1,14 +1,15 @@
 package energy.eddie.regionconnector.aiida;
 
-import energy.eddie.api.v0.*;
+import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
+import energy.eddie.api.v0.RegionConnector;
+import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.regionconnector.aiida.services.AiidaPermissionService;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
-
-import java.util.Map;
 
 @Component
 public class AiidaRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider, ConsentMarketDocumentProvider {
@@ -34,11 +35,6 @@ public class AiidaRegionConnector implements RegionConnector, Mvp1ConnectionStat
     @Override
     public void terminatePermission(String permissionId) {
         aiidaPermissionService.terminatePermission(permissionId);
-    }
-
-    @Override
-    public Map<String, HealthState> health() {
-        return Map.of();
     }
 
     @Override

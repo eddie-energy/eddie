@@ -8,7 +8,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
@@ -51,15 +52,5 @@ class DatadisRegionConnectorTest {
 
         // then
         assertEquals(DatadisRegionConnectorMetadata.getInstance(), result);
-    }
-
-    @Test
-    void health_returnsHealthChecks() {
-        // Given
-        // When
-        var res = connector.health();
-
-        // Then
-        assertNotNull(res);
     }
 }

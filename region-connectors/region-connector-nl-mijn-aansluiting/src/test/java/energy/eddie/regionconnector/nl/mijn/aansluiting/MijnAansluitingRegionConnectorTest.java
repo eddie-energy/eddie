@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,16 +35,5 @@ class MijnAansluitingRegionConnectorTest {
 
         // Then
         assertEquals(MijnAansluitingRegionConnectorMetadata.getInstance(), res);
-    }
-
-    @Test
-    void testHealth_returnsHealth() {
-        // Given
-
-        // When
-        var res = regionConnector.health();
-
-        // Then
-        assertNotNull(res);
     }
 }

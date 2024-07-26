@@ -2,8 +2,6 @@ package energy.eddie.api.v0;
 
 import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentProvider;
 
-import java.util.Map;
-
 /**
  * A region connector connects MDAs to EDDIE. It implements the MDA specific processes and converts requests for
  * permissions to the format expected by the MDA and also implements MDA and CA specifics related to these MDAs.
@@ -35,11 +33,4 @@ public interface RegionConnector {
      * @param permissionId unique id of the permission
      */
     void terminatePermission(String permissionId);
-
-    /**
-     * Returns the health of the region connectors and its services.
-     *
-     * @return a map of the health of the used services by the region connector.
-     */
-    Map<String, HealthState> health();
 }
