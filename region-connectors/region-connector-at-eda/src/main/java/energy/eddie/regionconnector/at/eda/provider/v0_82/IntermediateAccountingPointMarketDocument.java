@@ -7,7 +7,6 @@ import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import energy.eddie.regionconnector.at.eda.dto.masterdata.*;
-import energy.eddie.regionconnector.at.eda.processing.utils.XmlGregorianCalenderUtils;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 
 import java.util.Optional;
@@ -56,8 +55,7 @@ public class IntermediateAccountingPointMarketDocument {
                                                  .withAccountingPoints(accountingPointComplexType(edaMasterData)
                                                  )
                 )
-                .withCreatedDateTime(new EsmpDateTime(
-                        XmlGregorianCalenderUtils.toUtcZonedDateTime(edaMasterData.documentCreationDateTime())).toString()
+                .withCreatedDateTime(new EsmpDateTime(edaMasterData.documentCreationDateTime()).toString()
                 );
     }
 

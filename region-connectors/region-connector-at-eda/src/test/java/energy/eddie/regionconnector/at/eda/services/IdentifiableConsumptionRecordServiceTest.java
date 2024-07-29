@@ -6,55 +6,51 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.*;
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Sinks;
-import reactor.test.StepVerifier;
-import reactor.test.publisher.TestPublisher;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class IdentifiableConsumptionRecordServiceTest {
 
+    @Mock
+    private AtPermissionRequestRepository repository;
+
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
-    void subscribeToConsumptionRecordPublisher_returnsCorrectlyMappedRecords() {
+    void mapToIdentifiableConsumptionRecord_returnsCorrectlyMappedRecord() {
         String identifiableMeteringPoint = "identifiableMeteringPoint";
-        String unidentifiableMeteringPoint = "unidentifiableMeteringPoint";
         var identifiableConsumptionRecord = createConsumptionRecord(identifiableMeteringPoint);
-        var unidentifiableConsumptionRecord = createConsumptionRecord(unidentifiableMeteringPoint);
 
-        TestPublisher<EdaConsumptionRecord> testPublisher = TestPublisher.create();
-        var repository = mock(AtPermissionRequestRepository.class);
-        when(repository.findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate(eq(identifiableMeteringPoint),
-                                                                                    any()))
-                .thenReturn(List.of(
-                        new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1",
-                                                    PermissionProcessStatus.ACCEPTED),
-                        new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2",
-                                                    PermissionProcessStatus.ACCEPTED)
+        when(repository.findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate(
+                eq(identifiableMeteringPoint),
+                any()
+        ))
+                .thenReturn(List.of(new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1",
+                                                                PermissionProcessStatus.ACCEPTED),
+                                    new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2",
+                                                                PermissionProcessStatus.ACCEPTED)
                 ));
-        when(repository.findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate(eq(unidentifiableMeteringPoint),
-                                                                                    any()))
-                .thenReturn(List.of());
 
-        IdentifiableConsumptionRecordService identifiableConsumptionRecordService = new IdentifiableConsumptionRecordService(
-                testPublisher.flux(), repository);
+        IdentifiableConsumptionRecordService service = new IdentifiableConsumptionRecordService(repository);
 
-        StepVerifier.create(identifiableConsumptionRecordService.getIdentifiableConsumptionRecordStream())
-                    .then(() -> testPublisher.emit(identifiableConsumptionRecord, unidentifiableConsumptionRecord))
-                    .assertNext(icr -> {
-                        assertEquals(identifiableConsumptionRecord, icr.consumptionRecord());
-                        assertEquals(2, icr.permissionRequests().size());
-                    })
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
+        var result = service.mapToIdentifiableConsumptionRecord(identifiableConsumptionRecord);
+
+        assertAll(
+                () -> assertTrue(result.isPresent()),
+                () -> assertEquals(identifiableConsumptionRecord, result.get().consumptionRecord()),
+                () -> assertEquals(2, result.get().permissionRequests().size())
+        );
     }
 
     private EdaConsumptionRecord createConsumptionRecord(String meteringPoint) {
@@ -98,48 +94,18 @@ class IdentifiableConsumptionRecordServiceTest {
     }
 
     @Test
-    void subscribeToConsumptionRecordPublisher_multipleSubscriptionsExecuteCodeOnlyOnce() {
-        String identifiableMeteringPoint = "identifiableMeteringPoint";
-        var identifiableConsumptionRecord = createConsumptionRecord(identifiableMeteringPoint);
+    void mapToIdentifiableConsumptionRecord_withUnmappableRecord_returnsEmpty() {
+        String unidentifiableMeteringPoint = "unidentifiableMeteringPoint";
+        var unidentifiableConsumptionRecord = createConsumptionRecord(unidentifiableMeteringPoint);
 
-        Sinks.Many<EdaConsumptionRecord> testPublisher = Sinks.many().unicast().onBackpressureBuffer();
-        var repository = mock(AtPermissionRequestRepository.class);
-        when(repository.findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate(eq(identifiableMeteringPoint),
+        when(repository.findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate(eq(unidentifiableMeteringPoint),
                                                                                     any()))
-                .thenReturn(List.of(
-                        new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1",
-                                                    PermissionProcessStatus.ACCEPTED),
-                        new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2",
-                                                    PermissionProcessStatus.ACCEPTED))
-                );
+                .thenReturn(List.of());
 
-        IdentifiableConsumptionRecordService identifiableConsumptionRecordService = new IdentifiableConsumptionRecordService(
-                testPublisher.asFlux(), repository);
+        IdentifiableConsumptionRecordService service = new IdentifiableConsumptionRecordService(repository);
 
-        var first = StepVerifier.create(identifiableConsumptionRecordService.getIdentifiableConsumptionRecordStream())
-                                .then(() -> {
-                                    testPublisher.tryEmitNext(identifiableConsumptionRecord);
-                                    testPublisher.tryEmitComplete();
-                                })
-                                .assertNext(icr -> {
-                                    assertEquals(identifiableConsumptionRecord, icr.consumptionRecord());
-                                    assertEquals(2, icr.permissionRequests().size());
-                                })
-                                .expectComplete()
-                                .verifyLater();
+        var result = service.mapToIdentifiableConsumptionRecord(unidentifiableConsumptionRecord);
 
-        var second = StepVerifier.create(identifiableConsumptionRecordService.getIdentifiableConsumptionRecordStream())
-                                 .assertNext(icr -> {
-                                     assertEquals(identifiableConsumptionRecord, icr.consumptionRecord());
-                                     assertEquals(2, icr.permissionRequests().size());
-                                 })
-                                 .expectComplete()
-                                 .verifyLater();
-
-        first.verify(Duration.ofSeconds(2));
-        second.verify(Duration.ofSeconds(2));
-        verify(repository, times(1)).findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate(eq(
-                                                                                                         identifiableMeteringPoint),
-                                                                                                 any());
+        assertTrue(result.isEmpty());
     }
 }

@@ -14,15 +14,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import reactor.core.publisher.Sinks;
-import reactor.test.StepVerifier;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,28 +29,29 @@ class IdentifiableMasterDataServiceTest {
     @Mock
     Outbox outbox;
 
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     void mapsMasterDataAndFulfillsPermissionRequest() throws IOException {
+        // Given
+        ArgumentCaptor<SimpleEvent> eventCaptor = ArgumentCaptor.forClass(SimpleEvent.class);
         EdaMasterData masterData = masterData();
-        Sinks.Many<EdaMasterData> masterDataSink = Sinks.many().unicast().onBackpressureBuffer();
-        when(repository.findByConversationIdOrCMRequestId(masterData.conversationId(), null))
+        when(repository.findByConversationIdAndMeteringPointId(masterData.conversationId(), masterData.meteringPoint()))
                 .thenReturn(Optional.of(new SimplePermissionRequest("pmId", "connId", "dataNeedId", "test", "any",
                                                                     PermissionProcessStatus.ACCEPTED)));
 
-        var service = new IdentifiableMasterDataService(masterDataSink.asFlux(), repository, outbox);
+        var service = new IdentifiableMasterDataService(repository, outbox);
 
-        StepVerifier.create(service.getIdentifiableMasterDataStream())
-                    .then(() -> masterDataSink.tryEmitNext(masterData))
-                    .assertNext(identifiableMasterData -> assertAll(
-                            () -> assertEquals(masterData, identifiableMasterData.masterData()),
-                            () -> assertEquals("pmId", identifiableMasterData.permissionRequest().permissionId()),
-                            () -> assertEquals("connId", identifiableMasterData.permissionRequest().connectionId())
+        // When
+        var result = service.mapToIdentifiableMasterData(masterData);
 
-                    ))
-                    .then(masterDataSink::tryEmitComplete)
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
-        ArgumentCaptor<SimpleEvent> eventCaptor = ArgumentCaptor.forClass(SimpleEvent.class);
+        // Then
+        assertAll(
+                () -> assertTrue(result.isPresent()),
+                () -> assertEquals(masterData, result.get().masterData()),
+                () -> assertEquals("pmId", result.get().permissionRequest().permissionId()),
+                () -> assertEquals("connId", result.get().permissionRequest().connectionId())
+        );
+
         verify(outbox).commit(eventCaptor.capture());
         SimpleEvent event = eventCaptor.getValue();
         assertAll(
@@ -74,19 +71,18 @@ class IdentifiableMasterDataServiceTest {
 
     @Test
     void noPermissionRequestFound_doesNothing() throws IOException {
+        // Given
         EdaMasterData masterData = masterData();
-        Sinks.Many<EdaMasterData> masterDataSink = Sinks.many().unicast().onBackpressureBuffer();
-        when(repository.findByConversationIdOrCMRequestId(masterData.conversationId(), null))
+        when(repository.findByConversationIdAndMeteringPointId(masterData.conversationId(), masterData.meteringPoint()))
                 .thenReturn(Optional.empty());
 
-        var service = new IdentifiableMasterDataService(masterDataSink.asFlux(), repository, outbox);
+        var service = new IdentifiableMasterDataService(repository, outbox);
 
-        StepVerifier.create(service.getIdentifiableMasterDataStream())
-                    .then(() -> masterDataSink.tryEmitNext(masterData))
-                    .expectNextCount(0)
-                    .then(masterDataSink::tryEmitComplete)
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
+        // When
+        var result = service.mapToIdentifiableMasterData(masterData);
+
+        // Then
+        assertTrue(result.isEmpty());
         verifyNoInteractions(outbox);
     }
 }

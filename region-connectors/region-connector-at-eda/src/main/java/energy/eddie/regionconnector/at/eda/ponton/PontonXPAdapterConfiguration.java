@@ -7,7 +7,6 @@ import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
  * Messenger.
  */
 public interface PontonXPAdapterConfiguration {
-    int DEFAULT_PORT = 2600;
     String PREFIX = AtConfiguration.PREFIX + "ponton.messenger.";
     String ADAPTER_ID_KEY = PREFIX + "adapter.id";
     String ADAPTER_VERSION_KEY = PREFIX + "adapter.version";
@@ -15,6 +14,8 @@ public interface PontonXPAdapterConfiguration {
     String PORT_KEY = PREFIX + "port";
     String API_ENDPOINT_KEY = PREFIX + "api.endpoint";
     String WORK_FOLDER_KEY = PREFIX + "folder";
+    String USERNAME_KEY = PREFIX + "username";
+    String PASSWORD_KEY = PREFIX + "password";
 
     /**
      * ID of the adapter that will be used by the Ponton XP Messenger. The value used for this should be configured as
@@ -47,4 +48,15 @@ public interface PontonXPAdapterConfiguration {
      * identify the adapter.
      */
     String workFolder();
+
+    /**
+     * Username for the Ponton XP Messenger to use REST API endpoints that require authentication. Needs to be a user
+     * without 2FA activated.
+     */
+    String username();
+
+    /**
+     * Password for the given username.
+     */
+    String password();
 }

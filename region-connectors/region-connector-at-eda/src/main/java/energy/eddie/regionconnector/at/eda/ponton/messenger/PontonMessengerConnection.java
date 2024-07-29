@@ -6,7 +6,7 @@ import de.ponton.xp.adapter.api.TransmissionException;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
 
-public interface PontonMessengerConnection extends MessengerHealth {
+public interface PontonMessengerConnection extends MessengerHealth, MessengerMonitor {
     static PontonMessengerConnectionBuilder newBuilder() {
         return new PontonMessengerConnectionBuilder();
     }

@@ -25,11 +25,13 @@ dependencies {
     implementation(project(":region-connectors:shared"))
 
     implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.oxm)
     implementation(libs.hibernate.validator)
+    implementation(libs.nimbus.oidc)
 
     // dependency for PontonXP Messenger
     implementation(files("libs/adapterapi2.jar"))

@@ -19,8 +19,6 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.data.needs.calculation.strategies.EdaStrategy;
-import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
-import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
@@ -30,9 +28,9 @@ import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactoryCollection;
-import energy.eddie.regionconnector.at.eda.ponton.messenger.MessengerHealth;
+import energy.eddie.regionconnector.at.eda.ponton.messenger.MessengerMonitor;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConnection;
-import energy.eddie.regionconnector.at.eda.ponton.messenger.RestClientMessengerHealth;
+import energy.eddie.regionconnector.at.eda.ponton.messenger.WebClientMessengerHealth;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
 import energy.eddie.regionconnector.at.eda.provider.v0_82.EdaEddieValidatedHistoricalDataMarketDocumentProvider;
@@ -55,7 +53,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.web.client.RestClient;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -78,14 +77,20 @@ public class AtEdaBeanConfig {
             @Value("${" + HOSTNAME_KEY + "}") String hostname,
             @Value("${" + PORT_KEY + "}") int port,
             @Value("${" + API_ENDPOINT_KEY + "}") String apiEndpoint,
-            @Value("${" + WORK_FOLDER_KEY + "}") String workFolder
+            @Value("${" + WORK_FOLDER_KEY + "}") String workFolder,
+            @Value("${" + USERNAME_KEY + "}") String username,
+            @Value("${" + PASSWORD_KEY + "}") String password
     ) {
-        return new PlainPontonXPAdapterConfiguration(adapterId,
-                                                     adapterVersion,
-                                                     hostname,
-                                                     port,
-                                                     apiEndpoint,
-                                                     workFolder);
+        return new PlainPontonXPAdapterConfiguration(
+                adapterId,
+                adapterVersion,
+                hostname,
+                port,
+                apiEndpoint,
+                workFolder,
+                username,
+                password
+        );
     }
 
     @Bean
@@ -96,33 +101,27 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordStream(
-            IdentifiableConsumptionRecordService identifiableConsumptionRecordService
-    ) {
-        return identifiableConsumptionRecordService.getIdentifiableConsumptionRecordStream();
-    }
-
-    @Bean
-    public Flux<IdentifiableMasterData> identifiableMasterDataFlux(
-            IdentifiableMasterDataService identifiableMasterDataService
-    ) {
-        return identifiableMasterDataService.getIdentifiableMasterDataStream();
-    }
-
-    @Bean
-    public Flux<EdaConsumptionRecord> consumptionRecordStream(EdaAdapter edaAdapter) {
+    public Flux<IdentifiableConsumptionRecord> consumptionRecordStream(EdaAdapter edaAdapter) {
         return edaAdapter.getConsumptionRecordStream();
     }
 
     @Bean
-    public Flux<EdaMasterData> masterDataStream(EdaAdapter edaAdapter) {
+    public Flux<IdentifiableMasterData> masterDataStream(EdaAdapter edaAdapter) {
         return edaAdapter.getMasterDataStream();
     }
 
     @Bean
     @Profile("!no-ponton")
-    public EdaAdapter edaAdapter(PontonMessengerConnection pontonMessengerConnection) {
-        return new PontonXPAdapter(pontonMessengerConnection);
+    public EdaAdapter edaAdapter(
+            PontonMessengerConnection pontonMessengerConnection,
+            IdentifiableConsumptionRecordService identifiableConsumptionRecordService,
+            IdentifiableMasterDataService identifiableMasterDataService,
+            TaskScheduler taskScheduler
+    ) {
+        return new PontonXPAdapter(pontonMessengerConnection,
+                                   identifiableConsumptionRecordService,
+                                   identifiableMasterDataService,
+                                   taskScheduler);
     }
 
     @Bean
@@ -130,14 +129,16 @@ public class AtEdaBeanConfig {
             PontonXPAdapterConfiguration configuration,
             InboundMessageFactoryCollection inboundMessageFactoryCollection,
             OutboundMessageFactoryCollection outboundMessageFactoryCollection,
-            MessengerHealth healthApi
+            WebClient webClient,
+            MessengerMonitor messengerMonitor
     ) throws ConnectionException, IOException {
         return PontonMessengerConnection
                 .newBuilder()
                 .withConfig(configuration)
                 .withInboundMessageFactoryCollection(inboundMessageFactoryCollection)
                 .withOutboundMessageFactoryCollection(outboundMessageFactoryCollection)
-                .withHealthApi(healthApi)
+                .withHealthApi(new WebClientMessengerHealth(webClient, configuration))
+                .withMessengerMonitor(messengerMonitor)
                 .build();
     }
 
@@ -213,13 +214,8 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public RestClient restClient() {
-        return RestClient.create();
-    }
-
-    @Bean
-    public MessengerHealth messengerHealth(RestClient restClient, PontonXPAdapterConfiguration config) {
-        return new RestClientMessengerHealth(restClient, config);
+    public WebClient webClient() {
+        return WebClient.create();
     }
 
     @Bean
@@ -243,6 +239,13 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .registerModule(new Jdk8Module());
+    }
+
+    @Bean
     public ConsentMarketDocumentMessageHandler<AtPermissionRequest> consentMarketDocumentMessageHandler(
             EventBus eventBus,
             AtPermissionRequestRepository repository,
@@ -257,13 +260,6 @@ public class AtEdaBeanConfig {
                                                          cimConfig,
                                                          pr -> TRANSMISSION_CYCLE.name(),
                                                          AT_ZONE_ID);
-    }
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .registerModule(new Jdk8Module());
     }
 
     @Bean

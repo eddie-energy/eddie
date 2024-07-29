@@ -39,6 +39,7 @@ public class SendingEventHandler implements EventHandler<ValidatedEvent> {
         this.outbox = outbox;
         this.configuration = configuration;
         eventBus.filteredFlux(ValidatedEvent.class)
+                .filter(ValidatedEvent::needsToBeSent)
                 .subscribe(this::threadedAccept);
     }
 

@@ -3,10 +3,7 @@ package energy.eddie.regionconnector.at.eda.permission.request.events;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import jakarta.annotation.Nullable;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 
@@ -20,6 +17,9 @@ public class ValidatedEvent extends PersistablePermissionEvent {
     private final AllowedGranularity granularity;
     private final String cmRequestId;
     private final String conversationId;
+
+    @Transient
+    private NeedsToBeSent needsToBeSent = NeedsToBeSent.NO;
 
     public ValidatedEvent() {
         super();
@@ -38,7 +38,8 @@ public class ValidatedEvent extends PersistablePermissionEvent {
             @Nullable
             AllowedGranularity granularity,
             String cmRequestId,
-            String conversationId
+            String conversationId,
+            NeedsToBeSent needsToBeSent
     ) {
         super(permissionId, PermissionProcessStatus.VALIDATED);
         this.permissionStart = permissionStart;
@@ -46,6 +47,7 @@ public class ValidatedEvent extends PersistablePermissionEvent {
         this.granularity = granularity;
         this.cmRequestId = cmRequestId;
         this.conversationId = conversationId;
+        this.needsToBeSent = needsToBeSent;
     }
 
     public LocalDate start() {
@@ -68,5 +70,14 @@ public class ValidatedEvent extends PersistablePermissionEvent {
 
     public String conversationId() {
         return conversationId;
+    }
+
+    public boolean needsToBeSent() {
+        return needsToBeSent == NeedsToBeSent.YES;
+    }
+
+    public enum NeedsToBeSent {
+        YES,
+        NO
     }
 }

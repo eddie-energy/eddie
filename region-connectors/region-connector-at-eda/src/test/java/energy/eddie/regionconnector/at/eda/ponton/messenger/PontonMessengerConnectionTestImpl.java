@@ -6,6 +6,7 @@ import de.ponton.xp.adapter.api.TransmissionException;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
 
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 public class PontonMessengerConnectionTestImpl implements PontonMessengerConnection {
@@ -97,5 +98,10 @@ public class PontonMessengerConnectionTestImpl implements PontonMessengerConnect
     public PontonMessengerConnection withMasterDataHandler(MasterDataHandler masterDataHandler) {
         this.masterDataHandler = masterDataHandler;
         return this;
+    }
+
+    @Override
+    public void resendFailedMessages(ZonedDateTime date) {
+        // empty
     }
 }
