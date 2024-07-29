@@ -5,7 +5,6 @@ import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisAccountingPointDataApi;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisHealth;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisMeterReadingApi;
-import energy.eddie.regionconnector.fr.enedis.dto.EnedisContractApiResponse;
 import energy.eddie.regionconnector.fr.enedis.dto.EnedisDataApiResponse;
 import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.dto.address.CustomerAddress;
@@ -144,8 +143,8 @@ public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingP
         return getFromUri(
                 uriBuilder -> uriBuilder.path(CONTRACT_ENDPOINT).queryParam(USAGE_POINT_ID_PARAM, usagePointId).build(),
                 CONTRACT_API,
-                EnedisContractApiResponse.class
-        ).map(EnedisContractApiResponse::customer);
+                CustomerContract.class
+        );
     }
 
     @Override
