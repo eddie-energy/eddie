@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisAccountingPointDataApi;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.dto.contract.CustomerContract;
 import energy.eddie.regionconnector.fr.enedis.dto.contract.UsagePointContract;
@@ -23,10 +23,10 @@ public class AccountingPointDataService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountingPointDataService.class);
     public static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.backoff(10, Duration.ofMinutes(1))
                                                                    .filter(AccountingPointDataService::isRetryable);
-    private final EnedisApi enedisApi;
+    private final EnedisAccountingPointDataApi enedisApi;
     private final Outbox outbox;
 
-    public AccountingPointDataService(EnedisApi enedisApi, Outbox outbox) {
+    public AccountingPointDataService(EnedisAccountingPointDataApi enedisApi, Outbox outbox) {
         this.enedisApi = enedisApi;
         this.outbox = outbox;
     }

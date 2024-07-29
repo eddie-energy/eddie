@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisMeterReadingApi;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
@@ -27,13 +27,13 @@ public class PollingService implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
     public static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.backoff(10, Duration.ofMinutes(1))
                                                                    .filter(PollingService::isRetryable);
-    private final EnedisApi enedisApi;
+    private final EnedisMeterReadingApi enedisApi;
     private final Sinks.Many<IdentifiableMeterReading> meterReadings;
     private final MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService;
     private final Outbox outbox;
 
     public PollingService(
-            EnedisApi enedisApi,
+            EnedisMeterReadingApi enedisApi,
             MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService,
             Sinks.Many<IdentifiableMeterReading> meterReadings, Outbox outbox
     ) {

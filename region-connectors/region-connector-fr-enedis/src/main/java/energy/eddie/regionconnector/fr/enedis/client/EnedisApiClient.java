@@ -2,7 +2,9 @@ package energy.eddie.regionconnector.fr.enedis.client;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.HealthState;
-import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisAccountingPointDataApi;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisHealth;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisMeterReadingApi;
 import energy.eddie.regionconnector.fr.enedis.dto.EnedisContractApiResponse;
 import energy.eddie.regionconnector.fr.enedis.dto.EnedisDataApiResponse;
 import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
@@ -13,6 +15,7 @@ import energy.eddie.regionconnector.fr.enedis.dto.identity.CustomerIdentity;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriBuilder;
 import reactor.core.publisher.Mono;
@@ -25,7 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public class EnedisApiClient implements EnedisApi {
+@Component
+public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingPointDataApi, EnedisHealth {
 
     public static final String USAGE_POINT_ID_PARAM = "usage_point_id";
     public static final String METERING_DATA_CLC_V_5_CONSUMPTION_LOAD_CURVE = "metering_data_clc/v5/consumption_load_curve";
