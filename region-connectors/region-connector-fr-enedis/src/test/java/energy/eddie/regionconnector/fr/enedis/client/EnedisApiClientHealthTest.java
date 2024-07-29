@@ -8,6 +8,8 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
@@ -54,6 +56,9 @@ class EnedisApiClientHealthTest {
         assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API));
         assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.METERING_POINT_API));
         assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.CONTRACT_API));
+        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.CONTACT_API));
+        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.IDENTITY_API));
+        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.ADDRESS_API));
     }
 
     @Test
@@ -79,8 +84,9 @@ class EnedisApiClientHealthTest {
         assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.METERING_POINT_API));
     }
 
-    @Test
-    void health_returnsMETERING_POINT_API_down_whenDataFetchingFails() {
+    @ParameterizedTest
+    @ValueSource(strings = {EnedisApiClient.CONTRACT_API, EnedisApiClient.CONTACT_API, EnedisApiClient.IDENTITY_API, EnedisApiClient.ADDRESS_API, EnedisApiClient.METERING_POINT_API})
+    void health_returnsAPI_down_whenDataFetchingFails(String api) {
         // Given
         EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
         doReturn(Mono.just("token")).when(tokenProvider).getToken();
@@ -89,34 +95,24 @@ class EnedisApiClientHealthTest {
         mockBackEnd.enqueue(new MockResponse().setResponseCode(500));
 
         // When
-        enedisApi.getConsumptionMeterReading("usagePointId", LocalDate.now(ZoneOffset.UTC),
-                                             LocalDate.now(ZoneOffset.UTC), Granularity.PT30M)
-                 .as(StepVerifier::create)
+        var apiResult = switch (api) {
+            case EnedisApiClient.CONTRACT_API -> enedisApi.getContract("usagePointId");
+            case EnedisApiClient.CONTACT_API -> enedisApi.getContact("usagePointId");
+            case EnedisApiClient.IDENTITY_API -> enedisApi.getIdentity("usagePointId");
+            case EnedisApiClient.ADDRESS_API -> enedisApi.getAddress("usagePointId");
+            case EnedisApiClient.METERING_POINT_API -> enedisApi.getConsumptionMeterReading("usagePointId",
+                                                                                            LocalDate.now(ZoneOffset.UTC),
+                                                                                            LocalDate.now(ZoneOffset.UTC),
+                                                                                            Granularity.PT30M);
+            default -> throw new IllegalArgumentException("Unsupported API: " + api);
+        };
+
+        apiResult.as(StepVerifier::create)
                  .expectError()
                  .verify(Duration.ofSeconds(5));
 
         // Then
         assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API));
-        assertEquals(HealthState.DOWN, enedisApi.health().get(EnedisApiClient.METERING_POINT_API));
-    }
-
-    @Test
-    void health_returnsCONTRACT_API_down_whenDataFetchingFails() {
-        // Given
-        EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
-        doReturn(Mono.just("token")).when(tokenProvider).getToken();
-        EnedisApiClient enedisApi = new EnedisApiClient(tokenProvider, webClient);
-
-        mockBackEnd.enqueue(new MockResponse().setResponseCode(500));
-
-        // When
-        enedisApi.getContract("usagePointId")
-                 .as(StepVerifier::create)
-                 .expectError()
-                 .verify(Duration.ofSeconds(5));
-
-        // Then
-        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API));
-        assertEquals(HealthState.DOWN, enedisApi.health().get(EnedisApiClient.CONTRACT_API));
+        assertEquals(HealthState.DOWN, enedisApi.health().get(api));
     }
 }

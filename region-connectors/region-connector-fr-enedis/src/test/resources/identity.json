@@ -1,0 +1,13 @@
+{
+  "customer_id": "XXXX",
+  "identity": {
+    "natural_person": {
+      "title": "M",
+      "firstname": "Jon",
+      "lastname": "Doe"
+    },
+    "legal_entity": {
+      "name": "SNCF Immo"
+    }
+  }
+}
