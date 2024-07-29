@@ -2,10 +2,15 @@ package energy.eddie.regionconnector.fr.enedis.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 
 import java.time.LocalDate;
 import java.util.List;
 
+// this makes it possible to unwrap the customer object without an additional wrapper object
+@JsonTypeName("meter_reading")
+@JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT, use = JsonTypeInfo.Id.NAME)
 public record MeterReading(
         @JsonProperty("usage_point_id")
         String usagePointId,

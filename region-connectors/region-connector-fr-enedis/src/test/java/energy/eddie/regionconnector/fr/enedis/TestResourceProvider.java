@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.fr.enedis.dto.EnedisDataApiResponse;
 import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
 import okhttp3.mockwebserver.MockResponse;
 
@@ -26,7 +25,7 @@ public class TestResourceProvider {
 
     public static MeterReading readMeterReadingFromFile(String resource) throws IOException {
         try (InputStream is = TestResourceProvider.class.getClassLoader().getResourceAsStream(resource)) {
-            return objectMapper.readValue(Objects.requireNonNull(is), EnedisDataApiResponse.class).meterReading();
+            return objectMapper.readValue(Objects.requireNonNull(is), MeterReading.class);
         }
     }
 

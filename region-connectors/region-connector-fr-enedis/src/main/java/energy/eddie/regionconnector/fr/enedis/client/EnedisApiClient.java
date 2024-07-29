@@ -5,7 +5,6 @@ import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisAccountingPointDataApi;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisHealth;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisMeterReadingApi;
-import energy.eddie.regionconnector.fr.enedis.dto.EnedisDataApiResponse;
 import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.dto.address.CustomerAddress;
 import energy.eddie.regionconnector.fr.enedis.dto.contact.CustomerContact;
@@ -96,8 +95,8 @@ public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingP
                         .queryParam("end", end.format(DateTimeFormatter.ISO_DATE))
                         .build(),
                 METERING_POINT_API,
-                EnedisDataApiResponse.class
-        ).map(EnedisDataApiResponse::meterReading);
+                MeterReading.class
+        );
     }
 
     private <T> Mono<T> getFromUri(
