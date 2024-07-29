@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
+import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import okhttp3.mockwebserver.MockResponse;
 
 import java.io.IOException;

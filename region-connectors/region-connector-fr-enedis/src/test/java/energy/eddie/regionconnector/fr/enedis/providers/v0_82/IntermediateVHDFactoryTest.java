@@ -4,7 +4,7 @@ import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguratio
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
-import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
+import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import org.junit.jupiter.api.Test;

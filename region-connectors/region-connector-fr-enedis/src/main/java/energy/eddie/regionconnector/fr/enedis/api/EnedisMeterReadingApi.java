@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.api;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
+import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
