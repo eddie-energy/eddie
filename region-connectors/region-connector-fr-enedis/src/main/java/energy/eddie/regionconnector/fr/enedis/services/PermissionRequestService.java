@@ -18,6 +18,8 @@ import energy.eddie.regionconnector.fr.enedis.utils.EnedisDuration;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.apache.http.client.utils.URIBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -28,6 +30,7 @@ import java.util.UUID;
 
 @Service
 public class PermissionRequestService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestService.class);
     private static final String DATA_NEED_ID = "dataNeedId";
     private final FrPermissionRequestRepository repository;
     private final EnedisConfiguration configuration;
@@ -51,6 +54,7 @@ public class PermissionRequestService {
     }
 
     public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation permissionRequestForCreation) throws DataNeedNotFoundException, UnsupportedDataNeedException {
+        LOGGER.info("Got request to create a new permission, request was: {}", permissionRequestForCreation);
         var permissionId = UUID.randomUUID().toString();
 
         var dataNeed = dataNeedsService.findById(permissionRequestForCreation.dataNeedId())

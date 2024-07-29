@@ -26,6 +26,7 @@ import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
@@ -168,6 +169,20 @@ public class FrEnedisSpringConfig {
         return new DataNeedCalculationServiceImpl(
                 SUPPORTED_DATA_NEEDS,
                 EnedisRegionConnectorMetadata.getInstance()
+        );
+    }
+
+    @Bean
+    public ConnectionStatusMessageHandler<FrEnedisPermissionRequest> connectionStatusMessageHandler(
+            EventBus eventBus,
+            Sinks.Many<ConnectionStatusMessage> csm,
+            FrPermissionRequestRepository repository
+    ) {
+        return new ConnectionStatusMessageHandler<>(
+                eventBus,
+                csm,
+                repository,
+                pr -> ""
         );
     }
 }

@@ -36,11 +36,7 @@ class FrEnedisTest extends E2eTestSetup {
 
         // When navigating to new page, set the variable page to the new page, to make sure that the new page gets screenshotted if something goes wrong on the new page
         var buttonPage = page;
-        page = page.waitForPopup(() -> page.getByRole(
-                                                   AriaRole.IMG,
-                                                   new Page.GetByRoleOptions().setName("Share your ENEDIS Link data")
-                                           )
-                                           .click());
+        page = page.waitForPopup(() -> page.getByAltText("Share your ENEDIS Linky data").click());
 
         var redirectUrl = requestDetails.url() +
                           "/authorization-callback" +
