@@ -9,9 +9,9 @@ class AtDataSourceConfigTest {
     @Test
     void testHashCode_And_Equals() {
         // given
-        var atDataSourceConfig1 = new AtDataSourceConfig(true, "1", "tcp://example1.com", "test1");
-        var atDataSourceConfig2 = new AtDataSourceConfig(true, "1", "tcp://example2.com", "test2");
-        var atDataSourceConfig3 = new AtDataSourceConfig(true, "2", "tcp://example2.com", "test2");
+        var atDataSourceConfig1 = new AtDataSourceConfig(true, "1", "tcp://example1.com", "test1", "", "");
+        var atDataSourceConfig2 = new AtDataSourceConfig(true, "1", "tcp://example2.com", "test2", "", "");
+        var atDataSourceConfig3 = new AtDataSourceConfig(true, "2", "tcp://example2.com", "test2", "", "");
 
         // when
         var atDataSourceConfigSet = new HashSet<AtDataSourceConfig>();

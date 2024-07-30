@@ -13,13 +13,18 @@ public class AiidaRecordFactory {
         RECORD_MAP.put("1.8.0", IntegerAiidaRecord.class);
         RECORD_MAP.put("2.8.0", IntegerAiidaRecord.class);
         RECORD_MAP.put("C.1.0", StringAiidaRecord.class);       // Meter serial number
-        RECORD_MAP.put("1-0:1.8.0", IntegerAiidaRecord.class);
-        RECORD_MAP.put("1-0:2.8.0", IntegerAiidaRecord.class);
-        RECORD_MAP.put("1-0:1.7.0", IntegerAiidaRecord.class);
-        RECORD_MAP.put("1-0:2.7.0", IntegerAiidaRecord.class);
+        RECORD_MAP.put("1-0:1.8.0", IntegerAiidaRecord.class);  // Active energy consumed
+        RECORD_MAP.put("1-0:2.8.0", IntegerAiidaRecord.class);  // Active energy returned to the grid
+        RECORD_MAP.put("1-0:1.7.0", IntegerAiidaRecord.class);  // Positive active instantaneous power
+        RECORD_MAP.put("1-0:2.7.0", IntegerAiidaRecord.class);  // Negative active instantaneous power
+        RECORD_MAP.put("1-0:3.7.0", IntegerAiidaRecord.class);  // Positive reactive instantaneous power
+        RECORD_MAP.put("1-0:3.8.1", IntegerAiidaRecord.class);  // Positive reactive energy in tariff I
+        RECORD_MAP.put("1-0:4.7.0", IntegerAiidaRecord.class);  // Negative reactive instantaneous power
+        RECORD_MAP.put("1-0:4.8.1", IntegerAiidaRecord.class);  // Negative reactive energy in tariff I
         RECORD_MAP.put("0-0:96.1.0", StringAiidaRecord.class);
         RECORD_MAP.put("0-0:1.0.0", IntegerAiidaRecord.class);
         RECORD_MAP.put("0-0:2.0.0", IntegerAiidaRecord.class);
+        RECORD_MAP.put("0-0:2.0.1", IntegerAiidaRecord.class);  // No description on the internet about this code
     }
 
     private AiidaRecordFactory() {

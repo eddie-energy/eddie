@@ -4,7 +4,9 @@ public record AtDataSourceConfig(
         boolean enabled,
         String id,
         String mqttServerUri,
-        String mqttSubscribeTopic
+        String mqttSubscribeTopic,
+        String mqttUsername,
+        String mqttPassword
 ) {
     @Override
     public boolean equals(Object o) {

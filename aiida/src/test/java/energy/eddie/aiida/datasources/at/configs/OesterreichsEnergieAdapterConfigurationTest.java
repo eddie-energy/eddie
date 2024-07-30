@@ -21,14 +21,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         "aiida.datasources.at.oeas[0].enabled=true",
         "aiida.datasources.at.oeas[0].mqttServerUri=tcp://test1",
         "aiida.datasources.at.oeas[0].mqttSubscribeTopic=test1",
+        "aiida.datasources.at.oeas[0].mqttUsername=test1",
+        "aiida.datasources.at.oeas[0].mqttPassword=test1",
         "aiida.datasources.at.oeas[1].id=oea2",
         "aiida.datasources.at.oeas[1].enabled=false",
         "aiida.datasources.at.oeas[1].mqttServerUri=tcp://test2",
         "aiida.datasources.at.oeas[1].mqttSubscribeTopic=test2",
+        "aiida.datasources.at.oeas[1].mqttUsername=test2",
+        "aiida.datasources.at.oeas[1].mqttPassword=test2",
         "aiida.datasources.at.oeas[2].id=oea1",
         "aiida.datasources.at.oeas[2].enabled=true",
         "aiida.datasources.at.oeas[2].mqttServerUri=tcp://test3",
         "aiida.datasources.at.oeas[2].mqttSubscribeTopic=test3",
+        "aiida.datasources.at.oeas[2].mqttUsername=test3",
+        "aiida.datasources.at.oeas[2].mqttPassword=test3",
 })
 class OesterreichsEnergieAdapterConfigurationTest {
     @Autowired

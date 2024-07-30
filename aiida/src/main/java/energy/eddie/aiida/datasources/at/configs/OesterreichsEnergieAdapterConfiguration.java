@@ -33,10 +33,16 @@ public class OesterreichsEnergieAdapterConfiguration implements DataSourceConfig
                                     .filter(AtDataSourceConfig::enabled)
                                     .toList();
         enabledConfigs.forEach(config -> enabledDataSources.add(
-                new OesterreichsEnergieAdapter(config.id(),
-                                               new MqttConfig.MqttConfigBuilder(config.mqttServerUri(),
-                                                                                config.mqttSubscribeTopic()).build(),
-                                               objectMapper)
+                new OesterreichsEnergieAdapter(
+                        config.id(),
+                        new MqttConfig.MqttConfigBuilder(
+                                config.mqttServerUri(),
+                                config.mqttSubscribeTopic()
+                        ).setUsername(config.mqttUsername())
+                         .setPassword(config.mqttPassword())
+                         .build(),
+                        objectMapper
+                )
         ));
     }
 
