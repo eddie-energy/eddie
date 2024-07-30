@@ -2,12 +2,21 @@ package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisAccountingPointDataApi;
+import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
+import energy.eddie.regionconnector.fr.enedis.dto.address.CustomerAddress;
+import energy.eddie.regionconnector.fr.enedis.dto.contact.Contact;
+import energy.eddie.regionconnector.fr.enedis.dto.contact.CustomerContact;
 import energy.eddie.regionconnector.fr.enedis.dto.contract.Contract;
 import energy.eddie.regionconnector.fr.enedis.dto.contract.CustomerContract;
 import energy.eddie.regionconnector.fr.enedis.dto.contract.UsagePointContract;
+import energy.eddie.regionconnector.fr.enedis.dto.identity.CustomerIdentity;
+import energy.eddie.regionconnector.fr.enedis.dto.identity.Identity;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrUsagePointTypeEvent;
+import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisDataSourceInformation;
+import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
+import energy.eddie.regionconnector.fr.enedis.providers.v0_82.SimpleFrEnedisPermissionRequest;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,20 +24,21 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.testcontainers.shaded.org.checkerframework.checker.nullness.qual.Nullable;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import reactor.test.scheduler.VirtualTimeScheduler;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -39,6 +49,8 @@ import static org.mockito.Mockito.*;
 class AccountingPointDataServiceTest {
     private final String usagePointId = "usagePointId";
     private final String permissionId = "permissionId";
+    @Spy
+    Sinks.Many<IdentifiableAccountingPointData> sink = Sinks.many().unicast().onBackpressureBuffer();
     @Mock
     private Outbox outbox;
     @Mock
@@ -165,7 +177,7 @@ class AccountingPointDataServiceTest {
     }
 
     @Test
-    void fetchMeteringPointSegmentThrowsForbidden_revokesPermissionRequest() {
+    void fetchMeteringPointSegmentThrowsForbidden_unfulfillablePermissionRequest() {
         // Given
         when(enedisApi.getContract(usagePointId))
                 .thenReturn(Mono.error(WebClientResponseException.create(HttpStatus.FORBIDDEN.value(),
@@ -177,6 +189,93 @@ class AccountingPointDataServiceTest {
         accountingPointDataService.fetchMeteringPointSegment(permissionId, usagePointId);
 
         // Then
-        verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
+        verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, event.status())));
+    }
+
+    @Test
+    void fetchAccountingPointData_emitsAccountingPointDataAndFulfilledEvent() {
+        // Given
+        var permissionRequest = permissionRequest();
+        var customerContract = new CustomerContract("customerId", List.of());
+        var customerAddress = new CustomerAddress("customerId", List.of());
+        var customerIdentity = new CustomerIdentity("customerId", new Identity(Optional.empty(), Optional.empty()));
+        var customerContact = new CustomerContact("customerId", new Contact("email", "phone"));
+        when(enedisApi.getContract(usagePointId)).thenReturn(Mono.just(customerContract));
+        when(enedisApi.getAddress(usagePointId)).thenReturn(Mono.just(customerAddress));
+        when(enedisApi.getIdentity(usagePointId)).thenReturn(Mono.just(customerIdentity));
+        when(enedisApi.getContact(usagePointId)).thenReturn(Mono.just(customerContact));
+        StepVerifier.Step<IdentifiableAccountingPointData> stepVerifier = StepVerifier
+                .create(sink.asFlux())
+                .assertNext(data -> assertAll(
+                        () -> assertEquals(permissionRequest, data.permissionRequest()),
+                        () -> assertEquals(customerContract, data.contract()),
+                        () -> assertEquals(customerAddress, data.address()),
+                        () -> assertEquals(customerIdentity, data.identity()),
+                        () -> assertEquals(customerContact, data.contact())
+                ))
+                .then(() -> sink.tryEmitComplete());
+
+        // When
+        accountingPointDataService.fetchAccountingPointData(permissionRequest, usagePointId);
+
+        // Then
+        stepVerifier.verifyComplete();
+        verify(outbox).commit(simpleEventCaptor.capture());
+        assertAll(
+                () -> assertEquals(permissionId, simpleEventCaptor.getValue().permissionId()),
+                () -> assertEquals(PermissionProcessStatus.FULFILLED, simpleEventCaptor.getValue().status())
+        );
+    }
+
+    private FrEnedisPermissionRequest permissionRequest() {
+        return new SimpleFrEnedisPermissionRequest(
+                "usagePointId",
+                null,
+                UsagePointType.CONSUMPTION,
+                Optional.empty(),
+                "permissionId",
+                "connectionId",
+                "dataNeedId",
+                PermissionProcessStatus.ACCEPTED,
+                new EnedisDataSourceInformation(),
+                ZonedDateTime.now(),
+                LocalDate.now(),
+                LocalDate.now()
+        );
+    }
+
+    @Test
+    void fetchAccountingPointData_emitsUnfulfillable() {
+        // Given
+        var permissionRequest = permissionRequest();
+        var customerContract = new CustomerContract("customerId", List.of());
+        var customerAddress = new CustomerAddress("customerId", List.of());
+        var customerIdentity = new CustomerIdentity("customerId", new Identity(Optional.empty(), Optional.empty()));
+        var customerContact = new CustomerContact("customerId", new Contact("email", "phone"));
+        when(enedisApi.getContract(usagePointId)).thenReturn(Mono.just(customerContract));
+        when(enedisApi.getContract(usagePointId)).thenReturn(Mono.error(
+                WebClientResponseException.create(
+                        HttpStatus.FORBIDDEN.value(),
+                        "",
+                        null,
+                        null,
+                        null
+                )
+        ));
+        when(enedisApi.getAddress(usagePointId)).thenReturn(Mono.just(customerAddress));
+        when(enedisApi.getIdentity(usagePointId)).thenReturn(Mono.just(customerIdentity));
+        when(enedisApi.getContact(usagePointId)).thenReturn(Mono.just(customerContact));
+
+
+        // When
+        accountingPointDataService.fetchAccountingPointData(permissionRequest, usagePointId);
+
+        // Then
+        verifyNoInteractions(sink);
+        verify(outbox).commit(simpleEventCaptor.capture());
+        assertAll(
+                () -> assertEquals(permissionId, simpleEventCaptor.getValue().permissionId()),
+                () -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, simpleEventCaptor.getValue().status())
+        );
     }
 }
