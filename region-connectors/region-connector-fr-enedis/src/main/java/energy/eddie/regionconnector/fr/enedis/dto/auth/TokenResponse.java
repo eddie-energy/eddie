@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.fr.enedis.dto;
+package energy.eddie.regionconnector.fr.enedis.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

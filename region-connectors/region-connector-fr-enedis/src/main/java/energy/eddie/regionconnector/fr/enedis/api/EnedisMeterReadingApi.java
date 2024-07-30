@@ -1,15 +1,12 @@
 package energy.eddie.regionconnector.fr.enedis.api;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.HealthState;
-import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
-import energy.eddie.regionconnector.fr.enedis.dto.contract.CustomerContract;
+import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.util.Map;
 
-public interface EnedisApi {
+public interface EnedisMeterReadingApi {
     /**
      * Retrieves meter reading data for a specified usage point over a given period. This method supports different
      * granularities for the consumption data: {@link Granularity#PT30M} and {@link Granularity#P1D}.
@@ -83,14 +80,4 @@ public interface EnedisApi {
             LocalDate end,
             Granularity granularity
     );
-
-    /**
-     * Retrieves the contract data for a specified usage point.
-     *
-     * @param usagePointId The unique identifier for the usage point. Must not be null or empty.
-     * @return A {@link Mono} that emits the {@link CustomerContract} data for the specified usage point or an error
-     */
-    Mono<CustomerContract> getContract(String usagePointId);
-
-    Map<String, HealthState> health();
 }

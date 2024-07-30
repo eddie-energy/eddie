@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.health;
 
 import energy.eddie.api.v0.HealthState;
-import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisHealth;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -17,7 +17,7 @@ import static org.mockito.Mockito.when;
 class EnedisApiHealthIndicatorTest {
 
     @Mock
-    private EnedisApi api;
+    private EnedisHealth api;
 
     @Test
     void healthReturnsCorrectApiHealth() {

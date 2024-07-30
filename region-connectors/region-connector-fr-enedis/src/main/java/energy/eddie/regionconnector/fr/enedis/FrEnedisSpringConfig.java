@@ -12,9 +12,7 @@ import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguratio
 import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisTokenProvider;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
@@ -85,11 +83,6 @@ public class FrEnedisSpringConfig {
     @Bean
     public WebClient webClient(EnedisConfiguration configuration) {
         return WebClient.create(configuration.basePath());
-    }
-
-    @Bean
-    public EnedisApi enedisApi(EnedisTokenProvider tokenProvider, WebClient webClient) {
-        return new EnedisApiClient(tokenProvider, webClient);
     }
 
     @Bean

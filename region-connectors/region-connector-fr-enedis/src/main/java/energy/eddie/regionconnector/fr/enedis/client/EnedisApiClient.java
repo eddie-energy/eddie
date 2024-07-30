@@ -2,23 +2,32 @@ package energy.eddie.regionconnector.fr.enedis.client;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.HealthState;
-import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
-import energy.eddie.regionconnector.fr.enedis.dto.EnedisContractApiResponse;
-import energy.eddie.regionconnector.fr.enedis.dto.EnedisDataApiResponse;
-import energy.eddie.regionconnector.fr.enedis.dto.MeterReading;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisAccountingPointDataApi;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisHealth;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisMeterReadingApi;
+import energy.eddie.regionconnector.fr.enedis.dto.address.CustomerAddress;
+import energy.eddie.regionconnector.fr.enedis.dto.contact.CustomerContact;
 import energy.eddie.regionconnector.fr.enedis.dto.contract.CustomerContract;
+import energy.eddie.regionconnector.fr.enedis.dto.identity.CustomerIdentity;
+import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriBuilder;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
-public class EnedisApiClient implements EnedisApi {
+@Component
+public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingPointDataApi, EnedisHealth {
 
     public static final String USAGE_POINT_ID_PARAM = "usage_point_id";
     public static final String METERING_DATA_CLC_V_5_CONSUMPTION_LOAD_CURVE = "metering_data_clc/v5/consumption_load_curve";
@@ -28,7 +37,13 @@ public class EnedisApiClient implements EnedisApi {
     public static final String AUTHENTICATION_API = "AuthenticationAPI";
     public static final String METERING_POINT_API = "MeteringPointAPI";
     public static final String CONTRACT_API = "ContractAPI";
+    public static final String CONTACT_API = "ContactAPI";
+    public static final String IDENTITY_API = "IdentityAPI";
+    public static final String ADDRESS_API = "AddressAPI";
     private static final String CONTRACT_ENDPOINT = "customers_upc/v5/usage_points/contracts";
+    private static final String CONTACT_ENDPOINT = "customers_upc/v5/usage_points/contact_data";
+    private static final String IDENTITY_ENDPOINT = "customers_upc/v5/usage_points/identity";
+    private static final String ADDRESS_ENDPOINT = "customers_upc/v5/usage_points/addresses";
     private final EnedisTokenProvider tokenProvider;
     private final Map<String, HealthState> healthChecks = new HashMap<>();
     private final WebClient webClient;
@@ -40,6 +55,9 @@ public class EnedisApiClient implements EnedisApi {
         healthChecks.put(AUTHENTICATION_API, HealthState.UP);
         healthChecks.put(METERING_POINT_API, HealthState.UP);
         healthChecks.put(CONTRACT_API, HealthState.UP);
+        healthChecks.put(CONTACT_API, HealthState.UP);
+        healthChecks.put(IDENTITY_API, HealthState.UP);
+        healthChecks.put(ADDRESS_API, HealthState.UP);
     }
 
     @Override
@@ -62,33 +80,6 @@ public class EnedisApiClient implements EnedisApi {
         return getMeterReading(usagePointId, start, end, granularity, MeterReadingType.PRODUCTION);
     }
 
-    @Override
-    public Mono<CustomerContract> getContract(String usagePointId) {
-        return tokenProvider
-                .getToken()
-                .doOnSuccess(token -> healthChecks.put(AUTHENTICATION_API, HealthState.UP))
-                .doOnError(throwable -> healthChecks.put(AUTHENTICATION_API, HealthState.DOWN))
-                .flatMap(token -> webClient
-                        .get()
-                        .uri(uriBuilder -> uriBuilder
-                                .path(CONTRACT_ENDPOINT)
-                                .queryParam(USAGE_POINT_ID_PARAM, usagePointId)
-                                .build())
-                        .headers(headers -> headers.setBearerAuth(token))
-                        .headers(headers -> headers.setAccept(List.of(MediaType.APPLICATION_JSON)))
-                        .retrieve()
-                        .bodyToMono(EnedisContractApiResponse.class)
-                        .map(EnedisContractApiResponse::customer)
-                        .doOnSuccess(o -> healthChecks.put(CONTRACT_API, HealthState.UP))
-                        .doOnError(throwable -> healthChecks.put(CONTRACT_API, HealthState.DOWN))
-                );
-    }
-
-    @Override
-    public Map<String, HealthState> health() {
-        return healthChecks;
-    }
-
     private Mono<MeterReading> getMeterReading(
             String usagePointId,
             LocalDate start,
@@ -96,24 +87,31 @@ public class EnedisApiClient implements EnedisApi {
             Granularity granularity,
             MeterReadingType type
     ) {
-        return tokenProvider
-                .getToken()
-                .doOnSuccess(token -> healthChecks.put(AUTHENTICATION_API, HealthState.UP))
-                .doOnError(throwable -> healthChecks.put(AUTHENTICATION_API, HealthState.DOWN))
+        return getFromUri(
+                uriBuilder -> uriBuilder
+                        .path(granularityToPath(granularity, type))
+                        .queryParam(USAGE_POINT_ID_PARAM, usagePointId)
+                        .queryParam("start", start.format(DateTimeFormatter.ISO_DATE))
+                        .queryParam("end", end.format(DateTimeFormatter.ISO_DATE))
+                        .build(),
+                METERING_POINT_API,
+                MeterReading.class
+        );
+    }
+
+    private <T> Mono<T> getFromUri(
+            Function<UriBuilder, URI> uriFunction, String healthCheckKey, Class<T> responseType
+    ) {
+        return token()
                 .flatMap(token -> webClient
                         .get()
-                        .uri(uriBuilder -> uriBuilder
-                                .path(granularityToPath(granularity, type))
-                                .queryParam(USAGE_POINT_ID_PARAM, usagePointId)
-                                .queryParam("start", start.format(DateTimeFormatter.ISO_DATE))
-                                .queryParam("end", end.format(DateTimeFormatter.ISO_DATE))
-                                .build())
+                        .uri(uriFunction)
                         .headers(headers -> headers.setBearerAuth(token))
+                        .headers(headers -> headers.setAccept(List.of(MediaType.APPLICATION_JSON)))
                         .retrieve()
-                        .bodyToMono(EnedisDataApiResponse.class)
-                        .map(EnedisDataApiResponse::meterReading)
-                        .doOnSuccess(o -> healthChecks.put(METERING_POINT_API, HealthState.UP))
-                        .doOnError(throwable -> healthChecks.put(METERING_POINT_API, HealthState.DOWN))
+                        .bodyToMono(responseType)
+                        .doOnSuccess(o -> healthChecks.put(healthCheckKey, HealthState.UP))
+                        .doOnError(throwable -> healthChecks.put(healthCheckKey, HealthState.DOWN))
                 );
     }
 
@@ -130,5 +128,53 @@ public class EnedisApiClient implements EnedisApi {
                 default -> throw new IllegalArgumentException("Unsupported granularity: " + granularity);
             };
         };
+    }
+
+    private @NotNull Mono<String> token() {
+        return tokenProvider
+                .getToken()
+                .doOnSuccess(token -> healthChecks.put(AUTHENTICATION_API, HealthState.UP))
+                .doOnError(throwable -> healthChecks.put(AUTHENTICATION_API, HealthState.DOWN));
+    }
+
+    @Override
+    public Mono<CustomerContract> getContract(String usagePointId) {
+        return getFromUri(
+                uriBuilder -> uriBuilder.path(CONTRACT_ENDPOINT).queryParam(USAGE_POINT_ID_PARAM, usagePointId).build(),
+                CONTRACT_API,
+                CustomerContract.class
+        );
+    }
+
+    @Override
+    public Mono<CustomerAddress> getAddress(String usagePointId) {
+        return getFromUri(
+                uriBuilder -> uriBuilder.path(ADDRESS_ENDPOINT).queryParam(USAGE_POINT_ID_PARAM, usagePointId).build(),
+                ADDRESS_API,
+                CustomerAddress.class
+        );
+    }
+
+    @Override
+    public Mono<CustomerIdentity> getIdentity(String usagePointId) {
+        return getFromUri(
+                uriBuilder -> uriBuilder.path(IDENTITY_ENDPOINT).queryParam(USAGE_POINT_ID_PARAM, usagePointId).build(),
+                IDENTITY_API,
+                CustomerIdentity.class
+        );
+    }
+
+    @Override
+    public Mono<CustomerContact> getContact(String usagePointId) {
+        return getFromUri(
+                uriBuilder -> uriBuilder.path(CONTACT_ENDPOINT).queryParam(USAGE_POINT_ID_PARAM, usagePointId).build(),
+                CONTACT_API,
+                CustomerContact.class
+        );
+    }
+
+    @Override
+    public Map<String, HealthState> health() {
+        return healthChecks;
     }
 }

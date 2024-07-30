@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisAccountingPointDataApi;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.dto.contract.Contract;
 import energy.eddie.regionconnector.fr.enedis.dto.contract.CustomerContract;
@@ -42,7 +42,7 @@ class AccountingPointDataServiceTest {
     @Mock
     private Outbox outbox;
     @Mock
-    private EnedisApi enedisApi;
+    private EnedisAccountingPointDataApi enedisApi;
     @InjectMocks
     private AccountingPointDataService accountingPointDataService;
     @Captor

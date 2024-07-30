@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.client;
 
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
-import energy.eddie.regionconnector.fr.enedis.dto.TokenResponse;
+import energy.eddie.regionconnector.fr.enedis.dto.auth.TokenResponse;
 import jakarta.annotation.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
@@ -27,7 +27,8 @@ public class EnedisTokenProvider {
      * Retrieves and caches a token. If the token is expired, a new token is fetched.
      *
      * @return a valid token
-     * @throws TokenProviderException if the token could not be fetched (e.g. due to network issues or invalid credentials)
+     * @throws TokenProviderException if the token could not be fetched (e.g. due to network issues or invalid
+     *                                credentials)
      */
     @SuppressWarnings({"InvalidThrows", "JavadocDeclaration"})
     public synchronized Mono<String> getToken() {
@@ -41,19 +42,19 @@ public class EnedisTokenProvider {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "client_credentials");
         return webClient.post()
-                .uri(uriBuilder -> uriBuilder.path("/oauth2/v3/token").build())
-                .headers(httpHeaders -> {
-                    httpHeaders.setBasicAuth(configuration.clientId(), configuration.clientSecret());
-                    httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-                })
-                .bodyValue(body)
-                .retrieve()
-                .bodyToMono(TokenResponse.class)
-                .map(tokenResponse -> {
-                    expiryTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(tokenResponse.expires_in());
-                    token = tokenResponse.accessToken();
-                    return token;
-                })
-                .onErrorMap(TokenProviderException::new);
+                        .uri(uriBuilder -> uriBuilder.path("/oauth2/v3/token").build())
+                        .headers(httpHeaders -> {
+                            httpHeaders.setBasicAuth(configuration.clientId(), configuration.clientSecret());
+                            httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+                        })
+                        .bodyValue(body)
+                        .retrieve()
+                        .bodyToMono(TokenResponse.class)
+                        .map(tokenResponse -> {
+                            expiryTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(tokenResponse.expires_in());
+                            token = tokenResponse.accessToken();
+                            return token;
+                        })
+                        .onErrorMap(TokenProviderException::new);
     }
 }

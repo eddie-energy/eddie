@@ -2,19 +2,14 @@ package energy.eddie.regionconnector.fr.enedis.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.fr.enedis.FrEnedisSpringConfig;
 import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
-import energy.eddie.regionconnector.fr.enedis.api.EnedisApi;
-import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -23,13 +18,12 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
-class EnedisApiClientTest {
+class EnedisApiClientMeterReadingTest {
     private static MockWebServer mockBackEnd;
     private static WebClient webClient;
     private final ObjectMapper objectMapper = new FrEnedisSpringConfig().objectMapper();
@@ -53,7 +47,7 @@ class EnedisApiClientTest {
         // Given
         EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
         doReturn(Mono.just("token")).when(tokenProvider).getToken();
-        EnedisApi enedisApi = new EnedisApiClient(tokenProvider, webClient);
+        EnedisApiClient enedisApi = new EnedisApiClient(tokenProvider, webClient);
 
         mockBackEnd.enqueue(TestResourceProvider.readMockResponseFromFile(TestResourceProvider.CONSUMPTION_LOAD_CURVE_1_DAY));
         String usagePointId = "24115050XXXXXX";
@@ -81,7 +75,7 @@ class EnedisApiClientTest {
         // Given
         EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
         doReturn(Mono.just("token")).when(tokenProvider).getToken();
-        EnedisApi enedisApi = new EnedisApiClient(tokenProvider, webClient);
+        EnedisApiClient enedisApi = new EnedisApiClient(tokenProvider, webClient);
 
         mockBackEnd.enqueue(TestResourceProvider.readMockResponseFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK));
         String usagePointId = "24115050XXXXXX";
@@ -106,7 +100,7 @@ class EnedisApiClientTest {
         // Given
         EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
         doReturn(Mono.just("token")).when(tokenProvider).getToken();
-        EnedisApi enedisApi = new EnedisApiClient(tokenProvider, webClient);
+        EnedisApiClient enedisApi = new EnedisApiClient(tokenProvider, webClient);
 
         mockBackEnd.enqueue(TestResourceProvider.readMockResponseFromFile(TestResourceProvider.CONSUMPTION_LOAD_CURVE_1_DAY));
         String usagePointId = "24115050XXXXXX";
@@ -134,7 +128,7 @@ class EnedisApiClientTest {
         // Given
         EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
         doReturn(Mono.just("token")).when(tokenProvider).getToken();
-        EnedisApi enedisApi = new EnedisApiClient(tokenProvider, webClient);
+        EnedisApiClient enedisApi = new EnedisApiClient(tokenProvider, webClient);
 
         mockBackEnd.enqueue(TestResourceProvider.readMockResponseFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK));
         String usagePointId = "24115050XXXXXX";
@@ -160,7 +154,7 @@ class EnedisApiClientTest {
         // Given
         EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
         doReturn(Mono.just("token")).when(tokenProvider).getToken();
-        EnedisApi enedisApi = new EnedisApiClient(tokenProvider, webClient);
+        EnedisApiClient enedisApi = new EnedisApiClient(tokenProvider, webClient);
 
         // When & Then
         enedisApi.getConsumptionMeterReading("usagePointId", LocalDate.now(ZoneOffset.UTC),
@@ -168,124 +162,5 @@ class EnedisApiClientTest {
                  .as(StepVerifier::create)
                  .expectError(IllegalArgumentException.class)
                  .verify(Duration.ofSeconds(5));
-    }
-
-    @Test
-    void getContract_returnsContract() throws IOException {
-        // Given
-        EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
-        doReturn(Mono.just("token")).when(tokenProvider).getToken();
-        EnedisApi enedisApi = new EnedisApiClient(tokenProvider, webClient);
-
-        mockBackEnd.enqueue(TestResourceProvider.readMockResponseFromFile(TestResourceProvider.CONTRACT));
-        String usagePointId = "24115050XXXXXX";
-
-        // When & Then
-        enedisApi.getContract(usagePointId)
-                 .as(StepVerifier::create)
-                 .assertNext(customer -> assertAll(
-                         () -> assertEquals("XXXX", customer.customerId()),
-                         () -> assertEquals(1, customer.usagePointContracts().size()),
-                         () -> assertEquals("24115050XXXXXX",
-                                            customer.usagePointContracts().getFirst().usagePoint().id()),
-                         () -> assertEquals("com", customer.usagePointContracts().getFirst().usagePoint().status()),
-                         () -> assertEquals("AMM", customer.usagePointContracts().getFirst().usagePoint().meterType()),
-                         () -> assertEquals("C5", customer.usagePointContracts().getFirst().contract().segment()),
-                         () -> assertEquals("6 kVA",
-                                            customer.usagePointContracts().getFirst().contract().subscribedPower()),
-                         () -> assertEquals("2017-07-15+02:00",
-                                            customer.usagePointContracts().getFirst().contract().lastActivationDate()),
-                         () -> assertEquals("BTINFMU4",
-                                            customer.usagePointContracts().getFirst().contract().distributionTariff()),
-                         () -> assertEquals("HC (22H50-6H50)",
-                                            customer.usagePointContracts().getFirst().contract().offPeakHours()),
-                         () -> assertEquals("Contrat GRD-F",
-                                            customer.usagePointContracts().getFirst().contract().contractType()),
-                         () -> assertEquals("SERVC",
-                                            customer.usagePointContracts().getFirst().contract().contractStatus()),
-                         () -> assertEquals("2024-05-11+02:00",
-                                            customer.usagePointContracts()
-                                                    .getFirst()
-                                                    .contract()
-                                                    .lastDistributionTariffChangeDate())
-                 ))
-                 .expectComplete()
-                 .verify(Duration.ofSeconds(5));
-    }
-
-    @Test
-    void health_returnsUp_whenInitialized() {
-        // Given
-        EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
-        EnedisApi enedisApi = new EnedisApiClient(tokenProvider, webClient);
-
-        // Then
-        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API));
-        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.METERING_POINT_API));
-        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.CONTRACT_API));
-    }
-
-    @Test
-    void health_returnsAUTHENTICATION_API_down_whenTokenFetchingFails() {
-        // Given
-        EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
-        doReturn(Mono.error(WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(),
-                                                              "xxx",
-                                                              null,
-                                                              null,
-                                                              null))).when(tokenProvider).getToken();
-        EnedisApi enedisApi = new EnedisApiClient(tokenProvider, webClient);
-
-        // When
-        enedisApi.getConsumptionMeterReading("usagePointId", LocalDate.now(ZoneOffset.UTC),
-                                             LocalDate.now(ZoneOffset.UTC), Granularity.PT30M)
-                 .as(StepVerifier::create)
-                 .expectError()
-                 .verify(Duration.ofSeconds(5));
-
-        // Then
-        assertEquals(HealthState.DOWN, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API));
-        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.METERING_POINT_API));
-    }
-
-    @Test
-    void health_returnsMETERING_POINT_API_down_whenDataFetchingFails() {
-        // Given
-        EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
-        doReturn(Mono.just("token")).when(tokenProvider).getToken();
-        EnedisApi enedisApi = new EnedisApiClient(tokenProvider, webClient);
-
-        mockBackEnd.enqueue(new MockResponse().setResponseCode(500));
-
-        // When
-        enedisApi.getConsumptionMeterReading("usagePointId", LocalDate.now(ZoneOffset.UTC),
-                                             LocalDate.now(ZoneOffset.UTC), Granularity.PT30M)
-                 .as(StepVerifier::create)
-                 .expectError()
-                 .verify(Duration.ofSeconds(5));
-
-        // Then
-        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API));
-        assertEquals(HealthState.DOWN, enedisApi.health().get(EnedisApiClient.METERING_POINT_API));
-    }
-
-    @Test
-    void health_returnsCONTRACT_API_down_whenDataFetchingFails() {
-        // Given
-        EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
-        doReturn(Mono.just("token")).when(tokenProvider).getToken();
-        EnedisApi enedisApi = new EnedisApiClient(tokenProvider, webClient);
-
-        mockBackEnd.enqueue(new MockResponse().setResponseCode(500));
-
-        // When
-        enedisApi.getContract("usagePointId")
-                 .as(StepVerifier::create)
-                 .expectError()
-                 .verify(Duration.ofSeconds(5));
-
-        // Then
-        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API));
-        assertEquals(HealthState.DOWN, enedisApi.health().get(EnedisApiClient.CONTRACT_API));
     }
 }

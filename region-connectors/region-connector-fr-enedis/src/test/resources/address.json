@@ -1,0 +1,21 @@
+{
+  "customer": {
+    "customer_id": "XXXX",
+    "usage_points": [
+      {
+        "usage_point": {
+          "usage_point_id": "24115050XXXXXX",
+          "usage_point_status": "no com",
+          "meter_type": "PMEI",
+          "usage_point_addresses": {
+            "street": "1 rue de l'homologation",
+            "postal_code": "60000",
+            "insee_code": "60057",
+            "city": "BEAUVAIS",
+            "country": "France"
+          }
+        }
+      }
+    ]
+  }
+}

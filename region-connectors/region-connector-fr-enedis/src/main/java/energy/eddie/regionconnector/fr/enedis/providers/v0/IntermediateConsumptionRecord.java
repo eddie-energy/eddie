@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.fr.enedis.providers.v0;
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.dto.IntervalReading;
+import energy.eddie.regionconnector.fr.enedis.dto.readings.IntervalReading;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 
 import java.util.ArrayList;
