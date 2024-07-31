@@ -14,3 +14,25 @@ spring:
   flyway:
     enabled: true
     locations: 'classpath:db/aiida/migration'
+
+#aiida:
+#  datasources:
+#    at:
+#      oeas:
+#      - enabled: false
+#        id: REPLACE_ME_1
+#        mqtt-server-uri: REPLACE_ME
+#        mqtt-subscribe-topic: REPLACE_ME
+#        mqtt-username: REPLACE_ME_OR_EMPTY
+#        mqtt-password: REPLACE_ME_OR_EMPTY
+#      - enabled: false
+#        id: REPLACE_ME_2
+#        mqtt-server-uri: REPLACE_ME
+#        mqtt-subscribe-topic: REPLACE_ME
+#        mqtt-username: REPLACE_ME_OR_EMPTY
+#        mqtt-password: REPLACE_ME_OR_EMPTY
+#    sim:
+#      simulations:
+#        - enabled: true
+#          id: 1
+#          simulation-period-in-seconds: 5

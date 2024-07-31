@@ -94,7 +94,7 @@ class OesterreichsAdapterIntegrationTest {
                 .setPassword(password)
                 .build();
 
-        var adapter = new OesterreichsEnergieAdapter(config, mapper);
+        var adapter = new OesterreichsEnergieAdapter("1", config, mapper);
 
         StepVerifier.create(adapter.start())
                 .then(() -> publishSampleMqttMessage(config.subscribeTopic(), sampleJson))
@@ -142,7 +142,7 @@ class OesterreichsAdapterIntegrationTest {
 
         var json = "{\"1-0:2.7.0\":{\"value\":20,\"time\":1697622970},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2390.6}";
 
-        var adapter = new OesterreichsEnergieAdapter(config, mapper);
+        var adapter = new OesterreichsEnergieAdapter("1", config, mapper);
 
         var scheduler = Executors.newSingleThreadScheduledExecutor();
 

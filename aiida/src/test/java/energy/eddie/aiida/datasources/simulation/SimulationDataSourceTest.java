@@ -25,37 +25,51 @@ class SimulationDataSourceTest {
     }
 
     @Test
+    void testConstructorWithoutNameParameter() {
+        // given
+        Duration period = Duration.ofSeconds(1);
+
+        // when
+        simulator = new SimulationDataSource("1", fixedClock, period);
+
+        // then
+        assertEquals("SimulationDataSource", simulator.name());
+        assertEquals("1", simulator.id());
+    }
+
+    @Test
     void verify_bundleOfFourValuesIsGeneratedPerPeriod_andCloseEmitsCompleteOnFlux() {
         Duration period = Duration.ofSeconds(1);
 
-        simulator = new SimulationDataSource("Test Simulator", fixedClock, period);
+        simulator = new SimulationDataSource("1", "Test Simulator", fixedClock, period);
 
         StepVerifier.withVirtualTime(() -> simulator.start())
-                .expectSubscription()
-                .thenAwait(period)
-                .expectNextCount(4)
-                .thenAwait(period)
-                .expectNextCount(4)
-                .then(simulator::close)
-                .expectComplete()
-                .verify(Duration.ofSeconds(1));
+                    .expectSubscription()
+                    .thenAwait(period)
+                    .expectNextCount(4)
+                    .thenAwait(period)
+                    .expectNextCount(4)
+                    .then(simulator::close)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(1));
 
         assertEquals("Test Simulator", simulator.name());
+        assertEquals("1", simulator.id());
     }
 
 
     /**
-     * Tests that the complete signal is emitted immediately when {@code close()} is called and not just
-     * when the next value is emitted.
+     * Tests that the complete signal is emitted immediately when {@code close()} is called and not just when the next
+     * value is emitted.
      */
     @Test
     void verify_close_immediatelyEmitsCompleteOnFlux() {
-        simulator = new SimulationDataSource("Test Simulator", fixedClock, Duration.ofSeconds(200));
+        simulator = new SimulationDataSource("1", "Test Simulator", fixedClock, Duration.ofSeconds(200));
 
         var stepVerifier = StepVerifier.create(simulator.start())
-                .expectComplete()
-                .log()
-                .verifyLater();
+                                       .expectComplete()
+                                       .log()
+                                       .verifyLater();
 
         simulator.close();
 
