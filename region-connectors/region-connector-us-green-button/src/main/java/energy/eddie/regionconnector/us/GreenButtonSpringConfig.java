@@ -70,8 +70,8 @@ public class GreenButtonSpringConfig {
     }
 
     @Bean
-    public GreenButtonApi greenButtonApi(WebClient webClient, GreenButtonConfiguration configuration) {
-        return new GreenButtonClient(webClient, configuration);
+    public GreenButtonApi greenButtonApi(WebClient webClient) {
+        return new GreenButtonClient(webClient);
     }
 
     @Bean

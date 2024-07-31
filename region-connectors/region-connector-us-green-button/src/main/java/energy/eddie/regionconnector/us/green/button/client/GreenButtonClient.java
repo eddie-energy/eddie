@@ -2,10 +2,8 @@ package energy.eddie.regionconnector.us.green.button.client;
 
 import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
-import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.xml.helper.Status;
 import org.naesb.espi.ServiceStatus;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -14,11 +12,9 @@ import java.util.Map;
 public class GreenButtonClient implements GreenButtonApi {
     private static final String SERVICE_STATUS = "ServiceStatusApi";
     private final WebClient webClient;
-    private final GreenButtonConfiguration configuration;
 
-    public GreenButtonClient(WebClient webClient, GreenButtonConfiguration configuration) {
+    public GreenButtonClient(WebClient webClient) {
         this.webClient = webClient;
-        this.configuration = configuration;
     }
 
     @Override
@@ -26,7 +22,6 @@ public class GreenButtonClient implements GreenButtonApi {
         synchronized (webClient) {
             return webClient.get()
                             .uri("/ReadServiceStatus")
-                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + configuration.apiToken())
                             .retrieve()
                             .bodyToMono(ServiceStatus.class);
         }
