@@ -866,5 +866,96 @@
     "companyId": "basmff",
     "jumpOffUrl": "",
     "regionConnector": "nl-mijn-aansluiting"
+  },
+  {
+    "country": "us",
+    "company": "National Grid New York",
+    "companyId": "NGNY",
+    "jumpOffUrl": "https://greenbutton.nationalgrid.com",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "us",
+    "company": "Fort Collins Utilities",
+    "companyId": "FCU",
+    "jumpOffUrl": "https://data.fcgov.utilityapi.com",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "us",
+    "company": "Silicon Valley Clean Energy",
+    "companyId": "SVCE",
+    "jumpOffUrl": "https://data.svcleanenergy.org",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "us",
+    "company": "Peninsula Clean Energy",
+    "companyId": "PCE",
+    "jumpOffUrl": "https://www.peninsulacleanenergy.com/data-connect",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "us",
+    "company": "Consumers Energy",
+    "companyId": "CONSUMERSENERGY",
+    "jumpOffUrl": "https://greenbutton.consumersenergy.com",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "ca",
+    "company": "Essex Powerlines",
+    "companyId": "ESSEX",
+    "jumpOffUrl": "https://greenbutton.essexpowerlines.ca",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "ca",
+    "company": "Welland Hydro-Electric System Corp",
+    "companyId": "WELLAND",
+    "jumpOffUrl": "https://greenbutton.wellandhydro.com",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "ca",
+    "company": "Bluewater Power Distribution Corporation",
+    "companyId": "BLUEWATER",
+    "jumpOffUrl": "https://greenbutton.bluewaterpower.com",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "ca",
+    "company": "Lakefront Utilities Inc.",
+    "companyId": "LAKEFRONT",
+    "jumpOffUrl": "https://greenbutton.lakefrontutilities.com",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "ca",
+    "company": "PUC Distribution Inc.",
+    "companyId": "SSMPUC",
+    "jumpOffUrl": "https://greenbutton.ssmpuc.com",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "us",
+    "company": "Integrated Energy Data Resource Program",
+    "companyId": "IEDR",
+    "jumpOffUrl": "http://greenbutton.iedr.nyserda.ny.gov",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "us",
+    "company": "El Paso Electric Company",
+    "companyId": "EPE",
+    "jumpOffUrl": "https://greenbutton.epelectric.com",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "us",
+    "company": "Demo Utility",
+    "companyId": "DEMOUTILITY",
+    "jumpOffUrl": "https://greenbutton.demoutility.com",
+    "regionConnector": "us-green-button"
   }
 ]

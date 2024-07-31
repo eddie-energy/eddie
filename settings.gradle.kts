@@ -31,6 +31,9 @@ findProject(":region-connectors:region-connector-fi-fingrid")?.name = "region-co
 include("region-connectors:region-connector-simulation")
 findProject(":region-connectors:region-connector-simulation")?.name = "region-connector-simulation"
 
+include("region-connectors:region-connector-us-green-button")
+findProject(":region-connectors:region-connector-us-green-button")?.name = "region-connector-us-green-button"
+
 include("region-connectors:shared")
 findProject(":region-connectors:shared")?.name = "shared"
 
