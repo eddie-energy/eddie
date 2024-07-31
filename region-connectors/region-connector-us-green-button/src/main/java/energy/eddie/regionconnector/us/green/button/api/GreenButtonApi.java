@@ -9,5 +9,7 @@ import java.util.Map;
 public interface GreenButtonApi {
     Mono<ServiceStatus> readServiceStatus();
 
+    Mono<Boolean> isAlive();
+
     Mono<Map<String, HealthState>> health();
 }

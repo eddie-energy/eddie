@@ -30,6 +30,7 @@ dependencies {
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.oxm)
+    implementation(libs.spring.boot.starter.actuator)
 
     // dependencies needed to generate code
     jaxb(libs.jaxb.xjc)

@@ -23,11 +23,19 @@ public class GreenButtonClient implements GreenButtonApi {
 
     @Override
     public Mono<ServiceStatus> readServiceStatus() {
-        return webClient.get()
-                        .uri("/ReadServiceStatus")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + configuration.apiToken())
-                        .retrieve()
-                        .bodyToMono(ServiceStatus.class);
+        synchronized (webClient) {
+            return webClient.get()
+                            .uri("/ReadServiceStatus")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + configuration.apiToken())
+                            .retrieve()
+                            .bodyToMono(ServiceStatus.class);
+        }
+    }
+
+    @Override
+    public Mono<Boolean> isAlive() {
+        return readServiceStatus().map(serviceStatus -> !Status.fromValue(serviceStatus.getCurrentStatus())
+                                                               .equals(Status.UNAVAILABLE));
     }
 
     @Override
