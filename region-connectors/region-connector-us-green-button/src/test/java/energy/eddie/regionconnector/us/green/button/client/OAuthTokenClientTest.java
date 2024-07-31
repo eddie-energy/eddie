@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.us.green.button.client;
 
+import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.oauth.dto.AccessTokenResponse;
 import energy.eddie.regionconnector.us.green.button.oauth.dto.ClientAccessTokenResponse;
 import energy.eddie.regionconnector.us.green.button.oauth.request.AccessTokenWithCodeRequest;
@@ -15,17 +16,24 @@ import reactor.test.StepVerifier;
 
 import java.io.IOException;
 
+import static org.mockito.Mockito.mock;
+
 class OAuthTokenClientTest {
 
     private OAuthTokenClient oAuthTokenClient;
     private MockWebServer mockWebServer;
+    private GreenButtonConfiguration greenButtonConfiguration;
 
     @BeforeEach
     void setUp() throws IOException {
         mockWebServer = new MockWebServer();
         mockWebServer.start();
         String baseUrl = mockWebServer.url("/").toString();
-        oAuthTokenClient = new OAuthTokenClient(baseUrl, "test-client-id", "test-client-secret");
+        greenButtonConfiguration = mock(GreenButtonConfiguration.class);
+        oAuthTokenClient = new OAuthTokenClient(baseUrl,
+                                                "test-client-id",
+                                                "test-client-secret",
+                                                greenButtonConfiguration);
     }
 
     @AfterEach

@@ -92,7 +92,8 @@ public class PermissionRequestAuthorizationService {
 
         var oauthTokenClient = new OAuthTokenClient(permissionRequest.jumpOffUrl().orElseThrow(),
                                                     clientId,
-                                                    clientSecret);
+                                                    clientSecret,
+                                                    greenButtonConfiguration);
         var accessTokenRequest = new AccessTokenWithCodeRequest(code, greenButtonConfiguration.redirectUri());
 
         oauthTokenClient.accessToken(accessTokenRequest)
