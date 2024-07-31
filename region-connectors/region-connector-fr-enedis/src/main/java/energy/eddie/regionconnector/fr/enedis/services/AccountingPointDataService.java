@@ -7,13 +7,11 @@ import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.dto.address.CustomerAddress;
 import energy.eddie.regionconnector.fr.enedis.dto.contact.CustomerContact;
 import energy.eddie.regionconnector.fr.enedis.dto.contract.CustomerContract;
-import energy.eddie.regionconnector.fr.enedis.dto.contract.UsagePointContract;
 import energy.eddie.regionconnector.fr.enedis.dto.identity.CustomerIdentity;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrUsagePointTypeEvent;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -118,24 +116,7 @@ public class AccountingPointDataService {
             return;
         }
 
-        boolean consumption = false;
-        boolean production = false;
-
-        for (UsagePointContract usagePointContract : contract.usagePointContracts()) {
-            var segment = usagePointContract.contract().segment();
-            if (Strings.isEmpty(segment)) {
-                continue;
-            }
-
-            if (segment.contains("C")) {
-                consumption = true;
-            }
-            if (segment.contains("P")) {
-                production = true;
-            }
-        }
-
-        var usagePointType = UsagePointType.fromBooleans(consumption, production);
+        var usagePointType = UsagePointType.fromCustomerContract(contract);
         if (usagePointType.isEmpty()) {
             LOGGER.warn("MeteringPoint of permission request '{}' is neither consumption nor production", permissionId);
             outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.INVALID));
