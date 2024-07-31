@@ -10,19 +10,20 @@ import reactor.core.publisher.Flux;
 public class EnedisEddieValidatedHistoricalDataMarketDocumentProvider implements EddieValidatedHistoricalDataMarketDocumentProvider {
 
     private final Flux<IdentifiableMeterReading> identifiableMeterReadings;
-    private final IntermediateVHDFactory intermediateVHDFactory;
+    private final IntermediateMarketDocumentFactory intermediateMarketDocumentFactory;
 
     public EnedisEddieValidatedHistoricalDataMarketDocumentProvider(
             Flux<IdentifiableMeterReading> identifiableMeterReadings,
-            IntermediateVHDFactory intermediateVHDFactory) {
+            IntermediateMarketDocumentFactory intermediateMarketDocumentFactory
+    ) {
         this.identifiableMeterReadings = identifiableMeterReadings;
-        this.intermediateVHDFactory = intermediateVHDFactory;
+        this.intermediateMarketDocumentFactory = intermediateMarketDocumentFactory;
     }
 
     @Override
     public Flux<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
         return identifiableMeterReadings
-                .map(intermediateVHDFactory::create)
+                .map(intermediateMarketDocumentFactory::create)
                 .map(IntermediateValidatedHistoricalDocument::eddieValidatedHistoricalDataMarketDocument);
     }
 

@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 
-class IntermediateVHDFactoryTest {
+class IntermediateMarketDocumentFactoryTest {
     @Test
     void testCreate_returnsValidatedHistoricalDocument() {
         // Given
@@ -21,7 +21,7 @@ class IntermediateVHDFactoryTest {
                 "clientSecret",
                 "/path"
         );
-        IntermediateVHDFactory factory = new IntermediateVHDFactory(
+        IntermediateMarketDocumentFactory factory = new IntermediateMarketDocumentFactory(
                 enedisConfiguration,
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
                                                              "fallbackId")
