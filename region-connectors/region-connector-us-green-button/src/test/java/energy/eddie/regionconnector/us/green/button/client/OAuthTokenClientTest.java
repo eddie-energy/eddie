@@ -22,14 +22,13 @@ class OAuthTokenClientTest {
 
     private OAuthTokenClient oAuthTokenClient;
     private MockWebServer mockWebServer;
-    private GreenButtonConfiguration greenButtonConfiguration;
 
     @BeforeEach
     void setUp() throws IOException {
         mockWebServer = new MockWebServer();
         mockWebServer.start();
         String baseUrl = mockWebServer.url("/").toString();
-        greenButtonConfiguration = mock(GreenButtonConfiguration.class);
+        var greenButtonConfiguration = mock(GreenButtonConfiguration.class);
         oAuthTokenClient = new OAuthTokenClient(baseUrl,
                                                 "test-client-id",
                                                 "test-client-secret",
@@ -52,15 +51,15 @@ class OAuthTokenClientTest {
         Mono<AccessTokenResponse> response = oAuthTokenClient.accessToken(request);
 
         StepVerifier.create(response)
-                    .expectNextMatches(accessTokenResponse -> "test-token".equals(accessTokenResponse.getAccessToken()) &&
-                                                              "Bearer".equals(accessTokenResponse.getTokenType()) &&
-                                                              "refresh-token".equals(accessTokenResponse.getRefreshToken()) &&
-                                                              3600 == accessTokenResponse.getExpiresIn() &&
-                                                              "test-scope".equals(accessTokenResponse.getScope()) &&
-                                                              "https://example.com/resource".equals(accessTokenResponse.getResourceUri()) &&
-                                                              "https://example.com/customer".equals(accessTokenResponse.getCustomerResourceUri()) &&
+                    .expectNextMatches(accessTokenResponse -> "test-token".equals(accessTokenResponse.accessToken()) &&
+                                                              "Bearer".equals(accessTokenResponse.tokenType()) &&
+                                                              "refresh-token".equals(accessTokenResponse.refreshToken()) &&
+                                                              3600 == accessTokenResponse.expiresIn() &&
+                                                              "test-scope".equals(accessTokenResponse.scope()) &&
+                                                              "https://example.com/resource".equals(accessTokenResponse.resourceUri()) &&
+                                                              "https://example.com/customer".equals(accessTokenResponse.customerResourceUri()) &&
                                                               "https://example.com/authorization".equals(
-                                                                      accessTokenResponse.getAuthorizationUri()))
+                                                                      accessTokenResponse.authorizationUri()))
                     .verifyComplete();
     }
 
@@ -75,15 +74,15 @@ class OAuthTokenClientTest {
         Mono<AccessTokenResponse> response = oAuthTokenClient.accessToken(request);
 
         StepVerifier.create(response)
-                    .expectNextMatches(accessTokenResponse -> "test-token".equals(accessTokenResponse.getAccessToken()) &&
-                                                              "Bearer".equals(accessTokenResponse.getTokenType()) &&
-                                                              "refresh-token".equals(accessTokenResponse.getRefreshToken()) &&
-                                                              3600 == accessTokenResponse.getExpiresIn() &&
-                                                              "test-scope".equals(accessTokenResponse.getScope()) &&
-                                                              "https://example.com/resource".equals(accessTokenResponse.getResourceUri()) &&
-                                                              "https://example.com/customer".equals(accessTokenResponse.getCustomerResourceUri()) &&
+                    .expectNextMatches(accessTokenResponse -> "test-token".equals(accessTokenResponse.accessToken()) &&
+                                                              "Bearer".equals(accessTokenResponse.tokenType()) &&
+                                                              "refresh-token".equals(accessTokenResponse.refreshToken()) &&
+                                                              3600 == accessTokenResponse.expiresIn() &&
+                                                              "test-scope".equals(accessTokenResponse.scope()) &&
+                                                              "https://example.com/resource".equals(accessTokenResponse.resourceUri()) &&
+                                                              "https://example.com/customer".equals(accessTokenResponse.customerResourceUri()) &&
                                                               "https://example.com/authorization".equals(
-                                                                      accessTokenResponse.getAuthorizationUri()))
+                                                                      accessTokenResponse.authorizationUri()))
                     .verifyComplete();
     }
 
@@ -98,14 +97,14 @@ class OAuthTokenClientTest {
         Mono<ClientAccessTokenResponse> response = oAuthTokenClient.clientAccessToken(request);
 
         StepVerifier.create(response)
-                    .expectNextMatches(clientAccessTokenResponse -> "client-test-token".equals(clientAccessTokenResponse.getAccessToken()) &&
-                                                                    "Bearer".equals(clientAccessTokenResponse.getTokenType()) &&
-                                                                    3600 == clientAccessTokenResponse.getExpiresIn() &&
-                                                                    "test-scope".equals(clientAccessTokenResponse.getScope()) &&
+                    .expectNextMatches(clientAccessTokenResponse -> "client-test-token".equals(clientAccessTokenResponse.accessToken()) &&
+                                                                    "Bearer".equals(clientAccessTokenResponse.tokenType()) &&
+                                                                    3600 == clientAccessTokenResponse.expiresIn() &&
+                                                                    "test-scope".equals(clientAccessTokenResponse.scope()) &&
                                                                     "https://example.com/resource".equals(
-                                                                            clientAccessTokenResponse.getResourceUri()) &&
+                                                                            clientAccessTokenResponse.resourceUri()) &&
                                                                     "https://example.com/authorization".equals(
-                                                                            clientAccessTokenResponse.getAuthorizationUri()))
+                                                                            clientAccessTokenResponse.authorizationUri()))
                     .verifyComplete();
     }
 }

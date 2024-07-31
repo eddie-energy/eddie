@@ -104,20 +104,20 @@ public class PermissionRequestAuthorizationService {
     }
 
     private void handleAccessTokenResponse(AccessTokenResponse accessToken, String permissionId, String originalScope) {
-        if (!accessToken.getScope().equals(originalScope)) {
+        if (!accessToken.scope().equals(originalScope)) {
             // Scope was changed by the client
             outbox.commit(new UsInvalidEvent(permissionId, OAuthErrorResponse.INVALID_SCOPE));
         } else {
             // Scope is the same as requested
-            outbox.commit(new UsSimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
-
             var tokenIssued = Instant.now();
             var tokenDetails = new OAuthTokenDetails(permissionId,
-                                                     accessToken.getAccessToken(),
+                                                     accessToken.accessToken(),
                                                      tokenIssued,
-                                                     tokenIssued.plusSeconds(accessToken.getExpiresIn()),
-                                                     accessToken.getRefreshToken());
+                                                     tokenIssued.plusSeconds(accessToken.expiresIn()),
+                                                     accessToken.refreshToken());
             oAuthTokenRepository.save(tokenDetails);
+
+            outbox.commit(new UsSimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
         }
     }
 }
