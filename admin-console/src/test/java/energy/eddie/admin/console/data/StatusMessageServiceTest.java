@@ -59,7 +59,7 @@ class StatusMessageServiceTest {
         verify(statusMessageRepository)
                 .save(assertArg(message -> assertAll(
                         () -> assertEquals("mrid", message.getPermissionId()),
-                        () -> assertEquals("FRANCE_NATIONAL_CODING_SCHEME", message.getCountry()),
+                        () -> assertEquals("NFR", message.getCountry()),
                         () -> assertEquals("Enedis", message.getDso()),
                         () -> assertEquals("2021-01-01T00:00:00Z", message.getStartDate()),
                         () -> assertEquals("A05", message.getStatus())
@@ -90,6 +90,7 @@ class StatusMessageServiceTest {
                 );
         // When
         testPublisher.emit(cmd);
+        testPublisher.complete();
 
         // Then
         verify(statusMessageRepository)

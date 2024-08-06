@@ -46,7 +46,7 @@ public class StatusMessageService {
         if (message.getReceiverMarketParticipantMRID().getCodingScheme() == null) {
             country = "Unknown";
         } else {
-            country = message.getReceiverMarketParticipantMRID().getCodingScheme().toString();
+            country = message.getReceiverMarketParticipantMRID().getCodingScheme().value();
         }
         return new StatusMessage(
                 message.getMRID(),
