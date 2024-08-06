@@ -1,6 +1,9 @@
 package energy.eddie.aiida.datasources.simulation.configs;
 
-public record SimDataSourceConfig(boolean enabled, String id, int simulationPeriodInSeconds) {
+import energy.eddie.aiida.datasources.api.configs.AiidaDataSourceConfig;
+
+public record SimDataSourceConfig(boolean enabled, String id,
+                                  int simulationPeriodInSeconds) implements AiidaDataSourceConfig {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

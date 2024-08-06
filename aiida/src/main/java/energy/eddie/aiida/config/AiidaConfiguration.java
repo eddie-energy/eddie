@@ -3,17 +3,18 @@ package energy.eddie.aiida.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.aiida.datasources.api.DataSourceConfiguration;
 import energy.eddie.aiida.datasources.at.configs.OesterreichsEnergieAdapterConfiguration;
 import energy.eddie.aiida.datasources.simulation.configs.SimulationDataSourceConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Clock;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
@@ -47,30 +48,14 @@ public class AiidaConfiguration {
     }
 
     /**
-     * Returns a SimulationDataSourceConfiguration in order to create
-     * {@link energy.eddie.aiida.datasources.simulation.SimulationDataSource}
-     *
-     * @param environment Needed to access the configuration
-     * @param clock       Needed to create {@link energy.eddie.aiida.datasources.simulation.SimulationDataSource}
+     * Returns a list of DataSourceConfigurations {@link energy.eddie.aiida.datasources.api.DataSourceConfiguration}
      */
     @Bean
-    public SimulationDataSourceConfiguration simulationDataSourceConfiguration(Environment environment, Clock clock) {
-        return new SimulationDataSourceConfiguration(environment, clock);
-    }
-
-    /**
-     * Returns a OesterreichsEnergieAdapterConfiguration in order to create
-     * {@link energy.eddie.aiida.datasources.at.OesterreichsEnergieAdapter}
-     *
-     * @param environment  Needed to access the configuration
-     * @param objectMapper Needed to create {@link energy.eddie.aiida.datasources.at.OesterreichsEnergieAdapter}
-     */
-    @Bean
-    public OesterreichsEnergieAdapterConfiguration oesterreichsEnergieAdapterConfiguration(
-            Environment environment,
-            ObjectMapper objectMapper
+    public List<DataSourceConfiguration> dataSourceConfigurations(
+            OesterreichsEnergieAdapterConfiguration oeaConfiguration,
+            SimulationDataSourceConfiguration simulationConfiguration
     ) {
-        return new OesterreichsEnergieAdapterConfiguration(environment, objectMapper);
+        return List.of(oeaConfiguration, simulationConfiguration);
     }
 
     /**

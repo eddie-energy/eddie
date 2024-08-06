@@ -7,6 +7,7 @@ import energy.eddie.aiida.datasources.simulation.SimulationDataSource;
 import energy.eddie.aiida.datasources.simulation.configs.SimulationDataSourceConfiguration;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.mockito.Mockito.*;
@@ -20,11 +21,12 @@ class DataSourceServiceTest {
         var simDataSourceConfiguration = mock(SimulationDataSourceConfiguration.class);
         var oea = mock(OesterreichsEnergieAdapter.class);
         var simDataSource = mock(SimulationDataSource.class);
+        var dataSources = List.of(oeaConfiguration, simDataSourceConfiguration);
         when(simDataSourceConfiguration.enabledDataSources()).thenReturn(Set.of(simDataSource));
         when(oeaConfiguration.enabledDataSources()).thenReturn(Set.of(oea));
 
         // when
-        new DatasourceService(aggregator, oeaConfiguration, simDataSourceConfiguration);
+        new DatasourceService(aggregator, dataSources);
 
         // then
         verify(aggregator, times(1)).addNewAiidaDataSource(simDataSource);

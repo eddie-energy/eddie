@@ -1,38 +1,31 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.aggregator.Aggregator;
-import energy.eddie.aiida.datasources.at.configs.OesterreichsEnergieAdapterConfiguration;
-import energy.eddie.aiida.datasources.simulation.configs.SimulationDataSourceConfiguration;
+import energy.eddie.aiida.datasources.api.DataSourceConfiguration;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class DatasourceService {
     private final Aggregator aggregator;
-    private final OesterreichsEnergieAdapterConfiguration oeaConfiguration;
-    private final SimulationDataSourceConfiguration simulationDataSourceConfiguration;
+    private final List<DataSourceConfiguration> dataSourceConfigurations;
 
     public DatasourceService(
             Aggregator aggregator,
-            OesterreichsEnergieAdapterConfiguration oeaConfiguration,
-            SimulationDataSourceConfiguration simulationDataSourceConfiguration
+            List<DataSourceConfiguration> dataSourceConfigurations
     ) {
         this.aggregator = aggregator;
-        this.oeaConfiguration = oeaConfiguration;
-        this.simulationDataSourceConfiguration = simulationDataSourceConfiguration;
+        this.dataSourceConfigurations = dataSourceConfigurations;
 
-        addSimulationDataSourcesToAggregator();
-        addOesterreichsEnergieAdaptersToAggregator();
+        addDataSourcesToAggregator();
     }
 
-    private void addSimulationDataSourcesToAggregator() {
-        for (var simulationDataSource : simulationDataSourceConfiguration.enabledDataSources()) {
-            aggregator.addNewAiidaDataSource(simulationDataSource);
-        }
-    }
-
-    private void addOesterreichsEnergieAdaptersToAggregator() {
-        for (var oea : oeaConfiguration.enabledDataSources()) {
-            aggregator.addNewAiidaDataSource(oea);
+    private void addDataSourcesToAggregator() {
+        for (var dataSources : dataSourceConfigurations) {
+            for (var dataSource : dataSources.enabledDataSources()) {
+                aggregator.addNewAiidaDataSource(dataSource);
+            }
         }
     }
 }
