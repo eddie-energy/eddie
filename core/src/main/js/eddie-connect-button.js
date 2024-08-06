@@ -19,9 +19,8 @@ import buttonIcon from "../resources/logo.svg?raw";
 import headerImage from "../resources/header.svg?raw";
 
 import PERMISSION_ADMINISTRATORS from "../../../../european-masterdata/src/main/resources/permission-administrators.json";
-import { dataNeedSummary } from "./components/data-need-summary.js";
 
-setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn");
+setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn");
 
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
@@ -515,7 +514,9 @@ class EddieConnectButton extends LitElement {
         <div slot="label">${unsafeSVG(headerImage)}</div>
 
         <!-- Render data need summary -->
-        ${dataNeedSummary(this._dataNeedAttributes)}
+        <h2>Request for Permission</h2>
+        <data-need-summary data-need-id="${this.dataNeedId}"></data-need-summary>
+        <br />
 
         <!-- Render country selection -->
         ${!this.isAiida()
