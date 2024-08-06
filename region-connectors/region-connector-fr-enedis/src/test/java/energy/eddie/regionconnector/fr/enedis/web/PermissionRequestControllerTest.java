@@ -29,7 +29,6 @@ import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSI
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -100,52 +99,6 @@ class PermissionRequestControllerTest {
                // Then
                .andExpect(status().isCreated())
                .andExpect(header().string("Location", is(expectedLocationHeader)));
-    }
-
-    @Test
-    void callback_returnsOk() throws Exception {
-        // Given
-        doNothing().when(permissionRequestService).authorizePermissionRequest(anyString(), any());
-
-        // When
-        mockMvc.perform(
-                       MockMvcRequestBuilders.get("/authorization-callback")
-                                             .param("state", "state")
-                                             .param("usage_point_id", "upid")
-               )
-               // Then
-               .andExpect(status().isOk())
-               .andExpect(content().string("Access Granted to upid. You can close this tab now."));
-    }
-
-    @Test
-    void callback_withMultipleUsagePointIds_returnsOk() throws Exception {
-        // Given
-        doNothing().when(permissionRequestService).authorizePermissionRequest(anyString(), any());
-
-        // When
-        mockMvc.perform(
-                       MockMvcRequestBuilders.get("/authorization-callback")
-                                             .param("state", "state")
-                                             .param("usage_point_id", "upid;upid2;upid3")
-               )
-               // Then
-               .andExpect(status().isOk())
-               .andExpect(content().string("Access Granted to upid, upid2, upid3. You can close this tab now."));
-    }
-
-    @Test
-    void callback_noParameters_returnsOk() throws Exception {
-        // Given
-        doNothing().when(permissionRequestService).authorizePermissionRequest(anyString(), any());
-
-        // When
-        mockMvc.perform(
-                       MockMvcRequestBuilders.get("/authorization-callback")
-               )
-               // Then
-               .andExpect(status().isOk())
-               .andExpect(content().string("Access Denied. You can close this tab now."));
     }
 
     @Test
