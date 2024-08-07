@@ -6,12 +6,14 @@ import energy.eddie.aiida.datasources.simulation.SimulationDataSource;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
+@Component
 public class SimulationDataSourceConfiguration implements DataSourceConfiguration {
     private static final String CONFIG_PATH = "aiida.datasources.sim.simulations";
     private final Set<AiidaDataSource> enabledDataSources = new HashSet<>();

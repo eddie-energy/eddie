@@ -7,13 +7,13 @@ import energy.eddie.aiida.datasources.at.OesterreichsEnergieAdapter;
 import energy.eddie.aiida.utils.MqttConfig;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@Configuration
+@Component
 public class OesterreichsEnergieAdapterConfiguration implements DataSourceConfiguration {
     private static final String CONFIG_PATH = "aiida.datasources.at.oeas";
     private final ObjectMapper objectMapper;

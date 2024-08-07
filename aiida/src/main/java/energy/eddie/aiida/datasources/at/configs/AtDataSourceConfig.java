@@ -1,5 +1,7 @@
 package energy.eddie.aiida.datasources.at.configs;
 
+import energy.eddie.aiida.datasources.api.configs.MqttDataSourceConfig;
+
 public record AtDataSourceConfig(
         boolean enabled,
         String id,
@@ -7,7 +9,7 @@ public record AtDataSourceConfig(
         String mqttSubscribeTopic,
         String mqttUsername,
         String mqttPassword
-) {
+) implements MqttDataSourceConfig {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
