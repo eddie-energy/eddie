@@ -3,9 +3,6 @@ package energy.eddie.aiida.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import energy.eddie.aiida.datasources.api.DataSourceConfiguration;
-import energy.eddie.aiida.datasources.at.configs.OesterreichsEnergieAdapterConfiguration;
-import energy.eddie.aiida.datasources.simulation.configs.SimulationDataSourceConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -14,7 +11,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Clock;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
@@ -45,17 +41,6 @@ public class AiidaConfiguration {
         objectMapper.registerModule(module);
 
         return objectMapper;
-    }
-
-    /**
-     * Returns a list of DataSourceConfigurations {@link energy.eddie.aiida.datasources.api.DataSourceConfiguration}
-     */
-    @Bean
-    public List<DataSourceConfiguration> dataSourceConfigurations(
-            OesterreichsEnergieAdapterConfiguration oeaConfiguration,
-            SimulationDataSourceConfiguration simulationConfiguration
-    ) {
-        return List.of(oeaConfiguration, simulationConfiguration);
     }
 
     /**
