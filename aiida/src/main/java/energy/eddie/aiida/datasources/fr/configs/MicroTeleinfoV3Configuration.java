@@ -1,9 +1,9 @@
-package energy.eddie.aiida.datasources.at.configs;
+package energy.eddie.aiida.datasources.fr.configs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.datasources.AiidaDataSource;
 import energy.eddie.aiida.datasources.api.DataSourceConfiguration;
-import energy.eddie.aiida.datasources.at.OesterreichsEnergieAdapter;
+import energy.eddie.aiida.datasources.fr.MicroTeleinfoV3;
 import energy.eddie.aiida.utils.MqttConfig;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
@@ -14,8 +14,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Component
-public class OesterreichsEnergieAdapterConfiguration implements DataSourceConfiguration {
-    private static final String CONFIG_PATH = "aiida.datasources.at.oeas";
+public class MicroTeleinfoV3Configuration implements DataSourceConfiguration {
+    private static final String CONFIG_PATH = "aiida.datasources.fr.teleinfo";
     private final ObjectMapper objectMapper;
     private final Set<AiidaDataSource> enabledDataSources = new HashSet<>();
 
@@ -25,26 +25,26 @@ public class OesterreichsEnergieAdapterConfiguration implements DataSourceConfig
      * @param environment  Holds the environment variables of the configuration
      * @param objectMapper {@link ObjectMapper} that is used to deserialize the JSON messages.
      */
-    public OesterreichsEnergieAdapterConfiguration(Environment environment, ObjectMapper objectMapper) {
+    public MicroTeleinfoV3Configuration(Environment environment, ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
 
         var binder = Binder.get(environment);
-        var bindResult = binder.bind(CONFIG_PATH, Bindable.setOf(AtDataSourceConfig.class));
+        var bindResult = binder.bind(CONFIG_PATH, Bindable.setOf(FrDataSourceConfig.class));
         if (bindResult.isBound()) {
-            instantiateOesterreichsEnergieAdapterFromConfig(bindResult.get());
+            instantiateMicroTeleinfoV3FromConfig(bindResult.get());
         }
     }
 
-    private void instantiateOesterreichsEnergieAdapterFromConfig(Set<AtDataSourceConfig> configs) {
+    private void instantiateMicroTeleinfoV3FromConfig(Set<FrDataSourceConfig> configs) {
         var enabledConfigs = configs.stream()
-                                    .filter(AtDataSourceConfig::enabled)
+                                    .filter(FrDataSourceConfig::enabled)
                                     .toList();
         enabledConfigs.forEach(config -> enabledDataSources.add(
-                new OesterreichsEnergieAdapter(
+                new MicroTeleinfoV3(
                         config.id(),
                         new MqttConfig.MqttConfigBuilder(
                                 config.mqttServerUri(),
-                                config.mqttSubscribeTopic()
+                                config.mqttSubscribeTopic() + "/" + config.meteringId()
                         ).setUsername(config.mqttUsername())
                          .setPassword(config.mqttPassword())
                          .build(),
