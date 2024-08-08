@@ -20,9 +20,9 @@ public class MicroTeleinfoV3 extends MqttDataSource {
     private final ObjectMapper mapper;
 
     /**
-     * Creates the datasource for the Oesterreichs Energie adapter. It connects to the specified MQTT broker and expects
-     * that the adapter publishes its JSON messages on the specified topic. Any OBIS code without a time field will be
-     * assigned a Unix timestamp of 0.
+     * Creates the datasource for the Micro Teleinfo V3. It connects to the specified MQTT broker and expects that the
+     * adapter publishes its JSON messages on the specified topic. Any OBIS code without a time field will be assigned a
+     * Unix timestamp of 0.
      *
      * @param mqttConfig Configuration detailing the MQTT broker to connect to and options to use.
      * @param mapper     {@link ObjectMapper} that is used to deserialize the JSON messages. A
@@ -86,7 +86,8 @@ public class MicroTeleinfoV3 extends MqttDataSource {
         LOGGER.warn(
                 "Got deliveryComplete notification, but {} mustn't publish any MQTT messages but just listen. Token was {}",
                 MicroTeleinfoV3.class.getName(),
-                token);
+                token
+        );
         throw new UnsupportedOperationException("The " + MicroTeleinfoV3.class.getName() + " mustn't publish any MQTT messages");
     }
 }

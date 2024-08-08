@@ -88,7 +88,8 @@ public class OesterreichsEnergieAdapter extends MqttDataSource {
         LOGGER.warn(
                 "Got deliveryComplete notification, but {} mustn't publish any MQTT messages but just listen. Token was {}",
                 OesterreichsEnergieAdapter.class.getName(),
-                token);
+                token
+        );
         throw new UnsupportedOperationException("The " + OesterreichsEnergieAdapter.class.getName() + " mustn't publish any MQTT messages");
     }
 }
