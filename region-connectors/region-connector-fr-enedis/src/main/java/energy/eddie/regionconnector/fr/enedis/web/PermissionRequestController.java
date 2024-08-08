@@ -61,23 +61,4 @@ public class PermissionRequestController {
                 .created(location)
                 .body(createdPermissionRequest);
     }
-
-    @GetMapping(value = "/authorization-callback")
-    @ResponseStatus(HttpStatus.OK)
-    @SuppressWarnings("NullAway") // NullAway doesnt understand the isBlank checks
-    public ResponseEntity<String> callback(
-            @RequestParam("state") @Nullable String stateString,
-            @RequestParam("usage_point_id") @Nullable String usagePointId
-    )
-            throws PermissionNotFoundException {
-        if (Strings.isBlank(usagePointId) || Strings.isBlank(stateString)) {
-            return ResponseEntity.ok("Access Denied. You can close this tab now.");
-        }
-
-        var usagePointIds = StringUtils.delimitedListToStringArray(usagePointId, ";");
-
-        permissionRequestService.authorizePermissionRequest(stateString, usagePointIds);
-        return ResponseEntity.ok("Access Granted to %s. You can close this tab now.".formatted(
-                StringUtils.arrayToDelimitedString(usagePointIds, ", ")));
-    }
 }
