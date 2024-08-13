@@ -27,11 +27,11 @@ Once started, you can access the AIIDA Web-UI at the default location: http://lo
 Several configurations can be applied through environment variables or the _application.properties_ file.
 When using Docker, most of these properties should be configured in the [.env](docker/.env) file.
 
-| Property                     | Description                                                                                                      |
-|------------------------------|------------------------------------------------------------------------------------------------------------------|
-| SPRING_DATASOURCE_URL        | jdbc URL to connect to the TimescaleDB                                                                           |
-| SPRING_DATASOURCE_USERNAME   | Username to authenticate to the TimescaleDB                                                                      |
-| SPRING_DATASOURCE_PASSWORD   | Password to authenticate to the TimescaleDB                                                                      |
+| Property                   | Description                                                    |
+|----------------------------|----------------------------------------------------------------|
+| SPRING_DATASOURCE_USERNAME | Username to authenticate to the TimescaleDB                    |
+| SPRING_DATASOURCE_PASSWORD | Password to authenticate to the TimescaleDB                    |
+| APP_LOGIN_PASSWORD         | Password for the AIIDA web UI, the username is **aiida-admin** |
 
 ## API documentation
 
