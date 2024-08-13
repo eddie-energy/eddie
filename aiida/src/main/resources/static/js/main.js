@@ -69,7 +69,7 @@ const STATUS = {
   },
 };
 
-const { VITE_API_BASE_URL: BASE_URL } = import.meta.env;
+const BASE_URL = "/permissions";
 
 const permissionDialog = document.getElementById("permission-dialog");
 const permissionDialogContent = document.getElementById(
