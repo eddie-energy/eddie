@@ -15,6 +15,10 @@ spring:
     enabled: true
     locations: 'classpath:db/aiida/migration'
 
+app:
+  login:
+    password: REPLACE_ME
+
 #aiida:
 #  datasources:
 #    at:
