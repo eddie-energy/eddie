@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link href="/img/icon.svg" rel="icon" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>AIIDA</title>
@@ -11,16 +11,21 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/themes/light.css"
     />
-    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" th:href="@{/css/index.css}" />
     <script
       type="module"
       src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/shoelace-autoloader.js"
     ></script>
   </head>
   <body>
+  <div class="logout-position">
+    <form method="post" th:action="@{/logout}">
+      <input class="logout-button" type="submit" value="Logout" />
+    </form>
+  </div>
     <h1>AIIDA</h1>
 
-    <img src="/eddie.svg" alt="EDDIE Logo" height="64" />
+  <img alt="EDDIE Logo" height="64" th:src="@{/img/eddie.svg}" />
 
     <h2>Add new permission</h2>
 
@@ -71,6 +76,6 @@
     <h2>Expired permissions</h2>
     <div id="expired-permissions" class="permissions"></div>
 
-    <script type="module" src="./main.js"></script>
+  <script th:src="@{/js/main.js}" type="module"></script>
   </body>
 </html>
