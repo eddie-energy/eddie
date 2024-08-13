@@ -8,15 +8,6 @@ importers:
         specifier: ^3.3.2
         version: 3.3.2
 
-  aiida/ui:
-    devDependencies:
-      prettier:
-        specifier: ^3.2.5
-        version: 3.2.5
-      vite:
-        specifier: ^5.1.6
-        version: 5.1.6
-
   core:
     dependencies:
       lit:
