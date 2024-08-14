@@ -1,0 +1,90 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="RetrieveTimeSeriesData">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Header">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Identification" type="xs:string"/>
+                            <xs:element name="PhysicalSenderParty">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="Identification" type="xs:string"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="JuridicalSenderParty">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="Identification" type="xs:string"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="PhysicalReceiverParty">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="Identification" type="xs:string"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="JuridicalReceiverParty">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="Identification" type="xs:string"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="ProcessRole" type="xs:string"/>
+                            <xs:element name="Creation" type="xs:string"/>
+                            <xs:element name="DocumentType" type="xs:string"/>
+                            <xs:element name="OrganisationUser" type="xs:string"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="Transaction">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="TimeSeries">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="TimeSeriesElement" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="MeteringPointEAN" type="xs:string"/>
+                                                    <xs:element name="ResolutionDuration" type="xs:string"/>
+                                                    <xs:element name="PeriodStartTS" type="xs:string"/>
+                                                    <xs:element name="PeriodEndTS" type="xs:string"/>
+                                                    <xs:element name="ProductType" type="xs:string"/>
+                                                    <xs:element name="UnitType" type="xs:string"/>
+                                                    <xs:element name="ReadingType" type="xs:string"/>
+                                                    <xs:element name="Observations">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="Observation" maxOccurs="unbounded">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="PeriodStartTime"
+                                                                                        type="xs:string"/>
+                                                                            <xs:element name="Quantity"
+                                                                                        type="xs:string"/>
+                                                                            <xs:element name="Quality"
+                                                                                        type="xs:string"/>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

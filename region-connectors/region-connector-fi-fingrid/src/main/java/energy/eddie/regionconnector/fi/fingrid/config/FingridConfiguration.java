@@ -6,10 +6,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class FingridConfiguration {
     private final String organisationUser;
     private final String organisationName;
+    private final String apiUrl;
 
-    public FingridConfiguration(String organisationUser, String organisationName) {
+    public FingridConfiguration(String organisationUser, String organisationName, String apiUrl) {
         this.organisationUser = organisationUser;
         this.organisationName = organisationName;
+        this.apiUrl = apiUrl;
     }
 
     public String organisationUser() {
@@ -18,5 +20,9 @@ public class FingridConfiguration {
 
     public String organisationName() {
         return organisationName;
+    }
+
+    public String apiUrl() {
+        return apiUrl;
     }
 }

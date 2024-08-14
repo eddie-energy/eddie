@@ -58,7 +58,8 @@ public class PermissionCreationService {
         outbox.commit(new CreatedEvent(permissionId,
                                        permissionRequest.connectionId(),
                                        dataNeedId,
-                                       permissionRequest.customerIdentification()));
+                                       permissionRequest.customerIdentification(),
+                                       permissionRequest.meteringPointEAN()));
         var calculation = dataNeedCalculationService.calculate(dataNeedId);
         var res = switch (calculation) {
             case DataNeedNotFoundResult ignored -> {
@@ -78,7 +79,6 @@ public class PermissionCreationService {
             }
             case ValidatedHistoricalDataDataNeedResult vhdResult -> vhdResult;
         };
-
 
         outbox.commit(new ValidatedEvent(permissionId,
                                          res.granularities().getFirst(),

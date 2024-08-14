@@ -71,7 +71,7 @@ class PermissionCreationServiceTest {
     @Test
     void createAndValidatePermissionRequest_createsPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         // Given
-        var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier");
+        var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier", "mid");
         var today = LocalDate.now(ZoneOffset.UTC);
         when(dataNeedCalculationService.calculate("dnid"))
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(
@@ -96,9 +96,8 @@ class PermissionCreationServiceTest {
     @Test
     void createAndValidatePermissionRequest_throwsOnUnknownDataNeed() {
         // Given
-        var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier");
+        var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier", "mid");
         when(dataNeedCalculationService.calculate("dnid")).thenReturn(new DataNeedNotFoundResult());
-
         // When, Then
         assertThrows(DataNeedNotFoundException.class,
                      () -> permissionCreationService.createAndValidatePermissionRequest(forCreation));
@@ -108,7 +107,7 @@ class PermissionCreationServiceTest {
     @MethodSource
     void createAndValidatePermissionRequest_throwsOnUnsupportedDataNeed(DataNeedCalculationResult calculation) {
         // Given
-        var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier");
+        var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier", "mid");
         when(dataNeedCalculationService.calculate("dnid"))
                 .thenReturn(calculation);
 
@@ -142,7 +141,9 @@ class PermissionCreationServiceTest {
                 ZonedDateTime.now(ZoneOffset.UTC),
                 today,
                 today,
-                "identifier"
+                "identifier",
+                "mid",
+                Granularity.PT1H, null
         );
         when(permissionRequestRepository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(pr));
@@ -176,7 +177,9 @@ class PermissionCreationServiceTest {
                 ZonedDateTime.now(ZoneOffset.UTC),
                 today,
                 today,
-                "identifier"
+                "identifier",
+                "mid",
+                Granularity.PT1H, null
         );
         when(permissionRequestRepository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(pr));

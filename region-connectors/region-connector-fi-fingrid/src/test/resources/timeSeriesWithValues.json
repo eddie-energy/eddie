@@ -1,0 +1,48 @@
+{
+  "RetrieveTimeSeriesData": {
+    "Header": {
+      "Identification": "8c5857e0-9286-4099-b249-cedf90353b48",
+      "PhysicalSenderParty": {
+        "Identification": "1111111111111"
+      },
+      "JuridicalSenderParty": {
+        "Identification": "1111111111111"
+      },
+      "PhysicalReceiverParty": {
+        "Identification": "0000000000000"
+      },
+      "JuridicalReceiverParty": {
+        "Identification": "0000000000000"
+      },
+      "ProcessRole": "EZ",
+      "Creation": "2024-07-29T00:00:00.000+0000",
+      "DocumentType": "ETS.DIF.RTR",
+      "OrganisationUser": "0000000000000.THP"
+    },
+    "Transaction": {
+      "TimeSeries": [
+        {
+          "MeteringPointEAN": "642502030419633983",
+          "ResolutionDuration": "PT1H",
+          "PeriodStartTS": "2024-07-21T00:00:00Z",
+          "PeriodEndTS": "2024-07-30T00:00:00Z",
+          "ProductType": "8716867000030",
+          "UnitType": "kWh",
+          "ReadingType": "BN01",
+          "Observations": [
+            {
+              "PeriodStartTime": "2024-07-27T21:00:00Z",
+              "Quantity": "1.509000",
+              "Quality": "OK"
+            },
+            {
+              "PeriodStartTime": "2024-07-27T22:00:00Z",
+              "Quantity": "3.353000",
+              "Quality": "OK"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

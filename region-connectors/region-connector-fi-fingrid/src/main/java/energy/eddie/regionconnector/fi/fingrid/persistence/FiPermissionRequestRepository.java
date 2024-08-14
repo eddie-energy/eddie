@@ -16,7 +16,7 @@ public interface FiPermissionRequestRepository extends
         StalePermissionRequestRepository<FingridPermissionRequest> {
 
     @Query(
-            value = "SELECT permission_id, connection_id, created, data_need_id, granularity, permission_start, permission_end, status, customer_identification " +
+            value = "SELECT permission_id, connection_id, created, data_need_id, granularity, permission_start, permission_end, status, customer_identification, metering_point, latest_meter_reading " +
                     "FROM fi_fingrid.permission_request WHERE status = 'VALIDATED' AND created <= NOW() - :hours * INTERVAL '1 hour'",
             nativeQuery = true
     )

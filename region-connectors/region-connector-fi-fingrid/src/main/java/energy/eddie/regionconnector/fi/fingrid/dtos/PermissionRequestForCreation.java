@@ -15,6 +15,8 @@ public record PermissionRequestForCreation(
         String dataNeedId,
         @NotBlank(message = "must not be blank")
         @Size(max = 50)
-        String customerIdentification
+        String customerIdentification,
+        @Size(max = 18)
+        String meteringPointEAN
 ) {
 }
