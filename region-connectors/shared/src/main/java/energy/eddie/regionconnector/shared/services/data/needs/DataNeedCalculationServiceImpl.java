@@ -69,8 +69,9 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
 
         var permissionStartAndEndDate = strategy.permissionTimeframe(energyStartAndEndDate);
         return new DataNeedCalculation(
-                additionalChecks.stream()
-                                .allMatch(check -> check.test(dataNeed)),
+                dataNeed.isEnabled()
+                && additionalChecks.stream()
+                                   .allMatch(check -> check.test(dataNeed)),
                 null,
                 supportedGranularities,
                 permissionStartAndEndDate,

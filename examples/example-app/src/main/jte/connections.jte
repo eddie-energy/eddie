@@ -59,6 +59,11 @@ content = @`
                 connection-id="${nextConnectionId}"
                 data-need-id="8685eed4-ab97-4c57-9409-76295792ee1c"
         ></eddie-connect-button>
+        <div class="uk-width-medium">Disabled data need:</div>
+        <eddie-connect-button
+                connection-id="${nextConnectionId}"
+                data-need-id="8685eed4-ab97-4c57-9409-76295792ee1d"
+        ></eddie-connect-button>
     </div>
 
     <h3>Connections</h3>

@@ -255,20 +255,22 @@ the ID is a mandatory field.
   },
   "energyType": "ELECTRICITY",
   "minGranularity": "P1D",
-  "maxGranularity": "P1D"
+   "maxGranularity": "P1D",
+   "enabled": true
 }
 ```
 
 All data needs have these common fields:
 
-| Attribute   | Type   | Description                                                                                                                                         |
-|-------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| type        | String | Type of the data need, e.g. `validated` for historical validated consumption data. Please check the OpenAPI documentation for all supported values. |
-| id          | String | Unique id that can be used to reference this data need.                                                                                             |
-| name        | String | Short memorable name of the data need that may be presented to the customer.                                                                        |
-| description | String | Multiline string that describes this data need in a human readable form to be shown in the UI. May be formatted using Markdown.                     |
-| purpose     | String | Multiline string that describes the purpose of this data need. May be formatted using Markdown.                                                     |
-| policyLink  | URL    | URL to the data policy that applies to this data need.                                                                                              |
+| Attribute   | Type    | Description                                                                                                                                         |
+|-------------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| type        | String  | Type of the data need, e.g. `validated` for historical validated consumption data. Please check the OpenAPI documentation for all supported values. |
+| id          | String  | Unique id that can be used to reference this data need.                                                                                             |
+| name        | String  | Short memorable name of the data need that may be presented to the customer.                                                                        |
+| description | String  | Multiline string that describes this data need in a human readable form to be shown in the UI. May be formatted using Markdown.                     |
+| purpose     | String  | Multiline string that describes the purpose of this data need. May be formatted using Markdown.                                                     |
+| policyLink  | URL     | URL to the data policy that applies to this data need.                                                                                              |
+| enabled     | boolean | Enables or disables a data need.                                                                                                                    |
 
 Depending on the `type`, a data need may require more fields, e.g. for validated historical consumption data:
 

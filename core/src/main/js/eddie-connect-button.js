@@ -172,6 +172,13 @@ class EddieConnectButton extends LitElement {
      * @private
      */
     this._dataNeedAttributes = undefined;
+
+    /**
+     * If data need is disabled.
+     * @type {boolean}
+     * @private
+     */
+    this._disabled = false;
   }
 
   connectedCallback() {
@@ -346,6 +353,11 @@ class EddieConnectButton extends LitElement {
       throw new Error(`Invalid Data Need ${this.dataNeedId}`);
     }
 
+    if (!this._dataNeedAttributes.enabled) {
+      this._disabled = true;
+      return;
+    }
+
     this._supportedConnectors = await getSupportedRegionConnectors(
       this.dataNeedId
     );
@@ -473,6 +485,17 @@ class EddieConnectButton extends LitElement {
       `;
     }
 
+    if (this._disabled) {
+      return html`
+        <button
+          class="eddie-connect-button eddie-connect-button--disabled"
+          disabled
+        >
+          ${unsafeSVG(buttonIcon)}
+          <span> Disabled Configuration </span>
+        </button>
+      `;
+    }
     return html`
       <link
         rel="stylesheet"

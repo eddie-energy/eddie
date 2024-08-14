@@ -2,6 +2,7 @@ package energy.eddie.core.web;
 
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.core.services.UnknownRegionConnectorException;
+import energy.eddie.dataneeds.exceptions.DataNeedDisabledException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,5 +27,13 @@ public class PermissionFacadeControllerAdvice {
         LOGGER.info("Exception occurred while trying to calculate data need information", exception);
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
+    }
+
+    @ExceptionHandler(value = {DataNeedDisabledException.class})
+    protected ResponseEntity<Void> handleDataNeedDisabledException(
+            Exception exception
+    ) {
+        LOGGER.debug("Exception occurred while trying to calculate data need information", exception);
+        return ResponseEntity.status(HttpStatus.GONE).build();
     }
 }

@@ -60,6 +60,9 @@ public abstract class DataNeed implements DataNeedInterface {
     @CreationTimestamp
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Instant createdAt;
+    @JsonProperty
+    @Column(name = "enabled")
+    private boolean enabled = true;
     @JsonProperty(required = true)
     @Transient  // don't save type information in database, but make available as property
     private String type;
@@ -100,6 +103,10 @@ public abstract class DataNeed implements DataNeedInterface {
      */
     public Instant createdAt() {
         return createdAt;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 
     public String type() {

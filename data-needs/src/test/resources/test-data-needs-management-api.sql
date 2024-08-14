@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS data_needs.accounting_point_data_need
     description  varchar(255) NOT NULL,
     name         varchar(255) NOT NULL,
     policy_link  varchar(255) NOT NULL,
-    purpose      varchar(255) NOT NULL
+    purpose varchar(255) NOT NULL,
+    enabled boolean DEFAULT TRUE
 );
 
 
@@ -51,7 +52,8 @@ CREATE TABLE IF NOT EXISTS data_needs.generic_aiida_data_need
     purpose               varchar(255) NOT NULL,
     transmission_interval integer      NOT NULL
         CONSTRAINT generic_aiida_data_need_transmission_interval_check
-            CHECK (transmission_interval >= 1)
+            CHECK (transmission_interval >= 1),
+    enabled               boolean DEFAULT TRUE
 );
 
 
@@ -85,7 +87,8 @@ CREATE TABLE IF NOT EXISTS data_needs.smart_meter_aiida_data_need
     purpose               varchar(255) NOT NULL,
     transmission_interval integer      NOT NULL
         CONSTRAINT smart_meter_aiida_data_need_transmission_interval_check
-            CHECK (transmission_interval >= 1)
+            CHECK (transmission_interval >= 1),
+    enabled               boolean DEFAULT TRUE
 );
 
 
@@ -100,5 +103,6 @@ CREATE TABLE IF NOT EXISTS data_needs.validated_consumption_data_need
     purpose         varchar(255) NOT NULL,
     energy_type     varchar(255) NOT NULL,
     max_granularity varchar(255) NOT NULL,
-    min_granularity varchar(255) NOT NULL
+    min_granularity varchar(255) NOT NULL,
+    enabled         boolean DEFAULT TRUE
 );
