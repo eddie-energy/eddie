@@ -57,6 +57,7 @@ public class DataNeedsDbService implements DataNeedsService {
      */
     public DataNeed saveNewDataNeed(DataNeed newDataNeed) {
         newDataNeed.setId(UUID.randomUUID().toString());
+        newDataNeed.regionConnectorFilter().ifPresent(list -> list.setDataNeedId(newDataNeed.id()));
 
         if (newDataNeed instanceof TimeframedDataNeed timeframedDataNeed)
             timeframedDataNeed.duration().setDataNeedId(newDataNeed.id());

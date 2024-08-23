@@ -28,14 +28,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = DataNeedsController.class)
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 public class DataNeedsControllerTest {
-    public static final String EXAMPLE_VHD_DATA_NEED = "{\"type\":\"validated\",\"id\":\"123\",\"name\":\"Name\",\"description\":\"Description\",\"purpose\":\"Purpose\",\"policyLink\":\"https://example.com/toc\",\"createdAt\":1710262490.674,\"energyType\":\"ELECTRICITY\",\"minGranularity\":\"PT15M\",\"maxGranularity\":\"PT15M\",\"duration\":{\"type\":\"relativeDuration\",\"start\":\"-P90D\",\"end\":\"P120D\",\"stickyStartCalendarUnit\":null}}";
+    public static final String EXAMPLE_VHD_DATA_NEED = "{\"type\":\"validated\",\"id\":\"123\",\"name\":\"Name\",\"description\":\"Description\",\"purpose\":\"Purpose\",\"policyLink\":\"https://example.com/toc\",\"createdAt\":1710262490.674,\"energyType\":\"ELECTRICITY\",\"minGranularity\":\"PT15M\",\"maxGranularity\":\"PT15M\",\"duration\":{\"type\":\"relativeDuration\",\"start\":\"-P90D\",\"end\":\"P120D\",\"stickyStartCalendarUnit\":null},\"regionConnectorFilter\":{\"type\":\"blocklist\",\"regionConnectorIds\":[\"foo\",\"bar\"]}}";
     public static final String EXAMPLE_ACCOUNTING_POINT_DATA_NEED = "{\"type\":\"account\",\"id\":\"fooBar\",\"name\":\"Accounting Point Need\",\"description\":\"Description\",\"purpose\":\"Purpose\",\"policyLink\":\"https://example.com/toc\",\"createdAt\":1710262490.674}";
-
+    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     @Autowired
     private MockMvc mockMvc;
     @MockBean
     private DataNeedsService mockDataNeedsService;
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @Test
     void givenNoDataNeeds_getDataNeedIdsAndNames_returnsEmptyResponse() throws Exception {

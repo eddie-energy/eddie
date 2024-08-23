@@ -118,6 +118,8 @@ class DataNeedsDbServiceTest {
         assertNotEquals("123", saved.id());
         // the id of duration should be set to the one of the data need for correct association
         assertEquals(saved.id(), ((ValidatedHistoricalDataDataNeed) saved).duration().dataNeedId());
+        // regionConnectorFilter id also needs to be set to the dataNeedId
+        assertEquals(saved.id(), saved.regionConnectorFilter().orElseThrow().dataNeedId());
         verifyNoMoreInteractions(mockRepository);
     }
 
