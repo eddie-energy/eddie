@@ -13,6 +13,10 @@ import java.util.Optional;
 public class IsValidRelativeDurationValidator implements ConstraintValidator<IsValidRelativeDuration, RelativeDuration> {
     private final Clock clock;
 
+    public IsValidRelativeDurationValidator() {
+        this(Clock.systemDefaultZone());
+    }
+
     public IsValidRelativeDurationValidator(Clock clock) {
         this.clock = clock;
     }
@@ -111,6 +115,15 @@ public class IsValidRelativeDurationValidator implements ConstraintValidator<IsV
     }
 
     /**
+     * Add a new constraint violation with the passed message to the validation context.
+     */
+    private void addCustomViolation(String message, ConstraintValidatorContext context) {
+        context.buildConstraintViolationWithTemplate(message)
+               .addConstraintViolation()
+               .disableDefaultConstraintViolation();
+    }
+
+    /**
      * Calculates the relative start and end dates using today as reference and returns whether the end date is before
      * the start date. Today's date is taken from the clock passed as constructor parameter.
      *
@@ -125,14 +138,5 @@ public class IsValidRelativeDurationValidator implements ConstraintValidator<IsV
         LocalDate end = today.plus(endPeriod);
 
         return end.isBefore(start);
-    }
-
-    /**
-     * Add a new constraint violation with the passed message to the validation context.
-     */
-    private void addCustomViolation(String message, ConstraintValidatorContext context) {
-        context.buildConstraintViolationWithTemplate(message)
-               .addConstraintViolation()
-               .disableDefaultConstraintViolation();
     }
 }
