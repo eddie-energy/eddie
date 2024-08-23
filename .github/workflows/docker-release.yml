@@ -38,6 +38,13 @@ jobs:
           docker tag ghcr.io/eddie-energy/eddie-example-app:latest ghcr.io/eddie-energy/eddie-example-app:${{ steps.get_version.outputs.VERSION }}
           docker push ghcr.io/eddie-energy/eddie-example-app:${{ steps.get_version.outputs.VERSION }}
           
-          docker pull ghcr.io/eddie-energy/aiida:latest
-          docker tag ghcr.io/eddie-energy/aiida:latest ghcr.io/eddie-energy/aiida:${{ steps.get_version.outputs.VERSION }}
-          docker push ghcr.io/eddie-energy/aiida:${{ steps.get_version.outputs.VERSION }}
+          docker pull ghcr.io/eddie-energy/aiida:latest --platform linux/amd64
+          docker tag ghcr.io/eddie-energy/aiida:latest ghcr.io/eddie-energy/aiida:${{ steps.get_version.outputs.VERSION }}-amd64
+          docker push ghcr.io/eddie-energy/aiida:${{ steps.get_version.outputs.VERSION }}-amd64
+          
+          docker pull ghcr.io/eddie-energy/aiida:latest --platform linux/arm64
+          docker tag ghcr.io/eddie-energy/aiida:latest ghcr.io/eddie-energy/aiida:${{ steps.get_version.outputs.VERSION }}-arm64
+          docker push ghcr.io/eddie-energy/aiida:${{ steps.get_version.outputs.VERSION }}-arm64
+          
+          docker manifest create ghcr.io/eddie-energy/aiida:${{ steps.get_version.outputs.VERSION }} --amend ghcr.io/eddie-energy/aiida:${{ steps.get_version.outputs.VERSION }}-amd64 --amend ghcr.io/eddie-energy/aiida:${{ steps.get_version.outputs.VERSION }}-arm64
+          docker manifest push ghcr.io/eddie-energy/aiida:${{ steps.get_version.outputs.VERSION }}
