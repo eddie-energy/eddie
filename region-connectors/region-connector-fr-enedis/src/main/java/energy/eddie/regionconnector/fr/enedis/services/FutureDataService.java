@@ -18,10 +18,16 @@ public class FutureDataService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FutureDataService.class);
 
     private final PollingService pollingService;
+    private final AccountingPointDataService accountingPointDataService;
     private final FrPermissionRequestRepository repository;
 
-    public FutureDataService(PollingService pollingService, FrPermissionRequestRepository repository) {
+    public FutureDataService(
+            PollingService pollingService,
+            AccountingPointDataService accountingPointDataService,
+            FrPermissionRequestRepository repository
+    ) {
         this.pollingService = pollingService;
+        this.accountingPointDataService = accountingPointDataService;
         this.repository = repository;
     }
 
@@ -39,7 +45,10 @@ public class FutureDataService {
         LocalDate today = LocalDate.now(ZONE_ID_FR);
         LOGGER.info("Trying to fetch meter readings for {} permission requests", acceptedPermissionRequests.size());
         for (FrEnedisPermissionRequest acceptedPermissionRequest : acceptedPermissionRequests) {
-            if (isActiveAndNeedsToBeFetched(acceptedPermissionRequest, today)) {
+            if (acceptedPermissionRequest.granularity() == null) {
+                accountingPointDataService.fetchAccountingPointData(acceptedPermissionRequest,
+                                                                    acceptedPermissionRequest.usagePointId());
+            } else if (isActiveAndNeedsToBeFetched(acceptedPermissionRequest, today)) {
                 fetchMeteringDataForRequest(acceptedPermissionRequest, today);
             } else {
                 var permissionId = acceptedPermissionRequest.permissionId();

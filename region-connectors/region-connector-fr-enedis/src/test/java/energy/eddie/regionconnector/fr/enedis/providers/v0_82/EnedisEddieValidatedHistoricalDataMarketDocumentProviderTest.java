@@ -36,7 +36,7 @@ class EnedisEddieValidatedHistoricalDataMarketDocumentProviderTest {
                 "clientSecret",
                 "/path"
         );
-        IntermediateVHDFactory factory = new IntermediateVHDFactory(
+        IntermediateMarketDocumentFactory factory = new IntermediateMarketDocumentFactory(
                 enedisConfiguration,
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
                                                              "fallbackId")

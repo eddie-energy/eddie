@@ -20,6 +20,7 @@ import energy.eddie.regionconnector.fr.enedis.permission.events.FrInternalPollin
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionEventRepository;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
+import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
@@ -103,6 +104,18 @@ public class FrEnedisSpringConfig {
     @Bean
     public Flux<IdentifiableMeterReading> identifiableMeterReadingFlux(
             Sinks.Many<IdentifiableMeterReading> identifiableMeterReadingMany
+    ) {
+        return identifiableMeterReadingMany.asFlux();
+    }
+
+    @Bean
+    public Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataMany() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public Flux<IdentifiableAccountingPointData> identifiableAccountingPointDataFlux(
+            Sinks.Many<IdentifiableAccountingPointData> identifiableMeterReadingMany
     ) {
         return identifiableMeterReadingMany.asFlux();
     }

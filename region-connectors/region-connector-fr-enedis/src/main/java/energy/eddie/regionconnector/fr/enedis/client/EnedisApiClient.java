@@ -41,9 +41,9 @@ public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingP
     public static final String IDENTITY_API = "IdentityAPI";
     public static final String ADDRESS_API = "AddressAPI";
     private static final String CONTRACT_ENDPOINT = "customers_upc/v5/usage_points/contracts";
-    private static final String CONTACT_ENDPOINT = "customers_upc/v5/usage_points/contact_data";
-    private static final String IDENTITY_ENDPOINT = "customers_upc/v5/usage_points/identity";
-    private static final String ADDRESS_ENDPOINT = "customers_upc/v5/usage_points/addresses";
+    private static final String CONTACT_ENDPOINT = "customers_cd/v5/contact_data";
+    private static final String IDENTITY_ENDPOINT = "customers_i/v5/identity";
+    private static final String ADDRESS_ENDPOINT = "customers_upa/v5/usage_points/addresses";
     private final EnedisTokenProvider tokenProvider;
     private final Map<String, HealthState> healthChecks = new HashMap<>();
     private final WebClient webClient;

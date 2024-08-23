@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.fr.enedis.permission.events;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,9 +19,10 @@ public class FrValidatedEvent extends PersistablePermissionEvent {
     private final LocalDate end;
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text")
+    @Nullable
     private final Granularity granularity;
 
-    public FrValidatedEvent(String permissionId, LocalDate start, LocalDate end, Granularity granularity) {
+    public FrValidatedEvent(String permissionId, LocalDate start, LocalDate end, @Nullable Granularity granularity) {
         super(permissionId, PermissionProcessStatus.VALIDATED);
         this.start = start;
         this.end = end;

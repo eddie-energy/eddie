@@ -29,6 +29,13 @@ public class TestResourceProvider {
         }
     }
 
+
+    public static <T> T readFromFile(String resource, Class<T> tClass) throws IOException {
+        try (InputStream is = TestResourceProvider.class.getClassLoader().getResourceAsStream(resource)) {
+            return objectMapper.readValue(Objects.requireNonNull(is), tClass);
+        }
+    }
+
     public static MockResponse readMockResponseFromFile(String resource) throws IOException {
         try (InputStream is = TestResourceProvider.class.getClassLoader().getResourceAsStream(resource)) {
             return new MockResponse()
