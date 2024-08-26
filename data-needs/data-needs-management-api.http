@@ -51,8 +51,8 @@ Content-Type: application/json
     "end": "2024-12-31"
   },
   "dataTags": [
-    "1.8.0",
-    "1.7.0"
+    "1-0:1.8.0",
+    "1-0:1.7.0"
   ]
 }
 

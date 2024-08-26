@@ -1,6 +1,6 @@
 package energy.eddie.aiida.datasources.at.configs;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.datasources.AiidaDataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,8 @@ class OesterreichsEnergieAdapterConfigurationTest {
 
     @BeforeEach
     public void setUp() {
-        configuration = new OesterreichsEnergieAdapterConfiguration(environment, new ObjectMapper());
+        configuration = new OesterreichsEnergieAdapterConfiguration(environment,
+                                                                    new AiidaConfiguration().objectMapper());
     }
 
     @Test

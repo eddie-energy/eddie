@@ -1,4 +1,4 @@
-package energy.eddie.aiida.datasources.at;
+package energy.eddie.aiida.datasources.fr;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -15,26 +15,25 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
-import static energy.eddie.aiida.datasources.at.OesterreichAdapterJson.AdapterValue;
-
-public class OesterreichsEnergieAdapter extends MqttDataSource {
-    private static final Logger LOGGER = LoggerFactory.getLogger(OesterreichsEnergieAdapter.class);
+public class MicroTeleinfoV3 extends MqttDataSource {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MicroTeleinfoV3.class);
     private final ObjectMapper mapper;
 
     /**
-     * Creates the datasource for the Oesterreichs Energie adapter. It connects to the specified MQTT broker and expects
-     * that the adapter publishes its JSON messages on the specified topic. Any OBIS code without a time field will be
-     * assigned a Unix timestamp of 0.
+     * Creates the datasource for the Micro Teleinfo V3. It connects to the specified MQTT broker and expects that the
+     * adapter publishes its JSON messages on the specified topic. Any OBIS code without a time field will be assigned a
+     * Unix timestamp of 0.
      *
      * @param mqttConfig Configuration detailing the MQTT broker to connect to and options to use.
      * @param mapper     {@link ObjectMapper} that is used to deserialize the JSON messages. A
-     *                   {@link OesterreichsEnergieAdapterValueDeserializer} will be registered to this mapper.
+     *                   {@link MicroTeleinfoV3ValueDeserializer} will be registered to this mapper.
      */
-    public OesterreichsEnergieAdapter(String dataSourceId, MqttConfig mqttConfig, ObjectMapper mapper) {
-        super(dataSourceId, "Oesterreichs Energie Adapter (SMA)", mqttConfig, LOGGER);
+    public MicroTeleinfoV3(String dataSourceId, MqttConfig mqttConfig, ObjectMapper mapper) {
+        super(dataSourceId, "MicroTeleinfoV3", mqttConfig, LOGGER);
+
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(OesterreichAdapterJson.AdapterValue.class,
-                               new OesterreichsEnergieAdapterValueDeserializer(null));
+        module.addDeserializer(MicroTeleinfoV3Json.TeleinfoDataField.class,
+                               new MicroTeleinfoV3ValueDeserializer(null));
         mapper.registerModule(module);
         this.mapper = mapper;
     }
@@ -51,21 +50,20 @@ public class OesterreichsEnergieAdapter extends MqttDataSource {
         LOGGER.trace("Topic {} new message: {}", topic, message);
 
         try {
-            var json = mapper.readValue(message.getPayload(), OesterreichAdapterJson.class);
+            var json = mapper.readValue(message.getPayload(), MicroTeleinfoV3Json.class);
 
-            var energyData = json.energyData();
-            for (var entry : energyData.entrySet()) {
-                emitNextAiidaRecord(entry.getKey(), entry.getValue());
-            }
+            // TODO: Rework with GH-1209 to support other kinds of data supplied by MicroTeleinfoV3
+            var energyData = json.papp();
+            emitNextAiidaRecord("1-0:1.7.0", energyData);
         } catch (IOException e) {
             LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
                          new String(message.getPayload(), StandardCharsets.UTF_8), e);
         }
     }
 
-    private void emitNextAiidaRecord(String code, AdapterValue entry) {
+    private void emitNextAiidaRecord(String code, MicroTeleinfoV3Json.TeleinfoDataField entry) {
         try {
-            Instant timestamp = Instant.ofEpochSecond(entry.time());
+            Instant timestamp = Instant.now();
 
             var aiidaRecord = AiidaRecordFactory.createRecord(code, timestamp, entry.value());
             var result = recordSink.tryEmitNext(aiidaRecord);
@@ -73,7 +71,7 @@ public class OesterreichsEnergieAdapter extends MqttDataSource {
             if (result.isFailure())
                 LOGGER.error("Error while emitting new AiidaRecord {}. Error was {}", aiidaRecord, result);
         } catch (IllegalArgumentException e) {
-            LOGGER.warn("Got OBIS code {} from SMA, but AiidaRecordFactory does not know how to handle it", code, e);
+            LOGGER.warn("Got code {} from Teleinfo, but AiidaRecordFactory does not know how to handle it", code, e);
         }
     }
 
@@ -87,9 +85,9 @@ public class OesterreichsEnergieAdapter extends MqttDataSource {
     public void deliveryComplete(IMqttToken token) throws UnsupportedOperationException {
         LOGGER.warn(
                 "Got deliveryComplete notification, but {} mustn't publish any MQTT messages but just listen. Token was {}",
-                OesterreichsEnergieAdapter.class.getName(),
+                MicroTeleinfoV3.class.getName(),
                 token
         );
-        throw new UnsupportedOperationException("The " + OesterreichsEnergieAdapter.class.getName() + " mustn't publish any MQTT messages");
+        throw new UnsupportedOperationException("The " + MicroTeleinfoV3.class.getName() + " mustn't publish any MQTT messages");
     }
 }
