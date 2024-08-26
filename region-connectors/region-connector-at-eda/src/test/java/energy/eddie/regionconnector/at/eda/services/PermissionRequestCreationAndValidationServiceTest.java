@@ -65,6 +65,7 @@ class PermissionRequestCreationAndValidationServiceTest {
         when(vhdDataNeed.duration()).thenReturn(absoluteDuration);
         when(absoluteDuration.start()).thenReturn(start);
         when(absoluteDuration.end()).thenReturn(start.plusDays(5));
+        when(vhdDataNeed.isEnabled()).thenReturn(true);
 
 
         PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
@@ -81,6 +82,7 @@ class PermissionRequestCreationAndValidationServiceTest {
     void createValidPermissionRequest_forAccountingPointDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException, EdaValidationException {
         // Given
         when(mockService.findById(any())).thenReturn(Optional.of(accountingPointDataNeed));
+        when(accountingPointDataNeed.isEnabled()).thenReturn(true);
         PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
                                                                            "dnid", "AT000000");
 

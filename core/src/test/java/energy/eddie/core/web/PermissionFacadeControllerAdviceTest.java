@@ -29,4 +29,19 @@ class PermissionFacadeControllerAdviceTest {
                                    res.getBody())
         );
     }
+
+    @Test
+    void testHandleDataNeedDisabledException_returnsErrorMessage() {
+        // Given
+        var ex = new DataNeedNotFoundException("dnid");
+        var advice = new PermissionFacadeControllerAdvice();
+
+        // When
+        var res = advice.handleDataNeedDisabledException(ex);
+
+        // Then
+        assertAll(
+                () -> assertEquals(HttpStatus.GONE, res.getStatusCode())
+        );
+    }
 }

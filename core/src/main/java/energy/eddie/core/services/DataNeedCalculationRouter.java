@@ -2,6 +2,7 @@ package energy.eddie.core.services;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.dataneeds.exceptions.DataNeedDisabledException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -41,9 +42,10 @@ public class DataNeedCalculationRouter {
         return service.calculate(dataNeed);
     }
 
-    public Map<String, DataNeedCalculation> calculate(String dataNeedId) throws DataNeedNotFoundException {
+    public Map<String, DataNeedCalculation> calculate(String dataNeedId) throws DataNeedNotFoundException, DataNeedDisabledException {
         var dataNeed = dataNeedsService.findById(dataNeedId)
                                        .orElseThrow(() -> new DataNeedNotFoundException(dataNeedId));
+        if (!dataNeed.isEnabled()) throw new DataNeedDisabledException(dataNeedId);
         var calculations = new HashMap<String, DataNeedCalculation>();
         for (var entry : services.entrySet()) {
             calculations.put(entry.getKey(), entry.getValue().calculate(dataNeed));

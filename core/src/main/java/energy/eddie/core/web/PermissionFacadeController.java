@@ -5,6 +5,7 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.core.services.DataNeedCalculationRouter;
 import energy.eddie.core.services.MetadataService;
 import energy.eddie.core.services.UnknownRegionConnectorException;
+import energy.eddie.dataneeds.exceptions.DataNeedDisabledException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,7 +46,7 @@ public class PermissionFacadeController {
     @GetMapping("/region-connectors/data-needs/{data-need-id}")
     public Map<String, DataNeedCalculation> dataNeedCalculations(
             @PathVariable("data-need-id") String dataNeedId
-    ) throws DataNeedNotFoundException {
+    ) throws DataNeedNotFoundException, DataNeedDisabledException {
         return dataNeedCalculationRouter.calculate(dataNeedId);
     }
 }

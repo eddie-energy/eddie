@@ -40,6 +40,16 @@ public class DataNeedsDbService implements DataNeedsService {
     }
 
     /**
+     * Enables or disables a data need.
+     *
+     * @param id        The ID of the data need to enable or disable.
+     * @param isEnabled If the data need should be enabled or disabled.
+     */
+    public void enableOrDisableDataNeed(String id, boolean isEnabled) {
+        repository.setEnabledById(id, isEnabled);
+    }
+
+    /**
      * Saves the new data need in the database and sets a UUID as {@link DataNeed#id()}.
      *
      * @param newDataNeed Data need to save in the database.

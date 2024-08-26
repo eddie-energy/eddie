@@ -36,8 +36,8 @@ import java.util.List;
 @Tag(name = "Data needs management controller", description = "Only available when data needs are loaded from the database!")
 public class DataNeedsManagementController {
     public static final String BASE_PATH_KEY = "${eddie.management.server.urlprefix}";
-    private final DataNeedsDbService service;
     public final String basePath;
+    private final DataNeedsDbService service;
 
     public DataNeedsManagementController(DataNeedsDbService service, @Value(BASE_PATH_KEY) String basePath) {
         this.service = service;
@@ -137,6 +137,37 @@ public class DataNeedsManagementController {
             throw new DataNeedNotFoundException(id, false);
         }
         service.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Enable or disable an existing data need. Note that disabling data needs will not influence already created permission requests.")
+    @Parameter(in = ParameterIn.PATH, name = "id", example = "7f57cf16-5121-42a6-919e-7f7335826e64", schema = @Schema(type = "String"))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = EnableDisableBody.class),
+                    examples = @ExampleObject("{\"isEnabled\": true }")
+            )
+    )
+    @ApiResponse(responseCode = "204",
+            description = "OK",
+            content = @Content(schema = @Schema))
+    @ApiResponse(responseCode = "404",
+            description = "No data need with the supplied id was found",
+            content = @Content(mediaType = "application/json",
+                    array = @ArraySchema(schema = @Schema(implementation = EddieApiError.class)),
+                    examples = @ExampleObject("{\"errors\":[{\"message\":\"No data need with ID '7f57cf16-5121-42a6-919e-7f7335826e64' found.\"}]}")
+            ))
+    @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> enableOrDisableDataNeed(
+            @PathVariable String id,
+            @RequestBody EnableDisableBody enableDisableBody
+    ) throws DataNeedNotFoundException {
+        if (!service.existsById(id)) {
+            throw new DataNeedNotFoundException(id, false);
+        }
+        service.enableOrDisableDataNeed(id, enableDisableBody.isEnabled());
         return ResponseEntity.noContent().build();
     }
 }

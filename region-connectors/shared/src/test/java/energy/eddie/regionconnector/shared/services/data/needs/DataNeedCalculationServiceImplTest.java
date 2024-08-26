@@ -69,6 +69,8 @@ class DataNeedCalculationServiceImplTest {
                 .thenReturn(Granularity.PT5M);
         when(vhdDataNeed.maxGranularity())
                 .thenReturn(Granularity.P1Y);
+        when(vhdDataNeed.isEnabled())
+                .thenReturn(true);
         var now = LocalDate.now(ZoneOffset.UTC);
         var timeframe = new Timeframe(now, now.plusDays(5));
 
@@ -97,6 +99,8 @@ class DataNeedCalculationServiceImplTest {
                 .thenReturn(Granularity.PT5M);
         when(vhdDataNeed.maxGranularity())
                 .thenReturn(Granularity.P1Y);
+        when(vhdDataNeed.isEnabled())
+                .thenReturn(true);
         var now = LocalDate.now(ZoneOffset.UTC);
         var timeframe = new Timeframe(now.minusDays(5), now.minusDays(1));
 
@@ -153,6 +157,8 @@ class DataNeedCalculationServiceImplTest {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var timeframe = new Timeframe(now, now);
+        when(accountingPointDataNeed.isEnabled())
+                .thenReturn(true);
 
         // When
         var res = service.calculate(accountingPointDataNeed);
@@ -179,6 +185,8 @@ class DataNeedCalculationServiceImplTest {
                 .thenReturn(Granularity.PT5M);
         when(vhdDataNeed.maxGranularity())
                 .thenReturn(Granularity.P1Y);
+        when(vhdDataNeed.isEnabled())
+                .thenReturn(true);
         service = new DataNeedCalculationServiceImpl(
                 List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
                 regionConnectorMetadata,
@@ -197,7 +205,7 @@ class DataNeedCalculationServiceImplTest {
     }
 
     @Test
-    void testCalculate_returnsSupported_withSuccessfullAdditionalCheck() {
+    void testCalculate_returnsSupported_withSuccessfulAdditionalCheck() {
         // Given
         when(vhdDataNeed.duration())
                 .thenReturn(duration);
@@ -209,6 +217,8 @@ class DataNeedCalculationServiceImplTest {
                 .thenReturn(Granularity.PT5M);
         when(vhdDataNeed.maxGranularity())
                 .thenReturn(Granularity.P1Y);
+        when(vhdDataNeed.isEnabled())
+                .thenReturn(true);
         service = new DataNeedCalculationServiceImpl(
                 List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
                 regionConnectorMetadata,
@@ -225,6 +235,36 @@ class DataNeedCalculationServiceImplTest {
         assertTrue(res.supportsDataNeed());
     }
 
+    @Test
+    void testCalculate_returnsUnsupported_withDisabledDataNeed() {
+        // Given
+        when(vhdDataNeed.duration())
+                .thenReturn(duration);
+        when(duration.start())
+                .thenReturn(Optional.of(Period.ofDays(-5)));
+        when(duration.end())
+                .thenReturn(Optional.of(Period.ofDays(-1)));
+        when(vhdDataNeed.minGranularity())
+                .thenReturn(Granularity.PT5M);
+        when(vhdDataNeed.maxGranularity())
+                .thenReturn(Granularity.P1Y);
+        when(vhdDataNeed.isEnabled())
+                .thenReturn(false);
+        service = new DataNeedCalculationServiceImpl(
+                List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
+                regionConnectorMetadata,
+                new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
+                new DefaultEnergyDataTimeframeStrategy(regionConnectorMetadata),
+                List.of(
+                        dataNeed -> true
+                )
+        );
+        // When
+        var res = service.calculate(vhdDataNeed);
+
+        // Then
+        assertFalse(res.supportsDataNeed());
+    }
     @Test
     void testCalculate_returnsNotSupported() {
         // Given

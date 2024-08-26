@@ -9,6 +9,7 @@ import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsDbService;
 import energy.eddie.dataneeds.web.management.DataNeedsManagementController;
+import energy.eddie.dataneeds.web.management.EnableDisableBody;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,11 +52,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = DataNeedsManagementController.class, properties = {"eddie.management.server.urlprefix=management", "eddie.data-needs-config.data-need-source=database"})
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 class DataNeedsManagementControllerTest {
+    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     @Autowired
     private MockMvc mockMvc;
     @MockBean
     private DataNeedsDbService mockService;
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     private DataNeed exampleVhd;
     private DataNeed exampleAccount;
 
@@ -211,6 +212,25 @@ class DataNeedsManagementControllerTest {
 
         // Then
         verify(mockService).deleteById(id);
+    }
+
+    @Test
+    void givenExistingId_enableOrDisableDataNeed_callsService_andReturnsNoContent() throws Exception {
+        // Given
+        String id = "dnid";
+        when(mockService.existsById(id)).thenReturn(true);
+        doNothing().when(mockService).enableOrDisableDataNeed(id, true);
+
+        // When
+        mockMvc.perform(patch("/management/{dataNeedId}", id)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(mapper.writeValueAsString(new EnableDisableBody(true))))
+               // Then
+               .andExpect(status().isNoContent());
+
+        // Then
+        verify(mockService).enableOrDisableDataNeed(id, true);
     }
 
     /**

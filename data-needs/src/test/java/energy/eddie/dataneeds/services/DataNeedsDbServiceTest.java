@@ -158,4 +158,15 @@ class DataNeedsDbServiceTest {
         verify(mockRepository).deleteById(id);
         verifyNoMoreInteractions(mockRepository);
     }
+
+    @Test
+    void givenIdAndEnabled_UpdatesDataNeed_callsRepository_andEnabled() {
+        // Given
+        // When
+        service.enableOrDisableDataNeed("dnid", true);
+
+        // Then
+        verify(mockRepository).setEnabledById("dnid", true);
+        verifyNoMoreInteractions(mockRepository);
+    }
 }

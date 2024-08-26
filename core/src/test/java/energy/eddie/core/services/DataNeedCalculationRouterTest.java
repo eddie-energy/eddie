@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.dataneeds.exceptions.DataNeedDisabledException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
@@ -97,8 +98,8 @@ class DataNeedCalculationRouterTest {
     }
 
     @Test
-    void testCalculate_returnsCalculation() throws DataNeedNotFoundException {
-
+    void testCalculate_returnsCalculation() throws DataNeedNotFoundException, DataNeedDisabledException {
+        when(dataNeed.isEnabled()).thenReturn(true);
         when(dataNeedsService.findById(any()))
                 .thenReturn(Optional.of(dataNeed));
         var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
@@ -114,5 +115,15 @@ class DataNeedCalculationRouterTest {
 
         // Then
         assertThat(res).containsOnlyKeys("at-eda");
+    }
+
+    @Test
+    void testCalculate_throwsDataNeedDisabledException() {
+        when(dataNeed.isEnabled()).thenReturn(false);
+        when(dataNeedsService.findById(any()))
+                .thenReturn(Optional.of(dataNeed));
+        // When
+        // Then
+        assertThrows(DataNeedDisabledException.class, () -> router.calculate("dnid"));
     }
 }

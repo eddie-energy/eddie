@@ -72,5 +72,14 @@
     "description": "Gets accounting point master data",
     "purpose": "Some purpose",
     "policyLink": "https://example.com/toc"
+  },
+  {
+    "type": "account",
+    "id": "8685eed4-ab97-4c57-9409-76295792ee1d",
+    "name": "Disabled accounting point master data data need",
+    "description": "Gets accounting point master data",
+    "purpose": "Some purpose",
+    "policyLink": "https://example.com/toc",
+    "enabled": false
   }
 ]
