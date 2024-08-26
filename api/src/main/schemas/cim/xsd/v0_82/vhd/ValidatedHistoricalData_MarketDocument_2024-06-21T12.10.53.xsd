@@ -1,15 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- ****************************************************************** -->
-<!-- ***** ValidatedHistoricalData_MarketDocument XML Schema File ***** -->
+<?xml version="1.0"?>
+<!-- ****************************************************************** -->
+<!-- ***** ValidatedHistoricalData_Enveloppe XML Schema File ***** -->
 <!-- ****************************************************************** -->
 <!--
 Schema agency: Gasunie 
 Schema version: 1p0
-Schema date: woensdag 15 november 2023 10:41:21
+Schema date: Friday, 21 June 2024 12:10:48
  
 Generator name: EA_Toolkit by E. van Slooten
-Generator builddate: 15-7-2019 09:08:22
+Generator builddate: 04/04/2024 10:16:37
  
-Copyright (C) Gasunie (2023). All Rights Reserved.
+Copyright (C) Gasunie (2024). All Rights Reserved.
  
 This document and the information contained herein is provided on an "AS IS" basis
 and Gasunie DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT
@@ -18,17 +19,45 @@ LIMITED TO ANY WARRANTY THAT THE USE OF THE INFORMATION HEREIN WILL NOT INFRINGE
 PURPOSE
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns:ns1="http://www.eddie.energy/VHD/EDD01/20231115"
-           targetNamespace="http://www.eddie.energy/VHD/EDD01/20231115" attributeFormDefault="unqualified"
-           elementFormDefault="qualified" version="1p0">
-    <xs:element name="ValidatedHistoricalData_MarketDocument"
-                type="ns1:ValidatedHistoricalData_MarketDocumentComplexType">
-        <xs:annotation>
-            <xs:documentation>An electronic document containing the information necessary to satisfy the requirements of
-                a given business process.
-            </xs:documentation>
-        </xs:annotation>
-    </xs:element>
+		   xmlns:ns1="http://www.eddie.energy/VHD/EDD01/20240614"
+		   targetNamespace="http://www.eddie.energy/VHD/EDD01/20240614" attributeFormDefault="unqualified"
+		   elementFormDefault="qualified" version="1p0">
+    <xs:element name="ValidatedHistoricalData_Enveloppe" type="ns1:ValidatedHistoricalData_EnveloppeComplexType"/>
+    <xs:complexType name="ValidatedHistoricalData_EnveloppeComplexType">
+        <xs:sequence>
+            <xs:element name="MessageDocumentHeader" type="ns1:MessageDocumentHeaderComplexType"/>
+            <xs:element name="ValidatedHistoricalData_MarketDocument"
+                        type="ns1:ValidatedHistoricalData_MarketDocumentComplexType">
+                <xs:annotation>
+                    <xs:documentation>An electronic document containing the information necessary to satisfy the
+                        requirements of a given business process.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MessageDocumentHeaderComplexType">
+        <xs:sequence>
+            <xs:element name="creationDateTime" type="xs:dateTime"/>
+            <xs:element name="MessageDocumentHeader_MetaInformation"
+                        type="ns1:MessageDocumentHeader_MetaInformationComplexType"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MessageDocumentHeader_MetaInformationComplexType">
+        <xs:sequence>
+            <xs:element name="connectionid" type="xs:string"/>
+            <xs:element name="permissionid" type="xs:string"/>
+            <xs:element name="dataNeedid" type="xs:string"/>
+            <xs:element name="dataType" type="xs:string"/>
+            <xs:element name="MessageDocumentHeader_Region" type="ns1:MessageDocumentHeader_RegionComplexType"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MessageDocumentHeader_RegionComplexType">
+        <xs:sequence>
+            <xs:element name="connector" type="xs:string"/>
+            <xs:element name="country" type="ns1:CodingSchemeTypeList"/>
+        </xs:sequence>
+    </xs:complexType>
     <xs:complexType name="ValidatedHistoricalData_MarketDocumentComplexType">
         <xs:sequence>
             <xs:element name="mRID" type="xs:string">
@@ -36,8 +65,8 @@ PURPOSE
                     <xs:documentation>The unique identification of the document being exchanged within a business
                         process flow.
 
-                        In the ESMP context, the &quot;model authority&quot; is defined as a party (originator of the
-                        exchange) that provides an identification in the context of a business exchange such as document
+                        In the ESMP context, the "model authority" is defined as a party (originator of the exchange)
+                        that provides an identification in the context of a business exchange such as document
                         identification, ...
 
                         Master resource identifier issued by a model authority. The mRID is globally unique within an
@@ -79,8 +108,8 @@ PURPOSE
                 <xs:annotation>
                     <xs:documentation>The identification of a party in the energy market.
 
-                        In the ESMP context, the &quot;model authority&quot; is defined as an authorized issuing office
-                        that provides an agreed identification coding scheme for market participant, domain, measurement
+                        In the ESMP context, the "model authority" is defined as an authorized issuing office that
+                        provides an agreed identification coding scheme for market participant, domain, measurement
                         point, resources (generator, lines, substations, etc.) identification.
 
                         Master resource identifier issued by a model authority. The mRID is globally unique within an
@@ -111,8 +140,8 @@ PURPOSE
                 <xs:annotation>
                     <xs:documentation>The identification of a party in the energy market.
 
-                        In the ESMP context, the &quot;model authority&quot; is defined as an authorized issuing office
-                        that provides an agreed identification coding scheme for market participant, domain, measurement
+                        In the ESMP context, the "model authority" is defined as an authorized issuing office that
+                        provides an agreed identification coding scheme for market participant, domain, measurement
                         point, resources (generator, lines, substations, etc.) identification.
 
                         Master resource identifier issued by a model authority. The mRID is globally unique within an
@@ -175,9 +204,9 @@ PURPOSE
                 <xs:annotation>
                     <xs:documentation>A unique identification of the time series.
 
-                        In the ESMP context, the &quot;model authority&quot; is defined as a party (originator of the
-                        exchange) that provides a unique identification in the context of a business exchange such as
-                        time series identification, bid identification, ...
+                        In the ESMP context, the "model authority" is defined as a party (originator of the exchange)
+                        that provides a unique identification in the context of a business exchange such as time series
+                        identification, bid identification, ...
 
                         Master resource identifier issued by a model authority. The mRID is globally unique within an
                         exchange context.
@@ -211,8 +240,8 @@ PURPOSE
                 <xs:annotation>
                     <xs:documentation>The unique identification of the domain.
 
-                        In the ESMP context, the &quot;model authority&quot; is defined as an authorized issuing office
-                        that provides an agreed identification coding scheme for market participant, domain, measurement
+                        In the ESMP context, the "model authority" is defined as an authorized issuing office that
+                        provides an agreed identification coding scheme for market participant, domain, measurement
                         point, resources (generator, lines, substations, etc.) identification.
 
                         Master resource identifier issued by a model authority. The mRID is globally unique within an
@@ -231,8 +260,8 @@ PURPOSE
                 <xs:annotation>
                     <xs:documentation>The unique identification of the domain.
 
-                        In the ESMP context, the &quot;model authority&quot; is defined as an authorized issuing office
-                        that provides an agreed identification coding scheme for market participant, domain, measurement
+                        In the ESMP context, the "model authority" is defined as an authorized issuing office that
+                        provides an agreed identification coding scheme for market participant, domain, measurement
                         point, resources (generator, lines, substations, etc.) identification.
 
                         Master resource identifier issued by a model authority. The mRID is globally unique within an
@@ -261,8 +290,8 @@ PURPOSE
                 <xs:annotation>
                     <xs:documentation>A unique identification of the measurement point.
 
-                        In the ESMP context, the &quot;model authority&quot; is defined as an authorized issuing office
-                        that provides an agreed identification coding scheme for market participant, domain, measurement
+                        In the ESMP context, the "model authority" is defined as an authorized issuing office that
+                        provides an agreed identification coding scheme for market participant, domain, measurement
                         point, resources (generator, lines, substations, etc.) identification.
 
                         Master resource identifier issued by a model authority. The mRID is globally unique within an
@@ -282,8 +311,8 @@ PURPOSE
                 <xs:annotation>
                     <xs:documentation>The unique identification of the meter reading.
 
-                        In the ESMP context, the &quot;model authority&quot; is defined as a party (originator of the
-                        exchange) that provides an identification in the context of a business exchange.
+                        In the ESMP context, the "model authority" is defined as a party (originator of the exchange)
+                        that provides an identification in the context of a business exchange.
 
                         Master resource identifier issued by a model authority. The mRID is unique within an exchange
                         context. Global uniqueness is easily achieved by using a UUID, as specified in RFC 4122, for the
@@ -386,17 +415,6 @@ PURPOSE
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="ReasonList">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="Reason" type="ns1:ReasonComplexType" minOccurs="0" maxOccurs="unbounded">
-                            <xs:annotation>
-                                <xs:documentation>The motivation of an act.</xs:documentation>
-                            </xs:annotation>
-                        </xs:element>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
             <xs:element name="RegisteredResource" type="ns1:RegisteredResourceComplexType" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>A resource that is registered through the market participant registration system.
@@ -418,17 +436,17 @@ PURPOSE
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-        </xs:sequence>
-    </xs:complexType>
-    <xs:complexType name="ReasonComplexType">
-        <xs:sequence>
-            <xs:element name="text" type="xs:string" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation>The textual explanation corresponding to the reason code.
-                    </xs:documentation>
-                </xs:annotation>
+            <xs:element name="ReasonList">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Reason" type="ns1:ReasonComplexType" minOccurs="0" maxOccurs="unbounded">
+                            <xs:annotation>
+                                <xs:documentation>The motivation of an act.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
             </xs:element>
-            <xs:element name="code" type="ns1:ReasonCodeTypeList"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="RegisteredResourceComplexType">
@@ -459,8 +477,8 @@ PURPOSE
                 <xs:annotation>
                     <xs:documentation>The unique identification of a location.
 
-                        In the ESMP context, the &quot;model authority&quot; is defined as an authorized issuing office
-                        that provides an agreed identification coding scheme for market participant, domain, measurement
+                        In the ESMP context, the "model authority" is defined as an authorized issuing office that
+                        provides an agreed identification coding scheme for market participant, domain, measurement
                         point, resources (generator, lines, substations, etc.) identification, location, etc.
 
                         Master resource identifier issued by a model authority. The mRID is globally unique within an
@@ -492,7 +510,8 @@ PURPOSE
 
                         --- Location of this power system resource.
 
-                        --- Sequence of position points describing this location, expressed in coordinate system &#39;Location.CoordinateSystem&#39;.
+                        --- Sequence of position points describing this location, expressed in coordinate system
+                        'Location.CoordinateSystem'.
 
                     </xs:documentation>
                 </xs:annotation>
@@ -504,7 +523,8 @@ PURPOSE
 
                         --- Location of this power system resource.
 
-                        --- Sequence of position points describing this location, expressed in coordinate system &#39;Location.CoordinateSystem&#39;.
+                        --- Sequence of position points describing this location, expressed in coordinate system
+                        'Location.CoordinateSystem'.
 
                     </xs:documentation>
                 </xs:annotation>
@@ -516,7 +536,8 @@ PURPOSE
 
                         --- Location of this power system resource.
 
-                        --- Sequence of position points describing this location, expressed in coordinate system &#39;Location.CoordinateSystem&#39;.
+                        --- Sequence of position points describing this location, expressed in coordinate system
+                        'Location.CoordinateSystem'.
 
                     </xs:documentation>
                 </xs:annotation>
@@ -528,7 +549,8 @@ PURPOSE
 
                         --- Location of this power system resource.
 
-                        --- Sequence of position points describing this location, expressed in coordinate system &#39;Location.CoordinateSystem&#39;.
+                        --- Sequence of position points describing this location, expressed in coordinate system
+                        'Location.CoordinateSystem'.
 
                     </xs:documentation>
                 </xs:annotation>
@@ -536,7 +558,7 @@ PURPOSE
             <xs:element name="location.coordinateSystem.crsUrn" type="xs:string" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>A Uniform Resource Name (URN) for the coordinate reference system (crs) used to
-                        define &#39;Location.PositionPoints&#39;.
+                        define 'Location.PositionPoints'.
                         An example would be the European Petroleum Survey Group (EPSG) code for a coordinate reference
                         system, defined in URN under the Open Geospatial Consortium (OGC) namespace as:
                         urn:ogc:def:uom:EPSG::XXXX, where XXXX is an EPSG code (a full list of codes can be found at the
@@ -608,17 +630,6 @@ PURPOSE
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="ReasonList">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="Reason" type="ns1:ReasonComplexType" minOccurs="0" maxOccurs="unbounded">
-                            <xs:annotation>
-                                <xs:documentation>The motivation of an act.</xs:documentation>
-                            </xs:annotation>
-                        </xs:element>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
             <xs:element name="PointList">
                 <xs:complexType>
                     <xs:sequence>
@@ -627,6 +638,17 @@ PURPOSE
                                 <xs:documentation>The identification of the values being addressed within a specific
                                     interval of time.
                                 </xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="ReasonList">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Reason" type="ns1:ReasonComplexType" minOccurs="0" maxOccurs="unbounded">
+                            <xs:annotation>
+                                <xs:documentation>The motivation of an act.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
                     </xs:sequence>
@@ -681,6 +703,17 @@ PURPOSE
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ReasonComplexType">
+        <xs:sequence>
+            <xs:element name="text" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>The textual explanation corresponding to the reason code.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="code" type="ns1:ReasonCodeTypeList"/>
         </xs:sequence>
     </xs:complexType>
     <xs:simpleType name="AccumulationKind">
@@ -2332,14 +2365,12 @@ PURPOSE
         <xs:sequence>
             <xs:element name="date" type="xs:date" minOccurs="0">
                 <xs:annotation>
-                    <xs:documentation>The date as &quot;YYYY-MM-DD&quot;, which conforms with ISO 8601.
-                    </xs:documentation>
+                    <xs:documentation>The date as "YYYY-MM-DD", which conforms with ISO 8601.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="time" type="xs:time" minOccurs="0">
                 <xs:annotation>
-                    <xs:documentation>The time as &quot;hh:mm:ss.sssZ&quot;, which conforms with ISO 8601.
-                    </xs:documentation>
+                    <xs:documentation>The time as "hh:mm:ss.sssZ", which conforms with ISO 8601.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="dateTime" type="xs:dateTime" minOccurs="0">
@@ -2378,11 +2409,11 @@ PURPOSE
     </xs:simpleType>
     <xs:simpleType name="Duration">
         <xs:annotation>
-            <xs:documentation>Duration as &quot;PnYnMnDTnHnMnS&quot; which conforms to ISO 8601, where nY expresses a
-                number of years, nM a number of months, nD a number of days. The letter T separates the date expression
-                from the time expression and, after it, nH identifies a number of hours, nM a number of minutes and nS a
-                number of seconds. The number of seconds could be expressed as a decimal number, but all other numbers
-                are integers.
+            <xs:documentation>Duration as "PnYnMnDTnHnMnS" which conforms to ISO 8601, where nY expresses a number of
+                years, nM a number of months, nD a number of days. The letter T separates the date expression from the
+                time expression and, after it, nH identifies a number of hours, nM a number of minutes and nS a number
+                of seconds. The number of seconds could be expressed as a decimal number, but all other numbers are
+                integers.
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string"></xs:restriction>
@@ -3898,8 +3929,8 @@ PURPOSE
             </xs:enumeration>
             <xs:enumeration value="A30">
                 <xs:annotation>
-                    <xs:documentation>Imposed Time series from nominated party&#39;s time series (party identified in
-                        reason text)
+                    <xs:documentation>Imposed Time series from nominated party's time series (party identified in reason
+                        text)
                     </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
@@ -4855,8 +4886,8 @@ PURPOSE
     </xs:simpleType>
     <xs:simpleType name="YMDHM_DateTime">
         <xs:annotation>
-            <xs:documentation>In ESMP, the date and time is expressed as &quot;YYYY-MM-DDThh:mmZ&quot;, which conforms
-                with ISO 8601 UTC time zone. This date and time is without the seconds.
+            <xs:documentation>In ESMP, the date and time is expressed as "YYYY-MM-DDThh:mmZ", which conforms with ISO
+                8601 UTC time zone. This date and time is without the seconds.
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string"></xs:restriction>

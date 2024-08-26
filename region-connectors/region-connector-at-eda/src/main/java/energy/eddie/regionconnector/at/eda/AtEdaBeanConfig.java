@@ -33,7 +33,7 @@ import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConne
 import energy.eddie.regionconnector.at.eda.ponton.messenger.WebClientMessengerHealth;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
-import energy.eddie.regionconnector.at.eda.provider.v0_82.EdaEddieValidatedHistoricalDataMarketDocumentProvider;
+import energy.eddie.regionconnector.at.eda.provider.v0_82.EdaValidatedHistoricalDataEnveloppeProvider;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecordService;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableMasterDataService;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
@@ -173,11 +173,11 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public EdaEddieValidatedHistoricalDataMarketDocumentProvider consumptionRecordProcessor(
+    public EdaValidatedHistoricalDataEnveloppeProvider consumptionRecordProcessor(
             CommonInformationModelConfiguration commonInformationModelConfiguration,
             Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux
     ) {
-        return new EdaEddieValidatedHistoricalDataMarketDocumentProvider(
+        return new EdaValidatedHistoricalDataEnveloppeProvider(
                 new ValidatedHistoricalDataMarketDocumentDirector(
                         commonInformationModelConfiguration,
                         new ValidatedHistoricalDataMarketDocumentBuilderFactory()

@@ -8,8 +8,6 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +15,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.text.ParseException;
@@ -35,10 +32,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class JwtUtilTest {
     private static final String testSecret = "RbNQrp0Dfd+fNoTalQQTd5MRurblhcDtVYaPGoDsg8Q=";
     private JwtUtil jwtUtil;
-    @Mock
-    private HttpServletRequest mockRequest;
-    @Mock
-    private HttpServletResponse mockResponse;
     private DefaultJWTProcessor<SecurityContext> processor;
 
     public static Stream<Arguments> invalidJwtSource() {

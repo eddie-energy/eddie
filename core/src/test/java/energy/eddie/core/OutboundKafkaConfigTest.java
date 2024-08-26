@@ -105,9 +105,9 @@ class OutboundKafkaConfigTest {
         }
 
         @Bean
-        public EddieValidatedHistoricalDataMarketDocumentService eddieValidatedHistoricalDataMarketDocumentService() {
-            EddieValidatedHistoricalDataMarketDocumentService mock = Mockito.mock(
-                    EddieValidatedHistoricalDataMarketDocumentService.class);
+        public ValidatedHistoricalDataEnveloppeService eddieValidatedHistoricalDataMarketDocumentService() {
+            ValidatedHistoricalDataEnveloppeService mock = Mockito.mock(
+                    ValidatedHistoricalDataEnveloppeService.class);
             when(mock.getEddieValidatedHistoricalDataMarketDocumentStream()).thenReturn(Flux.empty());
             return mock;
         }

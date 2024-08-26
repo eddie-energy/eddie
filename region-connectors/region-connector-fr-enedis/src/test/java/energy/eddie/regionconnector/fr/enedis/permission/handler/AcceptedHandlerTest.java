@@ -20,6 +20,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -65,9 +66,9 @@ class AcceptedHandlerTest {
                 "dataNeedId",
                 PermissionProcessStatus.ACCEPTED,
                 new EnedisDataSourceInformation(),
-                ZonedDateTime.now(),
-                LocalDate.now(),
-                LocalDate.now()
+                ZonedDateTime.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC)
         );
     }
 

@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.shared.cim.v0_82;
+package energy.eddie.regionconnector.shared.cim.v0_82.pmd;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;

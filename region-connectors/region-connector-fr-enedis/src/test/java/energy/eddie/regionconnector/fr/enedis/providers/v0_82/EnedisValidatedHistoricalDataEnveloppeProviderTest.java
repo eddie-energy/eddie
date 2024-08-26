@@ -6,6 +6,7 @@ import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
+import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisDataSourceInformation;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import org.junit.jupiter.api.Test;
@@ -16,9 +17,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class EnedisEddieValidatedHistoricalDataMarketDocumentProviderTest {
+class EnedisValidatedHistoricalDataEnveloppeProviderTest {
     @Test
-    void testGetEddieValidatedHistoricalDataMarketDocumentStream_publishesDocuments() throws Exception {
+    void testGetValidatedHistoricalDataMarketDocumentsStream_publishesDocuments() throws Exception {
         // Given
         var meterReading = TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK);
         var permissionRequest = mock(FrEnedisPermissionRequest.class);
@@ -26,6 +27,7 @@ class EnedisEddieValidatedHistoricalDataMarketDocumentProviderTest {
         when(permissionRequest.permissionId()).thenReturn("pid");
         when(permissionRequest.dataNeedId()).thenReturn("dnid");
         when(permissionRequest.granularity()).thenReturn(Granularity.PT30M);
+        when(permissionRequest.dataSourceInformation()).thenReturn(new EnedisDataSourceInformation());
 
         var identifiableMeterReading = new IdentifiableMeterReading(permissionRequest,
                                                                     meterReading,
@@ -41,15 +43,18 @@ class EnedisEddieValidatedHistoricalDataMarketDocumentProviderTest {
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
                                                              "fallbackId")
         );
-        var provider = new EnedisEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(), factory);
+        var provider = new EnedisValidatedHistoricalDataEnveloppeProvider(testPublisher.flux(), factory);
 
         // When
-        StepVerifier.create(provider.getEddieValidatedHistoricalDataMarketDocumentStream())
+        StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())
                     .then(() -> {
                         testPublisher.emit(identifiableMeterReading);
                         testPublisher.complete();
                     })
-                    .assertNext(vhd -> assertEquals("pid", vhd.permissionId()))
+                    .assertNext(vhd -> assertEquals("pid",
+                                                    vhd.getMessageDocumentHeader()
+                                                       .getMessageDocumentHeaderMetaInformation()
+                                                       .getPermissionid()))
                     .verifyComplete();
 
         // Clean-Up

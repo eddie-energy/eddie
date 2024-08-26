@@ -5,12 +5,11 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.AggregateKind;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
-import energy.eddie.cim.v0_82.vhd.SeriesPeriodComplexType;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocument;
 import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
+import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisDataSourceInformation;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
@@ -40,6 +39,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         when(permissionRequest.permissionId()).thenReturn("pid");
         when(permissionRequest.dataNeedId()).thenReturn("dnid");
         when(permissionRequest.granularity()).thenReturn(Granularity.P1D);
+        when(permissionRequest.dataSourceInformation()).thenReturn(new EnedisDataSourceInformation());
 
         var intermediateVHD = intermediateValidatedHistoricalDocument(permissionRequest, meterReading);
         var esmpTimeInterval = new EsmpTimeInterval(
@@ -50,19 +50,20 @@ class IntermediateValidatedHistoricalDocumentTest {
         var res = intermediateVHD.eddieValidatedHistoricalDataMarketDocument();
 
 
-        ValidatedHistoricalDataMarketDocument marketDocument = res.marketDocument();
-        var timeSeries = marketDocument.getTimeSeriesList().getTimeSeries().getFirst();
-        SeriesPeriodComplexType seriesPeriod = timeSeries.getSeriesPeriodList().getSeriesPeriods().getFirst();
+        var vhd = res.getValidatedHistoricalDataMarketDocument();
+        var timeSeries = vhd.getTimeSeriesList().getTimeSeries().getFirst();
+        var seriesPeriod = timeSeries.getSeriesPeriodList().getSeriesPeriods().getFirst();
+        var header = res.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();
 
         // Then
         // The optional is checked, but intellij does not infer this.
         assertAll(
-                () -> assertEquals("pid", res.permissionId()),
-                () -> assertEquals("cid", res.connectionId()),
-                () -> assertEquals("dnid", res.dataNeedId()),
-                () -> assertEquals("clientId", marketDocument.getReceiverMarketParticipantMRID().getValue()),
-                () -> assertEquals(esmpTimeInterval.start(), marketDocument.getPeriodTimeInterval().getStart()),
-                () -> assertEquals(esmpTimeInterval.end(), marketDocument.getPeriodTimeInterval().getEnd()),
+                () -> assertEquals("pid", header.getPermissionid()),
+                () -> assertEquals("cid", header.getConnectionid()),
+                () -> assertEquals("dnid", header.getDataNeedid()),
+                () -> assertEquals("clientId", vhd.getReceiverMarketParticipantMRID().getValue()),
+                () -> assertEquals(esmpTimeInterval.start(), vhd.getPeriodTimeInterval().getStart()),
+                () -> assertEquals(esmpTimeInterval.end(), vhd.getPeriodTimeInterval().getEnd()),
                 () -> assertEquals(ACTIVE_ENERGY, timeSeries.getProduct()),
                 () -> assertEquals(AggregateKind.SUM,
                                    timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation()),
@@ -108,6 +109,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         when(permissionRequest.permissionId()).thenReturn("pid");
         when(permissionRequest.dataNeedId()).thenReturn("dnid");
         when(permissionRequest.granularity()).thenReturn(Granularity.PT30M);
+        when(permissionRequest.dataSourceInformation()).thenReturn(new EnedisDataSourceInformation());
 
         var intermediateVHD = intermediateValidatedHistoricalDocument(permissionRequest, meterReading);
         var esmpTimeInterval = new EsmpTimeInterval(
@@ -122,16 +124,17 @@ class IntermediateValidatedHistoricalDocumentTest {
         var res = intermediateVHD.eddieValidatedHistoricalDataMarketDocument();
 
 
-        ValidatedHistoricalDataMarketDocument marketDocument = res.marketDocument();
+        var marketDocument = res.getValidatedHistoricalDataMarketDocument();
+        var header = res.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();
         var timeSeries = marketDocument.getTimeSeriesList().getTimeSeries().getFirst();
-        SeriesPeriodComplexType seriesPeriod = timeSeries.getSeriesPeriodList().getSeriesPeriods().getFirst();
+        var seriesPeriod = timeSeries.getSeriesPeriodList().getSeriesPeriods().getFirst();
 
         // Then
         // The optional is checked, but intellij does not infer this.
         assertAll(
-                () -> assertEquals("pid", res.permissionId()),
-                () -> assertEquals("cid", res.connectionId()),
-                () -> assertEquals("dnid", res.dataNeedId()),
+                () -> assertEquals("pid", header.getPermissionid()),
+                () -> assertEquals("cid", header.getConnectionid()),
+                () -> assertEquals("dnid", header.getDataNeedid()),
                 () -> assertEquals("clientId", marketDocument.getReceiverMarketParticipantMRID().getValue()),
                 () -> assertEquals(esmpTimeInterval.start(), marketDocument.getPeriodTimeInterval().getStart()),
                 () -> assertEquals(esmpTimeInterval.end(), marketDocument.getPeriodTimeInterval().getEnd()),
@@ -157,6 +160,8 @@ class IntermediateValidatedHistoricalDocumentTest {
     }
 
     @Test
+    @SuppressWarnings("java:S5961")
+        // Too many asserts
     void testEddieValidatedHistoricalDataMarketDocument_ConsumptionLoadCurveWithChangingResolution_returnsMappedDocument() throws IOException {
         // Given
         var meterReading = TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.CONSUMPTION_LOAD_CURVE_WITH_CHANGING_RESOLUTION_1_DAY);
@@ -165,6 +170,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         when(permissionRequest.permissionId()).thenReturn("pid");
         when(permissionRequest.dataNeedId()).thenReturn("dnid");
         when(permissionRequest.granularity()).thenReturn(Granularity.PT30M);
+        when(permissionRequest.dataSourceInformation()).thenReturn(new EnedisDataSourceInformation());
 
         var intermediateVHD = intermediateValidatedHistoricalDocument(permissionRequest, meterReading);
         var esmpTimeInterval = new EsmpTimeInterval(
@@ -175,19 +181,20 @@ class IntermediateValidatedHistoricalDocumentTest {
         var res = intermediateVHD.eddieValidatedHistoricalDataMarketDocument();
 
 
-        ValidatedHistoricalDataMarketDocument marketDocument = res.marketDocument();
+        var marketDocument = res.getValidatedHistoricalDataMarketDocument();
+        var header = res.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();
         var timeSeries = marketDocument.getTimeSeriesList().getTimeSeries().getFirst();
-        SeriesPeriodComplexType pt30mSeries = timeSeries.getSeriesPeriodList().getSeriesPeriods().getFirst();
-        SeriesPeriodComplexType pt10mSeries = timeSeries.getSeriesPeriodList().getSeriesPeriods().get(1);
-        SeriesPeriodComplexType pt15mSeries = timeSeries.getSeriesPeriodList().getSeriesPeriods().get(2);
-        SeriesPeriodComplexType pt60mSeries = timeSeries.getSeriesPeriodList().getSeriesPeriods().getLast();
+        var pt30mSeries = timeSeries.getSeriesPeriodList().getSeriesPeriods().getFirst();
+        var pt10mSeries = timeSeries.getSeriesPeriodList().getSeriesPeriods().get(1);
+        var pt15mSeries = timeSeries.getSeriesPeriodList().getSeriesPeriods().get(2);
+        var pt60mSeries = timeSeries.getSeriesPeriodList().getSeriesPeriods().getLast();
 
         // Then
         // The optional is checked, but intellij does not infer this.
         assertAll(
-                () -> assertEquals("pid", res.permissionId()),
-                () -> assertEquals("cid", res.connectionId()),
-                () -> assertEquals("dnid", res.dataNeedId()),
+                () -> assertEquals("pid", header.getPermissionid()),
+                () -> assertEquals("cid", header.getConnectionid()),
+                () -> assertEquals("dnid", header.getDataNeedid()),
                 () -> assertEquals("clientId", marketDocument.getReceiverMarketParticipantMRID().getValue()),
                 () -> assertEquals(esmpTimeInterval.start(), marketDocument.getPeriodTimeInterval().getStart()),
                 () -> assertEquals(esmpTimeInterval.end(), marketDocument.getPeriodTimeInterval().getEnd()),

@@ -4,8 +4,8 @@ import energy.eddie.api.agnostic.RawDataOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordOutboundConnector;
 import energy.eddie.api.v0_82.EddieAccountingPointMarketDocumentOutboundConnector;
-import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.PermissionMarketDocumentOutboundConnector;
+import energy.eddie.api.v0_82.ValidatedHistoricalDataEnveloppeOutboundConnector;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.core.services.*;
 import energy.eddie.outbound.kafka.KafkaConnector;
@@ -78,9 +78,9 @@ public class OutboundKafkaConfig {
     }
 
     @Bean
-    EddieValidatedHistoricalDataMarketDocumentOutboundConnector eddieValidatedHistoricalDataMarketDocumentOutboundConnector(
+    ValidatedHistoricalDataEnveloppeOutboundConnector eddieValidatedHistoricalDataMarketDocumentOutboundConnector(
             KafkaConnector kafkaConnector,
-            EddieValidatedHistoricalDataMarketDocumentService cimService
+            ValidatedHistoricalDataEnveloppeService cimService
     ) {
         kafkaConnector.setEddieValidatedHistoricalDataMarketDocumentStream(cimService.getEddieValidatedHistoricalDataMarketDocumentStream());
         return kafkaConnector;

@@ -21,6 +21,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -136,9 +137,9 @@ class IntermediateAccountingPointDataMarketDocumentTest {
                 "dataNeedId",
                 PermissionProcessStatus.ACCEPTED,
                 new EnedisDataSourceInformation(),
-                ZonedDateTime.now(),
-                LocalDate.now(),
-                LocalDate.now()
+                ZonedDateTime.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC)
         );
     }
 }

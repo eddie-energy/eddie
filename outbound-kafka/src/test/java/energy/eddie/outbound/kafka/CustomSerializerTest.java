@@ -10,8 +10,9 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.cim.v0_82.pmd.*;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocumentComplexType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -94,12 +95,19 @@ class CustomSerializerTest {
     @Test
     void testSerialize_EddieValidatedHistoricalDataMarketDocument() throws JsonProcessingException {
         String topic = "test";
-        EddieValidatedHistoricalDataMarketDocument data = new EddieValidatedHistoricalDataMarketDocument(
-                "connectionId",
-                "permissionId",
-                "dataNeedId",
-                new energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocument()
-        );
+        var data = new ValidatedHistoricalDataEnveloppe()
+                .withMessageDocumentHeader(
+                        new energy.eddie.cim.v0_82.vhd.MessageDocumentHeaderComplexType()
+                                .withMessageDocumentHeaderMetaInformation(
+                                        new energy.eddie.cim.v0_82.vhd.MessageDocumentHeaderMetaInformationComplexType()
+                                                .withConnectionid("connectionId")
+                                                .withPermissionid("permissionId")
+                                                .withDataNeedid("dataNeedId")
+                                )
+                )
+                .withValidatedHistoricalDataMarketDocument(
+                        new ValidatedHistoricalDataMarketDocumentComplexType()
+                );
         byte[] expected = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .registerModule(new Jdk8Module())

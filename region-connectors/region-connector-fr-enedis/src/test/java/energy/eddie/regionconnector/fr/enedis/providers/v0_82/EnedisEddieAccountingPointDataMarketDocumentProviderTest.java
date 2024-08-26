@@ -18,6 +18,7 @@ import reactor.test.publisher.TestPublisher;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -70,9 +71,9 @@ class EnedisEddieAccountingPointDataMarketDocumentProviderTest {
                 "dataNeedId",
                 PermissionProcessStatus.ACCEPTED,
                 new EnedisDataSourceInformation(),
-                ZonedDateTime.now(),
-                LocalDate.now(),
-                LocalDate.now()
+                ZonedDateTime.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC)
         );
         return new IdentifiableAccountingPointData(
                 permissionRequest,

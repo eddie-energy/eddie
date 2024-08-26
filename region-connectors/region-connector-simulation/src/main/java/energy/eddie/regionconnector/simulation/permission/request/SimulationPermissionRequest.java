@@ -11,30 +11,12 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
-public record SimulationPermissionRequest(SetConnectionStatusRequest req) implements PermissionRequest {
+public record SimulationPermissionRequest(@Nullable String connectionId, @Nullable String permissionId,
+                                          @Nullable String dataNeedId,
+                                          @Nullable PermissionProcessStatus status) implements PermissionRequest {
 
-    @Nullable
-    @Override
-    public String permissionId() {
-        return req.connectionId;
-    }
-
-    @Nullable
-    @Override
-    public String connectionId() {
-        return req.connectionId;
-    }
-
-    @Nullable
-    @Override
-    public String dataNeedId() {
-        return req.dataNeedId;
-    }
-
-    @Override
-    @SuppressWarnings("NullAway")
-    public PermissionProcessStatus status() {
-        return req.connectionStatus;
+    public SimulationPermissionRequest(SetConnectionStatusRequest req) {
+        this(req.connectionId, req.connectionId, req.dataNeedId, req.connectionStatus);
     }
 
     @Override

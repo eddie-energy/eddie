@@ -2,9 +2,9 @@ package energy.eddie.regionconnector.simulation.web;
 
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordProvider;
-import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentProvider;
-import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
+import energy.eddie.api.v0_82.ValidatedHistoricalDataEnveloppeProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
 import energy.eddie.regionconnector.simulation.permission.request.IntermediateValidatedHistoricalDataMarketDocument;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,11 +13,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 @RestController
-public class ConsumptionRecordController implements Mvp1ConsumptionRecordProvider, EddieValidatedHistoricalDataMarketDocumentProvider, AutoCloseable {
+public class ConsumptionRecordController implements Mvp1ConsumptionRecordProvider, ValidatedHistoricalDataEnveloppeProvider, AutoCloseable {
 
     private final Sinks.Many<ConsumptionRecord> consumptionRecordStreamSink = Sinks.many().multicast()
             .onBackpressureBuffer();
-    private final Sinks.Many<EddieValidatedHistoricalDataMarketDocument> vhdmdSink = Sinks.many().multicast()
+    private final Sinks.Many<ValidatedHistoricalDataEnveloppe> vhdmdSink = Sinks.many().multicast()
             .onBackpressureBuffer();
 
     private final CommonInformationModelConfiguration cimConfig;
@@ -40,7 +40,7 @@ public class ConsumptionRecordController implements Mvp1ConsumptionRecordProvide
     }
 
     @Override
-    public Flux<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
+    public Flux<ValidatedHistoricalDataEnveloppe> getValidatedHistoricalDataMarketDocumentsStream() {
         return vhdmdSink.asFlux();
     }
 

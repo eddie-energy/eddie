@@ -9,8 +9,8 @@ import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0_82.cim.EddieAccountingPointMarketDocument;
-import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
@@ -28,7 +28,7 @@ class CustomSerializer implements Serializer<Object> {
         return switch (data) {
             case ConsumptionRecord ignored -> serializeJson(data);
             case ConnectionStatusMessage ignored -> serializeJson(data);
-            case EddieValidatedHistoricalDataMarketDocument vhd ->
+            case ValidatedHistoricalDataEnveloppe vhd ->
                     serializeEddieValidatedHistoricalDataMarketDocument(vhd);
             case PermissionEnveloppe pmd -> serializePermissionMarketDocument(pmd);
             case RawDataMessage rawDataMessage -> serializeRawDataMessage(rawDataMessage);
@@ -47,11 +47,11 @@ class CustomSerializer implements Serializer<Object> {
         }
     }
 
-    private byte[] serializeEddieValidatedHistoricalDataMarketDocument(EddieValidatedHistoricalDataMarketDocument data) {
+    private byte[] serializeEddieValidatedHistoricalDataMarketDocument(ValidatedHistoricalDataEnveloppe data) {
         try {
             return vhdObjectMapper.writeValueAsBytes(data);
         } catch (JsonProcessingException e) {
-            throw new EddieValidatedHistoricalDataMarketDocumentSerializationException(e);
+            throw new ValidatedHistoricalDataEnveloppeSerializationException(e);
         }
     }
 
@@ -91,8 +91,8 @@ class CustomSerializer implements Serializer<Object> {
         }
     }
 
-    public static class EddieValidatedHistoricalDataMarketDocumentSerializationException extends RuntimeException {
-        public EddieValidatedHistoricalDataMarketDocumentSerializationException(Throwable cause) {
+    public static class ValidatedHistoricalDataEnveloppeSerializationException extends RuntimeException {
+        public ValidatedHistoricalDataEnveloppeSerializationException(Throwable cause) {
             super(cause);
         }
     }

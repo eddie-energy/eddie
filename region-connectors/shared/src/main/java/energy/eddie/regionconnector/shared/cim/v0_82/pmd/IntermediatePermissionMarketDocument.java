@@ -1,27 +1,25 @@
-package energy.eddie.regionconnector.shared.cim.v0_82;
+package energy.eddie.regionconnector.shared.cim.v0_82.pmd;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.pmd.*;
+import energy.eddie.regionconnector.shared.cim.v0_82.CimUtils;
+import energy.eddie.regionconnector.shared.cim.v0_82.DocumentType;
+import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 import jakarta.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.xml.datatype.DatatypeFactory;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.UUID;
 
 import static energy.eddie.api.CommonInformationModelVersions.V0_82;
 
 public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(IntermediatePermissionMarketDocument.class);
     private final T permissionRequest;
     private final String customerIdentifier;
     private final TransmissionScheduleProvider<T> transmissionScheduleProvider;
@@ -62,6 +60,7 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
         EsmpDateTime now = EsmpDateTime.now(clock);
         EsmpDateTime created = new EsmpDateTime(permissionRequest.created());
         EsmpTimeInterval interval = new EsmpTimeInterval(permissionRequest.start(), permissionRequest.end(), zoneId);
+        var codingScheme = CimUtils.getCodingSchemePmd(permissionRequest.dataSourceInformation().countryCode());
 
         var pmd = new PermissionMarketDocumentComplexType()
                 .withMRID(permissionRequest.permissionId())
@@ -74,16 +73,12 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
                 .withProcessProcessType(ProcessTypeList.ACCESS_TO_METERED_DATA)
                 .withSenderMarketParticipantMRID(
                         new PartyIDStringComplexType()
-                                .withCodingScheme(
-                                        getCodingScheme()
-                                )
+                                .withCodingScheme(codingScheme)
                                 .withValue(customerIdentifier)
                 )
                 .withReceiverMarketParticipantMRID(
                         new PartyIDStringComplexType()
-                                .withCodingScheme(
-                                        getCodingScheme()
-                                )
+                                .withCodingScheme(codingScheme)
                                 .withValue(permissionRequest.dataSourceInformation().permissionAdministratorId())
                 )
                 .withPeriodTimeInterval(
@@ -119,21 +114,9 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
                                 )
                 );
         return new PermissionEnveloppe()
-                .withMessageDocumentHeader(metainformation())
+                .withMessageDocumentHeader(new DocumentHeader(permissionRequest,
+                                                              DocumentType.PERMISSION_MARKET_DOCUMENT).permissionMarketDocumentHeader())
                 .withPermissionMarketDocument(pmd);
-    }
-
-    @Nullable
-    private CodingSchemeTypeList getCodingScheme() {
-        var cc = permissionRequest.dataSourceInformation().countryCode();
-        try {
-            return CodingSchemeTypeList.fromValue("N" + cc);
-        } catch (IllegalArgumentException e) {
-            // prevent exception spamming until GH-638 is implemented
-            if (!cc.equalsIgnoreCase("aiida"))
-                LOGGER.info("Unknown country code.", e);
-            return null;
-        }
     }
 
     @Nullable
@@ -154,25 +137,5 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
             }
         }
         throw new IllegalArgumentException("Unknown enum value for StatusTypeList " + permissionRequestStatus);
-    }
-
-    private MessageDocumentHeaderComplexType metainformation() {
-        var calendar = DatatypeFactory
-                .newDefaultInstance()
-                .newXMLGregorianCalendar(LocalDate.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE));
-        return new MessageDocumentHeaderComplexType()
-                .withCreationDateTime(calendar)
-                .withMessageDocumentHeaderMetaInformation(
-                        new MessageDocumentHeaderMetaInformationComplexType()
-                                .withConnectionid(permissionRequest.connectionId())
-                                .withDataNeedid(permissionRequest.dataNeedId())
-                                .withDataType("permission-market-document")
-                                .withMessageDocumentHeaderRegion(
-                                        new MessageDocumentHeaderRegionComplexType()
-                                                .withConnector(permissionRequest.dataSourceInformation()
-                                                                                .regionConnectorId())
-                                                .withCountry(getCodingScheme())
-                                )
-                );
     }
 }

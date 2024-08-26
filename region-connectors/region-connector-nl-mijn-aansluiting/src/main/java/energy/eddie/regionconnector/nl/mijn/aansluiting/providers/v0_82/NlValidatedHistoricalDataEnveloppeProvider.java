@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.providers.v0_82;
 
-import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentProvider;
-import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
+import energy.eddie.api.v0_82.ValidatedHistoricalDataEnveloppeProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.IdentifiableMeteredData;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PollingService;
@@ -10,12 +10,12 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 @Component
-public class NlValidatedHistoricalDataMarketDocumentProvider implements EddieValidatedHistoricalDataMarketDocumentProvider {
-    private final Flux<EddieValidatedHistoricalDataMarketDocument> flux;
+public class NlValidatedHistoricalDataEnveloppeProvider implements ValidatedHistoricalDataEnveloppeProvider {
+    private final Flux<ValidatedHistoricalDataEnveloppe> flux;
     private final CommonInformationModelConfiguration cimConfig;
     private final MijnAansluitingConfiguration mijnAansluitingConfig;
 
-    public NlValidatedHistoricalDataMarketDocumentProvider(
+    public NlValidatedHistoricalDataEnveloppeProvider(
             PollingService pollingService,
             CommonInformationModelConfiguration cimConfig,
             MijnAansluitingConfiguration mijnAansluitingConfig
@@ -26,7 +26,7 @@ public class NlValidatedHistoricalDataMarketDocumentProvider implements EddieVal
         this.mijnAansluitingConfig = mijnAansluitingConfig;
     }
 
-    private Flux<EddieValidatedHistoricalDataMarketDocument> mapToVhd(IdentifiableMeteredData identifiableMeteredData) {
+    private Flux<ValidatedHistoricalDataEnveloppe> mapToVhd(IdentifiableMeteredData identifiableMeteredData) {
         IntermediateValidatedHistoricalDataMarketDocument vhd = new IntermediateValidatedHistoricalDataMarketDocument(
                 cimConfig,
                 mijnAansluitingConfig,
@@ -40,7 +40,7 @@ public class NlValidatedHistoricalDataMarketDocumentProvider implements EddieVal
     }
 
     @Override
-    public Flux<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
+    public Flux<ValidatedHistoricalDataEnveloppe> getValidatedHistoricalDataMarketDocumentsStream() {
         return flux;
     }
 

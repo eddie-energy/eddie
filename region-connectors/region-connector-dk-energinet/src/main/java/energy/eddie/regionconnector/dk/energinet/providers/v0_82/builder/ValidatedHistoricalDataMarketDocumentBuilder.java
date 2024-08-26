@@ -22,7 +22,7 @@ public class ValidatedHistoricalDataMarketDocumentBuilder {
             .withCodingScheme(CodingSchemeTypeList.GS1);
     private final TimeSeriesBuilderFactory timeSeriesBuilderFactory;
 
-    private final ValidatedHistoricalDataMarketDocument validatedHistoricalDataMarketDocument = new ValidatedHistoricalDataMarketDocument()
+    private final ValidatedHistoricalDataMarketDocumentComplexType validatedHistoricalDataMarketDocument = new ValidatedHistoricalDataMarketDocumentComplexType()
             .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
             .withType(MessageTypeList.MEASUREMENT_VALUE_DOCUMENT)
             .withSenderMarketParticipantMarketRoleType(RoleTypeList.METERING_POINT_ADMINISTRATOR)
@@ -65,7 +65,7 @@ public class ValidatedHistoricalDataMarketDocumentBuilder {
                 .withEnd(periodTimeInterval.getEnd());
     }
 
-    public ValidatedHistoricalDataMarketDocument build() {
+    public ValidatedHistoricalDataMarketDocumentComplexType build() {
         return validatedHistoricalDataMarketDocument;
     }
 }

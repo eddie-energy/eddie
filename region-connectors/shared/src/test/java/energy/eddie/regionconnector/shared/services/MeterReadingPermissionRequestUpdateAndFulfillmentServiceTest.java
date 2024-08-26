@@ -33,7 +33,7 @@ class MeterReadingPermissionRequestUpdateAndFulfillmentServiceTest {
 
     private static final LocalDate today = LocalDate.now(ZoneOffset.UTC);
     @Mock
-    private FulfillmentService FulfillmentService;
+    private FulfillmentService fulfillmentService;
     @Mock
     private Outbox outbox;
     @Captor
@@ -55,7 +55,7 @@ class MeterReadingPermissionRequestUpdateAndFulfillmentServiceTest {
         var permissionRequest = acceptedPermissionRequest(end, latest);
 
         var service = new MeterReadingPermissionUpdateAndFulfillmentService(
-                FulfillmentService,
+                fulfillmentService,
                 this::commitEvent);
 
         // When
@@ -80,12 +80,13 @@ class MeterReadingPermissionRequestUpdateAndFulfillmentServiceTest {
     }
 
     @Test
+    @SuppressWarnings("DirectInvocationOnMock")
     void tryUpdateAndFulfillPermissionRequest_withMeterReadingEndBeforeLatest_DoesNotUpdateLatestAndDoesNotFulfill() {
         // Given
         var latest = today.minusDays(2);
         var permissionRequest = acceptedPermissionRequest(latest, latest);
 
-        var service = new MeterReadingPermissionUpdateAndFulfillmentService(FulfillmentService,
+        var service = new MeterReadingPermissionUpdateAndFulfillmentService(fulfillmentService,
                                                                             (pr, endDate) -> outbox.commit(new TestPollingEvent(
                                                                                     pr.permissionId(),
                                                                                     PermissionProcessStatus.ACCEPTED,
@@ -99,12 +100,13 @@ class MeterReadingPermissionRequestUpdateAndFulfillmentServiceTest {
     }
 
     @Test
+    @SuppressWarnings("DirectInvocationOnMock")
     void tryUpdateAndFulfillPermissionRequest_withMeterReadingEndAfterPermission_UpdatesLatestAndFulfills() {
         // Given
         var end = today.plusDays(1);
         var permissionRequest = acceptedPermissionRequest(today, null);
 
-        var service = new MeterReadingPermissionUpdateAndFulfillmentService(FulfillmentService,
+        var service = new MeterReadingPermissionUpdateAndFulfillmentService(fulfillmentService,
                                                                             (pr, endDate) -> outbox.commit(new TestPollingEvent(
                                                                                     pr.permissionId(),
                                                                                     PermissionProcessStatus.ACCEPTED,

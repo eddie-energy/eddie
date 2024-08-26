@@ -8,10 +8,10 @@ import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
-class DatadisEddieValidatedHistoricalDataMarketDocumentProviderTest {
+class DatadisValidatedHistoricalDataEnveloppeProviderTest {
 
     @Test
-    void testGetEddieValidatedHistoricalDataMarketDocumentStream_publishesDocuments() throws Exception {
+    void testGetValidatedHistoricalDataMarketDocumentsStream_publishesDocuments() throws Exception {
         // Given
         TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
         PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId",
@@ -25,10 +25,10 @@ class DatadisEddieValidatedHistoricalDataMarketDocumentProviderTest {
         );
         IdentifiableMeteringData identifiableMeteringData = IntermediateValidatedHistoricalDocumentTest.identifiableMeterReading(
                 false);
-        var provider = new DatadisEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(), factory);
+        var provider = new DatadisValidatedHistoricalDataEnveloppeProvider(testPublisher.flux(), factory);
 
         // When
-        StepVerifier.create(provider.getEddieValidatedHistoricalDataMarketDocumentStream())
+        StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())
                     .then(() -> {
                         testPublisher.emit(identifiableMeteringData);
                         testPublisher.complete();

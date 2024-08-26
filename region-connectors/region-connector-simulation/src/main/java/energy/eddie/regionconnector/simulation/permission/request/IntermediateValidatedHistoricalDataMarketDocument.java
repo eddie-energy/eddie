@@ -3,9 +3,10 @@ package energy.eddie.regionconnector.simulation.permission.request;
 import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.api.v0.ConsumptionPoint;
 import energy.eddie.api.v0.ConsumptionRecord;
-import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
+import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 import energy.eddie.regionconnector.simulation.SimulationConnectorMetadata;
@@ -24,7 +25,7 @@ public record IntermediateValidatedHistoricalDataMarketDocument(ConsumptionRecor
                     new ReasonComplexType()
                             .withCode(ReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED));
 
-    public EddieValidatedHistoricalDataMarketDocument value() {
+    public ValidatedHistoricalDataEnveloppe value() {
         ZonedDateTime endDate = consumptionRecord.getStartDateTime()
                                                  .plus(
                                                          Duration.parse(consumptionRecord.getMeteringInterval())
@@ -36,7 +37,7 @@ public record IntermediateValidatedHistoricalDataMarketDocument(ConsumptionRecor
                 endDate
         );
 
-        var vhd = new ValidatedHistoricalDataMarketDocument()
+        var vhd = new ValidatedHistoricalDataMarketDocumentComplexType()
                 .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
                 .withType(MessageTypeList.MEASUREMENT_VALUE_DOCUMENT)
                 .withSenderMarketParticipantMarketRoleType(RoleTypeList.METERING_POINT_ADMINISTRATOR)
@@ -58,7 +59,7 @@ public record IntermediateValidatedHistoricalDataMarketDocument(ConsumptionRecor
                                 .withStart(timeframe.start())
                                 .withEnd(timeframe.end())
                 )
-                .withTimeSeriesList(new ValidatedHistoricalDataMarketDocument.TimeSeriesList()
+                .withTimeSeriesList(new ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList()
                                             .withTimeSeries(new TimeSeriesComplexType()
                                                                     .withMRID(UUID.randomUUID().toString())
                                                                     .withBusinessType(BusinessTypeList.CONSUMPTION)
@@ -89,12 +90,13 @@ public record IntermediateValidatedHistoricalDataMarketDocument(ConsumptionRecor
                                                                     )
                                             ));
 
-        return new EddieValidatedHistoricalDataMarketDocument(
-                consumptionRecord.getConnectionId(),
-                consumptionRecord.getPermissionId(),
-                consumptionRecord.getDataNeedId(),
-                vhd
-        );
+        return new VhdEnvelope(
+                vhd,
+                new SimulationPermissionRequest(consumptionRecord.getConnectionId(),
+                                                consumptionRecord.getPermissionId(),
+                                                consumptionRecord.getDataNeedId(),
+                                                PermissionProcessStatus.ACCEPTED)
+        ).wrap();
     }
 
     private List<SeriesPeriodComplexType> seriesPeriods(

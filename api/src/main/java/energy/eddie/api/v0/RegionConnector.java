@@ -1,6 +1,6 @@
 package energy.eddie.api.v0;
 
-import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentProvider;
+import energy.eddie.api.v0_82.ValidatedHistoricalDataEnveloppeProvider;
 
 /**
  * A region connector connects MDAs to EDDIE. It implements the MDA specific processes and converts requests for
@@ -17,7 +17,7 @@ import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentProvider
  *
  * @see energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider
  * @see energy.eddie.api.v0.Mvp1ConsumptionRecordProvider
- * @see EddieValidatedHistoricalDataMarketDocumentProvider
+ * @see ValidatedHistoricalDataEnveloppeProvider
  */
 public interface RegionConnector {
     /**

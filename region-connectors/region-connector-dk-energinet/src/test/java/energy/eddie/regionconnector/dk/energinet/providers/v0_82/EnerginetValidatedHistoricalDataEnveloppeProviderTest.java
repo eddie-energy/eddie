@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings({"resource"})
-class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
+class EnerginetValidatedHistoricalDataEnveloppeProviderTest {
 
     static MyEnergyDataMarketDocument myEnergyDataMarketDocument;
 
@@ -41,8 +41,8 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
     @BeforeAll
     static void setUp() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JsonNullableModule());
-        try (InputStream is = EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest.class.getClassLoader()
-                                                                                                   .getResourceAsStream(
+        try (InputStream is = EnerginetValidatedHistoricalDataEnveloppeProviderTest.class.getClassLoader()
+                                                                                         .getResourceAsStream(
                                                                                                            "MyEnergyDataMarketDocumentResponseListApiResponse.json")) {
             MyEnergyDataMarketDocumentResponseListApiResponse response = objectMapper.readValue(is,
                                                                                                 MyEnergyDataMarketDocumentResponseListApiResponse.class);
@@ -78,32 +78,41 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
 
     @SuppressWarnings("DataFlowIssue")
     @Test
-    void getEddieValidatedHistoricalDataMarketDocumentStream_producesDocumentWhenTestJsonIsUsed() {
+    void getValidatedHistoricalDataMarketDocumentStream_producesDocumentsWhenTestJsonIsUsed() {
         // Given
         TestPublisher<IdentifiableApiResponse> testPublisher = TestPublisher.create();
 
-        var provider = new EnerginetEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(),
-                                                                                       validatedHistoricalDataMarketDocumentBuilderFactory);
+        var provider = new EnerginetValidatedHistoricalDataEnveloppeProvider(testPublisher.flux(),
+                                                                             validatedHistoricalDataMarketDocumentBuilderFactory);
 
         // When & Then
-        StepVerifier.create(provider.getEddieValidatedHistoricalDataMarketDocumentStream())
+        StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())
                     .then(() -> {
                         testPublisher.emit(apiResponse);
                         testPublisher.complete();
                     })
                     .assertNext(document -> {
-                        assertEquals(apiResponse.permissionRequest().permissionId(), document.permissionId());
-                        assertEquals(apiResponse.permissionRequest().connectionId(), document.connectionId());
-                        assertEquals(apiResponse.permissionRequest().dataNeedId(), document.dataNeedId());
+                        var header = document.getMessageDocumentHeader()
+                                             .getMessageDocumentHeaderMetaInformation();
+                        assertEquals(apiResponse.permissionRequest().permissionId(), header.getPermissionid());
+                        assertEquals(apiResponse.permissionRequest().connectionId(), header.getConnectionid());
+                        assertEquals(apiResponse.permissionRequest().dataNeedId(), header.getDataNeedid());
 
                         assertEquals(myEnergyDataMarketDocument.getPeriodTimeInterval().getStart(),
-                                     document.marketDocument().getPeriodTimeInterval().getStart());
+                                     document.getValidatedHistoricalDataMarketDocument()
+                                             .getPeriodTimeInterval()
+                                             .getStart());
                         assertEquals(myEnergyDataMarketDocument.getPeriodTimeInterval().getEnd(),
-                                     document.marketDocument().getPeriodTimeInterval().getEnd());
+                                     document.getValidatedHistoricalDataMarketDocument()
+                                             .getPeriodTimeInterval()
+                                             .getEnd());
                         assertEquals(myEnergyDataMarketDocument.getTimeSeries().size(),
-                                     document.marketDocument().getTimeSeriesList().getTimeSeries().size());
+                                     document.getValidatedHistoricalDataMarketDocument()
+                                             .getTimeSeriesList()
+                                             .getTimeSeries()
+                                             .size());
                         assertEquals(myEnergyDataMarketDocument.getTimeSeries().getFirst().getPeriod().size(),
-                                     document.marketDocument()
+                                     document.getValidatedHistoricalDataMarketDocument()
                                              .getTimeSeriesList()
                                              .getTimeSeries()
                                              .getFirst()
@@ -111,7 +120,7 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
                                              .getSeriesPeriods()
                                              .size());
                         assertEquals(myEnergyDataMarketDocument.getTimeSeries().getLast().getPeriod().size(),
-                                     document.marketDocument()
+                                     document.getValidatedHistoricalDataMarketDocument()
                                              .getTimeSeriesList()
                                              .getTimeSeries()
                                              .getLast()
@@ -123,7 +132,7 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
     }
 
     @Test
-    void getEddieValidatedHistoricalDataMarketDocumentStream_producesNothingIfMappingFails() throws Exception {
+    void getValidatedHistoricalDataMarketDocumentsStream_producesNothingIfMappingFails() throws Exception {
         // Given
         ValidatedHistoricalDataMarketDocumentBuilder builder = mock(ValidatedHistoricalDataMarketDocumentBuilder.class);
         doThrow(new RuntimeException("Test exception")).when(builder).withMyEnergyDataMarketDocument(any());
@@ -133,11 +142,11 @@ class EnerginetEddieValidatedHistoricalDataMarketDocumentProviderTest {
 
         TestPublisher<IdentifiableApiResponse> testPublisher = TestPublisher.create();
 
-        try (var provider = new EnerginetEddieValidatedHistoricalDataMarketDocumentProvider(testPublisher.flux(),
-                                                                                            factory)) {
+        try (var provider = new EnerginetValidatedHistoricalDataEnveloppeProvider(testPublisher.flux(),
+                                                                                  factory)) {
 
             // When & Then
-            StepVerifier.create(provider.getEddieValidatedHistoricalDataMarketDocumentStream())
+            StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())
                         .then(() -> {
                             testPublisher.emit(apiResponse);
                             testPublisher.complete();

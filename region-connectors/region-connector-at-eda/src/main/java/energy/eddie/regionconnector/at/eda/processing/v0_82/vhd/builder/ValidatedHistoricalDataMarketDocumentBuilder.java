@@ -14,7 +14,7 @@ import static java.util.Objects.requireNonNull;
 
 public class ValidatedHistoricalDataMarketDocumentBuilder {
 
-    private final ValidatedHistoricalDataMarketDocument validatedHistoricalDataMarketDocument = new ValidatedHistoricalDataMarketDocument()
+    private final ValidatedHistoricalDataMarketDocumentComplexType validatedHistoricalDataMarketDocument = new ValidatedHistoricalDataMarketDocumentComplexType()
             .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
             .withType(MessageTypeList.MEASUREMENT_VALUE_DOCUMENT)
             .withSenderMarketParticipantMarketRoleType(RoleTypeList.METERING_POINT_ADMINISTRATOR)
@@ -57,7 +57,7 @@ public class ValidatedHistoricalDataMarketDocumentBuilder {
     }
 
     public ValidatedHistoricalDataMarketDocumentBuilder withConsumptionRecord(EdaConsumptionRecord consumptionRecord) throws InvalidMappingException {
-        var timeSeriesList = new ValidatedHistoricalDataMarketDocument.TimeSeriesList();
+        var timeSeriesList = new ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList();
         for (Energy energy : consumptionRecord.energy()) {
             for (EnergyData energyData : energy.energyData()) {
                 SeriesPeriodComplexType seriesPeriod = seriesPeriodBuilderFactory
@@ -92,7 +92,7 @@ public class ValidatedHistoricalDataMarketDocumentBuilder {
         return this;
     }
 
-    public ValidatedHistoricalDataMarketDocument build() {
+    public ValidatedHistoricalDataMarketDocumentComplexType build() {
         return validatedHistoricalDataMarketDocument;
     }
 }

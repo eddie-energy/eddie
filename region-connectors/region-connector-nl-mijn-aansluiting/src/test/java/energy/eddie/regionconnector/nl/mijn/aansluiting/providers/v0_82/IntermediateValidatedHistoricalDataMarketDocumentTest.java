@@ -60,12 +60,13 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
         // Then
         assertEquals(1, res.size());
         var eddieVHD = res.getFirst();
+        var header = eddieVHD.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();
         assertAll(
-                () -> assertEquals("cid", eddieVHD.connectionId()),
-                () -> assertEquals("pid", eddieVHD.permissionId()),
-                () -> assertEquals("dnid", eddieVHD.dataNeedId())
+                () -> assertEquals("cid", header.getConnectionid()),
+                () -> assertEquals("pid", header.getPermissionid()),
+                () -> assertEquals("dnid", header.getDataNeedid())
         );
-        var vhd = eddieVHD.marketDocument();
+        var vhd = eddieVHD.getValidatedHistoricalDataMarketDocument();
         assertAll(
                 () -> assertEquals("871690930000909597", vhd.getMRID()),
                 () -> assertEquals(CommonInformationModelVersions.V0_82.version(), vhd.getRevisionNumber()),
@@ -138,7 +139,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
 
         // Then
         assertEquals(1, res.size());
-        var vhd = res.getFirst().marketDocument();
+        var vhd = res.getFirst().getValidatedHistoricalDataMarketDocument();
         assertEquals(1, vhd.getTimeSeriesList().getTimeSeries().size());
         var timeseries = vhd.getTimeSeriesList().getTimeSeries().getFirst();
         assertAll(

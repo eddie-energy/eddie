@@ -24,21 +24,22 @@ public class MeasurementConverter {
         this.calculations = calculations;
     }
 
-    public ValidatedHistoricalDataMarketDocument convert(ValidatedHistoricalDataMarketDocument convertee) {
+    public ValidatedHistoricalDataEnveloppe convert(ValidatedHistoricalDataEnveloppe convertee) {
         LOGGER.info("Applying converters to validated historical data market document");
+        var doc = convertee.getValidatedHistoricalDataMarketDocument();
         var convertedTimeSeries = new ArrayList<TimeSeriesComplexType>();
         for (var calculation : calculations) {
-            if (containsTargetUnit(calculation, convertee)) {
-                convert(convertee, convertedTimeSeries, calculation);
+            if (containsTargetUnit(calculation, doc)) {
+                convert(doc, convertedTimeSeries, calculation);
             }
         }
-        convertee.getTimeSeriesList().withTimeSeries(convertedTimeSeries);
+        doc.getTimeSeriesList().withTimeSeries(convertedTimeSeries);
         return convertee;
     }
 
     private boolean containsTargetUnit(
             MeasurementCalculation calculation,
-            ValidatedHistoricalDataMarketDocument convertee
+            ValidatedHistoricalDataMarketDocumentComplexType convertee
     ) {
         for (var timeSeries : convertee.getTimeSeriesList().getTimeSeries()) {
             if (calculation.isTargetUnit(timeSeries.getEnergyMeasurementUnitName())) {
@@ -49,7 +50,7 @@ public class MeasurementConverter {
     }
 
     private void convert(
-            ValidatedHistoricalDataMarketDocument convertee,
+            ValidatedHistoricalDataMarketDocumentComplexType convertee,
             List<TimeSeriesComplexType> convertedTimeSeries,
             MeasurementCalculation calculation
     ) {

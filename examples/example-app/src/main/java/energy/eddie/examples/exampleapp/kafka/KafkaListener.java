@@ -1,16 +1,16 @@
 package energy.eddie.examples.exampleapp.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.cim.v0_82.pmd.MktActivityRecordComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
 import energy.eddie.cim.v0_82.vhd.PointComplexType;
 import energy.eddie.cim.v0_82.vhd.SeriesPeriodComplexType;
 import energy.eddie.cim.v0_82.vhd.TimeSeriesComplexType;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
 import energy.eddie.examples.exampleapp.Env;
-import energy.eddie.examples.exampleapp.kafka.serdes.EddieValidatedHistoricalDataMarketDocumentSerde;
 import energy.eddie.examples.exampleapp.kafka.serdes.PermissionMarketDocumentSerde;
+import energy.eddie.examples.exampleapp.kafka.serdes.ValidatedHistoricalDataEnveloppeSerde;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -78,7 +78,7 @@ public class KafkaListener implements Runnable {
     private Topology createVhdTopology() {
         var inputTopic = "validated-historical-data";
         Serde<String> stringSerde = Serdes.String();
-        var vhdSerde = new EddieValidatedHistoricalDataMarketDocumentSerde(mapper);
+        var vhdSerde = new ValidatedHistoricalDataEnveloppeSerde(mapper);
 
         StreamsBuilder builder = new StreamsBuilder();
         builder
@@ -103,13 +103,16 @@ public class KafkaListener implements Runnable {
         return builder.build();
     }
 
-    private void insertVhdIntoDb(String key, EddieValidatedHistoricalDataMarketDocument document) {
-        TimeSeriesComplexType timeSeries = document.marketDocument().getTimeSeriesList().getTimeSeries().getFirst();
+    private void insertVhdIntoDb(String key, ValidatedHistoricalDataEnveloppe document) {
+        var vhd = document.getValidatedHistoricalDataMarketDocument();
+        TimeSeriesComplexType timeSeries = vhd.getTimeSeriesList().getTimeSeries().getFirst();
         TimeSeriesComplexType.SeriesPeriodList seriesPeriods = timeSeries.getSeriesPeriodList();
 
-        String connectionId = document.connectionId();
+        String connectionId = document.getMessageDocumentHeader()
+                                      .getMessageDocumentHeaderMetaInformation()
+                                      .getConnectionid();
         String meteringPoint = timeSeries.getMarketEvaluationPointMRID().getValue();
-        ZonedDateTime startDateTime = ZonedDateTime.parse(document.marketDocument().getPeriodTimeInterval().getStart());
+        ZonedDateTime startDateTime = ZonedDateTime.parse(vhd.getPeriodTimeInterval().getStart());
         Integer resolution = meteringIntervalForCode.get(seriesPeriods.getSeriesPeriods().getFirst().getResolution());
 
         LOGGER.info("Writing consumption records for connection {} with metering point {} with {} data points",

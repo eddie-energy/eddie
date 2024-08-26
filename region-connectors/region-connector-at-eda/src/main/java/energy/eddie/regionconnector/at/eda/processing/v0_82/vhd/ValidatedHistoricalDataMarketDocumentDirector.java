@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda.processing.v0_82.vhd;
 
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocument;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocumentComplexType;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
@@ -23,7 +23,9 @@ public class ValidatedHistoricalDataMarketDocumentDirector {
         this.validatedHistoricalDataMarketDocumentBuilderFactory = validatedHistoricalDataMarketDocumentBuilderFactory;
     }
 
-    public ValidatedHistoricalDataMarketDocument createValidatedHistoricalDataMarketDocument(EdaConsumptionRecord consumptionRecord) throws InvalidMappingException {
+    public ValidatedHistoricalDataMarketDocumentComplexType createValidatedHistoricalDataMarketDocument(
+            EdaConsumptionRecord consumptionRecord
+    ) throws InvalidMappingException {
         return validatedHistoricalDataMarketDocumentBuilderFactory.create()
                                                                   .withRoutingHeaderData(consumptionRecord,
                                                                                          commonInformationModelConfiguration.eligiblePartyNationalCodingScheme())

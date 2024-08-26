@@ -1,9 +1,10 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82;
 
-import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentProvider;
-import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
+import energy.eddie.api.v0_82.ValidatedHistoricalDataEnveloppeProvider;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
+import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -12,13 +13,13 @@ import reactor.core.publisher.Flux;
 import java.util.Objects;
 
 @Component
-public class EnerginetEddieValidatedHistoricalDataMarketDocumentProvider implements EddieValidatedHistoricalDataMarketDocumentProvider {
+public class EnerginetValidatedHistoricalDataEnveloppeProvider implements ValidatedHistoricalDataEnveloppeProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(
-            EnerginetEddieValidatedHistoricalDataMarketDocumentProvider.class);
-    private final Flux<EddieValidatedHistoricalDataMarketDocument> eddieValidatedHistoricalDataMarketDocumentFlux;
+            EnerginetValidatedHistoricalDataEnveloppeProvider.class);
+    private final Flux<ValidatedHistoricalDataEnveloppe> eddieValidatedHistoricalDataMarketDocumentFlux;
     private final ValidatedHistoricalDataMarketDocumentBuilderFactory validatedHistoricalDataMarketDocumentBuilderFactory;
 
-    public EnerginetEddieValidatedHistoricalDataMarketDocumentProvider(
+    public EnerginetValidatedHistoricalDataEnveloppeProvider(
             Flux<IdentifiableApiResponse> identifiableApiResponseFlux,
             ValidatedHistoricalDataMarketDocumentBuilderFactory validatedHistoricalDataMarketDocumentBuilderFactory
     ) {
@@ -28,7 +29,7 @@ public class EnerginetEddieValidatedHistoricalDataMarketDocumentProvider impleme
         this.validatedHistoricalDataMarketDocumentBuilderFactory = validatedHistoricalDataMarketDocumentBuilderFactory;
     }
 
-    private Flux<EddieValidatedHistoricalDataMarketDocument> mapToValidatedHistoricalMarketDocument(
+    private Flux<ValidatedHistoricalDataEnveloppe> mapToValidatedHistoricalMarketDocument(
             IdentifiableApiResponse response
     ) {
         try {
@@ -39,11 +40,7 @@ public class EnerginetEddieValidatedHistoricalDataMarketDocumentProvider impleme
                     .build();
 
             return Flux.just(
-                    new EddieValidatedHistoricalDataMarketDocument(
-                            response.permissionRequest().connectionId(),
-                            response.permissionRequest().permissionId(),
-                            response.permissionRequest().dataNeedId(),
-                            validatedHistoricalDataMarketDocument)
+                    new VhdEnvelope(validatedHistoricalDataMarketDocument, response.permissionRequest()).wrap()
             );
         } catch (Exception e) {
             LOGGER.error("Failed to map to validated historical market document", e);
@@ -52,7 +49,7 @@ public class EnerginetEddieValidatedHistoricalDataMarketDocumentProvider impleme
     }
 
     @Override
-    public Flux<EddieValidatedHistoricalDataMarketDocument> getEddieValidatedHistoricalDataMarketDocumentStream() {
+    public Flux<ValidatedHistoricalDataEnveloppe> getValidatedHistoricalDataMarketDocumentsStream() {
         return eddieValidatedHistoricalDataMarketDocumentFlux;
     }
 

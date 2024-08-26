@@ -7,11 +7,11 @@ import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordOutboundConnector;
 import energy.eddie.api.v0_82.EddieAccountingPointMarketDocumentOutboundConnector;
-import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.PermissionMarketDocumentOutboundConnector;
+import energy.eddie.api.v0_82.ValidatedHistoricalDataEnveloppeOutboundConnector;
 import energy.eddie.api.v0_82.cim.EddieAccountingPointMarketDocument;
-import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -28,7 +28,7 @@ import java.util.Properties;
 public class KafkaConnector implements
         Mvp1ConnectionStatusMessageOutboundConnector,
         Mvp1ConsumptionRecordOutboundConnector,
-        EddieValidatedHistoricalDataMarketDocumentOutboundConnector,
+        ValidatedHistoricalDataEnveloppeOutboundConnector,
         PermissionMarketDocumentOutboundConnector,
         RawDataOutboundConnector,
         EddieAccountingPointMarketDocumentOutboundConnector,
@@ -63,10 +63,12 @@ public class KafkaConnector implements
     }
 
     private void producePermissionMarketDocument(PermissionEnveloppe permissionMarketDocument) {
+        var permissionId = permissionMarketDocument.getMessageDocumentHeader()
+                                                   .getMessageDocumentHeaderMetaInformation()
+                                                   .getPermissionid();
         ProducerRecord<String, Object> toSend = new ProducerRecord<>(
                 "permission-market-documents",
-                permissionMarketDocument.getPermissionMarketDocument().getPermissionList().getPermissions().getFirst()
-                                     .getMarketEvaluationPointMRID().getValue(),
+                permissionId,
                 permissionMarketDocument
         );
         kafkaProducer.send(toSend, new KafkaCallback("Could not produce permission market document"));
@@ -74,7 +76,7 @@ public class KafkaConnector implements
 
     @Override
     public void setEddieValidatedHistoricalDataMarketDocumentStream(
-            Flux<EddieValidatedHistoricalDataMarketDocument> marketDocumentStream
+            Flux<ValidatedHistoricalDataEnveloppe> marketDocumentStream
     ) {
         marketDocumentStream
                 .publishOn(Schedulers.boundedElastic())
@@ -82,15 +84,17 @@ public class KafkaConnector implements
     }
 
     private void produceEddieValidatedHistoricalDataMarketDocument(
-            EddieValidatedHistoricalDataMarketDocument marketDocument
+            ValidatedHistoricalDataEnveloppe marketDocument
     ) {
+        var info = marketDocument.getMessageDocumentHeader()
+                                 .getMessageDocumentHeaderMetaInformation();
         ProducerRecord<String, Object> toSend = new ProducerRecord<>("validated-historical-data",
-                                                                     marketDocument.connectionId(),
+                                                                     info.getConnectionid(),
                                                                      marketDocument);
         kafkaProducer.send(toSend,
                            new KafkaCallback("Could not produce validated historical data market document message"));
         LOGGER.debug("Produced validated historical data market document message for permission request {}",
-                     marketDocument.permissionId());
+                     info.getPermissionid());
     }
 
     @Override
