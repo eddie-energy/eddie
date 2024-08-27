@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.providers.agnostic;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
@@ -24,7 +25,7 @@ class DatadisRawDataProviderTest {
     void completeOnInputFlux_emitsCompleteOnRawDataFlow() {
         TestPublisher<IdentifiableMeteringData> publisher = TestPublisher.create();
         //noinspection resource StepVerifier closes provider
-        var provider = new DatadisRawDataProvider(publisher.flux());
+        var provider = new DatadisRawDataProvider(publisher.flux(), new ObjectMapper());
 
         StepVerifier.create(provider.getRawDataStream())
                     .then(publisher::complete)
@@ -39,7 +40,7 @@ class DatadisRawDataProviderTest {
         var reading = createReading();
 
         //noinspection resource StepVerifier closes provider
-        var provider = new DatadisRawDataProvider(publisher.flux());
+        var provider = new DatadisRawDataProvider(publisher.flux(), new ObjectMapper());
 
         StepVerifier.create(provider.getRawDataStream())
                     // When
