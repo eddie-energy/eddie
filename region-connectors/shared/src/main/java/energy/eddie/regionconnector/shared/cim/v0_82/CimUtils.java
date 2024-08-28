@@ -35,4 +35,9 @@ public class CimUtils {
     public static energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList getCodingSchemeVhd(String countryCode) {
         return fromValue(countryCode, energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList::fromValue);
     }
+
+    @Nullable
+    public static energy.eddie.cim.v0_82.ap.CodingSchemeTypeList getCodingSchemeAp(String countryCode) {
+        return fromValue(countryCode, energy.eddie.cim.v0_82.ap.CodingSchemeTypeList::fromValue);
+    }
 }

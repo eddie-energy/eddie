@@ -3,7 +3,7 @@ package energy.eddie.core;
 import energy.eddie.api.agnostic.RawDataOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordOutboundConnector;
-import energy.eddie.api.v0_82.EddieAccountingPointMarketDocumentOutboundConnector;
+import energy.eddie.api.v0_82.AccountingPointEnveloppeOutboundConnector;
 import energy.eddie.api.v0_82.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.ValidatedHistoricalDataEnveloppeOutboundConnector;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
@@ -96,11 +96,11 @@ public class OutboundKafkaConfig {
     }
 
     @Bean
-    EddieAccountingPointMarketDocumentOutboundConnector eddieAccountingPointMarketDocumentOutboundConnector(
+    AccountingPointEnveloppeOutboundConnector accountingPointEnveloppeOutboundConnector(
             KafkaConnector kafkaConnector,
-            EddieAccountingPointMarketDocumentService cimService
+            AccountingPointEnveloppeService cimService
     ) {
-        kafkaConnector.setEddieAccountingPointMarketDocumentStream(cimService.getEddieAccountingPointMarketDocumentStream());
+        kafkaConnector.setAccountingPointEnveloppeStream(cimService.getAccountingPointEnveloppeStream());
         return kafkaConnector;
     }
 

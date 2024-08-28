@@ -24,7 +24,7 @@ import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class EnerginetEddieAccountingPointMarketDocumentProviderTest {
+class EnerginetAccountingPointEnveloppeProviderTest {
 
     static MeteringPointDetailsCustomerDto meteringPointDetailsCustomerDto;
 
@@ -39,8 +39,8 @@ class EnerginetEddieAccountingPointMarketDocumentProviderTest {
     @BeforeAll
     static void setUp() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JsonNullableModule());
-        try (InputStream is = EnerginetEddieAccountingPointMarketDocumentProviderTest.class.getClassLoader()
-                                                                                           .getResourceAsStream(
+        try (InputStream is = EnerginetAccountingPointEnveloppeProviderTest.class.getClassLoader()
+                                                                                 .getResourceAsStream(
                                                                                                    "MeteringPointDetailsCustomerDtoResponseListApiResponse.json")) {
             MeteringPointDetailsCustomerDtoResponseListApiResponse response = objectMapper.readValue(is,
                                                                                                      MeteringPointDetailsCustomerDtoResponseListApiResponse.class);
@@ -71,20 +71,28 @@ class EnerginetEddieAccountingPointMarketDocumentProviderTest {
         // Given
         TestPublisher<IdentifiableAccountingPointDetails> testPublisher = TestPublisher.create();
 
-        var provider = new EnerginetEddieAccountingPointMarketDocumentProvider(testPublisher.flux(), cimConfig);
+        var provider = new EnerginetAccountingPointEnveloppeProvider(testPublisher.flux(), cimConfig);
 
         // When & Then
-        StepVerifier.create(provider.getEddieAccountingPointMarketDocumentStream())
+        StepVerifier.create(provider.getAccountingPointEnveloppeFlux())
                     .then(() -> {
                         testPublisher.emit(apiResponse);
                         testPublisher.complete();
                     })
                     .assertNext(document -> assertAll(
-                            () -> assertEquals(apiResponse.permissionRequest().permissionId(), document.permissionId()),
+                            () -> assertEquals(apiResponse.permissionRequest().permissionId(),
+                                               document.getMessageDocumentHeader()
+                                                       .getMessageDocumentHeaderMetaInformation()
+                                                       .getPermissionid()),
                             () -> assertEquals(apiResponse.permissionRequest().connectionId(),
-                                               document.connectionId()),
-                            () -> assertEquals(apiResponse.permissionRequest().dataNeedId(), document.dataNeedId()),
-                            () -> assertNotNull(document.marketDocument())
+                                               document.getMessageDocumentHeader()
+                                                       .getMessageDocumentHeaderMetaInformation()
+                                                       .getConnectionid()),
+                            () -> assertEquals(apiResponse.permissionRequest().dataNeedId(),
+                                               document.getMessageDocumentHeader()
+                                                       .getMessageDocumentHeaderMetaInformation()
+                                                       .getDataNeedid()),
+                            () -> assertNotNull(document.getAccountingPointMarketDocument())
                     ))
                     .verifyComplete();
 

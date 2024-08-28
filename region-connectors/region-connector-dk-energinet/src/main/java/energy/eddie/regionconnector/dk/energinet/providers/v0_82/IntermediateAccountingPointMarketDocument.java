@@ -6,6 +6,7 @@ import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.dk.energinet.customer.model.ContactAddressDto;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointDetailsCustomerDto;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableAccountingPointDetails;
+import energy.eddie.regionconnector.shared.cim.v0_82.ap.APEnvelope;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import org.apache.logging.log4j.util.Strings;
 
@@ -25,20 +26,22 @@ public record IntermediateAccountingPointMarketDocument(
             .withValue(GLOBAL_LOCATION_NUMBER);
 
     // TODO update mapping with GH-1037
-    public AccountingPointMarketDocument accountingPointMarketDocument() {
+    public AccountingPointEnveloppe accountingPointMarketDocument() {
         var meteringPointDetails = identifiableAccountingPointDetails.meteringPointDetails();
-        return new AccountingPointMarketDocument()
-                .withMRID(UUID.randomUUID().toString())
-                .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
-                .withType(MessageTypeList.ACCOUNTING_POINT_MASTER_DATA)
-                .withSenderMarketParticipantMarketRoleType(RoleTypeList.METERING_POINT_ADMINISTRATOR)
-                .withSenderMarketParticipantMRID(ENERGINET_MRID)
-                .withReceiverMarketParticipantMRID(receiverMRID())
-                .withReceiverMarketParticipantMarketRoleType(RoleTypeList.PARTY_CONNECTED_TO_GRID)
-                .withCreatedDateTime(createdDateTime())
-                .withAccountingPointList(new AccountingPointMarketDocument.AccountingPointList().withAccountingPoints(
-                        accountingPointComplexType(meteringPointDetails)
-                ));
+        return new APEnvelope(new AccountingPointMarketDocumentComplexType()
+                                      .withMRID(UUID.randomUUID().toString())
+                                      .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
+                                      .withType(MessageTypeList.ACCOUNTING_POINT_MASTER_DATA)
+                                      .withSenderMarketParticipantMarketRoleType(RoleTypeList.METERING_POINT_ADMINISTRATOR)
+                                      .withSenderMarketParticipantMRID(ENERGINET_MRID)
+                                      .withReceiverMarketParticipantMRID(receiverMRID())
+                                      .withReceiverMarketParticipantMarketRoleType(RoleTypeList.PARTY_CONNECTED_TO_GRID)
+                                      .withCreatedDateTime(createdDateTime())
+                                      .withAccountingPointList(new AccountingPointMarketDocumentComplexType.AccountingPointList().withAccountingPoints(
+                                              accountingPointComplexType(meteringPointDetails)
+                                      )),
+                              identifiableAccountingPointDetails.permissionRequest())
+                .wrap();
     }
 
     private PartyIDStringComplexType receiverMRID() {

@@ -1,12 +1,12 @@
 package energy.eddie.regionconnector.at.eda.provider.v0_82;
 
 import energy.eddie.api.CommonInformationModelVersions;
-import energy.eddie.api.v0_82.cim.EddieAccountingPointMarketDocument;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import energy.eddie.regionconnector.at.eda.dto.masterdata.*;
+import energy.eddie.regionconnector.shared.cim.v0_82.ap.APEnvelope;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 
 import java.util.Optional;
@@ -24,17 +24,14 @@ public class IntermediateAccountingPointMarketDocument {
         this.cimConfig = cimConfig;
     }
 
-    public EddieAccountingPointMarketDocument eddieAccountingPointMarketDocument() {
-        return new EddieAccountingPointMarketDocument(
-                identifiableMasterData.permissionRequest().connectionId(),
-                identifiableMasterData.permissionRequest().permissionId(),
-                identifiableMasterData.permissionRequest().dataNeedId(),
-                accountingPointMarketDocument(identifiableMasterData.masterData())
-        );
+    public AccountingPointEnveloppe accountingPointEnveloppe() {
+        return new APEnvelope(accountingPointMarketDocument(identifiableMasterData.masterData()),
+                              identifiableMasterData.permissionRequest())
+                .wrap();
     }
 
-    private AccountingPointMarketDocument accountingPointMarketDocument(EdaMasterData edaMasterData) {
-        return new AccountingPointMarketDocument()
+    private AccountingPointMarketDocumentComplexType accountingPointMarketDocument(EdaMasterData edaMasterData) {
+        return new AccountingPointMarketDocumentComplexType()
                 .withMRID(edaMasterData.messageId())
                 .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
                 .withType(MessageTypeList.ACCOUNTING_POINT_MASTER_DATA)
@@ -51,7 +48,7 @@ public class IntermediateAccountingPointMarketDocument {
                                                            .withValue(edaMasterData.receiverMessageAddress())
                 )
                 .withReceiverMarketParticipantMarketRoleType(RoleTypeList.PARTY_CONNECTED_TO_GRID)
-                .withAccountingPointList(new AccountingPointMarketDocument.AccountingPointList()
+                .withAccountingPointList(new AccountingPointMarketDocumentComplexType.AccountingPointList()
                                                  .withAccountingPoints(accountingPointComplexType(edaMasterData)
                                                  )
                 )

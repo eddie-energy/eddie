@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
 import energy.eddie.api.CommonInformationModelVersions;
-import energy.eddie.api.v0_82.cim.EddieAccountingPointMarketDocument;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
@@ -10,13 +9,14 @@ import energy.eddie.regionconnector.fr.enedis.dto.address.Address;
 import energy.eddie.regionconnector.fr.enedis.dto.identity.LegalEntity;
 import energy.eddie.regionconnector.fr.enedis.dto.identity.NaturalPerson;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
+import energy.eddie.regionconnector.shared.cim.v0_82.ap.APEnvelope;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import jakarta.annotation.Nullable;
 
 import java.util.UUID;
 
 public final class IntermediateAccountingPointDataMarketDocument {
-    private final AccountingPointMarketDocument ap = new AccountingPointMarketDocument()
+    private final AccountingPointMarketDocumentComplexType ap = new AccountingPointMarketDocumentComplexType()
             .withMRID(UUID.randomUUID().toString())
             .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
             .withType(MessageTypeList.ACCOUNTING_POINT_MASTER_DATA)
@@ -38,7 +38,7 @@ public final class IntermediateAccountingPointDataMarketDocument {
         this.cimConfig = cimConfig;
     }
 
-    public EddieAccountingPointMarketDocument eddieAccountingPointMarketDocument() {
+    public AccountingPointEnveloppe accountingPointEnveloppe() {
         ap.withCreatedDateTime(EsmpDateTime.now().toString())
           .withReceiverMarketParticipantMRID(
                   new PartyIDStringComplexType()
@@ -48,16 +48,11 @@ public final class IntermediateAccountingPointDataMarketDocument {
                           .withValue(identifiableAccountingPointData.address().customerId())
           )
           .withAccountingPointList(
-                  new AccountingPointMarketDocument.AccountingPointList()
+                  new AccountingPointMarketDocumentComplexType.AccountingPointList()
                           .withAccountingPoints(accountingPoint())
           );
         FrEnedisPermissionRequest permissionRequest = identifiableAccountingPointData.permissionRequest();
-        return new EddieAccountingPointMarketDocument(
-                permissionRequest.connectionId(),
-                permissionRequest.permissionId(),
-                permissionRequest.dataNeedId(),
-                ap
-        );
+        return new APEnvelope(ap, permissionRequest).wrap();
     }
 
 

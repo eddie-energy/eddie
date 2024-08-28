@@ -27,7 +27,7 @@ class IntermediateAccountingPointMarketDocumentTest {
     @Test
     @SuppressWarnings("java:S5961")
         // too many assertions
-    void eddieAccountingPointMarketDocument_mapsAsExpected() throws IOException {
+    void accountingPointEnveloppe_mapsAsExpected() throws IOException {
         // Given
         PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId", "clientSecret", "basepath");
         PlainCommonInformationModelConfiguration cimConfiguration = new PlainCommonInformationModelConfiguration(
@@ -42,12 +42,12 @@ class IntermediateAccountingPointMarketDocumentTest {
         );
 
         // When
-        var res = intermediateAccountingPointMarketDocument.eddieAccountingPointMarketDocument();
+        var res = intermediateAccountingPointMarketDocument.accountingPointEnveloppe();
 
         // Then
-        EsPermissionRequest permissionRequest = identifiableAccountingPointData.permissionRequest();
-        AccountingPointMarketDocument md = res.marketDocument();
-        AccountingPointComplexType accountingPoint = md.getAccountingPointList()
+        var permissionRequest = identifiableAccountingPointData.permissionRequest();
+        var md = res.getAccountingPointMarketDocument();
+        var accountingPoint = md.getAccountingPointList()
                                                        .getAccountingPoints()
                                                        .getFirst();
         AddressComplexType address = accountingPoint
@@ -57,10 +57,15 @@ class IntermediateAccountingPointMarketDocumentTest {
         BillingDataComplexType billingData = accountingPoint
                 .getBillingData();
 
+        var header = res.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();
         assertAll(
-                () -> assertEquals(permissionRequest.permissionId(), res.permissionId()),
-                () -> assertEquals(permissionRequest.dataNeedId(), res.dataNeedId()),
-                () -> assertEquals(permissionRequest.connectionId(), res.connectionId()),
+                () -> assertEquals(identifiableAccountingPointData.permissionRequest().permissionId(),
+                                   header.getPermissionid()),
+                () -> assertEquals(identifiableAccountingPointData.permissionRequest().dataNeedId(),
+                                   header.getDataNeedid()),
+                () -> assertEquals(identifiableAccountingPointData.permissionRequest().connectionId(),
+                                   header.getConnectionid()),
+                () -> assertNotNull(res.getAccountingPointMarketDocument()),
                 () -> assertNotNull(md),
                 // meta data
                 () -> assertNotNull(md.getMRID()),

@@ -9,11 +9,11 @@ import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
 
-class DatadisEddieAccountingPointMarketDocumentProviderTest {
+class DatadisAccountingPointEnveloppeProviderTest {
 
 
     @Test
-    void testGetEddieAccountingPointMarketDocumentStream_publishesDocuments() throws Exception {
+    void testGetAccountingPointEnveloppeFlux_publishesDocuments() throws Exception {
         // Given
         TestPublisher<IdentifiableAccountingPointData> testPublisher = TestPublisher.create();
         PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId", "clientSecret", "basepath");
@@ -23,10 +23,10 @@ class DatadisEddieAccountingPointMarketDocumentProviderTest {
                                                              "fallbackId")
         );
         IdentifiableAccountingPointData identifiableAccountingPointData = IntermediateAccountingPointMarketDocumentTest.identifiableAccountingPointData();
-        var provider = new DatadisEddieAccountingPointMarketDocumentProvider(testPublisher.flux(), factory);
+        var provider = new DatadisAccountingPointEnveloppeProvider(testPublisher.flux(), factory);
 
         // When
-        StepVerifier.create(provider.getEddieAccountingPointMarketDocumentStream())
+        StepVerifier.create(provider.getAccountingPointEnveloppeFlux())
                     .then(() -> {
                         testPublisher.emit(identifiableAccountingPointData);
                         testPublisher.complete();

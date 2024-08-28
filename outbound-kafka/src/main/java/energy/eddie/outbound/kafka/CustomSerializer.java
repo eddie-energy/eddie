@@ -8,7 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
-import energy.eddie.api.v0_82.cim.EddieAccountingPointMarketDocument;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnveloppe;
 import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
 import org.apache.kafka.common.serialization.Serializer;
@@ -32,8 +32,8 @@ class CustomSerializer implements Serializer<Object> {
                     serializeEddieValidatedHistoricalDataMarketDocument(vhd);
             case PermissionEnveloppe pmd -> serializePermissionMarketDocument(pmd);
             case RawDataMessage rawDataMessage -> serializeRawDataMessage(rawDataMessage);
-            case EddieAccountingPointMarketDocument accountingPointMarketDocument ->
-                    serializeEddieAccountingPointMarketDocument(accountingPointMarketDocument);
+            case AccountingPointEnveloppe accountingPointMarketDocument ->
+                    serializeAccountingPointEnveloppe(accountingPointMarketDocument);
             case null -> new byte[0];
             default -> throw new UnsupportedOperationException("Unsupported object type: " + data.getClass());
         };
@@ -72,11 +72,11 @@ class CustomSerializer implements Serializer<Object> {
         }
     }
 
-    private byte[] serializeEddieAccountingPointMarketDocument(EddieAccountingPointMarketDocument data) {
+    private byte[] serializeAccountingPointEnveloppe(AccountingPointEnveloppe data) {
         try {
             return vhdObjectMapper.writeValueAsBytes(data);
         } catch (JsonProcessingException e) {
-            throw new EddieAccountingPointMarketDocumentSerializationException(e);
+            throw new AccountingPointEnveloppeSerializationException(e);
         }
     }
 
@@ -98,8 +98,8 @@ class CustomSerializer implements Serializer<Object> {
     }
 
 
-    public static class EddieAccountingPointMarketDocumentSerializationException extends RuntimeException {
-        public EddieAccountingPointMarketDocumentSerializationException(Throwable cause) {
+    public static class AccountingPointEnveloppeSerializationException extends RuntimeException {
+        public AccountingPointEnveloppeSerializationException(Throwable cause) {
             super(cause);
         }
     }

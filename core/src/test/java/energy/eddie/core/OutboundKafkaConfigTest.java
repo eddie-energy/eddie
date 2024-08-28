@@ -120,9 +120,9 @@ class OutboundKafkaConfigTest {
         }
 
         @Bean
-        public EddieAccountingPointMarketDocumentService eddieAccountingPointMarketDocumentService() {
-            EddieAccountingPointMarketDocumentService mock = Mockito.mock(EddieAccountingPointMarketDocumentService.class);
-            when(mock.getEddieAccountingPointMarketDocumentStream()).thenReturn(Flux.empty());
+        public AccountingPointEnveloppeService accountingPointEnveloppeService() {
+            AccountingPointEnveloppeService mock = Mockito.mock(AccountingPointEnveloppeService.class);
+            when(mock.getAccountingPointEnveloppeStream()).thenReturn(Flux.empty());
             return mock;
         }
     }

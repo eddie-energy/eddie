@@ -40,16 +40,17 @@ class IntermediateAccountingPointMarketDocumentFactoryTest {
         );
 
 
-        var res = factory.create(identifiableMasterData).eddieAccountingPointMarketDocument();
-        var md = res.marketDocument();
+        var res = factory.create(identifiableMasterData).accountingPointEnveloppe();
+        var header = res.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();
+        var md = res.getAccountingPointMarketDocument();
         var ap = md.getAccountingPointList().getAccountingPoints().getFirst();
         var bd = ap.getBillingData();
         var cp = ap.getContractPartyList().getContractParties().getFirst();
         var add = ap.getAddressList().getAddresses().getFirst();
         assertAll(
-                () -> assertEquals(permissionRequest.permissionId(), res.permissionId()),
-                () -> assertEquals(permissionRequest.connectionId(), res.connectionId()),
-                () -> assertEquals(permissionRequest.dataNeedId(), res.dataNeedId()),
+                () -> assertEquals(permissionRequest.permissionId(), header.getPermissionid()),
+                () -> assertEquals(permissionRequest.connectionId(), header.getConnectionid()),
+                () -> assertEquals(permissionRequest.dataNeedId(), header.getDataNeedid()),
                 () -> assertEquals(edaMasterData.messageId(), md.getMRID()),
                 () -> assertEquals(CommonInformationModelVersions.V0_82.version(), md.getRevisionNumber()),
                 () -> assertEquals(MessageTypeList.ACCOUNTING_POINT_MASTER_DATA, md.getType()),
@@ -141,8 +142,9 @@ class IntermediateAccountingPointMarketDocumentFactoryTest {
         );
 
 
-        var res = factory.create(identifiableMasterData).eddieAccountingPointMarketDocument();
-        var md = res.marketDocument();
+        var res = factory.create(identifiableMasterData).accountingPointEnveloppe();
+        var header = res.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();
+        var md = res.getAccountingPointMarketDocument();
         var ap = md.getAccountingPointList().getAccountingPoints().getFirst();
         var bd = ap.getBillingData();
         var cp = ap.getContractPartyList().getContractParties().getFirst();
@@ -150,9 +152,9 @@ class IntermediateAccountingPointMarketDocumentFactoryTest {
         var invoiceCP = ap.getContractPartyList().getContractParties().getLast();
         var invoiceADD = ap.getAddressList().getAddresses().getLast();
         assertAll(
-                () -> assertEquals(permissionRequest.permissionId(), res.permissionId()),
-                () -> assertEquals(permissionRequest.connectionId(), res.connectionId()),
-                () -> assertEquals(permissionRequest.dataNeedId(), res.dataNeedId()),
+                () -> assertEquals(permissionRequest.permissionId(), header.getPermissionid()),
+                () -> assertEquals(permissionRequest.connectionId(), header.getConnectionid()),
+                () -> assertEquals(permissionRequest.dataNeedId(), header.getDataNeedid()),
                 () -> assertEquals(edaMasterData.messageId(), md.getMRID()),
                 () -> assertEquals(CommonInformationModelVersions.V0_82.version(), md.getRevisionNumber()),
                 () -> assertEquals(MessageTypeList.ACCOUNTING_POINT_MASTER_DATA, md.getType()),

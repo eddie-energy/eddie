@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.es.datadis.providers.v0_82;
 
 import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0_82.cim.EddieAccountingPointMarketDocument;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
@@ -11,6 +10,7 @@ import energy.eddie.regionconnector.es.datadis.dtos.Address;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
+import energy.eddie.regionconnector.shared.cim.v0_82.ap.APEnvelope;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import org.apache.logging.log4j.util.Strings;
 
@@ -38,17 +38,16 @@ public final class IntermediateAccountingPointMarketDocument {
         this.datadisConfig = datadisConfig;
     }
 
-    public EddieAccountingPointMarketDocument eddieAccountingPointMarketDocument() {
-        return new EddieAccountingPointMarketDocument(
-                permissionRequest.connectionId(),
-                permissionRequest.permissionId(),
-                permissionRequest.dataNeedId(),
-                accountingPointMarketDocument()
-        );
+    public AccountingPointEnveloppe accountingPointEnveloppe() {
+        return new APEnvelope(
+                accountingPointMarketDocument(),
+                permissionRequest
+        )
+                .wrap();
     }
 
-    private AccountingPointMarketDocument accountingPointMarketDocument() {
-        return new AccountingPointMarketDocument()
+    private AccountingPointMarketDocumentComplexType accountingPointMarketDocument() {
+        return new AccountingPointMarketDocumentComplexType()
                 .withMRID(UUID.randomUUID().toString())
                 .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
                 .withSenderMarketParticipantMRID(senderMRID())
@@ -57,7 +56,7 @@ public final class IntermediateAccountingPointMarketDocument {
                 .withSenderMarketParticipantMarketRoleType(RoleTypeList.METERING_POINT_ADMINISTRATOR)
                 .withReceiverMarketParticipantMarketRoleType(RoleTypeList.CONSUMER)
                 .withType(MessageTypeList.ACCOUNTING_POINT_MASTER_DATA)
-                .withAccountingPointList(new AccountingPointMarketDocument.AccountingPointList()
+                .withAccountingPointList(new AccountingPointMarketDocumentComplexType.AccountingPointList()
                                                  .withAccountingPoints(accountingPointComplexType())
                 );
     }
