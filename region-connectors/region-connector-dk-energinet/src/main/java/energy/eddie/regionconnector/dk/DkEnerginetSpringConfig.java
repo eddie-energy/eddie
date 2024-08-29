@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0.ConnectionStatusMessage;
@@ -28,6 +29,7 @@ import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.TimeSer
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.services.AccountingPointDetailsService;
 import energy.eddie.regionconnector.dk.energinet.services.PollingService;
+import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -38,8 +40,10 @@ import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdate
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import org.openapitools.jackson.nullable.JsonNullableModule;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -170,6 +174,21 @@ public class DkEnerginetSpringConfig {
         return new DataNeedCalculationServiceImpl(
                 SUPPORTED_DATA_NEEDS,
                 EnerginetRegionConnectorMetadata.getInstance()
+        );
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
+    public RawDataProvider rawDataProvider(
+            @Qualifier("objectMapper") ObjectMapper objectMapper,
+            Flux<IdentifiableApiResponse> identifiableApiResponseFlux,
+            Flux<IdentifiableAccountingPointDetails> accountingPointDetailsFlux
+    ) {
+        return new JsonRawDataProvider(
+                REGION_CONNECTOR_ID,
+                objectMapper,
+                identifiableApiResponseFlux,
+                accountingPointDetailsFlux
         );
     }
 }
