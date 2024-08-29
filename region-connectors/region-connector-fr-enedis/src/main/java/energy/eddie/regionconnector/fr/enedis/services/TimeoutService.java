@@ -32,7 +32,11 @@ public class TimeoutService {
     public void timeoutPendingPermissionRequests() {
         LOGGER.info("Querying permission requests to timeout.");
         var permissionRequests = repository.findTimedOutPermissionRequests(timeoutConfig.duration());
-        LOGGER.info("Found {} permission requests to timeout", permissionRequests.size());
+        LOGGER.info(
+                "Found {} permission requests that have been stale for the last {} hours, starting timeout.",
+                permissionRequests.size(),
+                timeoutConfig.duration()
+        );
         for (var pr : permissionRequests) {
             var permissionId = pr.permissionId();
             LOGGER.info("Timing out permission request {}", permissionId);
