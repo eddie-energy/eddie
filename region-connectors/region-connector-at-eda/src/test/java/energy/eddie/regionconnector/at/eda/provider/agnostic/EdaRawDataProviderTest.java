@@ -33,6 +33,7 @@ class EdaRawDataProviderTest {
     private final EdaConsumptionRecord mockConsumptionRecord = new SimpleEdaConsumptionRecord()
             .setOriginalConsumptionRecord(new ConsumptionRecord().withProcessDirectory(new ProcessDirectory())
                                                                  .withMarketParticipantDirectory(new MarketParticipantDirectory()));
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private Jaxb2Marshaller marshaller;
 
