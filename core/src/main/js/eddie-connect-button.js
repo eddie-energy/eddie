@@ -21,7 +21,7 @@ import headerImage from "../resources/header.svg?raw";
 import PERMISSION_ADMINISTRATORS from "../../../../european-masterdata/src/main/resources/permission-administrators.json";
 import { dataNeedSummary } from "./components/data-need-summary.js";
 
-setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn");
+setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn");
 
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
