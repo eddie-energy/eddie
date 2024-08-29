@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.fr.enedis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0.ConnectionStatusMessage;
@@ -22,6 +23,7 @@ import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionEventRepos
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -33,6 +35,7 @@ import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculati
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -189,6 +192,21 @@ public class FrEnedisSpringConfig {
                 csm,
                 repository,
                 pr -> ""
+        );
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
+    public RawDataProvider rawDataProvider(
+            ObjectMapper objectMapper,
+            Flux<IdentifiableMeterReading> identifiableMeterReadingFlux,
+            Flux<IdentifiableAccountingPointData> accountingPointDataFlux
+    ) {
+        return new JsonRawDataProvider(
+                REGION_CONNECTOR_ID,
+                objectMapper,
+                identifiableMeterReadingFlux,
+                accountingPointDataFlux
         );
     }
 }
