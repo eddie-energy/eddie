@@ -18,6 +18,7 @@ import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.oauth2.sdk.GeneralException;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
+import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
@@ -30,6 +31,8 @@ import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.data.needs.SupportsEnergyTypePredicate;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PollingService;
+import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -40,6 +43,7 @@ import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculati
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,8 +60,7 @@ import java.util.Set;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
-import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata.NL_ZONE_ID;
-import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata.SUPPORTED_DATA_NEEDS;
+import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata.*;
 
 @Configuration
 public class MijnAansluitingBeanConfig {
@@ -184,6 +187,17 @@ public class MijnAansluitingBeanConfig {
                 new PermissionEndIsEnergyDataEndStrategy(NL_ZONE_ID),
                 new DefaultEnergyDataTimeframeStrategy(MijnAansluitingRegionConnectorMetadata.getInstance()),
                 List.of(new SupportsEnergyTypePredicate())
+        );
+    }
+
+    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
+    @Bean
+    @ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
+    public RawDataProvider rawDataProvider(ObjectMapper objectMapper, PollingService pollingService) {
+        return new JsonRawDataProvider(
+                REGION_CONNECTOR_ID,
+                objectMapper,
+                pollingService.identifiableMeteredDataFlux()
         );
     }
 }
