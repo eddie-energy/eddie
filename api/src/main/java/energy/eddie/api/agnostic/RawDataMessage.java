@@ -1,7 +1,9 @@
 package energy.eddie.api.agnostic;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.DataSourceInformation;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 /**
@@ -20,5 +22,23 @@ public record RawDataMessage(
         String dataNeedId,
         DataSourceInformation dataSourceInformation,
         ZonedDateTime timestamp,
-        String rawPayload) {
+        String rawPayload
+) {
+    /**
+     * Utility constructor to create a RawDataMessage from a permission request and payload. Will always use the current
+     * ZonedDateTime for {@code timestamp}.
+     *
+     * @param permissionRequest used to populate all fields except timestamp and rawPayload
+     * @param rawPayload        the payload
+     */
+    public RawDataMessage(PermissionRequest permissionRequest, String rawPayload) {
+        this(
+                permissionRequest.permissionId(),
+                permissionRequest.connectionId(),
+                permissionRequest.dataNeedId(),
+                permissionRequest.dataSourceInformation(),
+                ZonedDateTime.now(ZoneOffset.UTC),
+                rawPayload
+        );
+    }
 }

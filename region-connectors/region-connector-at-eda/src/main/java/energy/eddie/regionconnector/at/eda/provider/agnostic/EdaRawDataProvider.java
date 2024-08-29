@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.at.eda.provider.agnostic;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -10,13 +11,10 @@ import org.springframework.oxm.XmlMappingException;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-
-import static java.util.Objects.requireNonNull;
 
 @Component
 @ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
@@ -27,18 +25,18 @@ public class EdaRawDataProvider implements RawDataProvider {
 
     public EdaRawDataProvider(
             Jaxb2Marshaller marshaller,
-            Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux
+            Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux,
+            Flux<IdentifiableMasterData> identifiableMasterDataFlux
     ) {
-        requireNonNull(marshaller);
-        requireNonNull(identifiableConsumptionRecordFlux);
         this.marshaller = marshaller;
-
-        this.rawDataStream = identifiableConsumptionRecordFlux
-                .flatMap(this::mapToRawDataMessage); // the mapping method is called for each element for each subscriber if we at some point have multiple subscribers, consider using publish().refCount()
+        // the mapping method is called for each element for each subscriber if we at some point have multiple subscribers, consider using publish().refCount()
+        this.rawDataStream = Flux.merge(
+                identifiableConsumptionRecordFlux.flatMap(this::mapToRawDataMessage),
+                identifiableMasterDataFlux.flatMap(this::mapToRawDataMessage)
+        );
     }
 
     private Flux<RawDataMessage> mapToRawDataMessage(IdentifiableConsumptionRecord identifiableConsumptionRecord) {
-
         var writer = new StringWriter();
         try {
             marshaller.marshal(identifiableConsumptionRecord.consumptionRecord()
@@ -50,14 +48,21 @@ public class EdaRawDataProvider implements RawDataProvider {
         }
         String rawXml = writer.toString();
         return Flux.fromIterable(identifiableConsumptionRecord.permissionRequests())
-                   .map(permissionRequest -> new RawDataMessage(
-                           permissionRequest.permissionId(),
-                           permissionRequest.connectionId(),
-                           permissionRequest.dataNeedId(),
-                           permissionRequest.dataSourceInformation(),
-                           ZonedDateTime.now(ZoneId.of("UTC")),
-                           rawXml
-                   ));
+                   .map(permissionRequest -> new RawDataMessage(permissionRequest, rawXml));
+    }
+
+    private Mono<RawDataMessage> mapToRawDataMessage(IdentifiableMasterData identifiableMasterData) {
+        var writer = new StringWriter();
+        try {
+            marshaller.marshal(identifiableMasterData.masterData().originalMasterData(), new StreamResult(writer));
+        } catch (XmlMappingException e) {
+            LOGGER.error("Error while marshalling MasterData back into XML for raw data output", e);
+            return Mono.empty();
+        }
+        String rawXml = writer.toString();
+        var permissionRequest = identifiableMasterData.permissionRequest();
+        var msg = new RawDataMessage(permissionRequest, rawXml);
+        return Mono.just(msg);
     }
 
     @Override
