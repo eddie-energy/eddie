@@ -21,16 +21,19 @@ public class AuthorizationCallbackController {
     @GetMapping(value = "/authorization-callback")
     @SuppressWarnings("NullAway") // NullAway doesnt understand the isBlank checks
     public String authorizationCallback(
-            @RequestParam(value = "state", required = false) @Nullable String stateString,
+            @RequestParam(value = "state", required = false) @Nullable String permissionId,
             @RequestParam(value = "usage_point_id", required = false) @Nullable String usagePointId,
             Model model
     ) {
-        if (Strings.isNotBlank(usagePointId) && Strings.isNotBlank(stateString)) {
+        if (Strings.isNotBlank(usagePointId) && Strings.isNotBlank(permissionId)) {
             var usagePointIds = StringUtils.delimitedListToStringArray(usagePointId, ";");
             model.addAttribute("usagePointIds", String.join(", ", usagePointIds));
 
             try {
-                permissionRequestService.authorizePermissionRequest(stateString, usagePointIds);
+                permissionRequestService.authorizePermissionRequest(permissionId, usagePointIds);
+                permissionRequestService.findDataNeedIdForPermission(permissionId)
+                                        .ifPresent(id -> model.addAttribute("dataNeedId", id));
+
                 model.addAttribute("status", "OK");
             } catch (PermissionNotFoundException e) {
                 model.addAttribute("status", "ERROR");

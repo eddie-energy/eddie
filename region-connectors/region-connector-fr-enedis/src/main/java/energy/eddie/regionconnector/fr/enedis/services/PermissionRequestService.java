@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.fr.enedis.services;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
@@ -165,6 +166,10 @@ public class PermissionRequestService {
             outbox.commit(new FrSimpleEvent(newPermissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
             outbox.commit(new FrAcceptedEvent(newPermissionId, usagePointIds[i]));
         }
+    }
+
+    public Optional<String> findDataNeedIdForPermission(String permissionId) {
+        return repository.findByPermissionId(permissionId).map(PermissionRequest::dataNeedId);
     }
 
     public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {

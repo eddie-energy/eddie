@@ -15,7 +15,10 @@ export default defineConfig({
     outDir: resolve(__dirname, "src/main/resources/public/lib"),
     assetsDir: "",
     rollupOptions: {
-      input: resolve(__dirname, "src/main/js/eddie-components.js"),
+      input: {
+        "eddie-components": resolve(__dirname, "src/main/js/eddie-components.js"),
+        "data-need-summary": resolve(__dirname, "src/main/js/data-need-summary.js"),
+      },
       output: {
         entryFileNames: "[name].js",
       },
