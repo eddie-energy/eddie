@@ -29,6 +29,7 @@ import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRe
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
+import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -41,7 +42,6 @@ import energy.eddie.regionconnector.shared.services.data.needs.calculation.strat
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import reactor.core.publisher.Flux;
@@ -244,7 +244,7 @@ public class DatadisSpringConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
+    @OnRawDataMessagesEnabled
     public RawDataProvider rawDataProvider(
             ObjectMapper mapper,
             Flux<IdentifiableMeteringData> meteringDataFlux,

@@ -30,6 +30,7 @@ import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.Validat
 import energy.eddie.regionconnector.dk.energinet.services.AccountingPointDetailsService;
 import energy.eddie.regionconnector.dk.energinet.services.PollingService;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
+import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -43,7 +44,6 @@ import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -178,7 +178,7 @@ public class DkEnerginetSpringConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
+    @OnRawDataMessagesEnabled
     public RawDataProvider rawDataProvider(
             @Qualifier("objectMapper") ObjectMapper objectMapper,
             Flux<IdentifiableApiResponse> identifiableApiResponseFlux,

@@ -4,9 +4,9 @@ import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
+import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.oxm.XmlMappingException;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
@@ -17,7 +17,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
 
 @Component
-@ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
+@OnRawDataMessagesEnabled
 public class EdaRawDataProvider implements RawDataProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaRawDataProvider.class);
     private final Jaxb2Marshaller marshaller;
