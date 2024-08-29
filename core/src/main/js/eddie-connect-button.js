@@ -25,6 +25,10 @@ setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn");
 
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
+const COUNTRIES = [
+  ...new Set(PERMISSION_ADMINISTRATORS.map((pa) => pa.country)),
+];
+
 const BASE_URL = import.meta.url.replace("/lib/eddie-components.js", "");
 
 const dialogOpenEvent = new Event("eddie-dialog-open", {
@@ -48,6 +52,13 @@ function fetchJson(path) {
       return response.json();
     })
     .catch((error) => console.error(error));
+}
+
+async function getEnabledCountries() {
+  const regionConnectors = await fetchJson("/api/region-connectors-metadata");
+  return regionConnectors
+    .map((rc) => rc.countryCode.toLowerCase())
+    .filter((country) => COUNTRIES.includes(country));
 }
 
 function getSupportedRegionConnectors(dataNeedId) {
@@ -156,12 +167,30 @@ class EddieConnectButton extends LitElement {
      */
     this._supportedConnectors = [];
 
-    this._availablePermissionAdministrators = [];
-    this._availableCountries = [];
+    /**
+     * Permission administrators which region connector supports the selected data need.
+     * @type {PermissionAdministrator[]}
+     * @private
+     */
+    this._supportedPermissionAdministrators = [];
 
     /**
-     * Permission Administrators that match the selected country.
+     * Country codes of all enabled region connectors.
      * @type {string[]}
+     * @private
+     */
+    this._enabledCountries = [];
+
+    /**
+     * Country codes which region connectors support the selected data need.
+     * @type {string[]}
+     * @private
+     */
+    this._supportedCountries = [];
+
+    /**
+     * Permission administrators that match the selected country.
+     * @type {PermissionAdministrator[]}
      * @private
      */
     this._filteredPermissionAdministrators = [];
@@ -200,7 +229,7 @@ class EddieConnectButton extends LitElement {
   }
 
   reset() {
-    this.selectPermissionAdministrator(this._presetPermissionAdministrator)
+    this.selectPermissionAdministrator(this._presetPermissionAdministrator);
   }
 
   async getRegionConnectorElement() {
@@ -272,7 +301,7 @@ class EddieConnectButton extends LitElement {
    * @returns {PermissionAdministrator | undefined} The first permission administrator with the given company ID or undefined if none is found.
    */
   getPermissionAdministratorByCompanyId(companyId) {
-    return this._availablePermissionAdministrators.find(
+    return this._supportedPermissionAdministrators.find(
       (pa) => pa.companyId === companyId
     );
   }
@@ -325,7 +354,7 @@ class EddieConnectButton extends LitElement {
 
     // only show permission administrators that match the selected country
     this._filteredPermissionAdministrators =
-      this._availablePermissionAdministrators.filter(
+      this._supportedPermissionAdministrators.filter(
         (pa) => pa.country === this._selectedCountry
       );
 
@@ -358,17 +387,19 @@ class EddieConnectButton extends LitElement {
       return;
     }
 
+    this._enabledCountries = await getEnabledCountries();
+
     this._supportedConnectors = await getSupportedRegionConnectors(
       this.dataNeedId
     );
 
-    this._availablePermissionAdministrators = PERMISSION_ADMINISTRATORS.filter(
+    this._supportedPermissionAdministrators = PERMISSION_ADMINISTRATORS.filter(
       (pa) => this._supportedConnectors.includes(pa.regionConnector)
     );
 
-    this._availableCountries = [
+    this._supportedCountries = [
       ...new Set(
-        this._availablePermissionAdministrators.map((pa) => pa.country)
+        this._supportedPermissionAdministrators.map((pa) => pa.country)
       ),
     ];
 
@@ -499,7 +530,7 @@ class EddieConnectButton extends LitElement {
     return html`
       <link
         rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/themes/light.css"
+        href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/themes/light.css"
       />
       <button class="eddie-connect-button" @click="${this.openDialog}">
         ${unsafeSVG(buttonIcon)}
@@ -528,10 +559,17 @@ class EddieConnectButton extends LitElement {
                 this._selectedCountry ??
                 ""}"
                 ?disabled="${!!this._presetPermissionAdministrator}"
+                help-text="${this._supportedCountries.length !==
+                this._enabledCountries.length
+                  ? "Some countries do not support the given data requirements."
+                  : ""}"
               >
-                ${this._availableCountries.map(
+                ${this._enabledCountries.map(
                   (country) => html`
-                    <sl-option value="${country}">
+                    <sl-option
+                      value="${country}"
+                      ?disabled="${!this._supportedCountries.includes(country)}"
+                    >
                       ${COUNTRY_NAMES.of(country.toUpperCase())}
                     </sl-option>
                   `
