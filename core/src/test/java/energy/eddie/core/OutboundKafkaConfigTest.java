@@ -1,6 +1,9 @@
 package energy.eddie.core;
 
-import energy.eddie.core.services.*;
+import energy.eddie.core.services.AccountingPointEnvelopeService;
+import energy.eddie.core.services.PermissionMarketDocumentService;
+import energy.eddie.core.services.PermissionService;
+import energy.eddie.core.services.ValidatedHistoricalDataEnvelopeService;
 import energy.eddie.outbound.kafka.KafkaConnector;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -82,9 +85,11 @@ class OutboundKafkaConfigTest {
                 .withPropertyValues("kafka.acks=all")
                 .run(context -> assertAll(
                         () -> assertThat(context).hasBean("kafkaConnector"),
-                        () -> assertThat(context).hasBean("mvp1ConsumptionRecordOutboundConnector"),
                         () -> assertThat(context).hasBean("mvp1ConnectionStatusMessageOutboundConnector"),
-                        () -> assertThat(context).hasBean("eddieValidatedHistoricalDataMarketDocumentOutboundConnector"),
+                        () -> assertThat(context).hasBean("validatedHistoricalDataEnvelopeOutboundConnector"),
+                        () -> assertThat(context).hasBean("accountingPointEnvelopeOutboundConnector"),
+                        () -> assertThat(context).hasBean("permissionMarketDocumentOutboundConnector"),
+                        () -> assertThat(context).hasBean("accountingPointEnvelopeService"),
                         () -> assertThat(context).hasBean("permissionMarketDocumentService")
                 ));
     }
@@ -94,13 +99,6 @@ class OutboundKafkaConfigTest {
         public PermissionService permissionService() {
             PermissionService mock = Mockito.mock(PermissionService.class);
             when(mock.getConnectionStatusMessageStream()).thenReturn(Flux.empty());
-            return mock;
-        }
-
-        @Bean
-        public ConsumptionRecordService consumptionRecordService() {
-            ConsumptionRecordService mock = Mockito.mock(ConsumptionRecordService.class);
-            when(mock.getConsumptionRecordStream()).thenReturn(Flux.empty());
             return mock;
         }
 

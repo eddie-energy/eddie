@@ -214,7 +214,7 @@ class EnerginetCustomerApiClientTest {
 
     @SuppressWarnings("DataFlowIssue")
     @Test
-    void getTimeSeries_returnsConsumptionRecord() {
+    void getTimeSeries_returnsApiResponse() {
         // Given
         var start = LocalDate.of(2023, 1, 1);
         var end = LocalDate.of(2023, 1, 2);

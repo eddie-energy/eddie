@@ -1,8 +1,6 @@
 package energy.eddie.regionconnector.simulation.permission.request;
 
 import energy.eddie.api.CommonInformationModelVersions;
-import energy.eddie.api.v0.ConsumptionPoint;
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
@@ -10,6 +8,8 @@ import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 import energy.eddie.regionconnector.simulation.SimulationConnectorMetadata;
+import energy.eddie.regionconnector.simulation.dtos.Measurement;
+import energy.eddie.regionconnector.simulation.dtos.SimulatedMeterReading;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public record IntermediateValidatedHistoricalDataMarketDocument(ConsumptionRecord consumptionRecord,
+public record IntermediateValidatedHistoricalDataMarketDocument(SimulatedMeterReading simulatedMeterReading,
                                                                 CommonInformationModelConfiguration cimConfig) {
     private static final TimeSeriesComplexType.ReasonList REASON_LIST = new TimeSeriesComplexType.ReasonList()
             .withReasons(
@@ -26,14 +26,13 @@ public record IntermediateValidatedHistoricalDataMarketDocument(ConsumptionRecor
                             .withCode(ReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED));
 
     public ValidatedHistoricalDataEnvelope value() {
-        ZonedDateTime endDate = consumptionRecord.getStartDateTime()
-                                                 .plus(
-                                                         Duration.parse(consumptionRecord.getMeteringInterval())
-                                                                 .multipliedBy(consumptionRecord.getConsumptionPoints()
-                                                                                                .size())
-                                                 );
+        ZonedDateTime endDate = simulatedMeterReading
+                .startDateTime()
+                .plus(Duration.parse(simulatedMeterReading.meteringInterval())
+                              .multipliedBy(simulatedMeterReading.measurements().size())
+                );
         var timeframe = new EsmpTimeInterval(
-                consumptionRecord.getStartDateTime(),
+                simulatedMeterReading.startDateTime(),
                 endDate
         );
 
@@ -50,69 +49,74 @@ public record IntermediateValidatedHistoricalDataMarketDocument(ConsumptionRecor
                 )
                 .withMRID(UUID.randomUUID().toString())
                 .withCreatedDateTime(EsmpDateTime.now().toString())
-                .withReceiverMarketParticipantMRID(new PartyIDStringComplexType()
-                                                           .withCodingScheme(
-                                                                   cimConfig.eligiblePartyNationalCodingScheme())
-                                                           .withValue(SimulationConnectorMetadata.REGION_CONNECTOR_ID))
+                .withReceiverMarketParticipantMRID(
+                        new PartyIDStringComplexType()
+                                .withCodingScheme(cimConfig.eligiblePartyNationalCodingScheme())
+                                .withValue(SimulationConnectorMetadata.REGION_CONNECTOR_ID)
+                )
                 .withPeriodTimeInterval(
                         new ESMPDateTimeIntervalComplexType()
                                 .withStart(timeframe.start())
                                 .withEnd(timeframe.end())
                 )
-                .withTimeSeriesList(new ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList()
-                                            .withTimeSeries(new TimeSeriesComplexType()
-                                                                    .withMRID(UUID.randomUUID().toString())
-                                                                    .withBusinessType(BusinessTypeList.CONSUMPTION)
-                                                                    .withProduct(EnergyProductTypeList.ACTIVE_ENERGY)
-                                                                    .withVersion("1.0")
-                                                                    .withFlowDirectionDirection(DirectionTypeList.DOWN)
-                                                                    .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation(
-                                                                            AggregateKind.SUM)
-                                                                    .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(
-                                                                            CommodityKind.NONE)
-                                                                    .withEnergyMeasurementUnitName(
-                                                                            UnitOfMeasureTypeList.WATT)
-                                                                    .withMarketEvaluationPointMRID(
-                                                                            new MeasurementPointIDStringComplexType()
-                                                                                    .withCodingScheme(
-                                                                                            CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME)
-                                                                                    .withValue(
-                                                                                            consumptionRecord.getMeteringPoint())
-                                                                    )
-                                                                    .withReasonList(REASON_LIST)
-                                                                    .withSeriesPeriodList(
-                                                                            new TimeSeriesComplexType.SeriesPeriodList()
-                                                                                    .withSeriesPeriods(
-                                                                                            seriesPeriods(
-                                                                                                    consumptionRecord,
-                                                                                                    timeframe)
-                                                                                    )
-                                                                    )
-                                            ));
+                .withTimeSeriesList(
+                        new ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList()
+                                .withTimeSeries(
+                                        new TimeSeriesComplexType()
+                                                .withMRID(UUID.randomUUID().toString())
+                                                .withBusinessType(BusinessTypeList.CONSUMPTION)
+                                                .withProduct(EnergyProductTypeList.ACTIVE_ENERGY)
+                                                .withVersion("1.0")
+                                                .withFlowDirectionDirection(DirectionTypeList.DOWN)
+                                                .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation(
+                                                        AggregateKind.SUM)
+                                                .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(
+                                                        CommodityKind.NONE)
+                                                .withEnergyMeasurementUnitName(UnitOfMeasureTypeList.WATT)
+                                                .withMarketEvaluationPointMRID(
+                                                        new MeasurementPointIDStringComplexType()
+                                                                .withCodingScheme(
+                                                                        CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME)
+                                                                .withValue(
+                                                                        simulatedMeterReading.meteringPoint())
+                                                )
+                                                .withReasonList(REASON_LIST)
+                                                .withSeriesPeriodList(
+                                                        new TimeSeriesComplexType.SeriesPeriodList()
+                                                                .withSeriesPeriods(
+                                                                        seriesPeriods(
+                                                                                simulatedMeterReading,
+                                                                                timeframe
+                                                                        )
+                                                                )
+                                                )
+                                )
+                );
 
         return new VhdEnvelope(
                 vhd,
-                new SimulationPermissionRequest(consumptionRecord.getConnectionId(),
-                                                consumptionRecord.getPermissionId(),
-                                                consumptionRecord.getDataNeedId(),
-                                                PermissionProcessStatus.ACCEPTED)
+                new SimulationPermissionRequest(
+                        simulatedMeterReading.connectionId(),
+                        simulatedMeterReading.permissionId(),
+                        simulatedMeterReading.dataNeedId(),
+                        PermissionProcessStatus.ACCEPTED
+                )
         ).wrap();
     }
 
     private List<SeriesPeriodComplexType> seriesPeriods(
-            ConsumptionRecord consumptionRecord,
+            SimulatedMeterReading simulatedMeterReading,
             EsmpTimeInterval interval
     ) {
-        String resolution = consumptionRecord.getMeteringInterval();
+        String resolution = simulatedMeterReading.meteringInterval();
         List<PointComplexType> points = new ArrayList<>();
         int position = 0;
-        for (var consumptionPoint
-                : consumptionRecord.getConsumptionPoints()) {
+        for (var measurement : simulatedMeterReading.measurements()) {
             PointComplexType point = new PointComplexType()
                     .withPosition("%d".formatted(position))
-                    .withEnergyQuantityQuantity(BigDecimal.valueOf(consumptionPoint.getConsumption()))
+                    .withEnergyQuantityQuantity(BigDecimal.valueOf(measurement.value()))
                     .withEnergyQuantityQuality(
-                            consumptionPoint.getMeteringType() == ConsumptionPoint.MeteringType.MEASURED_VALUE
+                            measurement.measurementType() == Measurement.MeasurementType.MEASURED
                                     ? QualityTypeList.AS_PROVIDED
                                     : QualityTypeList.ADJUSTED);
             points.add(point);

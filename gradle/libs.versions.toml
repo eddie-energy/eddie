@@ -21,7 +21,6 @@ jakarta-annotation = "2.1.0"
 jakarta-validation = "3.0.2"
 sonar = "4.0.0.2929"
 commons-codec = "1.15"
-jsonschema2pojo = "1.2.1"
 jackson = "2.15.2"
 h2database = "2.1.212"
 postgresql = "42.7.3"
@@ -185,7 +184,6 @@ rometools-rome = { module = "com.rometools:rome", version.ref = "rometools" }
 [plugins]
 errorprone = { id = "net.ltgt.errorprone", version.ref = "errorprone" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonar" }
-jsonschema2pojo = { id = "org.jsonschema2pojo", version.ref = "jsonschema2pojo" }
 # used by example-app
 jte-gradle = { id = "gg.jte.gradle", version.ref = "jte" }
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }

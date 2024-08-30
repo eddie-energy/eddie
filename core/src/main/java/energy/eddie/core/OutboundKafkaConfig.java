@@ -2,7 +2,6 @@ package energy.eddie.core;
 
 import energy.eddie.api.agnostic.RawDataOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
-import energy.eddie.api.v0.Mvp1ConsumptionRecordOutboundConnector;
 import energy.eddie.api.v0_82.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeOutboundConnector;
@@ -69,16 +68,7 @@ public class OutboundKafkaConfig {
     }
 
     @Bean
-    Mvp1ConsumptionRecordOutboundConnector mvp1ConsumptionRecordOutboundConnector(
-            KafkaConnector kafkaConnector,
-            ConsumptionRecordService consumptionRecordService
-    ) {
-        ((Mvp1ConsumptionRecordOutboundConnector) kafkaConnector).setConsumptionRecordStream(consumptionRecordService.getConsumptionRecordStream());
-        return kafkaConnector;
-    }
-
-    @Bean
-    ValidatedHistoricalDataEnvelopeOutboundConnector eddieValidatedHistoricalDataMarketDocumentOutboundConnector(
+    ValidatedHistoricalDataEnvelopeOutboundConnector validatedHistoricalDataEnvelopeOutboundConnector(
             KafkaConnector kafkaConnector,
             ValidatedHistoricalDataEnvelopeService cimService
     ) {

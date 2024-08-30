@@ -26,23 +26,23 @@ Philosophy: A developer should be able to clone this repository and be able to b
 ## How to add a new region connector
 
 - Annotate its Spring Configuration class with
-  - `@EnableWebMvc`
-  - `@SpringBootApplication`
-  - `@RegionConnector(name = "foo")`
+    - `@EnableWebMvc`
+    - `@SpringBootApplication`
+    - `@RegionConnector(name = "foo")`
 - it will then be started automatically, provided there is a property *region-connector.__foo__.enabled=true*
 - The name that is passed to the annotation determines the path under which the connector element JavaScript file will
   be served, e.g. */region-connectors/__foo__/ce.js*
-  - This JS must not be manually served by the RC but is done via a common *region connector processor*
+    - This JS must not be manually served by the RC but is done via a common *region connector processor*
 - There are several interface a region connector can implement and thereby make data available. E.g. if the region
   connector implements the `Mvp1ConnectionStatusMessageProvider` interface, it has to provide a stream
-  of `ConsumptionRecords`. When implementing such an interface from the `api` package, the region connector is
+  of `ConnectionStatusMessages`. When implementing such an interface from the `api` package, the region connector is
   automatically registered for the correct service by a *region connector processor*, and e.g. the consumption records
   are then streamed via Kafka to the EP.
 - A default ControllerAdvice called `RegionConnectorsCommonControllerAdvice`, which handles commonly occurring
   exceptions in a unified way, is automatically registered for all region connectors. Therefore, only exceptions that
   are not handled by this advice need to be explicitly handled in the region connector. If you want to test the error
   responses with your custom controller, you can either add a @TestConfiguration to your test class:
-  - ```
+    - ```
       @TestConfiguration
       static class ControllerTestConfiguration {
         @Bean
@@ -51,7 +51,7 @@ Philosophy: A developer should be able to clone this repository and be able to b
         }
       }
       ```
-  - or add a bean of type `RegionConnectorsCommonControllerAdvice` to your region connector Spring config.
+    - or add a bean of type `RegionConnectorsCommonControllerAdvice` to your region connector Spring config.
 - A region connector should expose a POST endpoint for creating a new permission request and a GET endpoint for fetching
   the current status of a permission request. To ensure consistency between the region connectors, String constants for
   these endpoints are defined in the package `energy.eddie.regionconnector.shared.web.RestApiPaths`.
@@ -62,6 +62,7 @@ See the existing region connectors as references.
 
 The frontend of each region connector is to be implemented as a custom element.
 The custom element will be loaded with the following attributes:
+
 - `connection-id`: Optional value that can be used to identify a customer.
 - `data-need-id`: Required by the backend to identify the requested data.
 - `accounting-point-id`: Optional default for the accounting point ID.

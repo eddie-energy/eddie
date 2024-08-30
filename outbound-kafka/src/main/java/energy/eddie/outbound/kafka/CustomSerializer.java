@@ -7,7 +7,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
@@ -26,8 +25,7 @@ class CustomSerializer implements Serializer<Object> {
     @Override
     public byte[] serialize(String topic, Object data) {
         return switch (data) {
-            case ConsumptionRecord ignored -> serializeJson(data);
-            case ConnectionStatusMessage ignored -> serializeJson(data);
+            case ConnectionStatusMessage csm -> serializeConnectionStatusMessage(csm);
             case ValidatedHistoricalDataEnvelope vhd ->
                     serializeEddieValidatedHistoricalDataMarketDocument(vhd);
             case PermissionEnvelope pmd -> serializePermissionMarketDocument(pmd);
@@ -39,11 +37,11 @@ class CustomSerializer implements Serializer<Object> {
         };
     }
 
-    private byte[] serializeJson(Object data) {
+    private byte[] serializeConnectionStatusMessage(ConnectionStatusMessage data) {
         try {
             return objectMapper.writeValueAsBytes(data);
         } catch (JsonProcessingException e) {
-            throw new ConsumptionRecordSerializationException(e);
+            throw new ConnectionStatusMessageSerializationException(e);
         }
     }
 
@@ -85,8 +83,8 @@ class CustomSerializer implements Serializer<Object> {
         stringSerializer.close();
     }
 
-    public static class ConsumptionRecordSerializationException extends RuntimeException {
-        public ConsumptionRecordSerializationException(Throwable cause) {
+    public static class ConnectionStatusMessageSerializationException extends RuntimeException {
+        public ConnectionStatusMessageSerializationException(Throwable cause) {
             super(cause);
         }
     }

@@ -7,7 +7,6 @@ import kotlin.io.path.Path
 
 plugins {
     id("energy.eddie.java-conventions")
-    alias(libs.plugins.jsonschema2pojo)
 }
 
 group = "energy.eddie"
@@ -42,29 +41,6 @@ dependencies {
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
-}
-
-
-jsonSchema2Pojo {
-    // https://github.com/joelittlejohn/jsonschema2pojo/tree/master/jsonschema2pojo-gradle-plugin
-    sourceFiles = listOf(projectDir.resolve("src/main/schema.json"))
-    targetDirectory = project.layout.buildDirectory.asFile.get().resolve("generated-sources")
-    targetPackage = "energy.eddie.api.v0"
-    setAnnotationStyle("jackson2")
-    dateTimeType = "java.time.ZonedDateTime"
-    isFormatDateTimes = true    // serialize ZonedDateTime to ISO 8601 string
-    generateBuilders = true
-    includeGetters = true
-    includeJsr305Annotations = false
-    includeHashcodeAndEquals = false
-}
-
-sourceSets {
-    create("schema") {
-        java {
-            srcDir(projectDir.resolve("src/main/schema.json"))
-        }
-    }
 }
 
 tasks.withType<JavaCompile>().configureEach {

@@ -7,7 +7,7 @@ function range(n) {
 
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
-class ProduceConsumptionRecordCe extends LitElement {
+class ProduceSimulatedMeterReadingCe extends LitElement {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
@@ -25,12 +25,12 @@ class ProduceConsumptionRecordCe extends LitElement {
   constructor() {
     super();
     this._measurementsPerDay =
-      ProduceConsumptionRecordCe.meteringIntervalOptions.PT1H;
+      ProduceSimulatedMeterReadingCe.meteringIntervalOptions.PT1H;
     this._date = new Date().toISOString().split("T")[0];
     this.meteringPointInputRef = createRef();
     this.permissionIdInputRef = createRef();
     this.measurementsPerDayRef = createRef();
-    this.consumptionPointsDivRef = createRef();
+    this.measurementsDivRef = createRef();
   }
 
   timeInterval(i) {
@@ -49,7 +49,9 @@ class ProduceConsumptionRecordCe extends LitElement {
 
   changeMeteringInterval(event) {
     this._measurementsPerDay =
-      ProduceConsumptionRecordCe.meteringIntervalOptions[event.target.value];
+      ProduceSimulatedMeterReadingCe.meteringIntervalOptions[
+        event.target.value
+      ];
   }
 
   changeStartDate(event) {
@@ -71,7 +73,7 @@ class ProduceConsumptionRecordCe extends LitElement {
     const values = nums(this._measurementsPerDay);
 
     [
-      ...this.consumptionPointsDivRef.value
+      ...this.measurementsDivRef.value
         .querySelectorAll("input[type='number']")
         .values(),
     ].forEach((node, index) => (node.value = values[index]));
@@ -79,48 +81,46 @@ class ProduceConsumptionRecordCe extends LitElement {
 
   submit() {
     const isDataPointMeasured = [
-      ...this.consumptionPointsDivRef.value
+      ...this.measurementsDivRef.value
         .querySelectorAll("input[type='radio']")
         .values(),
     ]
       .filter((node) => node.id.startsWith("measured"))
       .map((node) => node.checked);
-    const consumptionPoints = [
-      ...this.consumptionPointsDivRef.value
+    const measurements = [
+      ...this.measurementsDivRef.value
         .querySelectorAll("input[type='number']")
         .values(),
     ].map((node, i) => ({
-      consumption: node.value,
-      meteringType: isDataPointMeasured[i]
-        ? "measuredValue"
-        : "extrapolatedValue",
+      value: node.value,
+      measurementType: isDataPointMeasured[i] ? "measured" : "extrapolated",
     }));
-    const cr = {
+    const meterReading = {
       connectionId: this.connectionId,
       dataNeedId: this.dataNeedId,
       permissionId: this.permissionIdInputRef?.value?.value,
       meteringPoint: this.meteringPointInputRef?.value?.value,
       startDateTime: new Date(this._date + "T00:00:00").toISOString(),
       meteringInterval: this.measurementsPerDayRef?.value?.value,
-      consumptionPoints,
+      measurements: measurements,
     };
-    fetch("api/consumption-records", {
+    fetch("api/simulated-meter-reading", {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(cr),
+      body: JSON.stringify(meterReading),
     })
       .then((res) => {
         if (res.ok) {
           console.log(
-            `sucessfully sent consumption records for connectionId:${cr.connectionId} meteringPoint:${cr.meteringPoint}`
+            `sucessfully sent meter reading for connectionId:${meterReading.connectionId} meteringPoint:${meterReading.meteringPoint}`
           );
         } else {
           console.error(
-            `unable to send consumption records for connectionId:${cr.connectionId} meteringPoint:${cr.meteringPoint}`,
-            res.statusText
+            `unable to send meter reading for connectionId:${meterReading.connectionId} meteringPoint:${meterReading.meteringPoint}`,
+            res
           );
         }
       })
@@ -134,7 +134,7 @@ class ProduceConsumptionRecordCe extends LitElement {
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
       />
       <div class="card">
-        <div class="card-header">Consumption Records</div>
+        <div class="card-header">Meter Readings</div>
         <div class="card-body">
           <div class="row mb-3">
             <label class="col-2" for="startDate">Date</label>
@@ -185,7 +185,7 @@ class ProduceConsumptionRecordCe extends LitElement {
                 ${ref(this.measurementsPerDayRef)}
               >
                 ${Object.entries(
-                  ProduceConsumptionRecordCe.meteringIntervalOptions
+                  ProduceSimulatedMeterReadingCe.meteringIntervalOptions
                 )
                   .sort((a, b) => (a[1] > b[1] ? 1 : -1))
                   .map(
@@ -200,7 +200,7 @@ class ProduceConsumptionRecordCe extends LitElement {
               </select>
             </div>
           </div>
-          <div ${ref(this.consumptionPointsDivRef)}>
+          <div ${ref(this.measurementsDivRef)}>
             ${range(this._measurementsPerDay).map(
               (i) => html`
                 <div class="row mb-1">
@@ -259,7 +259,7 @@ class ProduceConsumptionRecordCe extends LitElement {
 }
 
 window.customElements.define(
-  "produce-consumption-records",
-  ProduceConsumptionRecordCe
+  "produce-simulated-meter-reading",
+  ProduceSimulatedMeterReadingCe
 );
-export default ProduceConsumptionRecordCe;
+export default ProduceSimulatedMeterReadingCe;

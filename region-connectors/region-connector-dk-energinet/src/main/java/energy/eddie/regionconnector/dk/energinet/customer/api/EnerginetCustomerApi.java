@@ -23,7 +23,7 @@ public interface EnerginetCustomerApi {
     Mono<String> accessToken(String refreshToken);
 
     /**
-     * Returns ConsumptionRecord out of a time series for each metering point in list.
+     * Returns the time series for each metering point in list.
      *
      * @param dateFrom              Date from filter in format: 'YYYY-MM-DD' (required)
      * @param dateTo                Date to filter in format: 'YYYY-MM-DD' (required)
