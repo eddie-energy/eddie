@@ -1,18 +1,18 @@
 package energy.eddie.regionconnector.es.datadis.providers.v0_82;
 
-import energy.eddie.api.v0_82.AccountingPointEnveloppeProvider;
-import energy.eddie.cim.v0_82.ap.AccountingPointEnveloppe;
+import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 @Component
-public class DatadisAccountingPointEnveloppeProvider implements AccountingPointEnveloppeProvider {
+public class DatadisAccountingPointEnvelopeProvider implements AccountingPointEnvelopeProvider {
 
     private final Flux<IdentifiableAccountingPointData> identifiableMeterReadings;
     private final IntermediateAPMDFactory intermediateAPMDFactory;
 
-    public DatadisAccountingPointEnveloppeProvider(
+    public DatadisAccountingPointEnvelopeProvider(
             Flux<IdentifiableAccountingPointData> identifiableMeterReadings,
             IntermediateAPMDFactory intermediateAPMDFactory
     ) {
@@ -21,10 +21,10 @@ public class DatadisAccountingPointEnveloppeProvider implements AccountingPointE
     }
 
     @Override
-    public Flux<AccountingPointEnveloppe> getAccountingPointEnveloppeFlux() {
+    public Flux<AccountingPointEnvelope> getAccountingPointEnvelopeFlux() {
         return identifiableMeterReadings
                 .map(intermediateAPMDFactory::create)
-                .map(IntermediateAccountingPointMarketDocument::accountingPointEnveloppe);
+                .map(IntermediateAccountingPointMarketDocument::accountingPointEnvelope);
     }
 
     @Override

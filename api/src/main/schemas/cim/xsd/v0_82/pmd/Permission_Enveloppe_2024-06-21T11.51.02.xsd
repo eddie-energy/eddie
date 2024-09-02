@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- ****************************************************************** -->
-<!-- ***** Permission_Enveloppe XML Schema File ***** -->
+<!-- ***** Permission_Envelope XML Schema File ***** -->
 <!-- ****************************************************************** -->
 <!--
 Schema agency: Gasunie 
@@ -22,8 +22,8 @@ PURPOSE
            xmlns:ns1="http://www.eddie.energy/Consent/EDD02/20240125"
            targetNamespace="http://www.eddie.energy/Consent/EDD02/20240125" attributeFormDefault="unqualified"
            elementFormDefault="qualified" version="1p0">
-    <xs:element name="Permission_Enveloppe" type="ns1:Permission_EnveloppeComplexType"/>
-    <xs:complexType name="Permission_EnveloppeComplexType">
+    <xs:element name="Permission_Envelope" type="ns1:Permission_EnvelopeComplexType"/>
+    <xs:complexType name="Permission_EnvelopeComplexType">
         <xs:sequence>
             <xs:element name="MessageDocumentHeader" type="ns1:MessageDocumentHeaderComplexType"/>
             <xs:element name="Permission_MarketDocument" type="ns1:Permission_MarketDocumentComplexType" minOccurs="0">

@@ -41,7 +41,7 @@ class TerminationRouterTest {
     @Test
     void testTerminationMessage_withRegionConnectorId() {
         // Given
-        TestPublisher<Pair<String, PermissionEnveloppe>> publisher = TestPublisher.create();
+        TestPublisher<Pair<String, PermissionEnvelope>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
         var router = new TerminationRouter(Set.of(connector));
 
@@ -53,7 +53,7 @@ class TerminationRouterTest {
 
         router.registerRegionConnector(regionConnector1);
         router.registerRegionConnector(regionConnector2);
-        PermissionEnveloppe pmd = new PermissionEnveloppe()
+        PermissionEnvelope pmd = new PermissionEnvelope()
                 .withPermissionMarketDocument(
                         new PermissionMarketDocumentComplexType()
                                 .withMRID("pid")
@@ -87,7 +87,7 @@ class TerminationRouterTest {
     @Test
     void testTerminationMessage_withMktActivityRecord() {
         // Given
-        TestPublisher<Pair<String, PermissionEnveloppe>> publisher = TestPublisher.create();
+        TestPublisher<Pair<String, PermissionEnvelope>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
         var router = new TerminationRouter(Set.of(connector));
 
@@ -99,7 +99,7 @@ class TerminationRouterTest {
 
         router.registerRegionConnector(regionConnector1);
         router.registerRegionConnector(regionConnector2);
-        var pmd = new PermissionEnveloppe()
+        var pmd = new PermissionEnvelope()
                 .withPermissionMarketDocument(
                         new PermissionMarketDocumentComplexType()
                                 .withMRID("pid")
@@ -122,7 +122,7 @@ class TerminationRouterTest {
                                                             )
                                 )
                 );
-        var pair = new Pair<String, PermissionEnveloppe>(null, pmd);
+        var pair = new Pair<String, PermissionEnvelope>(null, pmd);
 
         // When
         publisher.emit(pair);
@@ -135,7 +135,7 @@ class TerminationRouterTest {
     @Test
     void testTerminationMessage_withoutMatchingRegionConnectorIdOrMktActivityRecord() {
         // Given
-        TestPublisher<Pair<String, PermissionEnveloppe>> publisher = TestPublisher.create();
+        TestPublisher<Pair<String, PermissionEnvelope>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
         var router = new TerminationRouter(Set.of(connector));
 
@@ -147,7 +147,7 @@ class TerminationRouterTest {
 
         router.registerRegionConnector(regionConnector1);
         router.registerRegionConnector(regionConnector2);
-        var pmd = new PermissionEnveloppe()
+        var pmd = new PermissionEnvelope()
                 .withPermissionMarketDocument(
                         new PermissionMarketDocumentComplexType()
                                 .withMRID("pid")
@@ -170,7 +170,7 @@ class TerminationRouterTest {
                                                             )
                                 )
                 );
-        var pair = new Pair<String, PermissionEnveloppe>(null, pmd);
+        var pair = new Pair<String, PermissionEnvelope>(null, pmd);
 
         // When
         publisher.emit(pair);
@@ -183,7 +183,7 @@ class TerminationRouterTest {
     @Test
     void testTerminationMessage_withMissingTypeAttribute() {
         // Given
-        TestPublisher<Pair<String, PermissionEnveloppe>> publisher = TestPublisher.create();
+        TestPublisher<Pair<String, PermissionEnvelope>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
         var router = new TerminationRouter(Set.of(connector));
 
@@ -191,7 +191,7 @@ class TerminationRouterTest {
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
 
         router.registerRegionConnector(regionConnector1);
-        var pmd = new PermissionEnveloppe()
+        var pmd = new PermissionEnvelope()
                 .withPermissionMarketDocument(
                         new PermissionMarketDocumentComplexType()
                                 .withMRID("pid")
@@ -213,7 +213,7 @@ class TerminationRouterTest {
                                                             )
                                 )
                 );
-        var pair = new Pair<String, PermissionEnveloppe>(null, pmd);
+        var pair = new Pair<String, PermissionEnvelope>(null, pmd);
 
         // When
         publisher.emit(pair);
@@ -225,7 +225,7 @@ class TerminationRouterTest {
     @Test
     void testTerminationMessage_withMissingReason() {
         // Given
-        TestPublisher<Pair<String, PermissionEnveloppe>> publisher = TestPublisher.create();
+        TestPublisher<Pair<String, PermissionEnvelope>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
         var router = new TerminationRouter(Set.of(connector));
 
@@ -233,7 +233,7 @@ class TerminationRouterTest {
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
 
         router.registerRegionConnector(regionConnector1);
-        var pmd = new PermissionEnveloppe()
+        var pmd = new PermissionEnvelope()
                 .withPermissionMarketDocument(
                         new PermissionMarketDocumentComplexType()
                                 .withMRID("pid")
@@ -252,7 +252,7 @@ class TerminationRouterTest {
                                                             )
                                 )
                 );
-        var pair = new Pair<String, PermissionEnveloppe>(null, pmd);
+        var pair = new Pair<String, PermissionEnvelope>(null, pmd);
 
         // When
         publisher.emit(pair);
@@ -264,7 +264,7 @@ class TerminationRouterTest {
     @Test
     void testTerminationMessage_withoutMatchingRegionConnector() {
         // Given
-        TestPublisher<Pair<String, PermissionEnveloppe>> publisher = TestPublisher.create();
+        TestPublisher<Pair<String, PermissionEnvelope>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
         var router = new TerminationRouter(Set.of(connector));
 
@@ -276,7 +276,7 @@ class TerminationRouterTest {
 
         router.registerRegionConnector(regionConnector1);
         router.registerRegionConnector(regionConnector2);
-        var pmd = new PermissionEnveloppe()
+        var pmd = new PermissionEnvelope()
                 .withPermissionMarketDocument(
                         new PermissionMarketDocumentComplexType()
                                 .withMRID("pid")
@@ -297,7 +297,7 @@ class TerminationRouterTest {
                                                             )
                                 )
                 );
-        var pair = new Pair<String, PermissionEnveloppe>(null, pmd);
+        var pair = new Pair<String, PermissionEnvelope>(null, pmd);
 
         // When
         publisher.emit(pair);

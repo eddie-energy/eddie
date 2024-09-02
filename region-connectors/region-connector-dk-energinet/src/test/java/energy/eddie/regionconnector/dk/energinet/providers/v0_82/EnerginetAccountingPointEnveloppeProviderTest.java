@@ -24,7 +24,7 @@ import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class EnerginetAccountingPointEnveloppeProviderTest {
+class EnerginetAccountingPointEnvelopeProviderTest {
 
     static MeteringPointDetailsCustomerDto meteringPointDetailsCustomerDto;
 
@@ -39,7 +39,7 @@ class EnerginetAccountingPointEnveloppeProviderTest {
     @BeforeAll
     static void setUp() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JsonNullableModule());
-        try (InputStream is = EnerginetAccountingPointEnveloppeProviderTest.class.getClassLoader()
+        try (InputStream is = EnerginetAccountingPointEnvelopeProviderTest.class.getClassLoader()
                                                                                  .getResourceAsStream(
                                                                                                    "MeteringPointDetailsCustomerDtoResponseListApiResponse.json")) {
             MeteringPointDetailsCustomerDtoResponseListApiResponse response = objectMapper.readValue(is,
@@ -71,10 +71,10 @@ class EnerginetAccountingPointEnveloppeProviderTest {
         // Given
         TestPublisher<IdentifiableAccountingPointDetails> testPublisher = TestPublisher.create();
 
-        var provider = new EnerginetAccountingPointEnveloppeProvider(testPublisher.flux(), cimConfig);
+        var provider = new EnerginetAccountingPointEnvelopeProvider(testPublisher.flux(), cimConfig);
 
         // When & Then
-        StepVerifier.create(provider.getAccountingPointEnveloppeFlux())
+        StepVerifier.create(provider.getAccountingPointEnvelopeFlux())
                     .then(() -> {
                         testPublisher.emit(apiResponse);
                         testPublisher.complete();

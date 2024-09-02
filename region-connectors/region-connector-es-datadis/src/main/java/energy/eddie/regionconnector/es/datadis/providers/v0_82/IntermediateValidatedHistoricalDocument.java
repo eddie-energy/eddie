@@ -48,7 +48,7 @@ public final class IntermediateValidatedHistoricalDocument {
         this.datadisConfig = datadisConfig;
     }
 
-    public ValidatedHistoricalDataEnveloppe eddieValidatedHistoricalDataMarketDocument() {
+    public ValidatedHistoricalDataEnvelope eddieValidatedHistoricalDataMarketDocument() {
         var timeframe = new EsmpTimeInterval(
                 identifiableMeteringData.intermediateMeteringData().start(),
                 identifiableMeteringData.intermediateMeteringData().end(),

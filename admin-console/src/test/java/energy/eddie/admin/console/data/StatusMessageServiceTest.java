@@ -19,7 +19,7 @@ class StatusMessageServiceTest {
     private StatusMessageRepository statusMessageRepository;
     @Mock
     private PermissionMarketDocumentServiceInterface permissionMarketDocumentService;
-    private TestPublisher<PermissionEnveloppe> testPublisher;
+    private TestPublisher<PermissionEnvelope> testPublisher;
 
     @BeforeEach
     void setUp() {
@@ -32,7 +32,7 @@ class StatusMessageServiceTest {
     @Test
     void testReceivesValidPermissionMarketDocument_saves() {
         // Given
-        var pmd = new PermissionEnveloppe()
+        var pmd = new PermissionEnvelope()
                 .withPermissionMarketDocument(
                         new PermissionMarketDocumentComplexType()
                                 .withMRID("mrid")
@@ -72,7 +72,7 @@ class StatusMessageServiceTest {
     @Test
     void testReceivesAiidaPermissionMarketDocument() {
         // Given
-        var pmd = new PermissionEnveloppe()
+        var pmd = new PermissionEnvelope()
                 .withPermissionMarketDocument(
                         new PermissionMarketDocumentComplexType()
                                 .withMRID("mrid")

@@ -65,7 +65,7 @@ class MeasurementConverterTest {
                                                 )
                                 )
                 );
-        var envelope = new ValidatedHistoricalDataEnveloppe()
+        var envelope = new ValidatedHistoricalDataEnvelope()
                 .withValidatedHistoricalDataMarketDocument(vhd);
         var converter = new MeasurementConverter(List.of(new EnergyToPowerCalculation()));
 
@@ -138,7 +138,7 @@ class MeasurementConverterTest {
                                                 )
                                 )
                 );
-        var envelope = new ValidatedHistoricalDataEnveloppe()
+        var envelope = new ValidatedHistoricalDataEnvelope()
                 .withValidatedHistoricalDataMarketDocument(vhd);
         var converter = new MeasurementConverter(List.of(new EnergyToPowerCalculation()));
 

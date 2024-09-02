@@ -72,7 +72,7 @@ public final class IntermediateValidatedHistoricalDocument {
         this.enedisConfig = enedisConfig;
     }
 
-    public ValidatedHistoricalDataEnveloppe eddieValidatedHistoricalDataMarketDocument() {
+    public ValidatedHistoricalDataEnvelope eddieValidatedHistoricalDataMarketDocument() {
         var timeframe = new EsmpTimeInterval(
                 meterReading().start().atStartOfDay(ZONE_ID_FR),
                 meterReading().end().atStartOfDay(ZONE_ID_FR)

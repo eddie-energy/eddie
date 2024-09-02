@@ -11,7 +11,7 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
@@ -33,7 +33,7 @@ import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConne
 import energy.eddie.regionconnector.at.eda.ponton.messenger.WebClientMessengerHealth;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
-import energy.eddie.regionconnector.at.eda.provider.v0_82.EdaValidatedHistoricalDataEnveloppeProvider;
+import energy.eddie.regionconnector.at.eda.provider.v0_82.EdaValidatedHistoricalDataEnvelopeProvider;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecordService;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableMasterDataService;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
@@ -157,7 +157,7 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public Sinks.Many<PermissionEnveloppe> consentMarketDocumentSink() {
+    public Sinks.Many<PermissionEnvelope> consentMarketDocumentSink() {
         return Sinks
                 .many()
                 .multicast()
@@ -173,11 +173,11 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public EdaValidatedHistoricalDataEnveloppeProvider consumptionRecordProcessor(
+    public EdaValidatedHistoricalDataEnvelopeProvider consumptionRecordProcessor(
             CommonInformationModelConfiguration commonInformationModelConfiguration,
             Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux
     ) {
-        return new EdaValidatedHistoricalDataEnveloppeProvider(
+        return new EdaValidatedHistoricalDataEnvelopeProvider(
                 new ValidatedHistoricalDataMarketDocumentDirector(
                         commonInformationModelConfiguration,
                         new ValidatedHistoricalDataMarketDocumentBuilderFactory()
@@ -187,7 +187,7 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public PermissionMarketDocumentProvider permissionMarketDocumentProvider(Sinks.Many<PermissionEnveloppe> sink) {
+    public PermissionMarketDocumentProvider permissionMarketDocumentProvider(Sinks.Many<PermissionEnvelope> sink) {
         return new CommonPermissionMarketDocumentProvider(sink);
     }
 
@@ -249,7 +249,7 @@ public class AtEdaBeanConfig {
     public PermissionMarketDocumentMessageHandler<AtPermissionRequest> permissionMarketDocumentMessageHandler(
             EventBus eventBus,
             AtPermissionRequestRepository repository,
-            Sinks.Many<PermissionEnveloppe> pmdSink,
+            Sinks.Many<PermissionEnvelope> pmdSink,
             AtConfiguration atConfig,
             CommonInformationModelConfiguration cimConfig
     ) {

@@ -38,7 +38,7 @@ public final class IntermediateAccountingPointMarketDocument {
         this.datadisConfig = datadisConfig;
     }
 
-    public AccountingPointEnveloppe accountingPointEnveloppe() {
+    public AccountingPointEnvelope accountingPointEnvelope() {
         return new APEnvelope(
                 accountingPointMarketDocument(),
                 permissionRequest

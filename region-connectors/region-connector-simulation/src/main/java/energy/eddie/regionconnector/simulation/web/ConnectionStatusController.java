@@ -5,7 +5,7 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.regionconnector.shared.cim.v0_82.pmd.IntermediatePermissionMarketDocument;
 import energy.eddie.regionconnector.simulation.SimulationConnectorMetadata;
 import energy.eddie.regionconnector.simulation.SimulationDataSourceInformation;
@@ -28,7 +28,7 @@ public class ConnectionStatusController implements Mvp1ConnectionStatusMessagePr
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusController.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusStreamSink = Sinks.many().multicast()
                                                                                         .onBackpressureBuffer();
-    private final Sinks.Many<PermissionEnveloppe> pmdSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<PermissionEnvelope> pmdSink = Sinks.many().multicast().onBackpressureBuffer();
 
     @GetMapping(value = "/api/connection-status-values")
     public ResponseEntity<PermissionProcessStatus[]> connectionStatusValues() {
@@ -80,7 +80,7 @@ public class ConnectionStatusController implements Mvp1ConnectionStatusMessagePr
     }
 
     @Override
-    public Flux<PermissionEnveloppe> getPermissionMarketDocumentStream() {
+    public Flux<PermissionEnvelope> getPermissionMarketDocumentStream() {
         return pmdSink.asFlux();
     }
 }

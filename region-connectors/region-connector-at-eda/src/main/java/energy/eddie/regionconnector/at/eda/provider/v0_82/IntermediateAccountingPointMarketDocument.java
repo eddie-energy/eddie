@@ -24,7 +24,7 @@ public class IntermediateAccountingPointMarketDocument {
         this.cimConfig = cimConfig;
     }
 
-    public AccountingPointEnveloppe accountingPointEnveloppe() {
+    public AccountingPointEnvelope accountingPointEnvelope() {
         return new APEnvelope(accountingPointMarketDocument(identifiableMasterData.masterData()),
                               identifiableMasterData.permissionRequest())
                 .wrap();

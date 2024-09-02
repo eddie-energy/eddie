@@ -6,12 +6,12 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordOutboundConnector;
-import energy.eddie.api.v0_82.AccountingPointEnveloppeOutboundConnector;
+import energy.eddie.api.v0_82.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.PermissionMarketDocumentOutboundConnector;
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnveloppeOutboundConnector;
-import energy.eddie.cim.v0_82.ap.AccountingPointEnveloppe;
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
+import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeOutboundConnector;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -28,10 +28,10 @@ import java.util.Properties;
 public class KafkaConnector implements
         Mvp1ConnectionStatusMessageOutboundConnector,
         Mvp1ConsumptionRecordOutboundConnector,
-        ValidatedHistoricalDataEnveloppeOutboundConnector,
+        ValidatedHistoricalDataEnvelopeOutboundConnector,
         PermissionMarketDocumentOutboundConnector,
         RawDataOutboundConnector,
-        AccountingPointEnveloppeOutboundConnector,
+        AccountingPointEnvelopeOutboundConnector,
         Closeable {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaProducer<String, Object> kafkaProducer;
@@ -56,13 +56,13 @@ public class KafkaConnector implements
     }
 
     @Override
-    public void setPermissionMarketDocumentStream(Flux<PermissionEnveloppe> permissionMarketDocumentStream) {
+    public void setPermissionMarketDocumentStream(Flux<PermissionEnvelope> permissionMarketDocumentStream) {
         permissionMarketDocumentStream
                 .publishOn(Schedulers.boundedElastic())
                 .subscribe(this::producePermissionMarketDocument);
     }
 
-    private void producePermissionMarketDocument(PermissionEnveloppe permissionMarketDocument) {
+    private void producePermissionMarketDocument(PermissionEnvelope permissionMarketDocument) {
         var permissionId = permissionMarketDocument.getMessageDocumentHeader()
                                                    .getMessageDocumentHeaderMetaInformation()
                                                    .getPermissionid();
@@ -76,7 +76,7 @@ public class KafkaConnector implements
 
     @Override
     public void setEddieValidatedHistoricalDataMarketDocumentStream(
-            Flux<ValidatedHistoricalDataEnveloppe> marketDocumentStream
+            Flux<ValidatedHistoricalDataEnvelope> marketDocumentStream
     ) {
         marketDocumentStream
                 .publishOn(Schedulers.boundedElastic())
@@ -84,7 +84,7 @@ public class KafkaConnector implements
     }
 
     private void produceEddieValidatedHistoricalDataMarketDocument(
-            ValidatedHistoricalDataEnveloppe marketDocument
+            ValidatedHistoricalDataEnvelope marketDocument
     ) {
         var info = marketDocument.getMessageDocumentHeader()
                                  .getMessageDocumentHeaderMetaInformation();
@@ -134,14 +134,14 @@ public class KafkaConnector implements
     }
 
     @Override
-    public void setAccountingPointEnveloppeStream(Flux<AccountingPointEnveloppe> marketDocumentStream) {
+    public void setAccountingPointEnvelopeStream(Flux<AccountingPointEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .publishOn(Schedulers.boundedElastic())
-                .subscribe(this::produceAccountingPointEnveloppe);
+                .subscribe(this::produceAccountingPointEnvelope);
     }
 
-    private void produceAccountingPointEnveloppe(
-            AccountingPointEnveloppe marketDocument
+    private void produceAccountingPointEnvelope(
+            AccountingPointEnvelope marketDocument
     ) {
         var header = marketDocument.getMessageDocumentHeader()
                                    .getMessageDocumentHeaderMetaInformation();

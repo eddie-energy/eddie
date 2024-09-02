@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.shared.cim.v0_82.vhd;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.cim.v0_82.vhd.MessageDocumentHeaderMetaInformationComplexType;
 import energy.eddie.cim.v0_82.vhd.MessageDocumentHeaderRegionComplexType;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocumentComplexType;
 import energy.eddie.regionconnector.shared.cim.v0_82.CimUtils;
 import energy.eddie.regionconnector.shared.cim.v0_82.DocumentType;
@@ -14,7 +14,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 public record VhdEnvelope(ValidatedHistoricalDataMarketDocumentComplexType vhd, PermissionRequest permissionRequest) {
-    public ValidatedHistoricalDataEnveloppe wrap() {
+    public ValidatedHistoricalDataEnvelope wrap() {
         var calendar = DatatypeFactory
                 .newDefaultInstance()
                 .newXMLGregorianCalendar(LocalDate.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE));
@@ -34,7 +34,7 @@ public record VhdEnvelope(ValidatedHistoricalDataMarketDocumentComplexType vhd, 
                                                 .withCountry(codingScheme)
                                 )
                 );
-        return new ValidatedHistoricalDataEnveloppe()
+        return new ValidatedHistoricalDataEnvelope()
                 .withMessageDocumentHeader(header)
                 .withValidatedHistoricalDataMarketDocument(vhd);
     }

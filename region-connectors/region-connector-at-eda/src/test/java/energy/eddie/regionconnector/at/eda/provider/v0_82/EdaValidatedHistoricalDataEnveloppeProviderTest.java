@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EdaValidatedHistoricalDataEnveloppeProviderTest {
+class EdaValidatedHistoricalDataEnvelopeProviderTest {
     @Mock
     private ValidatedHistoricalDataMarketDocumentDirector director;
 
@@ -44,7 +44,7 @@ class EdaValidatedHistoricalDataEnveloppeProviderTest {
         when(director.createValidatedHistoricalDataMarketDocument(consumptionRecord))
                 .thenReturn(validatedHistoricalDataMarketDocument);
 
-        try (var uut = new EdaValidatedHistoricalDataEnveloppeProvider(director, testPublisher.flux())) {
+        try (var uut = new EdaValidatedHistoricalDataEnvelopeProvider(director, testPublisher.flux())) {
             StepVerifier.create(uut.getValidatedHistoricalDataMarketDocumentsStream())
                         .then(() -> {
                             testPublisher.next(new IdentifiableConsumptionRecord(consumptionRecord,
@@ -119,7 +119,7 @@ class EdaValidatedHistoricalDataEnveloppeProviderTest {
                 .thenThrow(new InvalidMappingException(""));
 
 
-        try (var uut = new EdaValidatedHistoricalDataEnveloppeProvider(
+        try (var uut = new EdaValidatedHistoricalDataEnvelopeProvider(
                 director,
                 testPublisher.flux())) {
             StepVerifier.create(uut.getValidatedHistoricalDataMarketDocumentsStream())

@@ -4,7 +4,7 @@ import energy.eddie.api.utils.Pair;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.cim.v0_82.pmd.MessageTypeList;
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.pmd.ReasonCodeTypeList;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
@@ -39,7 +39,7 @@ public class TerminationRouter {
         }
     }
 
-    private void route(Pair<String, PermissionEnveloppe> pmd) {
+    private void route(Pair<String, PermissionEnvelope> pmd) {
         if (!isTerminationMessage(pmd)) {
             LOGGER.warn("Received invalid termination message");
             // TODO: Propagate error, related to GH-410
@@ -57,7 +57,7 @@ public class TerminationRouter {
         }
     }
 
-    private static boolean isTerminationMessage(Pair<String, PermissionEnveloppe> pair) {
+    private static boolean isTerminationMessage(Pair<String, PermissionEnvelope> pair) {
         return pair.value()
                    .getPermissionMarketDocument()
                    .getPermissionList()
@@ -72,7 +72,7 @@ public class TerminationRouter {
                       .getType() == MessageTypeList.PERMISSION_TERMINATION_DOCUMENT;
     }
 
-    private static String getRegionConnectorId(Pair<String, PermissionEnveloppe> pmd) {
+    private static String getRegionConnectorId(Pair<String, PermissionEnvelope> pmd) {
         return Optional.ofNullable(pmd.key())
                        .orElseGet(() ->
                                           pmd.value()

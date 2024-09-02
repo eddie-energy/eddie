@@ -52,11 +52,11 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
         this.zoneId = zoneId;
     }
 
-    public PermissionEnveloppe toPermissionMarketDocument() {
+    public PermissionEnvelope toPermissionMarketDocument() {
         return toPermissionMarketDocument(Clock.systemUTC());
     }
 
-    PermissionEnveloppe toPermissionMarketDocument(Clock clock) {
+    PermissionEnvelope toPermissionMarketDocument(Clock clock) {
         EsmpDateTime now = EsmpDateTime.now(clock);
         EsmpDateTime created = new EsmpDateTime(permissionRequest.created());
         EsmpTimeInterval interval = new EsmpTimeInterval(permissionRequest.start(), permissionRequest.end(), zoneId);
@@ -113,7 +113,7 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
                                                 )
                                 )
                 );
-        return new PermissionEnveloppe()
+        return new PermissionEnvelope()
                 .withMessageDocumentHeader(new DocumentHeader(permissionRequest,
                                                               DocumentType.PERMISSION_MARKET_DOCUMENT).permissionMarketDocumentHeader())
                 .withPermissionMarketDocument(pmd);

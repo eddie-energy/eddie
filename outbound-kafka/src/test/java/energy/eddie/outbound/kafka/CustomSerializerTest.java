@@ -11,7 +11,7 @@ import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.pmd.*;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocumentComplexType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,7 +95,7 @@ class CustomSerializerTest {
     @Test
     void testSerialize_EddieValidatedHistoricalDataMarketDocument() throws JsonProcessingException {
         String topic = "test";
-        var data = new ValidatedHistoricalDataEnveloppe()
+        var data = new ValidatedHistoricalDataEnvelope()
                 .withMessageDocumentHeader(
                         new energy.eddie.cim.v0_82.vhd.MessageDocumentHeaderComplexType()
                                 .withMessageDocumentHeaderMetaInformation(
@@ -200,7 +200,7 @@ class CustomSerializerTest {
                 }
                 """.replace("\n", "")
                    .replace(" ", "");
-        var pmd = new PermissionEnveloppe()
+        var pmd = new PermissionEnvelope()
                 .withPermissionMarketDocument(
                         new PermissionMarketDocumentComplexType()
                                 .withMRID("permissionId")

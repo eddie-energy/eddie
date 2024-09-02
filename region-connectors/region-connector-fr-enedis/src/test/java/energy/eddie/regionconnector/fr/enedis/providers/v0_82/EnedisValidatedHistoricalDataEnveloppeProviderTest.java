@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class EnedisValidatedHistoricalDataEnveloppeProviderTest {
+class EnedisValidatedHistoricalDataEnvelopeProviderTest {
     @Test
     void testGetValidatedHistoricalDataMarketDocumentsStream_publishesDocuments() throws Exception {
         // Given
@@ -43,7 +43,7 @@ class EnedisValidatedHistoricalDataEnveloppeProviderTest {
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
                                                              "fallbackId")
         );
-        var provider = new EnedisValidatedHistoricalDataEnveloppeProvider(testPublisher.flux(), factory);
+        var provider = new EnedisValidatedHistoricalDataEnvelopeProvider(testPublisher.flux(), factory);
 
         // When
         StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())

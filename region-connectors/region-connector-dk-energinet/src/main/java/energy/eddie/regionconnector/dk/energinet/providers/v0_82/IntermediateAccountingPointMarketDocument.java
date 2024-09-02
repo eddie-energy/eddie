@@ -26,7 +26,7 @@ public record IntermediateAccountingPointMarketDocument(
             .withValue(GLOBAL_LOCATION_NUMBER);
 
     // TODO update mapping with GH-1037
-    public AccountingPointEnveloppe accountingPointMarketDocument() {
+    public AccountingPointEnvelope accountingPointMarketDocument() {
         var meteringPointDetails = identifiableAccountingPointDetails.meteringPointDetails();
         return new APEnvelope(new AccountingPointMarketDocumentComplexType()
                                       .withMRID(UUID.randomUUID().toString())

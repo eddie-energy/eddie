@@ -1,7 +1,7 @@
 package energy.eddie.spring.regionconnector.extensions;
 
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnveloppeProvider;
-import energy.eddie.core.services.ValidatedHistoricalDataEnveloppeService;
+import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
+import energy.eddie.core.services.ValidatedHistoricalDataEnvelopeService;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -9,27 +9,27 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-class ValidatedHistoricalDataEnveloppeServiceRegistrarTest {
+class ValidatedHistoricalDataEnvelopeServiceRegistrarTest {
     @Test
     void givenNull_constructor_throws() {
         // Given
-        var mockService = mock(ValidatedHistoricalDataEnveloppeService.class);
-        Optional<ValidatedHistoricalDataEnveloppeProvider> provider = Optional.empty();
+        var mockService = mock(ValidatedHistoricalDataEnvelopeService.class);
+        Optional<ValidatedHistoricalDataEnvelopeProvider> provider = Optional.empty();
 
         // When, Then
         assertThrows(NullPointerException.class,
-                     () -> new ValidatedHistoricalDataEnveloppeServiceRegistrar(null, mockService));
+                     () -> new ValidatedHistoricalDataEnvelopeServiceRegistrar(null, mockService));
         assertThrows(NullPointerException.class,
-                     () -> new ValidatedHistoricalDataEnveloppeServiceRegistrar(provider, null));
+                     () -> new ValidatedHistoricalDataEnvelopeServiceRegistrar(provider, null));
     }
 
     @Test
     void givenNoProvider_noRegistrationAtService() {
         // Given
-        var mockService = mock(ValidatedHistoricalDataEnveloppeService.class);
+        var mockService = mock(ValidatedHistoricalDataEnvelopeService.class);
 
         // When
-        new ValidatedHistoricalDataEnveloppeServiceRegistrar(Optional.empty(), mockService);
+        new ValidatedHistoricalDataEnvelopeServiceRegistrar(Optional.empty(), mockService);
 
         // Then
         verifyNoInteractions(mockService);
@@ -38,11 +38,11 @@ class ValidatedHistoricalDataEnveloppeServiceRegistrarTest {
     @Test
     void givenProvider_registersAtService() {
         // Given
-        var mockService = mock(ValidatedHistoricalDataEnveloppeService.class);
-        var mockProvider = mock(ValidatedHistoricalDataEnveloppeProvider.class);
+        var mockService = mock(ValidatedHistoricalDataEnvelopeService.class);
+        var mockProvider = mock(ValidatedHistoricalDataEnvelopeProvider.class);
 
         // When
-        new ValidatedHistoricalDataEnveloppeServiceRegistrar(Optional.of(mockProvider), mockService);
+        new ValidatedHistoricalDataEnvelopeServiceRegistrar(Optional.of(mockProvider), mockService);
 
         // Then
         verify(mockService).registerProvider(mockProvider);

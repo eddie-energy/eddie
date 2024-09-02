@@ -39,8 +39,8 @@ class IntermediateValidatedHistoricalDataMarketDocument {
 
     // TODO: get real CIM mapping, see GH-928
     @SuppressWarnings("java:S3776") // The mapping code for the CIM is this long
-    public List<ValidatedHistoricalDataEnveloppe> toEddieValidatedHistoricalDataMarketDocuments() {
-        var vhds = new ArrayList<ValidatedHistoricalDataEnveloppe>();
+    public List<ValidatedHistoricalDataEnvelope> toEddieValidatedHistoricalDataMarketDocuments() {
+        var vhds = new ArrayList<ValidatedHistoricalDataEnvelope>();
         for (MijnAansluitingResponse mijnAansluitingResponse : mijnAansluitingResponses) {
             var marketEvaluationPoint = mijnAansluitingResponse.getMarketEvaluationPoint();
             var vhd = new ValidatedHistoricalDataMarketDocumentComplexType()

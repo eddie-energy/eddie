@@ -1,28 +1,28 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82;
 
-import energy.eddie.api.v0_82.AccountingPointEnveloppeProvider;
+import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.ap.AccountingPointEnveloppe;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableAccountingPointDetails;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 @Component
-public class EnerginetAccountingPointEnveloppeProvider implements AccountingPointEnveloppeProvider {
-    private final Flux<AccountingPointEnveloppe> accountingPointEnveloppeFlux;
+public class EnerginetAccountingPointEnvelopeProvider implements AccountingPointEnvelopeProvider {
+    private final Flux<AccountingPointEnvelope> accountingPointEnvelopeFlux;
     private final CommonInformationModelConfiguration cimConfiguration;
 
-    public EnerginetAccountingPointEnveloppeProvider(
+    public EnerginetAccountingPointEnvelopeProvider(
             Flux<IdentifiableAccountingPointDetails> identifiableMeteringPointDetailsFlux,
             CommonInformationModelConfiguration cimConfiguration
     ) {
-        this.accountingPointEnveloppeFlux = identifiableMeteringPointDetailsFlux
+        this.accountingPointEnvelopeFlux = identifiableMeteringPointDetailsFlux
                 .map(this::mapToAccountingPointMarketDocument)
                 .share();
         this.cimConfiguration = cimConfiguration;
     }
 
-    private AccountingPointEnveloppe mapToAccountingPointMarketDocument(
+    private AccountingPointEnvelope mapToAccountingPointMarketDocument(
             IdentifiableAccountingPointDetails response
     ) {
         return new IntermediateAccountingPointMarketDocument(response, cimConfiguration)
@@ -30,8 +30,8 @@ public class EnerginetAccountingPointEnveloppeProvider implements AccountingPoin
     }
 
     @Override
-    public Flux<AccountingPointEnveloppe> getAccountingPointEnveloppeFlux() {
-        return accountingPointEnveloppeFlux;
+    public Flux<AccountingPointEnvelope> getAccountingPointEnvelopeFlux() {
+        return accountingPointEnvelopeFlux;
     }
 
     @Override

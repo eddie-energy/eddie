@@ -1,6 +1,6 @@
 package energy.eddie.outbound.kafka;
 
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionMarketDocumentComplexType;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -46,10 +46,10 @@ class TerminationKafkaConnectorTest {
         props.put("auto.offset.reset", "earliest");
         var terminationConnector = new TerminationKafkaConnector(props, "termination-topic");
         var pmd = new PermissionMarketDocumentComplexType().withMRID("permissionId");
-        var enveloppe = new PermissionEnveloppe().withPermissionMarketDocument(pmd);
+        var envelope = new PermissionEnvelope().withPermissionMarketDocument(pmd);
         // When
         producer.send(
-                        new ProducerRecord<>("termination-topic", "id", enveloppe))
+                        new ProducerRecord<>("termination-topic", "id", envelope))
                 .get();
 
         // Then
@@ -78,8 +78,8 @@ class TerminationKafkaConnectorTest {
         // When
         producer.send(new ProducerRecord<>("termination-topic", "id", "INVALID JSON")).get();
         var pmd = new PermissionMarketDocumentComplexType().withMRID("permissionId");
-        var enveloppe = new PermissionEnveloppe().withPermissionMarketDocument(pmd);
-        producer.send(new ProducerRecord<>("termination-topic", "id", mapper.writeValueAsString(enveloppe))).get();
+        var envelope = new PermissionEnvelope().withPermissionMarketDocument(pmd);
+        producer.send(new ProducerRecord<>("termination-topic", "id", mapper.writeValueAsString(envelope))).get();
         var pair = terminationConnector.getTerminationMessages()
                 .blockFirst();
 

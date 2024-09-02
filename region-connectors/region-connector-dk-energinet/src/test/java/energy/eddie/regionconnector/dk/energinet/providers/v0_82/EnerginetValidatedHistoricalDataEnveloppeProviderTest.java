@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings({"resource"})
-class EnerginetValidatedHistoricalDataEnveloppeProviderTest {
+class EnerginetValidatedHistoricalDataEnvelopeProviderTest {
 
     static MyEnergyDataMarketDocument myEnergyDataMarketDocument;
 
@@ -41,7 +41,7 @@ class EnerginetValidatedHistoricalDataEnveloppeProviderTest {
     @BeforeAll
     static void setUp() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JsonNullableModule());
-        try (InputStream is = EnerginetValidatedHistoricalDataEnveloppeProviderTest.class.getClassLoader()
+        try (InputStream is = EnerginetValidatedHistoricalDataEnvelopeProviderTest.class.getClassLoader()
                                                                                          .getResourceAsStream(
                                                                                                            "MyEnergyDataMarketDocumentResponseListApiResponse.json")) {
             MyEnergyDataMarketDocumentResponseListApiResponse response = objectMapper.readValue(is,
@@ -82,7 +82,7 @@ class EnerginetValidatedHistoricalDataEnveloppeProviderTest {
         // Given
         TestPublisher<IdentifiableApiResponse> testPublisher = TestPublisher.create();
 
-        var provider = new EnerginetValidatedHistoricalDataEnveloppeProvider(testPublisher.flux(),
+        var provider = new EnerginetValidatedHistoricalDataEnvelopeProvider(testPublisher.flux(),
                                                                              validatedHistoricalDataMarketDocumentBuilderFactory);
 
         // When & Then
@@ -142,7 +142,7 @@ class EnerginetValidatedHistoricalDataEnveloppeProviderTest {
 
         TestPublisher<IdentifiableApiResponse> testPublisher = TestPublisher.create();
 
-        try (var provider = new EnerginetValidatedHistoricalDataEnveloppeProvider(testPublisher.flux(),
+        try (var provider = new EnerginetValidatedHistoricalDataEnvelopeProvider(testPublisher.flux(),
                                                                                   factory)) {
 
             // When & Then

@@ -8,9 +8,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
-import energy.eddie.cim.v0_82.ap.AccountingPointEnveloppe;
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
@@ -28,12 +28,12 @@ class CustomSerializer implements Serializer<Object> {
         return switch (data) {
             case ConsumptionRecord ignored -> serializeJson(data);
             case ConnectionStatusMessage ignored -> serializeJson(data);
-            case ValidatedHistoricalDataEnveloppe vhd ->
+            case ValidatedHistoricalDataEnvelope vhd ->
                     serializeEddieValidatedHistoricalDataMarketDocument(vhd);
-            case PermissionEnveloppe pmd -> serializePermissionMarketDocument(pmd);
+            case PermissionEnvelope pmd -> serializePermissionMarketDocument(pmd);
             case RawDataMessage rawDataMessage -> serializeRawDataMessage(rawDataMessage);
-            case AccountingPointEnveloppe accountingPointMarketDocument ->
-                    serializeAccountingPointEnveloppe(accountingPointMarketDocument);
+            case AccountingPointEnvelope accountingPointMarketDocument ->
+                    serializeAccountingPointEnvelope(accountingPointMarketDocument);
             case null -> new byte[0];
             default -> throw new UnsupportedOperationException("Unsupported object type: " + data.getClass());
         };
@@ -47,15 +47,15 @@ class CustomSerializer implements Serializer<Object> {
         }
     }
 
-    private byte[] serializeEddieValidatedHistoricalDataMarketDocument(ValidatedHistoricalDataEnveloppe data) {
+    private byte[] serializeEddieValidatedHistoricalDataMarketDocument(ValidatedHistoricalDataEnvelope data) {
         try {
             return vhdObjectMapper.writeValueAsBytes(data);
         } catch (JsonProcessingException e) {
-            throw new ValidatedHistoricalDataEnveloppeSerializationException(e);
+            throw new ValidatedHistoricalDataEnvelopeSerializationException(e);
         }
     }
 
-    private byte[] serializePermissionMarketDocument(PermissionEnveloppe pmd) {
+    private byte[] serializePermissionMarketDocument(PermissionEnvelope pmd) {
         try {
             return vhdObjectMapper.writeValueAsBytes(pmd);
         } catch (JsonProcessingException e) {
@@ -72,11 +72,11 @@ class CustomSerializer implements Serializer<Object> {
         }
     }
 
-    private byte[] serializeAccountingPointEnveloppe(AccountingPointEnveloppe data) {
+    private byte[] serializeAccountingPointEnvelope(AccountingPointEnvelope data) {
         try {
             return vhdObjectMapper.writeValueAsBytes(data);
         } catch (JsonProcessingException e) {
-            throw new AccountingPointEnveloppeSerializationException(e);
+            throw new AccountingPointEnvelopeSerializationException(e);
         }
     }
 
@@ -91,15 +91,15 @@ class CustomSerializer implements Serializer<Object> {
         }
     }
 
-    public static class ValidatedHistoricalDataEnveloppeSerializationException extends RuntimeException {
-        public ValidatedHistoricalDataEnveloppeSerializationException(Throwable cause) {
+    public static class ValidatedHistoricalDataEnvelopeSerializationException extends RuntimeException {
+        public ValidatedHistoricalDataEnvelopeSerializationException(Throwable cause) {
             super(cause);
         }
     }
 
 
-    public static class AccountingPointEnveloppeSerializationException extends RuntimeException {
-        public AccountingPointEnveloppeSerializationException(Throwable cause) {
+    public static class AccountingPointEnvelopeSerializationException extends RuntimeException {
+        public AccountingPointEnvelopeSerializationException(Throwable cause) {
             super(cause);
         }
     }

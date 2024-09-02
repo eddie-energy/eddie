@@ -1,6 +1,6 @@
 package energy.eddie.api.v0_82;
 
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import reactor.core.publisher.Flux;
 
 public interface PermissionMarketDocumentProvider extends AutoCloseable {
@@ -10,5 +10,5 @@ public interface PermissionMarketDocumentProvider extends AutoCloseable {
      *
      * @return PermissionMarketDocument stream that can be consumed only once
      */
-    Flux<PermissionEnveloppe> getPermissionMarketDocumentStream();
+    Flux<PermissionEnvelope> getPermissionMarketDocumentStream();
 }

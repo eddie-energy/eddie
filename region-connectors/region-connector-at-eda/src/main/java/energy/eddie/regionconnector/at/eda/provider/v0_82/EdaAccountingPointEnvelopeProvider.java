@@ -1,30 +1,30 @@
 package energy.eddie.regionconnector.at.eda.provider.v0_82;
 
-import energy.eddie.api.v0_82.AccountingPointEnveloppeProvider;
-import energy.eddie.cim.v0_82.ap.AccountingPointEnveloppe;
+import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 /**
- * This class is for processing incoming master data by mapping it to {@link AccountingPointEnveloppe}
+ * This class is for processing incoming master data by mapping it to {@link AccountingPointEnvelope}
  */
 @Component
-public class EdaAccountingPointEnveloppeProvider implements AccountingPointEnveloppeProvider {
+public class EdaAccountingPointEnvelopeProvider implements AccountingPointEnvelopeProvider {
 
-    private final Flux<AccountingPointEnveloppe> apFlux;
+    private final Flux<AccountingPointEnvelope> apFlux;
 
-    public EdaAccountingPointEnveloppeProvider(
+    public EdaAccountingPointEnvelopeProvider(
             Flux<IdentifiableMasterData> identifiableMasterDataFlux,
             IntermediateAccountingPointMarketDocumentFactory factory
     ) {
         this.apFlux = identifiableMasterDataFlux
                 .map(factory::create)
-                .map(IntermediateAccountingPointMarketDocument::accountingPointEnveloppe);
+                .map(IntermediateAccountingPointMarketDocument::accountingPointEnvelope);
     }
 
     @Override
-    public Flux<AccountingPointEnveloppe> getAccountingPointEnveloppeFlux() {
+    public Flux<AccountingPointEnvelope> getAccountingPointEnvelopeFlux() {
         return apFlux;
     }
 

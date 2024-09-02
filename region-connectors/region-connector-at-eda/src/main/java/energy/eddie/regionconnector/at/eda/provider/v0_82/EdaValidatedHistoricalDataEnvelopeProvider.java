@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda.provider.v0_82;
 
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnveloppeProvider;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
+import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
@@ -16,13 +16,13 @@ import static java.util.Objects.requireNonNull;
  * This class is for processing incoming consumption records by mapping it to ValidatedHistoricalDataMarketDocuments and
  * emitting it for all matching permission requests
  */
-public class EdaValidatedHistoricalDataEnveloppeProvider implements ValidatedHistoricalDataEnveloppeProvider {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EdaValidatedHistoricalDataEnveloppeProvider.class);
+public class EdaValidatedHistoricalDataEnvelopeProvider implements ValidatedHistoricalDataEnvelopeProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EdaValidatedHistoricalDataEnvelopeProvider.class);
 
     private final ValidatedHistoricalDataMarketDocumentDirector director;
-    private final Flux<ValidatedHistoricalDataEnveloppe> eddieValidatedHistoricalDataMarketDocumentFlux;
+    private final Flux<ValidatedHistoricalDataEnvelope> eddieValidatedHistoricalDataMarketDocumentFlux;
 
-    public EdaValidatedHistoricalDataEnveloppeProvider(
+    public EdaValidatedHistoricalDataEnvelopeProvider(
             ValidatedHistoricalDataMarketDocumentDirector validatedHistoricalDataMarketDocumentDirector,
             Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux
     ) {
@@ -35,7 +35,7 @@ public class EdaValidatedHistoricalDataEnveloppeProvider implements ValidatedHis
                 .flatMap(this::mapToValidatedHistoricalMarketDocument);  // the mapping method is called for each element for each subscriber if we at some point have multiple subscribers, consider using publish().refCount()
     }
 
-    private Flux<ValidatedHistoricalDataEnveloppe> mapToValidatedHistoricalMarketDocument(
+    private Flux<ValidatedHistoricalDataEnvelope> mapToValidatedHistoricalMarketDocument(
             IdentifiableConsumptionRecord identifiableConsumptionRecord
     ) {
         try {
@@ -52,7 +52,7 @@ public class EdaValidatedHistoricalDataEnveloppeProvider implements ValidatedHis
     }
 
     @Override
-    public Flux<ValidatedHistoricalDataEnveloppe> getValidatedHistoricalDataMarketDocumentsStream() {
+    public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return eddieValidatedHistoricalDataMarketDocumentFlux;
     }
 

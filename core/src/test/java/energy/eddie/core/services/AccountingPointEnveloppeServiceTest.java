@@ -1,7 +1,7 @@
 package energy.eddie.core.services;
 
-import energy.eddie.api.v0_82.AccountingPointEnveloppeProvider;
-import energy.eddie.cim.v0_82.ap.AccountingPointEnveloppe;
+import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -10,7 +10,7 @@ import reactor.test.StepVerifier;
 
 import java.time.Duration;
 
-class AccountingPointEnveloppeServiceTest {
+class AccountingPointEnvelopeServiceTest {
     @BeforeAll
     static void beforeAll() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(2));
@@ -19,19 +19,19 @@ class AccountingPointEnveloppeServiceTest {
     @Test
     void givenMultipleStreams_combinesAndEmitsAllValuesFromAllStreams() throws Exception {
         // Given
-        var service = new AccountingPointEnveloppeService();
-        Sinks.Many<AccountingPointEnveloppe> sink1 = Sinks.many().unicast().onBackpressureBuffer();
-        Sinks.Many<AccountingPointEnveloppe> sink2 = Sinks.many().unicast().onBackpressureBuffer();
+        var service = new AccountingPointEnvelopeService();
+        Sinks.Many<AccountingPointEnvelope> sink1 = Sinks.many().unicast().onBackpressureBuffer();
+        Sinks.Many<AccountingPointEnvelope> sink2 = Sinks.many().unicast().onBackpressureBuffer();
 
-        AccountingPointEnveloppeProvider provider1 = createProvider(sink1);
-        AccountingPointEnveloppeProvider provider2 = createProvider(sink2);
+        AccountingPointEnvelopeProvider provider1 = createProvider(sink1);
+        AccountingPointEnvelopeProvider provider2 = createProvider(sink2);
 
-        var one = new AccountingPointEnveloppe();
-        var two = new AccountingPointEnveloppe();
-        var three = new AccountingPointEnveloppe();
+        var one = new AccountingPointEnvelope();
+        var two = new AccountingPointEnvelope();
+        var three = new AccountingPointEnvelope();
 
         // When
-        var flux = service.getAccountingPointEnveloppeStream();
+        var flux = service.getAccountingPointEnvelopeStream();
         StepVerifier.create(flux)
                     .then(() -> {
                         service.registerProvider(provider1);
@@ -49,10 +49,10 @@ class AccountingPointEnveloppeServiceTest {
         provider2.close();
     }
 
-    private static AccountingPointEnveloppeProvider createProvider(Sinks.Many<AccountingPointEnveloppe> sink) {
-        return new AccountingPointEnveloppeProvider() {
+    private static AccountingPointEnvelopeProvider createProvider(Sinks.Many<AccountingPointEnvelope> sink) {
+        return new AccountingPointEnvelopeProvider() {
             @Override
-            public Flux<AccountingPointEnveloppe> getAccountingPointEnveloppeFlux() {
+            public Flux<AccountingPointEnvelope> getAccountingPointEnvelopeFlux() {
                 return sink.asFlux();
             }
 

@@ -24,7 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class EnedisAccountingPointEnveloppeProviderTest {
+class EnedisAccountingPointEnvelopeProviderTest {
     @Test
     void testGetEddieValidatedHistoricalDataMarketDocumentStream_publishesDocuments() throws Exception {
         // Given
@@ -40,10 +40,10 @@ class EnedisAccountingPointEnveloppeProviderTest {
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
                                                              "fallbackId")
         );
-        var provider = new EnedisAccountingPointDataEnveloppeProvider(testPublisher.flux(), factory);
+        var provider = new EnedisAccountingPointDataEnvelopeProvider(testPublisher.flux(), factory);
 
         // When
-        StepVerifier.create(provider.getAccountingPointEnveloppeFlux())
+        StepVerifier.create(provider.getAccountingPointEnvelopeFlux())
                     .then(() -> {
                         testPublisher.emit(identifiableAccountingPointData);
                         testPublisher.complete();

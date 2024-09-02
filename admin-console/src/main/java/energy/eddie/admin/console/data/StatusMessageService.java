@@ -1,7 +1,7 @@
 package energy.eddie.admin.console.data;
 
 import energy.eddie.api.v0_82.PermissionMarketDocumentServiceInterface;
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionMarketDocumentComplexType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ public class StatusMessageService {
                 .subscribe(this::processMessage);
     }
 
-    private void processMessage(PermissionEnveloppe message) {
+    private void processMessage(PermissionEnvelope message) {
         try {
             StatusMessage statusMessage = createStatusMessage(message.getPermissionMarketDocument());
             statusMessageRepository.save(statusMessage);

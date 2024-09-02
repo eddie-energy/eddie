@@ -1,7 +1,7 @@
 package energy.eddie.core.services;
 
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnveloppeProvider;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
+import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.core.converters.MeasurementConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,31 +10,31 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 @Service
-public class ValidatedHistoricalDataEnveloppeService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ValidatedHistoricalDataEnveloppeService.class);
+public class ValidatedHistoricalDataEnvelopeService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ValidatedHistoricalDataEnvelopeService.class);
 
-    private final Sinks.Many<ValidatedHistoricalDataEnveloppe> consumptionRecordSink = Sinks.many()
+    private final Sinks.Many<ValidatedHistoricalDataEnvelope> consumptionRecordSink = Sinks.many()
                                                                                                       .multicast()
                                                                                                       .onBackpressureBuffer();
     private final MeasurementConverter converter;
 
-    public ValidatedHistoricalDataEnveloppeService(MeasurementConverter converter) {this.converter = converter;}
+    public ValidatedHistoricalDataEnvelopeService(MeasurementConverter converter) {this.converter = converter;}
 
-    public void registerProvider(ValidatedHistoricalDataEnveloppeProvider validatedHistoricalDataEnveloppeProvider) {
+    public void registerProvider(ValidatedHistoricalDataEnvelopeProvider validatedHistoricalDataEnvelopeProvider) {
         LOGGER.info("EddieValidatedHistoricalDataMarketDocumentService: Registering {}",
-                    validatedHistoricalDataEnveloppeProvider.getClass().getName());
-        validatedHistoricalDataEnveloppeProvider.getValidatedHistoricalDataMarketDocumentsStream()
+                    validatedHistoricalDataEnvelopeProvider.getClass().getName());
+        validatedHistoricalDataEnvelopeProvider.getValidatedHistoricalDataMarketDocumentsStream()
                                                 .doOnNext(consumptionRecordSink::tryEmitNext)
                                                 .doOnError(consumptionRecordSink::tryEmitError)
                                                 .subscribe();
     }
 
-    public Flux<ValidatedHistoricalDataEnveloppe> getEddieValidatedHistoricalDataMarketDocumentStream() {
+    public Flux<ValidatedHistoricalDataEnvelope> getEddieValidatedHistoricalDataMarketDocumentStream() {
         return consumptionRecordSink.asFlux()
                                     .map(this::applyConverter);
     }
 
-    private ValidatedHistoricalDataEnveloppe applyConverter(ValidatedHistoricalDataEnveloppe vhd) {
+    private ValidatedHistoricalDataEnvelope applyConverter(ValidatedHistoricalDataEnvelope vhd) {
         return converter.convert(vhd);
     }
 }

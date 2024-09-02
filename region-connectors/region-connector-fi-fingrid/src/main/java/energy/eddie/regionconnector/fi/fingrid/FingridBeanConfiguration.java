@@ -4,7 +4,7 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
@@ -70,7 +70,7 @@ public class FingridBeanConfiguration {
     }
 
     @Bean
-    public PermissionMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<PermissionEnveloppe> cmdSink) {
+    public PermissionMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<PermissionEnvelope> cmdSink) {
         return new CommonPermissionMarketDocumentProvider(cmdSink);
     }
 
@@ -78,7 +78,7 @@ public class FingridBeanConfiguration {
     public PermissionMarketDocumentMessageHandler<FingridPermissionRequest> cmdMessageHandler(
             EventBus eventBus,
             FiPermissionRequestRepository fiPermissionRequestRepository,
-            Sinks.Many<PermissionEnveloppe> cmdSink,
+            Sinks.Many<PermissionEnvelope> cmdSink,
             FingridConfiguration fingridConfiguration,
             CommonInformationModelConfiguration cimConfig
     ) {
@@ -94,7 +94,7 @@ public class FingridBeanConfiguration {
     }
 
     @Bean
-    public Sinks.Many<PermissionEnveloppe> cmdSink() {
+    public Sinks.Many<PermissionEnvelope> cmdSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
 }

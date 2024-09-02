@@ -1,7 +1,7 @@
 package energy.eddie.examples.exampleapp.kafka.serdes;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serializer;
@@ -10,24 +10,24 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class ValidatedHistoricalDataEnveloppeSerde implements Serde<ValidatedHistoricalDataEnveloppe> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ValidatedHistoricalDataEnveloppeSerde.class);
+public class ValidatedHistoricalDataEnvelopeSerde implements Serde<ValidatedHistoricalDataEnvelope> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ValidatedHistoricalDataEnvelopeSerde.class);
     private final ObjectMapper mapper;
 
-    public ValidatedHistoricalDataEnveloppeSerde(ObjectMapper mapper) {
+    public ValidatedHistoricalDataEnvelopeSerde(ObjectMapper mapper) {
         this.mapper = mapper;
     }
 
     @Override
-    public Serializer<ValidatedHistoricalDataEnveloppe> serializer() {
+    public Serializer<ValidatedHistoricalDataEnvelope> serializer() {
         throw new UnsupportedOperationException("This Serde doesn't support serialization!");
     }
 
     @Override
-    public Deserializer<ValidatedHistoricalDataEnveloppe> deserializer() {
+    public Deserializer<ValidatedHistoricalDataEnvelope> deserializer() {
         return (topic, data) -> {
             try {
-                return mapper.readValue(data, ValidatedHistoricalDataEnveloppe.class);
+                return mapper.readValue(data, ValidatedHistoricalDataEnvelope.class);
             } catch (IOException e) {
                 LOGGER.error("Error while deserializing EddieValidatedHistoricalDataMarketDocument.", e);
                 return null;

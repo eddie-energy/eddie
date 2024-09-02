@@ -25,7 +25,7 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
@@ -137,7 +137,7 @@ public class MijnAansluitingBeanConfig {
     }
 
     @Bean
-    public Sinks.Many<PermissionEnveloppe> permissionMarketDocumentSink() {
+    public Sinks.Many<PermissionEnvelope> permissionMarketDocumentSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
 
@@ -155,7 +155,7 @@ public class MijnAansluitingBeanConfig {
             EventBus eventBus,
             NlPermissionRequestRepository repository,
             Sinks.Many<ConnectionStatusMessage> messages,
-            Sinks.Many<PermissionEnveloppe> permissionMarketDocuments,
+            Sinks.Many<PermissionEnvelope> permissionMarketDocuments,
             MijnAansluitingConfiguration config,
             CommonInformationModelConfiguration cimConfig
     ) {

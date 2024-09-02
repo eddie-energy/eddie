@@ -25,7 +25,7 @@ public record IntermediateValidatedHistoricalDataMarketDocument(ConsumptionRecor
                     new ReasonComplexType()
                             .withCode(ReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED));
 
-    public ValidatedHistoricalDataEnveloppe value() {
+    public ValidatedHistoricalDataEnvelope value() {
         ZonedDateTime endDate = consumptionRecord.getStartDateTime()
                                                  .plus(
                                                          Duration.parse(consumptionRecord.getMeteringInterval())

@@ -37,7 +37,7 @@ class IntermediateAccountingPointDataMarketDocumentTest {
     })
     @SuppressWarnings("java:S5961")
         // suppress too many assertions warning
-    void accountingPointEnveloppe(String identityResource) throws IOException {
+    void accountingPointEnvelope(String identityResource) throws IOException {
         // Given
         var contract = TestResourceProvider.readFromFile(TestResourceProvider.CONTRACT, CustomerContract.class);
         var address = TestResourceProvider.readFromFile(TestResourceProvider.ADDRESS, CustomerAddress.class);
@@ -60,7 +60,7 @@ class IntermediateAccountingPointDataMarketDocumentTest {
         );
 
         // When
-        var res = intermediateAccountingPointDataMarketDocument.accountingPointEnveloppe();
+        var res = intermediateAccountingPointDataMarketDocument.accountingPointEnvelope();
 
         // Then
         var md = res.getAccountingPointMarketDocument();

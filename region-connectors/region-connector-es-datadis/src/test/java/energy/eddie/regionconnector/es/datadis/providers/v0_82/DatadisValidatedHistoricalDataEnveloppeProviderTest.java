@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
-class DatadisValidatedHistoricalDataEnveloppeProviderTest {
+class DatadisValidatedHistoricalDataEnvelopeProviderTest {
 
     @Test
     void testGetValidatedHistoricalDataMarketDocumentsStream_publishesDocuments() throws Exception {
@@ -25,7 +25,7 @@ class DatadisValidatedHistoricalDataEnveloppeProviderTest {
         );
         IdentifiableMeteringData identifiableMeteringData = IntermediateValidatedHistoricalDocumentTest.identifiableMeterReading(
                 false);
-        var provider = new DatadisValidatedHistoricalDataEnveloppeProvider(testPublisher.flux(), factory);
+        var provider = new DatadisValidatedHistoricalDataEnvelopeProvider(testPublisher.flux(), factory);
 
         // When
         StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())

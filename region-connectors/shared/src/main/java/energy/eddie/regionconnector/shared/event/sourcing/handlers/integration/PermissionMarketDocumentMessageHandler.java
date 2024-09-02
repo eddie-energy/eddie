@@ -5,7 +5,7 @@ import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.events.InternalPermissionEvent;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.cim.v0_82.pmd.IntermediatePermissionMarketDocument;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -20,7 +20,7 @@ import java.time.ZoneId;
 public class PermissionMarketDocumentMessageHandler<T extends PermissionRequest> implements EventHandler<PermissionEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionMarketDocumentMessageHandler.class);
     private final PermissionRequestRepository<T> repository;
-    private final Sinks.Many<PermissionEnveloppe> pmdSink;
+    private final Sinks.Many<PermissionEnvelope> pmdSink;
     private final TransmissionScheduleProvider<T> transmissionScheduleProvider;
     private final String customerIdentifier;
     private final String countryCode;
@@ -29,7 +29,7 @@ public class PermissionMarketDocumentMessageHandler<T extends PermissionRequest>
     public PermissionMarketDocumentMessageHandler(
             EventBus eventBus,
             PermissionRequestRepository<T> repository,
-            Sinks.Many<PermissionEnveloppe> pmdSink,
+            Sinks.Many<PermissionEnvelope> pmdSink,
             String eligiblePartyId,
             CommonInformationModelConfiguration cimConfig,
             TransmissionScheduleProvider<T> transmissionScheduleProvider,

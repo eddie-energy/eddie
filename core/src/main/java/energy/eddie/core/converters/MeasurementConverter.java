@@ -24,7 +24,7 @@ public class MeasurementConverter {
         this.calculations = calculations;
     }
 
-    public ValidatedHistoricalDataEnveloppe convert(ValidatedHistoricalDataEnveloppe convertee) {
+    public ValidatedHistoricalDataEnvelope convert(ValidatedHistoricalDataEnvelope convertee) {
         LOGGER.info("Applying converters to validated historical data market document");
         var doc = convertee.getValidatedHistoricalDataMarketDocument();
         var convertedTimeSeries = new ArrayList<TimeSeriesComplexType>();

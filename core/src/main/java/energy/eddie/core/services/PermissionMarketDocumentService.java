@@ -2,7 +2,7 @@ package energy.eddie.core.services;
 
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.PermissionMarketDocumentServiceInterface;
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,7 @@ import reactor.core.publisher.Sinks;
 @Service
 public class PermissionMarketDocumentService implements PermissionMarketDocumentServiceInterface {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionMarketDocumentService.class);
-    private final Sinks.Many<PermissionEnveloppe> permissionMarketDocumentSink = Sinks.many()
+    private final Sinks.Many<PermissionEnvelope> permissionMarketDocumentSink = Sinks.many()
                                                                                       .multicast()
                                                                                       .onBackpressureBuffer();
 
@@ -25,7 +25,7 @@ public class PermissionMarketDocumentService implements PermissionMarketDocument
     }
 
     @Override
-    public Flux<PermissionEnveloppe> getPermissionMarketDocumentStream() {
+    public Flux<PermissionEnvelope> getPermissionMarketDocumentStream() {
         return permissionMarketDocumentSink.asFlux();
     }
 }

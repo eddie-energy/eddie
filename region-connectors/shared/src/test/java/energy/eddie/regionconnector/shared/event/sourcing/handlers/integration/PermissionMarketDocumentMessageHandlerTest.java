@@ -4,7 +4,7 @@ import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
@@ -32,7 +32,7 @@ class PermissionMarketDocumentMessageHandlerTest {
     @Test
     void testAccept_emitsPermissionMarketDocument() {
         // Given
-        Sinks.Many<PermissionEnveloppe> messages = Sinks.many().multicast().onBackpressureBuffer();
+        Sinks.Many<PermissionEnvelope> messages = Sinks.many().multicast().onBackpressureBuffer();
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         var permissionRequest = new SimplePermissionRequest(
@@ -63,7 +63,7 @@ class PermissionMarketDocumentMessageHandlerTest {
     @Test
     void testAccept_doesNotEmitStatus_ifNoPermissionIsFound() {
         // Given
-        Sinks.Many<PermissionEnveloppe> messages = Sinks.many().multicast().onBackpressureBuffer();
+        Sinks.Many<PermissionEnvelope> messages = Sinks.many().multicast().onBackpressureBuffer();
         when(repository.findByPermissionId("pid")).thenReturn(Optional.empty());
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
                 CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "fallbackId");
@@ -89,7 +89,7 @@ class PermissionMarketDocumentMessageHandlerTest {
     @Test
     void testAccept_doesNotEmitStatus_onInternalEvent() {
         // Given
-        Sinks.Many<PermissionEnveloppe> messages = Sinks.many().multicast().onBackpressureBuffer();
+        Sinks.Many<PermissionEnvelope> messages = Sinks.many().multicast().onBackpressureBuffer();
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
                 CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "fallbackId");
         EventBus eventBus = new EventBusImpl();

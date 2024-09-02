@@ -93,7 +93,7 @@ class CustomDeserializerTest {
         var deserializer = new CustomDeserializer();
 
         // When
-        PermissionEnveloppe res = deserializer.deserialize("anyTopic", json.getBytes(StandardCharsets.UTF_8));
+        PermissionEnvelope res = deserializer.deserialize("anyTopic", json.getBytes(StandardCharsets.UTF_8));
 
         // Then
         assertNotNull(res);

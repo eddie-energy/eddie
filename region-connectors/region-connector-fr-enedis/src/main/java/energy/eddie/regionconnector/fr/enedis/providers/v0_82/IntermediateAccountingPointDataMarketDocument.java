@@ -38,7 +38,7 @@ public final class IntermediateAccountingPointDataMarketDocument {
         this.cimConfig = cimConfig;
     }
 
-    public AccountingPointEnveloppe accountingPointEnveloppe() {
+    public AccountingPointEnvelope accountingPointEnvelope() {
         ap.withCreatedDateTime(EsmpDateTime.now().toString())
           .withReceiverMarketParticipantMRID(
                   new PartyIDStringComplexType()

@@ -1,7 +1,7 @@
 package energy.eddie.core.services;
 
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnveloppeProvider;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
+import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.core.converters.MeasurementConverter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ValidatedHistoricalDataEnveloppeServiceTest {
+class ValidatedHistoricalDataEnvelopeServiceTest {
     @Mock
     private MeasurementConverter converter;
 
@@ -32,17 +32,17 @@ class ValidatedHistoricalDataEnveloppeServiceTest {
     void givenMultipleStreams_combinesAndEmitsAllValuesFromAllStreams() throws Exception {
         // Given
         when(converter.convert(any()))
-                .thenReturn(new ValidatedHistoricalDataEnveloppe());
-        var service = new ValidatedHistoricalDataEnveloppeService(converter);
-        Sinks.Many<ValidatedHistoricalDataEnveloppe> sink1 = Sinks.many().unicast().onBackpressureBuffer();
-        Sinks.Many<ValidatedHistoricalDataEnveloppe> sink2 = Sinks.many().unicast().onBackpressureBuffer();
+                .thenReturn(new ValidatedHistoricalDataEnvelope());
+        var service = new ValidatedHistoricalDataEnvelopeService(converter);
+        Sinks.Many<ValidatedHistoricalDataEnvelope> sink1 = Sinks.many().unicast().onBackpressureBuffer();
+        Sinks.Many<ValidatedHistoricalDataEnvelope> sink2 = Sinks.many().unicast().onBackpressureBuffer();
 
-        ValidatedHistoricalDataEnveloppeProvider provider1 = createProvider(sink1);
-        ValidatedHistoricalDataEnveloppeProvider provider2 = createProvider(sink2);
+        ValidatedHistoricalDataEnvelopeProvider provider1 = createProvider(sink1);
+        ValidatedHistoricalDataEnvelopeProvider provider2 = createProvider(sink2);
 
-        var one = new ValidatedHistoricalDataEnveloppe();
-        var two = new ValidatedHistoricalDataEnveloppe();
-        var three = new ValidatedHistoricalDataEnveloppe();
+        var one = new ValidatedHistoricalDataEnvelope();
+        var two = new ValidatedHistoricalDataEnvelope();
+        var three = new ValidatedHistoricalDataEnvelope();
 
         // When
         var flux = service.getEddieValidatedHistoricalDataMarketDocumentStream();
@@ -63,10 +63,10 @@ class ValidatedHistoricalDataEnveloppeServiceTest {
         provider2.close();
     }
 
-    private static ValidatedHistoricalDataEnveloppeProvider createProvider(Sinks.Many<ValidatedHistoricalDataEnveloppe> sink) {
-        return new ValidatedHistoricalDataEnveloppeProvider() {
+    private static ValidatedHistoricalDataEnvelopeProvider createProvider(Sinks.Many<ValidatedHistoricalDataEnvelope> sink) {
+        return new ValidatedHistoricalDataEnvelopeProvider() {
             @Override
-            public Flux<ValidatedHistoricalDataEnveloppe> getValidatedHistoricalDataMarketDocumentsStream() {
+            public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
                 return sink.asFlux();
             }
 
@@ -80,14 +80,14 @@ class ValidatedHistoricalDataEnveloppeServiceTest {
     @Test
     void givenConverter_appliesItToStream() throws Exception {
         // Given
-        var service = new ValidatedHistoricalDataEnveloppeService(converter);
+        var service = new ValidatedHistoricalDataEnvelopeService(converter);
         when(converter.convert(any()))
-                .thenReturn(new ValidatedHistoricalDataEnveloppe());
-        Sinks.Many<ValidatedHistoricalDataEnveloppe> sink = Sinks.many().unicast().onBackpressureBuffer();
+                .thenReturn(new ValidatedHistoricalDataEnvelope());
+        Sinks.Many<ValidatedHistoricalDataEnvelope> sink = Sinks.many().unicast().onBackpressureBuffer();
 
-        ValidatedHistoricalDataEnveloppeProvider provider = createProvider(sink);
+        ValidatedHistoricalDataEnvelopeProvider provider = createProvider(sink);
 
-        var one = new ValidatedHistoricalDataEnveloppe();
+        var one = new ValidatedHistoricalDataEnvelope();
         // When
         var flux = service.getEddieValidatedHistoricalDataMarketDocumentStream();
         StepVerifier.create(flux)

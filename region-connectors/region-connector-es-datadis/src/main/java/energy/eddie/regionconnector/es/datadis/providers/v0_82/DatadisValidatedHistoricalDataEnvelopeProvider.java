@@ -1,18 +1,18 @@
 package energy.eddie.regionconnector.es.datadis.providers.v0_82;
 
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnveloppeProvider;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
+import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 @Component
-public class DatadisValidatedHistoricalDataEnveloppeProvider implements ValidatedHistoricalDataEnveloppeProvider {
+public class DatadisValidatedHistoricalDataEnvelopeProvider implements ValidatedHistoricalDataEnvelopeProvider {
 
     private final Flux<IdentifiableMeteringData> identifiableMeterReadings;
     private final IntermediateVHDFactory intermediateVHDFactory;
 
-    public DatadisValidatedHistoricalDataEnveloppeProvider(
+    public DatadisValidatedHistoricalDataEnvelopeProvider(
             Flux<IdentifiableMeteringData> identifiableMeterReadings,
             IntermediateVHDFactory intermediateVHDFactory
     ) {
@@ -21,7 +21,7 @@ public class DatadisValidatedHistoricalDataEnveloppeProvider implements Validate
     }
 
     @Override
-    public Flux<ValidatedHistoricalDataEnveloppe> getValidatedHistoricalDataMarketDocumentsStream() {
+    public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return identifiableMeterReadings
                 .map(intermediateVHDFactory::create)
                 .map(IntermediateValidatedHistoricalDocument::eddieValidatedHistoricalDataMarketDocument);

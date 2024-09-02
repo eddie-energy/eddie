@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- ****************************************************************** -->
-<!-- ***** ValidatedHistoricalData_Enveloppe XML Schema File ***** -->
+<!-- ***** ValidatedHistoricalData_Envelope XML Schema File ***** -->
 <!-- ****************************************************************** -->
 <!--
 Schema agency: Gasunie 
@@ -22,8 +22,8 @@ PURPOSE
 		   xmlns:ns1="http://www.eddie.energy/VHD/EDD01/20240614"
 		   targetNamespace="http://www.eddie.energy/VHD/EDD01/20240614" attributeFormDefault="unqualified"
 		   elementFormDefault="qualified" version="1p0">
-    <xs:element name="ValidatedHistoricalData_Enveloppe" type="ns1:ValidatedHistoricalData_EnveloppeComplexType"/>
-    <xs:complexType name="ValidatedHistoricalData_EnveloppeComplexType">
+    <xs:element name="ValidatedHistoricalData_Envelope" type="ns1:ValidatedHistoricalData_EnvelopeComplexType"/>
+    <xs:complexType name="ValidatedHistoricalData_EnvelopeComplexType">
         <xs:sequence>
             <xs:element name="MessageDocumentHeader" type="ns1:MessageDocumentHeaderComplexType"/>
             <xs:element name="ValidatedHistoricalData_MarketDocument"

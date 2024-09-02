@@ -40,7 +40,7 @@ class IntermediateAccountingPointMarketDocumentFactoryTest {
         );
 
 
-        var res = factory.create(identifiableMasterData).accountingPointEnveloppe();
+        var res = factory.create(identifiableMasterData).accountingPointEnvelope();
         var header = res.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();
         var md = res.getAccountingPointMarketDocument();
         var ap = md.getAccountingPointList().getAccountingPoints().getFirst();
@@ -142,7 +142,7 @@ class IntermediateAccountingPointMarketDocumentFactoryTest {
         );
 
 
-        var res = factory.create(identifiableMasterData).accountingPointEnveloppe();
+        var res = factory.create(identifiableMasterData).accountingPointEnvelope();
         var header = res.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();
         var md = res.getAccountingPointMarketDocument();
         var ap = md.getAccountingPointList().getAccountingPoints().getFirst();

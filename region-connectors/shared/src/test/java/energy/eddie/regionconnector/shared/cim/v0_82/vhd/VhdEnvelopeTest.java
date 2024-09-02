@@ -10,14 +10,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class VhdEnvelopeTest {
     @Test
-    void wrapReturnsEnveloppe() {
+    void wrapReturnsEnvelope() {
         // Given
         var pr = new SimplePermissionRequest("pid", "cid", "dnid", PermissionProcessStatus.ACCEPTED);
         var vhd = new ValidatedHistoricalDataMarketDocumentComplexType();
-        var enveloppe = new VhdEnvelope(vhd, pr);
+        var envelope = new VhdEnvelope(vhd, pr);
 
         // When
-        var res = enveloppe.wrap();
+        var res = envelope.wrap();
 
         // Then
         var header = res.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();

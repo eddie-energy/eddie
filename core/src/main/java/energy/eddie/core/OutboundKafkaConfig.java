@@ -3,9 +3,9 @@ package energy.eddie.core;
 import energy.eddie.api.agnostic.RawDataOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordOutboundConnector;
-import energy.eddie.api.v0_82.AccountingPointEnveloppeOutboundConnector;
+import energy.eddie.api.v0_82.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.PermissionMarketDocumentOutboundConnector;
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnveloppeOutboundConnector;
+import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.core.services.*;
 import energy.eddie.outbound.kafka.KafkaConnector;
@@ -78,9 +78,9 @@ public class OutboundKafkaConfig {
     }
 
     @Bean
-    ValidatedHistoricalDataEnveloppeOutboundConnector eddieValidatedHistoricalDataMarketDocumentOutboundConnector(
+    ValidatedHistoricalDataEnvelopeOutboundConnector eddieValidatedHistoricalDataMarketDocumentOutboundConnector(
             KafkaConnector kafkaConnector,
-            ValidatedHistoricalDataEnveloppeService cimService
+            ValidatedHistoricalDataEnvelopeService cimService
     ) {
         kafkaConnector.setEddieValidatedHistoricalDataMarketDocumentStream(cimService.getEddieValidatedHistoricalDataMarketDocumentStream());
         return kafkaConnector;
@@ -96,11 +96,11 @@ public class OutboundKafkaConfig {
     }
 
     @Bean
-    AccountingPointEnveloppeOutboundConnector accountingPointEnveloppeOutboundConnector(
+    AccountingPointEnvelopeOutboundConnector accountingPointEnvelopeOutboundConnector(
             KafkaConnector kafkaConnector,
-            AccountingPointEnveloppeService cimService
+            AccountingPointEnvelopeService cimService
     ) {
-        kafkaConnector.setAccountingPointEnveloppeStream(cimService.getAccountingPointEnveloppeStream());
+        kafkaConnector.setAccountingPointEnvelopeStream(cimService.getAccountingPointEnvelopeStream());
         return kafkaConnector;
     }
 

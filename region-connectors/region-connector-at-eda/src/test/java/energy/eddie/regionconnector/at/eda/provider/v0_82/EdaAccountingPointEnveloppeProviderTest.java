@@ -13,7 +13,7 @@ import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
-class EdaAccountingPointEnveloppeProviderTest {
+class EdaAccountingPointEnvelopeProviderTest {
 
     @Test
     void mapsIncomingIdentifiableMasterDataToAccountingPointMarketDocument() throws Exception {
@@ -34,12 +34,12 @@ class EdaAccountingPointEnveloppeProviderTest {
         );
 
         Sinks.Many<IdentifiableMasterData> identifiableMasterDataSink = Sinks.many().unicast().onBackpressureBuffer();
-        var edaEddieAccountingPointMarketDocumentProvider = new EdaAccountingPointEnveloppeProvider(
+        var edaEddieAccountingPointMarketDocumentProvider = new EdaAccountingPointEnvelopeProvider(
                 identifiableMasterDataSink.asFlux(),
                 factory
         );
 
-        StepVerifier.create(edaEddieAccountingPointMarketDocumentProvider.getAccountingPointEnveloppeFlux())
+        StepVerifier.create(edaEddieAccountingPointMarketDocumentProvider.getAccountingPointEnvelopeFlux())
                     .then(() -> identifiableMasterDataSink.tryEmitNext(identifiableMasterData))
                     .expectNextCount(1)
                     .then(identifiableMasterDataSink::tryEmitComplete)

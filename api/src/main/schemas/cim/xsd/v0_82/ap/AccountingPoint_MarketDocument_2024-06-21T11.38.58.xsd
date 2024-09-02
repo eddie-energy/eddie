@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- ****************************************************************** -->
-<!-- ***** AccountingPoint_Enveloppe XML Schema File ***** -->
+<!-- ***** AccountingPoint_Envelope XML Schema File ***** -->
 <!-- ****************************************************************** -->
 <!--
 Schema agency: Gasunie 
@@ -22,8 +22,8 @@ PURPOSE
            xmlns:ns1="htthttp://www.eddie.energy/AP/EDD04/20240422"
            targetNamespace="htthttp://www.eddie.energy/AP/EDD04/20240422" attributeFormDefault="unqualified"
            elementFormDefault="qualified" version="1p0">
-    <xs:element name="AccountingPoint_Enveloppe" type="ns1:AccountingPoint_EnveloppeComplexType"/>
-    <xs:complexType name="AccountingPoint_EnveloppeComplexType">
+    <xs:element name="AccountingPoint_Envelope" type="ns1:AccountingPoint_EnvelopeComplexType"/>
+    <xs:complexType name="AccountingPoint_EnvelopeComplexType">
         <xs:sequence>
             <xs:element name="MessageDocumentHeader" type="ns1:MessageDocumentHeaderComplexType"/>
             <xs:element name="AccountingPoint_MarketDocument" type="ns1:AccountingPoint_MarketDocumentComplexType"

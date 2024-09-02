@@ -58,7 +58,7 @@ class NlValidatedHistoricalDataMarketDocumentProviderTest {
         var json = mapper.loadTestJson("single_consumption_data.json");
         when(pollingService.identifiableMeteredDataFlux())
                 .thenReturn(Flux.just(new IdentifiableMeteredData(pr, json)));
-        var vhdProvider = new NlValidatedHistoricalDataEnveloppeProvider(pollingService, cimConfig, config);
+        var vhdProvider = new NlValidatedHistoricalDataEnvelopeProvider(pollingService, cimConfig, config);
 
         // When
         var res = vhdProvider.getValidatedHistoricalDataMarketDocumentsStream();
@@ -78,7 +78,7 @@ class NlValidatedHistoricalDataMarketDocumentProviderTest {
         var json = mapper.loadTestJson("invalid_obis_code_consumption_data.json");
         when(pollingService.identifiableMeteredDataFlux())
                 .thenReturn(Flux.just(new IdentifiableMeteredData(pr, json)));
-        var vhdProvider = new NlValidatedHistoricalDataEnveloppeProvider(pollingService, cimConfig, config);
+        var vhdProvider = new NlValidatedHistoricalDataEnvelopeProvider(pollingService, cimConfig, config);
 
         // When
         var res = vhdProvider.getValidatedHistoricalDataMarketDocumentsStream();

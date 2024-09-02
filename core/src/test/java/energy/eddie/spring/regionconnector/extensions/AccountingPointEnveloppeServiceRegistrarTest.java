@@ -1,7 +1,7 @@
 package energy.eddie.spring.regionconnector.extensions;
 
-import energy.eddie.api.v0_82.AccountingPointEnveloppeProvider;
-import energy.eddie.core.services.AccountingPointEnveloppeService;
+import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
+import energy.eddie.core.services.AccountingPointEnvelopeService;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -9,27 +9,27 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-class AccountingPointEnveloppeServiceRegistrarTest {
+class AccountingPointEnvelopeServiceRegistrarTest {
     @Test
     void givenNull_constructor_throws() {
         // Given
-        var mockService = mock(AccountingPointEnveloppeService.class);
-        Optional<AccountingPointEnveloppeProvider> provider = Optional.empty();
+        var mockService = mock(AccountingPointEnvelopeService.class);
+        Optional<AccountingPointEnvelopeProvider> provider = Optional.empty();
 
         // When, Then
         assertThrows(NullPointerException.class,
-                     () -> new AccountingPointEnveloppeServiceRegistrar(null, mockService));
+                     () -> new AccountingPointEnvelopeServiceRegistrar(null, mockService));
         assertThrows(NullPointerException.class,
-                     () -> new AccountingPointEnveloppeServiceRegistrar(provider, null));
+                     () -> new AccountingPointEnvelopeServiceRegistrar(provider, null));
     }
 
     @Test
     void givenNoProvider_noRegistrationAtService() {
         // Given
-        var mockService = mock(AccountingPointEnveloppeService.class);
+        var mockService = mock(AccountingPointEnvelopeService.class);
 
         // When
-        new AccountingPointEnveloppeServiceRegistrar(Optional.empty(), mockService);
+        new AccountingPointEnvelopeServiceRegistrar(Optional.empty(), mockService);
 
         // Then
         verifyNoInteractions(mockService);
@@ -38,11 +38,11 @@ class AccountingPointEnveloppeServiceRegistrarTest {
     @Test
     void givenProvider_registersAtService() {
         // Given
-        var mockService = mock(AccountingPointEnveloppeService.class);
-        var mockProvider = mock(AccountingPointEnveloppeProvider.class);
+        var mockService = mock(AccountingPointEnvelopeService.class);
+        var mockProvider = mock(AccountingPointEnvelopeProvider.class);
 
         // When
-        new AccountingPointEnveloppeServiceRegistrar(Optional.of(mockProvider), mockService);
+        new AccountingPointEnvelopeServiceRegistrar(Optional.of(mockProvider), mockService);
 
         // Then
         verify(mockService).registerProvider(mockProvider);

@@ -10,7 +10,7 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
@@ -101,7 +101,7 @@ public class DatadisSpringConfig {
     }
 
     @Bean
-    public Sinks.Many<PermissionEnveloppe> permissionMarketDocumentSink() {
+    public Sinks.Many<PermissionEnvelope> permissionMarketDocumentSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
 
@@ -169,7 +169,7 @@ public class DatadisSpringConfig {
     }
 
     @Bean
-    public PermissionMarketDocumentProvider permissionMarketDocumentProvider(Sinks.Many<PermissionEnveloppe> sink) {
+    public PermissionMarketDocumentProvider permissionMarketDocumentProvider(Sinks.Many<PermissionEnvelope> sink) {
         return new CommonPermissionMarketDocumentProvider(sink);
     }
 
@@ -203,7 +203,7 @@ public class DatadisSpringConfig {
     public PermissionMarketDocumentMessageHandler<EsPermissionRequest> pmdHandler(
             EventBus eventBus,
             EsPermissionRequestRepository esPermissionRequestRepository,
-            Sinks.Many<PermissionEnveloppe> sink,
+            Sinks.Many<PermissionEnvelope> sink,
             DatadisConfig config,
             CommonInformationModelConfiguration cimConfig
     ) {

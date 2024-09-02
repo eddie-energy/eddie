@@ -3,14 +3,14 @@ package energy.eddie.examples.exampleapp.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.cim.v0_82.pmd.MktActivityRecordComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionComplexType;
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.PointComplexType;
 import energy.eddie.cim.v0_82.vhd.SeriesPeriodComplexType;
 import energy.eddie.cim.v0_82.vhd.TimeSeriesComplexType;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.examples.exampleapp.Env;
 import energy.eddie.examples.exampleapp.kafka.serdes.PermissionMarketDocumentSerde;
-import energy.eddie.examples.exampleapp.kafka.serdes.ValidatedHistoricalDataEnveloppeSerde;
+import energy.eddie.examples.exampleapp.kafka.serdes.ValidatedHistoricalDataEnvelopeSerde;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -78,7 +78,7 @@ public class KafkaListener implements Runnable {
     private Topology createVhdTopology() {
         var inputTopic = "validated-historical-data";
         Serde<String> stringSerde = Serdes.String();
-        var vhdSerde = new ValidatedHistoricalDataEnveloppeSerde(mapper);
+        var vhdSerde = new ValidatedHistoricalDataEnvelopeSerde(mapper);
 
         StreamsBuilder builder = new StreamsBuilder();
         builder
@@ -89,21 +89,7 @@ public class KafkaListener implements Runnable {
         return builder.build();
     }
 
-    private Topology createPermissionMarketDocumentTopology() {
-        var inputTopic = "permission-market-documents";
-        Serde<String> stringSerde = Serdes.String();
-        Serde<PermissionEnveloppe> statusSerde = new PermissionMarketDocumentSerde(mapper);
-
-        StreamsBuilder builder = new StreamsBuilder();
-        builder
-                .stream(inputTopic, Consumed.with(stringSerde, statusSerde))
-                .filterNot((unusedKey, value) -> Objects.isNull(value))
-                .foreach(this::insertPermissionMarketDocument);
-
-        return builder.build();
-    }
-
-    private void insertVhdIntoDb(String key, ValidatedHistoricalDataEnveloppe document) {
+    private void insertVhdIntoDb(String key, ValidatedHistoricalDataEnvelope document) {
         var vhd = document.getValidatedHistoricalDataMarketDocument();
         TimeSeriesComplexType timeSeries = vhd.getTimeSeriesList().getTimeSeries().getFirst();
         TimeSeriesComplexType.SeriesPeriodList seriesPeriods = timeSeries.getSeriesPeriodList();
@@ -150,7 +136,21 @@ public class KafkaListener implements Runnable {
         });
     }
 
-    private void insertPermissionMarketDocument(String key, PermissionEnveloppe document) {
+    private Topology createPermissionMarketDocumentTopology() {
+        var inputTopic = "permission-market-documents";
+        Serde<String> stringSerde = Serdes.String();
+        Serde<PermissionEnvelope> statusSerde = new PermissionMarketDocumentSerde(mapper);
+
+        StreamsBuilder builder = new StreamsBuilder();
+        builder
+                .stream(inputTopic, Consumed.with(stringSerde, statusSerde))
+                .filterNot((unusedKey, value) -> Objects.isNull(value))
+                .foreach(this::insertPermissionMarketDocument);
+
+        return builder.build();
+    }
+
+    private void insertPermissionMarketDocument(String key, PermissionEnvelope document) {
         PermissionComplexType permission = document.getPermissionMarketDocument()
                                                    .getPermissionList()
                                                    .getPermissions()

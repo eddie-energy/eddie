@@ -1,7 +1,7 @@
 package energy.eddie.examples.exampleapp.kafka.serdes;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serializer;
@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class PermissionMarketDocumentSerde implements Serde<PermissionEnveloppe> {
+public class PermissionMarketDocumentSerde implements Serde<PermissionEnvelope> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionMarketDocumentSerde.class);
     private final ObjectMapper mapper;
 
@@ -19,15 +19,15 @@ public class PermissionMarketDocumentSerde implements Serde<PermissionEnveloppe>
     }
 
     @Override
-    public Serializer<PermissionEnveloppe> serializer() {
+    public Serializer<PermissionEnvelope> serializer() {
         throw new UnsupportedOperationException("This Serde doesn't support serialization!");
     }
 
     @Override
-    public Deserializer<PermissionEnveloppe> deserializer() {
+    public Deserializer<PermissionEnvelope> deserializer() {
         return (topic, data) -> {
             try {
-                return mapper.readValue(data, PermissionEnveloppe.class);
+                return mapper.readValue(data, PermissionEnvelope.class);
             } catch (IOException e) {
                 LOGGER.error("Error while deserializing ConnectionStatusMessage.", e);
                 return null;

@@ -13,7 +13,7 @@ import reactor.core.publisher.Sinks;
 @Component
 public class TerminationAdminConsoleConnector implements TerminationConnector, ManualTermination {
     private static final Logger LOGGER = LoggerFactory.getLogger(TerminationAdminConsoleConnector.class);
-    private final Sinks.Many<Pair<String, PermissionEnveloppe>> sink = Sinks.many()
+    private final Sinks.Many<Pair<String, PermissionEnvelope>> sink = Sinks.many()
                                                                             .multicast()
                                                                             .onBackpressureBuffer();
 
@@ -22,7 +22,7 @@ public class TerminationAdminConsoleConnector implements TerminationConnector, M
         LOGGER.debug("Terminating permission with id {} for region connector with id {}",
                      permissionId,
                      regionConnectorId);
-        PermissionEnveloppe pmd = new PermissionEnveloppe()
+        PermissionEnvelope pmd = new PermissionEnvelope()
                 .withPermissionMarketDocument(
                         new PermissionMarketDocumentComplexType()
                                 .withMRID(permissionId)
@@ -53,7 +53,7 @@ public class TerminationAdminConsoleConnector implements TerminationConnector, M
     }
 
     @Override
-    public Flux<Pair<String, PermissionEnveloppe>> getTerminationMessages() {
+    public Flux<Pair<String, PermissionEnvelope>> getTerminationMessages() {
         return sink.asFlux();
     }
 }

@@ -105,9 +105,9 @@ class OutboundKafkaConfigTest {
         }
 
         @Bean
-        public ValidatedHistoricalDataEnveloppeService eddieValidatedHistoricalDataMarketDocumentService() {
-            ValidatedHistoricalDataEnveloppeService mock = Mockito.mock(
-                    ValidatedHistoricalDataEnveloppeService.class);
+        public ValidatedHistoricalDataEnvelopeService eddieValidatedHistoricalDataMarketDocumentService() {
+            ValidatedHistoricalDataEnvelopeService mock = Mockito.mock(
+                    ValidatedHistoricalDataEnvelopeService.class);
             when(mock.getEddieValidatedHistoricalDataMarketDocumentStream()).thenReturn(Flux.empty());
             return mock;
         }
@@ -120,9 +120,9 @@ class OutboundKafkaConfigTest {
         }
 
         @Bean
-        public AccountingPointEnveloppeService accountingPointEnveloppeService() {
-            AccountingPointEnveloppeService mock = Mockito.mock(AccountingPointEnveloppeService.class);
-            when(mock.getAccountingPointEnveloppeStream()).thenReturn(Flux.empty());
+        public AccountingPointEnvelopeService accountingPointEnvelopeService() {
+            AccountingPointEnvelopeService mock = Mockito.mock(AccountingPointEnvelopeService.class);
+            when(mock.getAccountingPointEnvelopeStream()).thenReturn(Flux.empty());
             return mock;
         }
     }

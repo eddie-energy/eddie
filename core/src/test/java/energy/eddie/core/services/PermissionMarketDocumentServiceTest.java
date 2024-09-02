@@ -1,7 +1,7 @@
 package energy.eddie.core.services;
 
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
-import energy.eddie.cim.v0_82.pmd.PermissionEnveloppe;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -20,15 +20,15 @@ class PermissionMarketDocumentServiceTest {
     void givenMultipleStreams_combinesAndEmitsAllValuesFromAllStreams() throws Exception {
         // Given
         var service = new PermissionMarketDocumentService();
-        Sinks.Many<PermissionEnveloppe> sink1 = Sinks.many().unicast().onBackpressureBuffer();
-        Sinks.Many<PermissionEnveloppe> sink2 = Sinks.many().unicast().onBackpressureBuffer();
+        Sinks.Many<PermissionEnvelope> sink1 = Sinks.many().unicast().onBackpressureBuffer();
+        Sinks.Many<PermissionEnvelope> sink2 = Sinks.many().unicast().onBackpressureBuffer();
 
         PermissionMarketDocumentProvider provider1 = createProvider(sink1);
         PermissionMarketDocumentProvider provider2 = createProvider(sink2);
 
-        var one = new PermissionEnveloppe();
-        var two = new PermissionEnveloppe();
-        var three = new PermissionEnveloppe();
+        var one = new PermissionEnvelope();
+        var two = new PermissionEnvelope();
+        var three = new PermissionEnvelope();
 
         // When
         var flux = service.getPermissionMarketDocumentStream();
@@ -49,10 +49,10 @@ class PermissionMarketDocumentServiceTest {
         provider2.close();
     }
 
-    private static PermissionMarketDocumentProvider createProvider(Sinks.Many<PermissionEnveloppe> sink) {
+    private static PermissionMarketDocumentProvider createProvider(Sinks.Many<PermissionEnvelope> sink) {
         return new PermissionMarketDocumentProvider() {
             @Override
-            public Flux<PermissionEnveloppe> getPermissionMarketDocumentStream() {
+            public Flux<PermissionEnvelope> getPermissionMarketDocumentStream() {
                 return sink.asFlux();
             }
 

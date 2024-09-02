@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82;
 
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnveloppeProvider;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnveloppe;
+import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
 import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
@@ -13,13 +13,13 @@ import reactor.core.publisher.Flux;
 import java.util.Objects;
 
 @Component
-public class EnerginetValidatedHistoricalDataEnveloppeProvider implements ValidatedHistoricalDataEnveloppeProvider {
+public class EnerginetValidatedHistoricalDataEnvelopeProvider implements ValidatedHistoricalDataEnvelopeProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(
-            EnerginetValidatedHistoricalDataEnveloppeProvider.class);
-    private final Flux<ValidatedHistoricalDataEnveloppe> eddieValidatedHistoricalDataMarketDocumentFlux;
+            EnerginetValidatedHistoricalDataEnvelopeProvider.class);
+    private final Flux<ValidatedHistoricalDataEnvelope> eddieValidatedHistoricalDataMarketDocumentFlux;
     private final ValidatedHistoricalDataMarketDocumentBuilderFactory validatedHistoricalDataMarketDocumentBuilderFactory;
 
-    public EnerginetValidatedHistoricalDataEnveloppeProvider(
+    public EnerginetValidatedHistoricalDataEnvelopeProvider(
             Flux<IdentifiableApiResponse> identifiableApiResponseFlux,
             ValidatedHistoricalDataMarketDocumentBuilderFactory validatedHistoricalDataMarketDocumentBuilderFactory
     ) {
@@ -29,7 +29,7 @@ public class EnerginetValidatedHistoricalDataEnveloppeProvider implements Valida
         this.validatedHistoricalDataMarketDocumentBuilderFactory = validatedHistoricalDataMarketDocumentBuilderFactory;
     }
 
-    private Flux<ValidatedHistoricalDataEnveloppe> mapToValidatedHistoricalMarketDocument(
+    private Flux<ValidatedHistoricalDataEnvelope> mapToValidatedHistoricalMarketDocument(
             IdentifiableApiResponse response
     ) {
         try {
@@ -49,7 +49,7 @@ public class EnerginetValidatedHistoricalDataEnveloppeProvider implements Valida
     }
 
     @Override
-    public Flux<ValidatedHistoricalDataEnveloppe> getValidatedHistoricalDataMarketDocumentsStream() {
+    public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return eddieValidatedHistoricalDataMarketDocumentFlux;
     }
 

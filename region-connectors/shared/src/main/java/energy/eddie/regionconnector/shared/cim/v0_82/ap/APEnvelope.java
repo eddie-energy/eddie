@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.shared.cim.v0_82.ap;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
-import energy.eddie.cim.v0_82.ap.AccountingPointEnveloppe;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.ap.AccountingPointMarketDocumentComplexType;
 import energy.eddie.cim.v0_82.ap.MessageDocumentHeaderMetaInformationComplexType;
 import energy.eddie.cim.v0_82.ap.MessageDocumentHeaderRegionComplexType;
@@ -22,7 +22,7 @@ public class APEnvelope {
         this.permissionRequest = permissionRequest;
     }
 
-    public AccountingPointEnveloppe wrap() {
+    public AccountingPointEnvelope wrap() {
         var calendar = DatatypeFactory
                 .newDefaultInstance()
                 .newXMLGregorianCalendar(LocalDate.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE));
@@ -42,7 +42,7 @@ public class APEnvelope {
                                                 .withCountry(codingScheme)
                                 )
                 );
-        return new AccountingPointEnveloppe()
+        return new AccountingPointEnvelope()
                 .withMessageDocumentHeader(header)
                 .withAccountingPointMarketDocument(ap);
     }

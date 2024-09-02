@@ -27,7 +27,7 @@ class IntermediateAccountingPointMarketDocumentTest {
     @Test
     @SuppressWarnings("java:S5961")
         // too many assertions
-    void accountingPointEnveloppe_mapsAsExpected() throws IOException {
+    void accountingPointEnvelope_mapsAsExpected() throws IOException {
         // Given
         PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId", "clientSecret", "basepath");
         PlainCommonInformationModelConfiguration cimConfiguration = new PlainCommonInformationModelConfiguration(
@@ -42,10 +42,9 @@ class IntermediateAccountingPointMarketDocumentTest {
         );
 
         // When
-        var res = intermediateAccountingPointMarketDocument.accountingPointEnveloppe();
+        var res = intermediateAccountingPointMarketDocument.accountingPointEnvelope();
 
         // Then
-        var permissionRequest = identifiableAccountingPointData.permissionRequest();
         var md = res.getAccountingPointMarketDocument();
         var accountingPoint = md.getAccountingPointList()
                                                        .getAccountingPoints()

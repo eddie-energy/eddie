@@ -1,19 +1,19 @@
 package energy.eddie.api.v0_82;
 
 import energy.eddie.api.v0.RegionConnector;
-import energy.eddie.cim.v0_82.ap.AccountingPointEnveloppe;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import reactor.core.publisher.Flux;
 
 /**
- * Used to extend a {@link RegionConnector} by making a Flux of {@link AccountingPointEnveloppe}s available.
+ * Used to extend a {@link RegionConnector} by making a Flux of {@link AccountingPointEnvelope}s available.
  */
-public interface AccountingPointEnveloppeProvider extends AutoCloseable {
+public interface AccountingPointEnvelopeProvider extends AutoCloseable {
     /**
      * Data stream of all EddieValidatedHistoricalDataMarketDocument created by this region connector.
      *
      * @return EddieValidatedHistoricalDataMarketDocument stream
      */
-    Flux<AccountingPointEnveloppe> getAccountingPointEnveloppeFlux();
+    Flux<AccountingPointEnvelope> getAccountingPointEnvelopeFlux();
 
     /**
      * Emit a complete signal on the Flow in this method.

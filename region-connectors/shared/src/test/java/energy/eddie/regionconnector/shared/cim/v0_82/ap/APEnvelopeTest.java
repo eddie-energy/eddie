@@ -11,14 +11,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class APEnvelopeTest {
 
     @Test
-    void wrapReturnsEnveloppe() {
+    void wrapReturnsEnvelope() {
         // Given
         var pr = new SimplePermissionRequest("pid", "cid", "dnid", PermissionProcessStatus.ACCEPTED);
         var ap = new AccountingPointMarketDocumentComplexType();
-        var enveloppe = new APEnvelope(ap, pr);
+        var envelope = new APEnvelope(ap, pr);
 
         // When
-        var res = enveloppe.wrap();
+        var res = envelope.wrap();
 
         // Then
         var header = res.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();
