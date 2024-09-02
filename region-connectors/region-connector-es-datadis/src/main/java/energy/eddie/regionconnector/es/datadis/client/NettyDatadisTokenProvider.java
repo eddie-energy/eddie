@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
@@ -14,8 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.Objects.requireNonNull;
-
+@Component
 public class NettyDatadisTokenProvider implements DatadisTokenProvider {
     private final DatadisConfig config;
     private final HttpClient httpClient;
@@ -25,10 +25,11 @@ public class NettyDatadisTokenProvider implements DatadisTokenProvider {
     private String token;
     private long expiryTime;
 
-    public NettyDatadisTokenProvider(DatadisConfig config, HttpClient httpClient, ObjectMapper mapper) {
-        requireNonNull(config);
-        requireNonNull(httpClient);
-
+    public NettyDatadisTokenProvider(
+            DatadisConfig config,
+            HttpClient httpClient,
+            ObjectMapper mapper
+    ) {
         this.config = config;
         this.httpClient = httpClient;
         this.tokenEndpoint = URI.create(config.basePath()).resolve("nikola-auth/tokens/login");

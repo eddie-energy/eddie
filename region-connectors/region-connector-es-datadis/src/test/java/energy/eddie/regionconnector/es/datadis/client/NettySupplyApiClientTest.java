@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
+import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -25,15 +27,17 @@ import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMeta
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class NettySupplyApiClientTest {
-    private final ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
-    static MockWebServer mockBackEnd;
+    private static MockWebServer mockBackEnd;
     private static String basePath;
+    private static DatadisConfig config;
+    private final ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
 
     @BeforeAll
     static void setUp() throws IOException {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
         basePath = "http://localhost:" + mockBackEnd.getPort();
+        config = new PlainDatadisConfiguration("username", "password", basePath);
     }
 
     @AfterAll
@@ -47,23 +51,24 @@ class NettySupplyApiClientTest {
                 HttpClient.create(),
                 mapper,
                 () -> Mono.just("token"),
-                basePath);
+                config
+        );
 
         var supply = new Supply("a", "a", "a", "a", "a", "a", LocalDate.now(ZONE_ID_SPAIN), null, 4, "3");
 
         String body = mapper.writeValueAsString(List.of(supply));
 
         mockBackEnd.enqueue(new MockResponse()
-                .setResponseCode(HttpStatus.OK.value())
-                .setBody(body));
+                                    .setResponseCode(HttpStatus.OK.value())
+                                    .setBody(body));
 
         StepVerifier.create(uut.getSupplies("nif", null))
-                .assertNext(supplies -> {
-                    assertEquals(1, supplies.size());
-                    assertEquals(supply, supplies.getFirst());
-                })
-                .expectComplete()
-                .verify(Duration.ofSeconds(2));
+                    .assertNext(supplies -> {
+                        assertEquals(1, supplies.size());
+                        assertEquals(supply, supplies.getFirst());
+                    })
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(2));
     }
 
     @Test
@@ -72,13 +77,14 @@ class NettySupplyApiClientTest {
                 HttpClient.create(),
                 mapper,
                 () -> Mono.just("token"),
-                basePath);
+                config
+        );
 
         mockBackEnd.enqueue(new MockResponse()
-                .setResponseCode(HttpStatus.FORBIDDEN.value()));
+                                    .setResponseCode(HttpStatus.FORBIDDEN.value()));
 
         StepVerifier.create(uut.getSupplies("nif", null))
-                .expectError(DatadisApiException.class)
-                .verify(Duration.ofSeconds(2));
+                    .expectError(DatadisApiException.class)
+                    .verify(Duration.ofSeconds(2));
     }
 }

@@ -1,12 +1,14 @@
 package energy.eddie.regionconnector.es.datadis.persistence;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.health.DatadisApiHealthIndicator;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsCreatedEvent;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -33,6 +35,9 @@ class EsPermissionRequestRepositoryTest {
     private EsPermissionRequestRepository permissionRequestRepository;
     @Autowired
     private EsPermissionEventRepository permissionEventRepository;
+    @SuppressWarnings("unused")
+    @MockBean
+    private DatadisApiHealthIndicator healthIndicator;
 
 
     @Test

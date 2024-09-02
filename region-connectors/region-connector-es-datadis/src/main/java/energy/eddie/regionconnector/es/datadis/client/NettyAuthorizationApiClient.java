@@ -5,20 +5,21 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.netty.ByteBufMono;
 import reactor.netty.http.client.HttpClient;
 
 import java.net.URI;
 
-import static java.util.Objects.requireNonNull;
-
+@Component
 public class NettyAuthorizationApiClient implements AuthorizationApi {
     private final HttpClient httpClient;
 
@@ -30,17 +31,13 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
             HttpClient httpClient,
             ObjectMapper mapper,
             DatadisTokenProvider tokenProvider,
-            String basePath
+            DatadisConfig datadisConfig
     ) {
-        requireNonNull(httpClient);
-        requireNonNull(mapper);
-        requireNonNull(tokenProvider);
-        requireNonNull(basePath);
-
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.tokenProvider = tokenProvider;
-        this.authorizationEndpoint = URI.create(basePath).resolve("api-private/request/send-request-authorization");
+        this.authorizationEndpoint = URI.create(datadisConfig.basePath())
+                                        .resolve("api-private/request/send-request-authorization");
     }
 
     @Override
@@ -53,35 +50,39 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
             return Mono.error(e);
         }
 
-        return tokenProvider.getToken().flatMap(token -> httpClient
-                .headers(headers -> headers.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON))
-                .headers(headers -> headers.add(HttpHeaderNames.AUTHORIZATION, "Bearer " + token))
-                .headers(headers -> headers.add(HttpHeaderNames.USER_AGENT,
-                                                "PostmanRuntime/7.36.3")) // TODO: fix with #1102
-                .post()
-                .uri(authorizationEndpoint)
-                .send(ByteBufMono.fromString(Mono.just(body)))
-                .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono
-                        .asString()
-                        .defaultIfEmpty(Strings.EMPTY)
-                        .flatMap(bodyString -> {
-                            if (httpClientResponse.status().code() == HttpResponseStatus.OK.code()) {
-                                try {
-                                    JsonNode jsonNode = mapper.readTree(bodyString);
-                                    return Mono.just(AuthorizationRequestResponse.fromResponse(
-                                            jsonNode.get("response").asText()
-                                    ));
-                                } catch (JsonProcessingException e) {
-                                    return Mono.error(e);
-                                }
-                            } else {
-                                return Mono.error(new DatadisApiException(
-                                        "Failed to post authorization request",
-                                        httpClientResponse.status(),
-                                        bodyString
-                                ));
-                            }
-                        }))
-        );
+        return tokenProvider
+                .getToken()
+                .flatMap(token -> httpClient
+                        .headers(headers -> headers.add(HttpHeaderNames.CONTENT_TYPE,
+                                                        HttpHeaderValues.APPLICATION_JSON))
+                        .headers(headers -> headers.add(HttpHeaderNames.AUTHORIZATION, "Bearer " + token))
+                        // TODO: fix with GH-1102
+                        .headers(headers -> headers.add(HttpHeaderNames.USER_AGENT, "PostmanRuntime/7.36.3"))
+                        .post()
+                        .uri(authorizationEndpoint)
+                        .send(ByteBufMono.fromString(Mono.just(body)))
+                        .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono
+                                .asString()
+                                .defaultIfEmpty(Strings.EMPTY)
+                                .flatMap(bodyString -> {
+                                    if (httpClientResponse.status()
+                                                          .code() == HttpResponseStatus.OK.code()) {
+                                        try {
+                                            JsonNode jsonNode = mapper.readTree(bodyString);
+                                            return Mono.just(AuthorizationRequestResponse.fromResponse(
+                                                    jsonNode.get("response").asText()
+                                            ));
+                                        } catch (JsonProcessingException e) {
+                                            return Mono.error(e);
+                                        }
+                                    } else {
+                                        return Mono.error(new DatadisApiException(
+                                                "Failed to post authorization request",
+                                                httpClientResponse.status(),
+                                                bodyString
+                                        ));
+                                    }
+                                }))
+                );
     }
 }

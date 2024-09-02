@@ -6,6 +6,7 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
 import energy.eddie.regionconnector.es.datadis.dtos.CreatedPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.health.DatadisApiHealthIndicator;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisDataSourceInformation;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionEventRepository;
@@ -22,7 +23,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -56,6 +56,8 @@ class PermissionControllerTest {
     private EsPermissionRequestRepository unusedMockRepository;
     @MockBean
     private EsPermissionEventRepository unusedPermissionEventRepository;
+    @MockBean
+    private DatadisApiHealthIndicator healthIndicator;
 
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {

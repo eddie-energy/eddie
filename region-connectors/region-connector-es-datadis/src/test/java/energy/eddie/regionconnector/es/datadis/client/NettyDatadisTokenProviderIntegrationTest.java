@@ -21,7 +21,10 @@ class NettyDatadisTokenProviderIntegrationTest {
     void getToken_withValidCredentials_returnsToken() {
         ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
         NettyDatadisTokenProvider uut = new NettyDatadisTokenProvider(
-                new MyDatadisConfig("replace", "replace"), HttpClient.create(), mapper);
+                new MyDatadisConfig("replace", "replace"),
+                HttpClient.create(),
+                mapper
+        );
 
         StepVerifier.create(uut.getToken())
                     .expectNextMatches(token -> !token.isEmpty())

@@ -5,6 +5,8 @@ import energy.eddie.regionconnector.es.datadis.ContractDetailsProvider;
 import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
 import energy.eddie.regionconnector.es.datadis.api.ContractApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
+import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.ContractDetails;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import okhttp3.mockwebserver.MockResponse;
@@ -27,16 +29,16 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class NettyContractApiClientTest {
-    static ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
-    static MockWebServer mockBackEnd;
-
-    private static String basePath;
+    private static MockWebServer mockBackEnd;
+    private static DatadisConfig datadisConfig;
+    private final ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
 
     @BeforeAll
     static void setUp() throws IOException {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
-        basePath = "http://localhost:" + mockBackEnd.getPort();
+        var basePath = "http://localhost:" + mockBackEnd.getPort();
+        datadisConfig = new PlainDatadisConfiguration("username", "password", basePath);
     }
 
     @AfterAll
@@ -51,7 +53,8 @@ class NettyContractApiClientTest {
                 HttpClient.create(),
                 mapper,
                 () -> Mono.just("token"),
-                basePath);
+                datadisConfig
+        );
 
         mockBackEnd.enqueue(new MockResponse()
                                     .setResponseCode(HttpStatus.OK.value())
@@ -85,7 +88,8 @@ class NettyContractApiClientTest {
                 HttpClient.create(),
                 mapper,
                 () -> Mono.just("token"),
-                basePath);
+                datadisConfig
+        );
 
 
         // this would happen e.g. ig we request data with an invalid MeasurementType and PointType combination

@@ -3,6 +3,8 @@ package energy.eddie.regionconnector.es.datadis.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
+import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -16,10 +18,8 @@ import java.util.ArrayList;
 
 class NettyAuthorizationApiClientIntegrationTest {
     private final ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
-    String requestNif = "replace_me";
-    String token = "replace_me";
-
-    String basePath = "https://datadis.es";
+    private final String requestNif = "replace_me";
+    private final DatadisConfig config = new PlainDatadisConfiguration("username", "password", "https://datadis.es");
 
     @Test
     @Disabled("Integration test, that needs real credentials")
@@ -28,7 +28,8 @@ class NettyAuthorizationApiClientIntegrationTest {
                 HttpClient.create(),
                 mapper,
                 new MyTokenProvider(),
-                basePath);
+                config
+        );
 
         AuthorizationRequest request = new AuthorizationRequest(
                 LocalDate.now(ZoneOffset.UTC),
@@ -38,7 +39,7 @@ class NettyAuthorizationApiClientIntegrationTest {
         );
 
         StepVerifier.create(uut.postAuthorizationRequest(request))
-                .verifyComplete();
+                    .verifyComplete();
     }
 
     @Test
@@ -47,7 +48,8 @@ class NettyAuthorizationApiClientIntegrationTest {
                 HttpClient.create(),
                 mapper,
                 () -> Mono.just("invalid token"),
-                basePath);
+                config
+        );
 
         AuthorizationRequest request = new AuthorizationRequest(
                 LocalDate.now(ZoneOffset.UTC),
@@ -57,8 +59,8 @@ class NettyAuthorizationApiClientIntegrationTest {
         );
 
         StepVerifier.create(uut.postAuthorizationRequest(request))
-                .expectError(DatadisApiException.class)
-                .verify();
+                    .expectError(DatadisApiException.class)
+                    .verify();
     }
 
     @Test
@@ -68,7 +70,8 @@ class NettyAuthorizationApiClientIntegrationTest {
                 HttpClient.create(),
                 mapper,
                 new MyTokenProvider(),
-                basePath);
+                config
+        );
 
         AuthorizationRequest request = new AuthorizationRequest(
                 LocalDate.now(ZoneOffset.UTC),
@@ -78,15 +81,15 @@ class NettyAuthorizationApiClientIntegrationTest {
         );
 
         StepVerifier.create(uut.postAuthorizationRequest(request))
-                .expectError(DatadisApiException.class)
-                .verify();
+                    .expectError(DatadisApiException.class)
+                    .verify();
     }
 
-    class MyTokenProvider implements DatadisTokenProvider {
+    static class MyTokenProvider implements DatadisTokenProvider {
 
         @Override
         public Mono<String> getToken() {
-            return Mono.just(token);
+            return Mono.just("replace_me");
         }
     }
 }

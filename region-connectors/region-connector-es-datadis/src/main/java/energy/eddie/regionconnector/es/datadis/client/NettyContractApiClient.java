@@ -5,11 +5,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.api.ContractApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.dtos.ContractDetails;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringEncoder;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.http.client.HttpClientResponse;
@@ -18,8 +20,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import static java.util.Objects.requireNonNull;
-
+@Component
 public class NettyContractApiClient implements ContractApi {
 
     private final HttpClient httpClient;
@@ -31,17 +32,12 @@ public class NettyContractApiClient implements ContractApi {
             HttpClient httpClient,
             ObjectMapper mapper,
             DatadisTokenProvider tokenProvider,
-            String basePath
+            DatadisConfig config
     ) {
-        requireNonNull(httpClient);
-        requireNonNull(mapper);
-        requireNonNull(tokenProvider);
-        requireNonNull(basePath);
-
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.tokenProvider = tokenProvider;
-        this.suppliesEndpoint = URI.create(basePath).resolve("api-private/api/get-contract-detail");
+        this.suppliesEndpoint = URI.create(config.basePath()).resolve("api-private/api/get-contract-detail");
     }
 
     @Override
