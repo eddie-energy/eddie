@@ -2,15 +2,15 @@ package energy.eddie.core.services;
 
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
+import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 @Service
-@ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
+@OnRawDataMessagesEnabled
 public class RawDataService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RawDataService.class);
 

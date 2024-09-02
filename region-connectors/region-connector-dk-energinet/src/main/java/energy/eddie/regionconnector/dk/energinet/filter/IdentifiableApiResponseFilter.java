@@ -50,6 +50,8 @@ public record IdentifiableApiResponseFilter() {
         return Mono.just(
                 new IdentifiableApiResponse(
                         permissionRequest,
-                        marketDocumentResponse));
+                        marketDocumentResponse
+                )
+        );
     }
 }

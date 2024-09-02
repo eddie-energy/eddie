@@ -3,17 +3,17 @@ package energy.eddie.spring.regionconnector.extensions;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.core.services.RawDataService;
+import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
 @RegionConnectorExtension
-@ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
+@OnRawDataMessagesEnabled
 public class RawDataServiceRegistrar {
     private static final Logger LOGGER = LoggerFactory.getLogger(RawDataServiceRegistrar.class);
 

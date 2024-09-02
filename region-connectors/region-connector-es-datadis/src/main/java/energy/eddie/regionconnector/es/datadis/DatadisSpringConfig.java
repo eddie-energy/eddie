@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.es.datadis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0.ConnectionStatusMessage;
@@ -27,6 +28,8 @@ import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionEventRepo
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
+import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
+import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -237,6 +240,21 @@ public class DatadisSpringConfig {
                 new DatadisStrategy(),
                 new DefaultEnergyDataTimeframeStrategy(DatadisRegionConnectorMetadata.getInstance()),
                 List.of()
+        );
+    }
+
+    @Bean
+    @OnRawDataMessagesEnabled
+    public RawDataProvider rawDataProvider(
+            ObjectMapper mapper,
+            Flux<IdentifiableMeteringData> meteringDataFlux,
+            Flux<IdentifiableAccountingPointData> accountingPointDataFlux
+    ) {
+        return new JsonRawDataProvider(
+                DatadisRegionConnectorMetadata.getInstance().countryCode(),
+                mapper,
+                meteringDataFlux,
+                accountingPointDataFlux
         );
     }
 }

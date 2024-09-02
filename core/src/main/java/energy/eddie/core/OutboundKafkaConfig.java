@@ -10,6 +10,7 @@ import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.core.services.*;
 import energy.eddie.outbound.kafka.KafkaConnector;
 import energy.eddie.outbound.kafka.TerminationKafkaConnector;
+import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -105,7 +106,7 @@ public class OutboundKafkaConfig {
 
 
     @Bean
-    @ConditionalOnProperty(name = "eddie.raw.data.output.enabled", havingValue = "true")
+    @OnRawDataMessagesEnabled
     RawDataOutboundConnector rawDataOutboundConnector(
             KafkaConnector kafkaConnector,
             RawDataService rawDataService

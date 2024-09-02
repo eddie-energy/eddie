@@ -3,13 +3,15 @@ package energy.eddie.regionconnector.at.eda.provider.agnostic;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p40.ConsumptionRecord;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p40.MarketParticipantDirectory;
 import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p40.ProcessDirectory;
+import at.ebutilities.schemata.customerprocesses.masterdata._01p32.MasterData;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import energy.eddie.regionconnector.at.eda.dto.SimpleEdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.ponton.messages.MarshallerConfig;
-import jakarta.xml.bind.JAXBException;
+import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p32.EdaMasterData01p32;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +33,15 @@ class EdaRawDataProviderTest {
     private final EdaConsumptionRecord mockConsumptionRecord = new SimpleEdaConsumptionRecord()
             .setOriginalConsumptionRecord(new ConsumptionRecord().withProcessDirectory(new ProcessDirectory())
                                                                  .withMarketParticipantDirectory(new MarketParticipantDirectory()));
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private Jaxb2Marshaller marshaller;
 
     @Test
-    void getRawDataStream_whenReceivingIdentifiableConsumptionRecordWithMultiplePermissions_publishesMultipleRawDataMessages() throws JAXBException {
+    void getRawDataStream_whenReceivingIdentifiableConsumptionRecordWithMultiplePermissions_publishesMultipleRawDataMessages() {
+        // Given
         TestPublisher<IdentifiableConsumptionRecord> testPublisher = TestPublisher.create();
+        TestPublisher<IdentifiableMasterData> masterDataTestPublisher = TestPublisher.create();
         String expectedString1 = "expectedString1";
         String expectedString2 = "expectedString2";
         String expectedString3 = "expectedString3";
@@ -46,10 +51,11 @@ class EdaRawDataProviderTest {
                 createPermissionRequest(expectedString3)
         );
 
-        var provider = new EdaRawDataProvider(marshaller, testPublisher.flux());
+        var provider = new EdaRawDataProvider(marshaller, testPublisher.flux(), masterDataTestPublisher.flux());
 
         var source = provider.getRawDataStream();
 
+        // When
         StepVerifier.create(source)
                     .then(() -> {
                         testPublisher.next(new IdentifiableConsumptionRecord(mockConsumptionRecord,
@@ -57,7 +63,9 @@ class EdaRawDataProviderTest {
                                                                              null,
                                                                              null));
                         testPublisher.complete();
+                        masterDataTestPublisher.complete();
                     })
+                    // Then
                     .assertNext(rawData -> {
                         assertEquals(expectedString1, rawData.permissionId());
                         assertEquals(expectedString1, rawData.connectionId());
@@ -78,9 +86,55 @@ class EdaRawDataProviderTest {
                     })
                     .expectComplete()
                     .verify(Duration.ofSeconds(2));
+
+        // Clean-Up
+        provider.close();
     }
 
     private SimplePermissionRequest createPermissionRequest(String expected) {
         return new SimplePermissionRequest(expected, expected, expected);
+    }
+
+    @Test
+    void getRawDataStream_whenReceivingIdentifiableMasterData_publishesRawDataMessage() {
+        // Given
+        TestPublisher<IdentifiableConsumptionRecord> testPublisher = TestPublisher.create();
+        TestPublisher<IdentifiableMasterData> masterDataTestPublisher = TestPublisher.create();
+        String expectedString = "expectedString";
+        var permissionRequest = createPermissionRequest(expectedString);
+
+        var provider = new EdaRawDataProvider(marshaller, testPublisher.flux(), masterDataTestPublisher.flux());
+
+        var source = provider.getRawDataStream();
+
+        // When
+        StepVerifier.create(source)
+                    .then(() -> {
+                        masterDataTestPublisher.next(
+                                new IdentifiableMasterData(
+                                        new EdaMasterData01p32(new MasterData()),
+                                        permissionRequest
+                                )
+                        );
+                        testPublisher.next(new IdentifiableConsumptionRecord(mockConsumptionRecord,
+                                                                             List.of(permissionRequest),
+                                                                             null,
+                                                                             null));
+                        testPublisher.complete();
+                        masterDataTestPublisher.complete();
+                    })
+                    // Then
+                    .assertNext(rawData -> {
+                        assertEquals(expectedString, rawData.permissionId());
+                        assertEquals(expectedString, rawData.connectionId());
+                        assertEquals(expectedString, rawData.dataNeedId());
+                        assertThat(rawData.rawPayload()).startsWith("<?xml");
+                    })
+                    .expectNextCount(1)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(2));
+
+        // Clean-Up
+        provider.close();
     }
 }

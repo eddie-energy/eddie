@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.fr.enedis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0.ConnectionStatusMessage;
@@ -22,6 +23,8 @@ import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionEventRepos
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
+import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -189,6 +192,21 @@ public class FrEnedisSpringConfig {
                 csm,
                 repository,
                 pr -> ""
+        );
+    }
+
+    @Bean
+    @OnRawDataMessagesEnabled
+    public RawDataProvider rawDataProvider(
+            ObjectMapper objectMapper,
+            Flux<IdentifiableMeterReading> identifiableMeterReadingFlux,
+            Flux<IdentifiableAccountingPointData> accountingPointDataFlux
+    ) {
+        return new JsonRawDataProvider(
+                REGION_CONNECTOR_ID,
+                objectMapper,
+                identifiableMeterReadingFlux,
+                accountingPointDataFlux
         );
     }
 }
