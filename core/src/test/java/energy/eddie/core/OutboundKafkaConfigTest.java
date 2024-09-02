@@ -85,7 +85,7 @@ class OutboundKafkaConfigTest {
                         () -> assertThat(context).hasBean("mvp1ConsumptionRecordOutboundConnector"),
                         () -> assertThat(context).hasBean("mvp1ConnectionStatusMessageOutboundConnector"),
                         () -> assertThat(context).hasBean("eddieValidatedHistoricalDataMarketDocumentOutboundConnector"),
-                        () -> assertThat(context).hasBean("consentMarketDocumentService")
+                        () -> assertThat(context).hasBean("permissionMarketDocumentService")
                 ));
     }
 
@@ -105,24 +105,24 @@ class OutboundKafkaConfigTest {
         }
 
         @Bean
-        public EddieValidatedHistoricalDataMarketDocumentService eddieValidatedHistoricalDataMarketDocumentService() {
-            EddieValidatedHistoricalDataMarketDocumentService mock = Mockito.mock(
-                    EddieValidatedHistoricalDataMarketDocumentService.class);
+        public ValidatedHistoricalDataEnvelopeService eddieValidatedHistoricalDataMarketDocumentService() {
+            ValidatedHistoricalDataEnvelopeService mock = Mockito.mock(
+                    ValidatedHistoricalDataEnvelopeService.class);
             when(mock.getEddieValidatedHistoricalDataMarketDocumentStream()).thenReturn(Flux.empty());
             return mock;
         }
 
         @Bean
-        public ConsentMarketDocumentService consentMarketDocumentService() {
-            ConsentMarketDocumentService mock = Mockito.mock(ConsentMarketDocumentService.class);
-            when(mock.getConsentMarketDocumentStream()).thenReturn(Flux.empty());
+        public PermissionMarketDocumentService permissionMarketDocumentService() {
+            PermissionMarketDocumentService mock = Mockito.mock(PermissionMarketDocumentService.class);
+            when(mock.getPermissionMarketDocumentStream()).thenReturn(Flux.empty());
             return mock;
         }
 
         @Bean
-        public EddieAccountingPointMarketDocumentService eddieAccountingPointMarketDocumentService() {
-            EddieAccountingPointMarketDocumentService mock = Mockito.mock(EddieAccountingPointMarketDocumentService.class);
-            when(mock.getEddieAccountingPointMarketDocumentStream()).thenReturn(Flux.empty());
+        public AccountingPointEnvelopeService accountingPointEnvelopeService() {
+            AccountingPointEnvelopeService mock = Mockito.mock(AccountingPointEnvelopeService.class);
+            when(mock.getAccountingPointEnvelopeStream()).thenReturn(Flux.empty());
             return mock;
         }
     }

@@ -8,10 +8,10 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
+import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
@@ -33,7 +33,7 @@ import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConne
 import energy.eddie.regionconnector.at.eda.ponton.messenger.WebClientMessengerHealth;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
 import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
-import energy.eddie.regionconnector.at.eda.provider.v0_82.EdaEddieValidatedHistoricalDataMarketDocumentProvider;
+import energy.eddie.regionconnector.at.eda.provider.v0_82.EdaValidatedHistoricalDataEnvelopeProvider;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecordService;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableMasterDataService;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
@@ -41,11 +41,11 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
-import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
-import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
+import energy.eddie.spring.regionconnector.extensions.cim.v0_82.pmd.CommonPermissionMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
@@ -157,7 +157,7 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public Sinks.Many<ConsentMarketDocument> consentMarketDocumentSink() {
+    public Sinks.Many<PermissionEnvelope> consentMarketDocumentSink() {
         return Sinks
                 .many()
                 .multicast()
@@ -173,11 +173,11 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public EdaEddieValidatedHistoricalDataMarketDocumentProvider consumptionRecordProcessor(
+    public EdaValidatedHistoricalDataEnvelopeProvider consumptionRecordProcessor(
             CommonInformationModelConfiguration commonInformationModelConfiguration,
             Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux
     ) {
-        return new EdaEddieValidatedHistoricalDataMarketDocumentProvider(
+        return new EdaValidatedHistoricalDataEnvelopeProvider(
                 new ValidatedHistoricalDataMarketDocumentDirector(
                         commonInformationModelConfiguration,
                         new ValidatedHistoricalDataMarketDocumentBuilderFactory()
@@ -187,8 +187,8 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public ConsentMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<ConsentMarketDocument> sink) {
-        return new CommonConsentMarketDocumentProvider(sink);
+    public PermissionMarketDocumentProvider permissionMarketDocumentProvider(Sinks.Many<PermissionEnvelope> sink) {
+        return new CommonPermissionMarketDocumentProvider(sink);
     }
 
     @Bean
@@ -246,20 +246,20 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public ConsentMarketDocumentMessageHandler<AtPermissionRequest> consentMarketDocumentMessageHandler(
+    public PermissionMarketDocumentMessageHandler<AtPermissionRequest> permissionMarketDocumentMessageHandler(
             EventBus eventBus,
             AtPermissionRequestRepository repository,
-            Sinks.Many<ConsentMarketDocument> cmdSink,
+            Sinks.Many<PermissionEnvelope> pmdSink,
             AtConfiguration atConfig,
             CommonInformationModelConfiguration cimConfig
     ) {
-        return new ConsentMarketDocumentMessageHandler<>(eventBus,
-                                                         repository,
-                                                         cmdSink,
-                                                         atConfig.eligiblePartyId(),
-                                                         cimConfig,
+        return new PermissionMarketDocumentMessageHandler<>(eventBus,
+                                                            repository,
+                                                            pmdSink,
+                                                            atConfig.eligiblePartyId(),
+                                                            cimConfig,
                                                          pr -> TRANSMISSION_CYCLE.name(),
-                                                         AT_ZONE_ID);
+                                                            AT_ZONE_ID);
     }
 
     @Bean

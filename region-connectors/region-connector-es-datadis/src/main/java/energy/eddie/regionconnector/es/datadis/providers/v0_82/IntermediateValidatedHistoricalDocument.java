@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.es.datadis.providers.v0_82;
 
 import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
@@ -10,6 +9,7 @@ import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
+import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 
@@ -27,7 +27,7 @@ public final class IntermediateValidatedHistoricalDocument {
                     new ReasonComplexType()
                             .withCode(ReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED)
             );
-    private final ValidatedHistoricalDataMarketDocument vhd = new ValidatedHistoricalDataMarketDocument()
+    private final ValidatedHistoricalDataMarketDocumentComplexType vhd = new ValidatedHistoricalDataMarketDocumentComplexType()
             .withMRID(UUID.randomUUID().toString())
             .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
             .withType(MessageTypeList.MEASUREMENT_VALUE_DOCUMENT)
@@ -48,7 +48,7 @@ public final class IntermediateValidatedHistoricalDocument {
         this.datadisConfig = datadisConfig;
     }
 
-    public EddieValidatedHistoricalDataMarketDocument eddieValidatedHistoricalDataMarketDocument() {
+    public ValidatedHistoricalDataEnvelope eddieValidatedHistoricalDataMarketDocument() {
         var timeframe = new EsmpTimeInterval(
                 identifiableMeteringData.intermediateMeteringData().start(),
                 identifiableMeteringData.intermediateMeteringData().end(),
@@ -75,17 +75,11 @@ public final class IntermediateValidatedHistoricalDocument {
                            .withEnd(timeframe.end())
            )
            .withTimeSeriesList(timeSeriesList(timeframe));
-        var permissionRequest = identifiableMeteringData.permissionRequest();
-        return new EddieValidatedHistoricalDataMarketDocument(
-                permissionRequest.connectionId(),
-                permissionRequest.permissionId(),
-                permissionRequest.dataNeedId(),
-                vhd
-        );
+        return new VhdEnvelope(vhd, identifiableMeteringData.permissionRequest()).wrap();
     }
 
-    private ValidatedHistoricalDataMarketDocument.TimeSeriesList timeSeriesList(EsmpTimeInterval timeframe) {
-        ValidatedHistoricalDataMarketDocument.TimeSeriesList timeSeriesList = new ValidatedHistoricalDataMarketDocument.TimeSeriesList();
+    private ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList timeSeriesList(EsmpTimeInterval timeframe) {
+        ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList timeSeriesList = new ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList();
         TimeSeriesComplexType consumptionReading = timeSeriesComplexType(
                 timeframe,
                 BusinessTypeList.CONSUMPTION,

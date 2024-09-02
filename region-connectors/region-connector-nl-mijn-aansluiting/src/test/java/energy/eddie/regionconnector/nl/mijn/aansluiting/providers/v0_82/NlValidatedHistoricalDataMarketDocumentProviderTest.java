@@ -53,15 +53,15 @@ class NlValidatedHistoricalDataMarketDocumentProviderTest {
     private PollingService pollingService;
 
     @Test
-    void testGetEddieValidatedHistoricalDataMarketDocumentStream_emits() throws IOException {
+    void testGetValidatedHistoricalDataMarketDocumentsStream_emits() throws IOException {
         // Given
         var json = mapper.loadTestJson("single_consumption_data.json");
         when(pollingService.identifiableMeteredDataFlux())
                 .thenReturn(Flux.just(new IdentifiableMeteredData(pr, json)));
-        var vhdProvider = new NlValidatedHistoricalDataMarketDocumentProvider(pollingService, cimConfig, config);
+        var vhdProvider = new NlValidatedHistoricalDataEnvelopeProvider(pollingService, cimConfig, config);
 
         // When
-        var res = vhdProvider.getEddieValidatedHistoricalDataMarketDocumentStream();
+        var res = vhdProvider.getValidatedHistoricalDataMarketDocumentsStream();
 
         // Then
         StepVerifier.create(res)
@@ -73,15 +73,15 @@ class NlValidatedHistoricalDataMarketDocumentProviderTest {
     }
 
     @Test
-    void testGetEddieValidatedHistoricalDataMarketDocumentStream_emitsNothing_onInvalidDocuments() throws IOException {
+    void testGetValidatedHistoricalDataMarketDocumentsStream_emitsNothing_onInvalidDocuments() throws IOException {
         // Given
         var json = mapper.loadTestJson("invalid_obis_code_consumption_data.json");
         when(pollingService.identifiableMeteredDataFlux())
                 .thenReturn(Flux.just(new IdentifiableMeteredData(pr, json)));
-        var vhdProvider = new NlValidatedHistoricalDataMarketDocumentProvider(pollingService, cimConfig, config);
+        var vhdProvider = new NlValidatedHistoricalDataEnvelopeProvider(pollingService, cimConfig, config);
 
         // When
-        var res = vhdProvider.getEddieValidatedHistoricalDataMarketDocumentStream();
+        var res = vhdProvider.getValidatedHistoricalDataMarketDocumentsStream();
 
         // Then
         StepVerifier.create(res)

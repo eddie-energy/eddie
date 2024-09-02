@@ -4,9 +4,9 @@ import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
-import energy.eddie.regionconnector.shared.cim.v0_82.IntermediateConsentMarketDocument;
+import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.regionconnector.shared.cim.v0_82.pmd.IntermediatePermissionMarketDocument;
 import energy.eddie.regionconnector.simulation.SimulationConnectorMetadata;
 import energy.eddie.regionconnector.simulation.SimulationDataSourceInformation;
 import energy.eddie.regionconnector.simulation.dtos.SetConnectionStatusRequest;
@@ -24,11 +24,11 @@ import reactor.core.publisher.Sinks;
 import java.time.ZoneOffset;
 
 @RestController
-public class ConnectionStatusController implements Mvp1ConnectionStatusMessageProvider, ConsentMarketDocumentProvider {
+public class ConnectionStatusController implements Mvp1ConnectionStatusMessageProvider, PermissionMarketDocumentProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusController.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusStreamSink = Sinks.many().multicast()
                                                                                         .onBackpressureBuffer();
-    private final Sinks.Many<ConsentMarketDocument> cmdSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<PermissionEnvelope> pmdSink = Sinks.many().multicast().onBackpressureBuffer();
 
     @GetMapping(value = "/api/connection-status-values")
     public ResponseEntity<PermissionProcessStatus[]> connectionStatusValues() {
@@ -49,14 +49,14 @@ public class ConnectionStatusController implements Mvp1ConnectionStatusMessagePr
                             req.connectionStatus.toString()
                     )
             );
-            cmdSink.tryEmitNext(
-                    new IntermediateConsentMarketDocument<PermissionRequest>(
+            pmdSink.tryEmitNext(
+                    new IntermediatePermissionMarketDocument<PermissionRequest>(
                             new SimulationPermissionRequest(req),
                             SimulationConnectorMetadata.REGION_CONNECTOR_ID,
                             ignored -> null,
                             "N" + SimulationConnectorMetadata.getInstance().countryCode(),
                             ZoneOffset.UTC
-                    ).toConsentMarketDocument()
+                    ).toPermissionMarketDocument()
             );
             return ResponseEntity.ok(req.connectionId);
         } else {
@@ -76,11 +76,11 @@ public class ConnectionStatusController implements Mvp1ConnectionStatusMessagePr
     @Override
     public void close() {
         connectionStatusStreamSink.tryEmitComplete();
-        cmdSink.tryEmitComplete();
+        pmdSink.tryEmitComplete();
     }
 
     @Override
-    public Flux<ConsentMarketDocument> getConsentMarketDocumentStream() {
-        return cmdSink.asFlux();
+    public Flux<PermissionEnvelope> getPermissionMarketDocumentStream() {
+        return pmdSink.asFlux();
     }
 }

@@ -48,7 +48,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         );
 
         var eddieMarketDocument = intermediateVHD.eddieValidatedHistoricalDataMarketDocument();
-        var marketDocument = eddieMarketDocument.marketDocument();
+        var marketDocument = eddieMarketDocument.getValidatedHistoricalDataMarketDocument();
 
         var timeframe = new EsmpTimeInterval(
                 identifiableMeteringData.intermediateMeteringData().start(),
@@ -171,7 +171,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         );
 
         var eddieMarketDocument = intermediateVHD.eddieValidatedHistoricalDataMarketDocument();
-        var marketDocument = eddieMarketDocument.marketDocument();
+        var marketDocument = eddieMarketDocument.getValidatedHistoricalDataMarketDocument();
 
         var timeframe = new EsmpTimeInterval(
                 identifiableMeteringData.intermediateMeteringData().start(),
@@ -245,7 +245,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> assertEquals(identifiableMeteringData.intermediateMeteringData().meteringData().size(),
                                    consumptionSeriesPeriod.getPointList().getPoints().size()),
                 () -> {
-                    // assert that all point in the array have the same value as meteringData.cunsuptionKwh
+                    // assert that all points in the array have the same value as meteringData.consumptionKwh
                     for (int i = identifiableMeteringData.intermediateMeteringData()
                                                          .meteringData()
                                                          .size() - 1; i >= 0; i--) {
@@ -266,7 +266,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                     }
                 },
                 () -> {
-                    // assert that all point in the array have the same value as meteringData.cunsuptionKwh
+                    // assert that all points in the array have the same value as meteringData.consumptionKwh
                     for (int i = identifiableMeteringData.intermediateMeteringData()
                                                          .meteringData()
                                                          .size() - 1; i >= 0; i--) {

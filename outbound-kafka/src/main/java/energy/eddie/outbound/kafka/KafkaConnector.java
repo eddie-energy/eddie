@@ -6,12 +6,12 @@ import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
 import energy.eddie.api.v0.Mvp1ConsumptionRecordOutboundConnector;
-import energy.eddie.api.v0_82.ConsentMarketDocumentOutboundConnector;
-import energy.eddie.api.v0_82.EddieAccountingPointMarketDocumentOutboundConnector;
-import energy.eddie.api.v0_82.EddieValidatedHistoricalDataMarketDocumentOutboundConnector;
-import energy.eddie.api.v0_82.cim.EddieAccountingPointMarketDocument;
-import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.api.v0_82.AccountingPointEnvelopeOutboundConnector;
+import energy.eddie.api.v0_82.PermissionMarketDocumentOutboundConnector;
+import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeOutboundConnector;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -28,10 +28,10 @@ import java.util.Properties;
 public class KafkaConnector implements
         Mvp1ConnectionStatusMessageOutboundConnector,
         Mvp1ConsumptionRecordOutboundConnector,
-        EddieValidatedHistoricalDataMarketDocumentOutboundConnector,
-        ConsentMarketDocumentOutboundConnector,
+        ValidatedHistoricalDataEnvelopeOutboundConnector,
+        PermissionMarketDocumentOutboundConnector,
         RawDataOutboundConnector,
-        EddieAccountingPointMarketDocumentOutboundConnector,
+        AccountingPointEnvelopeOutboundConnector,
         Closeable {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaProducer<String, Object> kafkaProducer;
@@ -56,25 +56,27 @@ public class KafkaConnector implements
     }
 
     @Override
-    public void setConsentMarketDocumentStream(Flux<ConsentMarketDocument> consentMarketDocumentStream) {
-        consentMarketDocumentStream
+    public void setPermissionMarketDocumentStream(Flux<PermissionEnvelope> permissionMarketDocumentStream) {
+        permissionMarketDocumentStream
                 .publishOn(Schedulers.boundedElastic())
-                .subscribe(this::produceConsentMarketDocument);
+                .subscribe(this::producePermissionMarketDocument);
     }
 
-    private void produceConsentMarketDocument(ConsentMarketDocument consentMarketDocument) {
+    private void producePermissionMarketDocument(PermissionEnvelope permissionMarketDocument) {
+        var permissionId = permissionMarketDocument.getMessageDocumentHeader()
+                                                   .getMessageDocumentHeaderMetaInformation()
+                                                   .getPermissionid();
         ProducerRecord<String, Object> toSend = new ProducerRecord<>(
                 "permission-market-documents",
-                consentMarketDocument.getPermissionList().getPermissions().getFirst()
-                                     .getMarketEvaluationPointMRID().getValue(),
-                consentMarketDocument
+                permissionId,
+                permissionMarketDocument
         );
-        kafkaProducer.send(toSend, new KafkaCallback("Could not produce consent market document"));
+        kafkaProducer.send(toSend, new KafkaCallback("Could not produce permission market document"));
     }
 
     @Override
     public void setEddieValidatedHistoricalDataMarketDocumentStream(
-            Flux<EddieValidatedHistoricalDataMarketDocument> marketDocumentStream
+            Flux<ValidatedHistoricalDataEnvelope> marketDocumentStream
     ) {
         marketDocumentStream
                 .publishOn(Schedulers.boundedElastic())
@@ -82,15 +84,17 @@ public class KafkaConnector implements
     }
 
     private void produceEddieValidatedHistoricalDataMarketDocument(
-            EddieValidatedHistoricalDataMarketDocument marketDocument
+            ValidatedHistoricalDataEnvelope marketDocument
     ) {
+        var info = marketDocument.getMessageDocumentHeader()
+                                 .getMessageDocumentHeaderMetaInformation();
         ProducerRecord<String, Object> toSend = new ProducerRecord<>("validated-historical-data",
-                                                                     marketDocument.connectionId(),
+                                                                     info.getConnectionid(),
                                                                      marketDocument);
         kafkaProducer.send(toSend,
                            new KafkaCallback("Could not produce validated historical data market document message"));
         LOGGER.debug("Produced validated historical data market document message for permission request {}",
-                     marketDocument.permissionId());
+                     info.getPermissionid());
     }
 
     @Override
@@ -130,22 +134,24 @@ public class KafkaConnector implements
     }
 
     @Override
-    public void setEddieAccountingPointMarketDocumentStream(Flux<EddieAccountingPointMarketDocument> marketDocumentStream) {
+    public void setAccountingPointEnvelopeStream(Flux<AccountingPointEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .publishOn(Schedulers.boundedElastic())
-                .subscribe(this::produceEddieAccountingPointMarketDocument);
+                .subscribe(this::produceAccountingPointEnvelope);
     }
 
-    private void produceEddieAccountingPointMarketDocument(
-            EddieAccountingPointMarketDocument marketDocument
+    private void produceAccountingPointEnvelope(
+            AccountingPointEnvelope marketDocument
     ) {
+        var header = marketDocument.getMessageDocumentHeader()
+                                   .getMessageDocumentHeaderMetaInformation();
         ProducerRecord<String, Object> toSend = new ProducerRecord<>("accounting-point-market-documents",
-                                                                     marketDocument.connectionId(),
+                                                                     header.getConnectionid(),
                                                                      marketDocument);
         kafkaProducer.send(toSend,
                            new KafkaCallback("Could not produce accounting point market document message"));
         LOGGER.debug("Produced accounting point market document message for permission request {}",
-                     marketDocument.permissionId());
+                     header.getPermissionid());
     }
 
     private record KafkaCallback(String errorLogMessage) implements Callback {

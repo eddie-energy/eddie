@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.providers.v0_82;
 
 import energy.eddie.api.CommonInformationModelVersions;
-import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
@@ -11,6 +10,7 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.ReadingType
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.Register;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.IdentifiableMeteredData;
+import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 import jakarta.annotation.Nullable;
@@ -39,11 +39,11 @@ class IntermediateValidatedHistoricalDataMarketDocument {
 
     // TODO: get real CIM mapping, see GH-928
     @SuppressWarnings("java:S3776") // The mapping code for the CIM is this long
-    public List<EddieValidatedHistoricalDataMarketDocument> toEddieValidatedHistoricalDataMarketDocuments() {
-        var vhds = new ArrayList<EddieValidatedHistoricalDataMarketDocument>();
+    public List<ValidatedHistoricalDataEnvelope> toEddieValidatedHistoricalDataMarketDocuments() {
+        var vhds = new ArrayList<ValidatedHistoricalDataEnvelope>();
         for (MijnAansluitingResponse mijnAansluitingResponse : mijnAansluitingResponses) {
             var marketEvaluationPoint = mijnAansluitingResponse.getMarketEvaluationPoint();
-            var vhd = new ValidatedHistoricalDataMarketDocument()
+            var vhd = new ValidatedHistoricalDataMarketDocumentComplexType()
                     .withMRID(marketEvaluationPoint.getMRID())
                     .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
                     .withType(MessageTypeList.MEASUREMENT_VALUE_DOCUMENT)
@@ -138,13 +138,11 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             if (timeSeriesList.isEmpty()) {
                 continue;
             }
-            vhd.withTimeSeriesList(new ValidatedHistoricalDataMarketDocument.TimeSeriesList()
+            vhd.withTimeSeriesList(new ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList()
                                            .withTimeSeries(timeSeriesList));
             vhds.add(
-                    new EddieValidatedHistoricalDataMarketDocument(permissionRequest.connectionId(),
-                                                                   permissionRequest.permissionId(),
-                                                                   permissionRequest.dataNeedId(),
-                                                                   vhd)
+                    new VhdEnvelope(vhd, permissionRequest).wrap()
+
             );
         }
         return vhds;

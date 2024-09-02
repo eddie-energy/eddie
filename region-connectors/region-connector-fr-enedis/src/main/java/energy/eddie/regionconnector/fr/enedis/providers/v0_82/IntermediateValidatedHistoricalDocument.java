@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
 import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.api.utils.Pair;
-import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
@@ -11,6 +10,7 @@ import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.IntervalReading;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
 import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
 import jakarta.annotation.Nullable;
@@ -46,7 +46,7 @@ public final class IntermediateValidatedHistoricalDocument {
                     new ReasonComplexType()
                             .withCode(ReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED)
             );
-    private final ValidatedHistoricalDataMarketDocument vhd = new ValidatedHistoricalDataMarketDocument()
+    private final ValidatedHistoricalDataMarketDocumentComplexType vhd = new ValidatedHistoricalDataMarketDocumentComplexType()
             .withMRID(UUID.randomUUID().toString())
             .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
             .withType(MessageTypeList.MEASUREMENT_VALUE_DOCUMENT)
@@ -72,7 +72,7 @@ public final class IntermediateValidatedHistoricalDocument {
         this.enedisConfig = enedisConfig;
     }
 
-    public EddieValidatedHistoricalDataMarketDocument eddieValidatedHistoricalDataMarketDocument() {
+    public ValidatedHistoricalDataEnvelope eddieValidatedHistoricalDataMarketDocument() {
         var timeframe = new EsmpTimeInterval(
                 meterReading().start().atStartOfDay(ZONE_ID_FR),
                 meterReading().end().atStartOfDay(ZONE_ID_FR)
@@ -91,19 +91,14 @@ public final class IntermediateValidatedHistoricalDocument {
                 )
                 .withTimeSeriesList(timeSeriesList());
         FrEnedisPermissionRequest permissionRequest = identifiableMeterReading.permissionRequest();
-        return new EddieValidatedHistoricalDataMarketDocument(
-                permissionRequest.connectionId(),
-                permissionRequest.permissionId(),
-                permissionRequest.dataNeedId(),
-                vhd
-        );
+        return new VhdEnvelope(vhd, permissionRequest).wrap();
     }
 
     private MeterReading meterReading() {
         return this.identifiableMeterReading.meterReading();
     }
 
-    private ValidatedHistoricalDataMarketDocument.TimeSeriesList timeSeriesList() {
+    private ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList timeSeriesList() {
         TimeSeriesComplexType reading = new TimeSeriesComplexType()
                 .withMRID(UUID.randomUUID().toString())
                 .withBusinessType(businessType())
@@ -127,7 +122,7 @@ public final class IntermediateValidatedHistoricalDocument {
             default -> reading.withSeriesPeriodList(seriesPeriods(false));
         };
 
-        return new ValidatedHistoricalDataMarketDocument.TimeSeriesList()
+        return new ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList()
                 .withTimeSeries(List.of(reading));
     }
 
@@ -234,8 +229,8 @@ public final class IntermediateValidatedHistoricalDocument {
 
     private void addChunk(
             boolean convertToKiloWatt,
-            ArrayList<PointsWithResolution> chunks,
-            ArrayList<Pair<Integer, IntervalReading>> currentChunk,
+            List<PointsWithResolution> chunks,
+            List<Pair<Integer, IntervalReading>> currentChunk,
             String prevResolution
     ) {
         chunks.add(new PointsWithResolution(currentChunk.stream()

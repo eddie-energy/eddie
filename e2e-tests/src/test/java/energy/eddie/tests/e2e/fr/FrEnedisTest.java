@@ -12,7 +12,7 @@ import java.io.IOException;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 class FrEnedisTest extends E2eTestSetup {
-    public static final String SANDBOX_METERING_POINT_WITH_ACCEPTED_CONSENT = "22516914714270";
+    public static final String SANDBOX_METERING_POINT_WITH_ACCEPTED_PERMISSION = "22516914714270";
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
@@ -41,7 +41,7 @@ class FrEnedisTest extends E2eTestSetup {
         var redirectUrl = requestDetails.url() +
                           "/authorization-callback" +
                           "?state=" + requestDetails.permissionId() +
-                          "&usage_point_id=" + SANDBOX_METERING_POINT_WITH_ACCEPTED_CONSENT;
+                          "&usage_point_id=" + SANDBOX_METERING_POINT_WITH_ACCEPTED_PERMISSION;
         page.navigate(redirectUrl);
         page.close();
         page = buttonPage;

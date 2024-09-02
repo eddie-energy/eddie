@@ -17,9 +17,9 @@ class MeasurementConverterTest {
         var point = new PointComplexType()
                 .withPosition("0")
                 .withEnergyQuantityQuantity(BigDecimal.valueOf(5));
-        var vhd = new ValidatedHistoricalDataMarketDocument()
+        var vhd = new ValidatedHistoricalDataMarketDocumentComplexType()
                 .withTimeSeriesList(
-                        new ValidatedHistoricalDataMarketDocument.TimeSeriesList()
+                        new ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList()
                                 .withTimeSeries(
                                         new TimeSeriesComplexType()
                                                 .withMarketEvaluationPointMRID(
@@ -65,14 +65,17 @@ class MeasurementConverterTest {
                                                 )
                                 )
                 );
+        var envelope = new ValidatedHistoricalDataEnvelope()
+                .withValidatedHistoricalDataMarketDocument(vhd);
         var converter = new MeasurementConverter(List.of(new EnergyToPowerCalculation()));
 
         // When
-        var res = converter.convert(vhd);
+        var res = converter.convert(envelope);
 
         // Then
-        assertEquals(4, res.getTimeSeriesList().getTimeSeries().size());
-        var timeSeries = res.getTimeSeriesList().getTimeSeries().getLast();
+        var resVhd = res.getValidatedHistoricalDataMarketDocument();
+        assertEquals(4, resVhd.getTimeSeriesList().getTimeSeries().size());
+        var timeSeries = resVhd.getTimeSeriesList().getTimeSeries().getLast();
         assertAll(
                 () -> assertEquals(UnitOfMeasureTypeList.KILOWATT,
                                    timeSeries.getEnergyMeasurementUnitName()),
@@ -103,9 +106,9 @@ class MeasurementConverterTest {
         var point = new PointComplexType()
                 .withPosition("0")
                 .withEnergyQuantityQuantity(BigDecimal.valueOf(5));
-        var vhd = new ValidatedHistoricalDataMarketDocument()
+        var vhd = new ValidatedHistoricalDataMarketDocumentComplexType()
                 .withTimeSeriesList(
-                        new ValidatedHistoricalDataMarketDocument.TimeSeriesList()
+                        new ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList()
                                 .withTimeSeries(
                                         new TimeSeriesComplexType()
                                                 .withEnergyMeasurementUnitName(UnitOfMeasureTypeList.KILOWATT_HOUR)
@@ -135,14 +138,17 @@ class MeasurementConverterTest {
                                                 )
                                 )
                 );
+        var envelope = new ValidatedHistoricalDataEnvelope()
+                .withValidatedHistoricalDataMarketDocument(vhd);
         var converter = new MeasurementConverter(List.of(new EnergyToPowerCalculation()));
 
         // When
-        var res = converter.convert(vhd);
+        var res = converter.convert(envelope);
 
         // Then
-        assertEquals(2, res.getTimeSeriesList().getTimeSeries().size());
-        var timeSeries = res.getTimeSeriesList().getTimeSeries().getFirst();
+        var resVhd = res.getValidatedHistoricalDataMarketDocument();
+        assertEquals(2, resVhd.getTimeSeriesList().getTimeSeries().size());
+        var timeSeries = resVhd.getTimeSeriesList().getTimeSeries().getFirst();
         assertEquals(1,
                      timeSeries
                              .getSeriesPeriodList()

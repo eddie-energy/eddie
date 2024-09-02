@@ -25,7 +25,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -34,7 +33,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = {PermissionRequestController.class}, properties = {"eddie.jwt.hmac.secret=RbNQrp0Dfd+fNoTalQQTd5MRurblhcDtVYaPGoDsg8Q=", "eddie.permission.request.timeout.duration=24"})
@@ -49,8 +49,6 @@ class PermissionRequestControllerTest {
     private PermissionCreationService creationService;
     @MockBean
     private PermissionRequestService requestService;
-    @SpyBean
-    private JwtUtil spyJwtUtil;
 
     @Test
     void connectionStatusMessage_returns() throws Exception {

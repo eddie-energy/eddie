@@ -1,6 +1,7 @@
 package energy.eddie.outbound.kafka;
 
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v0_82.pmd.PermissionMarketDocumentComplexType;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -44,10 +45,11 @@ class TerminationKafkaConnectorTest {
         var props = createProducerConfig();
         props.put("auto.offset.reset", "earliest");
         var terminationConnector = new TerminationKafkaConnector(props, "termination-topic");
-
+        var pmd = new PermissionMarketDocumentComplexType().withMRID("permissionId");
+        var envelope = new PermissionEnvelope().withPermissionMarketDocument(pmd);
         // When
         producer.send(
-                        new ProducerRecord<>("termination-topic", "id", new ConsentMarketDocument().withMRID("permissionId")))
+                        new ProducerRecord<>("termination-topic", "id", envelope))
                 .get();
 
         // Then
@@ -56,7 +58,7 @@ class TerminationKafkaConnectorTest {
         assertAll(
                 () -> assertNotNull(pair),
                 () -> assertEquals("id", pair.key()),
-                () -> assertEquals("permissionId", pair.value().getMRID())
+                () -> assertEquals("permissionId", pair.value().getPermissionMarketDocument().getMRID())
         );
 
         // Clean-Up
@@ -75,8 +77,9 @@ class TerminationKafkaConnectorTest {
 
         // When
         producer.send(new ProducerRecord<>("termination-topic", "id", "INVALID JSON")).get();
-        ConsentMarketDocument cmd = new ConsentMarketDocument().withMRID("permissionId");
-        producer.send(new ProducerRecord<>("termination-topic", "id", mapper.writeValueAsString(cmd))).get();
+        var pmd = new PermissionMarketDocumentComplexType().withMRID("permissionId");
+        var envelope = new PermissionEnvelope().withPermissionMarketDocument(pmd);
+        producer.send(new ProducerRecord<>("termination-topic", "id", mapper.writeValueAsString(envelope))).get();
         var pair = terminationConnector.getTerminationMessages()
                 .blockFirst();
 

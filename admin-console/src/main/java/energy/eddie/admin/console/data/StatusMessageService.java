@@ -1,11 +1,11 @@
 package energy.eddie.admin.console.data;
 
-import energy.eddie.api.v0_82.ConsentMarketDocumentServiceInterface;
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.api.v0_82.PermissionMarketDocumentServiceInterface;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v0_82.pmd.PermissionMarketDocumentComplexType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
 
@@ -14,35 +14,40 @@ public class StatusMessageService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StatusMessageService.class);
     private final StatusMessageRepository statusMessageRepository;
-    private final ConsentMarketDocumentServiceInterface consentMarketDocumentService;
+    private final PermissionMarketDocumentServiceInterface permissionMarketDocumentService;
 
-    public StatusMessageService(StatusMessageRepository statusMessageRepository,
-                                ConsentMarketDocumentServiceInterface consentMarketDocumentService) {
+    public StatusMessageService(
+            StatusMessageRepository statusMessageRepository,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+            PermissionMarketDocumentServiceInterface permissionMarketDocumentService
+    ) {
         this.statusMessageRepository = statusMessageRepository;
-        this.consentMarketDocumentService = consentMarketDocumentService;
+        this.permissionMarketDocumentService = permissionMarketDocumentService;
         subscribeToFlux();
     }
 
     private void subscribeToFlux() {
-        Flux<ConsentMarketDocument> flux = consentMarketDocumentService.getConsentMarketDocumentStream();
+        var flux = permissionMarketDocumentService.getPermissionMarketDocumentStream();
         flux
                 .publishOn(Schedulers.boundedElastic())
-                .doOnError(error -> LOGGER.error("Error receiving messages from the Flux stream: {}", error.getMessage(), error))
+                .doOnError(error -> LOGGER.error("Error receiving messages from the Flux stream: {}",
+                                                 error.getMessage(),
+                                                 error))
                 .subscribe(this::processMessage);
     }
 
-    private void processMessage(ConsentMarketDocument message) {
+    private void processMessage(PermissionEnvelope message) {
         try {
-            StatusMessage statusMessage = createStatusMessage(message);
+            StatusMessage statusMessage = createStatusMessage(message.getPermissionMarketDocument());
             statusMessageRepository.save(statusMessage);
-            LOGGER.debug("Saved status message with MRID: {}", message.getMRID());
+            LOGGER.debug("Saved status message with MRID: {}", message.getPermissionMarketDocument().getMRID());
         } catch (Exception ex) {
             LOGGER.error("Error saving status message: {}", ex.getMessage(), ex);
         }
     }
 
-    private StatusMessage createStatusMessage(ConsentMarketDocument message) {
-        String country = "";
+    private StatusMessage createStatusMessage(PermissionMarketDocumentComplexType message) {
+        String country;
         if (message.getReceiverMarketParticipantMRID().getCodingScheme() == null) {
             country = "Unknown";
         } else {
@@ -55,11 +60,11 @@ public class StatusMessageService {
                 country,
                 message.getReceiverMarketParticipantMRID().getValue(),
                 message.getPermissionList().getPermissions().getFirst()
-                        .getMktActivityRecordList().getMktActivityRecords().getFirst()
-                        .getCreatedDateTime(),
+                       .getMktActivityRecordList().getMktActivityRecords().getFirst()
+                       .getCreatedDateTime(),
                 message.getPermissionList().getPermissions().getFirst()
-                        .getMktActivityRecordList().getMktActivityRecords().getFirst()
-                        .getStatus().toString()
+                       .getMktActivityRecordList().getMktActivityRecords().getFirst()
+                       .getStatus().toString()
         );
     }
 }

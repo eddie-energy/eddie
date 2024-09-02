@@ -21,6 +21,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -36,7 +37,7 @@ class IntermediateAccountingPointDataMarketDocumentTest {
     })
     @SuppressWarnings("java:S5961")
         // suppress too many assertions warning
-    void eddieAccountingPointMarketDocument(String identityResource) throws IOException {
+    void accountingPointEnvelope(String identityResource) throws IOException {
         // Given
         var contract = TestResourceProvider.readFromFile(TestResourceProvider.CONTRACT, CustomerContract.class);
         var address = TestResourceProvider.readFromFile(TestResourceProvider.ADDRESS, CustomerAddress.class);
@@ -59,18 +60,19 @@ class IntermediateAccountingPointDataMarketDocumentTest {
         );
 
         // When
-        var res = intermediateAccountingPointDataMarketDocument.eddieAccountingPointMarketDocument();
+        var res = intermediateAccountingPointDataMarketDocument.accountingPointEnvelope();
 
         // Then
-        var md = res.marketDocument();
+        var md = res.getAccountingPointMarketDocument();
+        var header = res.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();
         var ap = md.getAccountingPointList().getAccountingPoints().getFirst();
         var cp = ap.getContractPartyList().getContractParties().getFirst();
         var add = ap.getAddressList().getAddresses().getFirst();
         assertAll(
 //region Meta Information
-                () -> assertEquals(permissionRequest.permissionId(), res.permissionId()),
-                () -> assertEquals(permissionRequest.connectionId(), res.connectionId()),
-                () -> assertEquals(permissionRequest.dataNeedId(), res.dataNeedId()),
+                () -> assertEquals(permissionRequest.permissionId(), header.getPermissionid()),
+                () -> assertEquals(permissionRequest.connectionId(), header.getConnectionid()),
+                () -> assertEquals(permissionRequest.dataNeedId(), header.getDataNeedid()),
                 () -> assertNotNull(md.getMRID()),
                 () -> assertEquals(CommonInformationModelVersions.V0_82.version(), md.getRevisionNumber()),
                 () -> assertEquals(MessageTypeList.ACCOUNTING_POINT_MASTER_DATA, md.getType()),
@@ -136,9 +138,9 @@ class IntermediateAccountingPointDataMarketDocumentTest {
                 "dataNeedId",
                 PermissionProcessStatus.ACCEPTED,
                 new EnedisDataSourceInformation(),
-                ZonedDateTime.now(),
-                LocalDate.now(),
-                LocalDate.now()
+                ZonedDateTime.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC)
         );
     }
 }

@@ -10,7 +10,7 @@ public class DummyDataSourceInformation implements DataSourceInformation {
 
     @Override
     public String regionConnectorId() {
-        return null;
+        return "dummy-rc";
     }
 
     @Override

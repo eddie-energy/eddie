@@ -2,7 +2,7 @@ package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.utils.Pair;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
@@ -19,13 +19,13 @@ import static org.apache.kafka.common.requests.FetchMetadata.log;
 
 public class TerminationKafkaConnector implements TerminationConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(TerminationKafkaConnector.class);
-    private final Flux<Pair<String, ConsentMarketDocument>> flux;
+    private final Flux<Pair<String, PermissionEnvelope>> flux;
 
     public TerminationKafkaConnector(Properties kafkaProperties, String terminationTopic) {
         LOGGER.info("Creating TerminationKafkaConnector which will listen on topic {}", terminationTopic);
         kafkaProperties.put(ConsumerConfig.GROUP_ID_CONFIG, "termination-group");
-        ReceiverOptions<String, ConsentMarketDocument> options = ReceiverOptions
-                .<String, ConsentMarketDocument>create(kafkaProperties)
+        ReceiverOptions<String, PermissionEnvelope> options = ReceiverOptions
+                .<String, PermissionEnvelope>create(kafkaProperties)
                 .subscription(Collections.singleton(terminationTopic))
                 // ensure no messages are skipped: start at the beginning of topic of no committed offsets are found
                 .consumerProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
@@ -42,14 +42,14 @@ public class TerminationKafkaConnector implements TerminationConnector {
                 .retry();
     }
 
-    private Pair<String, ConsentMarketDocument> process(ReceiverRecord<String, ConsentMarketDocument> rec) {
-        LOGGER.debug("Got new ConsentMarketDocument {}", rec);
+    private Pair<String, PermissionEnvelope> process(ReceiverRecord<String, PermissionEnvelope> rec) {
+        LOGGER.debug("Got new PermissionMarketDocument {}", rec);
         rec.receiverOffset().acknowledge();
         return new Pair<>(rec.key(), rec.value());
     }
 
     @Override
-    public Flux<Pair<String, ConsentMarketDocument>> getTerminationMessages() {
+    public Flux<Pair<String, PermissionEnvelope>> getTerminationMessages() {
         return flux;
     }
 }

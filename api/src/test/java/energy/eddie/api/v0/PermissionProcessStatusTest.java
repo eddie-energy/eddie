@@ -1,6 +1,6 @@
 package energy.eddie.api.v0;
 
-import energy.eddie.cim.v0_82.cmd.StatusTypeList;
+import energy.eddie.cim.v0_82.pmd.StatusTypeList;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 

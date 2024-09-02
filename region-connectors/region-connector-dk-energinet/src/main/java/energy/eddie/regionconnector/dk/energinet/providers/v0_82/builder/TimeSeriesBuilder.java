@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public class TimeSeriesBuilder {
 
-    private final ValidatedHistoricalDataMarketDocument.TimeSeriesList timeSeriesList = new ValidatedHistoricalDataMarketDocument.TimeSeriesList();
+    private final ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList timeSeriesList = new ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList();
 
     private final SeriesPeriodBuilderFactory seriesPeriodBuilderFactory;
 
@@ -43,7 +43,7 @@ public class TimeSeriesBuilder {
         return this;
     }
 
-    public ValidatedHistoricalDataMarketDocument.TimeSeriesList build() {
+    public ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList build() {
         return timeSeriesList;
     }
 }

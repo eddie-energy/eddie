@@ -8,9 +8,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.ConsumptionRecord;
-import energy.eddie.api.v0_82.cim.EddieAccountingPointMarketDocument;
-import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
@@ -28,12 +28,12 @@ class CustomSerializer implements Serializer<Object> {
         return switch (data) {
             case ConsumptionRecord ignored -> serializeJson(data);
             case ConnectionStatusMessage ignored -> serializeJson(data);
-            case EddieValidatedHistoricalDataMarketDocument vhd ->
+            case ValidatedHistoricalDataEnvelope vhd ->
                     serializeEddieValidatedHistoricalDataMarketDocument(vhd);
-            case ConsentMarketDocument cmd -> serializeConsentMarketDocument(cmd);
+            case PermissionEnvelope pmd -> serializePermissionMarketDocument(pmd);
             case RawDataMessage rawDataMessage -> serializeRawDataMessage(rawDataMessage);
-            case EddieAccountingPointMarketDocument accountingPointMarketDocument ->
-                    serializeEddieAccountingPointMarketDocument(accountingPointMarketDocument);
+            case AccountingPointEnvelope accountingPointMarketDocument ->
+                    serializeAccountingPointEnvelope(accountingPointMarketDocument);
             case null -> new byte[0];
             default -> throw new UnsupportedOperationException("Unsupported object type: " + data.getClass());
         };
@@ -47,19 +47,19 @@ class CustomSerializer implements Serializer<Object> {
         }
     }
 
-    private byte[] serializeEddieValidatedHistoricalDataMarketDocument(EddieValidatedHistoricalDataMarketDocument data) {
+    private byte[] serializeEddieValidatedHistoricalDataMarketDocument(ValidatedHistoricalDataEnvelope data) {
         try {
             return vhdObjectMapper.writeValueAsBytes(data);
         } catch (JsonProcessingException e) {
-            throw new EddieValidatedHistoricalDataMarketDocumentSerializationException(e);
+            throw new ValidatedHistoricalDataEnvelopeSerializationException(e);
         }
     }
 
-    private byte[] serializeConsentMarketDocument(ConsentMarketDocument cmd) {
+    private byte[] serializePermissionMarketDocument(PermissionEnvelope pmd) {
         try {
-            return vhdObjectMapper.writeValueAsBytes(cmd);
+            return vhdObjectMapper.writeValueAsBytes(pmd);
         } catch (JsonProcessingException e) {
-            throw new ConsentMarketDocumentSerializationException(e);
+            throw new PermissionMarketDocumentSerializationException(e);
         }
     }
 
@@ -72,11 +72,11 @@ class CustomSerializer implements Serializer<Object> {
         }
     }
 
-    private byte[] serializeEddieAccountingPointMarketDocument(EddieAccountingPointMarketDocument data) {
+    private byte[] serializeAccountingPointEnvelope(AccountingPointEnvelope data) {
         try {
             return vhdObjectMapper.writeValueAsBytes(data);
         } catch (JsonProcessingException e) {
-            throw new EddieAccountingPointMarketDocumentSerializationException(e);
+            throw new AccountingPointEnvelopeSerializationException(e);
         }
     }
 
@@ -91,21 +91,21 @@ class CustomSerializer implements Serializer<Object> {
         }
     }
 
-    public static class EddieValidatedHistoricalDataMarketDocumentSerializationException extends RuntimeException {
-        public EddieValidatedHistoricalDataMarketDocumentSerializationException(Throwable cause) {
+    public static class ValidatedHistoricalDataEnvelopeSerializationException extends RuntimeException {
+        public ValidatedHistoricalDataEnvelopeSerializationException(Throwable cause) {
             super(cause);
         }
     }
 
 
-    public static class EddieAccountingPointMarketDocumentSerializationException extends RuntimeException {
-        public EddieAccountingPointMarketDocumentSerializationException(Throwable cause) {
+    public static class AccountingPointEnvelopeSerializationException extends RuntimeException {
+        public AccountingPointEnvelopeSerializationException(Throwable cause) {
             super(cause);
         }
     }
 
-    public static class ConsentMarketDocumentSerializationException extends RuntimeException {
-        public ConsentMarketDocumentSerializationException(Throwable cause) {
+    public static class PermissionMarketDocumentSerializationException extends RuntimeException {
+        public PermissionMarketDocumentSerializationException(Throwable cause) {
             super(cause);
         }
     }

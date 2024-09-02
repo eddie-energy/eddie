@@ -8,10 +8,10 @@ import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0_82.ConsentMarketDocumentProvider;
+import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
@@ -35,11 +35,11 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
-import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConsentMarketDocumentMessageHandler;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
-import energy.eddie.spring.regionconnector.extensions.cim.v0_82.cmd.CommonConsentMarketDocumentProvider;
+import energy.eddie.spring.regionconnector.extensions.cim.v0_82.pmd.CommonPermissionMarketDocumentProvider;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -83,7 +83,7 @@ public class DkEnerginetSpringConfig {
     }
 
     @Bean
-    public Sinks.Many<ConsentMarketDocument> consentMarketDocumentSink() {
+    public Sinks.Many<PermissionEnvelope> permissionMarketDocumentSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
 
@@ -106,8 +106,8 @@ public class DkEnerginetSpringConfig {
     }
 
     @Bean
-    public ConsentMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<ConsentMarketDocument> sink) {
-        return new CommonConsentMarketDocumentProvider(sink);
+    public PermissionMarketDocumentProvider permissionMarketDocumentProvider(Sinks.Many<PermissionEnvelope> sink) {
+        return new CommonPermissionMarketDocumentProvider(sink);
     }
 
     @Bean
@@ -154,19 +154,19 @@ public class DkEnerginetSpringConfig {
     }
 
     @Bean
-    public ConsentMarketDocumentMessageHandler<DkEnerginetPermissionRequest> consentMarketDocumentMessageHandler(
+    public PermissionMarketDocumentMessageHandler<DkEnerginetPermissionRequest> permissionMarketDocumentMessageHandler(
             EventBus eventBus,
-            Sinks.Many<ConsentMarketDocument> cmdSink,
+            Sinks.Many<PermissionEnvelope> pmdSink,
             DkPermissionRequestRepository repository,
             CommonInformationModelConfiguration cimConfig
     ) {
-        return new ConsentMarketDocumentMessageHandler<>(eventBus,
-                                                         repository,
-                                                         cmdSink,
-                                                         cimConfig.eligiblePartyFallbackId(),
-                                                         cimConfig,
+        return new PermissionMarketDocumentMessageHandler<>(eventBus,
+                                                            repository,
+                                                            pmdSink,
+                                                            cimConfig.eligiblePartyFallbackId(),
+                                                            cimConfig,
                                                          pr -> Granularity.P1D.toString(),
-                                                         DK_ZONE_ID);
+                                                            DK_ZONE_ID);
     }
 
     @Bean

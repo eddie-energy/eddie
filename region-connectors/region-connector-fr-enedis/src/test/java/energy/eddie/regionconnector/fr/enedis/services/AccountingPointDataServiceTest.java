@@ -36,6 +36,7 @@ import reactor.test.scheduler.VirtualTimeScheduler;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -238,9 +239,9 @@ class AccountingPointDataServiceTest {
                 "dataNeedId",
                 PermissionProcessStatus.ACCEPTED,
                 new EnedisDataSourceInformation(),
-                ZonedDateTime.now(),
-                LocalDate.now(),
-                LocalDate.now()
+                ZonedDateTime.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC)
         );
     }
 

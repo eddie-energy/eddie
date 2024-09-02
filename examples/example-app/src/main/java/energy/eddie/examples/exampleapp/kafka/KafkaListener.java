@@ -1,16 +1,16 @@
 package energy.eddie.examples.exampleapp.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.api.v0_82.cim.EddieValidatedHistoricalDataMarketDocument;
-import energy.eddie.cim.v0_82.cmd.ConsentMarketDocument;
-import energy.eddie.cim.v0_82.cmd.MktActivityRecordComplexType;
-import energy.eddie.cim.v0_82.cmd.PermissionComplexType;
+import energy.eddie.cim.v0_82.pmd.MktActivityRecordComplexType;
+import energy.eddie.cim.v0_82.pmd.PermissionComplexType;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.PointComplexType;
 import energy.eddie.cim.v0_82.vhd.SeriesPeriodComplexType;
 import energy.eddie.cim.v0_82.vhd.TimeSeriesComplexType;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.examples.exampleapp.Env;
-import energy.eddie.examples.exampleapp.kafka.serdes.ConsentMarketDocumentSerde;
-import energy.eddie.examples.exampleapp.kafka.serdes.EddieValidatedHistoricalDataMarketDocumentSerde;
+import energy.eddie.examples.exampleapp.kafka.serdes.PermissionMarketDocumentSerde;
+import energy.eddie.examples.exampleapp.kafka.serdes.ValidatedHistoricalDataEnvelopeSerde;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -50,7 +50,7 @@ public class KafkaListener implements Runnable {
     @Override
     public void run() {
         var vhdTopology = createVhdTopology();
-        var statusTopology = createConsentMarketDocumentTopology();
+        var statusTopology = createPermissionMarketDocumentTopology();
         var vhdProperties = getKafkaProperties("vhd");
         var statusProperties = getKafkaProperties("status");
         var vhdStream = new KafkaStreams(vhdTopology, vhdProperties);
@@ -78,7 +78,7 @@ public class KafkaListener implements Runnable {
     private Topology createVhdTopology() {
         var inputTopic = "validated-historical-data";
         Serde<String> stringSerde = Serdes.String();
-        var vhdSerde = new EddieValidatedHistoricalDataMarketDocumentSerde(mapper);
+        var vhdSerde = new ValidatedHistoricalDataEnvelopeSerde(mapper);
 
         StreamsBuilder builder = new StreamsBuilder();
         builder
@@ -89,27 +89,16 @@ public class KafkaListener implements Runnable {
         return builder.build();
     }
 
-    private Topology createConsentMarketDocumentTopology() {
-        var inputTopic = "permission-market-documents";
-        Serde<String> stringSerde = Serdes.String();
-        Serde<ConsentMarketDocument> statusSerde = new ConsentMarketDocumentSerde(mapper);
-
-        StreamsBuilder builder = new StreamsBuilder();
-        builder
-                .stream(inputTopic, Consumed.with(stringSerde, statusSerde))
-                .filterNot((unusedKey, value) -> Objects.isNull(value))
-                .foreach(this::insertConsentMarketDocument);
-
-        return builder.build();
-    }
-
-    private void insertVhdIntoDb(String key, EddieValidatedHistoricalDataMarketDocument document) {
-        TimeSeriesComplexType timeSeries = document.marketDocument().getTimeSeriesList().getTimeSeries().getFirst();
+    private void insertVhdIntoDb(String key, ValidatedHistoricalDataEnvelope document) {
+        var vhd = document.getValidatedHistoricalDataMarketDocument();
+        TimeSeriesComplexType timeSeries = vhd.getTimeSeriesList().getTimeSeries().getFirst();
         TimeSeriesComplexType.SeriesPeriodList seriesPeriods = timeSeries.getSeriesPeriodList();
 
-        String connectionId = document.connectionId();
+        String connectionId = document.getMessageDocumentHeader()
+                                      .getMessageDocumentHeaderMetaInformation()
+                                      .getConnectionid();
         String meteringPoint = timeSeries.getMarketEvaluationPointMRID().getValue();
-        ZonedDateTime startDateTime = ZonedDateTime.parse(document.marketDocument().getPeriodTimeInterval().getStart());
+        ZonedDateTime startDateTime = ZonedDateTime.parse(vhd.getPeriodTimeInterval().getStart());
         Integer resolution = meteringIntervalForCode.get(seriesPeriods.getSeriesPeriods().getFirst().getResolution());
 
         LOGGER.info("Writing consumption records for connection {} with metering point {} with {} data points",
@@ -147,14 +136,31 @@ public class KafkaListener implements Runnable {
         });
     }
 
-    private void insertConsentMarketDocument(String key, ConsentMarketDocument document) {
-        PermissionComplexType permission = document.getPermissionList().getPermissions().getFirst();
+    private Topology createPermissionMarketDocumentTopology() {
+        var inputTopic = "permission-market-documents";
+        Serde<String> stringSerde = Serdes.String();
+        Serde<PermissionEnvelope> statusSerde = new PermissionMarketDocumentSerde(mapper);
+
+        StreamsBuilder builder = new StreamsBuilder();
+        builder
+                .stream(inputTopic, Consumed.with(stringSerde, statusSerde))
+                .filterNot((unusedKey, value) -> Objects.isNull(value))
+                .foreach(this::insertPermissionMarketDocument);
+
+        return builder.build();
+    }
+
+    private void insertPermissionMarketDocument(String key, PermissionEnvelope document) {
+        PermissionComplexType permission = document.getPermissionMarketDocument()
+                                                   .getPermissionList()
+                                                   .getPermissions()
+                                                   .getFirst();
         MktActivityRecordComplexType mktRecord = permission.getMktActivityRecordList().getMktActivityRecords().getFirst();
         String status = mktRecord.getStatus().value();
         ZonedDateTime timestamp = ZonedDateTime.parse(mktRecord.getCreatedDateTime());
         String connectionId = permission.getMarketEvaluationPointMRID().getValue();
 
-        LOGGER.info("Writing consent market document status for {}: {}", connectionId, status);
+        LOGGER.info("Writing permission market document status for {}: {}", connectionId, status);
         jdbi.withHandle(h ->
                 h.createUpdate("INSERT INTO connection_status (connection_id, timestamp_, consent_status) VALUES (?,?,?)")
                         .bind(0, connectionId)
