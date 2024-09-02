@@ -111,11 +111,13 @@ class PermissionRequestFormBase extends LitElement {
 
   /**
    * Dispatch a custom event to handle that a permission request was created.
-   * @param {string} location The location of the created permission request.
+   * @param {string} permissionId The permission id to identify the created permission request.
+   * @param {string} location The location to get the current status of the permission request from.
    */
-  handlePermissionRequestCreated(location) {
+  handlePermissionRequestCreated(permissionId, location) {
     const event = new CustomEvent("eddie-request-created", {
       detail: {
+        permissionId,
         location,
       },
       bubbles: true,
@@ -131,7 +133,7 @@ class PermissionRequestFormBase extends LitElement {
       duration: 10000,
     });
 
-    this.pollRequestStatus(location);
+    this.pollRequestStatus(`${this.REQUEST_STATUS_URL}/${permissionId}`);
   }
 
   /**
@@ -157,15 +159,15 @@ class PermissionRequestFormBase extends LitElement {
 
     if (response.ok) {
       if (response.status === 201) {
-        const location = response.headers.get("Location");
-        if (!location) {
+        const locationHeader = response.headers.get("Location");
+        if (!locationHeader) {
           throw new Error("Header 'Location' is missing");
         }
 
+        const location = this.BASE_URL + locationHeader;
+
         const { permissionId } = data;
-        this.handlePermissionRequestCreated(
-          `${this.REQUEST_STATUS_URL}/${permissionId}`
-        );
+        this.handlePermissionRequestCreated(permissionId, location);
       }
 
       return data;
@@ -187,21 +189,17 @@ class PermissionRequestFormBase extends LitElement {
     const eventSource = new EventSource(location);
 
     eventSource.onmessage = (event) => {
-      const { status, message, additionalInformation } = JSON.parse(event.data);
+      const data = JSON.parse(event.data);
 
       this.dispatchEvent(
         new CustomEvent("eddie-request-status", {
-          detail: {
-            status,
-            message,
-            additionalInformation,
-          },
+          detail: data,
           bubbles: true,
           composed: true,
         })
       );
 
-      if (TERMINAL_STATES.includes(status)) {
+      if (TERMINAL_STATES.includes(data.status)) {
         eventSource.close();
       }
     };
