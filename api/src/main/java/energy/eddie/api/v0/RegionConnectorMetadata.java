@@ -1,5 +1,6 @@
 package energy.eddie.api.v0;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import energy.eddie.api.agnostic.Granularity;
@@ -21,10 +22,18 @@ public interface RegionConnectorMetadata {
     String id();
 
     /**
-     * Country code of the region covered by a {@link RegionConnector}.
-     * Must be uppercase.
+     * Country codes of the regions covered by a {@link RegionConnector}. Must be uppercase.
+     * Defaults to a single country code.
      */
     @JsonProperty
+    default List<String> countryCodes() {
+        return List.of(countryCode());
+    }
+
+    /**
+     * Country code of the region covered by a {@link RegionConnector}. Must be uppercase.
+     */
+    @JsonIgnore
     String countryCode();
 
     /**

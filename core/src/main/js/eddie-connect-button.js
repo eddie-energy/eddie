@@ -56,7 +56,8 @@ function fetchJson(path) {
 async function getEnabledCountries() {
   const regionConnectors = await fetchJson("/api/region-connectors-metadata");
   return regionConnectors
-    .map((rc) => rc.countryCode.toLowerCase())
+    .flatMap((rc) => rc.countryCodes)
+    .map((countryCode) => countryCode.toLowerCase())
     .filter((country) => COUNTRIES.includes(country));
 }
 
@@ -234,6 +235,7 @@ class EddieConnectButton extends LitElement {
   async getRegionConnectorElement() {
     const regionConnectorId =
       this._selectedPermissionAdministrator.regionConnector;
+    console.log(regionConnectorId);
 
     const customElementName = regionConnectorId + "-pa-ce";
 
