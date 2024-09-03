@@ -54,7 +54,7 @@ class TerminationKafkaConnectorTest {
 
         // Then
         var pair = terminationConnector.getTerminationMessages()
-                .blockFirst();
+                                       .blockFirst();
         assertAll(
                 () -> assertNotNull(pair),
                 () -> assertEquals("id", pair.key()),
@@ -63,6 +63,13 @@ class TerminationKafkaConnectorTest {
 
         // Clean-Up
         producer.close();
+    }
+
+    private Properties createProducerConfig() {
+        Properties properties = new Properties();
+        String bootstrapServers = kafka.getBootstrapServers();
+        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        return properties;
     }
 
     @Test
@@ -81,7 +88,7 @@ class TerminationKafkaConnectorTest {
         var envelope = new PermissionEnvelope().withPermissionMarketDocument(pmd);
         producer.send(new ProducerRecord<>("termination-topic", "id", mapper.writeValueAsString(envelope))).get();
         var pair = terminationConnector.getTerminationMessages()
-                .blockFirst();
+                                       .blockFirst();
 
         // Then
         assertNotNull(pair);
@@ -90,10 +97,4 @@ class TerminationKafkaConnectorTest {
         producer.close();
     }
 
-    private Properties createProducerConfig() {
-        Properties properties = new Properties();
-        String bootstrapServers = kafka.getBootstrapServers();
-        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        return properties;
-    }
 }

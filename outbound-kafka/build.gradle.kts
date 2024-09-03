@@ -28,6 +28,7 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.reactor.test)
     testImplementation(libs.testcontainers.kafka)
+    testImplementation(libs.junit.mockito)
 }
 
 tasks.getByName<Test>("test") {
