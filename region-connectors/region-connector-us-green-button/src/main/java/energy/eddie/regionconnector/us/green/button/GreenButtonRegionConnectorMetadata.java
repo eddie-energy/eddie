@@ -36,6 +36,11 @@ public class GreenButtonRegionConnectorMetadata implements RegionConnectorMetada
     }
 
     @Override
+    public List<String> countryCodes() {
+        return List.of("US", "CA");
+    }
+
+    @Override
     public String countryCode() {
         return "US/CA";
     }
