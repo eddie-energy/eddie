@@ -17,7 +17,7 @@
  * @property {string} id - The unique identifier of the data need.
  * @property {string} name - The name of the data need.
  * @property {string} description - The description of the data need for internal use. It is not displayed to the user.
- * @property {string} purpose - The purpose and description of this data need that will be displayed to the user in the popup. Supports markdown formatting.
+ * @property {string} purpose - The purpose and description of this data need that will be displayed to the user in the popup.
  * @property {string} policyLink - The URL to a document describing the data policy.
  * @property {boolean} enabled - If data need is enabled.
  */

@@ -44,7 +44,7 @@ public abstract class DataNeed implements DataNeedInterface {
     @JsonProperty(required = true)
     @NotBlank(message = "must not be blank")
     private String description;
-    @Schema(description = "Purpose and description of this data need that will be displayed to the user in the popup. Supports markdown formatting.")
+    @Schema(description = "Purpose and description of this data need that will be displayed to the user in the popup.")
     @Column(name = "purpose", nullable = false)
     @JsonProperty(required = true)
     @NotBlank(message = "must not be blank")
