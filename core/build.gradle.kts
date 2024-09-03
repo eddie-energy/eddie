@@ -39,6 +39,7 @@ dependencies {
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.reactor.core)
     implementation(libs.flyway.core)
+    implementation(libs.kafka.clients)
 
 
     runtimeOnly(libs.postgresql)
