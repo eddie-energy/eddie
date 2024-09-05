@@ -165,6 +165,8 @@ class MicroTeleinfoV3Test {
                         .then(() -> adapter.messageArrived("MyTestTopic", message))
                         .expectNextMatches(received -> received.code().equals("1-0:1.7.0")
                                                        && ((IntegerAiidaRecord) received).value() == 126)
+                        .expectNextMatches(received -> received.code().equals("1-0:1.8.0")
+                                                       && ((IntegerAiidaRecord) received).value() == 6367621)
                         .then(adapter::close)
                         .expectComplete()
                         .log()
@@ -211,6 +213,8 @@ class MicroTeleinfoV3Test {
         StepVerifier stepVerifier = StepVerifier.create(adapter.start())
                                                 .expectNextMatches(aiidaRecord -> aiidaRecord.code()
                                                                                              .equals("1-0:1.7.0"))
+                                                .expectNextMatches(aiidaRecord -> aiidaRecord.code()
+                                                                                             .equals("1-0:1.8.0"))
                                                 .then(adapter::close)
                                                 .expectComplete()
                                                 .verifyLater();
