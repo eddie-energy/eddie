@@ -13,14 +13,10 @@ import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguratio
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
-import energy.eddie.regionconnector.es.datadis.api.ContractApi;
-import energy.eddie.regionconnector.es.datadis.api.DataApi;
-import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
-import energy.eddie.regionconnector.es.datadis.client.*;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.data.needs.calculation.strategies.DatadisStrategy;
+import energy.eddie.regionconnector.es.datadis.health.DatadisApiHealthIndicator;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsInternalPollingEvent;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
@@ -106,58 +102,11 @@ public class DatadisSpringConfig {
     }
 
     @Bean
-    public HttpClient httpClient() {
-        return HttpClient.create();
-    }
-
-    @Bean
-    public DatadisTokenProvider datadisTokenProvider(
-            DatadisConfig config,
-            HttpClient httpClient,
-            ObjectMapper mapper
-    ) {
-        return new NettyDatadisTokenProvider(config, httpClient, mapper);
-    }
-
-    @Bean
-    public DataApi dataApi(
-            DatadisTokenProvider tokenProvider,
-            ObjectMapper mapper,
-            DatadisConfig config,
-            HttpClient httpClient
-    ) {
-        return new NettyDataApiClient(httpClient, mapper, tokenProvider, config.basePath());
-    }
-
-    @Bean
-    public SupplyApi supplyApi(
-            DatadisTokenProvider tokenProvider,
-            ObjectMapper mapper,
-            DatadisConfig config,
-            HttpClient httpClient
-    ) {
-        return new NettySupplyApiClient(httpClient, mapper, tokenProvider, config.basePath());
-    }
-
-    @Bean
-    public ContractApi contractApi(
-            DatadisTokenProvider tokenProvider,
-            ObjectMapper mapper,
-            DatadisConfig config,
-            HttpClient httpClient
-    ) {
-        return new NettyContractApiClient(httpClient, mapper, tokenProvider, config.basePath());
-    }
-
-
-    @Bean
-    public AuthorizationApi authorizationApi(
-            HttpClient httpClient,
-            ObjectMapper mapper,
-            DatadisTokenProvider tokenProvider,
-            DatadisConfig config
-    ) {
-        return new NettyAuthorizationApiClient(httpClient, mapper, tokenProvider, config.basePath());
+    public HttpClient httpClient(DatadisApiHealthIndicator datadisApiHealthIndicator) {
+        return HttpClient.create()
+                         .doOnResponse((httpClientResponse, connection) -> datadisApiHealthIndicator.up())
+                         .doOnRequestError((httpClientResponse, throwable) -> datadisApiHealthIndicator.down(throwable))
+                         .doOnResponseError((httpClientResponse, throwable) -> datadisApiHealthIndicator.down(throwable));
     }
 
     @Bean

@@ -5,6 +5,8 @@ import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
+import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
@@ -30,22 +32,42 @@ import static org.mockito.Mockito.when;
 
 class NettyDataApiClientTest {
 
+    private static MockWebServer mockBackEnd;
+    private static DatadisConfig config;
     private final ObjectMapper mapper = MeteringDataProvider.objectMapper;
-
-    static MockWebServer mockBackEnd;
-    private static String basePath;
-
 
     @BeforeAll
     static void setUp() throws IOException {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
-        basePath = "http://localhost:" + mockBackEnd.getPort();
+        var basePath = "http://localhost:" + mockBackEnd.getPort();
+        config = new PlainDatadisConfiguration("username", "password", basePath);
     }
 
     @AfterAll
     static void tearDown() throws IOException {
         mockBackEnd.shutdown();
+    }
+
+    @Test
+    void getConsumptionKwh_withWhenReceivingSupplies_returnsSupplies() throws IOException {
+        DataApi uut = new NettyDataApiClient(
+                HttpClient.create(),
+                mapper,
+                () -> Mono.just("token"),
+                config
+        );
+
+        String body = mapper.writeValueAsString(MeteringDataProvider.loadMeteringData());
+
+        mockBackEnd.enqueue(new MockResponse()
+                                    .setResponseCode(HttpStatus.OK.value())
+                                    .setBody(body));
+
+        StepVerifier.create(uut.getConsumptionKwh(createMeteringDataRequest()))
+                    .assertNext(meteringDataList -> assertEquals(744, meteringDataList.size()))
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(2));
     }
 
     private static MeteringDataRequest createMeteringDataRequest() {
@@ -58,41 +80,22 @@ class NettyDataApiClientTest {
     }
 
     @Test
-    void getConsumptionKwh_withWhenReceivingSupplies_returnsSupplies() throws IOException {
-        DataApi uut = new NettyDataApiClient(
-                HttpClient.create(),
-                mapper,
-                () -> Mono.just("token"),
-                basePath);
-
-        String body = mapper.writeValueAsString(MeteringDataProvider.loadMeteringData());
-
-        mockBackEnd.enqueue(new MockResponse()
-                .setResponseCode(HttpStatus.OK.value())
-                .setBody(body));
-
-        StepVerifier.create(uut.getConsumptionKwh(createMeteringDataRequest()))
-                .assertNext(meteringDataList -> assertEquals(744, meteringDataList.size()))
-                .expectComplete()
-                .verify(Duration.ofSeconds(2));
-    }
-
-    @Test
     void getConsumptionKwh_whenReceivingNotFound_producesDatadisApiException() {
         DataApi uut = new NettyDataApiClient(
                 HttpClient.create(),
                 mapper,
                 () -> Mono.just("token"),
-                basePath);
+                config
+        );
 
         MeteringDataRequest request = createMeteringDataRequest();
 
         // this would happen e.g. ig we request data with an invalid MeasurementType and PointType combination
         mockBackEnd.enqueue(new MockResponse()
-                .setResponseCode(HttpStatus.NOT_FOUND.value()));
+                                    .setResponseCode(HttpStatus.NOT_FOUND.value()));
 
         StepVerifier.create(uut.getConsumptionKwh(request))
-                .expectError(DatadisApiException.class)
-                .verify(Duration.ofSeconds(2));
+                    .expectError(DatadisApiException.class)
+                    .verify(Duration.ofSeconds(2));
     }
 }
