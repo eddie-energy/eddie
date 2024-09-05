@@ -41,6 +41,7 @@ dependencies {
     testImplementation(libs.flyway.core)
     testImplementation(libs.flyway.postgresql)
     testRuntimeOnly(libs.postgresql)
+    testImplementation(libs.slf4j.test)
 }
 
 tasks.test {

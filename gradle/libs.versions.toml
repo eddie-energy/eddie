@@ -30,6 +30,7 @@ reactor = "3.5.5"
 reactor-netty = "1.1.15"
 netty-codec-http = "4.1.106.Final"
 slf4j = "2.0.7"
+slf4j-test = "3.0.1"
 guice = "5.1.0"
 jetty = "11.0.14"
 jte = "2.3.0"
@@ -104,6 +105,7 @@ netty-codec-http = { module = "io.netty:netty-codec-http", version.ref = "netty-
 
 log4j-sl4j2-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
 log4j-jul = { module = "org.apache.logging.log4j:log4j-jul", version.ref = "log4j" }
+slf4j-test = { module = "com.github.valfirst:slf4j-test", version.ref = "slf4j-test" }
 
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 

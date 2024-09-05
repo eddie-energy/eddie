@@ -47,6 +47,9 @@ class MqttServiceTest {
     private ArgumentCaptor<Iterable<MqttAcl>> mqttAclCaptor;
     private MqttService mqttService;
 
+    @Mock
+    private MqttMessageCallback mqttMessageCallback;
+
     @BeforeEach
     void setUp() {
         mqttService = new MqttService(mockUserRepository,
@@ -54,7 +57,9 @@ class MqttServiceTest {
                                       mockPasswordGenerator,
                                       mockEncoder,
                                       mockAsyncClient,
-                                      mockConfiguration);
+                                      mockConfiguration,
+                                      mqttMessageCallback
+        );
     }
 
     @Test
@@ -141,5 +146,18 @@ class MqttServiceTest {
         // Then
         verify(mockAsyncClient).disconnect(3000);
         verify(mockAsyncClient).close(true);
+    }
+
+    @Test
+    void verify_subscribeToStatusTopic() throws MqttException {
+        // Given
+        var permissionId = "test";
+        var expected = "aiida/v1/" + permissionId + "/status";
+
+        // When
+        mqttService.subscribeToStatusTopic(permissionId);
+
+        // Then
+        verify(mockAsyncClient).subscribe(expected, 1);
     }
 }

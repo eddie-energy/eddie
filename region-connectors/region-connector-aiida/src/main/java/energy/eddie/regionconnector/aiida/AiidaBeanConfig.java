@@ -15,6 +15,7 @@ import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.data.needs.AiidaEnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.aiida.mqtt.MqttConnectCallback;
+import energy.eddie.regionconnector.aiida.mqtt.MqttMessageCallback;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionEventRepository;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
@@ -99,6 +100,11 @@ public class AiidaBeanConfig {
 
     @Bean
     public Sinks.Many<PermissionEnvelope> permissionMarketDocumentSink() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public Sinks.Many<String> revocationSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
 
@@ -212,5 +218,10 @@ public class AiidaBeanConfig {
                 new AiidaEnergyDataTimeframeStrategy(clock),
                 List.of()
         );
+    }
+
+    @Bean
+    public MqttMessageCallback mqttMessageCallback(Sinks.Many<String> revocationSink, ObjectMapper objectMapper) {
+        return new MqttMessageCallback(revocationSink, objectMapper);
     }
 }
