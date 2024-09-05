@@ -5,13 +5,8 @@ import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
-import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
-import org.eclipse.paho.mqttv5.client.MqttCallback;
-import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
 import org.eclipse.paho.mqttv5.common.MqttException;
-import org.eclipse.paho.mqttv5.common.MqttMessage;
-import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -38,14 +33,15 @@ public class MqttService implements AutoCloseable {
             PasswordGenerator passwordGenerator,
             BCryptPasswordEncoder encoder,
             MqttAsyncClient mqttClient,
-            AiidaConfiguration aiidaConfiguration
+            AiidaConfiguration aiidaConfiguration,
+            MqttMessageCallback mqttMessageCallback
     ) {
         this.userRepository = userRepository;
         this.aclRepository = aclRepository;
         this.passwordGenerator = passwordGenerator;
         this.encoder = encoder;
         this.mqttClient = mqttClient;
-        this.mqttClient.setCallback(new LoggingMqttCallback());
+        this.mqttClient.setCallback(mqttMessageCallback);
         this.aiidaConfiguration = aiidaConfiguration;
     }
 
@@ -134,62 +130,18 @@ public class MqttService implements AutoCloseable {
         mqttClient.close(true);
     }
 
-    private enum TopicType {
-        DATA("data"),
-        STATUS("status"),
-        TERMINATION("termination");
-
-        private final String topicName;
-
-        TopicType(String topicName) {
-            this.topicName = topicName;
-        }
-
-        public String topicName() {
-            return topicName;
-        }
-    }
-
     private record UserPasswordWrapper(MqttUser user, String rawPassword) {}
 
     private record Topics(String publishTopic, String statusMessageTopic, String terminationTopic) {}
+
+    public void subscribeToStatusTopic(String permissionId) throws MqttException {
+        mqttClient.subscribe(getTopicForPermission(permissionId, TopicType.STATUS), 1);
+    }
 
     public void sendTerminationRequest(AiidaPermissionRequest permissionRequest) throws MqttException {
         mqttClient.publish(permissionRequest.terminationTopic(),
                            permissionRequest.permissionId().getBytes(StandardCharsets.UTF_8),
                            1,
                            true);
-    }
-
-    private static class LoggingMqttCallback implements MqttCallback {
-        @Override
-        public void disconnected(MqttDisconnectResponse disconnectResponse) {
-            LOGGER.warn("Disconnected from MQTT broker {}", disconnectResponse);
-        }
-
-        @Override
-        public void mqttErrorOccurred(MqttException exception) {
-            LOGGER.error("Mqtt error occurred", exception);
-        }
-
-        @Override
-        public void messageArrived(String topic, MqttMessage message) {
-            // Not needed, as no messages are read from the broker
-        }
-
-        @Override
-        public void deliveryComplete(IMqttToken token) {
-            LOGGER.trace("Delivery complete for MqttToken {}", token);
-        }
-
-        @Override
-        public void connectComplete(boolean reconnect, String serverURI) {
-            LOGGER.info("Connected to MQTT broker {}, was because of reconnect: {}", serverURI, reconnect);
-        }
-
-        @Override
-        public void authPacketArrived(int reasonCode, MqttProperties properties) {
-            // Not needed, as no advanced authentication is required
-        }
     }
 }

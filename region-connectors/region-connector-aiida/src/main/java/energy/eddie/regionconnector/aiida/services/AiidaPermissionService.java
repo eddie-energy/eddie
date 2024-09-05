@@ -25,10 +25,12 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
+import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriTemplate;
+import reactor.core.publisher.Sinks;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -55,7 +57,8 @@ public class AiidaPermissionService {
             AiidaPermissionRequestViewRepository viewRepository,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // is injected from another Spring context
             JwtUtil jwtUtil,
-            DataNeedCalculationService<DataNeed> calculationService
+            DataNeedCalculationService<DataNeed> calculationService,
+            Sinks.Many<String> revocationSink
     ) {
         this.outbox = outbox;
         this.dataNeedsService = dataNeedsService;
@@ -64,6 +67,7 @@ public class AiidaPermissionService {
         this.viewRepository = viewRepository;
         this.jwtUtil = jwtUtil;
         this.calculationService = calculationService;
+        revocationSink.asFlux().subscribe(this::revokePermission);
     }
 
     public QrCodeDto createValidateAndSendPermissionRequest(
@@ -105,16 +109,15 @@ public class AiidaPermissionService {
         return "aiida/v1/" + permissionId + "/termination";
     }
 
-    public MqttDto acceptPermission(String permissionId) throws CredentialsAlreadyExistException, PermissionNotFoundException, PermissionStateTransitionException {
-        checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, ACCEPTED);
-
-        outbox.commit(new SimpleEvent(permissionId, ACCEPTED));
-
-        var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId);
-
-        outbox.commit(new MqttCredentialsCreatedEvent(permissionId, mqttDto.username()));
-
-        return mqttDto;
+    public void revokePermission(String permissionId) {
+        try {
+            checkIfPermissionHasValidStatus(permissionId, ACCEPTED, REVOKED);
+            outbox.commit(new SimpleEvent(permissionId, REVOKED));
+        } catch (PermissionNotFoundException e) {
+            LOGGER.error("Permission with permission id {} not found", permissionId);
+        } catch (PermissionStateTransitionException e) {
+            LOGGER.error("Permission with permission id {} could not be revoked", permissionId);
+        }
     }
 
     private AiidaPermissionRequest checkIfPermissionHasValidStatus(
@@ -155,6 +158,26 @@ public class AiidaPermissionService {
         checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, REJECTED);
 
         outbox.commit(new SimpleEvent(permissionId, REJECTED));
+    }
+
+    public MqttDto acceptPermission(String permissionId) throws CredentialsAlreadyExistException, PermissionNotFoundException, PermissionStateTransitionException {
+        checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, ACCEPTED);
+
+        outbox.commit(new SimpleEvent(permissionId, ACCEPTED));
+
+        var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId);
+
+        outbox.commit(new MqttCredentialsCreatedEvent(permissionId, mqttDto.username()));
+
+        try {
+            mqttService.subscribeToStatusTopic(permissionId);
+        } catch (MqttException e) {
+            LOGGER.error("Something went wrong when subscribing to the status topic for permission {}",
+                         permissionId,
+                         e);
+        }
+
+        return mqttDto;
     }
 
     public void terminatePermission(String permissionId) {

@@ -41,6 +41,7 @@ dependencies {
     testImplementation(libs.flyway.core)
     testImplementation(libs.flyway.postgresql)
     testRuntimeOnly(libs.postgresql)
+    testImplementation(libs.hakky.logcaptor)
 }
 
 tasks.test {
