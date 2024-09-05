@@ -3,13 +3,13 @@ package energy.eddie.regionconnector.aiida.mqtt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.github.valfirst.slf4jtest.TestLogger;
-import com.github.valfirst.slf4jtest.TestLoggerFactory;
 import energy.eddie.api.v0.ConnectionStatusMessage;
+import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Sinks;
@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class MqttMessageCallbackTest {
-    private final TestLogger logger = TestLoggerFactory.getTestLogger(MqttMessageCallback.class);
+    private final LogCaptor logCaptor = LogCaptor.forClass(MqttMessageCallback.class);
     private final ObjectMapper realObjectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .registerModule(new Jdk8Module());
@@ -35,6 +35,12 @@ class MqttMessageCallbackTest {
         revocationSink = mock(Sinks.Many.class);
         objectMapper = mock(ObjectMapper.class);
         mqttMessageCallback = new MqttMessageCallback(revocationSink, objectMapper);
+    }
+
+    @AfterEach
+    void tearDown() {
+        logCaptor.clearLogs();
+        logCaptor.resetLogLevel();
     }
 
     @Test
@@ -90,15 +96,7 @@ class MqttMessageCallbackTest {
         mqttMessageCallback.disconnected(disconnectResponse);
 
         // Then
-        assertTrue(logger.isWarnEnabled());
-        assertTrue(logger.getLoggingEvents()
-                         .stream()
-                         .anyMatch(
-                                 loggingEvent ->
-                                         loggingEvent.getMessage().equals("Disconnected from MQTT broker {}")
-                                         && loggingEvent.getArguments().contains(disconnectResponse)
-                         )
-        );
+        assertTrue(logCaptor.getWarnLogs().stream().anyMatch(log -> log.startsWith("Disconnected from MQTT broker")));
     }
 
     @Test
@@ -110,34 +108,22 @@ class MqttMessageCallbackTest {
         mqttMessageCallback.mqttErrorOccurred(mqttException);
 
         // Then
-        assertTrue(logger.isErrorEnabled());
-        assertTrue(logger.getLoggingEvents()
-                         .stream()
-                         .anyMatch(
-                                 loggingEvent ->
-                                         loggingEvent.getMessage().equals("Mqtt error occurred")
-                         )
-        );
+        assertTrue(logCaptor.getErrorLogs().contains("Mqtt error occurred"));
     }
 
     @Test
     void testDeliveryComplete() {
         // Given
         var mqttToken = mock(IMqttToken.class);
+        logCaptor.setLogLevelToTrace();
 
         // When
         mqttMessageCallback.deliveryComplete(mqttToken);
 
         // Then
-        assertTrue(logger.isTraceEnabled());
-        assertTrue(logger.getLoggingEvents()
-                         .stream()
-                         .anyMatch(
-                                 loggingEvent ->
-                                         loggingEvent.getMessage().equals("Delivery complete for MqttToken {}")
-                                         && loggingEvent.getArguments().contains(mqttToken)
-                         )
-        );
+        assertTrue(logCaptor.getTraceLogs()
+                            .stream()
+                            .anyMatch(log -> log.startsWith("Delivery complete for MqttToken")));
     }
 
     @Test
@@ -150,16 +136,6 @@ class MqttMessageCallbackTest {
         mqttMessageCallback.connectComplete(reconnect, serverURI);
 
         // Then
-        assertTrue(logger.isInfoEnabled());
-        assertTrue(logger.getLoggingEvents()
-                         .stream()
-                         .anyMatch(
-                                 loggingEvent ->
-                                         loggingEvent.getMessage()
-                                                     .equals("Connected to MQTT broker {}, was because of reconnect: {}")
-                                         && loggingEvent.getArguments().contains(serverURI)
-                                         && loggingEvent.getArguments().contains(reconnect)
-                         )
-        );
+        assertTrue(logCaptor.getInfoLogs().stream().anyMatch(log -> log.startsWith("Connected to MQTT broker")));
     }
 }

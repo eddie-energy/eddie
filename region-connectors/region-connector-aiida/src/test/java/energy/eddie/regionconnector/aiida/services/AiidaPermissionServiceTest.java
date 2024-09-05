@@ -1,7 +1,5 @@
 package energy.eddie.regionconnector.aiida.services;
 
-import com.github.valfirst.slf4jtest.TestLogger;
-import com.github.valfirst.slf4jtest.TestLoggerFactory;
 import energy.eddie.api.agnostic.aiida.MqttDto;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
@@ -27,7 +25,9 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
+import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.common.MqttException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,7 +64,7 @@ class AiidaPermissionServiceTest {
             null,
             null
     );
-    private final TestLogger logger = TestLoggerFactory.getTestLogger(AiidaPermissionService.class);
+    private final LogCaptor logCaptor = LogCaptor.forClass(AiidaPermissionService.class);
     @Mock
     private DataNeedsService mockDataNeedsService;
     @Mock
@@ -101,6 +101,11 @@ class AiidaPermissionServiceTest {
                 calculationService,
                 Sinks.many().multicast().onBackpressureBuffer()
         );
+    }
+
+    @AfterEach
+    void tearDown() {
+        logCaptor.clearLogs();
     }
 
     @Test
@@ -266,14 +271,8 @@ class AiidaPermissionServiceTest {
         service.revokePermission(permissionId);
 
         // Then
-        assertTrue(logger.isErrorEnabled());
-        assertTrue(logger.getLoggingEvents()
-                         .stream()
-                         .anyMatch(
-                                 loggingEvent ->
-                                         loggingEvent.getMessage().equals("Permission with permission id {} not found")
-                                         && loggingEvent.getArguments().contains(permissionId)
-                         ));
+
+        assertTrue(logCaptor.getErrorLogs().contains("Permission with permission id " + permissionId + " not found"));
     }
 
     @Test
@@ -287,15 +286,8 @@ class AiidaPermissionServiceTest {
         service.revokePermission(permissionId);
 
         // Then
-        assertTrue(logger.isErrorEnabled());
-        assertTrue(logger.getLoggingEvents()
-                         .stream()
-                         .anyMatch(
-                                 loggingEvent ->
-                                         loggingEvent.getMessage()
-                                                     .equals("Permission with permission id {} could not be revoked")
-                                         && loggingEvent.getArguments().contains(permissionId)
-                         ));
+        assertTrue(logCaptor.getErrorLogs()
+                            .contains("Permission with permission id " + permissionId + " could not be revoked"));
     }
 
     @Test
@@ -347,15 +339,8 @@ class AiidaPermissionServiceTest {
         service.acceptPermission(permissionId);
 
         // Then
-        assertTrue(logger.isErrorEnabled());
-        assertTrue(logger.getLoggingEvents()
-                         .stream()
-                         .anyMatch(
-                                 loggingEvent ->
-                                         loggingEvent.getMessage()
-                                                     .equals("Something went wrong when subscribing to the status topic for permission {}")
-                                         && loggingEvent.getArguments().contains(permissionId)
-                         ));
+        assertTrue(logCaptor.getErrorLogs()
+                            .contains("Something went wrong when subscribing to the status topic for permission " + permissionId));
     }
 
     @Test
