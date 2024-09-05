@@ -54,7 +54,9 @@ public class MicroTeleinfoV3 extends MqttDataSource {
 
             // TODO: Rework with GH-1209 to support other kinds of data supplied by MicroTeleinfoV3
             var energyData = json.papp();
+            var meterReading = json.base();
             emitNextAiidaRecord("1-0:1.7.0", energyData);
+            emitNextAiidaRecord("1-0:1.8.0", meterReading);
         } catch (IOException e) {
             LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
                          new String(message.getPayload(), StandardCharsets.UTF_8), e);
