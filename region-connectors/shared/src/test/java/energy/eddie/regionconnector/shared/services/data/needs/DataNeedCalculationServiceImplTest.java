@@ -5,6 +5,7 @@ import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.RegionConnectorFilter;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
@@ -12,9 +13,13 @@ import energy.eddie.regionconnector.shared.services.data.needs.calculation.strat
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -22,6 +27,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -47,6 +53,17 @@ class DataNeedCalculationServiceImplTest {
     @Mock
     private AccountingPointDataNeed accountingPointDataNeed;
     private DataNeedCalculationServiceImpl service;
+
+    private static Stream<Arguments> regionConnectorFilterConfigurations() {
+        return Stream.of(
+                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.ALLOWLIST, List.of("id")), true),
+                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.ALLOWLIST, List.of("notInList")),
+                             false),
+                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.BLOCKLIST, List.of("id")), false),
+                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.BLOCKLIST, List.of("notInList")),
+                             true)
+        );
+    }
 
     @BeforeEach
     void setUp() {
@@ -115,6 +132,25 @@ class DataNeedCalculationServiceImplTest {
                 () -> assertEquals(timeframe, res.energyDataTimeframe())
         );
     }
+
+    @ParameterizedTest
+    @MethodSource("regionConnectorFilterConfigurations")
+    @MockitoSettings(strictness = org.mockito.quality.Strictness.LENIENT)
+    void testCalculate_regionConnectorFilterReturnsExpectedResult(
+            RegionConnectorFilter regionConnectorFilter,
+            boolean expected
+    ) {
+        // Given
+        when(accountingPointDataNeed.isEnabled()).thenReturn(true);
+        when(accountingPointDataNeed.regionConnectorFilter()).thenReturn(Optional.of(regionConnectorFilter));
+
+        // When
+        var res = service.calculate(accountingPointDataNeed);
+
+        // Then
+        assertEquals(expected, res.supportsDataNeed());
+    }
+
 
     @Test
     void testCalculate_returnsCorrect_forInvalidTimeframedVHDDataNeed() {
@@ -265,6 +301,7 @@ class DataNeedCalculationServiceImplTest {
         // Then
         assertFalse(res.supportsDataNeed());
     }
+
     @Test
     void testCalculate_returnsNotSupported() {
         // Given

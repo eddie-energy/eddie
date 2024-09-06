@@ -18,7 +18,13 @@ Content-Type: application/json
   },
   "energyType": "ELECTRICITY",
   "minGranularity": "PT15M",
-  "maxGranularity": "P1D"
+  "maxGranularity": "P1D",
+  "regionConnectorFilter": {
+    "type": "allowlist",
+    "regionConnectorIds": [
+      "at-eda"
+    ]
+  }
 }
 
 ### Create a new account point data need

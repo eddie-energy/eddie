@@ -92,9 +92,6 @@ content = @`
     <script defer>
       const select = document.querySelector("#data-need-select");
       const container = document.querySelector("#data-need-select-button");
-      const button = document.createElement("eddie-connect-button");
-
-      button.setAttribute("connection-id", "${nextConnectionId}");
 
       // Fetch data needs from the API
       fetch("http://localhost:8080/data-needs/api")
@@ -110,6 +107,8 @@ content = @`
         })
         .then(() => {
           select.addEventListener("change", event => {
+            const button = document.createElement("eddie-connect-button");
+            button.setAttribute("connection-id", "${nextConnectionId}");
             const dataNeedId = event.target.value;
             button.setAttribute("data-need-id", dataNeedId);
             container.replaceChildren(button);

@@ -7,6 +7,7 @@ import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.RegionConnectorFilter;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.EnergyDataTimeframeStrategy;
@@ -55,6 +56,25 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
 
     @Override
     public DataNeedCalculation calculate(DataNeed dataNeed) {
+        var filter = dataNeed.regionConnectorFilter();
+        if (filter.isPresent()) {
+            var regionConnectorId = regionConnectorMetadata.id();
+            var rcIsInList = filter.get()
+                                   .regionConnectorIds()
+                                   .contains(regionConnectorId);
+
+            var type = filter.get().type();
+            if (type == RegionConnectorFilter.Type.ALLOWLIST && !rcIsInList) {
+                return new DataNeedCalculation(false,
+                                               "Region connector " + regionConnectorMetadata.id() + " is not in the allowlist");
+            }
+
+            if (type == RegionConnectorFilter.Type.BLOCKLIST && rcIsInList) {
+                return new DataNeedCalculation(false,
+                                               "Region connector " + regionConnectorMetadata.id() + " is in the blocklist");
+            }
+        }
+
         if (!supportsDataNeedType(dataNeed)) {
             return new DataNeedCalculation(false, "Data need type not supported");
         }

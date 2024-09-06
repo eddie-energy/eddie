@@ -8,12 +8,14 @@ import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.SmartMeterAiidaDataNeed;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.validator.constraints.URL;
 
 import java.time.Instant;
+import java.util.Optional;
 
 @Entity
 @Table(schema = "data_needs")
@@ -56,7 +58,7 @@ public abstract class DataNeed implements DataNeedInterface {
     @URL(message = "must be a valid URL")
     private String policyLink;
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     @CreationTimestamp
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Instant createdAt;
@@ -66,6 +68,12 @@ public abstract class DataNeed implements DataNeedInterface {
     @JsonProperty(required = true)
     @Transient  // don't save type information in database, but make available as property
     private String type;
+
+    @JsonProperty
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    @Nullable
+    private RegionConnectorFilter regionConnectorFilter = null;
 
     @SuppressWarnings("NullAway.Init")
     protected DataNeed() {
@@ -111,5 +119,9 @@ public abstract class DataNeed implements DataNeedInterface {
 
     public String type() {
         return type;
+    }
+
+    public Optional<RegionConnectorFilter> regionConnectorFilter() {
+        return Optional.ofNullable(regionConnectorFilter);
     }
 }
