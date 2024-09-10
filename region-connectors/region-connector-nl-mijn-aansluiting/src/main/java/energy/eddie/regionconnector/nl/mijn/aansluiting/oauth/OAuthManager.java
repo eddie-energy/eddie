@@ -23,6 +23,7 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.persistence.OAuthT
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.persistence.OAuthTokenRepository;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

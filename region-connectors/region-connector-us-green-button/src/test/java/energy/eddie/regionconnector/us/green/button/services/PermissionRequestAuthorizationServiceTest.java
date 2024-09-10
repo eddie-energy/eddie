@@ -1,38 +1,49 @@
 package energy.eddie.regionconnector.us.green.button.services;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientSecretException;
+import energy.eddie.regionconnector.us.green.button.exceptions.InvalidScopesException;
 import energy.eddie.regionconnector.us.green.button.oauth.OAuthCallback;
 import energy.eddie.regionconnector.us.green.button.oauth.enums.OAuthErrorResponse;
+import energy.eddie.regionconnector.us.green.button.oauth.persistence.OAuthTokenDetails;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsInvalidEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsSimpleEvent;
+import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Mono;
 
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestAuthorizationServiceTest {
-
+    @Mock
+    private OAuthCallback callback;
     @Mock
     private UsPermissionRequestRepository usPermissionRequestRepository;
-
     @Mock
     private Outbox outbox;
-
+    @Mock
+    private CredentialService credentialService;
     @InjectMocks
     private PermissionRequestAuthorizationService authorizationService;
 
@@ -42,16 +53,22 @@ class PermissionRequestAuthorizationServiceTest {
     @Captor
     private ArgumentCaptor<UsInvalidEvent> invalidEventCaptor;
 
+    public static Stream<Arguments> testAuthorizePermissionRequest_withInternalException_doesNotEmit() {
+        return Stream.of(
+                Arguments.of(new MissingClientIdException()),
+                Arguments.of(new MissingClientSecretException()),
+                Arguments.of(new Exception())
+        );
+    }
+
     @Test
     void testAuthorizePermissionRequest_invalidPermissionId() {
         // Given
         var invalidPermissionId = "invalidPermissionId";
-        var callback = mock(OAuthCallback.class);
-
-        // When
         when(callback.state()).thenReturn(invalidPermissionId);
-        when(usPermissionRequestRepository.existsById(invalidPermissionId)).thenReturn(false);
-
+        when(usPermissionRequestRepository.findById(invalidPermissionId))
+                .thenReturn(Optional.empty());
+        // When
         // Then
         assertThrows(PermissionNotFoundException.class,
                      () -> authorizationService.authorizePermissionRequest(callback));
@@ -61,14 +78,13 @@ class PermissionRequestAuthorizationServiceTest {
     void testAuthorizePermissionRequest_rejectedCallback() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException {
         // Given
         var permissionId = "permissionId";
-        var callback = mock(OAuthCallback.class);
-
-        // When
         when(callback.state()).thenReturn(permissionId);
         when(callback.error()).thenReturn(Optional.of("access_denied"));
         when(callback.isSuccessful()).thenReturn(false);
-        when(usPermissionRequestRepository.existsById(permissionId)).thenReturn(true);
+        when(usPermissionRequestRepository.findById(permissionId))
+                .thenReturn(Optional.of(createPermissionRequest()));
 
+        // When
         authorizationService.authorizePermissionRequest(callback);
 
         // Then
@@ -81,18 +97,35 @@ class PermissionRequestAuthorizationServiceTest {
         verifyNoMoreInteractions(outbox);
     }
 
+    private static GreenButtonPermissionRequest createPermissionRequest() {
+        var now = LocalDate.now(ZoneOffset.UTC);
+        return new GreenButtonPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                now,
+                now,
+                Granularity.PT15M,
+                PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
+                ZonedDateTime.now(ZoneOffset.UTC),
+                "US",
+                "blbl",
+                "http://localhost",
+                "other"
+        );
+    }
+
     @Test
     void testAuthorizePermissionRequest_invalid() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException {
         // Given
         var permissionId = "permissionId";
-        var callback = mock(OAuthCallback.class);
-
-        // When
         when(callback.state()).thenReturn(permissionId);
         when(callback.error()).thenReturn(Optional.of("invalid_request"));
         when(callback.isSuccessful()).thenReturn(false);
-        when(usPermissionRequestRepository.existsById(permissionId)).thenReturn(true);
+        when(usPermissionRequestRepository.findById(permissionId))
+                .thenReturn(Optional.of(createPermissionRequest()));
 
+        // When
         authorizationService.authorizePermissionRequest(callback);
 
         // Then
@@ -108,5 +141,77 @@ class PermissionRequestAuthorizationServiceTest {
         assertEquals(OAuthErrorResponse.INVALID_REQUEST, invalidEvent.invalidReason());
 
         verifyNoMoreInteractions(outbox);
+    }
+
+    @Test
+    void testAuthorizePermissionRequest_successful() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException {
+        // Given
+        var permissionId = "permissionId";
+        when(callback.state()).thenReturn(permissionId);
+        when(callback.isSuccessful()).thenReturn(true);
+        when(callback.code()).thenReturn(Optional.of("code"));
+        when(usPermissionRequestRepository.findById(permissionId))
+                .thenReturn(Optional.of(createPermissionRequest()));
+        var now = Instant.now(Clock.systemUTC());
+        when(credentialService.retrieveAccessToken(any(), any()))
+                .thenReturn(Mono.just(new OAuthTokenDetails("pid",
+                                                            "token",
+                                                            now,
+                                                            now.plus(10, ChronoUnit.DAYS),
+                                                            "token",
+                                                            "1111")));
+
+        // When
+        authorizationService.authorizePermissionRequest(callback);
+
+        // Then
+        verify(credentialService).retrieveAccessToken(any(), any());
+        verify(outbox, times(2)).commit(simpleEventCaptor.capture());
+        var res = simpleEventCaptor.getValue();
+        assertEquals(PermissionProcessStatus.ACCEPTED, res.status());
+    }
+
+    @Test
+    void testAuthorizePermissionRequest_withMismatchingScopes_emitsInvalid() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException {
+        // Given
+        var permissionId = "permissionId";
+        when(callback.state()).thenReturn(permissionId);
+        when(callback.isSuccessful()).thenReturn(true);
+        when(callback.code()).thenReturn(Optional.of("code"));
+        when(usPermissionRequestRepository.findById(permissionId))
+                .thenReturn(Optional.of(createPermissionRequest()));
+        when(credentialService.retrieveAccessToken(any(), any()))
+                .thenReturn(Mono.error(new InvalidScopesException()));
+
+        // When
+        authorizationService.authorizePermissionRequest(callback);
+
+        // Then
+        verify(outbox).commit(invalidEventCaptor.capture());
+        var res = invalidEventCaptor.getValue();
+        assertAll(
+                () -> assertEquals(PermissionProcessStatus.INVALID, res.status()),
+                () -> assertEquals(OAuthErrorResponse.INVALID_SCOPE, res.invalidReason())
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void testAuthorizePermissionRequest_withInternalException_doesNotEmit(Exception e) throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException {
+        // Given
+        var permissionId = "permissionId";
+        when(callback.state()).thenReturn(permissionId);
+        when(callback.isSuccessful()).thenReturn(true);
+        when(callback.code()).thenReturn(Optional.of("code"));
+        when(usPermissionRequestRepository.findById(permissionId))
+                .thenReturn(Optional.of(createPermissionRequest()));
+        when(credentialService.retrieveAccessToken(any(), any()))
+                .thenReturn(Mono.error(e));
+
+        // When
+        authorizationService.authorizePermissionRequest(callback);
+
+        // Then
+        verify(outbox, never()).commit(invalidEventCaptor.capture());
     }
 }

@@ -19,6 +19,7 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.persistence.OAuthT
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;

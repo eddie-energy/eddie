@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>urn:uuid:31a03bbc-5ce2-5cdc-b10d-4f626b106337</id>
+    <link rel="self" href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Batch/Subscription/467189"
+          type="espi-feed/Subscription"></link>
+    <link rel="related" href="https://cert.greenbuttonalliance.org/certificate/52df5b79-f375-54b4-9eca-3ab0fa6fd45b"
+          type="text/html"/>
+    <title>Subscription</title>
+    <updated>2024-09-04T08:02:15.281809Z</updated>
+    <entry xmlns="http://www.w3.org/2005/Atom">
+        <id>urn:uuid:7fcd83f8-9bf1-5ae7-871a-b71593a57004</id>
+        <link rel="self"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/467189/UsagePoint/1669851"
+              type="espi-entry/UsagePoint"/>
+        <link rel="up" href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/467189/UsagePoint"
+              type="espi-feed/UsagePoint"/>
+        <link rel="related"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/467189/UsagePoint/1669851/MeterReading"
+              type="espi-feed/MeterReading"/>
+        <link rel="related"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/LocalTimeParameters/TIMEZONE_467189_1669851"
+              type="espi-entry/LocalTimeParameters"/>
+        <published>2024-09-04T07:55:48.021385Z</published>
+        <updated>2024-09-04T08:02:15.281809Z</updated>
+        <title>UsagePoint</title>
+        <content type="atom+xml">
+            <UsagePoint xmlns="http://naesb.org/espi">
+                <ServiceCategory>
+                    <kind>0</kind>
+                </ServiceCategory>
+                <ServiceDeliveryPoint>
+                    <tariffProfile>RES-2-TIER</tariffProfile>
+                </ServiceDeliveryPoint>
+            </UsagePoint>
+        </content>
+    </entry>
+    <entry xmlns="http://www.w3.org/2005/Atom">
+        <id>urn:uuid:f292dd95-1307-5bc7-83cd-ccb59973738b</id>
+        <link rel="self"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/LocalTimeParameters/TIMEZONE_467189_1669851"
+              type="espi-entry/LocalTimeParameters"/>
+        <link rel="up" href="https://utilityapi.com/DataCustodian/espi/1_1/resource/LocalTimeParameters"
+              type="espi-feed/LocalTimeParameters"/>
+        <published>2024-09-04T07:55:48.021385Z</published>
+        <updated>2024-09-04T08:02:15.281809Z</updated>
+        <title>LocalTimeParameters</title>
+        <content type="atom+xml">
+            <LocalTimeParameters xmlns="http://naesb.org/espi">
+                <dstEndRule>B40E2000</dstEndRule>
+                <dstOffset>3600</dstOffset>
+                <dstStartRule>360E2000</dstStartRule>
+                <tzOffset>-18000</tzOffset>
+            </LocalTimeParameters>
+        </content>
+    </entry>
+    <entry xmlns="http://www.w3.org/2005/Atom">
+        <id>urn:uuid:03e20a9c-0067-5bef-9116-413cb9e5006f</id>
+        <link rel="self"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/467189/UsagePoint/1669851/MeterReading/1669851-1725408000-1725321600_kwh_19"
+              type="espi-entry/MeterReading"/>
+        <link rel="up"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/467189/UsagePoint/1669851/MeterReading"
+              type="espi-feed/MeterReading"/>
+        <link rel="related"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/467189/UsagePoint/1669851"
+              type="espi-entry/UsagePoint"/>
+        <link rel="related"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/467189/UsagePoint/1669851/MeterReading/1669851-1725408000-1725321600_kwh_19/IntervalBlock"
+              type="espi-feed/IntervalBlock"/>
+        <link rel="related"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/ReadingType/467189_1669851_1669851-1725408000-1725321600_kwh_19"
+              type="espi-entry/ReadingType"/>
+        <published>2024-09-04T08:02:14.896492Z</published>
+        <updated>2024-09-04T08:02:14.905064Z</updated>
+        <title>MeterReading</title>
+        <content type="atom+xml">
+            <MeterReading xmlns="http://naesb.org/espi"/>
+        </content>
+    </entry>
+    <entry xmlns="http://www.w3.org/2005/Atom">
+        <id>urn:uuid:d540e6aa-67d6-5003-aa2a-3c2dd8157d2a</id>
+        <link rel="self"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/ReadingType/467189_1669851_1669851-1725408000-1725321600_kwh_19"
+              type="espi-entry/ReadingType"/>
+        <link rel="up" href="https://utilityapi.com/DataCustodian/espi/1_1/resource/ReadingType"
+              type="espi-feed/ReadingType"/>
+        <link rel="related"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/467189/UsagePoint/1669851/MeterReading/1669851-1725408000-1725321600_kwh_19"
+              type="espi-entry/MeterReading"/>
+        <published>2024-09-04T08:02:14.896492Z</published>
+        <updated>2024-09-04T08:02:14.905064Z</updated>
+        <title>ReadingType</title>
+        <content type="atom+xml">
+            <ReadingType xmlns="http://naesb.org/espi">
+                <accumulationBehaviour>4</accumulationBehaviour>
+                <commodity>1</commodity>
+                <currency>840</currency>
+                <flowDirection>19</flowDirection>
+                <intervalLength>900</intervalLength>
+                <kind>12</kind>
+                <phase>0</phase>
+                <powerOfTenMultiplier>-3</powerOfTenMultiplier>
+                <uom>72</uom>
+            </ReadingType>
+        </content>
+    </entry>
+</feed>

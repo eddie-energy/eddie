@@ -16,7 +16,8 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.exceptions.*;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlInternalPollingEvent;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlSimpleEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.utils.LocalDateUtils;
+import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
+import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -116,7 +117,7 @@ public class PollingService implements AutoCloseable {
 
                 // Remove the rest of the meter readings which are not part of the permission request timeframe
                 // End of day calculation
-                ZonedDateTime end = LocalDateUtils.endOfDay(permissionRequest.end(), timestamp.getZone());
+                ZonedDateTime end = DateTimeUtils.endOfDay(permissionRequest.end(), timestamp.getZone());
                 removeMeterReadingsAfter(register, end);
             }
         }

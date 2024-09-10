@@ -36,14 +36,15 @@ tbd
 The region connector needs a set of configuration values to be able to function correctly, how you provide these values
 depends on the way you deploy the region connector.
 
-| Configuration values                                | Description                                                                                  |
-|-----------------------------------------------------|----------------------------------------------------------------------------------------------|
-| `region-connector.us.green.button.basepath`         | Base path for the client (default is https://utilityapi.com/DataCustodian/espi/1_1/resource) |
-| `region-connector.us.green.button.redirect.url`     | The redirect url for the OAuth flow                                                          |
-| `region-connector.us.green.button.client.api.token` | The api token in order to check the API status                                               |
-| `region-connector.us.green.button.webhook.secret`   | The webhook secret in order to validate webhook events                                       |
-| `region-connector.us.green.button.client.ids`       | The client ids of the utilities you want to support                                          |
-| `region-connector.us.green.button.client.secrets`   | The client secrets of the utilities you want to support                                      |
+| Configuration values                                  | Description                                                                                                                                             |
+|-------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `region-connector.us.green.button.basepath`           | Base path for the client (default is https://utilityapi.com/DataCustodian/espi/1_1/resource)                                                            |
+| `region-connector.us.green.button.redirect.url`       | The redirect url for the OAuth flow                                                                                                                     |
+| `region-connector.us.green.button.client.api.token`   | The api token in order to check the API status                                                                                                          |
+| `region-connector.us.green.button.webhook.secret`     | The webhook secret in order to validate webhook events                                                                                                  |
+| `region-connector.us.green.button.client.ids`         | The client ids of the utilities you want to support                                                                                                     |
+| `region-connector.us.green.button.client.secrets`     | The client secrets of the utilities you want to support                                                                                                 |
+| `region-connector.us.green-button.data-ready.polling` | The frequency in which the region-connector checks if the data is available via the green button API. Uses Spring Cron syntax. Default is `0 0 * * * *` |
 
 ### .properties file
 
@@ -56,6 +57,7 @@ region-connector.us.green.button.client.api.token=REPLACE_ME
 region-connector.us.green.button.webhook.secret=REPLACE_ME
 region-connector.us.green.button.client.ids={REPLACE: 'ME', REPLACE_ME: 'TOO'}
 region-connector.us.green.button.client.secrets={REPLACE: 'ME', REPLACE_ME: 'TOO'}
+region-connector.us.green-button.data-ready.polling=0 0 * * * *
 ```
 
 ### Environment variables
@@ -74,6 +76,7 @@ REGION_CONNECTOR_US_GREEN_BUTTON_CLIENT_API_TOKEN=REPLACE_ME
 REGION_CONNECTOR_US_GREEN_BUTTON_WEBHOOK_SECRET=REPLACE_ME
 REGION_CONNECTOR_US_GREEN_BUTTON_CLIENT_IDS={REPLACE: 'ME', REPLACE_ME: 'TOO'}
 REGION_CONNECTOR_US_GREEN_BUTTON_CLIENT_SECRETS={REPLACE: 'ME', REPLACE_ME: 'TOO'}
+REGION_CONNECTOR_US_GREEN_BUTTON_DATA_READY_POLLING=0 0 * * * *
 ```
 
 ## Running the Region Connector via EDDIE

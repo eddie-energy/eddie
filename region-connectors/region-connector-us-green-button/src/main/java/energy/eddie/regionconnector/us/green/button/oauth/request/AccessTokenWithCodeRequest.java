@@ -13,6 +13,7 @@ public class AccessTokenWithCodeRequest extends OAuthTokenRequest {
         this.redirectUri = redirectUri;
     }
 
+    @Override
     public MultipartBodyBuilder assembleMultipartBodyBuilder(MultipartBodyBuilder multipartBodyBuilder) {
         multipartBodyBuilder.part("grant_type", getGrantType().getGrantType());
         multipartBodyBuilder.part("code", code);

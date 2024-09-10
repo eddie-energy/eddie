@@ -1,11 +1,9 @@
 package energy.eddie.regionconnector.us.green.button.web;
 
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
-import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientSecretException;
 import energy.eddie.regionconnector.us.green.button.oauth.OAuthCallback;
@@ -24,7 +22,6 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriTemplate;
 
 import java.net.URI;
-import java.util.Map;
 import java.util.Optional;
 
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
@@ -33,15 +30,13 @@ import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSI
 @RestController
 public class PermissionRequestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
-    private final GreenButtonApi greenButtonApi;
     private final PermissionRequestCreationService permissionRequestCreationService;
     private final PermissionRequestAuthorizationService permissionRequestAuthorizationService;
 
     public PermissionRequestController(
-            GreenButtonApi greenButtonApi, PermissionRequestCreationService permissionRequestCreationService,
+            PermissionRequestCreationService permissionRequestCreationService,
             PermissionRequestAuthorizationService permissionRequestAuthorizationService
     ) {
-        this.greenButtonApi = greenButtonApi;
         this.permissionRequestCreationService = permissionRequestCreationService;
         this.permissionRequestAuthorizationService = permissionRequestAuthorizationService;
     }
@@ -67,18 +62,14 @@ public class PermissionRequestController {
             @Valid
             PermissionRequestForCreation permissionRequest
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, MissingClientIdException, MissingClientSecretException {
-        CreatedPermissionRequest createdPermissionRequest = permissionRequestCreationService.createPermissionRequest(
-                permissionRequest);
+        var createdPermissionRequest = permissionRequestCreationService.createPermissionRequest(
+                permissionRequest
+        );
         URI location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
                 .expand(createdPermissionRequest.permissionId());
         return ResponseEntity
                 .created(location)
                 .body(createdPermissionRequest);
-    }
-
-    @GetMapping("/health")
-    public Map<String, HealthState> health() {
-        return greenButtonApi.health().block();
     }
 
     @GetMapping("/authorization-callback")

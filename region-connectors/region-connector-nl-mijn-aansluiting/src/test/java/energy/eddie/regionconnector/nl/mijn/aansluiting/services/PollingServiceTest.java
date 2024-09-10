@@ -16,6 +16,7 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlInte
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlSimpleEvent;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
