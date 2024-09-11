@@ -46,8 +46,11 @@ public class MijnAansluitingRegionConnectorMetadata implements RegionConnectorMe
 
     @Override
     public long coveredMeteringPoints() {
-        // TODO calculate/find out, see GH-946
-        return 0;
+        // Source: https://github.com/eddie-energy/eddie/issues/487#issue-2019640488
+        // Alliander | 3 700 000
+        // Enexis Netbeheer B.V. | 2 849 000
+        // Stedin Groep | 2 000 000
+        return 3_700_000L + 2_849_000L + 2_000_000L;
     }
 
     @Override
