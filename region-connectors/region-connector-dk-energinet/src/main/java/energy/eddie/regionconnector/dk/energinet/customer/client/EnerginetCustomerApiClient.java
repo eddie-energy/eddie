@@ -12,6 +12,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.StringApiRespons
 import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.DateTimeException;
@@ -35,8 +36,8 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     private final IsAliveApi isAliveApi;
 
     @Autowired
-    public EnerginetCustomerApiClient(EnerginetConfiguration configuration) {
-        apiClient = new ApiClient()
+    public EnerginetCustomerApiClient(EnerginetConfiguration configuration, WebClient webClient) {
+        apiClient = new ApiClient(webClient)
                 .setBasePath(configuration.customerBasePath());
         tokenApi = new TokenApi(apiClient);
         meterDataApi = new MeterDataApi(apiClient);

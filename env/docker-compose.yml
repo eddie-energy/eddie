@@ -68,6 +68,12 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      # Big messages produced for validated historical data
+      # See: https://stackoverflow.com/questions/63528508/recordtoolargeexception-in-kafka
+      - KAFKA_CFG_SOCKET_RECEIVE_BUFFER_BYTES=102400
+      - KAFKA_CFG_SOCKET_SEND_BUFFER_BYTES=102400
+      - KAFKA_CFG_SOCKET_REQUEST_MAX_BYTES=104857600
+      - KAFKA_CFG_MESSAGE_MAX_BYTES=104857600
 
   init-kafka:
     image: docker.io/bitnami/kafka:3.6

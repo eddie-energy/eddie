@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -79,7 +80,7 @@ class EnerginetCustomerApiClientTest {
         // Given
         when(config.customerBasePath()).thenReturn("path");
 
-        var client = new EnerginetCustomerApiClient(config);
+        var client = new EnerginetCustomerApiClient(config, WebClient.create());
         var spy = spy(client);
         doReturn(Mono.just(true)).when(spy).isAlive();
 
@@ -100,7 +101,7 @@ class EnerginetCustomerApiClientTest {
         // Given
         when(config.customerBasePath()).thenReturn("path");
 
-        var client = new EnerginetCustomerApiClient(config);
+        var client = new EnerginetCustomerApiClient(config, WebClient.create());
         var spy = spy(client);
         doReturn(Mono.just(false)).when(spy).isAlive();
 
@@ -121,7 +122,7 @@ class EnerginetCustomerApiClientTest {
         // Given
         when(config.customerBasePath()).thenReturn("path");
 
-        var client = new EnerginetCustomerApiClient(config);
+        var client = new EnerginetCustomerApiClient(config, WebClient.create());
         String token = "token";
         UUID userCorrelationId = UUID.randomUUID();
 
@@ -144,7 +145,7 @@ class EnerginetCustomerApiClientTest {
         var startExceedsMaxPeriod = end.minusDays(MAX_PERIOD + 1);
         when(config.customerBasePath()).thenReturn("path");
 
-        var client = new EnerginetCustomerApiClient(config);
+        var client = new EnerginetCustomerApiClient(config, WebClient.create());
         UUID userCorrelationId = UUID.randomUUID();
 
 
