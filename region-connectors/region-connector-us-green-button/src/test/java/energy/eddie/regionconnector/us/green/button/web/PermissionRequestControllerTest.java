@@ -89,19 +89,4 @@ class PermissionRequestControllerTest {
                .andExpect(status().isCreated())
                .andExpect(jsonPath("$.redirectUri", is("http://localhost")));
     }
-
-    @Test
-    void authorizationCallback_returnsSuccess() throws Exception {
-        // Given
-
-        // When
-        mockMvc.perform(
-                       get("/authorization-callback")
-                               .queryParam("state", "asdf")
-                               .queryParam("code", "asdf")
-               )
-               // Then
-               .andExpect(status().isOk())
-               .andExpect(content().string("You can close this tab now."));
-    }
 }

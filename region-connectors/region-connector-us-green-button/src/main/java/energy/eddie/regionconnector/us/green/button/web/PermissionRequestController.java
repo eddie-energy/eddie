@@ -3,17 +3,12 @@ package energy.eddie.regionconnector.us.green.button.web;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientSecretException;
-import energy.eddie.regionconnector.us.green.button.oauth.OAuthCallback;
 import energy.eddie.regionconnector.us.green.button.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.permission.request.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.us.green.button.services.PermissionRequestAuthorizationService;
 import energy.eddie.regionconnector.us.green.button.services.PermissionRequestCreationService;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,16 +24,12 @@ import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSI
 
 @RestController
 public class PermissionRequestController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final PermissionRequestCreationService permissionRequestCreationService;
-    private final PermissionRequestAuthorizationService permissionRequestAuthorizationService;
 
     public PermissionRequestController(
-            PermissionRequestCreationService permissionRequestCreationService,
-            PermissionRequestAuthorizationService permissionRequestAuthorizationService
+            PermissionRequestCreationService permissionRequestCreationService
     ) {
         this.permissionRequestCreationService = permissionRequestCreationService;
-        this.permissionRequestAuthorizationService = permissionRequestAuthorizationService;
     }
 
     @GetMapping(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
@@ -70,18 +61,5 @@ public class PermissionRequestController {
         return ResponseEntity
                 .created(location)
                 .body(createdPermissionRequest);
-    }
-
-    @GetMapping("/authorization-callback")
-    public ResponseEntity<String> authorizationCallback(
-            @RequestParam(name = "code", required = false) String code,
-            @RequestParam(name = "error", required = false) String error,
-            @RequestParam(name = "state") String state
-    ) throws PermissionNotFoundException, MissingClientIdException, MissingClientSecretException {
-        LOGGER.info("Authorization callback received with code: {}, error: {}, state: {}", code, error, state);
-        var oauthCallback = new OAuthCallback(Optional.ofNullable(code), Optional.ofNullable(error), state);
-        permissionRequestAuthorizationService.authorizePermissionRequest(oauthCallback);
-
-        return ResponseEntity.ok("You can close this tab now.");
     }
 }

@@ -35,7 +35,7 @@ public class PermissionRequestAuthorizationService {
 
     public void authorizePermissionRequest(
             OAuthCallback callback
-    ) throws PermissionNotFoundException, MissingClientIdException, MissingClientSecretException {
+    ) throws PermissionNotFoundException, MissingClientIdException, MissingClientSecretException, UnauthorizedException {
         var permissionId = callback.state();
         var pr = permissionRequestRepository.findById(permissionId);
         if (pr.isEmpty()) {
@@ -53,7 +53,7 @@ public class PermissionRequestAuthorizationService {
             } else {
                 outbox.commit(new UsInvalidEvent(permissionId, oAuthErrorResponse));
             }
-            return;
+            throw new UnauthorizedException();
         }
 
         LOGGER.info("Authorization callback was successful");
