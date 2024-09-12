@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
+import energy.eddie.regionconnector.dk.energinet.DtoLoader;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
-import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointDetailsCustomerDtoResponseListApiResponse;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -23,7 +23,6 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -112,7 +111,7 @@ class AccountingPointDetailsServiceTest {
         var permissionRequest = permissionRequest(start, end);
         doReturn(Mono.just(refreshToken))
                 .when(customerApi).accessToken(anyString());
-        var response = validApiResponse();
+        var response = DtoLoader.validApiResponse();
         when(customerApi.getMeteringPointDetails(any(), eq("token")))
                 .thenReturn(Mono.just(response));
 
@@ -136,13 +135,5 @@ class AccountingPointDetailsServiceTest {
         verify(outbox).commit(simpleEventArgumentCaptor.capture());
         var res = simpleEventArgumentCaptor.getValue();
         assertEquals(PermissionProcessStatus.FULFILLED, res.status());
-    }
-
-    private MeteringPointDetailsCustomerDtoResponseListApiResponse validApiResponse() throws IOException {
-        try (InputStream is = AccountingPointDetailsServiceTest.class.getClassLoader()
-                                                                     .getResourceAsStream(
-                                                                             "MeteringPointDetailsCustomerDtoResponseListApiResponse.json")) {
-            return mapper.readValue(is, MeteringPointDetailsCustomerDtoResponseListApiResponse.class);
-        }
     }
 }

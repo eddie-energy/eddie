@@ -26,6 +26,12 @@ public class EnerginetRegionConnectorMetadata implements RegionConnectorMetadata
             ValidatedHistoricalDataDataNeed.class,
             AccountingPointDataNeed.class
     );
+    /**
+     * The Global Location Number (GLN) of the sender of the message. This value is from the <a
+     * href="https://api.eloverblik.dk/customerapi/index.html">API documentation</a> (from the API description linked in
+     * the description)
+     */
+    public static final String GLOBAL_LOCATION_NUMBER = "5790001330583";
 
     @Nullable
     private static EnerginetRegionConnectorMetadata instance = null;
