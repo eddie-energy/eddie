@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed
+        xmlns="http://www.w3.org/2005/Atom">
+    <id>urn:uuid:0b75f7be-9405-549f-8c8d-934e4605d7d6</id>
+    <link rel="self" href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/467189/UsagePoint"
+          type="espi-feed/UsagePoint"></link>
+    <link rel="related" href="https://cert.greenbuttonalliance.org/certificate/52df5b79-f375-54b4-9eca-3ab0fa6fd45b"
+          type="text/html"/>
+    <title>UsagePoint</title>
+    <updated>2024-09-04T07:56:13.853346Z</updated>
+    <entry
+            xmlns="http://www.w3.org/2005/Atom">
+        <id>urn:uuid:7fcd83f8-9bf1-5ae7-871a-b71593a57004</id>
+        <link rel="self"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/467189/UsagePoint/1669851"
+              type="espi-entry/UsagePoint"/>
+        <link rel="up" href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/467189/UsagePoint"
+              type="espi-feed/UsagePoint"/>
+        <link rel="related"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/467189/UsagePoint/1669851/MeterReading"
+              type="espi-feed/MeterReading"/>
+        <link rel="related"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/467189/UsagePoint/1669851/UsageSummary"
+              type="espi-feed/UsageSummary"/>
+        <link rel="related"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/467189/UsagePoint/1669851/ElectricPowerQualitySummary"
+              type="espi-feed/ElectricPowerQualitySummary"/>
+        <link rel="related"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/LocalTimeParameters/TIMEZONE_467189_1669851"
+              type="espi-entry/LocalTimeParameters"/>
+        <published>2024-09-04T07:55:48.021385Z</published>
+        <updated>2024-09-04T07:56:13.853346Z</updated>
+        <title>UsagePoint</title>
+        <content type="atom+xml">
+            <UsagePoint
+                    xmlns="http://naesb.org/espi">
+                <ServiceCategory>
+                    <kind>0</kind>
+                </ServiceCategory>
+                <ServiceDeliveryPoint>
+                    <tariffProfile>RES-2-TIER</tariffProfile>
+                </ServiceDeliveryPoint>
+            </UsagePoint>
+        </content>
+    </entry>
+</feed>

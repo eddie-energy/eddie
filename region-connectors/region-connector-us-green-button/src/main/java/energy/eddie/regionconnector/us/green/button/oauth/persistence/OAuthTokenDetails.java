@@ -25,6 +25,7 @@ public class OAuthTokenDetails {
     private final String refreshTokenValue;
     @CreationTimestamp
     private final Instant createdAt;
+    private final String authUid;
 
     protected OAuthTokenDetails() {
         permissionId = null;
@@ -33,6 +34,7 @@ public class OAuthTokenDetails {
         accessTokenExpiresAt = null;
         refreshTokenValue = null;
         createdAt = null;
+        authUid = null;
     }
 
     public OAuthTokenDetails(
@@ -40,13 +42,15 @@ public class OAuthTokenDetails {
             String accessTokenValue,
             Instant accessTokenIssuedAt,
             Instant accessTokenExpiresAt,
-            String refreshTokenValue
+            String refreshTokenValue,
+            String authUid
     ) {
         this.permissionId = permissionId;
         this.accessTokenValue = accessTokenValue;
         this.accessTokenIssuedAt = accessTokenIssuedAt;
         this.accessTokenExpiresAt = accessTokenExpiresAt;
         this.refreshTokenValue = refreshTokenValue;
+        this.authUid = authUid;
         this.createdAt = null;
     }
 
@@ -61,6 +65,10 @@ public class OAuthTokenDetails {
 
     public boolean isValid() {
         Instant now = Instant.now(Clock.systemUTC());
-        return accessTokenExpiresAt.isAfter(now);
+        return accessTokenExpiresAt != null && accessTokenExpiresAt.isAfter(now);
+    }
+
+    public String authUid() {
+        return authUid;
     }
 }

@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.us.green.button.permission.request.helper;
 import energy.eddie.api.agnostic.Granularity;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -136,7 +137,7 @@ public class Scope {
 
         private void completelyInThePastOrFuture() {
             if (historicalDataStart != null && ongoingDataEnd != null) {
-                var now = LocalDate.now();
+                var now = LocalDate.now(ZoneOffset.UTC);
                 if (historicalDataStart.isBefore(now) && ongoingDataEnd.isBefore(now)) {
                     ongoingDataEnd = null;
                 } else if (historicalDataStart.isAfter(now) && ongoingDataEnd.isAfter(now)) {

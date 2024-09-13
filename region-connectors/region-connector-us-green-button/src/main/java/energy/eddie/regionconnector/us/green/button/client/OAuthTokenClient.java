@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.us.green.button.client;
 
-import energy.eddie.regionconnector.us.GreenButtonSpringConfig;
+import energy.eddie.regionconnector.us.green.button.GreenButtonBeanConfig;
 import energy.eddie.regionconnector.us.green.button.api.TokenApi;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.oauth.dto.AccessTokenResponse;
@@ -34,11 +34,11 @@ public class OAuthTokenClient implements TokenApi {
         var authorizationHeader = "Basic " + Base64.getEncoder()
                                                    .encodeToString((clientId + ":" + clientSecret).getBytes(
                                                            StandardCharsets.UTF_8));
-        this.webClient = new GreenButtonSpringConfig().webClient(greenButtonConfiguration)
-                                                      .mutate()
-                                                      .defaultHeader(HttpHeaders.AUTHORIZATION, authorizationHeader)
-                                                      .baseUrl(baseUrl)
-                                                      .build();
+        this.webClient = new GreenButtonBeanConfig().webClient(greenButtonConfiguration)
+                                                    .mutate()
+                                                    .defaultHeader(HttpHeaders.AUTHORIZATION, authorizationHeader)
+                                                    .baseUrl(baseUrl)
+                                                    .build();
     }
 
     @Override

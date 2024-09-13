@@ -32,6 +32,9 @@ dependencies {
     implementation(libs.spring.oxm)
     implementation(libs.spring.boot.starter.actuator)
 
+    // for atom feed
+    implementation(libs.rometools.rome)
+
     // dependencies needed to generate code
     jaxb(libs.jaxb.xjc)
     jaxb(libs.jaxb.runtime)

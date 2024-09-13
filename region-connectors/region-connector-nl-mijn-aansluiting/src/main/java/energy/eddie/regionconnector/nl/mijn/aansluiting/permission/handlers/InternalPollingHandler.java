@@ -7,7 +7,7 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermission
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
-import energy.eddie.regionconnector.shared.utils.LocalDateUtils;
+import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -46,7 +46,7 @@ public class InternalPollingHandler implements EventHandler<NlInternalPollingEve
     }
 
     private static boolean isAfter(ZonedDateTime timestamp, LocalDate end) {
-        var eod = LocalDateUtils.endOfDay(end, timestamp.getZone());
+        var eod = DateTimeUtils.endOfDay(end, timestamp.getZone());
         return timestamp.isAfter(eod);
     }
 }

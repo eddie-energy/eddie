@@ -19,6 +19,7 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.persistence.OAuthT
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +51,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings("JavaUtilDate") // The nimbus library still uses the Date class, which should be avoided
 class OAuthManagerTest {
-    private final static String PRIVATE_KEY =
+    private static final String PRIVATE_KEY =
             """
                     MIIG/QIBADANBgkqhkiG9w0BAQEFAASCBucwggbjAgEAAoIBgQDJfNnt6mHorE/w
                     898Dqwqu8an7dNE7A+EQ32eu+8DArom6Z4nqxr8leMD8XkLPXNLYR9Nsa4Ob4oH0
@@ -373,6 +374,7 @@ class OAuthManagerTest {
     @Test
     void testAccessTokenAndSingleSyncUrl_invalidCredentials() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, BadJOSEException, JOSEException, IOException {
         // Given
+        //noinspection resource
         var server = new MockWebServer();
         var now = ZonedDateTime.now(ZoneOffset.UTC);
         var details = new OAuthTokenDetails(

@@ -116,8 +116,8 @@ public class PermissionRequestCreationService {
         Scope scope;
         try {
             scope = new Scope.ScopeBuilder().addDataField(Scope.DataField.INTERVALS)
-                                            .withHistoricalDataStart(calculation.permissionTimeframe().start())
-                                            .withOngoingDataEnd(calculation.permissionTimeframe().end())
+                                            .withHistoricalDataStart(calculation.energyDataTimeframe().start())
+                                            .withOngoingDataEnd(calculation.energyDataTimeframe().end())
                                             .withGranularity(calculation.granularities().getFirst())
                                             .build();
         } catch (IllegalStateException e) {
@@ -127,8 +127,8 @@ public class PermissionRequestCreationService {
 
         String scopeString = scope.toString();
         outbox.commit(new UsValidatedEvent(permissionId,
-                                           calculation.permissionTimeframe().start(),
-                                           calculation.permissionTimeframe().end(),
+                                           calculation.energyDataTimeframe().start(),
+                                           calculation.energyDataTimeframe().end(),
                                            calculation.granularities().getFirst(),
                                            scopeString));
 
@@ -169,7 +169,7 @@ public class PermissionRequestCreationService {
                          .map(request -> new ConnectionStatusMessage(request.connectionId(),
                                                                      request.permissionId(),
                                                                      request.dataNeedId(),
-                                                                     null,
+                                                                     request.dataSourceInformation(),
                                                                      request.status()));
     }
 }

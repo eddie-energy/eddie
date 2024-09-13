@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.us.green.button.permission.request;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
 import energy.eddie.regionconnector.us.green.button.permission.GreenButtonDataSourceInformation;
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
 import jakarta.annotation.Nullable;
@@ -10,6 +11,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 @Entity
@@ -30,6 +32,7 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
     private final PermissionProcessStatus status;
     @Column(name = "granularity")
     @Enumerated(EnumType.STRING)
+    @SuppressWarnings("unused")
     private final Granularity granularity;
     @Column(name = "permission_start")
     private final LocalDate start;
@@ -43,6 +46,10 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
     private final String scope;
     @Column(name = "created")
     private final ZonedDateTime created;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @MapKeyJoinColumn(name = "permission_id", referencedColumnName = "permission_id")
+    @CollectionTable(name = "last_meter_readings", joinColumns = @JoinColumn(name = "permission_id"), schema = "us_green_button")
+    private final Map<String, ZonedDateTime> lastMeterReadings;
 
     // just for JPA
     @SuppressWarnings("NullAway.Init")
@@ -58,20 +65,7 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
         scope = null;
         jumpOffUrl = null;
         created = null;
-    }
-
-    @SuppressWarnings("unused")
-    public GreenButtonPermissionRequest(
-            String permissionId,
-            String connectionId,
-            LocalDate start,
-            LocalDate end,
-            String dataNeedId,
-            PermissionProcessStatus status,
-            Granularity granularity,
-            ZonedDateTime created
-    ) {
-        this(permissionId, connectionId, dataNeedId, start, end, granularity, status, created, null, null, null, null);
+        lastMeterReadings = Map.of();
     }
 
     @SuppressWarnings("java:S107")
@@ -89,6 +83,40 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
             String jumpOffUrl,
             String scope
     ) {
+        this(
+                permissionId,
+                connectionId,
+                dataNeedId,
+                start,
+                end,
+                granularity,
+                status,
+                created,
+                countryCode,
+                companyId,
+                jumpOffUrl,
+                scope,
+                Map.of()
+        );
+    }
+
+
+    @SuppressWarnings({"java:S107"})
+    public GreenButtonPermissionRequest(
+            String permissionId,
+            String connectionId,
+            String dataNeedId,
+            LocalDate start,
+            LocalDate end,
+            Granularity granularity,
+            PermissionProcessStatus status,
+            ZonedDateTime created,
+            String countryCode,
+            String companyId,
+            @Nullable String jumpOffUrl,
+            @Nullable String scope,
+            Map<String, ZonedDateTime> lastMeterReadings
+    ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
         this.start = start;
@@ -100,6 +128,7 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
         this.dataSourceInformation = new GreenButtonDataSourceInformation(companyId, countryCode);
         this.jumpOffUrl = jumpOffUrl;
         this.scope = scope;
+        this.lastMeterReadings = lastMeterReadings;
     }
 
     @Override
@@ -150,5 +179,16 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
     @Override
     public Optional<String> jumpOffUrl() {
         return Optional.ofNullable(jumpOffUrl);
+    }
+
+    @Override
+    public Optional<ZonedDateTime> latestMeterReadingEndDateTime() {
+        return DateTimeUtils.oldestDateTime(lastMeterReadings.values());
+    }
+
+    @Override
+    public Optional<LocalDate> latestMeterReadingEndDate() {
+        return latestMeterReadingEndDateTime()
+                .map(ZonedDateTime::toLocalDate);
     }
 }
