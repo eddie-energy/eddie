@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.shared.services;
 
+import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
-import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.TestPollingEvent;

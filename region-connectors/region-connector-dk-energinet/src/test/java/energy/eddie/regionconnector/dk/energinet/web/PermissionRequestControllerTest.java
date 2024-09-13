@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.dk.energinet.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -256,6 +256,7 @@ class PermissionRequestControllerTest {
                                 .content(mapper.writeValueAsString(jsonNode)))
                .andExpect(status().isBadRequest());
     }
+
     /**
      * The {@link RegionConnectorsCommonControllerAdvice} is automatically registered for each region connector when the
      * whole core is started. To be able to properly test the controller's error responses, manually add the advice to

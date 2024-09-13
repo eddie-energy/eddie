@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events;
 
-import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.MijnAansluitingDataSourceInformation;
 import jakarta.persistence.Column;

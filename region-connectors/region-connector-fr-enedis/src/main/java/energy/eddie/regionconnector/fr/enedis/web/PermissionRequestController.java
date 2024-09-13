@@ -1,19 +1,15 @@
 package energy.eddie.regionconnector.fr.enedis.web;
 
-import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
-import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
-import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriTemplate;

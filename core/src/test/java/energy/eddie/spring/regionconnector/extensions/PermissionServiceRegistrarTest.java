@@ -1,6 +1,6 @@
 package energy.eddie.spring.regionconnector.extensions;
 
-import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
+import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
 import energy.eddie.core.services.PermissionService;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +13,7 @@ class PermissionServiceRegistrarTest {
     void givenNull_constructor_throws() {
         // Given
         var mockService = mock(PermissionService.class);
-        var mockProvider = mock(Mvp1ConnectionStatusMessageProvider.class);
+        var mockProvider = mock(ConnectionStatusMessageProvider.class);
 
         // When, Then
         assertThrows(NullPointerException.class, () -> new PermissionServiceRegistrar(null, mockService));
@@ -24,7 +24,7 @@ class PermissionServiceRegistrarTest {
     void givenRegionConnector_registersAtService() {
         // Given
         var mockService = mock(PermissionService.class);
-        var mockProvider = mock(Mvp1ConnectionStatusMessageProvider.class);
+        var mockProvider = mock(ConnectionStatusMessageProvider.class);
 
         // When
         new PermissionServiceRegistrar(mockProvider, mockService);

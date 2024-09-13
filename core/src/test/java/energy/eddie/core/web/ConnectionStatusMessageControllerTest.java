@@ -1,6 +1,6 @@
 package energy.eddie.core.web;
 
-import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.core.services.PermissionService;
 import org.junit.jupiter.api.Test;
@@ -26,15 +26,6 @@ public class ConnectionStatusMessageControllerTest {
     @Autowired
     private WebTestClient webTestClient;
 
-    private ConnectionStatusMessage statusMessage(PermissionProcessStatus status) {
-        return new ConnectionStatusMessage(
-                "1",
-                "1",
-                "1",
-                null,
-                status);
-    }
-
     @Test
     public void connectionStatusMessageByPermissionId_sendsStatus() {
         var message1 = statusMessage(PermissionProcessStatus.CREATED);
@@ -44,17 +35,26 @@ public class ConnectionStatusMessageControllerTest {
                 .willReturn(Flux.just(message1, message2));
 
         var result = webTestClient.get()
-                .uri("/api/connection-status-messages/1")
-                .accept(MediaType.TEXT_EVENT_STREAM)
-                .exchange()
-                .expectStatus().isOk()
-                .returnResult(ConnectionStatusMessage.class)
-                .getResponseBody();
+                                  .uri("/api/connection-status-messages/1")
+                                  .accept(MediaType.TEXT_EVENT_STREAM)
+                                  .exchange()
+                                  .expectStatus().isOk()
+                                  .returnResult(ConnectionStatusMessage.class)
+                                  .getResponseBody();
 
         StepVerifier.create(result)
-                // only check status to avoid time zone issues
-                .expectNextMatches(message -> message1.status().equals(message.status()))
-                .expectNextMatches(message -> message2.status().equals(message.status()))
-                .verifyComplete();
+                    // only check status to avoid time zone issues
+                    .expectNextMatches(message -> message1.status().equals(message.status()))
+                    .expectNextMatches(message -> message2.status().equals(message.status()))
+                    .verifyComplete();
+    }
+
+    private ConnectionStatusMessage statusMessage(PermissionProcessStatus status) {
+        return new ConnectionStatusMessage(
+                "1",
+                "1",
+                "1",
+                null,
+                status);
     }
 }

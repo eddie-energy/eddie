@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda;
 
-import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;

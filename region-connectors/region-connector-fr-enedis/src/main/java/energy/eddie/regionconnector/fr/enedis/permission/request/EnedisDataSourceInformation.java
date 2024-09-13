@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.permission.request;
 
-import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata;
 
 public class EnedisDataSourceInformation implements DataSourceInformation {
@@ -19,12 +19,12 @@ public class EnedisDataSourceInformation implements DataSourceInformation {
     }
 
     @Override
-    public String permissionAdministratorId() {
+    public String meteredDataAdministratorId() {
         return ENEDIS;
     }
 
     @Override
-    public String meteredDataAdministratorId() {
+    public String permissionAdministratorId() {
         return ENEDIS;
     }
 }

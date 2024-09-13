@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.aiida;
 
-import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.regionconnector.aiida.services.AiidaPermissionService;
 import org.junit.jupiter.api.BeforeEach;

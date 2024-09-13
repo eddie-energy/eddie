@@ -1,7 +1,6 @@
 package energy.eddie.api.agnostic;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
-import energy.eddie.api.v0.DataSourceInformation;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;

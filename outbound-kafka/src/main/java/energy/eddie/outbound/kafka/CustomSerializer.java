@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataMessage;
-import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
@@ -26,8 +26,7 @@ class CustomSerializer implements Serializer<Object> {
     public byte[] serialize(String topic, Object data) {
         return switch (data) {
             case ConnectionStatusMessage csm -> serializeConnectionStatusMessage(csm);
-            case ValidatedHistoricalDataEnvelope vhd ->
-                    serializeEddieValidatedHistoricalDataMarketDocument(vhd);
+            case ValidatedHistoricalDataEnvelope vhd -> serializeEddieValidatedHistoricalDataMarketDocument(vhd);
             case PermissionEnvelope pmd -> serializePermissionMarketDocument(pmd);
             case RawDataMessage rawDataMessage -> serializeRawDataMessage(rawDataMessage);
             case AccountingPointEnvelope accountingPointMarketDocument ->

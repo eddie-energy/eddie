@@ -1,6 +1,10 @@
 package energy.eddie.regionconnector.at.eda;
 
-import energy.eddie.api.v0.*;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.api.v0.RegionConnector;
+import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -14,7 +18,7 @@ import reactor.core.publisher.Sinks;
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
 @Component
-public class EdaRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider {
+public class EdaRegionConnector implements RegionConnector, ConnectionStatusMessageProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaRegionConnector.class);
     private final EdaAdapter edaAdapter;
     private final AtPermissionRequestRepository repository;

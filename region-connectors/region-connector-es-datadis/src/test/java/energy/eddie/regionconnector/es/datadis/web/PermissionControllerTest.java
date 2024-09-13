@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.es.datadis.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
@@ -220,7 +220,8 @@ class PermissionControllerTest {
     void requestPermission_validInput_returnsCreatedAndSetsHeader() throws Exception {
         // Given
         var testPermissionId = "MyTestId";
-        when(mockService.createAndSendPermissionRequest(any())).thenReturn(new CreatedPermissionRequest(testPermissionId, ""));
+        when(mockService.createAndSendPermissionRequest(any())).thenReturn(new CreatedPermissionRequest(testPermissionId,
+                                                                                                        ""));
 
 
         ObjectNode jsonNode = mapper.createObjectNode()

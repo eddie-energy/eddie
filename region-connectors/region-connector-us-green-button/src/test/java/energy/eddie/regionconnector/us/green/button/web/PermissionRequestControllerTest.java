@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.us.green.button.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import energy.eddie.regionconnector.us.green.button.permission.GreenButtonDataSourceInformation;

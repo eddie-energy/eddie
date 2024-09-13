@@ -85,7 +85,7 @@ class OutboundKafkaConfigTest {
                 .withPropertyValues("kafka.acks=all")
                 .run(context -> assertAll(
                         () -> assertThat(context).hasBean("kafkaConnector"),
-                        () -> assertThat(context).hasBean("mvp1ConnectionStatusMessageOutboundConnector"),
+                        () -> assertThat(context).hasBean("connectionStatusMessageOutboundConnector"),
                         () -> assertThat(context).hasBean("validatedHistoricalDataEnvelopeOutboundConnector"),
                         () -> assertThat(context).hasBean("accountingPointEnvelopeOutboundConnector"),
                         () -> assertThat(context).hasBean("permissionMarketDocumentOutboundConnector"),

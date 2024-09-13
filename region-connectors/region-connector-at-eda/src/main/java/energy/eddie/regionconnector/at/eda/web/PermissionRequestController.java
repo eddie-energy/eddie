@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda.web;
 
-import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;

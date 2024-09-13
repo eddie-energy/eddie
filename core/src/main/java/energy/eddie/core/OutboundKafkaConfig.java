@@ -1,7 +1,7 @@
 package energy.eddie.core;
 
+import energy.eddie.api.agnostic.ConnectionStatusMessageOutboundConnector;
 import energy.eddie.api.agnostic.RawDataOutboundConnector;
-import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
 import energy.eddie.api.v0_82.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeOutboundConnector;
@@ -58,11 +58,11 @@ public class OutboundKafkaConfig {
     }
 
     @Bean
-    Mvp1ConnectionStatusMessageOutboundConnector mvp1ConnectionStatusMessageOutboundConnector(
+    ConnectionStatusMessageOutboundConnector connectionStatusMessageOutboundConnector(
             KafkaConnector kafkaConnector,
             PermissionService permissionService
     ) {
-        ((Mvp1ConnectionStatusMessageOutboundConnector) kafkaConnector).setConnectionStatusMessageStream(
+        ((ConnectionStatusMessageOutboundConnector) kafkaConnector).setConnectionStatusMessageStream(
                 permissionService.getConnectionStatusMessageStream());
         return kafkaConnector;
     }

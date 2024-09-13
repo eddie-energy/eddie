@@ -1,4 +1,4 @@
-package energy.eddie.api.v0;
+package energy.eddie.api.agnostic;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

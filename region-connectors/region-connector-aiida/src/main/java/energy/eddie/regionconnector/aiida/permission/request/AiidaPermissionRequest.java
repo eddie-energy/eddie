@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.aiida.permission.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
@@ -105,6 +105,23 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     }
 
     @Override
+    public PermissionProcessStatus status() {
+        return status;
+    }
+
+    @Override
+    public DataSourceInformation dataSourceInformation() {
+        return dataSourceInformation;
+    }
+
+    @Override
+    @SuppressWarnings("NullAway")
+    // TODO use Instant instead of ZonedDateTime because with ZonedDateTime we have again a problem that PostgreSQL doesn't include the TZ information when we read the dates, so just use UTC timestamps
+    public ZonedDateTime created() {
+        return created.atZone(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ZONE_ID);
+    }
+
+    @Override
     public LocalDate start() {
         return start;
     }
@@ -112,11 +129,6 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     @Override
     public LocalDate end() {
         return end;
-    }
-
-    @Override
-    public PermissionProcessStatus status() {
-        return status;
     }
 
     @Override
@@ -135,18 +147,5 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     @Nullable
     public String message() {
         return message;
-    }
-
-
-    @Override
-    public DataSourceInformation dataSourceInformation() {
-        return dataSourceInformation;
-    }
-
-    @Override
-    @SuppressWarnings("NullAway")
-    // TODO use Instant instead of ZonedDateTime because with ZonedDateTime we have again a problem that PostgreSQL doesn't include the TZ information when we read the dates, so just use UTC timestamps
-    public ZonedDateTime created() {
-        return created.atZone(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ZONE_ID);
     }
 }

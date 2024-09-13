@@ -1,7 +1,7 @@
 package energy.eddie.api.agnostic.process.model;
 
 
-import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 
 import java.time.LocalDate;

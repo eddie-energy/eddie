@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request;
 
-import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
 
 public class EnerginetDataSourceInformation implements DataSourceInformation {
@@ -19,12 +19,12 @@ public class EnerginetDataSourceInformation implements DataSourceInformation {
     }
 
     @Override
-    public String permissionAdministratorId() {
+    public String meteredDataAdministratorId() {
         return ENERGINET;
     }
 
     @Override
-    public String meteredDataAdministratorId() {
+    public String permissionAdministratorId() {
         return ENERGINET;
     }
 }

@@ -1,8 +1,8 @@
 package energy.eddie.core.web;
 
-import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.DataSourceInformation;
-import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
+import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.core.services.PermissionService;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ class ConnectionStatusWebsocketHandlerTest {
     void givenConnectionStatusMessage_isSentToAllSubscribedWebSocketSessions() throws IOException {
         Sinks.Many<ConnectionStatusMessage> statusMessageSink = Sinks.many().unicast().onBackpressureBuffer();
         PermissionService permissionService = new PermissionService();
-        permissionService.registerProvider(new Mvp1ConnectionStatusMessageProvider() {
+        permissionService.registerProvider(new ConnectionStatusMessageProvider() {
             @Override
             public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
                 return statusMessageSink.asFlux();
@@ -41,7 +41,11 @@ class ConnectionStatusWebsocketHandlerTest {
         // When
         websocketHandler.afterConnectionEstablished(mockSession1);
         websocketHandler.afterConnectionEstablished(mockSession2);
-        statusMessageSink.tryEmitNext(new ConnectionStatusMessage("one", "one", "one", mock(DataSourceInformation.class), PermissionProcessStatus.CREATED));
+        statusMessageSink.tryEmitNext(new ConnectionStatusMessage("one",
+                                                                  "one",
+                                                                  "one",
+                                                                  mock(DataSourceInformation.class),
+                                                                  PermissionProcessStatus.CREATED));
 
         // Then
         verify(mockSession1).sendMessage(any());

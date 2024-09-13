@@ -1,11 +1,11 @@
 package energy.eddie.regionconnector.shared.event.sourcing.handlers.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.events.InternalPermissionEvent;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
-import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
 import org.slf4j.Logger;
@@ -25,6 +25,15 @@ public class ConnectionStatusMessageHandler<T extends PermissionRequest> impleme
             EventBus eventBus,
             Sinks.Many<ConnectionStatusMessage> messages,
             PermissionRequestRepository<T> repository,
+            Function<T, String> messageFunc
+    ) {
+        this(eventBus, messages, repository, messageFunc, permissionRequest -> null);
+    }
+
+    public ConnectionStatusMessageHandler(
+            EventBus eventBus,
+            Sinks.Many<ConnectionStatusMessage> messages,
+            PermissionRequestRepository<T> repository,
             Function<T, String> messageFunc,
             Function<T, JsonNode> additionalDataFunc
     ) {
@@ -34,15 +43,6 @@ public class ConnectionStatusMessageHandler<T extends PermissionRequest> impleme
         this.additionalDataFunc = additionalDataFunc;
         eventBus.filteredFlux(PermissionEvent.class)
                 .subscribe(this::accept);
-    }
-
-    public ConnectionStatusMessageHandler(
-            EventBus eventBus,
-            Sinks.Many<ConnectionStatusMessage> messages,
-            PermissionRequestRepository<T> repository,
-            Function<T, String> messageFunc
-    ) {
-        this(eventBus, messages, repository, messageFunc, permissionRequest -> null);
     }
 
     @Override

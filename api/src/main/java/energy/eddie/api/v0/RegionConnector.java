@@ -1,5 +1,7 @@
 package energy.eddie.api.v0;
 
+import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
+
 /**
  * A region connector connects MDAs to EDDIE. It implements the MDA specific processes and converts requests for
  * permissions to the format expected by the MDA and also implements MDA and CA specifics related to these MDAs. If
@@ -13,7 +15,7 @@ package energy.eddie.api.v0;
  * The interfaces in the see also section extend the functionality of the region connector.
  * Note that there may be more versions than are referenced.
  *
- * @see energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider
+ * @see ConnectionStatusMessageProvider
  * @see energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider
  * @see energy.eddie.api.v0_82.AccountingPointEnvelopeProvider
  * @see energy.eddie.api.v0_82.PermissionMarketDocumentProvider

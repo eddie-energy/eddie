@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
-import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import org.springframework.stereotype.Service;
 

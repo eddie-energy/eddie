@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.eda.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import org.springframework.stereotype.Service;
 

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;

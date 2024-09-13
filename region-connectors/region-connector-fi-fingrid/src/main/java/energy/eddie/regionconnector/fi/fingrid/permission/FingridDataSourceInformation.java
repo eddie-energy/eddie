@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fi.fingrid.permission;
 
-import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.fi.fingrid.FingridRegionConnectorMetadata;
 

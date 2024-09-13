@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.us.green.button.permission;
 
-import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.regionconnector.us.green.button.GreenButtonRegionConnectorMetadata;
 import jakarta.persistence.Embeddable;
 

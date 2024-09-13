@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.shared.permission.requests;
 
-import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.agnostic.DataSourceInformation;
 
 public class DummyDataSourceInformation implements DataSourceInformation {
     @Override
