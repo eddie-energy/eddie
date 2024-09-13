@@ -1,7 +1,7 @@
 import { html, nothing } from "lit";
+import { createRef, ref } from "lit/directives/ref.js";
 import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
-
 import logo from "../resources/datadis-logo.svg?raw";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/input/input.js";
@@ -18,12 +18,16 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     _areResponseButtonsDisabled: { type: Boolean },
   };
 
+  requestInformation = createRef();
+
   permissionId = null;
   accessToken = null;
 
   constructor() {
     super();
-
+    this.addEventListener("eddie-request-status", (_) => {
+      this.requestInformation.value.textContent = null;
+    });
     this._isPermissionRequestCreated = false;
     this._isSubmitDisabled = false;
     this._areResponseButtonsDisabled = false;
@@ -61,10 +65,12 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     fetch(this.REQUEST_URL + `/${this.permissionId}/accepted`, {
       method: "PATCH",
       headers: {
-        "Authorization": "Bearer " + this.accessToken,
-      }
+        Authorization: "Bearer " + this.accessToken,
+      },
     })
       .then(() => {
+        this.requestInformation.value.textContent =
+          "We are verifying your response with Datadis. This might take a few minutes.";
         this._areResponseButtonsDisabled = true;
       })
       .catch((error) => this.error(error));
@@ -74,8 +80,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     fetch(this.REQUEST_URL + `/${this.permissionId}/rejected`, {
       method: "PATCH",
       headers: {
-        "Authorization": "Bearer " + this.accessToken,
-      }
+        Authorization: "Bearer " + this.accessToken,
+      },
     })
       .then(() => {
         this._areResponseButtonsDisabled = true;
@@ -103,7 +109,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           ></sl-input>
 
           <br />
-          
+
           <sl-input
             label="DNI/NIF"
             type="text"
@@ -154,6 +160,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
               Rejected
             </sl-button>
           </div>
+          <p ${ref(this.requestInformation)}></p>
         </div>
       </div>
     `;
