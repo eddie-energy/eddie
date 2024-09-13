@@ -30,12 +30,12 @@ public class ConnectionStatusController implements Mvp1ConnectionStatusMessagePr
                                                                                         .onBackpressureBuffer();
     private final Sinks.Many<PermissionEnvelope> pmdSink = Sinks.many().multicast().onBackpressureBuffer();
 
-    @GetMapping(value = "/api/connection-status-values")
+    @GetMapping(value = "/connection-status-values")
     public ResponseEntity<PermissionProcessStatus[]> connectionStatusValues() {
         return ResponseEntity.ok(PermissionProcessStatus.values());
     }
 
-    @PostMapping(value = "/api/connection-status")
+    @PostMapping(value = "/connection-status")
     public ResponseEntity<String> changeConnectionStatus(@RequestBody SetConnectionStatusRequest req) {
         LOGGER.info("Changing connection status of {} to {}", req.connectionId, req.connectionStatus);
         if (req.connectionId != null && req.connectionStatus != null && req.dataNeedId != null) {

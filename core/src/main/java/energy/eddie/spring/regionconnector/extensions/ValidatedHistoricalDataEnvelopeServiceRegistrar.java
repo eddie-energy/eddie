@@ -17,11 +17,11 @@ import static java.util.Objects.requireNonNull;
 public class ValidatedHistoricalDataEnvelopeServiceRegistrar {
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public ValidatedHistoricalDataEnvelopeServiceRegistrar(
-            Optional<ValidatedHistoricalDataEnvelopeProvider> consumptionRecordProvider,
+            Optional<ValidatedHistoricalDataEnvelopeProvider> validatedHistoricalDataEnvelopeProvider,
             ValidatedHistoricalDataEnvelopeService cimService
     ) {
-        requireNonNull(consumptionRecordProvider);
+        requireNonNull(validatedHistoricalDataEnvelopeProvider);
         requireNonNull(cimService);
-        consumptionRecordProvider.ifPresent(cimService::registerProvider);
+        validatedHistoricalDataEnvelopeProvider.ifPresent(cimService::registerProvider);
     }
 }

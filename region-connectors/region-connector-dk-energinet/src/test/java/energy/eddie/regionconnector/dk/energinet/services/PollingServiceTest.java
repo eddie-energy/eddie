@@ -100,7 +100,7 @@ class PollingServiceTest {
     }
 
     @Test
-    void fetchingAConsumptionRecord_revokesPermissionRequest_whenTokenInvalid() {
+    void fetchingAMeterReading_revokesPermissionRequest_whenTokenInvalid() {
         // Given
         var start = LocalDate.now(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
@@ -139,7 +139,7 @@ class PollingServiceTest {
     }
 
     @Test
-    void fetchingAConsumptionRecord_marksPermissionRequestAsUnfulfillable_whenResolutionDoesNotSatisfyDataNeed() {
+    void fetchingAMeterReading_marksPermissionRequestAsUnfulfillable_whenResolutionDoesNotSatisfyDataNeed() {
         // Given
         var start = LocalDate.now(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
@@ -190,7 +190,7 @@ class PollingServiceTest {
     @MethodSource("granularityCombinations")
     // max is not used in all cases, so we need to set it to lenient
     @MockitoSettings(strictness = Strictness.LENIENT)
-    void fetchingAConsumptionRecord_emitsExpectedGranularityEvent_ifPermissionContainsNoGranularity(
+    void fetchingAMeterReading_emitsExpectedGranularityEvent_ifPermissionContainsNoGranularity(
             Granularity meterReadingOccurrence,
             Granularity expectedGranularity,
             Granularity min,
@@ -262,7 +262,7 @@ class PollingServiceTest {
     }
 
     @Test
-    void fetchingAConsumptionRecord_returnsAggregationUnavailable_emitsUnfulfillable() {
+    void fetchingAMeterReading_returnsAggregationUnavailable_emitsUnfulfillable() {
         // Given
         var start = LocalDate.now(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
@@ -309,7 +309,7 @@ class PollingServiceTest {
     }
 
     @Test
-    void fetchingAConsumptionRecord_doesNotRevokePermission_on5xx() {
+    void fetchingAMeterReading_doesNotRevokePermission_on5xx() {
         // Given
         var start = LocalDate.now(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
@@ -348,7 +348,7 @@ class PollingServiceTest {
     }
 
     @Test
-    void fetchingAConsumptionRecord_emitsRecord() {
+    void fetchingAMeterReading_emitsRecord() {
         // Given
         var start = LocalDate.now(DK_ZONE_ID).minusDays(10);
         var end = start.plusDays(5);
@@ -410,7 +410,7 @@ class PollingServiceTest {
     }
 
     @Test
-    void fetchingInactiveConsumptionRecord_doesNotEmit() {
+    void fetchingInactivePermissionRequest_doesNotEmit() {
         // Given
         var start = LocalDate.now(DK_ZONE_ID).plusDays(1);
         var end = start.plusDays(5);

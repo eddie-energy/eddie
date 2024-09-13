@@ -3,9 +3,7 @@ package energy.eddie.outbound.kafka;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.RawDataOutboundConnector;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.Mvp1ConnectionStatusMessageOutboundConnector;
-import energy.eddie.api.v0.Mvp1ConsumptionRecordOutboundConnector;
 import energy.eddie.api.v0_82.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeOutboundConnector;
@@ -31,7 +29,6 @@ import java.util.Properties;
 
 public class KafkaConnector implements
         Mvp1ConnectionStatusMessageOutboundConnector,
-        Mvp1ConsumptionRecordOutboundConnector,
         ValidatedHistoricalDataEnvelopeOutboundConnector,
         PermissionMarketDocumentOutboundConnector,
         RawDataOutboundConnector,
@@ -126,22 +123,6 @@ public class KafkaConnector implements
                 new StringHeader(CONNECTION_ID, header.getConnectionid()),
                 new StringHeader(DATA_NEED_ID, header.getDataNeedid())
         );
-    }
-
-    @Override
-    public void setConsumptionRecordStream(Flux<ConsumptionRecord> consumptionRecordStream) {
-        consumptionRecordStream
-                .publishOn(Schedulers.boundedElastic())
-                .subscribe(this::produceConsumptionRecord);
-    }
-
-    private void produceConsumptionRecord(ConsumptionRecord consumptionRecord) {
-        var toSend = new ProducerRecord<String, Object>("consumption-records",
-                                                        consumptionRecord.getConnectionId(),
-                                                        consumptionRecord);
-        kafkaProducer.send(toSend, new KafkaCallback("Could not produce consumption record message"));
-        LOGGER.debug("Produced consumption record message for permission request {}",
-                     consumptionRecord.getPermissionId());
     }
 
     @Override

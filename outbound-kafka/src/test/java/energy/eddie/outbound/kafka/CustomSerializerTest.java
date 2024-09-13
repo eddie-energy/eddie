@@ -7,7 +7,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.ConsumptionRecord;
 import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.pmd.*;
@@ -58,17 +57,6 @@ class CustomSerializerTest {
                 .getBytes(StandardCharsets.UTF_8);
 
         byte[] result = customSerializer.serialize(topic, data);
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    void testSerialize_ConsumptionRecordData() throws JsonProcessingException {
-        String topic = "test";
-        ConsumptionRecord data = new ConsumptionRecord();
-        byte[] expected = new ObjectMapper().writeValueAsBytes(data);
-
-        byte[] result = customSerializer.serialize(topic, data);
-
         assertArrayEquals(expected, result);
     }
 
