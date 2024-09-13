@@ -11,7 +11,7 @@ class SetConnectionStatusCe extends LitElement {
   constructor() {
     super();
     this._statusValues = [];
-    fetch("api/connection-status-values")
+    fetch("connection-status-values")
       .then((res) => res.json())
       .then((json) => (this._statusValues = json))
       .catch(console.error);
@@ -27,7 +27,7 @@ class SetConnectionStatusCe extends LitElement {
       dataNeedId: this.dataNeedId,
       connectionStatus,
     });
-    fetch("api/connection-status", {
+    fetch("connection-status", {
       method: "POST",
       headers: {
         Accept: "application/json",

@@ -23,12 +23,12 @@ public class SimulatedMeterReadingController implements ValidatedHistoricalDataE
         this.cimConfig = cimConfig;
     }
 
-    @PostMapping("/api/simulated-meter-reading")
+    @PostMapping("/simulated-meter-reading")
     public void produceMeterReading(@RequestBody SimulatedMeterReading simulatedMeterReading) {
         vhdmdSink.tryEmitNext(
                 new IntermediateValidatedHistoricalDataMarketDocument(simulatedMeterReading, cimConfig).value());
     }
-    
+
     @Override
     public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return vhdmdSink.asFlux();

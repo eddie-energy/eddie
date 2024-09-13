@@ -104,7 +104,7 @@ class ProduceSimulatedMeterReadingCe extends LitElement {
       meteringInterval: this.measurementsPerDayRef?.value?.value,
       measurements: measurements,
     };
-    fetch("api/simulated-meter-reading", {
+    fetch("simulated-meter-reading", {
       method: "POST",
       headers: {
         Accept: "application/json",
