@@ -2,12 +2,18 @@ package energy.eddie.regionconnector.us.green.button;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
+import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
@@ -17,6 +23,8 @@ import energy.eddie.regionconnector.us.green.button.permission.events.UsSimpleEv
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionEventRepository;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
+import energy.eddie.spring.regionconnector.extensions.cim.v0_82.pmd.CommonPermissionMarketDocumentProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -27,8 +35,11 @@ import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Sinks;
 
+import java.time.ZoneOffset;
 import java.util.List;
 
+import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
+import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.us.green.button.GreenButtonRegionConnectorMetadata.SUPPORTED_DATA_NEEDS;
 import static energy.eddie.regionconnector.us.green.button.GreenButtonRegionConnectorMetadata.US_ZONE_ID;
 
@@ -99,5 +110,41 @@ public class GreenButtonBeanConfig {
     @Bean
     public FulfillmentService fulfillmentService(Outbox outbox) {
         return new FulfillmentService(outbox, UsSimpleEvent::new);
+    }
+
+    @Bean
+    public Sinks.Many<PermissionEnvelope> permissionEnvelopeMany() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public CommonInformationModelConfiguration cimConfig(
+            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme,
+            @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallbackId
+    ) {
+        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme), fallbackId);
+    }
+
+    @Bean
+    public PermissionMarketDocumentProvider permissionMarketDocumentProvider(Sinks.Many<PermissionEnvelope> sink) {
+        return new CommonPermissionMarketDocumentProvider(sink);
+    }
+
+    @Bean
+    public PermissionMarketDocumentMessageHandler<UsGreenButtonPermissionRequest> pmdHandler(
+            EventBus eventBus,
+            UsPermissionRequestRepository repository,
+            Sinks.Many<PermissionEnvelope> sink,
+            CommonInformationModelConfiguration cimConfig
+    ) {
+        return new PermissionMarketDocumentMessageHandler<>(
+                eventBus,
+                repository,
+                sink,
+                cimConfig.eligiblePartyFallbackId(),
+                cimConfig,
+                pr -> null,
+                ZoneOffset.UTC
+        );
     }
 }
