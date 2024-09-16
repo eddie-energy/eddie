@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.us.green.button.services;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
@@ -171,5 +172,10 @@ public class PermissionRequestCreationService {
                                                                      request.dataNeedId(),
                                                                      request.dataSourceInformation(),
                                                                      request.status()));
+    }
+
+    public Optional<String> findDataNeedIdByPermissionId(String permissionId) {
+        return repository.findByPermissionId(permissionId)
+                         .map(PermissionRequest::dataNeedId);
     }
 }

@@ -75,7 +75,7 @@ class PermissionRequestAuthorizationServiceTest {
     }
 
     @Test
-    void testAuthorizePermissionRequest_rejectedCallback() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException {
+    void testAuthorizePermissionRequest_rejectedCallback() {
         // Given
         var permissionId = "permissionId";
         when(callback.state()).thenReturn(permissionId);
@@ -85,7 +85,7 @@ class PermissionRequestAuthorizationServiceTest {
                 .thenReturn(Optional.of(createPermissionRequest()));
 
         // When
-        authorizationService.authorizePermissionRequest(callback);
+        assertThrows(UnauthorizedException.class, () -> authorizationService.authorizePermissionRequest(callback));
 
         // Then
         verify(outbox, times(2)).commit(simpleEventCaptor.capture());
@@ -116,7 +116,7 @@ class PermissionRequestAuthorizationServiceTest {
     }
 
     @Test
-    void testAuthorizePermissionRequest_invalid() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException {
+    void testAuthorizePermissionRequest_invalid() {
         // Given
         var permissionId = "permissionId";
         when(callback.state()).thenReturn(permissionId);
@@ -126,7 +126,7 @@ class PermissionRequestAuthorizationServiceTest {
                 .thenReturn(Optional.of(createPermissionRequest()));
 
         // When
-        authorizationService.authorizePermissionRequest(callback);
+        assertThrows(UnauthorizedException.class, () -> authorizationService.authorizePermissionRequest(callback));
 
         // Then
         verify(outbox).commit(simpleEventCaptor.capture());
@@ -144,7 +144,7 @@ class PermissionRequestAuthorizationServiceTest {
     }
 
     @Test
-    void testAuthorizePermissionRequest_successful() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException {
+    void testAuthorizePermissionRequest_successful() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException {
         // Given
         var permissionId = "permissionId";
         when(callback.state()).thenReturn(permissionId);
@@ -172,7 +172,7 @@ class PermissionRequestAuthorizationServiceTest {
     }
 
     @Test
-    void testAuthorizePermissionRequest_withMismatchingScopes_emitsInvalid() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException {
+    void testAuthorizePermissionRequest_withMismatchingScopes_emitsInvalid() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException {
         // Given
         var permissionId = "permissionId";
         when(callback.state()).thenReturn(permissionId);
@@ -197,7 +197,7 @@ class PermissionRequestAuthorizationServiceTest {
 
     @ParameterizedTest
     @MethodSource
-    void testAuthorizePermissionRequest_withInternalException_doesNotEmit(Exception e) throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException {
+    void testAuthorizePermissionRequest_withInternalException_doesNotEmit(Exception e) throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException {
         // Given
         var permissionId = "permissionId";
         when(callback.state()).thenReturn(permissionId);
