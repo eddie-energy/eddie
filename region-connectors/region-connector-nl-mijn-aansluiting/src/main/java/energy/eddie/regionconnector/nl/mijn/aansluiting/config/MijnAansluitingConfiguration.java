@@ -8,35 +8,50 @@ import java.net.URI;
 
 @ConfigurationProperties(value = "region-connector.nl.mijn.aansluiting")
 public class MijnAansluitingConfiguration {
-    private final String keyId;
+    private final String continuousKeyId;
+    private final String singleKeyId;
     private final String issuerUrl;
-    private final ClientID clientId;
-    private final Scope scope;
+    private final ClientID continuousClientId;
+    private final ClientID singleClientId;
+    private final Scope singleScope;
+    private final Scope continuousScope;
     private final URI redirectUrl;
 
     @SuppressWarnings("java:S107")
     // Config class is only instantiated by spring
     public MijnAansluitingConfiguration(
-            String keyId,
+            String continuousKeyId,
+            String singleKeyId,
             String issuerUrl,
-            ClientID clientId,
-            Scope scope,
+            ClientID continuousClientId,
+            ClientID singleClientId,
+            Scope singleScope,
+            Scope continuousScope,
             URI redirectUrl
     ) {
-        this.keyId = keyId;
+        this.continuousKeyId = continuousKeyId;
+        this.singleKeyId = singleKeyId;
         this.issuerUrl = issuerUrl;
-        this.clientId = clientId;
-        this.scope = scope;
+        this.continuousClientId = continuousClientId;
+        this.singleClientId = singleClientId;
+        this.singleScope = singleScope;
+        this.continuousScope = continuousScope;
         this.redirectUrl = redirectUrl;
     }
 
-    public String keyId() {return keyId;}
+    public String continuousKeyId() {return continuousKeyId;}
+
+    public String singleKeyId() {return singleKeyId;}
 
     public String issuerUrl() {return issuerUrl;}
 
-    public ClientID clientId() {return clientId;}
+    public ClientID continuousClientId() {return continuousClientId;}
 
-    public Scope scope() {return scope;}
+    public ClientID singleClientId() {return singleClientId;}
+
+    public Scope singleScope() {return singleScope;}
+
+    public Scope continuousScope() {return continuousScope;}
 
     public URI redirectUrl() {return redirectUrl;}
 }

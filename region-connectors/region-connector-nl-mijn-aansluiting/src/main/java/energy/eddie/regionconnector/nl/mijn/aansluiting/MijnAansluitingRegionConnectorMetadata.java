@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.nl.mijn.aansluiting;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.EnergyType;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 
@@ -20,7 +21,8 @@ public class MijnAansluitingRegionConnectorMetadata implements RegionConnectorMe
     public static final SequencedCollection<EnergyType> SUPPORTED_ENERGY_TYPES = List.of(EnergyType.NATURAL_GAS,
                                                                                          EnergyType.ELECTRICITY);
     public static final ZoneId NL_ZONE_ID = ZoneId.of("Europe/Amsterdam");
-    public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(ValidatedHistoricalDataDataNeed.class);
+    public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(ValidatedHistoricalDataDataNeed.class,
+                                                                                       AccountingPointDataNeed.class);
     @Nullable
     private static MijnAansluitingRegionConnectorMetadata instance = null;
 

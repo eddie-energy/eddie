@@ -3,6 +3,10 @@ package energy.eddie.regionconnector.nl.mijn.aansluiting.permission.handlers.int
 import energy.eddie.api.agnostic.process.model.events.InternalPermissionEvent;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PollingService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -20,14 +24,17 @@ public class AcceptedEventHandler implements EventHandler<PermissionEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AcceptedEventHandler.class);
     private final PollingService pollingService;
     private final NlPermissionRequestRepository repository;
+    private final DataNeedsService dataNeedsService;
 
     public AcceptedEventHandler(
             EventBus eventBus,
             PollingService pollingService,
-            NlPermissionRequestRepository repository
+            NlPermissionRequestRepository repository,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
     ) {
         this.pollingService = pollingService;
         this.repository = repository;
+        this.dataNeedsService = dataNeedsService;
         eventBus.filteredFlux(PermissionProcessStatus.ACCEPTED)
                 .subscribe(this::accept);
     }
@@ -38,15 +45,21 @@ public class AcceptedEventHandler implements EventHandler<PermissionEvent> {
             return;
         }
         String permissionId = permissionEvent.permissionId();
-        var request = repository.findByPermissionId(permissionId);
-        if (request.isEmpty()) {
-            LOGGER.error("Got unknown accepted permission request: {}", permissionId);
-            return;
+        var request = repository.getByPermissionId(permissionId);
+        var dataNeed = dataNeedsService.getById(request.dataNeedId());
+        switch (dataNeed) {
+            case AccountingPointDataNeed ignored -> pollingService.fetchAccountingPointData(request);
+            case ValidatedHistoricalDataDataNeed ignored -> pollValidatedHistoricalData(request);
+            default -> LOGGER.warn("Unsupported data need: {}", dataNeed);
         }
-        var nlPermissionRequest = request.get();
-        if (nlPermissionRequest.start().isBefore(LocalDate.now(NL_ZONE_ID))) {
-            LOGGER.info("Fetching data for accepted permission request {}", permissionId);
-            pollingService.fetchConsumptionData(nlPermissionRequest);
+    }
+
+    private void pollValidatedHistoricalData(NlPermissionRequest request) {
+        if (request.start().isBefore(LocalDate.now(NL_ZONE_ID))) {
+            LOGGER.atInfo()
+                  .addArgument(request::permissionId)
+                  .log("Fetching data for accepted permission request {}");
+            pollingService.fetchConsumptionData(request);
         }
     }
 }

@@ -35,10 +35,14 @@ class NlValidatedHistoricalDataMarketDocumentProviderTest {
     private final JsonResourceObjectMapper<List<MijnAansluitingResponse>> mapper = new JsonResourceObjectMapper<>(new TypeReference<>() {});
     private final MijnAansluitingConfiguration config = new MijnAansluitingConfiguration(
             "",
-                                                                                         "",
-                                                                                         new ClientID("client-id"),
-                                                                                         new Scope(),
-                                                                                         null);
+            "",
+            "",
+            new ClientID("client-id"),
+            new ClientID("client-id"),
+            new Scope(),
+            new Scope(),
+            null
+    );
     private final NlPermissionRequest pr = new MijnAansluitingPermissionRequest("pid",
                                                                                 "cid",
                                                                                 "dnid",

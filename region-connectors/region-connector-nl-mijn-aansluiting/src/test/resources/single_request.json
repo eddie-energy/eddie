@@ -1,0 +1,16 @@
+[
+  {
+    "supplierEanCode": "8234567890123",
+    "supplierName": "Essent Energie Verkoop Nederland bv",
+    "productType": "ELK",
+    "energyFlowDirection": "LVR",
+    "sjaOffPeak": 1000,
+    "sjaPeak": 1000,
+    "sjiOffPeak": 1000,
+    "sjiPeak": 1000,
+    "energyMeterType": "SLM",
+    "numberOfRegisters": 1,
+    "contractEndDate": "2020-01-02",
+    "subtype": "GWN"
+  }
+]

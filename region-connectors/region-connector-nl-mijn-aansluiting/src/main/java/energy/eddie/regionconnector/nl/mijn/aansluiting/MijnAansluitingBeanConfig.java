@@ -165,7 +165,7 @@ public class MijnAansluitingBeanConfig {
                 new PermissionMarketDocumentMessageHandler<>(eventBus,
                                                              repository,
                                                              permissionMarketDocuments,
-                                                             config.clientId().getValue(),
+                                                             config.continuousClientId().getValue(),
                                                              cimConfig,
                                                           pr -> null,
                                                              NL_ZONE_ID)
@@ -201,7 +201,8 @@ public class MijnAansluitingBeanConfig {
         return new JsonRawDataProvider(
                 REGION_CONNECTOR_ID,
                 objectMapper,
-                pollingService.identifiableMeteredDataFlux()
+                pollingService.identifiableMeteredDataFlux(),
+                pollingService.identifiableAccountingPointDataFlux()
         );
     }
 }

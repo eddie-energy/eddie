@@ -49,19 +49,22 @@ aansluiting.
 The region connector needs a set of configuration values to be able to function correctly, how you provide these values
 depends on the way you deploy the region connector.
 
-| Configuration values                                | Description                                                                                                                                                                     |
-|-----------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `region-connector.nl.mijn.aansluiting.issuer-url`   | The Issuer Url of the authorization server. You can get this information from the portal where you registered the user.                                                         |
-| `region-connector.nl.mijn.aansluiting.client-id`    | The Client-ID needed to facilitate the OAuth flow.                                                                                                                              |
-| `region-connector.nl.mijn.aansluiting.scope`        | The scope of the energy data that is requested, `24_maanden_dagstanden` allows to access up to two year old energy data.                                                        |
-| `region-connector.nl.mijn.aansluiting.redirect-url` | The redirect URL that will be used by the authorization server to redirect the final customer to. Should be `domain + /nl-mijn-aansluiting/oauth2/code/mijn-aansluiting`        |
-| `region-connector.nl.mijn-aansluting.polling`       | Used to configure when future data should be polled, uses Spring cron syntax. The default is 17 o'clock every day.                                                              |
-| `region-connector.nl.mijn.aansluiting.key-id`       | The ID of the key for Mijn Aansluiting.                                                                                                                                         |
-| `spring.ssl.bundle.jks.nl.keystore.location`        | Path to the keystore, which contains the private key needed to create OAuth Requests. It is recommended to create a keystore for each key to simplify key rotation and updates. |
-| `spring.ssl.bundle.jks.nl.keystore.password`        | Password to access the keystore.                                                                                                                                                |
-| `spring.ssl.bundle.jks.nl.key.alias`                | The alias under which the key is saved in the keystore.                                                                                                                         |
-| `spring.ssl.bundle.jks.nl.key.password`             | Password to access the key in the keystore                                                                                                                                      |
-| `spring.ssl.bundle.jks.nl.keystore.type`            | The keystore type. Should always be set to `JKS`                                                                                                                                |
+| Configuration values                                        | Description                                                                                                                                                                     |
+|-------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `region-connector.nl.mijn.aansluiting.issuer-url`           | The Issuer Url of the authorization server. You can get this information from the portal where you registered the user.                                                         |
+| `region-connector.nl.mijn.aansluiting.continuous-client-id` | The Client-ID needed to facilitate the OAuth flow. Must be the Client-ID for the continuous API.                                                                                |
+| `region-connector.nl.mijn.aansluiting.continuous-scope`     | The scope of the energy data that is requested, `24_maanden_dagstanden` allows to access up to two year old energy data.                                                        |
+| `region-connector.nl.mijn.aansluiting.continuous-key-id`    | The ID of the key for Mijn Aansluiting continuous API.                                                                                                                          |
+| `region-connector.nl.mijn.aansluiting.single-client-id`     | The Client-ID needed to facilitate the OAuth flow. Must be the Client-ID for the single permission API.                                                                         |
+| `region-connector.nl.mijn.aansluiting.single-scope`         | The scope of the accounting point data that is requested, `consumption_data` allows to access accounting point data.                                                            |
+| `region-connector.nl.mijn.aansluiting.single-key-id`        | The ID of the key for Mijn Aansluiting single permission API.                                                                                                                   |
+| `region-connector.nl.mijn.aansluiting.redirect-url`         | The redirect URL that will be used by the authorization server to redirect the final customer to. Should be `domain + /nl-mijn-aansluiting/oauth2/code/mijn-aansluiting`        |
+| `region-connector.nl.mijn-aansluting.polling`               | Used to configure when future data should be polled, uses Spring cron syntax. The default is 17 o'clock every day.                                                              |
+| `spring.ssl.bundle.jks.nl.keystore.location`                | Path to the keystore, which contains the private key needed to create OAuth Requests. It is recommended to create a keystore for each key to simplify key rotation and updates. |
+| `spring.ssl.bundle.jks.nl.keystore.password`                | Password to access the keystore.                                                                                                                                                |
+| `spring.ssl.bundle.jks.nl.key.alias`                        | The alias under which the key is saved in the keystore.                                                                                                                         |
+| `spring.ssl.bundle.jks.nl.key.password`                     | Password to access the key in the keystore                                                                                                                                      |
+| `spring.ssl.bundle.jks.nl.keystore.type`                    | The keystore type. Should always be set to `JKS`                                                                                                                                |
 
 ### .properties file
 
