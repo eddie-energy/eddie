@@ -6,7 +6,6 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
 import energy.eddie.tests.e2e.E2eTestSetup;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
 
 import java.io.IOException;
 
@@ -17,7 +16,6 @@ class FrEnedisTest extends E2eTestSetup {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    @Disabled("Until Enedis Sandbox is working again")
     void buttonClickOpensNewPage_statusIsFulfilled() {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(1).click();
         page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Country")).click();
