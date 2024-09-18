@@ -19,19 +19,35 @@ AIIDA is also available as a docker image at
 the [GitHub registry](https://github.com/eddie-energy/eddie/pkgs/container/aiida).
 The necessary configuration should be specified via [environment variables](docker/.env), and
 an [example docker compose file](docker/compose.yml)
-includes a TimescaleDB.
+includes a TimescaleDB and Keycloak.
 Once started, you can access the AIIDA Web-UI at the default location: http://localhost:8080
+
+## Authentication with Keycloak
+The [example docker compose file](docker/compose.yml) includes a keycloak instance with a preconfigured user named
+`aiida`, with the password `aiida`.
+
+The preconfigured keycloak includes an EDDIE realm with the AIIDA client, that is used for authentication.
+The client secret of the AIIDA client is set to `REPLACE_ME` and can be regenerated in the admin console, which is
+reachable at http://localhost:8888.
+The keycloak admin user is configured in the [.env](docker/.env) file and has by default the username `admin` and the 
+password `admin`.
+
+If a different keycloak instance should be used, it can be configured in the 
+[application.yml](src/main/resources/application.yml) file or using environment variables.
 
 ## AIIDA configuration
 
 Several configurations can be applied through environment variables or the _application.properties_ file.
 When using Docker, most of these properties should be configured in the [.env](docker/.env) file.
 
-| Property                   | Description                                                    |
-|----------------------------|----------------------------------------------------------------|
-| SPRING_DATASOURCE_USERNAME | Username to authenticate to the TimescaleDB                    |
-| SPRING_DATASOURCE_PASSWORD | Password to authenticate to the TimescaleDB                    |
-| APP_LOGIN_PASSWORD         | Password for the AIIDA web UI, the username is **aiida-admin** |
+| Property                   | Description                                 |
+|----------------------------|---------------------------------------------|
+| SPRING_DATASOURCE_USERNAME | Username to authenticate to the TimescaleDB |
+| SPRING_DATASOURCE_PASSWORD | Password to authenticate to the TimescaleDB |
+| KEYCLOAK_HOST              | Host of the Keycloak instance               |
+| KEYCLOAK_REALM             | Name of the Keycloak realm                  |
+| KEYCLOAK_CLIENT            | Name of the Keycloak client                 |
+| KEYCLOAK_CLIENT_SECRET     | The client secret for the Keycloak client   |
 
 ## API documentation
 
