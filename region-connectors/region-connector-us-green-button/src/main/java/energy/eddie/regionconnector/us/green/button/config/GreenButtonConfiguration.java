@@ -11,6 +11,7 @@ public class GreenButtonConfiguration {
     private final Map<String, String> clientIds;
     private final Map<String, String> clientSecrets;
     private final String redirectUri;
+    private final int activationBatchSize;
 
     @SuppressWarnings("java:S107")
     // Config class is only instantiated by spring
@@ -19,13 +20,15 @@ public class GreenButtonConfiguration {
             String basePath,
             Map<String, String> clientIds,
             Map<String, String> clientSecrets,
-            String redirectUri
+            String redirectUri,
+            int activationBatchSize
     ) {
         this.apiToken = apiToken;
         this.basePath = basePath;
         this.clientIds = clientIds;
         this.clientSecrets = clientSecrets;
         this.redirectUri = redirectUri;
+        this.activationBatchSize = activationBatchSize;
     }
 
     public String apiToken() {return apiToken;}
@@ -37,4 +40,6 @@ public class GreenButtonConfiguration {
     public Map<String, String> clientSecrets() {return clientSecrets;}
 
     public String redirectUri() {return redirectUri;}
+
+    public int activationBatchSize() {return activationBatchSize;}
 }
