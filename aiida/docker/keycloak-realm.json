@@ -1,0 +1,39 @@
+{
+  "realm": "EDDIE",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "AIIDA",
+      "enabled": true,
+      "redirectUris": ["http://localhost:*"],
+      "publicClient": false,
+      "secret": "REPLACE_ME",
+      "directAccessGrantsEnabled": true
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin"
+        }
+      ]
+    },
+    {
+      "username": "aiida",
+      "email": "aiida@eddie.eu",
+      "firstName": "aiida",
+      "lastName": "aiida",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "aiida"
+        }
+      ]
+    }
+  ]
+}

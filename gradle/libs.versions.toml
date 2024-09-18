@@ -147,6 +147,7 @@ spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-s
 spring-boot-starter-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
+spring-boot-starter-oauth2-client = { module = "org.springframework.boot:spring-boot-starter-oauth2-client"}
 spring-boot-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-kafka = { module = "org.springframework.kafka:spring-kafka", version.ref = "spring-kafka" }
 spring-websocket = { module = "org.springframework:spring-websocket", version.ref = "spring-websocket" }
