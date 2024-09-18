@@ -45,6 +45,7 @@ dependencies {
 
     runtimeOnly(libs.postgresql)
 
+    testImplementation(libs.spring.security.test)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.reactor.test)
     testImplementation(libs.apache.http.client)
