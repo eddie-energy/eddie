@@ -19,11 +19,11 @@ spring:
       client:
         provider:
           keycloak:
-            issuer-uri: http://localhost:8888/realms/EDDIE
+            issuer-uri: ${KEYCLOAK_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}
         registration:
           keycloak:
-            client-id: AIIDA
-            client-secret: REPLACE_ME
+            client-id: ${KEYCLOAK_CLIENT:EDDIE}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:REPLACE_ME}
             authorization-grant-type: authorization_code
             scope: openid
             provider: keycloak

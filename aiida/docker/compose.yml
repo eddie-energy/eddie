@@ -5,8 +5,6 @@ services:
       POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
       POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       POSTGRES_DB: aiida
-    ports:
-      - "7777:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     restart: always
