@@ -34,6 +34,7 @@ dependencies {
     implementation(libs.spring.openapi.webmvc.ui)
     implementation(libs.spring.boot.security)
     implementation(libs.spring.boot.starter.thymeleaf)
+    implementation(libs.spring.boot.starter.oauth2.client)
 
     implementation(libs.reactor.core)
     implementation(libs.flyway.core)
