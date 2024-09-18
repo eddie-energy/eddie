@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
@@ -30,6 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -55,20 +57,22 @@ class PermissionControllerTest {
     }
 
     @Test
+    @WithMockUser
     void givenInvalidAcceptMediaType_returnsNotAcceptable() throws Exception {
         mockMvc.perform(get("/permissions")
-                                .accept(MediaType.APPLICATION_XML))
-               .andExpect(status().isNotAcceptable());
+                        .accept(MediaType.APPLICATION_XML))
+                .andExpect(status().isNotAcceptable());
     }
 
     @Test
+    @WithMockUser
     void getAllPermissionsByGrantDate_returnsEmptyList() throws Exception {
         List<Permission> empty = Collections.emptyList();
         when(permissionService.getAllPermissionsSortedByGrantTime()).thenReturn(empty);
 
         var responseString = mockMvc.perform(get("/permissions"))
-                                    .andExpect(status().isOk())
-                                    .andReturn().getResponse().getContentAsString();
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
 
         var response = mapper.readValue(responseString, new TypeReference<List<Permission>>() {
         });
@@ -76,13 +80,14 @@ class PermissionControllerTest {
     }
 
     @Test
+    @WithMockUser
     void getAllPermissionsByGrantDate_returnsCorrectOrder() throws Exception {
         var permissions = sampleDataForGetAllPermissionsTest();
         when(permissionService.getAllPermissionsSortedByGrantTime()).thenReturn(permissions);
 
         var responseString = mockMvc.perform(get("/permissions"))
-                                    .andExpect(status().isOk())
-                                    .andReturn().getResponse().getContentAsString();
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
 
         var response = mapper.readValue(responseString, new TypeReference<List<Permission>>() {
         });
@@ -95,25 +100,25 @@ class PermissionControllerTest {
     private List<Permission> sampleDataForGetAllPermissionsTest() {
         var name = "Service1";
         var permission1 = new Permission(new QrCodeDto(UUID.randomUUID().toString(),
-                                                       name,
-                                                       "https://example.org",
-                                                       "fooBarToken"));
+                name,
+                "https://example.org",
+                "fooBarToken"));
         permission1.setGrantTime(grant);
 
         name = "Service2";
         grant = grant.plusSeconds(1000);
         var permission2 = new Permission(new QrCodeDto(UUID.randomUUID().toString(),
-                                                       name,
-                                                       "https://example.org",
-                                                       "fooBarToken"));
+                name,
+                "https://example.org",
+                "fooBarToken"));
         permission2.setGrantTime(grant);
 
         name = "Service3";
         grant = grant.plusSeconds(5000);
         var permission3 = new Permission(new QrCodeDto(UUID.randomUUID().toString(),
-                                                       name,
-                                                       "https://example.org",
-                                                       "fooBarToken"));
+                name,
+                "https://example.org",
+                "fooBarToken"));
         permission3.setGrantTime(grant);
 
         // grant time order is permission3, permission2, permission1
@@ -121,33 +126,40 @@ class PermissionControllerTest {
     }
 
     @Test
+    @WithMockUser
     void givenInvalidMediaType_permissionRequest_returnsUnsupportedMediaType() throws Exception {
         mockMvc.perform(
-                       post("/permissions")
-                               .contentType(MediaType.APPLICATION_CBOR))
-               .andExpect(status().isUnsupportedMediaType());
+                        post("/permissions")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_CBOR))
+                .andExpect(status().isUnsupportedMediaType());
     }
 
     @Test
+    @WithMockUser
     void givenInvalidAcceptMediaType_permissionRequest_returnsNotAcceptable() throws Exception {
         mockMvc.perform(post("/permissions")
-                                .accept(MediaType.APPLICATION_XML)
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isNotAcceptable());
+                        .with(csrf())
+                        .accept(MediaType.APPLICATION_XML)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotAcceptable());
     }
 
     @Test
+    @WithMockUser
     void givenEmptyPostBody_permissionRequest_returnsBadRequest() throws Exception {
         mockMvc.perform(
-                       post("/permissions")
-                               .contentType(MediaType.APPLICATION_JSON)
-                               .content(""))
-               .andExpect(status().isBadRequest())
-               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
+                        post("/permissions")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(""))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
     }
 
     @Test
+    @WithMockUser
     void givenIncompletePostBody_permissionRequest_returnsBadRequest() throws Exception {
         // Given
         when(permissionService.setupNewPermission(any())).thenReturn(mockPermission);
@@ -156,18 +168,20 @@ class PermissionControllerTest {
 
         // When
         mockMvc.perform(
-                       post("/permissions")
-                               .contentType(MediaType.APPLICATION_JSON)
-                               .content(requestJson))
-               // Then
-               .andExpect(status().isBadRequest())
-               .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", allOf(
-                       iterableWithSize(1),
-                       hasItem("serviceName: must not be blank")
-               )));
+                        post("/permissions")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestJson))
+                // Then
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", allOf(
+                        iterableWithSize(1),
+                        hasItem("serviceName: must not be blank")
+                )));
     }
 
     @Test
+    @WithMockUser
     void givenValidInput_setupPermission_callsService_andReturnsLocationHeader() throws Exception {
         // Given
         when(permissionService.setupNewPermission(any())).thenReturn(mockPermission);
@@ -176,87 +190,101 @@ class PermissionControllerTest {
 
         // When
         mockMvc.perform(post("/permissions")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(requestJson))
-               // Then
-               .andExpect(status().isCreated())
-               .andExpect(header().string("location", "/permissions/" + permissionId));
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                // Then
+                .andExpect(status().isCreated())
+                .andExpect(header().string("location", "/permissions/" + permissionId));
 
         verify(permissionService).setupNewPermission(argThat(dto -> dto.permissionId()
-                                                                       .equals(permissionId)));
+                .equals(permissionId)));
     }
 
     @Test
+    @WithMockUser
     void givenInvalidMediaType_updatePermission_returnsUnsupportedMediaType() throws Exception {
         mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
-                                .contentType(MediaType.APPLICATION_NDJSON))
-               .andExpect(status().isUnsupportedMediaType());
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_NDJSON))
+                .andExpect(status().isUnsupportedMediaType());
     }
 
     @Test
+    @WithMockUser
     void givenInvalidAcceptMediaType_updatePermission_returnsNotAcceptable() throws Exception {
         mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
-                                .accept(MediaType.APPLICATION_XML)
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isNotAcceptable());
+                        .with(csrf())
+                        .accept(MediaType.APPLICATION_XML)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotAcceptable());
     }
 
     @Test
+    @WithMockUser
     void givenEmptyPatchBody_updatePermission_returnsBadRequest() throws Exception {
         mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(""))
-               .andExpect(status().isBadRequest())
-               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(""))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
     }
 
     @Test
+    @WithMockUser
     void givenAccept_updatePermission_callsAcceptOnService() throws Exception {
         // Given
         var requestJson = "{\"operation\": \"ACCEPT\"}";
 
         // When
         mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(requestJson))
-               // Then
-               .andExpect(status().isOk());
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                // Then
+                .andExpect(status().isOk());
 
         verify(permissionService).acceptPermission(permissionId);
     }
 
     @Test
+    @WithMockUser
     void givenReject_updatePermission_callsRejectOnService() throws Exception {
         // Given
         var requestJson = "{\"operation\": \"REJECT\"}";
 
         // When
         mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(requestJson))
-               // Then
-               .andExpect(status().isOk());
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                // Then
+                .andExpect(status().isOk());
 
         verify(permissionService).rejectPermission(permissionId);
     }
 
     @Test
+    @WithMockUser
     void givenRevoke_updatePermission_callsRevokeOnService() throws Exception {
         // Given
         var requestJson = "{\"operation\": \"REVOKE\"}";
 
         // When
         mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(requestJson))
-               // Then
-               .andExpect(status().isOk());
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                // Then
+                .andExpect(status().isOk());
 
         verify(permissionService).revokePermission(permissionId);
     }
 
     @Test
+    @WithMockUser
     void givenExceptionDuringRevoke_updatePermission_returnsConflict() throws Exception {
         // Given
         var exception = new PermissionStateTransitionException("fooBar", "desired", List.of("allowed"), "current");
@@ -265,13 +293,14 @@ class PermissionControllerTest {
 
         // When
         mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(requestJson))
-               // Then
-               .andExpect(status().isConflict())
-               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
-                                   is("Cannot transition permission 'fooBar' to state 'desired', as it is not in a one of the permitted states '[allowed]' but in state 'current'")));
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                // Then
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
+                        is("Cannot transition permission 'fooBar' to state 'desired', as it is not in a one of the permitted states '[allowed]' but in state 'current'")));
     }
 
     @TestConfiguration

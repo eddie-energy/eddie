@@ -7,6 +7,7 @@ spring-aspects = "6.1.1"
 spring-kafka = "3.1.1"
 spring-websocket = "6.1.2"
 spring-oxm = "6.1.5"
+spring-security-test = "6.3.3"
 junit = "5.9.2"
 mockito-junit = "5.4.0"
 errorprone = "3.0.1"
@@ -155,6 +156,7 @@ spring-retry = { module = "org.springframework.retry:spring-retry", version.ref 
 spring-aspects = { module = "org.springframework:spring-aspects", version.ref = "spring-aspects" }
 spring-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "openapi-webmvc-ui" }
 spring-oxm = { module = "org.springframework:spring-oxm", version.ref = "spring-oxm" }
+spring-security-test = { module = "org.springframework.security:spring-security-test", version.ref="spring-security-test" }
 
 
 hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", version.ref = "hibernate-validator" }
